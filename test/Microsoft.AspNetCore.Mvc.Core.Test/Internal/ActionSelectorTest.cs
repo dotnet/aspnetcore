@@ -17,6 +17,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -785,7 +786,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 .Select(t => t.GetTypeInfo())
                 .ToList();
 
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
 
             var manager = GetApplicationManager(controllerTypes);
 

@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public void SelectFormatter_WithAcceptHeaderAndReturnHttpNotAcceptable_DoesNotUseFallback()
         {
             // Arrange
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.ReturnHttpNotAcceptable = true;
 
             var executor = CreateExecutor(options);
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         public async Task ExecuteAsync_FallsBackOnFormattersInOptions()
         {
             // Arrange
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new TestJsonOutputFormatter());
 
             var executor = CreateExecutor(options: options);
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             string expectedContentType)
         {
             // Arrange
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.RespectBrowserAcceptHeader = false;
 
             var executor = CreateExecutor(options: options);
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             string expectedContentType)
         {
             // Arrange
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.RespectBrowserAcceptHeader = true;
 
             var executor = CreateExecutor(options: options);
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static TestObjectResultExecutor CreateExecutor(IOptions<MvcOptions> options = null)
         {
             return new TestObjectResultExecutor(
-                options ?? new TestOptionsManager<MvcOptions>(),
+                options ?? Options.Create(new MvcOptions()),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance);
         }
@@ -648,7 +648,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private static CustomObjectResultExecutor CreateCustomObjectResultExecutor()
         {
             return new CustomObjectResultExecutor(
-                new TestOptionsManager<MvcOptions>(),
+                Options.Create(new MvcOptions()),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance);
         }

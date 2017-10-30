@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
             var partManager = new ApplicationPartManager();
-            var options = new TestOptionsManager<RazorViewEngineOptions>();
+            var options = Options.Create(new RazorViewEngineOptions());
 
             var referenceManager = new DefaultRazorReferenceManager(partManager, options);
 

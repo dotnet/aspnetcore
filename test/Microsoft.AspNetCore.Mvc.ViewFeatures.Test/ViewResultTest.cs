@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -227,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private HttpContext GetHttpContext()
         {
-            var options = new TestOptionsManager<MvcViewOptions>();
+            var options = Options.Create(new MvcViewOptions());
 
             var viewExecutor = new ViewResultExecutor(
                 options,

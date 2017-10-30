@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(TestApiController));
-            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            var options = Options.Create(new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
             });
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(SimpleController));
-            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            var options = Options.Create(new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
             });
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(TestApiController));
-            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            var options = Options.Create(new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
             });
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = GetContext(typeof(TestApiController));
             context.Result.Controllers[0].ApiExplorer.IsVisible = false;
-            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            var options = Options.Create(new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
             });
@@ -401,7 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IOptions<ApiBehaviorOptions> options = null,
             IModelMetadataProvider modelMetadataProvider = null)
         {
-            options = options ?? new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            options = options ?? Options.Create(new ApiBehaviorOptions
             {
                 InvalidModelStateResponseFactory = _ => null,
             });
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static ApplicationModelProviderContext GetContext(Type type)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
-            new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>()).OnProvidersExecuting(context);
+            new DefaultApplicationModelProvider(Options.Create(new MvcOptions())).OnProvidersExecuting(context);
             return context;
         }
 

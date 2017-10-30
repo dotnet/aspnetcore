@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
                 new FileProviderRazorProject(accessor));
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var options = Options.Create(new RazorPagesOptions());
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
             // Act
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
                 new FileProviderRazorProject(accessor));
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = rootDirectory;
 
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 RazorEngine.Create(),
                 new FileProviderRazorProject(accessor));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
 
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);

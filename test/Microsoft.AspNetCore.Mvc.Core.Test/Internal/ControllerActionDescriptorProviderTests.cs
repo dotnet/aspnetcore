@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -706,7 +707,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var controllerTypeInfo = typeof(UserController).GetTypeInfo();
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.Conventions.Add(new TestRoutingConvention());
             var modelProvider = new DefaultApplicationModelProvider(options);
             var provider = new ControllerActionDescriptorProvider(
@@ -1175,7 +1176,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(c => c.Apply(It.IsAny<ParameterModel>()))
                 .Callback(() => { Assert.Equal(3, sequence++); });
 
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.Conventions.Add(applicationConvention.Object);
 
             var applicationModel = new ApplicationModel();
@@ -1385,7 +1386,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             TypeInfo controllerTypeInfo,
             IEnumerable<IFilterMetadata> filters = null)
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             if (filters != null)
             {
                 foreach (var filter in filters)
@@ -1409,7 +1410,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private ControllerActionDescriptorProvider GetProvider(
             params TypeInfo[] controllerTypeInfos)
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
 
             var manager = GetApplicationManager(controllerTypeInfos);
             var modelProvider = new DefaultApplicationModelProvider(options);
@@ -1426,7 +1427,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             TypeInfo controllerTypeInfo,
             IApplicationModelConvention convention)
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.Conventions.Add(convention);
 
             var manager = GetApplicationManager(new[] { controllerTypeInfo });

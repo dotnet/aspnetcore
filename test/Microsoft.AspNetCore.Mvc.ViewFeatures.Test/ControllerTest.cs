@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
 using Xunit;
@@ -442,7 +443,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
             {
                 new DataAnnotationsModelValidatorProvider(
                     new ValidationAttributeAdapterProvider(),
-                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                     stringLocalizerFactory: null),
             };
 

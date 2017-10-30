@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new [] { typeof(CorsController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(DisableCorsController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(CustomCorsFilterController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(EnableCorsController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(DisableCorsActionController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(CustomCorsFilterOnActionController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(RegularController).GetTypeInfo() });
             context.Result.Filters.Add(new CorsAuthorizationFilter(Mock.Of<ICorsService>(), Mock.Of<ICorsPolicyProvider>()));
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(RegularController).GetTypeInfo() });
             context.Result.Filters.Add(new DisableCorsAuthorizationFilter());
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(RegularController).GetTypeInfo() });
             context.Result.Filters.Add(new CustomCorsFilterAttribute());
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(RegularController).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);

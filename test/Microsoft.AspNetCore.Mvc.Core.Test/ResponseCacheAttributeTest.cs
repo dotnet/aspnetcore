@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc
         private IServiceProvider GetServiceProvider(Dictionary<string, CacheProfile> cacheProfiles)
         {
             var serviceProvider = new Mock<IServiceProvider>();
-            var optionsAccessor = new TestOptionsManager<MvcOptions>();
+            var optionsAccessor = Options.Create(new MvcOptions());
             if (cacheProfiles != null)
             {
                 foreach (var p in cacheProfiles)

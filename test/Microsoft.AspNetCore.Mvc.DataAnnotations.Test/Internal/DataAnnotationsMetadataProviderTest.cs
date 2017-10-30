@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var dataType = new DataTypeAttribute(DataType.Currency);
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var dataType = new DataTypeAttribute(DataType.Time); // Has a non-null DisplayFormat.
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var editable = new EditableAttribute(allowEdit: false);
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var editable = new EditableAttribute(allowEdit: true);
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute()
         {
             // Arrange
-            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
 
             var provider = new DataAnnotationsMetadataProvider(
                 localizationOptions,
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         public void CreateDisplayMetadata_DisplayAttribute_OverridesDisplayNameAttribute_IfNameEmpty()
         {
             // Arrange
-            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
 
             var provider = new DataAnnotationsMetadataProvider(
                 localizationOptions,
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         public void CreateDisplayMetadata_DisplayAttribute_DoesNotOverrideDisplayNameAttribute_IfNameNull()
         {
             // Arrange
-            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
 
             var provider = new DataAnnotationsMetadataProvider(
                 localizationOptions,
@@ -263,7 +264,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(s => s.Create(typeof(EmptyClass)))
                 .Returns(() => sharedLocalizer.Object);
 
-            var localizationOptions = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var localizationOptions = Options.Create(new MvcDataAnnotationsLocalizationOptions());
             localizationOptions.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
             {
                 return stringLocalizerFactory.Create(typeof(EmptyClass));
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(s => s.Create(typeof(EmptyClass)))
                 .Returns(() => sharedLocalizer.Object);
 
-            var options = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var options = Options.Create(new MvcDataAnnotationsLocalizationOptions());
             bool dataAnnotationLocalizerProviderWasUsed = false;
             options.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
             {
@@ -330,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var display = new DisplayAttribute()
@@ -367,7 +368,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(s => s.Create(It.IsAny<Type>()))
                 .Returns(() => stringLocalizer.Object);
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory.Object);
 
             var display = new DisplayAttribute()
@@ -404,7 +405,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(s => s.Create(It.IsAny<Type>()))
                 .Returns(() => stringLocalizer.Object);
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory.Object);
 
             var display = new DisplayAttribute()
@@ -435,7 +436,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var display = new DisplayAttribute()
@@ -472,7 +473,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(s => s.Create(It.IsAny<Type>()))
                 .Returns(() => stringLocalizer.Object);
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory.Object);
 
             var display = new DisplayAttribute()
@@ -503,7 +504,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var display = new DisplayAttribute()
@@ -548,7 +549,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Setup(f => f.Create(It.IsAny<Type>()))
                 .Returns(stringLocalizer.Object);
 
-            var options = new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>();
+            var options = Options.Create(new MvcDataAnnotationsLocalizationOptions());
             options.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
             {
                 return stringLocalizerFactory.Create(type);
@@ -609,7 +610,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(type);
@@ -645,7 +646,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(type);
@@ -779,7 +780,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(type);
@@ -825,7 +826,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Returns(stringLocalizer.Object);
 
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory.Object);
 
             // Act
@@ -959,7 +960,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(type);
@@ -989,7 +990,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             };
 
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var key = ModelMetadataIdentity.ForType(typeof(EnumWithDisplayOrder));
@@ -1091,7 +1092,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var required = new RequiredAttribute();
@@ -1115,7 +1116,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var attributes = new Attribute[] { };
@@ -1138,7 +1139,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var attributes = new Attribute[] { new RequiredAttribute() };
@@ -1161,7 +1162,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var attributes = new Attribute[] { };
@@ -1181,7 +1182,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var attribute = new TestValidationAttribute();
@@ -1202,7 +1203,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             // Arrange
             var provider = new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var attribute = new TestValidationAttribute();
@@ -1249,7 +1250,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Returns(stringLocalizer.Object);
 
             return new DataAnnotationsMetadataProvider(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 useStringLocalizer ? stringLocalizerFactory.Object : null);
         }
 

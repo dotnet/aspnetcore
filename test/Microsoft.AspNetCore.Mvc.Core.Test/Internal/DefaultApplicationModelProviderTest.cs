@@ -1250,13 +1250,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _methods = methods;
             }
 
-            public IEnumerable<string> HttpMethods
-            {
-                get
-                {
-                    return _methods;
-                }
-            }
+            public IEnumerable<string> HttpMethods => _methods;
         }
 
         [Route("A")]
@@ -1344,7 +1338,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class TestApplicationModelProvider : DefaultApplicationModelProvider
         {
             public TestApplicationModelProvider()
-                : this(new TestOptionsManager<MvcOptions>())
+                : this(Options.Create(new MvcOptions()))
             {
             }
 
@@ -1352,10 +1346,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 IOptions<MvcOptions> options)
                 : base(options)
             {
-                Options = options.Value;
             }
-
-            public MvcOptions Options { get; }
 
             public new ControllerModel CreateControllerModel(TypeInfo typeInfo)
             {

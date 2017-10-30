@@ -1597,7 +1597,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var httpContext = new DefaultHttpContext();
             var options = new MvcOptions();
-            var mvcOptionsAccessor = new TestOptionsManager<MvcOptions>(options);
+            var mvcOptionsAccessor = Options.Create(options);
 
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);

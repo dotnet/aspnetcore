@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -332,7 +333,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns<ActionContext, string, bool>(
                     (context, name, isMainPage) => ViewEngineResult.Found(name, Mock.Of<IView>()));
 
-            var options = new TestOptionsManager<MvcViewOptions>();
+            var options = Options.Create(new MvcViewOptions());
             options.Value.ViewEngines.Add(viewEngine.Object);
 
             var viewExecutor = new PartialViewResultExecutor(

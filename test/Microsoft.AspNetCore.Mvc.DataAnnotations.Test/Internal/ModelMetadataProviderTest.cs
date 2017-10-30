@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
@@ -1051,10 +1052,10 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                       {
                           new DefaultBindingMetadataProvider(),
                           new DataAnnotationsMetadataProvider(
-                              new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                              Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                               stringLocalizerFactory: null),
                       }),
-                      new TestOptionsManager<MvcOptions>())
+                      Options.Create(new MvcOptions()))
             {
                 _attributes = attributes;
             }

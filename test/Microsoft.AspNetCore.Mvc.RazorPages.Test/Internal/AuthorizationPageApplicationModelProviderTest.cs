@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_IgnoresAttributesOnHandlerMethods()
         {
             // Arrange
-            var policyProvider = new DefaultAuthorizationPolicyProvider(new TestOptionsManager<AuthorizationOptions>());
+            var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
             var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var typeInfo = typeof(PageWithAuthorizeHandlers).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_AddsAuthorizeFilter_IfModelHasAuthorizationAttributes()
         {
             // Arrange
-            var policyProvider = new DefaultAuthorizationPolicyProvider(new TestOptionsManager<AuthorizationOptions>());
+            var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
             var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var context = GetApplicationProviderContext(typeof(TestPage).GetTypeInfo());
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_CollatesAttributesFromInheritedTypes()
         {
             // Arrange
-            var options = new TestOptionsManager<AuthorizationOptions>();
+            var options = Options.Create(new AuthorizationOptions());
             options.Value.AddPolicy("Base", policy => policy.RequireClaim("Basic").RequireClaim("Basic2"));
             options.Value.AddPolicy("Derived", policy => policy.RequireClaim("Derived"));
 
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public void OnProvidersExecuting_AddsAllowAnonymousFilter()
         {
             // Arrange
-            var policyProvider = new DefaultAuthorizationPolicyProvider(new TestOptionsManager<AuthorizationOptions>());
+            var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(new AuthorizationOptions()));
             var autorizationProvider = new AuthorizationPageApplicationModelProvider(policyProvider);
             var context = GetApplicationProviderContext(typeof(PageWithAnonymousModel).GetTypeInfo());
 

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -595,8 +596,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Single(modelStateDictionary);
 
             // Check Age error.
-            ModelStateEntry entry;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out var entry));
             var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
@@ -630,8 +630,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Single(modelStateDictionary);
 
             // Check Age error.
-            ModelStateEntry entry;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out var entry));
             var modelError = Assert.Single(entry.Errors);
             Assert.Null(modelError.Exception);
             Assert.NotNull(modelError.ErrorMessage);
@@ -667,8 +666,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Single(modelStateDictionary);
 
             // Check Age error.
-            ModelStateEntry entry;
-            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out entry));
+            Assert.True(modelStateDictionary.TryGetValue("theModel.Age", out var entry));
             Assert.Equal(ModelValidationState.Invalid, entry.ValidationState);
 
             var modelError = Assert.Single(entry.Errors);
@@ -1032,7 +1030,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private static TestableComplexTypeModelBinder CreateBinder(ModelMetadata metadata)
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             var setup = new MvcCoreMvcOptionsSetup(new TestHttpRequestStreamReaderFactory());
             setup.Configure(options.Value);
 
@@ -1368,8 +1366,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     return base.BindModelAsync(bindingContext);
                 }
 
-                ModelBindingResult result;
-                if (Results.TryGetValue(bindingContext.ModelMetadata, out result))
+                if (Results.TryGetValue(bindingContext.ModelMetadata, out var result))
                 {
                     bindingContext.Result = result;
                 }

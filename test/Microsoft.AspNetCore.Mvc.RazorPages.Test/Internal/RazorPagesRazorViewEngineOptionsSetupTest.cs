@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
             var viewEngineOptions = GetViewEngineOptions();
             var setup = new RazorPagesRazorViewEngineOptionsSetup(
-                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions));
+                Options.Create(razorPagesOptions));
 
             // Act
             setup.Configure(viewEngineOptions);
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var razorPagesOptions = new RazorPagesOptions();
             var viewEngineOptions = GetViewEngineOptions();
             var setup = new RazorPagesRazorViewEngineOptionsSetup(
-                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions));
+                Options.Create(razorPagesOptions));
 
             // Act
             setup.Configure(viewEngineOptions);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
             var viewEngineOptions = GetViewEngineOptions();
             var setup = new RazorPagesRazorViewEngineOptionsSetup(
-                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions));
+                Options.Create(razorPagesOptions));
 
             // Act
             setup.Configure(viewEngineOptions);
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
             var viewEngineOptions = GetViewEngineOptions();
             var setup = new RazorPagesRazorViewEngineOptionsSetup(
-                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions));
+                Options.Create(razorPagesOptions));
 
             // Act
             setup.Configure(viewEngineOptions);
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var viewEngineOptions = GetViewEngineOptions();
-            var setup = new RazorPagesRazorViewEngineOptionsSetup(new TestOptionsManager<RazorPagesOptions>());
+            var setup = new RazorPagesRazorViewEngineOptionsSetup(Options.Create(new RazorPagesOptions()));
 
             // Act
             setup.Configure(viewEngineOptions);

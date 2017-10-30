@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -507,7 +508,7 @@ this should fail";
             var applicationPartManager = new ApplicationPartManager();
             var referenceManager = new DefaultRazorReferenceManager(
                 applicationPartManager,
-                new TestOptionsManager<RazorViewEngineOptions>());
+                Options.Create(new RazorViewEngineOptions()));
             var compiler = GetViewCompiler(
                 compilationCallback: compilationCallback,
                 referenceManager: referenceManager);
@@ -531,7 +532,7 @@ this should fail";
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
             compilationCallback = compilationCallback ?? (_ => { });
-            var options = new TestOptionsManager<RazorViewEngineOptions>();
+            var options = Options.Create(new RazorViewEngineOptions());
             if (referenceManager == null)
             {
                 var applicationPartManager = new ApplicationPartManager();

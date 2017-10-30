@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 new[] { typeof(AuthorizeController).GetTypeInfo() });
 
             var policyProvider = new TestAuthorizationPolicyProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             defaultProvider.OnProvidersExecuting(applicationModelProviderContext);
 

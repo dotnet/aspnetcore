@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Test.Internal
             services.AddSingleton<IHostingEnvironment>(Mock.Of<IHostingEnvironment>());
             services.AddSingleton<IValidationAttributeAdapterProvider, ValidationAttributeAdapterProvider>();
             services.AddSingleton<IOptions<MvcDataAnnotationsLocalizationOptions>>(
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>());
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()));
             services.AddSingleton<IConfigureOptions<MvcOptions>, MvcDataAnnotationsMvcOptionsSetup>();
 
             var serviceProvider = services.BuildServiceProvider();

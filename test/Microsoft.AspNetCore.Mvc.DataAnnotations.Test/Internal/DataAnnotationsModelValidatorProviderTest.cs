@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
             var mockValidatable = Mock.Of<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.GetType());
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
         {
             var provider = new DataAnnotationsModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForProperty(
                 typeof(ClassWithProperty),
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
             var mockValidatable = new Mock<IValidatableObject>();
             var metadata = _metadataProvider.GetMetadataForType(mockValidatable.Object.GetType());

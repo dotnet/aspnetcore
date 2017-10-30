@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var metadata = _metadataProvider.GetMetadataForProperty(
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var metadata = _metadataProvider.GetMetadataForProperty(
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var metadata = _metadataProvider.GetMetadataForProperty(
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
 
             var metadata = _metadataProvider.GetMetadataForProperty(
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             // Arrange
             var provider = new DataAnnotationsClientModelValidatorProvider(
                 new ValidationAttributeAdapterProvider(),
-                new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                 stringLocalizerFactory: null);
             var metadata = _metadataProvider.GetMetadataForType(typeof(DummyClassWithDummyValidationAttribute));
 

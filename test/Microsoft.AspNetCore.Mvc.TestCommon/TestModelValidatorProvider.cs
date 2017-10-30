@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 new DefaultModelValidatorProvider(),
                 new DataAnnotationsModelValidatorProvider(
                     new ValidationAttributeAdapterProvider(),
-                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                     stringLocalizerFactory: null)
             };
 

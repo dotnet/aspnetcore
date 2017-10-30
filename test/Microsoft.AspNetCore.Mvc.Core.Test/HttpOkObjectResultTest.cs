@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static IServiceProvider CreateServices()
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
             options.Value.OutputFormatters.Add(new JsonOutputFormatter(
                 new JsonSerializerSettings(),

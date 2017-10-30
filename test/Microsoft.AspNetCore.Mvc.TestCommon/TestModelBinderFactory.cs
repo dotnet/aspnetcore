@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             }
 
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             foreach (var provider in providers)
             {
                 options.Value.ModelBinderProviders.Add(provider);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             }
 
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             foreach (var provider in providers)
             {
                 options.Value.ModelBinderProviders.Add(provider);

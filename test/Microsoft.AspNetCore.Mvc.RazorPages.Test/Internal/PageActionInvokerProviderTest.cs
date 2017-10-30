@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -487,8 +488,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 parameterBinder,
                 modelMetadataProvider,
                 tempDataFactory.Object,
-                new TestOptionsManager<MvcOptions>(),
-                new TestOptionsManager<HtmlHelperOptions>(),
+                Options.Create(new MvcOptions()),
+                Options.Create(new HtmlHelperOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
                 razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),

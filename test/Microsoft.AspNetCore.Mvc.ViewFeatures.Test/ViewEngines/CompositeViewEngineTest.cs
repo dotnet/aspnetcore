@@ -6,6 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             // Arrange
             var viewEngine1 = Mock.Of<IViewEngine>();
             var viewEngine2 = Mock.Of<IViewEngine>();
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(viewEngine1);
             optionsAccessor.Value.ViewEngines.Add(viewEngine2);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "test-view";
             var actionContext = GetActionContext();
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act & Assert
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ true))
                 .Returns(ViewEngineResult.NotFound(viewName, new[] { "controller/test-view" }));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ true))
                 .Returns(ViewEngineResult.Found(viewName, view));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ true))
                 .Returns(ViewEngineResult.Found(viewName, view3));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ true))
                 .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);
@@ -168,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             var expected = $"'{typeof(MvcViewOptions).FullName}.{nameof(MvcViewOptions.ViewEngines)}' must not be " +
                 $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "test-view.cshtml";
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act & Assert
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.GetView("~/Index.html", viewName, isMainPage))
                 .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { expectedViewName }));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.GetView("~/Index.html", viewName, isMainPage))
                 .Returns(ViewEngineResult.Found(expectedViewName, view));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -251,7 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.GetView("~/Index.html", viewName, isMainPage))
                 .Returns(ViewEngineResult.Found(expectedViewName, view3));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);
@@ -287,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.GetView("~/Index.html", viewName, isMainPage))
                 .Returns(ViewEngineResult.NotFound(expectedViewName, new[] { "4", "5" }));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             var expected = $"'{typeof(MvcViewOptions).FullName}.{nameof(MvcViewOptions.ViewEngines)}' must not be " +
                 $"empty. At least one '{typeof(IViewEngine).FullName}' is required to locate a view for rendering.";
             var viewName = "my-partial-view";
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
             // Act & AssertS
@@ -326,7 +327,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound(viewName, new[] { "Shared/partial-view" }));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -348,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
             engine
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.Found(viewName, view));
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine.Object);
             var compositeViewEngine = new CompositeViewEngine(optionsAccessor);
 
@@ -380,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.Found(viewName, view3));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);
@@ -413,7 +414,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
                 .Setup(e => e.FindView(It.IsAny<ActionContext>(), viewName, /*isMainPage*/ false))
                 .Returns(ViewEngineResult.NotFound(viewName, new[] { "4", "5" }));
 
-            var optionsAccessor = new TestOptionsManager<MvcViewOptions>();
+            var optionsAccessor = Options.Create(new MvcViewOptions());
             optionsAccessor.Value.ViewEngines.Add(engine1.Object);
             optionsAccessor.Value.ViewEngines.Add(engine2.Object);
             optionsAccessor.Value.ViewEngines.Add(engine3.Object);

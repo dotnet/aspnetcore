@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc
             string expectedUrl)
         {
             // Arrange
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             var uri = new Uri(url);
 
             var requestContext = new DefaultHttpContext();
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Mvc
 
         private static IServiceProvider CreateServices(int? sslPort = null, bool requireHttpsPermanent = false)
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.SslPort = sslPort;
             options.Value.RequireHttpsPermanent = requireHttpsPermanent;
 

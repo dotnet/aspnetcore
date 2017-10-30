@@ -81,7 +81,7 @@ namespace System.Web.Http
 
         private static IServiceProvider CreateServices()
         {
-            var options = new TestOptionsManager<MvcOptions>();
+            var options = Options.Create(new MvcOptions());
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
             options.Value.OutputFormatters.Add(new JsonOutputFormatter(
                 new JsonSerializerSettings(),

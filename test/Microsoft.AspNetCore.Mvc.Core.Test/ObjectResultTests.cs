@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
         {
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                new TestOptionsManager<MvcOptions>(),
+                Options.Create(new MvcOptions()),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);

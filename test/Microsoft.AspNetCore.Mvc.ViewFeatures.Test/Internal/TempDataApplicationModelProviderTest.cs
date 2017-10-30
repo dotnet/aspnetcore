@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneTempDataProperty).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -61,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_OneValid_OneInvalidProperty).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_PrivateSet).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var provider = new TempDataApplicationModelProvider();
-            var defaultProvider = new DefaultApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(TestController_NonPrimitiveType).GetTypeInfo() });
             defaultProvider.OnProvidersExecuting(context);

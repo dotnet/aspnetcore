@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using Xunit;
@@ -221,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
             return new JsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),
                 logger ?? NullLogger<JsonResultExecutor>.Instance,
-                new TestOptionsManager<MvcJsonOptions>(),
+                Options.Create(new MvcJsonOptions()),
                 ArrayPool<char>.Shared);
         }
 

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test.Internal
                 .Select(r => r.Display);
             var referenceManager = new DefaultRazorReferenceManager(
                 applicationPartManager,
-                new TestOptionsManager<RazorViewEngineOptions>(options));
+                Options.Create(options));
 
             // Act
             var references = referenceManager.CompilationReferences;

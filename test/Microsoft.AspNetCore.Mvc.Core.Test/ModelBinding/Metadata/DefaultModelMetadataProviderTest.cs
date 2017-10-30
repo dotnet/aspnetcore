@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
@@ -256,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
             return new DefaultModelMetadataProvider(
                 new EmptyCompositeMetadataDetailsProvider(),
-                new TestOptionsManager<MvcOptions>());
+                Options.Create(new MvcOptions()));
         }
 
         [Model("OnType")]
@@ -292,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         private class ModelTypeWithIndexer
         {
-            public PropertyType this[string key] { get { return null; } }
+            public PropertyType this[string key] => null;
 
             public PropertyType Property1 { get; set; }
         }

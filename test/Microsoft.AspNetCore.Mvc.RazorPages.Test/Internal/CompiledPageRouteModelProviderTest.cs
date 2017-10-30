@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             private readonly IEnumerable<CompiledViewDescriptor> _descriptors;
 
             public TestCompiledPageRouteModelProvider(IEnumerable<CompiledViewDescriptor> descriptors, RazorPagesOptions options)
-                : base(new ApplicationPartManager(), new TestOptionsManager<RazorPagesOptions>(options))
+                : base(new ApplicationPartManager(), Options.Create(options))
             {
                 _descriptors = descriptors;
             }

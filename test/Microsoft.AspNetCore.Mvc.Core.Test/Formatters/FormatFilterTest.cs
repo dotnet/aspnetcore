@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            mockObjects.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+            mockObjects.MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 format,
                 MediaTypeHeaderValue.Parse(contentType));
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
-            mockObjects.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+            mockObjects.MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects("xml", FormatSource.RouteData);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
-            mockObjects.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+            mockObjects.MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml;version=1"));
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
-            mockObjects.Options.FormatterMappings.SetMediaTypeMappingForFormat(
+            mockObjects.MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
@@ -374,10 +374,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Empty(result.ContentTypes);
         }
 
-
         private class MockObjects
         {
-            public MvcOptions Options { get; private set; }
+            public MvcOptions MvcOptions { get; private set; }
             public HttpContext MockHttpContext { get; private set; }
             public ActionContext MockActionContext { get; private set; }
 
@@ -442,20 +441,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 string format = null,
                 FormatSource? place = null)
             {
-                OptionsManager = new TestOptionsManager<MvcOptions>();
+                OptionsManager = Options.Create(new MvcOptions());
 
                 // Setup options on mock service provider
-                Options = OptionsManager.Value;
+                MvcOptions = OptionsManager.Value;
 
                 // Set up default output formatters.
-                Options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
-                Options.OutputFormatters.Add(new StringOutputFormatter());
-                Options.OutputFormatters.Add(new JsonOutputFormatter(
+                MvcOptions.OutputFormatters.Add(new HttpNoContentOutputFormatter());
+                MvcOptions.OutputFormatters.Add(new StringOutputFormatter());
+                MvcOptions.OutputFormatters.Add(new JsonOutputFormatter(
                     new JsonSerializerSettings(),
                     ArrayPool<char>.Shared));
 
                 // Set up default mapping for json extensions to content type
-                Options.FormatterMappings.SetMediaTypeMappingForFormat(
+                MvcOptions.FormatterMappings.SetMediaTypeMappingForFormat(
                     "json",
                     MediaTypeHeaderValue.Parse("application/json"));
 

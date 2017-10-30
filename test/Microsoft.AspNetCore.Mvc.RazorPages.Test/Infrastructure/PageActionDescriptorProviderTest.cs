@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
         {
-            return new TestOptionsManager<RazorPagesOptions>();
+            return Options.Create(new RazorPagesOptions());
         }
 
         private static RazorProjectItem GetProjectItem(string basePath, string path, string content)

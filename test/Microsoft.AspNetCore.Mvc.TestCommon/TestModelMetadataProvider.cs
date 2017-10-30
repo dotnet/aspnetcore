@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -23,13 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(
-                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                     stringLocalizerFactory),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));
         }
 
         public static IModelMetadataProvider CreateDefaultProvider(IList<IMetadataDetailsProvider> providers)
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 new DefaultBindingMetadataProvider(),
                 new DefaultValidationMetadataProvider(),
                 new DataAnnotationsMetadataProvider(
-                    new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                    Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                     stringLocalizerFactory: null),
                 new DataMemberRequiredBindingMetadataProvider(),
             };
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             detailsProviders.AddRange(providers);
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));
         }
 
         public static IModelMetadataProvider CreateProvider(IList<IMetadataDetailsProvider> providers)
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
 
             var compositeDetailsProvider = new DefaultCompositeMetadataDetailsProvider(detailsProviders);
-            return new DefaultModelMetadataProvider(compositeDetailsProvider, new TestOptionsManager<MvcOptions>());
+            return new DefaultModelMetadataProvider(compositeDetailsProvider, Options.Create(new MvcOptions()));
         }
 
         private readonly TestModelMetadataDetailsProvider _detailsProvider;
@@ -76,11 +77,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                       new DefaultBindingMetadataProvider(),
                       new DefaultValidationMetadataProvider(),
                       new DataAnnotationsMetadataProvider(
-                          new TestOptionsManager<MvcDataAnnotationsLocalizationOptions>(),
+                          Options.Create(new MvcDataAnnotationsLocalizationOptions()),
                           stringLocalizerFactory: null),
                       detailsProvider
                   }),
-                  new TestOptionsManager<MvcOptions>())
+                  Options.Create(new MvcOptions()))
         {
             _detailsProvider = detailsProvider;
         }

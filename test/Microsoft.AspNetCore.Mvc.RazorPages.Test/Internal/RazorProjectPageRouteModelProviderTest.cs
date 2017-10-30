@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/Pages";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
@@ -190,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
