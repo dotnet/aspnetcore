@@ -227,6 +227,7 @@
     <PackageArtifact Include="Microsoft.Extensions.SecurityHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.StackTrace.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.TypeNameHelper.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.Extensions.ValueStopwatch.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" Metapackage="true" />
