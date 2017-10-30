@@ -1167,6 +1167,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
                 NULL,
                 L"InProcess Application");
         }
+        SetHttpSysDisconnectCallback();
         return  m_pApplication->ExecuteRequest(m_pW3Context);
     }
     case HOSTING_OUT_PROCESS:
@@ -1397,9 +1398,11 @@ Failure:
             &cchANCMHeader))) // first time failure
         {
             if (SUCCEEDED(hr = m_pW3Context->CloneContext(
-                CLONE_FLAG_BASICS | CLONE_FLAG_HEADERS | CLONE_FLAG_ENTITY,
-                &m_pChildRequestContext
-            )) &&
+                    CLONE_FLAG_BASICS  |
+                    CLONE_FLAG_HEADERS |
+                    CLONE_FLAG_ENTITY  |
+                    CLONE_FLAG_SERVER_VARIABLE,
+                    &m_pChildRequestContext)) &&
                 SUCCEEDED(hr = m_pChildRequestContext->SetServerVariable(
                     STR_ANCM_CHILDREQUEST,
                     L"1")) &&
@@ -1412,6 +1415,7 @@ Failure:
             {
                 if (!fCompletionExpected)
                 {
+                    m_pW3Context->SetRequestHandled();
                     retVal = RQ_NOTIFICATION_CONTINUE;
                 }
                 else
@@ -3141,45 +3145,54 @@ FORWARDING_HANDLER::TerminateRequest(
     bool    fClientInitiated
 )
 {
-    bool fAcquiredLock = FALSE;
-
-    if (TlsGetValue(g_dwTlsIndex) != this)
+    if (m_pApplication->QueryConfig()->QueryHostingModel() == HOSTING_IN_PROCESS) 
     {
-        DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == NULL);
-        AcquireSRWLockShared(&m_RequestLock);
-        TlsSetValue(g_dwTlsIndex, this);
-        DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
-        fAcquiredLock = TRUE;
+        //
+        // Todo: need inform managed layer to abort the request
+        //
     }
-
-    if (m_hRequest != NULL)
+    else
     {
-        WinHttpSetStatusCallback(m_hRequest,
-            FORWARDING_HANDLER::OnWinHttpCompletion,
-            WINHTTP_CALLBACK_FLAG_HANDLES,
-            NULL);
-        if (WinHttpCloseHandle(m_hRequest))
+        bool fAcquiredLock = FALSE;
+
+        if (TlsGetValue(g_dwTlsIndex) != this)
         {
-            m_hRequest = NULL;
+            DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == NULL);
+            AcquireSRWLockShared(&m_RequestLock);
+            TlsSetValue(g_dwTlsIndex, this);
+            DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
+            fAcquiredLock = TRUE;
         }
-        m_fHandleClosedDueToClient = fClientInitiated;
-    }
 
-    //
-    // If the request is a websocket request, initiate cleanup.
-    //
+        if (m_hRequest != NULL)
+        {
+            WinHttpSetStatusCallback(m_hRequest,
+                FORWARDING_HANDLER::OnWinHttpCompletion,
+                WINHTTP_CALLBACK_FLAG_HANDLES,
+                NULL);
+            if (WinHttpCloseHandle(m_hRequest))
+            {
+                m_hRequest = NULL;
+            }
+            m_fHandleClosedDueToClient = fClientInitiated;
+        }
 
-    if (m_pWebSocket != NULL)
-    {
-        m_pWebSocket->TerminateRequest();
-    }
+        //
+        // If the request is a websocket request, initiate cleanup.
+        //
 
-    if (fAcquiredLock)
-    {
-        DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
-        TlsSetValue(g_dwTlsIndex, NULL);
-        ReleaseSRWLockShared(&m_RequestLock);
-        DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == NULL);
+        if (m_pWebSocket != NULL)
+        {
+            m_pWebSocket->TerminateRequest();
+        }
+
+        if (fAcquiredLock)
+        {
+            DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
+            TlsSetValue(g_dwTlsIndex, NULL);
+            ReleaseSRWLockShared(&m_RequestLock);
+            DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == NULL);
+        }
     }
 }
 
@@ -3223,4 +3236,46 @@ FORWARDING_HANDLER::FreeResponseBuffers()
     m_cEntityBuffers = 0;
     m_pEntityBuffer = NULL;
     m_cBytesBuffered = 0;
+}
+
+HRESULT
+FORWARDING_HANDLER::SetHttpSysDisconnectCallback()
+{
+    HRESULT hr = S_OK;
+    IHttpConnection * pClientConnection = m_pW3Context->GetConnection();
+
+    if (g_fAsyncDisconnectAvailable)
+    {
+        m_pDisconnect = static_cast<ASYNC_DISCONNECT_CONTEXT *>(
+            pClientConnection->GetModuleContextContainer()->
+            GetConnectionModuleContext(g_pModuleId));
+        if (m_pDisconnect == NULL)
+        {
+            m_pDisconnect = new ASYNC_DISCONNECT_CONTEXT;
+            if (m_pDisconnect == NULL)
+            {
+                hr = E_OUTOFMEMORY;
+                goto Finished;
+            }
+
+            hr = pClientConnection->GetModuleContextContainer()->
+                SetConnectionModuleContext(m_pDisconnect,
+                    g_pModuleId);
+            DBG_ASSERT(hr != HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED));
+            if (FAILED(hr))
+            {
+                goto Finished;
+            }
+        }
+
+        //
+        // Issue: There is a window of opportunity to miss on the disconnect
+        // notification if it happens before the SetHandler() call is made.
+        // It is suboptimal for performance, but should functionally be OK.
+        //
+        m_pDisconnect->SetHandler(this);
+
+    Finished: 
+        return hr;
+    }
 }

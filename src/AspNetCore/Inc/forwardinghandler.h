@@ -301,6 +301,11 @@ private:
         VOID
     );
 
+    HRESULT
+    SetHttpSysDisconnectCallback(
+        VOID
+    );
+
     DWORD                               m_Signature;
     mutable LONG                        m_cRefs;
 
