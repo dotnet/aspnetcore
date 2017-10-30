@@ -1,3 +1,6 @@
 <Project>
   <Import Project="version.props" />
+  <PropertyGroup>
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+  </PropertyGroup>
 </Project>
