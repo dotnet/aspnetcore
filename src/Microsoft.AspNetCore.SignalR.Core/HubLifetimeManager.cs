@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task AddGroupAsync(string connectionId, string groupName);
 
-        public abstract Task RemoveGroupAsync(string connnectionId, string groupName);
+        public abstract Task RemoveGroupAsync(string connectionId, string groupName);
     }
 
 }
