@@ -2,13 +2,15 @@
 
 <#
 .SYNOPSIS
-    Updates each repo Universe builds to new dependencies.props
+    Updates each repo Universe builds to new dependencies.props.
 .PARAMETER Source
     The NuGet package source to find the lineup on.
 .PARAMETER LineupID
     The ID of the Lineup to determine which versions to use.
 .PARAMETER LineupVersion
     The version of the Lineup to be used.
+.PARAMETER NoPush
+    Make commits without pusing.
 #>
 [cmdletbinding(SupportsShouldProcess = $true)]
 param(
@@ -18,6 +20,7 @@ param(
     [string]$LineupID,
     [Parameter(Mandatory=$true)]
     [string]$LineupVersion,
+    [switch]$NoPush,
     [string[]]$GitCommitArgs = @()
 )
 
@@ -52,7 +55,7 @@ try {
             # Move to latest commit on tracked branch
             Invoke-Block { & git checkout --quiet $submodule.branch }
 
-            Invoke-Block { & .\run.ps1 upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile }
+            Invoke-Block { & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile }
             Invoke-Block { & git add $depsFile }
 
             Invoke-Block { & git commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
@@ -74,25 +77,28 @@ try {
         throw 'Failed to update'
     }
 
-    $push_errors = @()
-    foreach($submodule in $updated_submodules)
+    if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Push the changes to these repos?'))))
     {
-        Push-Location $submodule.path
-        try {
-            Invoke-Block { & git push origin $submodule.branch}
-        }
-        catch
+        $push_errors = @()
+        foreach($submodule in $updated_submodules)
         {
-            $push_errors += $_
+            Push-Location $submodule.path
+            try {
+                Invoke-Block { & git push origin $submodule.branch}
+            }
+            catch
+            {
+                $push_errors += $_
+            }
+            finally {
+                Pop-Location
+            }
         }
-        finally {
-            Pop-Location
-        }
-    }
 
-    if ($push_errors.Count -gt 0 )
-    {
-        throw 'Failed to push'
+        if ($push_errors.Count -gt 0 )
+        {
+            throw 'Failed to push'
+        }
     }
 }
 finally {
