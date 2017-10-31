@@ -184,6 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void AllocateNativeRequest(uint? size = null, ulong requestId = 0)
         {
+            _nativeRequestContext?.Dispose();
             //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
