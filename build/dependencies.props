@@ -32,10 +32,10 @@
     <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
     <OctokitPackageVersion>0.26.0</OctokitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)' == 'netcoreapp2.0'">2.0.2-servicing-25728-02</RuntimeFrameworkVersion>
-    <SeleniumFirefoxWebDriverPackageVersion>0.18.0</SeleniumFirefoxWebDriverPackageVersion>
-    <SeleniumSupportPackageVersion>3.4.0</SeleniumSupportPackageVersion>
-    <SeleniumWebDriverMicrosoftDriverPackageVersion>15.15063.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>3.4.0</SeleniumWebDriverPackageVersion>
+    <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
+    <SeleniumSupportPackageVersion>3.6.0</SeleniumSupportPackageVersion>
+    <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>3.6.0</SeleniumWebDriverPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.4.0</SystemSecurityPermissionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.7.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>
