@@ -14,7 +14,7 @@ namespace Templates.Test
         [InlineData("net461")]
         public void WebApiTemplate_Works(string targetFrameworkOverride)
         {
-            RunDotNetNew("api", targetFrameworkOverride);
+            RunDotNetNew("webapi", targetFrameworkOverride);
 
             foreach (var publish in new[] { false, true })
             {
