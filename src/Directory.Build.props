@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
@@ -8,6 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 </Project>

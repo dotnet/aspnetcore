@@ -24,12 +24,8 @@ nuget.exe
 *.ncrunchsolution
 *.*sdf
 *.ipch
-
 .vs/
 npm-debug.log
 /.build/
-
 .vscode/
-
 global.json
-korebuild-lock.txt
