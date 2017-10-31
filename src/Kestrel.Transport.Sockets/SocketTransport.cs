@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 }
                 else
                 {
-                    _trace.LogCritical($"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
+                    _trace.LogCritical(ex, $"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
                     _listenException = ex;
 
                     // Request shutdown so we can rethrow this exception
