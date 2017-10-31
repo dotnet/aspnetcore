@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>A compatibility layer for sharing identity databases between Microsoft.AspNet.Identity.EntityFramework and Microsoft.AspNetCore.Identity.EntityFrameworkCore.</Description>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VerifyVersion Condition="'$(ExperimentalProjectVersionPrefix)' != ''">false</VerifyVersion>
     <TargetFramework>net461</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -10,9 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" />
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" />
-    <PackageReference Include="Microsoft.Owin.Security.Interop" />
+    <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(MicrosoftOwinSecurityCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security.Interop" Version="$(MicrosoftOwinSecurityInteropPackageVersion)" />
   </ItemGroup>
 
 </Project>
