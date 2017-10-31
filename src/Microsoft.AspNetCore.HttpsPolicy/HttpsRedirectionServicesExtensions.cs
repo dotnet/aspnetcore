@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Builder
             {
                 throw new ArgumentNullException(nameof(configureOptions));
             }
-
             services.Configure(configureOptions);
             return services;
         }

@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(308, null, "https://localhost/")]
         [InlineData(301, 5050, "https://localhost:5050/")]
         [InlineData(301, 443, "https://localhost/")]
-        public async Task SetOptions_SetStatusCodeTlsPort(int statusCode, int? tlsPort, string expected)
+        public async Task SetOptions_SetStatusCodeHttpsPort(int statusCode, int? httpsPort, string expected)
         {
 
             var builder = new WebHostBuilder()
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     services.Configure<HttpsRedirectionOptions>(options =>
                     {
                         options.RedirectStatusCode = statusCode;
-                        options.TlsPort = tlsPort;
+                        options.HttpsPort = httpsPort;
                     });
                 })
                 .Configure(app =>
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         [InlineData(308, null, "https://localhost/")]
         [InlineData(301, 5050, "https://localhost:5050/")]
         [InlineData(301, 443, "https://localhost/")]
-        public async Task SetOptionsThroughHelperMethod_SetStatusCodeTlsPort(int statusCode, int? tlsPort, string expectedUrl)
+        public async Task SetOptionsThroughHelperMethod_SetStatusCodeAndHttpsPort(int statusCode, int? httpsPort, string expectedUrl)
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     services.AddHttpsRedirection(options =>
                     {
                         options.RedirectStatusCode = statusCode;
-                        options.TlsPort = tlsPort;
+                        options.HttpsPort = httpsPort;
                     });
                 })
                 .Configure(app =>
@@ -119,6 +119,42 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var response = await client.SendAsync(request);
 
             Assert.Equal(statusCode, (int)response.StatusCode);
+            Assert.Equal(expectedUrl, response.Headers.Location.ToString());
+        }
+
+        [Theory]
+        [InlineData(null, null, "https://localhost/")]
+        [InlineData(null, "5000", "https://localhost:5000/")]
+        [InlineData(null, "443", "https://localhost/")]
+        [InlineData(443, "5000", "https://localhost/")]
+        [InlineData(4000, "5000", "https://localhost:4000/")]
+        [InlineData(5000, null, "https://localhost:5000/")]
+        public async Task SetHttpsPortEnvironmentVariable_ReturnsCorrectStatusCodeOnResponse(int? optionsHttpsPort, string configHttpsPort, string expectedUrl)
+        {
+            var builder = new WebHostBuilder()
+               .ConfigureServices(services =>
+               {
+                   services.AddHttpsRedirection(options =>
+                   {
+                       options.HttpsPort = optionsHttpsPort;
+                   });
+               })
+               .Configure(app =>
+               {
+                   app.UseHttpsRedirection();
+                   app.Run(context =>
+                   {
+                       return context.Response.WriteAsync("Hello world");
+                   });
+               });
+            builder.UseSetting("HTTPS_PORT", configHttpsPort);
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+
+            var response = await client.SendAsync(request);
+
             Assert.Equal(expectedUrl, response.Headers.Location.ToString());
         }
     }

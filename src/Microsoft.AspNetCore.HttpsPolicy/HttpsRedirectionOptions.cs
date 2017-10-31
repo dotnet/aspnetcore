@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <remarks>
         /// Defaults to 443 if not provided.
         /// </remarks>
-        public int? TlsPort { get; set; }
+        public int? HttpsPort { get; set; }
     }
 }
