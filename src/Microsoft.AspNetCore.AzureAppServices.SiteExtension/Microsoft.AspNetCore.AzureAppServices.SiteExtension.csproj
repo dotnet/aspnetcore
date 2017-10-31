@@ -5,7 +5,7 @@
     <Description>This extension enables additional functionality for ASP.NET Core on Azure WebSites, such as enabling Azure logging.</Description>
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <PackageType>AzureSiteExtension</PackageType>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>

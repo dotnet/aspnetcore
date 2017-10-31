@@ -5,9 +5,6 @@ using Microsoft.AspNetCore.Hosting;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.AzureAppServices.HostingStartup.AzureAppServicesHostingStartup))]
 
-// To be able to build as <OutputType>Exe</OutputType>
-internal class Program { public static void Main() { } }
-
 namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
 {
     /// <summary>
@@ -15,13 +12,21 @@ namespace Microsoft.AspNetCore.AzureAppServices.HostingStartup
     /// </summary>
     public class AzureAppServicesHostingStartup : IHostingStartup
     {
+        private const string HostingStartupName = "AppServices";
+        private const string DiagnosticsFeatureName = "DiagnosticsEnabled";
+
         /// <summary>
         /// Calls UseAzureAppServices
         /// </summary>
         /// <param name="builder"></param>
         public void Configure(IWebHostBuilder builder)
         {
-            builder.UseAzureAppServices();
+            var baseConfiguration = HostingStartupConfigurationExtensions.GetBaseConfiguration();
+
+            if (baseConfiguration.IsEnabled(HostingStartupName, DiagnosticsFeatureName))
+            {
+                builder.UseAzureAppServices();
+            }
         }
     }
 }
