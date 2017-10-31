@@ -31,7 +31,7 @@ namespace Templates.Test.Helpers
             {
                 foreach (var envVar in envVars)
                 {
-                    startInfo.EnvironmentVariables.Add(envVar.Key, envVar.Value);
+                    startInfo.EnvironmentVariables[envVar.Key] = envVar.Value;
                 }
             }
 
