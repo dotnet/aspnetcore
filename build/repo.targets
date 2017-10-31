@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Target Name="RestoreNpm" AfterTargets="Restore" Condition="'$(PreflightRestore)' != 'True'">
     <Message Text="Restoring NPM modules" Importance="high" />
     <Exec Command="npm install --no-optional" WorkingDirectory="$(RepositoryRoot)client-ts" />
