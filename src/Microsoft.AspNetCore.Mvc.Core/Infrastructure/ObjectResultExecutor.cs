@@ -3,19 +3,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
@@ -27,17 +21,22 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.
         /// </summary>
-        /// <param name="options">An accessor to <see cref="MvcOptions"/>.</param>
+        /// <param name="formatterSelector">The <see cref="OutputFormatterSelector"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ObjectResultExecutor(
-            IOptions<MvcOptions> options,
+            OutputFormatterSelector formatterSelector,
             IHttpResponseStreamWriterFactory writerFactory,
             ILoggerFactory loggerFactory)
         {
-            if (options == null)
+            if (formatterSelector == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(formatterSelector));
+            }
+
+            if (writerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(writerFactory));
             }
 
             if (loggerFactory == null)
@@ -45,11 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            OptionsFormatters = options.Value.OutputFormatters;
-            RespectBrowserAcceptHeader = options.Value.RespectBrowserAcceptHeader;
-            ReturnHttpNotAcceptable = options.Value.ReturnHttpNotAcceptable;
-            Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
+            FormatterSelector = formatterSelector;
             WriterFactory = writerFactory.CreateWriter;
+            Logger = loggerFactory.CreateLogger<ObjectResultExecutor>();
         }
 
         /// <summary>
@@ -58,19 +55,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected ILogger Logger { get; }
 
         /// <summary>
-        /// Gets the list of <see cref="IOutputFormatter"/> instances from <see cref="MvcOptions"/>.
+        /// Gets the <see cref="OutputFormatterSelector"/>.
         /// </summary>
-        protected FormatterCollection<IOutputFormatter> OptionsFormatters { get; }
-
-        /// <summary>
-        /// Gets the value of <see cref="MvcOptions.RespectBrowserAcceptHeader"/>.
-        /// </summary>
-        protected bool RespectBrowserAcceptHeader { get; }
-
-        /// <summary>
-        /// Gets the value of <see cref="MvcOptions.ReturnHttpNotAcceptable"/>.
-        /// </summary>
-        protected bool ReturnHttpNotAcceptable { get; }
+        protected OutputFormatterSelector FormatterSelector { get; }
 
         /// <summary>
         /// Gets the writer factory delegate.
@@ -113,24 +100,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
             }
 
-            ValidateContentTypes(result.ContentTypes);
-
-            var formatters = result.Formatters;
-            if (formatters == null || formatters.Count == 0)
-            {
-                formatters = OptionsFormatters;
-
-                // Complain about MvcOptions.OutputFormatters only if the result has an empty Formatters.
-                Debug.Assert(formatters != null, "MvcOptions.OutputFormatters cannot be null.");
-                if (formatters.Count == 0)
-                {
-                    throw new InvalidOperationException(Resources.FormatOutputFormattersAreRequired(
-                        typeof(MvcOptions).FullName,
-                        nameof(MvcOptions.OutputFormatters),
-                        typeof(IOutputFormatter).FullName));
-                }
-            }
-
             var objectType = result.DeclaredType;
             if (objectType == null || objectType == typeof(object))
             {
@@ -143,7 +112,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 objectType,
                 result.Value);
 
-            var selectedFormatter = SelectFormatter(formatterContext, result.ContentTypes, formatters);
+            var selectedFormatter = FormatterSelector.SelectFormatter(
+                formatterContext, 
+                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(), 
+                result.ContentTypes);
             if (selectedFormatter == null)
             {
                 // No formatter supports this.
@@ -153,334 +125,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return Task.CompletedTask;
             }
 
-            Logger.FormatterSelected(selectedFormatter, formatterContext);
             Logger.ObjectResultExecuting(context);
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
-        }
-
-        /// <summary>
-        /// Selects the <see cref="IOutputFormatter"/> to write the response.
-        /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
-        /// <param name="contentTypes">
-        /// The list of content types provided by <see cref="ObjectResult.ContentTypes"/>.
-        /// </param>
-        /// <param name="formatters">
-        /// The list of <see cref="IOutputFormatter"/> instances to consider.
-        /// </param>
-        /// <returns>
-        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
-        /// </returns>
-        protected virtual IOutputFormatter SelectFormatter(
-            OutputFormatterWriteContext formatterContext,
-            MediaTypeCollection contentTypes,
-            IList<IOutputFormatter> formatters)
-        {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (contentTypes == null)
-            {
-                throw new ArgumentNullException(nameof(contentTypes));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            var request = formatterContext.HttpContext.Request;
-            var acceptableMediaTypes = GetAcceptableMediaTypes(request);
-            var selectFormatterWithoutRegardingAcceptHeader = false;
-            IOutputFormatter selectedFormatter = null;
-
-            if (acceptableMediaTypes.Count == 0)
-            {
-                // There is either no Accept header value, or it contained */* and we
-                // are not currently respecting the 'browser accept header'.
-                Logger.NoAcceptForNegotiation();
-
-                selectFormatterWithoutRegardingAcceptHeader = true;
-            }
-            else
-            {
-                if (contentTypes.Count == 0)
-                {
-                    // Use whatever formatter can meet the client's request
-                    selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
-                        formatterContext,
-                        formatters,
-                        acceptableMediaTypes);
-                }
-                else
-                {
-                    // Verify that a content type from the context is compatible with the client's request
-                    selectedFormatter = SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
-                        formatterContext,
-                        formatters,
-                        acceptableMediaTypes,
-                        contentTypes);
-                }
-
-                if (selectedFormatter == null && !ReturnHttpNotAcceptable)
-                {
-                    Logger.NoFormatterFromNegotiation(acceptableMediaTypes);
-
-                    selectFormatterWithoutRegardingAcceptHeader = true;
-                }
-            }
-
-            if (selectFormatterWithoutRegardingAcceptHeader)
-            {
-                if (contentTypes.Count == 0)
-                {
-                    selectedFormatter = SelectFormatterNotUsingContentType(
-                        formatterContext,
-                        formatters);
-                }
-                else
-                {
-                    selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
-                        formatterContext,
-                        formatters,
-                        contentTypes);
-                }
-            }
-
-            return selectedFormatter;
-        }
-
-        private List<MediaTypeSegmentWithQuality> GetAcceptableMediaTypes(
-            HttpRequest request)
-        {
-            var result = new List<MediaTypeSegmentWithQuality>();
-            AcceptHeaderParser.ParseAcceptHeader(request.Headers[HeaderNames.Accept], result);
-            for (var i = 0; i < result.Count; i++)
-            {
-                var mediaType = new MediaType(result[i].MediaType);
-                if (!RespectBrowserAcceptHeader && mediaType.MatchesAllSubTypes && mediaType.MatchesAllTypes)
-                {
-                    result.Clear();
-                    return result;
-                }
-            }
-
-            result.Sort((left, right) => left.Quality > right.Quality ? -1 : (left.Quality == right.Quality ? 0 : 1));
-
-            return result;
-        }
-
-        /// <summary>
-        /// Selects the <see cref="IOutputFormatter"/> to write the response. The first formatter which
-        /// can write the response should be chosen without any consideration for content type.
-        /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
-        /// <param name="formatters">
-        /// The list of <see cref="IOutputFormatter"/> instances to consider.
-        /// </param>
-        /// <returns>
-        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
-        /// </returns>
-        protected virtual IOutputFormatter SelectFormatterNotUsingContentType(
-            OutputFormatterWriteContext formatterContext,
-            IList<IOutputFormatter> formatters)
-        {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            foreach (var formatter in formatters)
-            {
-                formatterContext.ContentType = new StringSegment();
-                formatterContext.ContentTypeIsServerDefined = false;
-                if (formatter.CanWriteResult(formatterContext))
-                {
-                    return formatter;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
-        /// present in <paramref name="sortedAcceptHeaders"/>.
-        /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
-        /// <param name="formatters">
-        /// The list of <see cref="IOutputFormatter"/> instances to consider.
-        /// </param>
-        /// <param name="sortedAcceptHeaders">
-        /// The ordered content types from the <c>Accept</c> header, sorted by descending q-value.
-        /// </param>
-        /// <returns>
-        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
-        /// </returns>
-        protected virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeaders(
-            OutputFormatterWriteContext formatterContext,
-            IList<IOutputFormatter> formatters,
-            IList<MediaTypeSegmentWithQuality> sortedAcceptHeaders)
-        {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            if (sortedAcceptHeaders == null)
-            {
-                throw new ArgumentNullException(nameof(sortedAcceptHeaders));
-            }
-
-            for (var i = 0; i < sortedAcceptHeaders.Count; i++)
-            {
-                var mediaType = sortedAcceptHeaders[i];
-                formatterContext.ContentType = mediaType.MediaType;
-                formatterContext.ContentTypeIsServerDefined = false;
-                for (var j = 0; j < formatters.Count; j++)
-                {
-                    var formatter = formatters[j];
-                    if (formatter.CanWriteResult(formatterContext))
-                    {
-                        return formatter;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
-        /// present in <paramref name="acceptableContentTypes"/>.
-        /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
-        /// <param name="formatters">
-        /// The list of <see cref="IOutputFormatter"/> instances to consider.
-        /// </param>
-        /// <param name="acceptableContentTypes">
-        /// The ordered content types from <see cref="ObjectResult.ContentTypes"/> in descending priority order.
-        /// </param>
-        /// <returns>
-        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
-        /// </returns>
-        protected virtual IOutputFormatter SelectFormatterUsingAnyAcceptableContentType(
-            OutputFormatterWriteContext formatterContext,
-            IList<IOutputFormatter> formatters,
-            MediaTypeCollection acceptableContentTypes)
-        {
-            if (formatterContext == null)
-            {
-                throw new ArgumentNullException(nameof(formatterContext));
-            }
-
-            if (formatters == null)
-            {
-                throw new ArgumentNullException(nameof(formatters));
-            }
-
-            if (acceptableContentTypes == null)
-            {
-                throw new ArgumentNullException(nameof(acceptableContentTypes));
-            }
-
-            foreach (var formatter in formatters)
-            {
-                foreach (var contentType in acceptableContentTypes)
-                {
-                    formatterContext.ContentType = new StringSegment(contentType);
-                    formatterContext.ContentTypeIsServerDefined = true;
-                    if (formatter.CanWriteResult(formatterContext))
-                    {
-                        return formatter;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Selects the <see cref="IOutputFormatter"/> to write the response based on the content type values
-        /// present in <paramref name="sortedAcceptableContentTypes"/> and <paramref name="possibleOutputContentTypes"/>.
-        /// </summary>
-        /// <param name="formatterContext">The <see cref="OutputFormatterWriteContext"/>.</param>
-        /// <param name="formatters">
-        /// The list of <see cref="IOutputFormatter"/> instances to consider.
-        /// </param>
-        /// <param name="sortedAcceptableContentTypes">
-        /// The ordered content types from the <c>Accept</c> header, sorted by descending q-value.
-        /// </param>
-        /// <param name="possibleOutputContentTypes">
-        /// The ordered content types from <see cref="ObjectResult.ContentTypes"/> in descending priority order.
-        /// </param>
-        /// <returns>
-        /// The selected <see cref="IOutputFormatter"/> or <c>null</c> if no formatter can write the response.
-        /// </returns>
-        protected virtual IOutputFormatter SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
-            OutputFormatterWriteContext formatterContext,
-            IList<IOutputFormatter> formatters,
-            IList<MediaTypeSegmentWithQuality> sortedAcceptableContentTypes,
-            MediaTypeCollection possibleOutputContentTypes)
-        {
-            for (var i = 0; i < sortedAcceptableContentTypes.Count; i++)
-            {
-                var acceptableContentType = new MediaType(sortedAcceptableContentTypes[i].MediaType);
-                for (var j = 0; j < possibleOutputContentTypes.Count; j++)
-                {
-                    var candidateContentType = new MediaType(possibleOutputContentTypes[j]);
-                    if (candidateContentType.IsSubsetOf(acceptableContentType))
-                    {
-                        for (var k = 0; k < formatters.Count; k++)
-                        {
-                            var formatter = formatters[k];
-                            formatterContext.ContentType = new StringSegment(possibleOutputContentTypes[j]);
-                            formatterContext.ContentTypeIsServerDefined = true;
-                            if (formatter.CanWriteResult(formatterContext))
-                            {
-                                return formatter;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private void ValidateContentTypes(MediaTypeCollection contentTypes)
-        {
-            if (contentTypes == null)
-            {
-                return;
-            }
-
-            for (var i = 0; i < contentTypes.Count; i++)
-            {
-                var contentType = contentTypes[i];
-                var parsedContentType = new MediaType(contentType);
-                if (parsedContentType.HasWildcard)
-                {
-                    var message = Resources.FormatObjectResult_MatchAllContentType(
-                        contentType,
-                        nameof(ObjectResult.ContentTypes));
-                    throw new InvalidOperationException(message);
-                }
-            }
         }
     }
 }

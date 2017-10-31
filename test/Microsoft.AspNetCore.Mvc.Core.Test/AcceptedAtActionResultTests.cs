@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc
             options.Value.OutputFormatters.Add(formatter.Object);
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                options,
+                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
 

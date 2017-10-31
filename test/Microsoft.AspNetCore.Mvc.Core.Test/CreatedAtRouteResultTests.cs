@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             var services = new ServiceCollection();
             services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
-                options,
+                new DefaultOutputFormatterSelector(options, NullLoggerFactory.Instance),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));
 

@@ -489,7 +489,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static void NoFormatter(
             this ILogger logger,
-            OutputFormatterWriteContext formatterContext)
+            OutputFormatterCanWriteContext formatterContext)
         {
             if (logger.IsEnabled(LogLevel.Warning))
             {
@@ -500,7 +500,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void FormatterSelected(
             this ILogger logger,
             IOutputFormatter outputFormatter,
-            OutputFormatterWriteContext context)
+            OutputFormatterCanWriteContext context)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {

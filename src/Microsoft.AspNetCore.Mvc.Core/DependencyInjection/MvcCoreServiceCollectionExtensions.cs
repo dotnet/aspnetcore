@@ -250,6 +250,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
             services.TryAddSingleton(ArrayPool<byte>.Shared);
             services.TryAddSingleton(ArrayPool<char>.Shared);
+            services.TryAddSingleton<OutputFormatterSelector, DefaultOutputFormatterSelector>();
             services.TryAddSingleton<IActionResultExecutor<ObjectResult>, ObjectResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<PhysicalFileResult>, PhysicalFileResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<VirtualFileResult>, VirtualFileResultExecutor>();
