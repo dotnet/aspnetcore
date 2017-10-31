@@ -32,7 +32,22 @@ namespace Microsoft.AspNetCore.Authentication.OAuth.Claims
         /// <inheritdoc />
         public override void Run(JObject userData, ClaimsIdentity identity, string issuer)
         {
-            var value = userData?.Value<string>(JsonKey);
+            var value = userData?[JsonKey];
+            if (value is JValue)
+            {
+                AddClaim(value?.ToString(), identity, issuer);
+            }
+            else if (value is JArray)
+            {
+                foreach (var v in value)
+                {
+                    AddClaim(v?.ToString(), identity, issuer);
+                }
+            }
+        }
+
+        private void AddClaim(string value, ClaimsIdentity identity, string issuer)
+        {
             if (!string.IsNullOrEmpty(value))
             {
                 identity.AddClaim(new Claim(ClaimType, value, ValueType, issuer));
