@@ -54,12 +54,24 @@ namespace Microsoft.AspNetCore.TestHost
             string solutionRelativePath,
             string solutionName = "*.sln")
         {
+            return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
+        }
+
+        public static IWebHostBuilder UseSolutionRelativeContentRoot(
+            this IWebHostBuilder builder,
+            string solutionRelativePath,
+            string applicationBasePath,
+            string solutionName = "*.sln")
+        {
             if (solutionRelativePath == null)
             {
                 throw new ArgumentNullException(nameof(solutionRelativePath));
             }
 
-            var applicationBasePath = AppContext.BaseDirectory;
+            if (applicationBasePath == null)
+            {
+                throw new ArgumentNullException(nameof(applicationBasePath));
+            }
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
             do
