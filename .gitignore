@@ -35,4 +35,3 @@ testWorkDir/
 .idea/
 .dotnet/
 global.json
-korebuild-lock.txt
