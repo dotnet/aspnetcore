@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Error Logging Middleware (ELM) to capture and display request logs.</Description>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VerifyVersion Condition="'$(ExperimentalProjectVersionPrefix)' != ''">false</VerifyVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -14,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging" />
-    <PackageReference Include="Microsoft.Extensions.Options" />
-    <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.RazorViews.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsRazorViewsSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

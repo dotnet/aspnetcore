@@ -33,7 +33,6 @@ launchSettings.json
 .build/
 .testPublish/
 global.json
-korebuild-lock.txt
 
 # Rider and friends
 .idea/
