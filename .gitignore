@@ -16,7 +16,6 @@ StyleCop.Cache
 node_modules
 *.snk
 .nuget
-.r
 .deps
 global.json
 *.binlog

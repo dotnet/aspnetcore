@@ -6,6 +6,7 @@ function Assert-Git {
 }
 
 function Invoke-Block([scriptblock]$cmd) {
+    $cmd | Out-String | Write-Verbose
     & $cmd
 
     # Need to check both of these cases for errors as they represent different items
@@ -16,15 +17,20 @@ function Invoke-Block([scriptblock]$cmd) {
     }
 }
 
-function Get-Submodules([string]$ModuleDirectory)
-{
-    Invoke-Block { & git submodule update --init }
+function Get-Submodules {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$RepoRoot
+    )
 
-    $gitModules = Join-Path $RepoRoot ".gitmodules"
+    Invoke-Block { & git submodule update --init } | Out-Null
+
+    $moduleConfigFile = Join-Path $RepoRoot ".gitmodules"
     $submodules = @()
 
-    Get-ChildItem "$ModuleDirectory/*" -Directory | % {
-        Push-Location $_
+    Get-ChildItem "$RepoRoot/modules/*" -Directory | % {
+        Push-Location $_ | Out-Null
+        Write-Verbose "Attempting to get submodule info for $_"
         try {
             $data = @{
                 path      = $_
@@ -32,13 +38,13 @@ function Get-Submodules([string]$ModuleDirectory)
                 commit    = $(git rev-parse HEAD)
                 newCommit = $null
                 changed   = $false
-                branch    = $(git config -f $gitModules --get submodule.modules/$($_.Name).branch )
+                branch    = $(git config -f $moduleConfigFile --get submodule.modules/$($_.Name).branch )
             }
 
             $submodules += $data
         }
         finally {
-            Pop-Location
+            Pop-Location | Out-Null
         }
     }
 

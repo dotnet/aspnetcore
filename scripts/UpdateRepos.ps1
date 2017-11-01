@@ -1,4 +1,4 @@
-#!/usr/bin/env powershell
+#!/usr/bin/env pwsh
 
 <#
 .SYNOPSIS
@@ -38,7 +38,7 @@ try {
     Invoke-Block { & git submodule update --init }
 
     $update_errors = @()
-    $submodules = Get-Submodules $ModuleDirectory
+    $submodules = Get-Submodules $RepoRoot
     $updated_submodules = @()
     foreach($submodule in $submodules)
     {

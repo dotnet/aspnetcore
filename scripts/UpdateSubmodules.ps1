@@ -1,4 +1,4 @@
-#!/usr/bin/env powershell
+#!/usr/bin/env pwsh
 
 <#
 .SYNOPSIS
@@ -36,65 +36,71 @@ function Get-GitChanges([string]$Path) {
     return $LastExitCode -ne 0
 }
 
+Push-Location $RepoRoot | Out-Null
 try {
     Assert-Git
 
+    Write-Host "Checking that submodules are in a clean state first..."
     if (Get-GitChanges $ModuleDirectory) {
         Write-Error "$RepoRoot/modules is in an unclean state. Reset submodules first by running ``git submodule update``"
         exit 1
     }
 
-    $submodules = Get-Submodules $ModuleDirectory
+    $submodules = Get-Submodules $RepoRoot -Verbose:$VerbosePreference
 
-    $changes = $submodules `
-    | % {
-        Push-Location $_.path
-        try {
-            $vcs_name = "BUILD_VCS_NUMBER_" + $_.module
-            $newCommit = [environment]::GetEnvironmentVariable($vcs_name)
+    foreach ($submodule in  $submodules) {
+        $submodulePath = $submodule.path
+        Write-Host "Updating $submodulePath"
 
-            if($newCommit -eq $null)
-            {
-                Write-Warning "TeamCity env variable '$vcs_name' not found."
-                Write-Warning "git submodule update --remote"
-                Invoke-Block { & git submodule update --remote }
+        $vcs_name = "BUILD_VCS_NUMBER_" + $submodule.module
+        $newCommit = [environment]::GetEnvironmentVariable($vcs_name)
+
+        if (-not $newCommit) {
+            Write-Warning "TeamCity env variable '$vcs_name' not found. Pulling the latest submodule branch instead"
+            Invoke-Block { & git submodule update --remote $submodulePath }
+            Push-Location $submodulePath | Out-Null
+            try {
                 $newCommit = $(git rev-parse HEAD)
             }
-            else
-            {
+            finally {
+                Pop-Location | Out-Null
+            }
+        }
+        else {
+            Push-Location $submodulePath | Out-Null
+            try {
                 Invoke-Block { & git checkout $newCommit }
             }
-
-            $_.newCommit = $newCommit
-            if ($newCommit -ne $_.commit) {
-                $_.changed = $true
-                Write-Verbose "$($_.module) updated to $($_.newCommit)"
+            finally {
+                Pop-Location | Out-Null
             }
-            else {
-                Write-Verbose "$($_.module) did not change"
-            }
-            return $_
         }
-        finally {
-            Pop-Location
-        }
-    } `
-    | ? { $_.changed } `
-    | % { "$($_.module) to $($_.newCommit.Substring(0, 8))" }
 
-    $submodules `
+        $submodule.newCommit = $newCommit
+        if ($newCommit -ne $submodule.commit) {
+            $submodule.changed = $true
+            Write-Host -ForegroundColor Cyan "`t=> $($submodule.module) updated to $($submodule.newCommit)"
+        }
+        else {
+            Write-Host -ForegroundColor Magenta "`t$($submodule.module) did not change"
+        }
+    }
+
+    $changes = $submodules `
         | ? { $_.changed } `
         | % {
             Invoke-Block { & git add $_.path }
+            "$($_.module) => $($_.newCommit)"
         }
 
     if ($changes) {
-        $shortMessage = "Updating submodule(s) $( $changes -join ' ,' )"
+        $shortMessage = "Updating submodule(s) `n`n$( $changes -join "`n" )"
         # add this to the commit message to make it possible to filter commit triggers based on message
         $message = "$shortMessage`n`n[auto-updated: submodules]"
         if (-not $NoCommit -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Create a new commit with these changes?')))) {
             Invoke-Block { & git commit -m $message @GitCommitArgs }
-        } else {
+        }
+        else {
             # If composing this script with others, return the message that would have been used
             return @{
                 message = $message

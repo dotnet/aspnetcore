@@ -35,7 +35,7 @@ namespace RepoTools.BuildGraph
             Parallel.For(0, repositoryPaths.Count, new ParallelOptions { MaxDegreeOfParallelism = 6 }, i =>
             {
                 var repositoryPath = repositoryPaths[i];
-                var repositoryName = Path.GetFileName(repositoryPath);
+                var repositoryName = Path.GetFileName(repositoryPath.TrimEnd(new [] { '\\', '/' }));
                 var repository = Read(provider, repositoryName, repositoryPath);
                 repositories[i] = repository;
             });

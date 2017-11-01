@@ -39,7 +39,7 @@ namespace RepoTasks
         {
             var graphSpecProvider = new DependencyGraphSpecProvider(PackageSpecsDirectory.Trim());
 
-            var repositoryPaths = Repositories.Select(r => r.GetMetadata("RepositoryPath")).ToList();
+            var repositoryPaths = Repositories.Select(r => r.GetMetadata("RootPath")).ToList();
             var repositories = Repository.ReadAllRepositories(repositoryPaths, graphSpecProvider);
 
             var graph = GraphBuilder.Generate(repositories, StartGraphAt, Log);

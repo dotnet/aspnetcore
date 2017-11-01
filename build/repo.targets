@@ -3,19 +3,12 @@
   <Import Project="push.targets" />
 
   <PropertyGroup>
+    <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
-    <ClearRepositoryCloneRoot Condition="'$(SkipClone)' == 'true'">false</ClearRepositoryCloneRoot>
-    <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyLineupDir>$(RepositoryRoot).deps\lineups\</_DependencyLineupDir>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
     <_RestoreGraphSpecsDirectory>$(IntermediateDir)package-specs\</_RestoreGraphSpecsDirectory>
-
-    <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
-    <_DefaultRepositoryList>$(MSBuildThisFileDirectory)$(_RepositoryListFileName)</_DefaultRepositoryList>
-    <_DependencyRepositoryList>$(_DependencyBuildDirectory)$(_RepositoryListFileName)</_DependencyRepositoryList>
-    <_RepositoryListToImport Condition="Exists('$(_DependencyRepositoryList)')">$(_DependencyRepositoryList)</_RepositoryListToImport>
-    <_RepositoryListToImport Condition="!Exists('$(_DependencyRepositoryList)')">$(_DefaultRepositoryList)</_RepositoryListToImport>
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Build</_RepositoryBuildTargets>
@@ -26,20 +19,16 @@
     <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.props</GeneratedPackageVersionPropsPath>
 
-    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;CleanArtifacts;PrepareOutputPaths</PrepareDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
-    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
-    <CompileDependsOn>$(CompileDependsOn);CloneRepositories;BuildRepositories</CompileDependsOn>
+    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts</CleanDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CopyPackagesByCategory</PackageDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
-  <Import Project="$(_RepositoryListToImport)" />
-
-  <Target Name="CleanUniverseArtifacts">
-    <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)') AND '$(ClearRepositoryCloneRoot)' != 'false'" />
-    <RemoveDir Directories="$(LineupBuildDir)" />
-    <MakeDir Directories="$(LineupBuildDir)" />
+  <Target Name="PrepareOutputPaths">
+    <MakeDir Directories="$(ArtifactsDir);$(BuildDir);$(LineupBuildDir)" />
   </Target>
 
   <Target Name="RestoreExternalDependencies">
@@ -49,21 +38,24 @@
   </Target>
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
+
+    <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
+
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=%(Repository.RootPath);KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=%(Repository.RootPath);KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" />
     </MSBuild>
 
-    <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
+    <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
   <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
@@ -113,104 +105,24 @@
     <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
       Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
 
-    <!--
-    Determine the protocol to clone individual repositories over. Clone repositories over https,
-    if Universe was cloned over https
-    -->
-    <Exec
-      Command="git config --get remote.origin.url"
-      ConsoleToMSBuild="true"
-      WorkingDirectory="$(RepositoryRoot)"
-      IgnoreStandardErrorWarningFormat="true"
-      StandardOutputImportance="low"
-      IgnoreExitCode="true">
-        <Output TaskParameter="ConsoleOutput" PropertyName="UniverseCloneUrl" />
-    </Exec>
-
-    <PropertyGroup>
-      <_CloneOverHttps>true</_CloneOverHttps>
-      <_CloneOverHttps Condition="'$(UniverseCloneUrl)' != '' AND !$(UniverseCloneUrl.StartsWith('https'))">false</_CloneOverHttps>
-    </PropertyGroup>
-
     <ItemGroup>
-      <Repository Update="%(Identity)" RepositoryPath="$(_CloneRepositoryRoot)%(Identity)" />
-      <Repository Update="%(Identity)" CloneUrl="git@github.com:aspnet/%(Identity)" Condition="'$(_CloneOverHttps)'!='true'" />
-      <Repository Update="%(Identity)" CloneUrl="https://github.com/aspnet/%(Identity)" Condition="'$(_CloneOverHttps)'=='true'" />
+      <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories" Condition="'$(SkipClone)' != 'true'">
-    <ItemGroup>
-      <_CloneRepository Include="$(MSBuildProjectFullPath)">
-        <AdditionalProperties>
-          CloneRepository=%(Repository.Identity);
-          CloneUrl=%(Repository.CloneUrl);
-          CloneBranch=%(Repository.Branch);
-          CloneRepositoryCommit=%(Repository.Commit);
-          UseGateBranch=$(UseGateBranch)
-        </AdditionalProperties>
-      </_CloneRepository>
-    </ItemGroup>
-
-    <Message Text="Using the repository list information from '$(_RepositoryListToImport)' to clone ..." Importance="High" />
-
-    <MakeDir Directories="$(_CloneRepositoryRoot)" />
-
-    <MSBuild Projects="@(_CloneRepository)"
-      Targets="_CloneRepository"
-      BuildInParallel="$(BuildInParallel)" />
-
-  </Target>
-
-  <Target Name="_CloneRepository">
-    <PropertyGroup>
-      <ShallowClone Condition="'$(ShallowClone)'=='' OR '$(CloneRepositoryCommit)'!=''">false</ShallowClone>
-      <_CloneArguments>git clone --quiet $(CloneUrl) $(CloneRepository)</_CloneArguments>
-      <_CloneArguments Condition="'$(ShallowClone)'=='true'">$(_CloneArguments) --depth 1</_CloneArguments>
-    </PropertyGroup>
-
-    <Message Text="Cloning $(CloneRepository) ..." Importance="High" />
-    <Exec
-      Command="$(_CloneArguments) --branch $(CloneBranch)-gate"
-      Condition="'$(UseGateBranch)'=='true'"
-      IgnoreExitCode="true"
-      IgnoreStandardErrorWarningFormat="true"
-      WorkingDirectory="$(_CloneRepositoryRoot)">
-      <Output TaskParameter="ExitCode" PropertyName="GateBranchExitCode" />
-    </Exec>
-
-    <Warning Text="Using $(CloneBranch)-gate for $(CloneRepository)"
-      Condition="'$(GateBranchExitCode)'=='0'" />
-
-    <Exec
-      Command="$(_CloneArguments) --branch $(CloneBranch)"
-      Condition="'$(GateBranchExitCode)'!='0'"
-      WorkingDirectory="$(_CloneRepositoryRoot)"
-      EnvironmentVariables="GIT_TERMINAL_PROMPT=0"
-      IgnoreStandardErrorWarningFormat="true"
-      Timeout="180000" />
-
-    <Message Text="Resetting $(CloneRepository) commit to $(CloneRepositoryCommit) ..." Importance="High" Condition="'$(CloneRepositoryCommit)'!=''"/>
-    <Exec
-      Command="git reset --quiet --hard $(CloneRepositoryCommit)"
-      WorkingDirectory="$(_CloneRepositoryRoot)$(CloneRepository)"
-      IgnoreStandardErrorWarningFormat="true"
-      Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\"
+             Properties="RepositoryRoot=%(Repository.RootPath)"
              ContinueOnError="WarnAndContinue"
              Condition="%(Repository.Build)">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" />
     </MSBuild>
 
-    <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
+    <Error Text="No solutions were found. Did you remember to checkout the git submodules? Run `git submodules update`." Condition="@(Solution->Count()) == 0" />
 
     <ItemGroup>
       <Solution>
@@ -219,8 +131,8 @@
 
       <GraphSpecInputs Include="
         @(Solution);
-        $(_CloneRepositoryRoot)**\*.csproj;
-        $(_CloneRepositoryRoot)**\dependencies.props" />
+        $(SubmoduleRoot)**\*.csproj;
+        $(SubmoduleRoot)**\dependencies.props" />
       <GraphSpecOutputs Include="$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json" />
     </ItemGroup>
   </Target>
@@ -246,7 +158,7 @@
 
   <Target Name="_UpdateNuGetConfig">
     <UpdatePackageSource
-      NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
+      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
       SourceName="Dependencies"
       SourceUri="$(_DependencyPackagesDirectory)"
       Condition="Exists('$(_DependencyPackagesDirectory)') AND %(Repository.Build)" />
@@ -254,7 +166,7 @@
     <MakeDir Directories="$(BuildDir)" Condition="!Exists('$(BuildDir)')" />
 
     <UpdatePackageSource
-      NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
+      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
       SourceName="Artifacts"
       Condition="%(Repository.Build)"
       SourceUri="$(BuildDir)" />
@@ -287,59 +199,6 @@
     <RepoTasks.VerifyCoherentVersions
       PackageFiles="@(ShippingPackageFiles)"
       ExternalDependencies="@(ExternalDependency)" />
-  </Target>
-
-  <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">
-    <PropertyGroup>
-      <RepositoryFileWithCommit>$(BuildDir)$(_RepositoryListFileName)</RepositoryFileWithCommit>
-    </PropertyGroup>
-    <Copy
-      SourceFiles="$(_DefaultRepositoryList)"
-      DestinationFiles="$(RepositoryFileWithCommit)" />
-
-    <XmlPoke
-      XmlInputPath="$(RepositoryFileWithCommit)"
-      Query="//Repository[@Include='%(Repository.Identity)']/@Commit"
-      Value="%(Repository.Commit)" />
-
-    <XmlPoke
-      XmlInputPath="$(RepositoryFileWithCommit)"
-      Query="//Repository[@Include='%(Repository.Identity)']/@CloneUrl"
-      Value="%(Repository.CloneUrl)" />
-  </Target>
-
-  <!-- Based on the solution here: http://stackoverflow.com/a/11331566 -->
-  <Target Name="_GetRepositoryCommits" Outputs="%(Repository.Identity)">
-    <PropertyGroup>
-      <!--
-        Attempt to read environment variables set up by the CI's VCS Root if available.
-        * BUILD_VCS_URL_<RepositoryName> gives us the clone URL for a repository
-        * BUILD_VCS_NUMBER_<RepositoryName> gives us the commit hash for a repository.
-      -->
-      <_RepositoryName>$([System.String]::new('%(Repository.Identity)').Replace('.', '_'))</_RepositoryName>
-      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_URL_$(_RepositoryName)"))</_CloneUrl>
-      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_NUMBER_$(_RepositoryName)"))</_CommitHash>
-    </PropertyGroup>
-
-    <Warning Text="%(Repository.Identity) has not been cloned."
-      Condition="!Exists('%(Repository.RepositoryPath)')" />
-
-    <GetGitCommitInfo
-      WorkingDirectory="%(Repository.RepositoryPath)"
-      Condition="'$(_CommitHash)'=='' AND Exists('%(Repository.RepositoryPath)')">
-
-      <Output TaskParameter="CommitHash" PropertyName="_CommitHash" />
-    </GetGitCommitInfo>
-
-    <ItemGroup>
-      <Repository Update="%(Identity)" Commit="$(_CommitHash)" />
-      <Repository Update="%(Identity)" CloneUrl="$(_CloneUrl)" Condition="'$(_CloneUrl)'!=''" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <_CommitHash></_CommitHash>
-      <_CloneUrl></_CloneUrl>
-    </PropertyGroup>
   </Target>
 
 </Project>

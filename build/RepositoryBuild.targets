@@ -6,8 +6,7 @@
         <Repository>%(RepositoryToBuildInOrder.Identity)</Repository>
         <AdditionalProperties>
           RepositoryToBuild=%(RepositoryToBuildInOrder.Identity);
-          BuildRepositoryRoot=%(RepositoryToBuildInOrder.RepositoryPath)\;
-          CommitHash=%(RepositoryToBuildInOrder.Commit)
+          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryToBuildInOrder.RootPath)))
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -35,7 +34,7 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomBeforeKoreBuildProps=$(MSBuildThisFileDirectory)repobuild\BeforeKoreBuild.props'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomAfterKoreBuildTargets=$(MSBuildThisFileDirectory)repobuild\AfterKoreBuild.targets'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 
       <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
