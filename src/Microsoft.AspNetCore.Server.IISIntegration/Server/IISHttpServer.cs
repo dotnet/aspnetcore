@@ -74,10 +74,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (task.IsCompleted)
             {
                 context.Dispose();
-                return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE;
+                return ConvertRequestCompletionResults(task.Result);
             }
 
-            task.ContinueWith((t, state) => CompleteRequest((IISHttpContext)state), context);
+            task.ContinueWith((t, state) => CompleteRequest((IISHttpContext)state, t), context);
 
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
@@ -96,13 +96,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
 
-        private static void CompleteRequest(IISHttpContext context)
+        private static void CompleteRequest(IISHttpContext context, Task<bool> completedTask)
         {
             // Post completion after completing the request to resume the state machine
-            context.PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE);
+            context.PostCompletion(ConvertRequestCompletionResults(completedTask.Result));
 
             // Dispose the context
             context.Dispose();
+        }
+
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS ConvertRequestCompletionResults(bool success)
+        {
+            return success ? NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE
+                                                     : NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_FINISH_REQUEST;
         }
 
         private class IISContextFactory<T> : IISContextFactory

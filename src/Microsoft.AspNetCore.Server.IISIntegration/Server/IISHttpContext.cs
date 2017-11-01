@@ -805,7 +805,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return _readWebSocketsOperation;
         }
 
-        public abstract Task ProcessRequestAsync();
+        public abstract Task<bool> ProcessRequestAsync();
 
         public void OnStarting(Func<object, Task> callback, object state)
         {

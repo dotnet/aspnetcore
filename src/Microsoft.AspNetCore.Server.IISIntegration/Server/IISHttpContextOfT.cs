@@ -19,9 +19,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _application = application;
         }
 
-        public override async Task ProcessRequestAsync()
+        public override async Task<bool> ProcessRequestAsync()
         {
             var context = default(TContext);
+            var success = true;
 
             try
             {
@@ -37,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             catch (Exception ex)
             {
                 ReportApplicationError(ex);
+                success = false;
             }
             finally
             {
@@ -61,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // If the request was aborted and no response was sent, there's no
                 // meaningful status code to log.
                 StatusCode = 0;
+                success = false;
             }
 
             try
@@ -71,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 // TODO Log this
                 _applicationException = _applicationException ?? ex;
+                success = false;
             }
             finally
             {
@@ -90,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     await _readingTask;
                 }
             }
+            return success;
         }
     }
 }
