@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <Description>Redis storage support as key store.</Description>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VerifyVersion Condition="'$(ExperimentalProjectVersionPrefix)' != ''">false</VerifyVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -15,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="StackExchange.Redis.StrongName" />
+    <PackageReference Include="StackExchange.Redis.StrongName" Version="$(StackExchangeRedisStrongNamePackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -30,4 +30,3 @@ project.lock.json
 .testPublish/
 samples/**/temp-keys/
 global.json
-korebuild-lock.txt
