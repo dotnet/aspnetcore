@@ -34,4 +34,3 @@ nuget.exe
 **/Resources/*.Designer.cs
 .vscode/
 global.json
-korebuild-lock.txt

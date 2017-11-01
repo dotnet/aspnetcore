@@ -1,5 +1,6 @@
-<Project>
-  <Import Project="version.xml" />
+﻿<Project>
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
 
   <PropertyGroup>
     <RepositoryUrl>https://github.com/aspnet/Localization</RepositoryUrl>
@@ -8,7 +9,6 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>
