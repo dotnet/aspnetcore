@@ -29,4 +29,3 @@ nuget.exe
 autobahnreports/
 .vscode/
 global.json
-korebuild-lock.txt
