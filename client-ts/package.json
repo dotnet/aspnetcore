@@ -42,6 +42,6 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "msgpack5": "^3.5.0"
+    "msgpack5": "^3.6.0"
   }
 }
