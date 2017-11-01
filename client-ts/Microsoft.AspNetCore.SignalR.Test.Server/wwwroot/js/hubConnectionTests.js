@@ -298,13 +298,21 @@ describe('hubConnection', function () {
 
                 var complexObject = {
                     String: 'Hello, World!',
-                    IntArray: [0x01, 0x02, 0x03, 0xff]
+                    IntArray: [0x01, 0x02, 0x03, 0xff],
+                    ByteArray: protocol.name == "json"
+                        ? btoa([0xff, 0x03, 0x02, 0x01])
+                        : new Uint8Array([0xff, 0x03, 0x02, 0x01])
                 };
 
                 hubConnection.start().then(function () {
                     return hubConnection.invoke('EchoComplexObject', complexObject);
                 })
-                .then(function(value) {
+                .then(function (value) {
+                    // msgpack creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                    // and a Uint8Array even though Buffer instances are also Uint8Array instances
+                    if (protocol.name == "messagepack") {
+                        value.ByteArray = new Uint8Array(value.ByteArray);
+                    }
                     expect(value).toEqual(complexObject);
                 })
                 .then(function () {
