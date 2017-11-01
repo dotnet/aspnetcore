@@ -97,6 +97,21 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
+        [Fact]
+        public async Task JsonInputFormatter_SuppliedJsonDeserializationErrorMessage()
+        {
+            // Arrange
+            var content = new StringContent("{", Encoding.UTF8, "application/json");
+
+            // Act
+            var response = await Client.PostAsync("http://localhost/JsonFormatter/ReturnInput/", content);
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("{\"\":[\"Unexpected end when reading JSON. Path '', line 1, position 1.\"]}", responseBody);
+        }
+
         [Theory]
         [InlineData("\"I'm a JSON string!\"")]
         [InlineData("true")]

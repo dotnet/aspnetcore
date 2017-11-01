@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -262,6 +263,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
 
                 return TryAddModelError(key, errorMessage);
+            }
+            else if (exception is InputFormatterException && !string.IsNullOrEmpty(exception.Message))
+            {
+                // InputFormatterException is a signal that the message is safe to expose to clients
+                return TryAddModelError(key, exception.Message);
             }
 
             ErrorCount++;

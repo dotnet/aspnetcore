@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.True(result.HasError);
-            Assert.Contains(exceptionMessage, modelState[""].Errors[0].Exception.Message);
+            Assert.Contains(exceptionMessage, modelState[""].Errors[0].ErrorMessage);
         }
 
         private static ILogger GetLogger()

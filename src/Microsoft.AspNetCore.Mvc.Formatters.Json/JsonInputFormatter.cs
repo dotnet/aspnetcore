@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
         private readonly bool _suppressInputFormatterBuffering;
+        private readonly bool _suppressJsonDeserializationExceptionMessages;
 
         private ObjectPool<JsonSerializer> _jsonSerializerPool;
 
@@ -70,6 +71,32 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ArrayPool<char> charPool,
             ObjectPoolProvider objectPoolProvider,
             bool suppressInputFormatterBuffering)
+            : this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, suppressJsonDeserializationExceptionMessages: false)
+        {
+            // This constructor by default treats JSON deserialization exceptions as safe
+            // because this is the default for applications generally
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
+        /// <param name="suppressJsonDeserializationExceptionMessages">If <see langword="true"/>, JSON deserialization exception messages will replaced by a generic message in model state.</param>
+        public JsonInputFormatter(
+            ILogger logger,
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider,
+            bool suppressInputFormatterBuffering,
+            bool suppressJsonDeserializationExceptionMessages)
         {
             if (logger == null)
             {
@@ -96,6 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _charPool = new JsonArrayPool<char>(charPool);
             _objectPoolProvider = objectPoolProvider;
             _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
+            _suppressJsonDeserializationExceptionMessages = suppressJsonDeserializationExceptionMessages;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -187,7 +215,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         }
 
                         var metadata = GetPathMetadata(context.Metadata, eventArgs.ErrorContext.Path);
-                        context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
+                        var modelStateException = WrapExceptionForModelState(eventArgs.ErrorContext.Error);
+                        context.ModelState.TryAddModelError(key, modelStateException, metadata);
 
                         _logger.JsonInputException(eventArgs.ErrorContext.Error);
 
@@ -314,6 +343,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             }
 
             return metadata;
+        }
+
+        private Exception WrapExceptionForModelState(Exception exception)
+        {
+            // It's not known that Json.NET currently ever raises error events with exceptions
+            // other than these two types, but we're being conservative and limiting which ones
+            // we regard as having safe messages to expose to clients
+            var isJsonExceptionType =
+                exception is JsonReaderException || exception is JsonSerializationException;
+            var suppressOriginalMessage =
+                _suppressJsonDeserializationExceptionMessages || !isJsonExceptionType;
+            return suppressOriginalMessage
+                ? exception
+                : new InputFormatterException(exception.Message, exception);
         }
     }
 }

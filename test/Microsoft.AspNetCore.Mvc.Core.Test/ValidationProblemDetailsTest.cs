@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -45,6 +46,31 @@ namespace Microsoft.AspNetCore.Mvc
                 {
                     Assert.Equal("key3", item.Key);
                     Assert.Equal(new[] { "error2", "error3" }, item.Value);
+                });
+        }
+
+        [Fact]
+        public void Constructor_SerializesErrorsFromModelStateDictionary_AddsDefaultMessage()
+        {
+            // Arrange
+            var modelStateDictionary = new ModelStateDictionary();
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+            modelStateDictionary.AddModelError("unsafeError",
+                new Exception("This message should not be returned to clients"),
+                metadata);
+
+            // Act
+            var problemDescription = new ValidationProblemDetails(modelStateDictionary);
+
+            // Assert
+            Assert.Equal("One or more validation errors occured.", problemDescription.Title);
+            Assert.Collection(
+                problemDescription.Errors,
+                item =>
+                {
+                    Assert.Equal("unsafeError", item.Key);
+                    Assert.Equal(new[] { "The input was not valid." }, item.Value);
                 });
         }
     }

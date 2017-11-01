@@ -47,7 +47,7 @@ namespace FormatterWebSite.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest();
+                return BadRequest(ModelState);
             }
 
             return Content(dummyObject.SampleInt.ToString());

@@ -232,10 +232,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
+            var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
             Assert.Equal("Bad input!!", errorMessage);
-            var formatException = Assert.IsType<FormatException>(entry.Value.Errors[0].Exception.InnerException);
-            Assert.Same(expectedFormatException, formatException);
+            Assert.Null(entry.Value.Errors[0].Exception);
         }
 
         public static TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy> BuiltInFormattersThrowingInputFormatterException
@@ -282,9 +281,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
+            var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
             Assert.Equal("An error occured while deserializing input data.", errorMessage);
-            Assert.IsType<InputFormatterException>(entry.Value.Errors[0].Exception);
+            Assert.Null(entry.Value.Errors[0].Exception);
         }
 
         [Theory]
@@ -319,7 +318,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            Assert.IsType<JsonReaderException>(entry.Value.Errors[0].Exception);
+            Assert.NotEmpty(entry.Value.Errors[0].ErrorMessage);
         }
 
         public static TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy> DerivedFormattersThrowingInputFormatterException
@@ -366,9 +365,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            var errorMessage = Assert.Single(entry.Value.Errors).Exception.Message;
+            var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
             Assert.Equal("An error occured while deserializing input data.", errorMessage);
-            Assert.IsType<InputFormatterException>(entry.Value.Errors[0].Exception);
+            Assert.Null(entry.Value.Errors[0].Exception);
         }
 
         [Theory]
@@ -403,7 +402,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Key is the empty string because this was a top-level binding.
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
-            Assert.IsType<JsonReaderException>(entry.Value.Errors[0].Exception);
+            Assert.NotEmpty(entry.Value.Errors[0].ErrorMessage);
+            Assert.Null(entry.Value.Errors[0].Exception);
         }
 
         // Throwing Non-InputFormatterException

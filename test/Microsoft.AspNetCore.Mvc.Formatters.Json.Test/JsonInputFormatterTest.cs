@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.True(result.HasError);
             Assert.Equal(
                 "Could not convert string to decimal: not-an-age. Path 'Age', line 1, position 39.",
-                modelState["Age"].Errors[0].Exception.Message);
+                modelState["Age"].Errors[0].ErrorMessage);
         }
 
         [Fact]
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.True(result.HasError);
             Assert.Equal(
                 "Error converting value 300 to type 'System.Byte'. Path '[1].Small', line 1, position 59.",
-                modelState["names[1].Small"].Errors[0].Exception.Message);
+                modelState["names[1].Small"].Errors[0].ErrorMessage);
         }
 
         [Fact]
@@ -508,7 +508,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.True(result.HasError);
             Assert.False(modelState.IsValid);
 
-            var modelErrorMessage = modelState.Values.First().Errors[0].Exception.Message;
+            var modelErrorMessage = modelState.Values.First().Errors[0].ErrorMessage;
             Assert.Contains("Required property 'Password' not found in JSON", modelErrorMessage);
         }
 
@@ -531,6 +531,81 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Same(settings.ContractResolver, actual.ContractResolver);
             Assert.Equal(settings.MaxDepth, actual.MaxDepth);
             Assert.Equal(settings.DateTimeZoneHandling, actual.DateTimeZoneHandling);
+        }
+
+        [Theory]
+        [InlineData("{", "", "Unexpected end when reading JSON. Path '', line 1, position 1.")]
+        [InlineData("{\"a\":{\"b\"}}", "a", "Invalid character after parsing property name. Expected ':' but got: }. Path 'a', line 1, position 9.")]
+        [InlineData("{\"age\":\"x\"}", "age", "Could not convert string to decimal: x. Path 'age', line 1, position 10.")]
+        [InlineData("{\"login\":1}", "login", "Error converting value 1 to type 'Microsoft.AspNetCore.Mvc.Formatters.JsonInputFormatterTest+UserLogin'. Path 'login', line 1, position 10.")]
+        [InlineData("{\"login\":{\"username\":\"somevalue\"}}", "login", "Required property 'Password' not found in JSON. Path 'login', line 1, position 33.")]
+        public async Task ReadAsync_RegistersJsonInputExceptionsAsInputFormatterException(
+            string content,
+            string modelStateKey,
+            string expectedMessage)
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter =
+                new JsonInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.True(!modelState.IsValid);
+            Assert.True(modelState.ContainsKey(modelStateKey));
+
+            var modelError = modelState[modelStateKey].Errors.Single();
+            Assert.Equal(expectedMessage, modelError.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ReadAsync_WhenSuppressJsonDeserializationExceptionMessagesIsTrue_DoesNotWrapJsonInputExceptions()
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter = new JsonInputFormatter(
+                logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider,
+                suppressInputFormatterBuffering: false, suppressJsonDeserializationExceptionMessages: true);
+            var contentBytes = Encoding.UTF8.GetBytes("{");
+            var modelStateKey = string.Empty;
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = GetHttpContext(contentBytes);
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(User));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.True(result.HasError);
+            Assert.True(!modelState.IsValid);
+            Assert.True(modelState.ContainsKey(modelStateKey));
+
+            var modelError = modelState[modelStateKey].Errors.Single();
+            Assert.IsNotType<InputFormatterException>(modelError.Exception);
+            Assert.Empty(modelError.ErrorMessage);
         }
 
         private class TestableJsonInputFormatter : JsonInputFormatter
@@ -609,6 +684,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             public decimal Age { get; set; }
 
             public byte Small { get; set; }
+
+            public UserLogin Login { get; set; }
         }
 
         private sealed class UserLogin
