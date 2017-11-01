@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +13,7 @@ namespace IISSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDataProtection();
         }
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
@@ -60,6 +62,13 @@ namespace IISSample
                     await context.Response.WriteAsync(key + ": " + value + Environment.NewLine);
                 }
                 await context.Response.WriteAsync(Environment.NewLine);
+
+                var protectorProvider = context.RequestServices.GetService<IDataProtectionProvider>();
+                var protector = protectorProvider.CreateProtector("Purpose");
+
+                await context.Response.WriteAsync("Protected Query: " + protector.Protect(context.Request.QueryString.Value) + Environment.NewLine);
+                await context.Response.WriteAsync(Environment.NewLine);
+
             });
         }
 

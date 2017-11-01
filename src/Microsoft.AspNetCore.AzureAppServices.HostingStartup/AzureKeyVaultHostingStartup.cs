@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.IO;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.KeyVault;
@@ -59,7 +61,28 @@ namespace Microsoft.AspNetCore.AzureKeyVault.HostingStartup
 
         internal virtual void AddDataProtection(IServiceCollection serviceCollection, KeyVaultClient client, string protectionKey)
         {
-            serviceCollection.AddDataProtection().ProtectKeysWithAzureKeyVault(client, protectionKey);
+            // Duplicates functionality from GetKeyStorageDirectoryForAzureWebSites in DataProtection
+            // to detect key storage location when running on Azure
+            // because you are not alowed to set IXmlEncryptor without setting IXmlRepository
+
+            // Check that we are running in Azure AppServices
+            var siteId = Environment.GetEnvironmentVariable("WEBSITE_INSTANCE_ID");
+            if (string.IsNullOrWhiteSpace(siteId))
+            {
+                return;
+            }
+
+            var home = Environment.GetEnvironmentVariable("HOME");
+            if (string.IsNullOrWhiteSpace(home))
+            {
+                return;
+            }
+
+            var keyLocation = new DirectoryInfo(Path.Combine(home, "ASP.NET", "DataProtection-Keys"));
+
+            serviceCollection.AddDataProtection()
+                .ProtectKeysWithAzureKeyVault(client, protectionKey)
+                .PersistKeysToFileSystem(keyLocation);
         }
 
         internal virtual void AddConfiguration(IConfigurationBuilder configurationBuilder, KeyVaultClient client, string keyVault)
