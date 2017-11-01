@@ -170,8 +170,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     await PublishAsync($"{_channelNamePrefix}.internal.{groupMessage.Server}", new GroupMessage
                     {
                         Action = GroupAction.Ack,
-                        ConnectionId = groupMessage.ConnectionId,
-                        Group = groupMessage.Group,
                         Id = groupMessage.Id
                     });
                 }
