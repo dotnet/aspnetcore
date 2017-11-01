@@ -1,6 +1,7 @@
 ﻿<Project>
-  <ItemGroup>
-    <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
-    <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
-  </ItemGroup>
+  <PropertyGroup>
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
+  </PropertyGroup>
 </Project>
