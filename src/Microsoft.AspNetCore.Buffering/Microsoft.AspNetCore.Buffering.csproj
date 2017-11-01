@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>0.4.0</VersionPrefix>
+    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VerifyVersion Condition="'$(ExperimentalProjectVersionPrefix)' != ''">false</VerifyVersion>
     <Description>ASP.NET Core middleware for buffering response bodies.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -10,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsPackageVersion)" />
   </ItemGroup>
 
 </Project>

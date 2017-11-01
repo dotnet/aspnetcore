@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" />
-    <PackageReference Include="Moq" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(MicrosoftAspNetCoreHttpPackageVersion)" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
+    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
   </ItemGroup>
 
 </Project>

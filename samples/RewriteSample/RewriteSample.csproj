@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(MicrosoftAspNetCoreServerKestrelHttpsPackageVersion)" />
   </ItemGroup>
 
 </Project>
