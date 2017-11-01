@@ -30,4 +30,3 @@ project.lock.json
 /.vs/
 .vscode/
 global.json
-korebuild-lock.txt
