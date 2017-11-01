@@ -13,6 +13,7 @@ function Invoke-Block([scriptblock]$cmd) {
     # - $?: did the powershell script block throw an error
     # - $lastexitcode: did a windows command executed by the script block end in error
     if ((-not $?) -or ($lastexitcode -ne 0)) {
+        Write-Warning $error[0]
         throw "Command failed to execute: $cmd"
     }
 }

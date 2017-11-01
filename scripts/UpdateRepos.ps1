@@ -9,20 +9,22 @@
     The ID of the Lineup to determine which versions to use.
 .PARAMETER LineupVersion
     The version of the Lineup to be used.
+.PARAMETER NoPush
+    Make commits without pusing.
 .PARAMETER GitAuthorName
     The author name to use in the commit message. (Optional)
 .PARAMETER GitAuthorEmail
     The author email to use in the commit message. (Optional)
-.PARAMETER NoPush
-    Make commits without pusing.
+.PARAMETER GitCommitArgs
+    Any remaining arguments are passed as arguments to 'git commit' actions in each repo.
 #>
 [cmdletbinding(SupportsShouldProcess = $true)]
 param(
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$Source,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$LineupID,
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$LineupVersion,
     [switch]$NoPush,
     [string]$GitAuthorName = $null,
@@ -40,46 +42,44 @@ $ModuleDirectory = Join-Path $RepoRoot "modules"
 
 $gitConfigArgs = @()
 if ($GitAuthorName) {
-    $gitConfigArgs += '-c',"user.name=$GitAuthorName"
+    $gitConfigArgs += '-c', "user.name=$GitAuthorName"
 }
 
 if ($GitAuthorEmail) {
-    $gitConfigArgs += '-c',"user.email=$GitAuthorEmail"
+    $gitConfigArgs += '-c', "user.email=$GitAuthorEmail"
 }
 
 Push-Location $ModuleDirectory
 try {
     # Init all submodules
-    Invoke-Block { & git submodule update --init }
+    Write-Verbose "Updating submodules..."
+    Invoke-Block { & git submodule update --init } | Out-Null
+    Write-Verbose "Submodules updated."
 
     $update_errors = @()
     $submodules = Get-Submodules $RepoRoot
     $updated_submodules = @()
-    foreach($submodule in $submodules)
-    {
+    foreach ($submodule in $submodules) {
         Push-Location $submodule.path
         try {
             $depsFile = Join-Path (Join-Path $($submodule.path) "build") "dependencies.props"
 
-            if (!Test-Path $depsFile)
-            {
-                Write-Warning "No build\dependencies.props file exists for $($submodule.module). "
+            if (!(Test-Path $depsFile)) {
+                Write-Warning "No build\dependencies.props file exists for $($submodule.module)."
                 continue
             }
 
-            # Move to latest commit on tracked branch
-            Invoke-Block { & git checkout --quiet $submodule.branch }
-
-            Invoke-Block { & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile }
-            Invoke-Block { & git add $depsFile }
+            Write-Verbose "About to update dependencies.props for $($submodule.module)"
+            & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
 
             Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
+
             $sshUrl = "git@github.com:aspnet/$($submodule.module)"
             Invoke-Block { & git remote set-url --push origin $sshUrl }
             $updated_submodules += $submodule
         }
-        catch
-        {
+        catch {
+            Write-Warning "Error in $($submodule.module)"
             $update_errors += $_
         }
         finally {
@@ -87,22 +87,25 @@ try {
         }
     }
 
-    if ($update_errors.Count -gt 0 )
-    {
+    if ($update_errors.Count -gt 0 ) {
+        foreach ($update_error in $update_errors) {
+            Write-Error "$update_error"
+        }
+
         throw 'Failed to update'
     }
+    else {
+        Write-Verbose "All updates successful!"
+    }
 
-    if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Push the changes to these repos?'))))
-    {
+    if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Push the changes to these repos?')))) {
         $push_errors = @()
-        foreach($submodule in $updated_submodules)
-        {
+        foreach ($submodule in $updated_submodules) {
             Push-Location $submodule.path
             try {
-                Invoke-Block { & git @gitConfigArgs push origin $submodule.branch}
+                Invoke-Block { & git @gitConfigArgs push origin HEAD:$submodule.branch}
             }
-            catch
-            {
+            catch {
                 $push_errors += $_
             }
             finally {
@@ -110,8 +113,7 @@ try {
             }
         }
 
-        if ($push_errors.Count -gt 0 )
-        {
+        if ($push_errors.Count -gt 0 ) {
             throw 'Failed to push'
         }
     }
