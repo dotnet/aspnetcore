@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
@@ -27,6 +26,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal TimeSpan IdleDelay = TimeSpan.FromSeconds(3);
         internal Timer _idleTimer;
         internal BackgroundParser _parser;
+        internal ChangeReference _latestChangeReference;
 
         private readonly object IdleLock = new object();
         private readonly ICompletionBroker _completionBroker;
@@ -95,6 +95,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public override ITextSnapshot Snapshot => _snapshot;
 
         public override ITextBuffer TextBuffer => _documentTracker.TextBuffer;
+
+        public override bool HasPendingChanges => _latestChangeReference != null;
 
         // Used in unit tests to ensure we can be notified when idle starts.
         internal ManualResetEventSlim NotifyForegroundIdleStart { get; set; }
@@ -253,7 +255,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // If partial parsing failed or there were outstanding parser tasks, start a full reparse
             if ((result & PartialParseResultInternal.Rejected) == PartialParseResultInternal.Rejected)
             {
-                _parser.QueueChange(change, snapshot);
+                QueueChange(change, snapshot);
             }
 
             if ((result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional)
@@ -292,7 +294,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var snapshot = TextBuffer.CurrentSnapshot;
-            _parser.QueueChange(null, snapshot);
+            QueueChange(null, snapshot);
+        }
+
+        private void QueueChange(SourceChange change, ITextSnapshot snapshot)
+        {
+            _dispatcher.AssertForegroundThread();
+
+            _latestChangeReference = new ChangeReference(change, snapshot);
+            _parser.QueueChange(change, snapshot);
         }
 
         private void OnNotifyForegroundIdle()
@@ -311,7 +321,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private async void Timer_Tick(object state)
+        private void Timer_Tick(object state)
         {
             try
             {
@@ -322,12 +332,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 StopIdleTimer();
 
                 // We need to get back to the UI thread to properly check if a completion is active.
-                await Task.Factory.StartNew(OnIdle, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                Task.Factory.StartNew(OnIdle, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
             catch (Exception ex)
             {
                 // This is something totally unexpected, let's just send it over to the workspace.
-                await Task.Factory.StartNew(() => _errorReporter.ReportError(ex), CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                Task.Factory.StartNew(() => _errorReporter.ReportError(ex), CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
         }
 
@@ -335,19 +345,29 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _dispatcher.AssertBackgroundThread();
 
-            if (DocumentStructureChanged != null)
-            {
-                if (args.Snapshot != TextBuffer.CurrentSnapshot)
-                {
-                    // A different text change is being parsed.
-                    return;
-                }
+            // Jump back to UI thread to notify structure changes.
+            Task.Factory.StartNew(OnDocumentStructureChanged, args, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+        }
 
-                _codeDocument = args.CodeDocument;
-                _snapshot = args.Snapshot;
-                _partialParser = new RazorSyntaxTreePartialParser(CodeDocument.GetSyntaxTree());
-                DocumentStructureChanged(this, args);
+        // Internal for testing
+        internal void OnDocumentStructureChanged(object state)
+        {
+            _dispatcher.AssertForegroundThread();
+
+            var args = (DocumentStructureChangedEventArgs)state;
+            if (_latestChangeReference == null || // extra hardening
+                !_latestChangeReference.IsAssociatedWith(args))
+            {
+                // In the middle of parsing a newer change.
+                return;
             }
+
+            _latestChangeReference = null;
+            _codeDocument = args.CodeDocument;
+            _snapshot = args.Snapshot;
+            _partialParser = new RazorSyntaxTreePartialParser(CodeDocument.GetSyntaxTree());
+
+            DocumentStructureChanged?.Invoke(this, args);
         }
 
         private void ConfigureTemplateEngine(IRazorEngineBuilder builder)
@@ -397,6 +417,26 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
 
                 return Array.Empty<TagHelperDescriptor>();
+            }
+        }
+
+        // Internal for testing
+        internal class ChangeReference
+        {
+            public ChangeReference(SourceChange change, ITextSnapshot snapshot)
+            {
+                Change = change;
+                Snapshot = snapshot;
+            }
+
+            public SourceChange Change { get; }
+
+            public ITextSnapshot Snapshot { get; }
+
+            public bool IsAssociatedWith(DocumentStructureChangedEventArgs other)
+            {
+                return Change == other.SourceChange &&
+                    Snapshot == other.Snapshot;
             }
         }
     }

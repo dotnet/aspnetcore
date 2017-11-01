@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Test;
@@ -24,6 +25,63 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 tracker.IsSupportedProject == isSupportedProject);
 
             return documentTracker;
+        }
+
+        [ForegroundFact]
+        public void OnDocumentStructureChanged_IgnoresEditsThatAreOld()
+        {
+            // Arrange
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                CreateDocumentTracker(),
+                Mock.Of<RazorTemplateEngineFactoryService>(),
+                new DefaultErrorReporter(),
+                Mock.Of<ICompletionBroker>()))
+            {
+                var called = false;
+                parser.DocumentStructureChanged += (sender, e) => called = true;
+                parser._latestChangeReference = new DefaultVisualStudioRazorParser.ChangeReference(null, new StringTextSnapshot(string.Empty));
+                var args = new DocumentStructureChangedEventArgs(
+                    new SourceChange(0, 0, string.Empty),
+                    new StringTextSnapshot(string.Empty),
+                    TestRazorCodeDocument.CreateEmpty());
+
+                // Act
+                parser.OnDocumentStructureChanged(args);
+
+                // Assert
+                Assert.False(called);
+            }
+        }
+
+        [ForegroundFact]
+        public void OnDocumentStructureChanged_FiresForLatestTextBufferEdit()
+        {
+            // Arrange
+            var documentTracker = CreateDocumentTracker();
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                Mock.Of<RazorTemplateEngineFactoryService>(),
+                new DefaultErrorReporter(),
+                Mock.Of<ICompletionBroker>()))
+            {
+                var called = false;
+                parser.DocumentStructureChanged += (sender, e) => called = true;
+                var latestChange = new SourceChange(0, 0, string.Empty);
+                var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
+                parser._latestChangeReference = new DefaultVisualStudioRazorParser.ChangeReference(latestChange, latestSnapshot);
+                var args = new DocumentStructureChangedEventArgs(
+                    latestChange,
+                    latestSnapshot,
+                    TestRazorCodeDocument.CreateEmpty());
+
+                // Act
+                parser.OnDocumentStructureChanged(args);
+
+                // Assert
+                Assert.True(called);
+            }
         }
 
         [ForegroundFact]

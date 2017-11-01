@@ -21,6 +21,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract ITextBuffer TextBuffer { get; }
 
+        public abstract bool HasPendingChanges { get; }
+
         public abstract void QueueReparse();
     }
 }
