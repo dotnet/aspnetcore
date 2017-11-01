@@ -37,4 +37,3 @@ node_modules
 *launchSettings.json
 *.orig
 global.json
-korebuild-lock.txt
