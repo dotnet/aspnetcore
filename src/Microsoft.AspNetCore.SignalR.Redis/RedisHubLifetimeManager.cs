@@ -88,86 +88,97 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
             _bus = _redisServerConnection.GetSubscriber();
 
-            var previousBroadcastTask = Task.CompletedTask;
-
             var channelName = _channelNamePrefix;
             _logger.Subscribing(channelName);
             _bus.Subscribe(channelName, async (c, data) =>
             {
-                await previousBroadcastTask;
-
-                _logger.ReceivedFromChannel(channelName);
-
-                var message = DeserializeMessage<HubMessage>(data);
-
-                // TODO: This isn't going to work when we allow JsonSerializer customization or add Protobuf
-                var tasks = new List<Task>(_connections.Count);
-
-                foreach (var connection in _connections)
+                try
                 {
-                    tasks.Add(WriteAsync(connection, message));
-                }
+                    _logger.ReceivedFromChannel(channelName);
 
-                previousBroadcastTask = Task.WhenAll(tasks);
+                    var message = DeserializeMessage<HubMessage>(data);
+
+                    var tasks = new List<Task>(_connections.Count);
+
+                    foreach (var connection in _connections)
+                    {
+                        tasks.Add(WriteAsync(connection, message));
+                    }
+
+                    await Task.WhenAll(tasks);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedWritingMessage(ex);
+                }
             });
 
-            var allExceptTask = Task.CompletedTask;
             channelName = _channelNamePrefix + ".AllExcept";
             _logger.Subscribing(channelName);
             _bus.Subscribe(channelName, async (c, data) =>
             {
-                await allExceptTask;
-
-                _logger.ReceivedFromChannel(channelName);
-
-                var message = DeserializeMessage<RedisExcludeClientsMessage>(data);
-                var excludedIds = message.ExcludedIds;
-
-                // TODO: This isn't going to work when we allow JsonSerializer customization or add Protobuf
-
-                var tasks = new List<Task>(_connections.Count);
-
-                foreach (var connection in _connections)
+                try
                 {
-                    if (!excludedIds.Contains(connection.ConnectionId))
-                    {
-                        tasks.Add(WriteAsync(connection, message));
-                    }
-                }
+                    _logger.ReceivedFromChannel(channelName);
 
-                allExceptTask = Task.WhenAll(tasks);
+                    var message = DeserializeMessage<RedisExcludeClientsMessage>(data);
+                    var excludedIds = message.ExcludedIds;
+
+                    var tasks = new List<Task>(_connections.Count);
+
+                    foreach (var connection in _connections)
+                    {
+                        if (!excludedIds.Contains(connection.ConnectionId))
+                        {
+                            tasks.Add(WriteAsync(connection, message));
+                        }
+                    }
+
+                    await Task.WhenAll(tasks);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedWritingMessage(ex);
+                }
             });
 
             channelName = _channelNamePrefix + ".internal.group";
             _bus.Subscribe(channelName, async (c, data) =>
             {
-                var groupMessage = DeserializeMessage<GroupMessage>(data);
-
-                var connection = _connections[groupMessage.ConnectionId];
-                if (connection == null)
+                try
                 {
-                    // user not on this server
-                    return;
+                    var groupMessage = DeserializeMessage<GroupMessage>(data);
+
+                    var connection = _connections[groupMessage.ConnectionId];
+                    if (connection == null)
+                    {
+                        // user not on this server
+                        return;
+                    }
+
+                    if (groupMessage.Action == GroupAction.Remove)
+                    {
+                        await RemoveGroupAsyncCore(connection, groupMessage.Group);
+                    }
+
+                    if (groupMessage.Action == GroupAction.Add)
+                    {
+                        await AddGroupAsyncCore(connection, groupMessage.Group);
+                    }
+
+                    // Sending ack to server that sent the original add/remove
+                    await PublishAsync($"{_channelNamePrefix}.internal.{groupMessage.Server}", new GroupMessage
+                    {
+                        Action = GroupAction.Ack,
+                        ConnectionId = groupMessage.ConnectionId,
+                        Group = groupMessage.Group,
+                        Id = groupMessage.Id
+                    });
                 }
-
-                if (groupMessage.Action == GroupAction.Remove)
+                catch (Exception ex)
                 {
-                    await RemoveGroupAsyncCore(connection, groupMessage.Group);
+                    _logger.InternalMessageFailed(ex);
                 }
-
-                if (groupMessage.Action == GroupAction.Add)
-                {
-                    await AddGroupAsyncCore(connection, groupMessage.Group);
-                }
-
-                // Sending ack to server that sent the original add/remove
-                await PublishAsync($"{_channelNamePrefix}.internal.{groupMessage.Server}", new GroupMessage
-                {
-                    Action = GroupAction.Ack,
-                    ConnectionId = groupMessage.ConnectionId,
-                    Group = groupMessage.Group,
-                    Id = groupMessage.Id
-                });
             });
 
             // Create server specific channel in order to send an ack to a single server
@@ -264,16 +275,19 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var connectionChannel = _channelNamePrefix + "." + connection.ConnectionId;
             redisSubscriptions.Add(connectionChannel);
 
-            var previousConnectionTask = Task.CompletedTask;
-
             _logger.Subscribing(connectionChannel);
             connectionTask = _bus.SubscribeAsync(connectionChannel, async (c, data) =>
             {
-                await previousConnectionTask;
+                try
+                {
+                    var message = DeserializeMessage<HubMessage>(data);
 
-                var message = DeserializeMessage<HubMessage>(data);
-
-                previousConnectionTask = WriteAsync(connection, message);
+                    await WriteAsync(connection, message);
+                }
+                catch (Exception ex)
+                {
+                    _logger.FailedWritingMessage(ex);
+                }
             });
 
             if (!string.IsNullOrEmpty(connection.UserIdentifier))
@@ -281,16 +295,19 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 var userChannel = _channelNamePrefix + ".user." + connection.UserIdentifier;
                 redisSubscriptions.Add(userChannel);
 
-                var previousUserTask = Task.CompletedTask;
-
                 // TODO: Look at optimizing (looping over connections checking for Name)
                 userTask = _bus.SubscribeAsync(userChannel, async (c, data) =>
                 {
-                    await previousUserTask;
+                    try
+                    {
+                        var message = DeserializeMessage<HubMessage>(data);
 
-                    var message = DeserializeMessage<HubMessage>(data);
-
-                    previousUserTask = WriteAsync(connection, message);
+                        await WriteAsync(connection, message);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.FailedWritingMessage(ex);
+                    }
                 });
             }
 
@@ -383,25 +400,25 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     return;
                 }
 
-                var previousTask = Task.CompletedTask;
-
                 _logger.Subscribing(groupChannel);
                 await _bus.SubscribeAsync(groupChannel, async (c, data) =>
                 {
-                    // Since this callback is async, we await the previous task then
-                    // before sending the current message. This is because we don't
-                    // want to do concurrent writes to the outgoing connections
-                    await previousTask;
-
-                    var message = DeserializeMessage<HubMessage>(data);
-
-                    var tasks = new List<Task>(group.Connections.Count);
-                    foreach (var groupConnection in group.Connections)
+                    try
                     {
-                        tasks.Add(WriteAsync(groupConnection, message));
-                    }
+                        var message = DeserializeMessage<HubMessage>(data);
 
-                    previousTask = Task.WhenAll(tasks);
+                        var tasks = new List<Task>(group.Connections.Count);
+                        foreach (var groupConnection in group.Connections)
+                        {
+                            tasks.Add(WriteAsync(groupConnection, message));
+                        }
+
+                        await Task.WhenAll(tasks);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.FailedWritingMessage(ex);
+                    }
                 });
             }
             finally
