@@ -29,4 +29,3 @@ project.lock.json
 .testPublish/
 /.vs/
 global.json
-korebuild-lock.txt
