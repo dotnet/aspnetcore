@@ -3,6 +3,10 @@
 <#
 .SYNOPSIS
     Updates git submodules and generates a commit message with the list of changes
+.PARAMETER GitAuthorName
+    The author name to use in the commit message. (Optional)
+.PARAMETER GitAuthorEmail
+    The author email to use in the commit message. (Optional)
 .PARAMETER GitCommitArgs
     Additional arguments to pass into git-commit
 .PARAMETER NoCommit
@@ -98,7 +102,17 @@ try {
         # add this to the commit message to make it possible to filter commit triggers based on message
         $message = "$shortMessage`n`n[auto-updated: submodules]"
         if (-not $NoCommit -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Create a new commit with these changes?')))) {
-            Invoke-Block { & git commit -m $message @GitCommitArgs }
+
+            $gitConfigArgs = @()
+            if ($GitAuthorName) {
+                $gitConfigArgs += '-c',"user.name=$GitAuthorName"
+            }
+
+            if ($GitAuthorEmail) {
+                $gitConfigArgs += '-c',"user.email=$GitAuthorEmail"
+            }
+
+            Invoke-Block { & git @gitConfigArgs commit -m $message @GitCommitArgs }
         }
         else {
             # If composing this script with others, return the message that would have been used

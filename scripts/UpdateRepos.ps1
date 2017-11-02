@@ -9,6 +9,10 @@
     The ID of the Lineup to determine which versions to use.
 .PARAMETER LineupVersion
     The version of the Lineup to be used.
+.PARAMETER GitAuthorName
+    The author name to use in the commit message. (Optional)
+.PARAMETER GitAuthorEmail
+    The author email to use in the commit message. (Optional)
 .PARAMETER NoPush
     Make commits without pusing.
 #>
@@ -31,6 +35,15 @@ Import-Module "$PSScriptRoot/common.psm1" -Scope Local -Force
 
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
 $ModuleDirectory = Join-Path $RepoRoot "modules"
+
+$gitConfigArgs = @()
+if ($GitAuthorName) {
+    $gitConfigArgs += '-c',"user.name=$GitAuthorName"
+}
+
+if ($GitAuthorEmail) {
+    $gitConfigArgs += '-c',"user.email=$GitAuthorEmail"
+}
 
 Push-Location $ModuleDirectory
 try {
@@ -58,7 +71,7 @@ try {
             Invoke-Block { & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile }
             Invoke-Block { & git add $depsFile }
 
-            Invoke-Block { & git commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
+            Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
             $sshUrl = "git@github.com:aspnet/$($submodule.module)"
             Invoke-Block { & git remote set-url --push origin $sshUrl }
             $updated_submodules += $submodule
@@ -84,7 +97,7 @@ try {
         {
             Push-Location $submodule.path
             try {
-                Invoke-Block { & git push origin $submodule.branch}
+                Invoke-Block { & git @gitConfigArgs push origin $submodule.branch}
             }
             catch
             {

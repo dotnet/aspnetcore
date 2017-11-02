@@ -5,6 +5,10 @@
     Updates the build tools version and generates a commit message with the list of changes
 .PARAMETER RepoRoot
     The directory containing the repo
+.PARAMETER GitAuthorName
+    The author name to use in the commit message. (Optional)
+.PARAMETER GitAuthorEmail
+    The author email to use in the commit message. (Optional)
 .PARAMETER GitCommitArgs
     Additional arguments to pass into git-commit
 .PARAMETER NoCommit
@@ -15,6 +19,8 @@
 [cmdletbinding(SupportsShouldProcess = $true)]
 param(
     [string]$RepoRoot,
+    [string]$GitAuthorName = $null,
+    [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @(),
     [switch]$NoCommit,
     [switch]$Force
@@ -76,7 +82,17 @@ try {
     $message = "$shortMessage`n`n[auto-updated: buildtools]"
 
     if (-not $NoCommit -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Create a new commit with these changes?')))) {
-        Invoke-Block { git commit -m $message @GitCommitArgs }
+
+        $gitConfigArgs = @()
+        if ($GitAuthorName) {
+            $gitConfigArgs += '-c',"user.name=$GitAuthorName"
+        }
+
+        if ($GitAuthorEmail) {
+            $gitConfigArgs += '-c',"user.email=$GitAuthorEmail"
+        }
+
+        Invoke-Block { git @gitConfigArgs commit -m $message @GitCommitArgs }
     }
     else {
         # If composing this script with others, return the message that would have been used
