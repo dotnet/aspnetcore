@@ -25,6 +25,8 @@ param(
     [Parameter(Mandatory=$true)]
     [string]$LineupVersion,
     [switch]$NoPush,
+    [string]$GitAuthorName = $null,
+    [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @()
 )
 

@@ -16,6 +16,8 @@
 #>
 [cmdletbinding(SupportsShouldProcess = $true)]
 param(
+    [string]$GitAuthorName = $null,
+    [string]$GitAuthorEmail = $null,
     [string[]]$GitCommitArgs = @(),
     [switch]$NoCommit,
     [switch]$Force
