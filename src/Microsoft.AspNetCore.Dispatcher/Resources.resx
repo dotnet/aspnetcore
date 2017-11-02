@@ -124,6 +124,21 @@
   <data name="Argument_NullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="DefaultConstraintResolver_AmbiguousCtors" xml:space="preserve">
+    <value>The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultConstraintResolver_CouldNotFindCtor" xml:space="preserve">
+    <value>Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.</value>
+  </data>
+  <data name="DefaultConstraintResolver_TypeNotConstraint" xml:space="preserve">
+    <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.</value>
+  </data>
+  <data name="DispatcherValueConstraintBuilder_CouldNotResolveConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.</value>
+  </data>
+  <data name="DispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
+    <value>The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.</value>
+  </data>
   <data name="RoutePatternBuilder_CollectionCannotBeEmpty" xml:space="preserve">
     <value>The collection cannot be empty.</value>
   </data>

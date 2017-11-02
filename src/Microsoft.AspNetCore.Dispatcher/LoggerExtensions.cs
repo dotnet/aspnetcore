@@ -83,6 +83,21 @@ namespace Microsoft.AspNetCore.Dispatcher
             new EventId(3, "NoEndpointMatchedRequestMethod"),
             "No endpoint matched request method '{Method}'.");
 
+        // DispatcherValueConstraintMatcher
+        private static readonly Action<ILogger, object, string, IDispatcherValueConstraint, Exception> _routeValueDoesNotMatchConstraint = LoggerMessage.Define<object, string, IDispatcherValueConstraint>(
+                LogLevel.Debug,
+                1,
+                "Route value '{RouteValue}' with key '{RouteKey}' did not match the constraint '{RouteConstraint}'.");
+
+        public static void RouteValueDoesNotMatchConstraint(
+            this ILogger logger,
+            object routeValue,
+            string routeKey,
+            IDispatcherValueConstraint routeConstraint)
+        {
+            _routeValueDoesNotMatchConstraint(logger, routeValue, routeKey, routeConstraint, null);
+        }
+
         public static void AmbiguousEndpoints(this ILogger logger, string ambiguousEndpoints)
         {
             _ambiguousEndpoints(logger, ambiguousEndpoints, null);

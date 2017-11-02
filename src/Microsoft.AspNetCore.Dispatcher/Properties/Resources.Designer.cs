@@ -39,6 +39,76 @@ namespace Microsoft.AspNetCore.Dispatcher
             => GetString("Argument_NullOrEmpty");
 
         /// <summary>
+        /// The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.
+        /// </summary>
+        internal static string DefaultConstraintResolver_AmbiguousCtors
+        {
+            get => GetString("DefaultConstraintResolver_AmbiguousCtors");
+        }
+
+        /// <summary>
+        /// The constructor to use for activating the constraint type '{0}' is ambiguous. Multiple constructors were found with the following number of parameters: {1}.
+        /// </summary>
+        internal static string FormatDefaultConstraintResolver_AmbiguousCtors(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultConstraintResolver_AmbiguousCtors"), p0, p1);
+
+        /// <summary>
+        /// Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.
+        /// </summary>
+        internal static string DefaultConstraintResolver_CouldNotFindCtor
+        {
+            get => GetString("DefaultConstraintResolver_CouldNotFindCtor");
+        }
+
+        /// <summary>
+        /// Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.
+        /// </summary>
+        internal static string FormatDefaultConstraintResolver_CouldNotFindCtor(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultConstraintResolver_CouldNotFindCtor"), p0, p1);
+
+        /// <summary>
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
+        /// </summary>
+        internal static string DefaultConstraintResolver_TypeNotConstraint
+        {
+            get => GetString("DefaultConstraintResolver_TypeNotConstraint");
+        }
+
+        /// <summary>
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
+        /// </summary>
+        internal static string FormatDefaultConstraintResolver_TypeNotConstraint(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DefaultConstraintResolver_TypeNotConstraint"), p0, p1, p2);
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.
+        /// </summary>
+        internal static string DispatcherValueConstraintBuilder_CouldNotResolveConstraint
+        {
+            get => GetString("DispatcherValueConstraintBuilder_CouldNotResolveConstraint");
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' could not be resolved by the constraint resolver of type '{3}'.
+        /// </summary>
+        internal static string FormatDispatcherValueConstraintBuilder_CouldNotResolveConstraint(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DispatcherValueConstraintBuilder_CouldNotResolveConstraint"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.
+        /// </summary>
+        internal static string DispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint
+        {
+            get => GetString("DispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint");
+        }
+
+        /// <summary>
+        /// The constraint entry '{0}' - '{1}' on the route '{2}' must have a string value or be of a type which implements '{3}'.
+        /// </summary>
+        internal static string FormatDispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint"), p0, p1, p2, p3);
+
+        /// <summary>
         /// The collection cannot be empty.
         /// </summary>
         internal static string RoutePatternBuilder_CollectionCannotBeEmpty
