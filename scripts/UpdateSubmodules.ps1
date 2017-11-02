@@ -58,7 +58,7 @@ try {
         $submodulePath = $submodule.path
         Write-Host "Updating $submodulePath"
 
-        $vcs_name = "BUILD_VCS_NUMBER_" + ($submodule.module -replace '.','_')
+        $vcs_name = "BUILD_VCS_NUMBER_" + ($submodule.module -replace '\.','_')
         $newCommit = [environment]::GetEnvironmentVariable($vcs_name)
 
         if (-not $newCommit) {
