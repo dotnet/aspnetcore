@@ -318,6 +318,31 @@ namespace AspnetCoreModule.TestSites.Standard
                             response += de.Key + ":" + de.Value + "<br/>";
                         }
                     }
+
+                    // This action can be used for testing invalid Transfer-Encoding response header
+                    action = "SetTransferEncoding";
+                    if (item.StartsWith(action))
+                    {
+                        if (item.Length > action.Length)
+                        {
+                            // this is the default response which is valid for chunked encoding
+                            response = "10\r\nManually Chunked\r\n0\r\n\r\n"; 
+                            parameter = item.Substring(action.Length);
+
+                            // valid encoding value: "chunked" or "chunked,gzip"
+                            string encoding = parameter;
+                            var tokens = parameter.Split("_");
+
+                            // if respons body value was also given after "_" delimeter, use the value as response data.
+                            if (tokens.Length == 2) 
+                            {
+                                encoding = tokens[0];
+                                response = tokens[1];
+                            }
+                            context.Response.Headers[HeaderNames.TransferEncoding] = encoding;
+                            return context.Response.WriteAsync(response);
+                        }
+                    }
                 }
 
                 // Handle shutdown event from ANCM

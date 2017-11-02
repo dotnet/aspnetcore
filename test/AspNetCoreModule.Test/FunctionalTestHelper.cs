@@ -35,14 +35,14 @@ namespace AspNetCoreModule.Test
         {
             get
             {
-                if (InitializeTestMachine.GlobalTestFlags.Contains(TestFlags.SkipTest))
+                if (TestFlags.Enabled(TestFlags.SkipTest))
                 {
                     AdditionalInfo = TestFlags.SkipTest + " is set";
                     return false;
                 }
 
                 if (_attributeValue == TestFlags.RequireRunAsAdministrator 
-                    && !InitializeTestMachine.GlobalTestFlags.Contains(TestFlags.RunAsAdministrator))
+                    && !TestFlags.Enabled(TestFlags.RunAsAdministrator))
                 { 
                     AdditionalInfo = _attributeValue + " is not belong to the given global test context(" + InitializeTestMachine.GlobalTestFlags + ")";
                     return false;
@@ -849,7 +849,7 @@ namespace AspNetCoreModule.Test
                     string result = string.Empty;
                     iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "forwardWindowsAuthToken", enabledForwardWindowsAuthToken);
                     string requestHeaders = await GetResponse(testSite.AspNetCoreApp.GetUri("DumpRequestHeaders"), HttpStatusCode.OK);
-                    Assert.DoesNotContain("MS-ASPNETCORE-WINAUTHTOKEN", requestHeaders.ToUpper());
+                    Assert.DoesNotContain("MS-ASPNETCORE-WINAUTHTOKEN", requestHeaders, StringComparison.InvariantCultureIgnoreCase);
 
                     iisConfig.EnableIISAuthentication(testSite.SiteName, windows: true, basic: false, anonymous: false);
                     Thread.Sleep(500);
@@ -883,7 +883,7 @@ namespace AspNetCoreModule.Test
                     }
                     else
                     {
-                        Assert.DoesNotContain("MS-ASPNETCORE-WINAUTHTOKEN", requestHeaders.ToUpper());
+                        Assert.DoesNotContain("MS-ASPNETCORE-WINAUTHTOKEN", requestHeaders, StringComparison.InvariantCultureIgnoreCase);
 
                         result = await GetResponse(testSite.AspNetCoreApp.GetUri("ImpersonateMiddleware"), HttpStatusCode.OK);
                         Assert.Contains("ImpersonateMiddleware-UserName = NoAuthentication", result);
@@ -1219,13 +1219,13 @@ namespace AspNetCoreModule.Test
                     string requestHeaders = string.Empty;
                     requestHeaders = await GetResponseAndHeaders(testSite.AspNetCoreApp.GetUri("DumpRequestHeaders"), new string[] { "Accept-Encoding", "gzip", requestHeader, requestHeaderValue }, HttpStatusCode.OK);
                     requestHeaders = requestHeaders.Replace(" ", "");
-                    Assert.DoesNotContain(requestHeader.ToLower() + ":", requestHeaders.ToUpper());
+                    Assert.DoesNotContain(requestHeader + ":", requestHeaders, StringComparison.InvariantCultureIgnoreCase);
 
                     // Verify https request
                     Uri targetHttpsUri = testSite.AspNetCoreApp.GetUri(null, sslPort, protocol: "https");
                     requestHeader = await GetResponseAndHeaders(targetHttpsUri, new string[] { "Accept-Encoding", "gzip", requestHeader, requestHeaderValue }, HttpStatusCode.OK);
                     requestHeaders = requestHeaders.Replace(" ", "");
-                    Assert.DoesNotContain(requestHeader.ToLower() + ":", requestHeaders.ToUpper());
+                    Assert.DoesNotContain(requestHeader + ":", requestHeaders, StringComparison.InvariantCultureIgnoreCase);
 
                     // Remove the SSL Certificate mapping
                     iisConfig.RemoveSSLCertificate(sslPort, hexIPAddress);
@@ -1561,11 +1561,11 @@ namespace AspNetCoreModule.Test
                         // Remove websocketModule
                         IISConfigUtility.BackupAppHostConfig("DoWebSocketErrorhandlingTest", true);
                         iisConfig.RemoveModule("WebSocketModule");
-
+                        Thread.Sleep(3000);
                         using (WebSocketClientHelper websocketClient = new WebSocketClientHelper())
                         {
                             var frameReturned = websocketClient.Connect(testSite.AspNetCoreApp.GetUri("websocket"), true, true, waitForConnectionOpen:false);
-                            Assert.DoesNotContain("Connection: Upgrade", frameReturned.Content);
+                            Assert.DoesNotContain("Connection: Upgrade", frameReturned.Content, StringComparison.InvariantCultureIgnoreCase);
 
                             //BugBug: Currently we returns 101 here.
                             //Assert.DoesNotContain("HTTP/1.1 101 Switching Protocols", frameReturned.Content);
