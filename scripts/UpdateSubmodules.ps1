@@ -58,11 +58,13 @@ try {
         $submodulePath = $submodule.path
         Write-Host "Updating $submodulePath"
 
-        $vcs_name = "BUILD_VCS_NUMBER_" + $submodule.module
+        $vcs_name = "BUILD_VCS_NUMBER_" + ($submodule.module -replace '.','_')
         $newCommit = [environment]::GetEnvironmentVariable($vcs_name)
 
         if (-not $newCommit) {
-            Write-Warning "TeamCity env variable '$vcs_name' not found. Pulling the latest submodule branch instead"
+            if ($env:TEAMCITY_PROJECT_NAME) {
+                throw "TeamCity env variable '$vcs_name' not found. Make sure to configure a VCS root for $submodulePath"
+            }
             Invoke-Block { & git submodule update --remote $submodulePath }
             Push-Location $submodulePath | Out-Null
             try {
