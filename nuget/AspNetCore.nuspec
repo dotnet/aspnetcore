@@ -20,5 +20,6 @@
     <file src="..\artifacts\build\AspNetCore\bin\Release\x64\*.xml"/>
     <file src="..\tools\installancm.ps1"/>
     <file src="..\LICENSE.txt"/>
+    <file src="Microsoft.AspNetCore.AspNetCoreModule.props" target="build\" />
   </files>
 </package>
