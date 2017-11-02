@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Runtime" Version="$(MicrosoftAspNetCoreRazorRuntimePackageVersion)" />
   </ItemGroup>
 
 </Project>

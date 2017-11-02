@@ -40,4 +40,3 @@ node_modules
 BuildInfo.generated.cs
 msbuild.log
 global.json
-korebuild-lock.txt

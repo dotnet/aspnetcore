@@ -17,9 +17,9 @@
     <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
     <ProjectReference Include="$(TasksProjectDirectory)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" />
 
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" />
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="$(MicrosoftAspNetCoreMvcRazorPagesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <PackageReference Update="Microsoft.NETCore.App" PrivateAssets="All" />
   </ItemGroup>
 
