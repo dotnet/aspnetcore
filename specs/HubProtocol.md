@@ -4,8 +4,8 @@ The SignalR Protocol is a protocol for two-way RPC over any Message-based transp
 
 ## Terms
 
-* Caller - The node that is issuing an `Invocation` message and receiving `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Caller and Callee for different invocations simultaneously)
-* Callee - The node that is receiving an `Invocation` message and issuing `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Callee and Caller for different invocations simultaneously)
+* Caller - The node that is issuing an `Negotiation`, `Invocation`, `CancelInvocation` messages and receiving `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Caller and Callee for different invocations simultaneously)
+* Callee - The node that is receiving an `Negotiation`, `Invocation`, `CancelInvocation` messages and issuing `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Callee and Caller for different invocations simultaneously)
 * Binder - The component on each node that handles mapping `Invocation` messages to method calls and return values to `Completion`, `StreamItem` and `StreamCompletion` messages
 
 ## Transport Requirements
@@ -76,7 +76,7 @@ The SignalR protocol allows for multiple `StreamItem` messages to be transmitted
 
 On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `StreamCompletion` message.
 
-On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `StreamCompletion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `Invocation` message that started the stream. It is possible to receive `StreamItem` messages or a `StreamCompletion` message after a `CancelInvocation` message has been sent, these can be ignored.
+On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `StreamCompletion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `Invocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `StreamCompletion` message. The Caller is free to ignore any `StreamItem` messages as well as the `StreamCompletion` message after sending `CancelInvocation`.
 
 ## Completion and results
 
@@ -224,6 +224,7 @@ S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 C->S: CancelInvocation { Id = 42 }
 S->C: StreamItem { Id = 42, Item = 2} // This can be ignored
+S->C: StreamCompletion { Id = 42 } // This can be ignored
 ```
 
 ### Non-Blocking Call (`NonBlocking` example above)
