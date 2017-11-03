@@ -39,7 +39,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
             _authSchemeAuthenticated = LoggerMessage.Define<string>(
                 eventId: 8,
-                logLevel: LogLevel.Information,
+                logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was successfully authenticated.");
             _authSchemeNotAuthenticated = LoggerMessage.Define<string>(
                 eventId: 9,
