@@ -1,7 +1,0 @@
-<!-- This file is imported in the context of an individual repo, not the universe build. -->
-<Project>
-  <ItemGroup>
-    <PackageLineup Update="Internal.AspNetCore.Universe.Lineup" Version="$(Universe_Version)" />
-    <PackageLineup Update="Internal.AspNetCore.Partners.Lineup" Version="$(Universe_Version)" />
-  </ItemGroup>
-</Project>

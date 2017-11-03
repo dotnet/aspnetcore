@@ -59,13 +59,6 @@
   </Target>
 
   <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
-    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Partners.Lineup.nuspec"
-                DestinationFolder="$(LineupBuildDir)"
-                Properties="version=$(Version)"
-                Dependencies="@(ExternalDependency->WithMetadataValue('Lineup', 'true'))">
-      <Output TaskParameter="Packages" ItemName="LineupPackage" />
-    </PackNuSpec>
-
     <ItemGroup>
       <PackageArtifactInfo Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
     </ItemGroup>
@@ -78,8 +71,7 @@
 
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
-                Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)"
-                Dependencies="@(PackageArtifactInfo)">
+                Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
   </Target>

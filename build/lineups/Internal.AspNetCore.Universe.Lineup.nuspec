@@ -8,11 +8,6 @@
     <packageTypes>
       <packageType name="lineup" />
     </packageTypes>
-    <dependencies>
-      <!--
-        The list of dependencies will be augmented automatically by the build script.
-      -->
-    </dependencies>
   </metadata>
   <files>
     <file src="$dependenciesPropsFile$" target="build/dependencies.props" />

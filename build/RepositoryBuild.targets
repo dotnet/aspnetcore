@@ -24,17 +24,12 @@
       Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber)" />
   </Target>
 
-  <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
+  <Target Name="_BuildRepository">
     <PropertyGroup>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_Version=$(Version)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_LineupBuildDir=$(LineupBuildDir)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_AdditionalRestoreSources=$(IntermediateMirrorPackageDir)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_IntermediateDir=$(IntermediateDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomBeforeKoreBuildProps=$(MSBuildThisFileDirectory)repobuild\BeforeKoreBuild.props'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomAfterKoreBuildTargets=$(MSBuildThisFileDirectory)repobuild\AfterKoreBuild.targets'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 
       <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
@@ -71,18 +66,6 @@
        DestinationFolder="$(ArtifactsDir)msbuild\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
-  </Target>
-
-  <Target Name="_PinVersions">
-    <ItemGroup>
-      <PinPackageSources Include="$(BuildDir)" />
-      <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
-    </ItemGroup>
-
-    <RepoTasks.PinVersions
-      GraphSpecsRoot="$(_RestoreGraphSpecsDirectory)"
-      BuildRepositoryRoot="$(BuildRepositoryRoot)"
-      PackageSources="@(PinPackageSources)" />
   </Target>
 
 </Project>
