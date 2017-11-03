@@ -113,7 +113,9 @@ namespace RepoTasks
                         }
                         else if (!packageLookup.TryGetValue(dependency.Id, out dependencyPackageInfo))
                         {
-                            Log.LogError($"Package {packageInfo.Id} has an undefined external dependency on {dependency.Id}/{depVersion}");
+                            Log.LogError($"Package {packageInfo.Id} has an undefined external dependency on {dependency.Id}/{depVersion}. " +
+                                "If the package is built in aspnet/Universe, make sure it is also marked as 'ship'. " +
+                                "If it is an external dependency, add it as a new ExternalDependency.");
                             continue;
                         }
 
@@ -123,7 +125,7 @@ namespace RepoTasks
                             // Add a mismatch if the min version doesn't work out
                             // (we only really care about >= minVersion)
                             Log.LogError($"{packageInfo.Id} depends on {dependency.Id} " +
-                                    $"{dependency.VersionRange} ({dependencySet.TargetFramework}) when the latest build is {depVersion}.");
+                                    $"{dependency.VersionRange} ({dependencySet.TargetFramework}) when the latest build is {dependencyPackageInfo.Version}.");
                         }
                     }
                 }
