@@ -94,13 +94,15 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Returns a temporary redirect response (HTTP 302) to the client.
         /// </summary>
-        /// <param name="location">The URL to redirect the client to.</param>
+        /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
+        /// where only ASCII characters are allowed.</param>
         public virtual void Redirect(string location) => Redirect(location, permanent: false);
 
         /// <summary>
         /// Returns a redirect response (HTTP 301 or HTTP 302) to the client.
         /// </summary>
-        /// <param name="location">The URL to redirect the client to.</param>
+        /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
+        /// where only ASCII characters are allowed.</param>
         /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
         public abstract void Redirect(string location, bool permanent);
     }
