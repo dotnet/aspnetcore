@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // Adds a server and calls Build()
             var server = new TestServer(builder);
 
-            Assert.Equal("http://localhost:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+            Assert.Equal("http://127.0.0.1:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
             Assert.Equal("true", builder.GetSetting(WebHostDefaults.PreferHostingUrlsKey));
         }
 
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 });
             new TestServer(builder);
 
-            Assert.Equal("http://localhost:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
+            Assert.Equal("http://127.0.0.1:12345", builder.GetSetting(WebHostDefaults.ServerUrlsKey));
         }
 
         [Fact]

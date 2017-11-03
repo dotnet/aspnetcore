@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Hosting
                     }
                 }
 
-                var address = "http://localhost:" + port;
+                var address = "http://127.0.0.1:" + port;
                 hostBuilder.CaptureStartupErrors(true);
 
                 hostBuilder.ConfigureServices(services =>
