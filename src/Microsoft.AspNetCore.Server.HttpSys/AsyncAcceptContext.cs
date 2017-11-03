@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -79,6 +80,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                                 asyncResult.Tcs.TrySetResult(requestContext);
                                 complete = true;
                             }
+                        }
+                        catch (Exception)
+                        {
+                            server.SendError(asyncResult._nativeRequestContext.RequestId, StatusCodes.Status400BadRequest);
+                            throw;
                         }
                         finally
                         {
