@@ -37,6 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly ConcurrentDictionary<string, List<InvocationHandler>> _handlers = new ConcurrentDictionary<string, List<InvocationHandler>>();
 
         private int _nextId = 0;
+        private volatile bool _startCalled;
 
         public event Func<Exception, Task> Closed
         {
@@ -65,7 +66,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _connection.Closed += Shutdown;
         }
 
-        public async Task StartAsync() => await StartAsyncCore().ForceAsync();
+        public async Task StartAsync()
+        {
+            try
+            {
+                await StartAsyncCore().ForceAsync();
+            }
+            finally
+            {
+                _startCalled = true;
+            }
+        }
 
         private async Task StartAsyncCore()
         {
@@ -141,13 +152,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<ReadableChannel<object>> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
+            if (!_startCalled)
+            {
+                throw new InvalidOperationException($"The '{nameof(StreamAsync)}' method cannot be called before the connection has been started.");
+            }
+
             var invokeCts = new CancellationTokenSource();
             var irq = InvocationRequest.Stream(invokeCts.Token, returnType, GetNextId(), _loggerFactory, this, out var channel);
             // After InvokeCore we don't want the irq cancellation token to be triggered.
             // The stream invocation will be canceled by the CancelInvocationMessage, connection closing, or channel finishing.
             using (cancellationToken.Register(token => ((CancellationTokenSource)token).Cancel(), invokeCts))
             {
-                await InvokeCore(methodName, irq, args, nonBlocking: false);
+                await InvokeCore(methodName, irq, args);
             }
 
             if (cancellationToken.CanBeCanceled)
@@ -178,44 +194,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<object> InvokeAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
+            if (!_startCalled)
+            {
+                throw new InvalidOperationException($"The '{nameof(InvokeAsync)}' method cannot be called before the connection has been started.");
+            }
+
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, this, out var task);
-            await InvokeCore(methodName, irq, args, nonBlocking: false);
+            await InvokeCore(methodName, irq, args);
             return await task;
         }
 
-        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
-            await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
-
-        private Task SendAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
-        {
-            var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, this, out _);
-            return InvokeCore(methodName, irq, args, nonBlocking: true);
-        }
-
-        private Task InvokeCore(string methodName, InvocationRequest irq, object[] args, bool nonBlocking)
+        private Task InvokeCore(string methodName, InvocationRequest irq, object[] args)
         {
             ThrowIfConnectionTerminated(irq.InvocationId);
-            if (nonBlocking)
-            {
-                _logger.PreparingNonBlockingInvocation(irq.InvocationId, methodName, args.Length);
-            }
-            else
-            {
-                _logger.PreparingBlockingInvocation(irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
-            }
+            _logger.PreparingBlockingInvocation(irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
-            // Create an invocation descriptor. Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking, methodName,
+            // Client invocations are always blocking
+            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking: false, target: methodName,
                 argumentBindingException: null, arguments: args);
 
-            // We don't need to track invocations for fire an forget calls
-            if (!nonBlocking)
-            {
-                // I just want an excuse to use 'irq' as a variable name...
-                _logger.RegisterInvocation(invocationMessage.InvocationId);
+            _logger.RegisterInvocation(invocationMessage.InvocationId);
 
-                AddInvocation(irq);
-            }
+            AddInvocation(irq);
 
             // Trace the full invocation
             _logger.IssueInvocation(invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
@@ -239,6 +239,38 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _logger.SendInvocationFailed(hubMessage.InvocationId, ex);
                 irq.Fail(ex);
                 TryRemoveInvocation(hubMessage.InvocationId, out _);
+            }
+        }
+
+        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
+            await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
+
+        private async Task SendAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
+        {
+            if (!_startCalled)
+            {
+                throw new InvalidOperationException($"The '{nameof(SendAsync)}' method cannot be called before the connection has been started.");
+            }
+
+            var invocationMessage = new InvocationMessage(GetNextId(), nonBlocking: true, target: methodName,
+                argumentBindingException: null, arguments: args);
+
+            ThrowIfConnectionTerminated(invocationMessage.InvocationId);
+
+            try
+            {
+                _logger.PreparingNonBlockingInvocation(invocationMessage.InvocationId, methodName, args.Length);
+
+                var payload = _protocolReaderWriter.WriteMessage(invocationMessage);
+                _logger.SendInvocation(invocationMessage.InvocationId);
+
+                await _connection.SendAsync(payload, cancellationToken);
+                _logger.SendInvocationCompleted(invocationMessage.InvocationId);
+            }
+            catch (Exception ex)
+            {
+                _logger.SendInvocationFailed(invocationMessage.InvocationId, ex);
+                throw;
             }
         }
 

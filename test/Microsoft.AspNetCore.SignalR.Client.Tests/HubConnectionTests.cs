@@ -55,6 +55,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public async Task SendAsyncThrowsIfSerializingMessageFails()
+        {
+            var exception = new InvalidOperationException();
+            var mockProtocol = MockHubProtocol.Throw(exception);
+            var hubConnection = new HubConnection(new TestConnection(), mockProtocol, null);
+            await hubConnection.StartAsync();
+
+            var actualException =
+                await Assert.ThrowsAsync<InvalidOperationException>(async () => await hubConnection.SendAsync("test"));
+            Assert.Same(exception, actualException);
+        }
+
+        [Fact]
         public async Task ClosedEventRaisedWhenTheClientIsStopped()
         {
             var hubConnection = new HubConnection(new TestConnection(), Mock.Of<IHubProtocol>(), null);
@@ -72,6 +85,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public async Task CannotCallInvokeOnNotStartedHubConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => hubConnection.InvokeAsync<int>("test"));
+
+            Assert.Equal("The 'InvokeAsync' method cannot be called before the connection has been started.", exception.Message);
+        }
+
+        [Fact]
         public async Task CannotCallInvokeOnClosedHubConnection()
         {
             var connection = new TestConnection();
@@ -80,9 +105,60 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.StartAsync();
             await hubConnection.DisposeAsync();
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
-                async () => await hubConnection.InvokeAsync<int>("test"));
+                () => hubConnection.InvokeAsync<int>("test"));
 
             Assert.Equal("Connection has been terminated.", exception.Message);
+        }
+
+        [Fact]
+        public async Task CannotCallSendOnNotStartedHubConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => hubConnection.SendAsync("test"));
+
+            Assert.Equal("The 'SendAsync' method cannot be called before the connection has been started.", exception.Message);
+        }
+
+        [Fact]
+        public async Task CannotCallSendOnClosedHubConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            await hubConnection.StartAsync();
+            await hubConnection.DisposeAsync();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => hubConnection.SendAsync("test"));
+
+            Assert.Equal("Connection has been terminated.", exception.Message);
+        }
+
+        [Fact]
+        public async Task CannotCallStreamOnClosedHubConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            await hubConnection.StartAsync();
+            await hubConnection.DisposeAsync();
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => hubConnection.StreamAsync<int>("test"));
+
+            Assert.Equal("Connection has been terminated.", exception.Message);
+        }
+
+        [Fact]
+        public async Task CannotCallStreamOnNotStartedHubConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                () => hubConnection.StreamAsync<int>("test"));
+
+            Assert.Equal("The 'StreamAsync' method cannot be called before the connection has been started.", exception.Message);
         }
 
         [Fact]
