@@ -30,7 +30,6 @@
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
-    <OctokitPackageVersion>0.26.0</OctokitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)' == 'netcoreapp2.0'">2.0.2-servicing-25728-02</RuntimeFrameworkVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.6.0</SeleniumSupportPackageVersion>
