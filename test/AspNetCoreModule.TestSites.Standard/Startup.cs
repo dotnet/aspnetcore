@@ -252,16 +252,16 @@ namespace AspnetCoreModule.TestSites.Standard
                         parameter = "1024";
                         if (item.Length > action.Length)
                         {
-                            parameter = item.Substring(action.Length);                            
+                            parameter = item.Substring(action.Length);
                         }
-                        long size = Convert.ToInt32(parameter);                        
-                        var rnd = new Random();                        
-                        byte[] b = new byte[size*1024];
+                        long size = Convert.ToInt32(parameter);
+                        var rnd = new Random();
+                        byte[] b = new byte[size * 1024];
                         b[rnd.Next(0, b.Length)] = byte.MaxValue;
-                        MemoryLeakList.Add(b); 
+                        MemoryLeakList.Add(b);
                         response = "MemoryLeak, size:" + size.ToString() + " KB, total: " + MemoryLeakList.Count.ToString();
                     }
-                    
+
                     action = "ExpandEnvironmentVariables";
                     if (item.StartsWith(action))
                     {
@@ -269,7 +269,7 @@ namespace AspnetCoreModule.TestSites.Standard
                         {
                             parameter = item.Substring(action.Length);
                             response = Environment.ExpandEnvironmentVariables("%" + parameter + "%");
-                        }                        
+                        }
                     }
 
                     action = "GetEnvironmentVariables";
@@ -285,9 +285,9 @@ namespace AspnetCoreModule.TestSites.Standard
                         response = String.Empty;
 
                         foreach (DictionaryEntry de in Environment.GetEnvironmentVariables())
-                        { 
+                        {
                             response += de.Key + ":" + de.Value + "<br/>";
-                        }                        
+                        }
                     }
 
                     action = "GetRequestHeaderValue";
@@ -312,7 +312,7 @@ namespace AspnetCoreModule.TestSites.Standard
                     if (item.StartsWith(action))
                     {
                         response = String.Empty;
-                        
+
                         foreach (var de in context.Request.Headers)
                         {
                             response += de.Key + ":" + de.Value + "<br/>";
@@ -326,7 +326,7 @@ namespace AspnetCoreModule.TestSites.Standard
                         if (item.Length > action.Length)
                         {
                             // this is the default response which is valid for chunked encoding
-                            response = "10\r\nManually Chunked\r\n0\r\n\r\n"; 
+                            response = "10\r\nManually Chunked\r\n0\r\n\r\n";
                             parameter = item.Substring(action.Length);
 
                             // valid encoding value: "chunked" or "chunked,gzip"
@@ -334,7 +334,7 @@ namespace AspnetCoreModule.TestSites.Standard
                             var tokens = parameter.Split("_");
 
                             // if respons body value was also given after "_" delimeter, use the value as response data.
-                            if (tokens.Length == 2) 
+                            if (tokens.Length == 2)
                             {
                                 encoding = tokens[0];
                                 response = tokens[1];
@@ -342,20 +342,6 @@ namespace AspnetCoreModule.TestSites.Standard
                             context.Response.Headers[HeaderNames.TransferEncoding] = encoding;
                             return context.Response.WriteAsync(response);
                         }
-                    }
-                }
-
-                // Handle shutdown event from ANCM
-                if (HttpMethods.IsPost(context.Request.Method) &&
-                    //context.Request.Path.Equals(ANCMRequestPath) &&
-                    string.Equals("shutdown", context.Request.Headers["MS-ASPNETCORE-EVENT"], StringComparison.OrdinalIgnoreCase))
-                {
-                    response = "shutdown";
-                    string shutdownMode = Environment.GetEnvironmentVariable("GracefulShutdown");
-                    if (String.IsNullOrEmpty(shutdownMode) || !shutdownMode.ToLower().StartsWith("disabled"))
-                    {
-                        context.Response.StatusCode = StatusCodes.Status202Accepted;
-                        Program.AappLifetime.StopApplication();
                     }
                 }
                 return context.Response.WriteAsync(response);

@@ -2,13 +2,13 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using System.Net;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AspnetCoreModule.TestSites.Standard
 {
@@ -88,8 +88,15 @@ namespace AspnetCoreModule.TestSites.Standard
             else
             {
                 builder = new WebHostBuilder()
+                    .ConfigureServices(services =>
+                    {
+                        const string PairingToken = "TOKEN";
+                        string paringToken = builder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
+                        services.AddSingleton<IStartupFilter>(
+                            new IISSetupFilter(paringToken)
+                        );
+                    })
                     .UseConfiguration(config)
-                    .UseIISIntegration()
                     .UseStartup<Startup>();
             }
 
@@ -139,7 +146,7 @@ namespace AspnetCoreModule.TestSites.Standard
             );
             try
             {
-                host.Run();                
+                host.Run();
             }
             catch
             {
