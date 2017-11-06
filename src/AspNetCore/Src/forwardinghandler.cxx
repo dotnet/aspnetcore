@@ -1451,9 +1451,8 @@ Failure:
     //
     pResponse->SetStatus(502, "Bad Gateway", 3, hr);
 
-    if (hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
-        hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST))
-    {
+    if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
+          hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
 #pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
         FormatMessage(
             FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
@@ -1462,9 +1461,7 @@ Failure:
             0,
             strDescription.QueryStr(),
             strDescription.QuerySizeCCH(),
-            NULL);
-    }
-    else
+            NULL) == 0)
     {
         LoadString(g_hModule,
             IDS_SERVER_ERROR,
@@ -1774,9 +1771,8 @@ REQUEST_NOTIFICATION_STATUS
 
             pResponse->SetStatus(502, "Bad Gateway", 3, hr);
 
-            if (hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
-                hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST))
-            {
+            if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
+                  hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
 #pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
                 FormatMessage(
                     FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
@@ -1785,15 +1781,14 @@ REQUEST_NOTIFICATION_STATUS
                     0,
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH(),
-                    NULL);
-            }
-            else
+                    NULL) == 0)
             {
                 LoadString(g_hModule,
                     IDS_SERVER_ERROR,
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH());
             }
+
             (VOID)strDescription.SyncWithBuffer();
             if (strDescription.QueryCCH() != 0)
             {
@@ -2379,9 +2374,8 @@ Failure:
 
             pResponse->SetStatus(502, "Bad Gateway", 3, hr);
 
-            if (hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
-                hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST))
-            {
+            if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
+                  hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
 #pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
                 FormatMessage(
                     FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
@@ -2390,15 +2384,14 @@ Failure:
                     0,
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH(),
-                    NULL);
-            }
-            else
+                    NULL) == 0)
             {
                 LoadString(g_hModule,
                     IDS_SERVER_ERROR,
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH());
             }
+
             strDescription.SyncWithBuffer();
             if (strDescription.QueryCCH() != 0)
             {

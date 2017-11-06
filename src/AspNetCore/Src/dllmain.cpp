@@ -191,6 +191,7 @@ HRESULT
     g_pModuleId = pModuleInfo->GetId();
     g_pszModuleName = pModuleInfo->GetName();
     g_pHttpServer = pHttpServer;
+    g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
 
     //
     // WinHTTP does not create enough threads, ask it to create more.
