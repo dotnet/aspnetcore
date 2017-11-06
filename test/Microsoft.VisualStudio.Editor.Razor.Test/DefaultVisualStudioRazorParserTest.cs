@@ -28,6 +28,54 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [ForegroundFact]
+        public void ReparseOnForeground_NoopsIfDisposed()
+        {
+            // Arrange
+            var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                CreateDocumentTracker(),
+                Mock.Of<RazorTemplateEngineFactoryService>(),
+                new DefaultErrorReporter(),
+                Mock.Of<ICompletionBroker>());
+            parser.Dispose();
+
+            // Act & Assert
+            parser.ReparseOnForeground(null);
+        }
+
+        [ForegroundFact]
+        public void OnIdle_NoopsIfDisposed()
+        {
+            // Arrange
+            var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                CreateDocumentTracker(),
+                Mock.Of<RazorTemplateEngineFactoryService>(),
+                new DefaultErrorReporter(),
+                Mock.Of<ICompletionBroker>());
+            parser.Dispose();
+
+            // Act & Assert
+            parser.OnIdle(null);
+        }
+
+        [ForegroundFact]
+        public void OnDocumentStructureChanged_NoopsIfDisposed()
+        {
+            // Arrange
+            var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                CreateDocumentTracker(),
+                Mock.Of<RazorTemplateEngineFactoryService>(),
+                new DefaultErrorReporter(),
+                Mock.Of<ICompletionBroker>());
+            parser.Dispose();
+
+            // Act & Assert
+            parser.OnDocumentStructureChanged(new object());
+        }
+
+        [ForegroundFact]
         public void OnDocumentStructureChanged_IgnoresEditsThatAreOld()
         {
             // Arrange

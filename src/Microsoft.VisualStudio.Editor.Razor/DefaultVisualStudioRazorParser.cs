@@ -38,6 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private RazorTemplateEngine _templateEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
+        private bool _disposed;
 
         // For testing only
         internal DefaultVisualStudioRazorParser(RazorCodeDocument codeDocument)
@@ -127,6 +128,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _documentTracker.ContextChanged -= DocumentTracker_ContextChanged;
 
             StopIdleTimer();
+
+            _disposed = true;
         }
 
         // Internal for testing
@@ -264,9 +267,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void OnIdle(object state)
+        // Internal for testing
+        internal void OnIdle(object state)
         {
             _dispatcher.AssertForegroundThread();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             OnNotifyForegroundIdle();
 
@@ -283,13 +292,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             QueueReparse();
         }
 
-        private void ReparseOnForeground(object state)
+        // Internal for testing
+        internal void ReparseOnForeground(object state)
         {
             _dispatcher.AssertForegroundThread();
 
-            if (_parser == null)
+            if (_disposed)
             {
-                Debug.Fail("Reparse being attempted after the parser has been disposed.");
                 return;
             }
 
@@ -353,6 +362,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal void OnDocumentStructureChanged(object state)
         {
             _dispatcher.AssertForegroundThread();
+
+            if (_disposed)
+            {
+                return;
+            }
 
             var args = (DocumentStructureChangedEventArgs)state;
             if (_latestChangeReference == null || // extra hardening
