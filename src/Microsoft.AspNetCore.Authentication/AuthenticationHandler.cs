@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected HttpRequest Request
         {
-            get { return Context.Request; }
+            get => Context.Request;
         }
 
         protected HttpResponse Response
         {
-            get { return Context.Response; }
+            get => Context.Response;
         }
 
         protected PathString OriginalPath => Context.Features.Get<IAuthenticationFeature>()?.OriginalPath ?? Request.Path;
@@ -52,10 +52,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected string CurrentUri
         {
-            get
-            {
-                return Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
-            }
+            get => Request.Scheme + "://" + Request.Host + Request.PathBase + Request.Path + Request.QueryString;
         }
 
         protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
@@ -116,15 +113,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// Called after options/events have been initialized for the handler to finish initializing itself.
         /// </summary>
         /// <returns>A task</returns>
-        protected virtual Task InitializeHandlerAsync()
-        {
-            return Task.CompletedTask;
-        }
+        protected virtual Task InitializeHandlerAsync() => Task.CompletedTask;
 
         protected string BuildRedirectUri(string targetPath)
-        {
-            return Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
-        }
+            => Request.Scheme + "://" + Request.Host + OriginalPathBase + targetPath;
 
         public async Task<AuthenticateResult> AuthenticateAsync()
         {

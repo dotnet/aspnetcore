@@ -990,7 +990,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         var res = context.Response;
                         if (req.Path == new PathString("/challenge"))
                         {
-                            await context.ChallengeAsync("Google");
+                            await context.ChallengeAsync();
                         }
                         else if (req.Path == new PathString("/challengeFacebook"))
                         {
@@ -1061,19 +1061,19 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 .ConfigureServices(services =>
                 {
                     services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
-                    services.AddAuthentication(o =>
-                    {
-                        o.DefaultScheme = TestExtensions.CookieAuthenticationScheme;
-                        o.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
-                    });
-                    services.AddAuthentication()
+                    services.AddAuthentication("Auth")
+                        .AddVirtualScheme("Auth", "Auth", o =>
+                        {
+                            o.Default = TestExtensions.CookieAuthenticationScheme;
+                            o.Challenge = GoogleDefaults.AuthenticationScheme;
+                        })
                         .AddCookie(TestExtensions.CookieAuthenticationScheme)
                         .AddGoogle(configureOptions)
                         .AddFacebook(o =>
-                    {
-                        o.AppId = "Test AppId";
-                        o.AppSecret = "Test AppSecrent";
-                    });
+                        {
+                            o.AppId = "Test AppId";
+                            o.AppSecret = "Test AppSecrent";
+                        });
                 });
             return new TestServer(builder);
         }

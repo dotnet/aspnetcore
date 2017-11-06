@@ -25,18 +25,10 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public virtual IServiceCollection Services { get; }
 
-        /// <summary>
-        /// Adds a <see cref="AuthenticationScheme"/> which can be used by <see cref="IAuthenticationService"/>.
-        /// </summary>
-        /// <typeparam name="TOptions">The <see cref="AuthenticationSchemeOptions"/> type to configure the handler."/>.</typeparam>
-        /// <typeparam name="THandler">The <see cref="AuthenticationHandler{TOptions}"/> used to handle this scheme.</typeparam>
-        /// <param name="authenticationScheme">The name of this scheme.</param>
-        /// <param name="displayName">The display name of this scheme.</param>
-        /// <param name="configureOptions">Used to configure the scheme options.</param>
-        /// <returns>The builder.</returns>
-        public virtual AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
-            where TOptions : AuthenticationSchemeOptions, new()
-            where THandler : AuthenticationHandler<TOptions>
+
+        private AuthenticationBuilder AddSchemeHelper<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : class, new()
+            where THandler : class, IAuthenticationHandler
         {
             Services.Configure<AuthenticationOptions>(o =>
             {
@@ -52,6 +44,20 @@ namespace Microsoft.AspNetCore.Authentication
             Services.AddTransient<THandler>();
             return this;
         }
+
+        /// <summary>
+        /// Adds a <see cref="AuthenticationScheme"/> which can be used by <see cref="IAuthenticationService"/>.
+        /// </summary>
+        /// <typeparam name="TOptions">The <see cref="AuthenticationSchemeOptions"/> type to configure the handler."/>.</typeparam>
+        /// <typeparam name="THandler">The <see cref="AuthenticationHandler{TOptions}"/> used to handle this scheme.</typeparam>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="displayName">The display name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddScheme<TOptions, THandler>(string authenticationScheme, string displayName, Action<TOptions> configureOptions)
+            where TOptions : AuthenticationSchemeOptions, new()
+            where THandler : AuthenticationHandler<TOptions>
+            => AddSchemeHelper<TOptions, THandler>(authenticationScheme, displayName, configureOptions);
 
         /// <summary>
         /// Adds a <see cref="AuthenticationScheme"/> which can be used by <see cref="IAuthenticationService"/>.
@@ -83,6 +89,17 @@ namespace Microsoft.AspNetCore.Authentication
             Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, EnsureSignInScheme<TOptions>>());
             return AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureOptions: configureOptions);
         }
+
+        /// <summary>
+        /// Adds a <see cref="VirtualAuthenticationHandler"/> based authentication handler which can be used to 
+        /// redirect to other authentication schemes.
+        /// </summary>
+        /// <param name="authenticationScheme">The name of this scheme.</param>
+        /// <param name="displayName">The display name of this scheme.</param>
+        /// <param name="configureOptions">Used to configure the scheme options.</param>
+        /// <returns>The builder.</returns>
+        public virtual AuthenticationBuilder AddVirtualScheme(string authenticationScheme, string displayName, Action<VirtualSchemeOptions> configureOptions)
+            => AddSchemeHelper<VirtualSchemeOptions, VirtualAuthenticationHandler>(authenticationScheme, displayName, configureOptions);
 
         // Used to ensure that there's always a default sign in scheme that's not itself
         private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
