@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             return new string[] { CreateStorageVaryByKey(context) };
         }
 
-        // GET<delimiter>/PATH
+        // GET<delimiter>SCHEME<delimiter>HOST:PORT/PATHBASE/PATH
         public string CreateBaseKey(ResponseCachingContext context)
         {
             if (context == null)
@@ -54,15 +54,22 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 builder
                     .AppendUpperInvariant(request.Method)
-                    .Append(KeyDelimiter);
+                    .Append(KeyDelimiter)
+                    .AppendUpperInvariant(request.Scheme)
+                    .Append(KeyDelimiter)
+                    .AppendUpperInvariant(request.Host.Value);
 
                 if (_options.UseCaseSensitivePaths)
                 {
-                    builder.Append(request.Path.Value);
+                    builder
+                        .Append(request.PathBase.Value)
+                        .Append(request.Path.Value);
                 }
                 else
                 {
-                    builder.AppendUpperInvariant(request.Path.Value);
+                    builder
+                        .AppendUpperInvariant(request.PathBase.Value)
+                        .AppendUpperInvariant(request.Path.Value);
                 }
 
                 return builder.ToString();
