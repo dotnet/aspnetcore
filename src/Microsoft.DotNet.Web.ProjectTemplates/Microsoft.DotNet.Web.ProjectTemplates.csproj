@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.1</PackageId>
+    <NuspecFile>Microsoft.DotNet.Web.ProjectTemplates.nuspec</NuspecFile>
+  </PropertyGroup>
+
+</Project>
