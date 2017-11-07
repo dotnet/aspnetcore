@@ -4,26 +4,18 @@
     <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
   </PropertyGroup>
 
-  <Target Name="_LocateMSBuildExe">
-    <ItemGroup>
-      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\**\MSBuild\15.0\Bin\MSBuild.exe" />
-    </ItemGroup>
-
-    <Error
-      Text="Unable to locate MSBuild 15.0 under $(MSBuildProgramFiles32)\Microsoft Visual Studio"
-      Condition="'@(MSBuild15ExePaths)'==''"/>
-
-    <PropertyGroup Condition="'@(MSBuild15ExePaths)'!=''">
-      <MSBuildExePath>%(MSBuild15ExePaths.FullPath)</MSBuildExePath>
-    </PropertyGroup>
-  </Target>
-
-  <Target Name="BuildNativeAssets" DependsOnTargets="_LocateMSBuildExe" BeforeTargets="Compile">
+  <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" BeforeTargets="Compile" >
     <ItemGroup>
       <BuildConfigurations Include="/p:Configuration=Release /p:platform=Win32" />
       <BuildConfigurations Include="/p:Configuration=Release /p:platform=x64" />
     </ItemGroup>
-    <Exec Command="&quot;$(MSBuildExePath)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)" />
+
+    <Error
+      Text="Could not find an installation of Visual Studio with the C++ development tools."
+      Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
+      
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
   <Target Name="PackageProjects">
