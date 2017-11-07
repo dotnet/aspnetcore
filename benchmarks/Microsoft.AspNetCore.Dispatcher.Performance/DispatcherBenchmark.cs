@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Tree;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Dispatcher.Performance
 {
@@ -19,25 +15,25 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
         private const int NumberOfRequestTypes = 3;
         private const int Iterations = 100;
 
-        private readonly IRouter _treeRouter;
+        private readonly IMatcher _treeMatcher;
         private readonly RequestEntry[] _requests;
 
         public DispatcherBenchmark()
         {
-            var handler = new RouteHandler((next) => Task.FromResult<object>(null));
+            var dataSource = new DefaultDispatcherDataSource()
+            {
+                Endpoints =
+                {
+                    new RoutePatternEndpoint("api/Widgets", Benchmark_Delegate),
+                    new RoutePatternEndpoint("api/Widgets/{id}", Benchmark_Delegate),
+                    new RoutePatternEndpoint("api/Widgets/search/{term}", Benchmark_Delegate),
+                    new RoutePatternEndpoint("admin/users/{id}", Benchmark_Delegate),
+                    new RoutePatternEndpoint("admin/users/{id}/manage", Benchmark_Delegate),
+                },
+            };
 
-            var treeBuilder = new TreeRouteBuilder(
-                NullLoggerFactory.Instance,
-                new RoutePatternBinderFactory(UrlEncoder.Default, new DefaultObjectPoolProvider()),
-                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
-
-            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets"), "default", 0);
-            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets/{id}"), "default", 0);
-            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets/search/{term}"), "default", 0);
-            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("admin/users/{id}"), "default", 0);
-            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("admin/users/{id}/manage"), "default", 0);
-
-            _treeRouter = treeBuilder.Build();
+            var factory = new TreeMatcherFactory();
+            _treeMatcher = factory.CreateMatcher(dataSource, new List<EndpointSelector>());
 
             _requests = new RequestEntry[NumberOfRequestTypes];
 
@@ -64,38 +60,38 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
             {
                 for (var j = 0; j < _requests.Length; j++)
                 {
-                    var context = new RouteContext(_requests[j].HttpContext);
+                    var context = new MatcherContext(_requests[j].HttpContext);
 
-                    await _treeRouter.RouteAsync(context);
+                    await _treeMatcher.MatchAsync(context);
 
                     Verify(context, j);
                 }
             }
         }
 
-        private void Verify(RouteContext context, int i)
+        private void Verify(MatcherContext context, int i)
         {
             if (_requests[i].IsMatch)
             {
-                if (context.Handler == null)
+                if (context.Endpoint == null)
                 {
                     throw new InvalidOperationException($"Failed {i}");
                 }
 
                 var values = _requests[i].Values;
-                if (values.Count != context.RouteData.Values.Count)
+                if (values.Count != context.Values.Count)
                 {
                     throw new InvalidOperationException($"Failed {i}");
                 }
             }
             else
             {
-                if (context.Handler != null)
+                if (context.Endpoint != null)
                 {
                     throw new InvalidOperationException($"Failed {i}");
                 }
 
-                if (context.RouteData.Values.Count != 0)
+                if (context.Values.Count != 0)
                 {
                     throw new InvalidOperationException($"Failed {i}");
                 }
@@ -107,6 +103,11 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
             public HttpContext HttpContext;
             public bool IsMatch;
             public RouteValueDictionary Values;
+        }
+
+        private static Task Benchmark_Delegate(HttpContext httpContext)
+        {
+            return Task.CompletedTask;
         }
     }
 }

@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Misc Infrastructure
             //
             services.TryAddSingleton<RoutePatternBinderFactory>();
+            services.TryAddSingleton<IConstraintFactory, DefaultConstraintFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHandlerFactory, RoutePatternEndpointHandlerFactory>());
 

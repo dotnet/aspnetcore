@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Dispatcher;
 
-namespace Microsoft.AspNetCore.Routing.Dispatcher
+namespace Microsoft.AspNetCore.Dispatcher
 {
     public class TreeMatcherFactory : IDefaultMatcherFactory
     {

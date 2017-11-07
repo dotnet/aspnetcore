@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Dispatcher
     /// A builder for producing a mapping of keys to <see cref="IDispatcherValueConstraint"/>.
     /// </summary>
     /// <remarks>
-    /// <see cref="DispatcherValueConstraintBuilder"/> allows iterative building a set of route constraints, and will
+    /// <see cref="DispatcherValueConstraintBuilder"/> allows iterative building a set of dispatcher value constraints, and will
     /// merge multiple entries for the same key.
     /// </remarks>
     public class DispatcherValueConstraintBuilder

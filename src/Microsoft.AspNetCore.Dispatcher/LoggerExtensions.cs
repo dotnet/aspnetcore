@@ -83,7 +83,17 @@ namespace Microsoft.AspNetCore.Dispatcher
             new EventId(3, "NoEndpointMatchedRequestMethod"),
             "No endpoint matched request method '{Method}'.");
 
-        // DispatcherValueConstraintMatcher
+        // TreeMatcher
+        private static readonly Action<ILogger, string, Exception> _requestShortCircuited = LoggerMessage.Define<string>(
+            LogLevel.Information,
+            new EventId(3, "RequestShortCircuited"),
+            "The current request '{RequestPath}' was short circuited.");
+
+        private static readonly Action<ILogger, string, Exception> _matchedRoute = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                1,
+                "Request successfully matched the route pattern '{RoutePattern}'.");
+
         private static readonly Action<ILogger, object, string, IDispatcherValueConstraint, Exception> _routeValueDoesNotMatchConstraint = LoggerMessage.Define<object, string, IDispatcherValueConstraint>(
                 LogLevel.Debug,
                 1,
@@ -96,6 +106,19 @@ namespace Microsoft.AspNetCore.Dispatcher
             IDispatcherValueConstraint routeConstraint)
         {
             _routeValueDoesNotMatchConstraint(logger, routeValue, routeKey, routeConstraint, null);
+        }
+
+        public static void RequestShortCircuited(this ILogger logger, MatcherContext matcherContext)
+        {
+            var requestPath = matcherContext.HttpContext.Request.Path;
+            _requestShortCircuited(logger, requestPath, null);
+        }
+
+        public static void MatchedRoute(
+            this ILogger logger,
+            string routePattern)
+        {
+            _matchedRoute(logger, routePattern, null);
         }
 
         public static void AmbiguousEndpoints(this ILogger logger, string ambiguousEndpoints)

@@ -5,11 +5,9 @@ using System;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Dispatcher;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.DependencyInjection
 {

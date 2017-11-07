@@ -10,6 +10,36 @@ namespace Microsoft.AspNetCore.Dispatcher
     {
         public MatcherCollection Matchers { get; } = new MatcherCollection();
 
-        public IDictionary<string, Type> ConstraintMap = new Dictionary<string, Type>();
+        private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
+
+        public IDictionary<string, Type> ConstraintMap
+        {
+            get
+            {
+                return _constraintTypeMap;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(ConstraintMap));
+                }
+
+                _constraintTypeMap = value;
+            }
+        }
+
+        private static IDictionary<string, Type> GetDefaultConstraintMap()
+        {
+            return new Dictionary<string, Type>(StringComparer.OrdinalIgnoreCase)
+            {
+                // Type-specific constraints
+                { "int", typeof(IntDispatcherValueConstraint) },
+
+                //// Regex-based constraints
+                { "alpha", typeof(AlphaDispatcherValueConstraint) },
+                { "regex", typeof(RegexStringDispatcherValueConstraint) },
+            };
+        }
     }
 }
