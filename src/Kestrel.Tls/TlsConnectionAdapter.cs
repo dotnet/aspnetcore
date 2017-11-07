@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
                 throw new ArgumentException("Certificate path must be non-null.", nameof(options));
             }
 
-            if (options.Password == null)
+            if (options.PrivateKeyPath == null)
             {
-                throw new ArgumentException("Password must be non-null.", nameof(options));
+                throw new ArgumentException("Private key path must be non-null.", nameof(options));
             }
 
             _options = options;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
 
         private async Task<IAdaptedConnection> InnerOnConnectionAsync(ConnectionAdapterContext context)
         {
-            var tlsStream = new TlsStream(context.ConnectionStream, _options.CertificatePath, _options.Password, _serverProtocols);
+            var tlsStream = new TlsStream(context.ConnectionStream, _options.CertificatePath, _options.PrivateKeyPath, _serverProtocols);
 
             try
             {
