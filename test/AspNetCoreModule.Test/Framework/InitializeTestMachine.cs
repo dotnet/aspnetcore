@@ -27,7 +27,7 @@ namespace AspNetCoreModule.Test.Framework
 
         public static bool Enabled(string flagValue)
         {
-            return InitializeTestMachine.GlobalTestFlags.Contains(flagValue.ToLower());
+            return InitializeTestMachine.GlobalTestFlags.IndexOf(flagValue, StringComparison.OrdinalIgnoreCase) > -1;
         }
     }
 

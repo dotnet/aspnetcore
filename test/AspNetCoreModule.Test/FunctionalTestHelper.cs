@@ -35,7 +35,7 @@ namespace AspNetCoreModule.Test
         {
             get
             {
-                if (TestFlags.Enabled(TestFlags.SkipTest))
+                if (_attributeValue == TestFlags.SkipTest)
                 {
                     AdditionalInfo = TestFlags.SkipTest + " is set";
                     return false;
