@@ -4,6 +4,7 @@
     <Description>Microsoft Build Tasks supporting  Razor view compilation.</Description>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
