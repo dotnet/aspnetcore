@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         /// <param name="host">The configured web host containing the web application to host in the Windows service.</param>
         public WebHostService(IWebHost host)
         {
-            _host = host;
+            _host = host ?? throw new ArgumentNullException(nameof(host));
         }
 
         protected sealed override void OnStart(string[] args)
@@ -48,8 +49,15 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
         {
             _stopRequestedByWindows = true;
             OnStopping();
-            _host?.Dispose();
-            OnStopped();
+            try
+            {
+                _host.StopAsync().GetAwaiter().GetResult();
+            }
+            finally
+            {
+                _host.Dispose();
+                OnStopped();
+            }
         }
 
         /// <summary>
