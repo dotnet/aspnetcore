@@ -49,6 +49,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
             NativeMethods.SSL_CTX_free(ctx);
         }
 
+        public unsafe static int SSL_CTX_Set_Pfx(IntPtr ctx, string path, string password)
+        {
+            var pass = Marshal.StringToHGlobalAnsi(password);
+            var key = IntPtr.Zero;
+            var cert = IntPtr.Zero;
+            var ca = IntPtr.Zero;
+
+            try
+            {
+                var file = System.IO.File.ReadAllBytes(path);
+
+                fixed (void* f = file)
+                {
+                    var buffer = (IntPtr)f;
+                    var pkcs = NativeMethods.d2i_PKCS12(IntPtr.Zero, ref buffer, file.Length);
+                    var result = NativeMethods.PKCS12_parse(pkcs, pass, ref key, ref cert, ref ca);
+                    if (result != 1)
+                    {
+                        return -1;
+                    }
+                    if (NativeMethods.SSL_CTX_use_certificate(ctx, cert) != 1) return -1;
+                    if (NativeMethods.SSL_CTX_use_PrivateKey(ctx, key) != 1) return -1;
+                    if (NativeMethods.SSL_CTX_set1_chain(ctx, ca) != 1) return -1;
+                    return 1;
+                }
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(pass);
+                if (key != IntPtr.Zero) NativeMethods.EVP_PKEY_free(key);
+                if (cert != IntPtr.Zero) NativeMethods.X509_free(cert);
+                if (ca != IntPtr.Zero) NativeMethods.sk_X509_pop_free(ca);
+            }
+        }
+
         public static int SSL_CTX_set_ecdh_auto(IntPtr ctx, int onoff)
         {
             return (int)NativeMethods.SSL_CTX_ctrl(ctx, SSL_CTRL_SET_ECDH_AUTO, onoff, IntPtr.Zero);
@@ -263,6 +298,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
 
             [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
             public static extern void ERR_load_BIO_strings();
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern IntPtr d2i_PKCS12(IntPtr unsused, ref IntPtr bufferPointer, long length);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int PKCS12_parse(IntPtr p12, IntPtr pass, ref IntPtr pkey, ref IntPtr cert, ref IntPtr ca);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void PKCS12_free(IntPtr p12);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void EVP_PKEY_free(IntPtr pkey);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void X509_free(IntPtr a);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern void sk_X509_pop_free(IntPtr ca);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int SSL_CTX_set1_chain(IntPtr ctx, IntPtr sk);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int SSL_CTX_use_certificate(IntPtr ctx, IntPtr x509);
+
+            [DllImport("libssl", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int SSL_CTX_use_PrivateKey(IntPtr ctx, IntPtr pkey);
         }
     }
 }
