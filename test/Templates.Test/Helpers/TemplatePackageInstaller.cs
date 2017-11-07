@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
@@ -38,8 +39,8 @@ namespace Templates.Test.Helpers
             {
                 var proc = ProcessEx.Run(
                     output,
-                    Directory.GetCurrentDirectory(),
-                    "dotnet",
+                    AppContext.BaseDirectory,
+                    DotNetMuxer.MuxerPathOrDefault(),
                     $"new --uninstall {packageName}");
 
                 // We don't need this command to succeed, because we'll verify next that
@@ -61,8 +62,8 @@ namespace Templates.Test.Helpers
                     output.WriteLine($"Installing templates package {packagePath}...");
                     var proc = ProcessEx.Run(
                         output,
-                        Directory.GetCurrentDirectory(),
-                        "dotnet",
+                        AppContext.BaseDirectory,
+                        DotNetMuxer.MuxerPathOrDefault(),
                         $"new --install \"{packagePath}\"");
                     proc.WaitForExit(assertSuccess: true);
                 }
@@ -72,7 +73,7 @@ namespace Templates.Test.Helpers
         private static void VerifyCannotFindTemplate(ITestOutputHelper output, string templateName)
         {
             // Verify we really did remove the previous templates
-            var tempDir = Path.Combine(Directory.GetCurrentDirectory(), Guid.NewGuid().ToString("D"));
+            var tempDir = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName(), Guid.NewGuid().ToString("D"));
             Directory.CreateDirectory(tempDir);
 
             try
@@ -80,9 +81,11 @@ namespace Templates.Test.Helpers
                 var proc = ProcessEx.Run(
                     output,
                     tempDir,
-                    "dotnet",
+                    DotNetMuxer.MuxerPathOrDefault(),
                     $"new \"{templateName}\"");
-                    proc.WaitForExit(assertSuccess: false);
+
+                proc.WaitForExit(assertSuccess: false);
+
                 if (!proc.Error.Contains($"No templates matched the input template name: {templateName}."))
                 {
                     throw new InvalidOperationException($"Failed to uninstall previous templates. The template '{templateName}' could still be found.");
@@ -90,13 +93,13 @@ namespace Templates.Test.Helpers
             }
             finally
             {
-                Directory.Delete(tempDir);
+                Directory.Delete(tempDir, recursive: true);
             }
         }
 
         private static string FindAncestorDirectoryContaining(string filename)
         {
-            var dir = Directory.GetCurrentDirectory();
+            var dir = AppContext.BaseDirectory;
             while (dir != null)
             {
                 if (File.Exists(Path.Combine(dir, filename)))
@@ -107,7 +110,7 @@ namespace Templates.Test.Helpers
                 dir = Directory.GetParent(dir)?.FullName;
             }
 
-            throw new InvalidOperationException($"Could not find any ancestor directory containing {filename} at or above {Directory.GetCurrentDirectory()}");
+            throw new InvalidOperationException($"Could not find any ancestor directory containing {filename} at or above {AppContext.BaseDirectory}");
         }
     }
 }

@@ -1,9 +1,65 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.1</PackageId>
     <NuspecFile>Microsoft.DotNet.Web.ProjectTemplates.nuspec</NuspecFile>
   </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Set this last to ensure the properties get the final versions which may be overridden by CI. -->
+  <PropertyGroup>
+    <GeneratedContentProperties>
+      MicrosoftAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion);
+      MicrosoftAspNetCoreAuthenticationCookiesPackageVersion=$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion);
+      MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion=$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion);
+      MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion=$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion);
+      MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
+      MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
+      MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
+      MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion);
+      MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
+      MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
+      MicrosoftEntityFrameworkCoreDesignPackageVersion=$(MicrosoftEntityFrameworkCoreDesignPackageVersion);
+      MicrosoftEntityFrameworkCoreSqlitePackageVersion=$(MicrosoftEntityFrameworkCoreSqlitePackageVersion);
+      MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
+      MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion=$(MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion);
+      MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
+      MicrosoftExtensionsSecretManagerToolsPackageVersion=$(MicrosoftExtensionsSecretManagerToolsPackageVersion);
+      MicrosoftVisualStudioWebBrowserLinkPackageVersion=$(MicrosoftVisualStudioWebBrowserLinkPackageVersion);
+      MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion);
+      MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
+      MicrosoftNETCoreApp20PackageVersion=$(MicrosoftNETCoreApp20PackageVersion);
+      NETStandardLibraryPackageVersion=$(NETStandardLibraryPackageVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+  </ItemGroup>
+
 
 </Project>

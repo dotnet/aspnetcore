@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Testing.xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
@@ -9,10 +13,16 @@ namespace Templates.Test
         {
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("net461")]
-        public void EmptyWebTemplate_Works(string targetFrameworkOverride)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void EmptyWebTemplate_Works_NetFramework()
+            => EmptyWebTemplateImpl("net461");
+
+        [Fact]
+        public void EmptyWebTemplate_Works_NetCore()
+            => EmptyWebTemplateImpl(null);
+
+        private void EmptyWebTemplateImpl(string targetFrameworkOverride)
         {
             RunDotNetNew("web", targetFrameworkOverride);
 

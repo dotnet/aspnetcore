@@ -1,10 +1,36 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Directory.Build.props" />
-  <Import Project="..\Directory.Build.targets" />
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NuspecFile>Microsoft.DotNet.Web.Spa.ProjectTemplates.nuspec</NuspecFile>
   </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Set this last to ensure the properties get the final versions which may be overridden by CI. -->
+  <PropertyGroup>
+    <GeneratedContentProperties>
+      MicrosoftAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion);
+      MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
+      MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
+      MicrosoftAspNetCoreSpaServicesPackageVersion=$(MicrosoftAspNetCoreSpaServicesPackageVersion);
+      MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
+      MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="Angular-CSharp.csproj.in" OutputPath="content/Angular-CSharp/AngularSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="React-CSharp.csproj.in" OutputPath="content/React-CSharp/ReactSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="ReactRedux-CSharp.csproj.in" OutputPath="content/ReactRedux-CSharp/ReactReduxSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+  </ItemGroup>
 
 </Project>

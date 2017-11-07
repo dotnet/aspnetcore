@@ -1,10 +1,35 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\Directory.Build.props" />
-  <Import Project="..\Directory.Build.targets" />
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NuspecFile>Microsoft.AspNetCore.SpaTemplates.nuspec</NuspecFile>
   </PropertyGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Set this last to ensure the properties get the final versions which may be overridden by CI. -->
+  <PropertyGroup>
+    <GeneratedContentProperties>
+      MicrosoftAspNetCoreAllPackageVersion=$(MicrosoftAspNetCoreAllPackageVersion);
+      MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
+      MicrosoftAspNetCorePackageVersion=$(MicrosoftAspNetCorePackageVersion);
+      MicrosoftAspNetCoreSpaServicesPackageVersion=$(MicrosoftAspNetCoreSpaServicesPackageVersion);
+      MicrosoftAspNetCoreStaticFilesPackageVersion=$(MicrosoftAspNetCoreStaticFilesPackageVersion);
+      MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
+    </GeneratedContentProperties>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <GeneratedContent Include="Aurelia-CSharp.csproj.in" OutputPath="content/Aurelia-CSharp/AureliaSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="Knockout-CSharp.csproj.in" OutputPath="content/Knockout-CSharp/KnockoutSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+    <GeneratedContent Include="Vue-CSharp.csproj.in" OutputPath="content/Vue-CSharp/VueSpa.csproj">
+      <Properties>$(GeneratedContentProperties)</Properties>
+    </GeneratedContent>
+  </ItemGroup>
 
 </Project>

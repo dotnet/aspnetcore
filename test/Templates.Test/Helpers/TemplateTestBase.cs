@@ -1,7 +1,12 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.Extensions.CommandLineUtils;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -30,7 +35,7 @@ namespace Templates.Test
             // We don't want any of the host repo's build config interfering with
             // how the test project is built, so disconnect it from the
             // Directory.Build.props/targets context
-            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), "<Project />");
+            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), "<Project><Import Project=\"../../TemplateTests.props\" /></Project>");
             File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), "<Project />");
         }
 
@@ -58,7 +63,7 @@ namespace Templates.Test
                 args += $" -lang {language}";
             }
 
-            ProcessEx.Run(Output, TemplateOutputDir, "dotnet", args).WaitForExit(assertSuccess: true);            
+            ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
         }
 
         protected void RunNpmInstall()
@@ -66,7 +71,10 @@ namespace Templates.Test
             // The first time this runs on any given CI agent it may take several minutes.
             // If the agent has NPM 5+ installed, it should be quite a lot quicker on
             // subsequent runs because of package caching.
-            ProcessEx.Run(Output, TemplateOutputDir, "cmd", "/c \"npm install\"").WaitForExit(assertSuccess: true);
+            var (exe, args) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? ("cmd", "/c")
+                : ("bash", "-c");
+            ProcessEx.Run(Output, TemplateOutputDir, exe, args + " \"npm install\"").WaitForExit(assertSuccess: true);
         }
 
         protected void AssertDirectoryExists(string path, bool shouldExist)

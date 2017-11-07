@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Testing.xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
@@ -9,13 +13,19 @@ namespace Templates.Test
         {
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("net461")]
-        public void RazorPagesTemplate_NoAuth_Works(string targetFrameworkOverride)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void RazorPagesTemplate_NoAuth_Works_NetFramework()
+            => RazorPagesTemplate_NoAuthImpl("net461");
+
+        [Fact]
+        public void RazorPagesTemplate_NoAuth_Works_NetCore()
+            => RazorPagesTemplate_NoAuthImpl(null);
+
+        private void RazorPagesTemplate_NoAuthImpl(string targetFrameworkOverride)
         {
             RunDotNetNew("razor", targetFrameworkOverride);
-            
+
             AssertDirectoryExists("Extensions", false);
             AssertFileExists("Controllers/AccountController.cs", false);
 
@@ -37,10 +47,16 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("net461")]
-        public void RazorPagesTemplate_IndividualAuth_Works(string targetFrameworkOverride)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
+            => RazorPagesTemplate_IndividualAuthImpl("net461");
+
+        [Fact]
+        public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
+            => RazorPagesTemplate_IndividualAuthImpl(null);
+
+        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride)
         {
             RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual");
 

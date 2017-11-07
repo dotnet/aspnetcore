@@ -1,8 +1,10 @@
 <Project>
-  <Import Project="version.xml" />
-  <Import Project="TemplateDependencies.props" />
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
 
   <PropertyGroup>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 </Project>

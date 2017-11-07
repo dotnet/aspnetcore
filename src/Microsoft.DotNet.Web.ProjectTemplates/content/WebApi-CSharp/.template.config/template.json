@@ -1,7 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": ["Web", "WebAPI"],
+  "classifications": [
+    "Web",
+    "WebAPI"
+  ],
   "name": "ASP.NET Core Web API",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with an example Controller for a RESTful HTTP service. This template can also be used for ASP.NET Core MVC Views and Controllers.",
@@ -268,14 +271,20 @@
       "defaultValue": "false"
     }
   },
-  "primaryOutputs": [ { "path": "Company.WebApplication1.csproj" } ],
+  "primaryOutputs": [
+    {
+      "path": "Company.WebApplication1.csproj"
+    }
+  ],
   "defaultName": "WebApplication1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore'" }
+        {
+          "text": "Run 'dotnet restore'"
+        }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true

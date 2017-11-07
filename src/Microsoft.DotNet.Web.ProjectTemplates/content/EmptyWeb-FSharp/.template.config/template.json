@@ -1,6 +1,9 @@
 {
   "author": "Microsoft",
-  "classifications": ["Web", "Empty"],
+  "classifications": [
+    "Web",
+    "Empty"
+  ],
   "name": "ASP.NET Core Empty",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
@@ -57,14 +60,20 @@
       "defaultValue": "false"
     }
   },
-  "primaryOutputs": [ { "path": "Company.WebApplication1.fsproj" } ],
+  "primaryOutputs": [
+    {
+      "path": "Company.WebApplication1.fsproj"
+    }
+  ],
   "defaultName": "WebApplication1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore'" }
+        {
+          "text": "Run 'dotnet restore'"
+        }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true

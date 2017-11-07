@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RestoreSources>${RestoreSources}</RestoreSources>
+    <RuntimeFrameworkVersion>${RuntimeFrameworkVersion}</RuntimeFrameworkVersion>
+  </PropertyGroup>
+</Project>

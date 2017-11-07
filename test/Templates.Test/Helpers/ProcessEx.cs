@@ -35,6 +35,7 @@ namespace Templates.Test.Helpers
                 }
             }
 
+            output.WriteLine($"==> {startInfo.FileName} {startInfo.Arguments} [{startInfo.WorkingDirectory}]");
             var proc = Process.Start(startInfo);
 
             return new ProcessEx(output, proc);
