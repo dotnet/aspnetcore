@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authentication
             }
             if (!typeof(IAuthenticationHandler).IsAssignableFrom(handlerType))
             {
-                throw new ArgumentException("handlerType must implement IAuthenticationSchemeHandler.");
+                throw new ArgumentException("handlerType must implement IAuthenticationHandler.");
             }
 
             Name = name;
