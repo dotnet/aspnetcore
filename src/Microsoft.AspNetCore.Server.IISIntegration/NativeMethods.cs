@@ -92,6 +92,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern int http_cancel_io(IntPtr pHttpContext);
 
+        [DllImport(AspNetCoreModuleDll)]
+        public unsafe static extern int http_response_set_unknown_header(IntPtr pHttpContext, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace);
+
+        [DllImport(AspNetCoreModuleDll)]
+        internal unsafe static extern int http_response_set_known_header(IntPtr pHttpContext, int headerId, byte* pHeaderValue, ushort length, bool fReplace);
+
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -99,5 +105,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             return GetModuleHandle(AspNetCoreModuleDll) != IntPtr.Zero;
         }
+
     }
 }

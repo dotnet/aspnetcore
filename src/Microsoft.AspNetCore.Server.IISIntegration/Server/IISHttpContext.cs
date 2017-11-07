@@ -40,8 +40,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         protected Exception _applicationException;
         private readonly PipeFactory _pipeFactory;
 
-        private List<GCHandle> _pinnedHeaders;
-
         private GCHandle _thisHandle;
         private BufferHandle _inputHandle;
         private IISAwaitable _operation = new IISAwaitable();
@@ -193,8 +191,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 hr = NativeMethods.http_flush_response_bytes(_pHttpContext, out var fCompletionExpected);
                 if (!fCompletionExpected)
                 {
-                    FreePinnedHeaders(_pinnedHeaders);
-                    _pinnedHeaders = null;
                     _operation.Complete(hr, 0);
                 }
                 return _operation;
@@ -372,161 +368,35 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 NativeMethods.http_set_response_status_code(_pHttpContext, (ushort)StatusCode, pReasonPhrase);
             }
 
-            HttpApiTypes.HTTP_RESPONSE_V2* pHttpResponse = NativeMethods.http_get_raw_response(_pHttpContext);
-
-            // We should be sending the headers here as there are many responses that don't have status codes.
-            _pinnedHeaders = SerializeHeaders(pHttpResponse);
-        }
-
-        // From HttpSys, except does not write to response
-        private unsafe List<GCHandle> SerializeHeaders(HttpApiTypes.HTTP_RESPONSE_V2* pHttpResponse)
-        {
             HttpResponseHeaders.IsReadOnly = true;
-            HttpApiTypes.HTTP_UNKNOWN_HEADER[] unknownHeaders = null;
-            HttpApiTypes.HTTP_RESPONSE_INFO[] knownHeaderInfo = null;
-            var pinnedHeaders = new List<GCHandle>();
-            GCHandle gcHandle;
-
-            if (HttpResponseHeaders.Count == 0)
-            {
-                return null;
-            }
-            string headerName;
-            string headerValue;
-            int lookup;
-            var numUnknownHeaders = 0;
-            int numKnownMultiHeaders = 0;
-            byte[] bytes = null;
-
             foreach (var headerPair in HttpResponseHeaders)
             {
-                if (headerPair.Value.Count == 0)
+                var headerValues = headerPair.Value;
+                var knownHeaderIndex = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
+                if (knownHeaderIndex == -1)
                 {
-                    continue;
-                }
-                lookup = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerPair.Key);
-                if (lookup == -1) // TODO handle opaque stream upgrade?
-                {
-                    numUnknownHeaders++;
-                }
-                else if (headerPair.Value.Count > 1)
-                {
-                    numKnownMultiHeaders++;
-                }
-            }
-
-            try
-            {
-                var pKnownHeaders = &pHttpResponse->Response_V1.Headers.KnownHeaders;
-                foreach (var headerPair in HttpResponseHeaders)
-                {
-                    if (headerPair.Value.Count == 0)
+                    var headerNameBytes = Encoding.UTF8.GetBytes(headerPair.Key);
+                    for (var i = 0; i < headerValues.Count; i++)
                     {
-                        continue;
-                    }
-                    headerName = headerPair.Key;
-                    StringValues headerValues = headerPair.Value;
-                    lookup = HttpApiTypes.HTTP_RESPONSE_HEADER_ID.IndexOfKnownHeader(headerName);
-                    if (lookup == -1)
-                    {
-                        if (unknownHeaders == null)
+                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
+                        fixed (byte* pHeaderName = headerNameBytes)
                         {
-                            unknownHeaders = new HttpApiTypes.HTTP_UNKNOWN_HEADER[numUnknownHeaders];
-                            gcHandle = GCHandle.Alloc(unknownHeaders, GCHandleType.Pinned);
-                            pinnedHeaders.Add(gcHandle);
-                            pHttpResponse->Response_V1.Headers.pUnknownHeaders = (HttpApiTypes.HTTP_UNKNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
-                            pHttpResponse->Response_V1.Headers.UnknownHeaderCount = 0; // to remove the iis header for server=...
-                        }
-
-                        for (var headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
-                        {
-                            // Add Name
-                            bytes = HeaderEncoding.GetBytes(headerName);
-                            unknownHeaders[pHttpResponse->Response_V1.Headers.UnknownHeaderCount].NameLength = (ushort)bytes.Length;
-                            gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                            pinnedHeaders.Add(gcHandle);
-                            unknownHeaders[pHttpResponse->Response_V1.Headers.UnknownHeaderCount].pName = (byte*)gcHandle.AddrOfPinnedObject();
-
-                            // Add Value
-                            headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                            bytes = HeaderEncoding.GetBytes(headerValue);
-                            unknownHeaders[pHttpResponse->Response_V1.Headers.UnknownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                            gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                            pinnedHeaders.Add(gcHandle);
-                            unknownHeaders[pHttpResponse->Response_V1.Headers.UnknownHeaderCount].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
-                            pHttpResponse->Response_V1.Headers.UnknownHeaderCount++;
+                            fixed (byte* pHeaderValue = headerValueBytes)
+                            {
+                                NativeMethods.http_response_set_unknown_header(_pHttpContext, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                            }
                         }
                     }
-                    else if (headerPair.Value.Count == 1)
-                    {
-                        headerValue = headerValues[0] ?? string.Empty;
-                        bytes = HeaderEncoding.GetBytes(headerValue);
-                        pKnownHeaders[lookup].RawValueLength = (ushort)bytes.Length;
-                        gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                        pinnedHeaders.Add(gcHandle);
-                        pKnownHeaders[lookup].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
-                    }
-                    else
-                    {
-                        if (knownHeaderInfo == null)
-                        {
-                            knownHeaderInfo = new HttpApiTypes.HTTP_RESPONSE_INFO[numKnownMultiHeaders];
-                            gcHandle = GCHandle.Alloc(knownHeaderInfo, GCHandleType.Pinned);
-                            pinnedHeaders.Add(gcHandle);
-                            pHttpResponse->pResponseInfo = (HttpApiTypes.HTTP_RESPONSE_INFO*)gcHandle.AddrOfPinnedObject();
-                        }
-
-                        knownHeaderInfo[pHttpResponse->ResponseInfoCount].Type = HttpApiTypes.HTTP_RESPONSE_INFO_TYPE.HttpResponseInfoTypeMultipleKnownHeaders;
-                        knownHeaderInfo[pHttpResponse->ResponseInfoCount].Length = (uint)Marshal.SizeOf<HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS>();
-
-                        var header = new HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS();
-
-                        header.HeaderId = (HttpApiTypes.HTTP_RESPONSE_HEADER_ID.Enum)lookup;
-                        header.Flags = HttpApiTypes.HTTP_RESPONSE_INFO_FLAGS.PreserveOrder; // TODO: The docs say this is for www-auth only.
-
-                        var nativeHeaderValues = new HttpApiTypes.HTTP_KNOWN_HEADER[headerValues.Count];
-                        gcHandle = GCHandle.Alloc(nativeHeaderValues, GCHandleType.Pinned);
-                        pinnedHeaders.Add(gcHandle);
-                        header.KnownHeaders = (HttpApiTypes.HTTP_KNOWN_HEADER*)gcHandle.AddrOfPinnedObject();
-
-                        for (int headerValueIndex = 0; headerValueIndex < headerValues.Count; headerValueIndex++)
-                        {
-                            // Add Value
-                            headerValue = headerValues[headerValueIndex] ?? string.Empty;
-                            bytes = HeaderEncoding.GetBytes(headerValue);
-                            nativeHeaderValues[header.KnownHeaderCount].RawValueLength = (ushort)bytes.Length;
-                            gcHandle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
-                            pinnedHeaders.Add(gcHandle);
-                            nativeHeaderValues[header.KnownHeaderCount].pRawValue = (byte*)gcHandle.AddrOfPinnedObject();
-                            header.KnownHeaderCount++;
-                        }
-
-                        // This type is a struct, not an object, so pinning it causes a boxed copy to be created. We can't do that until after all the fields are set.
-                        gcHandle = GCHandle.Alloc(header, GCHandleType.Pinned);
-                        pinnedHeaders.Add(gcHandle);
-                        knownHeaderInfo[pHttpResponse->ResponseInfoCount].pInfo = (HttpApiTypes.HTTP_MULTIPLE_KNOWN_HEADERS*)gcHandle.AddrOfPinnedObject();
-
-                        pHttpResponse->ResponseInfoCount++;
-                    }
                 }
-            }
-            catch (Exception)
-            {
-                FreePinnedHeaders(pinnedHeaders);
-                throw;
-            }
-            return pinnedHeaders;
-        }
-
-        private static void FreePinnedHeaders(List<GCHandle> pinnedHeaders)
-        {
-            if (pinnedHeaders != null)
-            {
-                foreach (GCHandle gcHandle in pinnedHeaders)
+                else
                 {
-                    if (gcHandle.IsAllocated)
+                    for (var i = 0; i < headerValues.Count; i++)
                     {
-                        gcHandle.Free();
+                        var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
+                        fixed (byte* pHeaderValue = headerValueBytes)
+                        {
+                            NativeMethods.http_response_set_known_header(_pHttpContext, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                        }
                     }
                 }
             }
@@ -931,8 +801,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     _operation.Complete(hr, cbBytes);
                     break;
                 case CurrentOperationType.Flush:
-                    FreePinnedHeaders(_pinnedHeaders);
-                    _pinnedHeaders = null;
                     _operation.Complete(hr, cbBytes);
                     break;
             }
