@@ -13,10 +13,11 @@ namespace Microsoft.AspNetCore.TestHost
     {
         private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
         private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
+        private HeaderDictionary _headers = new HeaderDictionary();
 
         public ResponseFeature()
         {
-            Headers = new HeaderDictionary();
+            Headers = _headers;
             Body = new MemoryStream();
 
             // 200 is the default status code all the way down to the host, so we set it
@@ -69,6 +70,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             await _responseStartingAsync();
             HasStarted = true;
+            _headers.IsReadOnly = true;
         }
 
         public Task FireOnResponseCompletedAsync()

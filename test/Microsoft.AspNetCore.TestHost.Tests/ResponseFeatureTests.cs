@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.TestHost
             await responseInformation.FireOnSendingHeadersAsync();
 
             Assert.True(responseInformation.HasStarted);
+            Assert.True(responseInformation.Headers.IsReadOnly);
         }
 
         [Fact]
