@@ -370,9 +370,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var args = (DocumentStructureChangedEventArgs)state;
             if (_latestChangeReference == null || // extra hardening
-                !_latestChangeReference.IsAssociatedWith(args))
+                !_latestChangeReference.IsAssociatedWith(args) ||
+                args.Snapshot != TextBuffer.CurrentSnapshot)
             {
-                // In the middle of parsing a newer change.
+                // In the middle of parsing a newer change or about to parse a newer change.
                 return;
             }
 
