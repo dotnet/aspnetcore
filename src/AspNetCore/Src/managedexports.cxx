@@ -355,4 +355,30 @@ http_cancel_io(
     return pHttpContext->CancelIo();
 }
 
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_response_set_unknown_header(
+    _In_ IHttpContext* pHttpContext,
+    _In_ PCSTR pszHeaderName,
+    _In_ PCSTR pszHeaderValue,
+    _In_ USHORT usHeaderValueLength,
+    _In_ BOOL  fReplace
+)
+{
+    return pHttpContext->GetResponse()->SetHeader( pszHeaderName, pszHeaderValue, usHeaderValueLength, fReplace );
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_response_set_known_header(
+    _In_ IHttpContext* pHttpContext,
+    _In_ HTTP_HEADER_ID dwHeaderId,
+    _In_ PCSTR pszHeaderValue,
+    _In_ USHORT usHeaderValueLength,
+    _In_ BOOL  fReplace
+)
+{
+    return pHttpContext->GetResponse()->SetHeader( dwHeaderId, pszHeaderValue, usHeaderValueLength, fReplace );
+}
+
 // End of export
