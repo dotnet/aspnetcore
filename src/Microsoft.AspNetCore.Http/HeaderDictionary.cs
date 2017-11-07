@@ -58,13 +58,13 @@ namespace Microsoft.AspNetCore.Http
                 }
                 return StringValues.Empty;
             }
-
             set
             {
                 if (key == null)
                 {
                     throw new ArgumentNullException(nameof(key));
                 }
+                ThrowIfReadOnly();
 
                 if (StringValues.IsNullOrEmpty(value))
                 {
@@ -90,7 +90,11 @@ namespace Microsoft.AspNetCore.Http
         StringValues IDictionary<string, StringValues>.this[string key]
         {
             get { return Store[key]; }
-            set { this[key] = value; }
+            set
+            {
+                ThrowIfReadOnly();
+                this[key] = value;
+            }
         }
 
         public long? ContentLength
@@ -110,6 +114,7 @@ namespace Microsoft.AspNetCore.Http
             }
             set
             {
+                ThrowIfReadOnly();
                 if (value.HasValue)
                 {
                     this[HeaderNames.ContentLength] = HeaderUtilities.FormatNonNegativeInt64(value.Value);
@@ -125,25 +130,13 @@ namespace Microsoft.AspNetCore.Http
         /// Gets the number of elements contained in the <see cref="HeaderDictionary" />;.
         /// </summary>
         /// <returns>The number of elements contained in the <see cref="HeaderDictionary" />.</returns>
-        public int Count
-        {
-            get
-            {
-                return Store?.Count ?? 0;
-            }
-        }
+        public int Count => Store?.Count ?? 0;
 
         /// <summary>
         /// Gets a value that indicates whether the <see cref="HeaderDictionary" /> is in read-only mode.
         /// </summary>
         /// <returns>true if the <see cref="HeaderDictionary" /> is in read-only mode; otherwise, false.</returns>
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly { get; set; }
 
         public ICollection<string> Keys
         {
@@ -179,6 +172,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException("The key is null");
             }
+            ThrowIfReadOnly();
             if (Store == null)
             {
                 Store = new Dictionary<string, StringValues>(1, StringComparer.OrdinalIgnoreCase);
@@ -197,6 +191,7 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(key));
             }
+            ThrowIfReadOnly();
 
             if (Store == null)
             {
@@ -210,6 +205,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         public void Clear()
         {
+            ThrowIfReadOnly();
             Store?.Clear();
         }
 
@@ -270,6 +266,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>true if the specified object was removed from the collection; otherwise, false.</returns>
         public bool Remove(KeyValuePair<string, StringValues> item)
         {
+            ThrowIfReadOnly();
             if (Store == null)
             {
                 return false;
@@ -291,6 +288,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>true if the specified object was removed from the collection; otherwise, false.</returns>
         public bool Remove(string key)
         {
+            ThrowIfReadOnly();
             if (Store == null)
             {
                 return false;
@@ -354,6 +352,14 @@ namespace Microsoft.AspNetCore.Http
                 return EmptyIEnumerator;
             }
             return Store.GetEnumerator();
+        }
+
+        private void ThrowIfReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("The response headers cannot be modified because the response has already started.");
+            }
         }
 
         public struct Enumerator : IEnumerator<KeyValuePair<string, StringValues>>

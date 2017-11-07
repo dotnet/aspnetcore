@@ -68,5 +68,40 @@ namespace Microsoft.AspNetCore.Http
             var result = headers.GetCommaSeparatedValues("Header1");
             Assert.Equal(new[] { "Value1", "Value2" }, result);
         }
+
+        [Fact]
+        public void ReadActionsWorkWhenReadOnly()
+        {
+            var headers = new HeaderDictionary(
+                new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "Header1", "Value1" }
+                });
+
+            headers.IsReadOnly = true;
+
+            Assert.Single(headers);
+            Assert.Equal<string>(new[] { "Header1" }, headers.Keys);
+            Assert.True(headers.ContainsKey("header1"));
+            Assert.False(headers.ContainsKey("header2"));
+            Assert.Equal("Value1", headers["header1"]);
+            Assert.Equal(new[] { "Value1" }, headers["header1"].ToArray());
+        }
+
+        [Fact]
+        public void WriteActionsThrowWhenReadOnly()
+        {
+            var headers = new HeaderDictionary();
+            headers.IsReadOnly = true;
+
+            Assert.Throws<InvalidOperationException>(() => headers["header1"] = "value1");
+            Assert.Throws<InvalidOperationException>(() => ((IDictionary<string, StringValues>)headers)["header1"] = "value1");
+            Assert.Throws<InvalidOperationException>(() => headers.ContentLength = 12);
+            Assert.Throws<InvalidOperationException>(() => headers.Add(new KeyValuePair<string, StringValues>("header1", "value1")));
+            Assert.Throws<InvalidOperationException>(() => headers.Add("header1", "value1"));
+            Assert.Throws<InvalidOperationException>(() => headers.Clear());
+            Assert.Throws<InvalidOperationException>(() => headers.Remove(new KeyValuePair<string, StringValues>("header1", "value1")));
+            Assert.Throws<InvalidOperationException>(() => headers.Remove("header1"));
+        }
     }
 }
