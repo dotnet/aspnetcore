@@ -4,17 +4,24 @@
     <Description>Build-time references required to enable Razor view compilation as part of building the application.</Description>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
-    <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
+
     <PackageTags>cshtml;razor;compilation;precompilation;aspnetcore</PackageTags>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
-    <X86ProjectDirectory>..\..\tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\</X86ProjectDirectory>
     <TasksProjectDirectory>..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(TargetFramework)'=='net461'">
+    <RuntimeIdentifiers>win7-x86;win7-x64</RuntimeIdentifiers>
+    <PlatformTarget Condition="'$(Platform)'=='AnyCPU'">x86</PlatformTarget>
+    <AssemblyName>$(AssemblyName)-$(PlatformTarget)</AssemblyName>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>bin\$(Configuration)\net461\win7-$(PlatformTarget)</OutputPath>
+    <IntermediateOutputPath>obj\$(Configuration)\net461\win7-$(PlatformTarget)</IntermediateOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
-    <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
     <ProjectReference Include="$(TasksProjectDirectory)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" />
 
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
@@ -30,8 +37,17 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)'=='Windows_NT'">
-    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName).exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x64.exe" />
-    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x86.exe" />
+    <None Include="$(OutputPath)net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\" />
+    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName)-x64.exe" Pack="true" PackagePath="build\netstandard2.0\" />
   </ItemGroup>
 
+  <Target Name="BuildX64" AfterTargets="Build" Condition="'$(TargetFramework)'=='net461' AND '$(PlatformTarget)'!='x64'">
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="Build"
+      Properties="
+        Configuration=$(Configuration);
+        TargetFramework=net461;
+        Platform=x64;" />
+  </Target>
 </Project>

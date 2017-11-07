@@ -20,7 +20,7 @@
     Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
     <PropertyGroup>
       <_MvcViewCompilationBinaryPath Condition="'$(TargetFramework)'=='netcoreapp2.0'">$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll</_MvcViewCompilationBinaryPath>
-      <_MvcViewCompilationBinaryPath Condition="'$(TargetFramework)'=='net461'">$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.exe</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(TargetFramework)'=='net461'">$(MSBuildProjectDirectory)\$(OutputPath)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.exe</_MvcViewCompilationBinaryPath>
     </PropertyGroup>
   </Target>
 </Project>

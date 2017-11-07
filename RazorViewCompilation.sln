@@ -67,8 +67,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{75244EBD
 		tools\Directory.Build.props = tools\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86", "tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.csproj", "{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks", "src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj", "{996D4DEB-1701-435E-8048-1E65790C2050}"
 EndProject
 Global
@@ -273,18 +271,6 @@ Global
 		{779BACC4-B20E-4F73-A9C7-350443CF1941}.Release|x64.Build.0 = Release|Any CPU
 		{779BACC4-B20E-4F73-A9C7-350443CF1941}.Release|x86.ActiveCfg = Release|Any CPU
 		{779BACC4-B20E-4F73-A9C7-350443CF1941}.Release|x86.Build.0 = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|x64.Build.0 = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Debug|x86.Build.0 = Debug|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|x64.ActiveCfg = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|x64.Build.0 = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|x86.ActiveCfg = Release|Any CPU
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}.Release|x86.Build.0 = Release|Any CPU
 		{996D4DEB-1701-435E-8048-1E65790C2050}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{996D4DEB-1701-435E-8048-1E65790C2050}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{996D4DEB-1701-435E-8048-1E65790C2050}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -318,7 +304,6 @@ Global
 		{037F4B73-75FB-4570-A38A-9109B580168C} = {0DC7C88C-E3DB-46DF-B47E-AC5ECB2A16B7}
 		{08552602-37E7-48A7-95A2-BB1A1F57C804} = {0DC7C88C-E3DB-46DF-B47E-AC5ECB2A16B7}
 		{779BACC4-B20E-4F73-A9C7-350443CF1941} = {0DC7C88C-E3DB-46DF-B47E-AC5ECB2A16B7}
-		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D} = {75244EBD-DFBD-4C4B-9543-C135AC142C7F}
 		{996D4DEB-1701-435E-8048-1E65790C2050} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
