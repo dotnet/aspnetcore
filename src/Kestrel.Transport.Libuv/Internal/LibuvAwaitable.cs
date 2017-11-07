@@ -36,6 +36,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public UvWriteResult GetResult()
         {
+            Debug.Assert(_callback == _callbackCompleted);
+
             var exception = _exception;
             var status = _status;
 

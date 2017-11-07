@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
@@ -11,10 +10,9 @@ using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     internal sealed class SocketConnection : TransportConnection
     {
@@ -22,8 +20,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         private readonly Socket _socket;
         private readonly ISocketsTrace _trace;
+        private readonly SocketReceiver _receiver;
+        private readonly SocketSender _sender;
 
-        private IList<ArraySegment<byte>> _sendBufferList;
         private volatile bool _aborted;
 
         internal SocketConnection(Socket socket, PipeFactory pipeFactory, ISocketsTrace trace)
@@ -44,6 +43,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             RemoteAddress = remoteEndPoint.Address;
             RemotePort = remoteEndPoint.Port;
+
+            _receiver = new SocketReceiver(_socket);
+            _sender = new SocketSender(_socket);
         }
 
         public override PipeFactory PipeFactory { get; }
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                     try
                     {
-                        var bytesReceived = await _socket.ReceiveAsync(GetArraySegment(buffer.Buffer), SocketFlags.None);
+                        var bytesReceived = await _receiver.ReceiveAsync(buffer.Buffer);
 
                         if (bytesReceived == 0)
                         {
@@ -176,25 +178,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
         }
 
-        private void SetupSendBuffers(ReadableBuffer buffer)
-        {
-            Debug.Assert(!buffer.IsEmpty);
-            Debug.Assert(!buffer.IsSingleSpan);
-
-            if (_sendBufferList == null)
-            {
-                _sendBufferList = new List<ArraySegment<byte>>();
-            }
-
-            // We should always clear the list after the send
-            Debug.Assert(_sendBufferList.Count == 0);
-
-            foreach (var b in buffer)
-            {
-                _sendBufferList.Add(GetArraySegment(b));
-            }
-        }
-
         private async Task DoSend()
         {
             Exception error = null;
@@ -216,23 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     {
                         if (!buffer.IsEmpty)
                         {
-                            if (buffer.IsSingleSpan)
-                            {
-                                await _socket.SendAsync(GetArraySegment(buffer.First), SocketFlags.None);
-                            }
-                            else
-                            {
-                                SetupSendBuffers(buffer);
-
-                                try
-                                {
-                                    await _socket.SendAsync(_sendBufferList, SocketFlags.None);
-                                }
-                                finally
-                                {
-                                    _sendBufferList.Clear();
-                                }
-                            }
+                            await _sender.SendAsync(buffer);
                         }
                         else if (result.IsCompleted)
                         {
@@ -273,16 +240,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _socket.Shutdown(SocketShutdown.Both);
             }
         }
-
-        private static ArraySegment<byte> GetArraySegment(Buffer<byte> buffer)
-        {
-            if (!buffer.TryGetArray(out var segment))
-            {
-                throw new InvalidOperationException();
-            }
-
-            return segment;
-        }
-
     }
 }
