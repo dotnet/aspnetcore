@@ -72,6 +72,7 @@ try {
             Write-Verbose "About to update dependencies.props for $($submodule.module)"
             & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
 
+            Invoke-Block { & git @gitConfigArgs add $depsFile "korebuild-lock.txt" }
             Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
 
             $sshUrl = "git@github.com:aspnet/$($submodule.module)"
@@ -80,7 +81,10 @@ try {
         }
         catch {
             Write-Warning "Error in $($submodule.module)"
-            $update_errors += $_
+            $update_errors += @{
+                Repo    = $submodule.module
+                Message = $_
+            }
         }
         finally {
             Pop-Location
@@ -89,7 +93,12 @@ try {
 
     if ($update_errors.Count -gt 0 ) {
         foreach ($update_error in $update_errors) {
-            Write-Error "$update_error"
+            if ($update_error -eq $null) {
+                Write-Error "Error was null."
+            }
+            else {
+                Write-Error "$update_error.Repo error: $update_error.Message"
+            }
         }
 
         throw 'Failed to update'
