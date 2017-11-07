@@ -110,7 +110,13 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 // Sets HasStarted
                 await _responseFeature.FireOnSendingHeadersAsync();
-                _responseTcs.TrySetResult(_httpContext);
+                // Copy the feature collection so we're not multi-threading on the same collection.
+                var newFeatures = new FeatureCollection();
+                foreach (var pair in _httpContext.Features)
+                {
+                    newFeatures[pair.Key] = pair.Value;
+                }
+                _responseTcs.TrySetResult(new DefaultHttpContext(newFeatures));
             }
         }
 
