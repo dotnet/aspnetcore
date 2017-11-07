@@ -46,24 +46,6 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         [Fact]
-        public void InvalidPathWithDotShouldThrowException()
-        {
-            // Arrange
-            var patchDocument = new JsonPatchDocument();
-
-            // Act
-            var exception = Assert.Throws<JsonPatchException>(() =>
-            {
-                patchDocument.Add("NewInt.Test", 1);
-            });
-
-            // Assert
-            Assert.Equal(
-               "The provided string 'NewInt.Test' is an invalid path.",
-                exception.Message);
-        }
-
-        [Fact]
         public void NonGenericPatchDocToGenericMustSerialize()
         {
             // Arrange

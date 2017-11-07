@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // absolutely necessary, but it allows us to already catch mistakes
             // on creation of the patch document rather than on execute.
 
-            if (path.Contains(".") || path.Contains("//") || path.Contains(" ") || path.Contains("\\"))
+            if (path.Contains("//") || path.Contains(" ") || path.Contains("\\"))
             {
                 throw new JsonPatchException(Resources.FormatInvalidValueForPath(path), null); 
             }
