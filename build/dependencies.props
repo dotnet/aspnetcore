@@ -97,7 +97,7 @@
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15557</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15551</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
