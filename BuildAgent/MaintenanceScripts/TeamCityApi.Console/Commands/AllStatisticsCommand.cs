@@ -19,8 +19,8 @@ namespace TeamCityApi.Console.Commands
 
         protected override int Execute()
         {
-            var buildResult = BuildStatisticsCommand.BuildStatistics(Client, StartDate, _buildOutputFile?.Value());
-            var testResult = TestStatisticsCommand.TestStatistics(Client, StartDate, _testOutputFile?.Value());
+            var buildResult = BuildStatisticsCommand.BuildStatistics(Client, StartDate, _buildOutputFile.HasValue() ? _buildOutputFile.Value() : BuildStatisticsCommand.DefaultOutputFile);
+            var testResult = TestStatisticsCommand.TestStatistics(Client, StartDate, _testOutputFile.HasValue() ? _testOutputFile.Value() : TestStatisticsCommand.DefaultOutputFile);
 
             return buildResult + testResult;
         }

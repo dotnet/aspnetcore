@@ -35,6 +35,11 @@ namespace TeamCityApi.Console.Commands
 
         public static int TestStatistics(TeamCityClient client, DateTime startDate, string outputFile = DefaultOutputFile)
         {
+            if (outputFile == null)
+            {
+                throw new ArgumentNullException(nameof(outputFile));
+            }
+
             var failedBuilds = client.GetFailedBuilds(startDate);
 
             // TODO: Ignore builds we don't own (WebSdk-Integration,WebSdk etc)
