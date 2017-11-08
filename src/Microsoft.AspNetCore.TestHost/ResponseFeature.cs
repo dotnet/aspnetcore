@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.TestHost
         private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
         private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
         private HeaderDictionary _headers = new HeaderDictionary();
+        private int _statusCode;
+        private string _reasonPhrase;
 
         public ResponseFeature()
         {
@@ -25,9 +27,37 @@ namespace Microsoft.AspNetCore.TestHost
             StatusCode = 200;
         }
 
-        public int StatusCode { get; set; }
+        public int StatusCode
+        {
+            get => _statusCode;
+            set
+            {
+                if (HasStarted)
+                {
+                    throw new InvalidOperationException("The status code cannot be set, the response has already started.");
+                }
+                if (value < 100)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The status code cannot be set to a value less than 100");
+                }
 
-        public string ReasonPhrase { get; set; }
+                _statusCode = value;
+            }
+        }
+
+        public string ReasonPhrase
+        {
+            get => _reasonPhrase;
+            set
+            {
+                if (HasStarted)
+                {
+                    throw new InvalidOperationException("The reason phrase cannot be set, the response has already started.");
+                }
+
+                _reasonPhrase = value;
+            }
+        }
 
         public IHeaderDictionary Headers { get; set; }
 

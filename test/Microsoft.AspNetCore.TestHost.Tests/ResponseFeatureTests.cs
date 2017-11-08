@@ -41,5 +41,28 @@ namespace Microsoft.AspNetCore.TestHost
                 }, state: "string");
             });
         }
+
+        [Fact]
+        public void StatusCode_ThrowsWhenHasStarted()
+        {
+            var responseInformation = new ResponseFeature();
+            responseInformation.HasStarted = true;
+
+            Assert.Throws<InvalidOperationException>(() => responseInformation.StatusCode = 400);
+            Assert.Throws<InvalidOperationException>(() => responseInformation.ReasonPhrase = "Hello World");
+        }
+
+        [Fact]
+        public void StatusCode_MustBeGreaterThan99()
+        {
+            var responseInformation = new ResponseFeature();
+
+            Assert.Throws<ArgumentOutOfRangeException>(() => responseInformation.StatusCode = 99);
+            Assert.Throws<ArgumentOutOfRangeException>(() => responseInformation.StatusCode = 0);
+            Assert.Throws<ArgumentOutOfRangeException>(() => responseInformation.StatusCode = -200);
+            responseInformation.StatusCode = 100;
+            responseInformation.StatusCode = 200;
+            responseInformation.StatusCode = 1000;
+        }
     }
 }
