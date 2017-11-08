@@ -718,6 +718,7 @@ namespace AspNetCoreModule.Test
                     if (!isGraceFullShutdownEnabled)
                     {
                         iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "environmentVariable", new string[] { "GracefulShutdown", "disabled" });
+                        iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "environmentVariable", new string[] { "ANCMTestStartupClassName", "StartupWithShutdownDisabled" });
                         expectedGracefulShutdownResponseStatusCode = "200";
                     }
 

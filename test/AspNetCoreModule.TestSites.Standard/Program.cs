@@ -80,14 +80,9 @@ namespace AspnetCoreModule.TestSites.Standard
                         .UseIISIntegration()
                         .UseStartup<StartupNtlmAuthentication>();
                 }
-                else
+                else if (startUpClassString == "StartupWithShutdownDisabled")
                 {
-                    throw new System.Exception("Invalid startup class name : " + startUpClassString);
-                }
-            }
-            else
-            {
-                builder = new WebHostBuilder()
+                    builder = new WebHostBuilder()
                     .ConfigureServices(services =>
                     {
                         const string PairingToken = "TOKEN";
@@ -97,6 +92,18 @@ namespace AspnetCoreModule.TestSites.Standard
                         );
                     })
                     .UseConfiguration(config)
+                    .UseStartup<Startup>();
+                }
+                else
+                {
+                    throw new Exception("Invalid startup class name : " + startUpClassString);
+                }
+            }
+            else
+            {
+                builder = new WebHostBuilder()
+                    .UseConfiguration(config)
+                    .UseIISIntegration()
                     .UseStartup<Startup>();
             }
 
