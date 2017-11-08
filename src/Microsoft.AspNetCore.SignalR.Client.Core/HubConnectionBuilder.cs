@@ -42,9 +42,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new InvalidOperationException("Cannot create IConnection instance. The connection factory was not configured.");
             }
 
+            IHubConnectionBuilder builder = this;
             var connection = _connectionFactoryDelegate();
-            var loggerFactory = ((IHubConnectionBuilder)this).GetLoggerFactory();
-            var hubProtocol = ((IHubConnectionBuilder)this).GetHubProtocol();
+
+            var loggerFactory = builder.GetLoggerFactory();
+            var hubProtocol = builder.GetHubProtocol();
 
             return new HubConnection(connection, hubProtocol ?? new JsonHubProtocol(), loggerFactory);
         }

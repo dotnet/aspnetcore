@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -29,6 +32,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public async Task CallHandlerThatDoesntExist()
         {
             await Clients.Client(Context.ConnectionId).InvokeAsync("NoClientHandler");
+        }
+
+        public IEnumerable<string> GetHeaderValues(string[] headerNames)
+        {
+            var headers = Context.Connection.GetHttpContext().Request.Headers;
+            return headerNames.Select(h => (string)headers[h]);
         }
     }
 
@@ -110,5 +119,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         Task Echo(string message);
         Task Send(string message);
         Task NoClientHandler();
+    }
+
+    [Authorize(JwtBearerDefaults.AuthenticationScheme)]
+    public class HubWithAuthorization : Hub
+    {
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
     }
 }

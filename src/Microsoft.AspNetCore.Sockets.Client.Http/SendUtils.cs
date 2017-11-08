@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     internal static class SendUtils
     {
         public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient,
-            CancellationTokenSource transportCts, ILogger logger, string connectionId)
+            HttpOptions httpOptions, CancellationTokenSource transportCts, ILogger logger, string connectionId)
         {
             logger.SendStarted(connectionId);
             IList<SendMessage> messages = null;
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                        request.Headers.UserAgent.Add(Constants.UserAgentHeader);
+                        PrepareHttpRequest(request, httpOptions);
 
                         // TODO: We can probably use a pipeline here or some kind of pooled memory.
                         // But where do we get the pool from? ArrayBufferPool.Instance?
@@ -106,6 +106,23 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             logger.SendStopped(connectionId);
+        }
+
+        public static void PrepareHttpRequest(HttpRequestMessage request, HttpOptions httpOptions)
+        {
+            if (httpOptions?.Headers != null)
+            {
+                foreach (var header in httpOptions.Headers)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
+            }
+            request.Headers.UserAgent.Add(Constants.UserAgentHeader);
+
+            if (httpOptions?.JwtBearerTokenFactory != null)
+            {
+                request.Headers.Add("Authorization", $"Bearer {httpOptions.JwtBearerTokenFactory()}");
+            }
         }
     }
 }

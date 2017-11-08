@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void DefaultTransportFactoryCannotBeCreatedWithInvalidTransportType(TransportType transportType)
         {
             Assert.Throws<ArgumentOutOfRangeException>(
-                () => new DefaultTransportFactory(transportType, new LoggerFactory(), new HttpClient()));
+                () => new DefaultTransportFactory(transportType, new LoggerFactory(), new HttpClient(), httpOptions: null));
         }
 
         [Theory]
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(TransportType transportType)
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null));
+                () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null, httpOptions: null));
 
             Assert.Equal("httpClient", exception.ParamName);
         }
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void DefaultTransportFactoryCanBeCreatedWithoutHttpClientIfWebSocketsTransportRequestedExplicitly()
         {
-            new DefaultTransportFactory(TransportType.WebSockets, new LoggerFactory(), httpClient: null);
+            new DefaultTransportFactory(TransportType.WebSockets, new LoggerFactory(), httpClient: null, httpOptions: null);
         }
 
         [ConditionalTheory]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable(TransportType requestedTransport, Type expectedTransportType)
         {
-            var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+            var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
             Assert.IsType(expectedTransportType,
                 transportFactory.CreateTransport(TransportType.All));
         }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport(TransportType requestedTransport)
         {
             var transportFactory =
-                new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+                new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
             var ex = Assert.Throws<InvalidOperationException>(
                 () => transportFactory.CreateTransport(~requestedTransport));
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void DefaultTransportFactoryCreatesWebSocketsTransportIfAvailable()
         {
             Assert.IsType<WebSocketsTransport>(
-                new DefaultTransportFactory(TransportType.All, loggerFactory: null, httpClient: new HttpClient())
+                new DefaultTransportFactory(TransportType.All, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null)
                     .CreateTransport(TransportType.All));
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             if (!TestHelpers.IsWebSocketsSupported())
             {
-                var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+                var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
                 Assert.IsType(expectedTransportType,
                     transportFactory.CreateTransport(TransportType.All));
             }
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             if (!TestHelpers.IsWebSocketsSupported())
             {
                 var transportFactory =
-                    new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
+                    new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient(), httpOptions: null);
                 var ex = Assert.Throws<InvalidOperationException>(
                     () => transportFactory.CreateTransport(TransportType.All));
 

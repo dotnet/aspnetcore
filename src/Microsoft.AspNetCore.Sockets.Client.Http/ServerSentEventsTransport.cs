@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private static readonly MemoryPool _memoryPool = new MemoryPool();
         private readonly HttpClient _httpClient;
+        private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
@@ -32,10 +34,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public TransferMode? Mode { get; private set; }
 
         public ServerSentEventsTransport(HttpClient httpClient)
-            : this(httpClient, null)
+            : this(httpClient, null, null)
         { }
 
-        public ServerSentEventsTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(HttpClient httpClient, HttpOptions httpOptions, ILoggerFactory loggerFactory)
         {
             if (httpClient == null)
             {
@@ -43,6 +45,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             _httpClient = httpClient;
+            _httpOptions = httpOptions;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             _logger.StartTransport(_connectionId, Mode.Value);
 
-            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger, _connectionId);
+            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _transportCts, _logger, _connectionId);
             var receiveTask = OpenConnection(_application, url, _transportCts.Token);
 
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
@@ -78,6 +81,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.StartReceive(_connectionId);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+            SendUtils.PrepareHttpRequest(request, _httpOptions);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 

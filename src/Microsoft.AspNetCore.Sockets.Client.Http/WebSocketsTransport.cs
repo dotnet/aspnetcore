@@ -6,8 +6,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public class WebSocketsTransport : ITransport
     {
-        private readonly ClientWebSocket _webSocket = new ClientWebSocket();
+        private readonly ClientWebSocket _webSocket;
         private Channel<byte[], SendMessage> _application;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly CancellationTokenSource _receiveCts = new CancellationTokenSource();
@@ -28,12 +29,26 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public TransferMode? Mode { get; private set; }
 
         public WebSocketsTransport()
-            : this(null)
+            : this(null, null)
         {
         }
 
-        public WebSocketsTransport(ILoggerFactory loggerFactory)
+        public WebSocketsTransport(HttpOptions httpOptions, ILoggerFactory loggerFactory)
         {
+            _webSocket = new ClientWebSocket();
+            if (httpOptions?.Headers != null)
+            {
+                foreach (var header in httpOptions.Headers)
+                {
+                    _webSocket.Options.SetRequestHeader(header.Key, header.Value);
+                }
+            }
+
+            if (httpOptions?.JwtBearerTokenFactory != null)
+            {
+                _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.JwtBearerTokenFactory()}");
+            }
+
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }
 

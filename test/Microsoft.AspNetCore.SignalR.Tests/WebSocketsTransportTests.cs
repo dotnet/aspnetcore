@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportToConnection = Channel.CreateUnbounded<byte[]>();
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
-                var webSocketsTransport = new WebSocketsTransport(loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
                     TransferMode.Binary, connectionId: string.Empty).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportToConnection = Channel.CreateUnbounded<byte[]>();
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
-                var webSocketsTransport = new WebSocketsTransport(loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
                     TransferMode.Binary, connectionId: string.Empty);
                 connectionToTransport.Writer.TryComplete();
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportToConnection = Channel.CreateUnbounded<byte[]>();
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
-                var webSocketsTransport = new WebSocketsTransport(loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, transferMode, connectionId: string.Empty);
 
                 var sendTcs = new TaskCompletionSource<object>();
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportToConnection = Channel.CreateUnbounded<byte[]>();
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
-                var webSocketsTransport = new WebSocketsTransport(loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
 
                 Assert.Null(webSocketsTransport.Mode);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var transportToConnection = Channel.CreateUnbounded<byte[]>();
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
-                var webSocketsTransport = new WebSocketsTransport(loggerFactory);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
                     webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Text | TransferMode.Binary, connectionId: string.Empty));
 

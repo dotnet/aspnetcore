@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Client
@@ -10,11 +11,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public class DefaultTransportFactory : ITransportFactory
     {
         private readonly HttpClient _httpClient;
+        private readonly HttpOptions _httpOptions;
         private readonly TransportType _requestedTransportType;
         private readonly ILoggerFactory _loggerFactory;
         private static volatile bool _websocketsSupported = true;
 
-        public DefaultTransportFactory(TransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient)
+        public DefaultTransportFactory(TransportType requestedTransportType, ILoggerFactory loggerFactory, HttpClient httpClient, HttpOptions httpOptions)
         {
             if (requestedTransportType <= 0 || requestedTransportType > TransportType.All)
             {
@@ -29,6 +31,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _requestedTransportType = requestedTransportType;
             _loggerFactory = loggerFactory;
             _httpClient = httpClient;
+            _httpOptions = httpOptions;
         }
 
         public ITransport CreateTransport(TransportType availableServerTransports)
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 try
                 {
-                    return new WebSocketsTransport(_loggerFactory);
+                    return new WebSocketsTransport(_httpOptions, _loggerFactory);
                 }
                 catch (PlatformNotSupportedException)
                 {
@@ -47,12 +50,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             if ((availableServerTransports & TransportType.ServerSentEvents & _requestedTransportType) == TransportType.ServerSentEvents)
             {
-                return new ServerSentEventsTransport(_httpClient, _loggerFactory);
+                return new ServerSentEventsTransport(_httpClient, _httpOptions, _loggerFactory);
             }
 
             if ((availableServerTransports & TransportType.LongPolling & _requestedTransportType) == TransportType.LongPolling)
             {
-                return new LongPollingTransport(_httpClient, _loggerFactory);
+                return new LongPollingTransport(_httpClient, _httpOptions, _loggerFactory);
             }
 
             throw new InvalidOperationException("No requested transports available on the server.");

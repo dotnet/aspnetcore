@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private volatile int _connectionState = ConnectionState.Initial;
         private volatile ChannelConnection<byte[], SendMessage> _transportChannel;
         private readonly HttpClient _httpClient;
+        private readonly HttpOptions _httpOptions;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private TaskCompletionSource<object> _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -54,49 +55,47 @@ namespace Microsoft.AspNetCore.Sockets.Client
             : this(url, TransportType.All)
         { }
 
-        public HttpConnection(Uri url, HttpMessageHandler httpMessageHandler)
-            : this(url, TransportType.All, loggerFactory: null, httpMessageHandler: httpMessageHandler)
-        { }
-
         public HttpConnection(Uri url, TransportType transportType)
             : this(url, transportType, loggerFactory: null)
         {
         }
 
         public HttpConnection(Uri url, ILoggerFactory loggerFactory)
-            : this(url, TransportType.All, loggerFactory, httpMessageHandler: null)
+            : this(url, TransportType.All, loggerFactory, httpOptions: null)
         {
         }
 
         public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory)
-            : this(url, transportType, loggerFactory, httpMessageHandler: null)
+            : this(url, transportType, loggerFactory, httpOptions: null)
         {
         }
 
-        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory, HttpMessageHandler httpMessageHandler)
+        public HttpConnection(Uri url, TransportType transportType, ILoggerFactory loggerFactory, HttpOptions httpOptions)
         {
             Url = url ?? throw new ArgumentNullException(nameof(url));
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
+            _httpOptions = httpOptions;
 
             _requestedTransportType = transportType;
             if (_requestedTransportType != TransportType.WebSockets)
             {
-                _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+                _httpClient = httpOptions?.HttpMessageHandler == null ? new HttpClient() : new HttpClient(httpOptions.HttpMessageHandler);
                 _httpClient.Timeout = HttpClientTimeout;
             }
 
-            _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient);
+            _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient, httpOptions);
         }
 
-        public HttpConnection(Uri url, ITransportFactory transportFactory, ILoggerFactory loggerFactory, HttpMessageHandler httpMessageHandler)
+        public HttpConnection(Uri url, ITransportFactory transportFactory, ILoggerFactory loggerFactory, HttpOptions httpOptions)
         {
             Url = url ?? throw new ArgumentNullException(nameof(url));
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
-            _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
-            _httpClient.Timeout = HttpClientTimeout;
+            _httpOptions = httpOptions;
+            _httpClient = _httpOptions?.HttpMessageHandler == null ? new HttpClient() : new HttpClient(_httpOptions?.HttpMessageHandler);
+            _httpClient.Timeout =  HttpClientTimeout;
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
         }
 
@@ -214,7 +213,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
         }
 
-        private async static Task<NegotiationResponse> Negotiate(Uri url, HttpClient httpClient, ILogger logger)
+        private async Task<NegotiationResponse> Negotiate(Uri url, HttpClient httpClient, ILogger logger)
         {
             try
             {
@@ -229,7 +228,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                 using (var request = new HttpRequestMessage(HttpMethod.Post, urlBuilder.Uri))
                 {
-                    request.Headers.UserAgent.Add(Constants.UserAgentHeader);
+                    SendUtils.PrepareHttpRequest(request, _httpOptions);
+
                     using (var response = await httpClient.SendAsync(request))
                     {
                         response.EnsureSuccessStatusCode();

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public class LongPollingTransport : ITransport
     {
         private readonly HttpClient _httpClient;
+        private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
         private Channel<byte[], SendMessage> _application;
         private Task _sender;
@@ -30,12 +32,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public TransferMode? Mode { get; private set; }
 
         public LongPollingTransport(HttpClient httpClient)
-            : this(httpClient, null)
+            : this(httpClient, null, null)
         { }
 
-        public LongPollingTransport(HttpClient httpClient, ILoggerFactory loggerFactory)
+        public LongPollingTransport(HttpClient httpClient, HttpOptions httpOptions, ILoggerFactory loggerFactory)
         {
             _httpClient = httpClient;
+            _httpOptions = httpOptions;
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
@@ -54,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             // Start sending and polling (ask for binary if the server supports it)
             _poller = Poll(url, _transportCts.Token);
-            _sender = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger, _connectionId);
+            _sender = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _transportCts, _logger, _connectionId);
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
@@ -90,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
-                    request.Headers.UserAgent.Add(Constants.UserAgentHeader);
+                    SendUtils.PrepareHttpRequest(request, _httpOptions);
 
                     HttpResponseMessage response;
 
