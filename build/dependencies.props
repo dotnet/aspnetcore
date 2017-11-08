@@ -12,8 +12,6 @@
       <Private>false</Private>
       <!-- When true, this dependency should be mirrored to aspnetcore's nightly build feeds. -->
       <Mirror>false</Mirror>
-      <!-- The dependency should be added to the partners lineup. -->
-      <Lineup>true</Lineup>
     </ExternalDependency>
   </ItemDefinitionGroup>
 
@@ -55,43 +53,43 @@
 
   <ItemGroup>
     <!-- These versions of roslyn must be used when building a VSIX. -->
-    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisCommonPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftCodeAnalysisRemoteWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion</VariableName>
     </ExternalDependency>
   </ItemGroup>
@@ -103,8 +101,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
+    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
   </ItemGroup>
 
   <!-- ASP.NET Core Module -->
@@ -191,7 +189,7 @@
     <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
-    <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)" Lineup="false">
+    <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)">
       <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
       <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
     </ExternalDependency>
