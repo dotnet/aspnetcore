@@ -4,7 +4,7 @@
   "toolsets": {
     "visualstudio": {
       "required": false,
-      "includePrerelease": false,
+      "includePrerelease": true,
       "minVersion": "15.0.26730.03",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VSSDK"
