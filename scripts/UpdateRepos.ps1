@@ -15,6 +15,8 @@
     The author name to use in the commit message. (Optional)
 .PARAMETER GitAuthorEmail
     The author email to use in the commit message. (Optional)
+.PARAMETER Force
+    Specified this to push commits without prompting.
 .PARAMETER GitCommitArgs
     Any remaining arguments are passed as arguments to 'git commit' actions in each repo.
 #>
@@ -29,6 +31,7 @@ param(
     [switch]$NoPush,
     [string]$GitAuthorName = $null,
     [string]$GitAuthorEmail = $null,
+    [switch]$Force,
     [string[]]$GitCommitArgs = @()
 )
 
