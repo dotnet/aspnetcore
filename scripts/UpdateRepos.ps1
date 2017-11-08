@@ -110,6 +110,7 @@ try {
         Write-Verbose "All updates successful!"
     }
 
+    $shortMessage = "Pushing updates to repos."
     if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Push the changes to these repos?')))) {
         $push_errors = @()
         foreach ($submodule in $updated_submodules) {
