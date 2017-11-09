@@ -38,6 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var called = false;
             documentTracker.ContextChanged += (sender, args) =>
             {
+                Assert.Equal(ContextChangeKind.EditorSettingsChanged, args.Kind);
                 called = true;
                 Assert.Equal(ContextChangeKind.EditorSettingsChanged, args.Kind);
             };
@@ -47,6 +48,77 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.True(called);
+        }
+
+        [Fact]
+        public void ProjectManager_Changed_ProjectChanged_TriggersContextChanged()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+
+            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
+            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
+
+            var called = false;
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                Assert.Equal(ContextChangeKind.ProjectChanged, args.Kind);
+                called = true;
+            };
+
+            // Act
+            documentTracker.ProjectManager_Changed(null, projectChangedArgs);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void ProjectManager_Changed_TagHelpersChanged_TriggersContextChanged()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+
+            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
+            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.TagHelpersChanged);
+
+            var called = false;
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                Assert.Equal(ContextChangeKind.TagHelpersChanged, args.Kind);
+                called = true;
+            };
+
+            // Act
+            documentTracker.ProjectManager_Changed(null, projectChangedArgs);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void ProjectManager_Changed_IgnoresUnknownProject()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+
+            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Other/Path/TestProject.csproj"));
+            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
+
+            var called = false;
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                called = true;
+            };
+
+            // Act
+            documentTracker.ProjectManager_Changed(null, projectChangedArgs);
+
+            // Assert
+            Assert.False(called);
         }
 
         [Fact]

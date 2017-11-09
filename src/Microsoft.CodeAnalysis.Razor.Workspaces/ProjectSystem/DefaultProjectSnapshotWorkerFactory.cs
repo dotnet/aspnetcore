@@ -15,7 +15,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             return new DefaultProjectSnapshotWorker(
                 languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>(),
-                languageServices.GetRequiredService<ProjectExtensibilityConfigurationFactory>());
+                languageServices.GetRequiredService<ProjectExtensibilityConfigurationFactory>(),
+                languageServices.GetRequiredService<TagHelperResolver>());
         }
     }
 }

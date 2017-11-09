@@ -100,5 +100,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
             return false;
         }
+
+        public override string GetProjectName(object project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            var hierarchy = (IVsHierarchy)project;
+            if (ErrorHandler.Failed(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out var name)))
+            {
+                return null;
+            }
+
+            return (string)name;
+        }
     }
 }

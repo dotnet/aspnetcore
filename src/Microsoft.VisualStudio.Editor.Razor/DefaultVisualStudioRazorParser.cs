@@ -387,7 +387,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private void ConfigureTemplateEngine(IRazorEngineBuilder builder)
         {
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
-            builder.Features.Add(new VisualStudioTagHelperFeature(TextBuffer));
+            builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));
         }
 
         private class VisualStudioParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
@@ -408,29 +408,20 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        /// <summary>
-        /// This class will cease to be useful once we control TagHelper discovery. For now, it delegates discovery
-        /// to ITagHelperFeature's that exist on the text buffer.
-        /// </summary>
         private class VisualStudioTagHelperFeature : ITagHelperFeature
         {
-            private readonly ITextBuffer _textBuffer;
+            private readonly IReadOnlyList<TagHelperDescriptor> _tagHelpers;
 
-            public VisualStudioTagHelperFeature(ITextBuffer textBuffer)
+            public VisualStudioTagHelperFeature(IReadOnlyList<TagHelperDescriptor> tagHelpers)
             {
-                _textBuffer = textBuffer;
+                _tagHelpers = tagHelpers;
             }
 
             public RazorEngine Engine { get; set; }
 
             public IReadOnlyList<TagHelperDescriptor> GetDescriptors()
             {
-                if (_textBuffer.Properties.TryGetProperty(typeof(ITagHelperFeature), out ITagHelperFeature feature))
-                {
-                    return feature.GetDescriptors();
-                }
-
-                return Array.Empty<TagHelperDescriptor>();
+                return _tagHelpers;
             }
         }
 

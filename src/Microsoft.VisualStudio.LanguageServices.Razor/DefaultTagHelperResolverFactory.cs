@@ -11,12 +11,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     [ExportLanguageServiceFactory(typeof(TagHelperResolver), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultTagHelperResolverFactory : ILanguageServiceFactory
     {
-        [Import]
-        public VisualStudioWorkspace Workspace { get; set; }
-
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTagHelperResolver(Workspace.Services.GetRequiredService<ErrorReporter>(), Workspace);
+            var workspace = languageServices.WorkspaceServices.Workspace;
+            return new DefaultTagHelperResolver(workspace.Services.GetRequiredService<ErrorReporter>(), workspace);
         }
     }
 }

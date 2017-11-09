@@ -210,6 +210,38 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         [Fact]
+        public void ProjectBuildComplete_KnownProject_NotifiesBackgroundWorker()
+        {
+            // Arrange
+            var project = Workspace.CurrentSolution.AddProject("Test", "Test", LanguageNames.CSharp);
+            ProjectManager.ProjectAdded(project);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.ProjectBuildComplete(project);
+
+            // Assert
+            Assert.False(ProjectManager.ListenersNotified);
+            Assert.True(ProjectManager.WorkerStarted);
+        }
+
+        [Fact]
+        public void ProjectBuildComplete_IgnoresUnknownProject()
+        {
+            // Arrange
+            var project = Workspace.CurrentSolution.AddProject("Test", "Test", LanguageNames.CSharp);
+
+            // Act
+            ProjectManager.ProjectBuildComplete(project);
+
+            // Assert
+            Assert.Empty(ProjectManager.Projects);
+
+            Assert.False(ProjectManager.ListenersNotified);
+            Assert.False(ProjectManager.WorkerStarted);
+        }
+
+        [Fact]
         public void ProjectRemoved_RemovesProject_NotifiesListeners_DoesNotStartBackgroundWorker()
         {
             // Arrange

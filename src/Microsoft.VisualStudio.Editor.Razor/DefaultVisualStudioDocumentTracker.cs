@@ -74,11 +74,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _textViews = new List<ITextView>();
         }
 
-        internal override ProjectExtensibilityConfiguration Configuration => _project.Configuration;
+        internal override ProjectExtensibilityConfiguration Configuration => _project?.Configuration;
 
         public override EditorSettings EditorSettings => _editorSettingsManager.Current;
 
-        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => Array.Empty<TagHelperDescriptor>();
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => _project?.TagHelpers ?? Array.Empty<TagHelperDescriptor>();
 
         public override bool IsSupportedProject => _isSupportedProject;
 
@@ -167,7 +167,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
+        // Internal for testing
+        internal void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
         {
             if (_projectPath != null &&
                 string.Equals(_projectPath, e.Project.UnderlyingProject.FilePath, StringComparison.OrdinalIgnoreCase))

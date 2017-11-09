@@ -11,10 +11,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         private readonly ProjectExtensibilityConfigurationFactory _configurationFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly TagHelperResolver _tagHelperResolver;
 
         public DefaultProjectSnapshotWorker(
             ForegroundDispatcher foregroundDispatcher,
-            ProjectExtensibilityConfigurationFactory configurationFactory)
+            ProjectExtensibilityConfigurationFactory configurationFactory,
+            TagHelperResolver tagHelperResolver)
         {
             if (foregroundDispatcher == null)
             {
@@ -26,8 +28,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(configurationFactory));
             }
 
+            if (tagHelperResolver == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperResolver));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _configurationFactory = configurationFactory;
+            _tagHelperResolver = tagHelperResolver;
         }
 
         public override Task ProcessUpdateAsync(ProjectSnapshotUpdateContext update, CancellationToken cancellationToken = default(CancellationToken))
@@ -54,6 +62,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             var configuration = await _configurationFactory.GetConfigurationAsync(update.UnderlyingProject);
             update.Configuration = configuration;
+
+            var result = await _tagHelperResolver.GetTagHelpersAsync(update.UnderlyingProject);
+            update.TagHelpers = result.Descriptors;
         }
     }
 }

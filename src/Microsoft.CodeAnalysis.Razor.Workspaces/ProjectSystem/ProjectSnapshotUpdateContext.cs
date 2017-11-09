@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -20,5 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public Project UnderlyingProject { get; }
 
         public ProjectExtensibilityConfiguration Configuration { get; set; }
+
+        public IReadOnlyList<TagHelperDescriptor> TagHelpers { get; set; }
     }
 }

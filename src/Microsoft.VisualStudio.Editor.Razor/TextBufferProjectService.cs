@@ -12,5 +12,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public abstract bool IsSupportedProject(object project);
 
         public abstract string GetProjectPath(object project);
+
+        public abstract string GetProjectName(object project);
     }
 }

@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -41,6 +44,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ComputedVersion = other.ComputedVersion;
             Configuration = other.Configuration;
+            TagHelpers = other.TagHelpers;
         }
 
         private DefaultProjectSnapshot(ProjectSnapshotUpdateContext update, DefaultProjectSnapshot other)
@@ -59,11 +63,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             ComputedVersion = update.UnderlyingProject.Version;
             Configuration = update.Configuration;
+            TagHelpers = update.TagHelpers ?? Array.Empty<TagHelperDescriptor>();
         }
 
         public override ProjectExtensibilityConfiguration Configuration { get; }
 
         public override Project UnderlyingProject { get; }
+
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers { get; } = Array.Empty<TagHelperDescriptor>();
 
         // This is the version that the computed state is based on.
         public VersionStamp? ComputedVersion { get; set; }
@@ -92,7 +99,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DefaultProjectSnapshot(update, this);
         }
 
-        public bool HasChangesComparedTo(ProjectSnapshot original)
+        public bool HasConfigurationChanged(ProjectSnapshot original)
         {
             if (original == null)
             {
@@ -100,6 +107,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             return !object.Equals(Configuration, original.Configuration);
+        }
+
+        public bool HaveTagHelpersChanged(ProjectSnapshot original)
+        {
+            if (original == null)
+            {
+                throw new ArgumentNullException(nameof(original));
+            }
+
+            return !Enumerable.SequenceEqual(TagHelpers, original.TagHelpers);
         }
     }
 }
