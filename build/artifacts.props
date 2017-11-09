@@ -136,7 +136,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="noship" />
-      <PackageArtifact Include="Microsoft.AspNetCore.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Abstractions" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Client.Http" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Common.Http" Category="noship" />
@@ -157,7 +157,7 @@
     <PackageArtifact Include="Microsoft.DotNet.Watcher.Tools" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
-    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.0" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.EntityFrameworkCore" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Design" Category="ship" Metapackage="true" RuntimeStore="true"/>
