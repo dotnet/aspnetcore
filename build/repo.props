@@ -1,11 +1,9 @@
 <Project>
-  <Import Project="artifacts.props" />
-  <Import Project="dependencies.props" />
-  <Import Project="submodules.props" />
-
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
   </PropertyGroup>
 
+  <Import Project="artifacts.props" />
+  <Import Project="submodules.props" />
 </Project>

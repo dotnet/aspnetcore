@@ -7,7 +7,7 @@ using System.Text;
 using Microsoft.Build.Framework;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using RepoTasks.ProjectModel;
+using RepoTasks.Utilities;
 
 namespace RepoTasks
 {
@@ -44,26 +44,22 @@ namespace RepoTasks
 
             foreach (var file in Files)
             {
-                var isSymbolsPackage = file.ItemSpec.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase);
-
                 PackageIdentity identity;
                 using (var reader = new PackageArchiveReader(file.ItemSpec))
                 {
                     identity = reader.GetIdentity();
                 }
 
+                var isSymbolsPackage = file.ItemSpec.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase);
                 PackageCategory category;
                 if (isSymbolsPackage)
                 {
                     category = PackageCategory.Symbols;
                 }
-                else
+                else if (!expectedPackages.TryGetCategory(identity.Id, out category))
                 {
-                    if (!expectedPackages.TryGetCategory(identity.Id, out category))
-                    {
-                        Log.LogError($"Unexpected package artifact with id: {identity.Id}");
-                        continue;
-                    }
+                    Log.LogError($"Unexpected package artifact with id: {identity.Id}");
+                    continue;
                 }
 
                 string destDir;

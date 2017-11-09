@@ -9,6 +9,8 @@ _ReSharper.*
 *.pidb
 *.vspx
 *.psess
+*.binlog
+*.log
 packages
 target
 artifacts
@@ -16,6 +18,8 @@ StyleCop.Cache
 node_modules
 *.snk
 .nuget
+.r
+.w
 .deps
 global.json
-*.binlog
+msbuild.ProjectImports.zip

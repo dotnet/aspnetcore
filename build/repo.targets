@@ -1,29 +1,31 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
+  <Import Project="RuntimeStore.targets" />
+  <Import Project="RuntimeStoreInstaller.targets" />
+  <Import Project="PackageArchive.targets" />
+  <Import Project="Templating.targets" />
   <Import Project="push.targets" />
 
   <PropertyGroup>
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
-    <_DependencyLineupDir>$(RepositoryRoot).deps\lineups\</_DependencyLineupDir>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
-    <_RestoreGraphSpecsDirectory>$(IntermediateDir)package-specs\</_RestoreGraphSpecsDirectory>
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Build</_RepositoryBuildTargets>
-
     <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
     <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
     <!-- For external packages that come from feeds we don't mirror. -->
     <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.props</GeneratedPackageVersionPropsPath>
+    <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.props</GeneratedRestoreSourcesPropsPath>
 
-    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;CleanArtifacts;PrepareOutputPaths</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPaths</PrepareDependsOn>
+    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
-    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts</CleanDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CopyPackagesByCategory</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
@@ -33,6 +35,10 @@
 
   <Target Name="RestoreExternalDependencies">
     <DownloadNuGetPackages
+      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'false'))"
+      DestinationFolder="$(IntermediateExternalPackageDir)" />
+
+    <DownloadNuGetPackages
       Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
       DestinationFolder="$(IntermediateMirrorPackageDir)" />
   </Target>
@@ -40,40 +46,79 @@
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
 
     <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
+    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath))" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=%(Repository.RootPath);KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
     </MSBuild>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=%(Repository.RootPath);KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" />
     </MSBuild>
 
+    <!--
+      Analyze what was shipped in these repos.
+      This is required so we can verify that cascading versions are consistent.
+    -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />
+    </MSBuild>
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="ResolveSolutions"
+             Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
+    </MSBuild>
+
+    <ItemGroup>
+      <Solution Update="@(Solution)" Build="true" />
+      <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
+      <Solution Include="@(_NoBuildSolution)" />
+    </ItemGroup>
+
     <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="GeneratePropsFiles" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
-      <PackageArtifactInfo Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+      <_LineupPackages Include="@(ExternalDependency)" />
+      <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
+      <_LineupPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
+
+      <_LineupSources Include="$(_DependencyPackagesDirectory)" Condition="'$(_DependencyPackagesDirectory)' != '' AND Exists('$(_DependencyPackagesDirectory)')" />
+      <_LineupSources Include="$(BuildDir)" />
+      <_LineupSources Include="$(IntermediateExternalPackageDir)" />
+      <_LineupSources Include="$(IntermediateMirrorPackageDir)" />
     </ItemGroup>
 
     <GeneratePackageVersionPropsFile
-      Packages="@(ExternalDependency);@(PackageArtifactInfo)"
+      Packages="@(_LineupPackages)"
       OutputPath="$(GeneratedPackageVersionPropsPath)" />
 
     <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
+
+    <RepoTasks.GenerateRestoreSourcesPropsFile
+      Sources="@(_LineupSources)"
+      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
                 Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
+  </Target>
+
+  <Target Name="CleanUniverseArtifacts">
+    <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
   </Target>
 
   <Target Name="_PrepareRepositories">
@@ -99,53 +144,23 @@
 
     <ItemGroup>
       <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
+      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
     </ItemGroup>
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_UpdateNuGetConfig;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
 
-  <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="ResolveSolutions"
-             Properties="RepositoryRoot=%(Repository.RootPath)"
-             ContinueOnError="WarnAndContinue"
-             Condition="%(Repository.Build)">
-      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
-    </MSBuild>
 
-    <Error Text="No solutions were found. Did you remember to checkout the git submodules? Run `git submodules update`." Condition="@(Solution->Count()) == 0" />
-
-    <ItemGroup>
-      <Solution>
-        <AdditionalProperties>RestoreGraphOutputPath=$(_RestoreGraphSpecsDirectory)$([System.IO.Path]::GetFileName('$([System.IO.Path]::GetDirectoryName(%(FullPath)))'))\%(Solution.FileName)%(Solution.Extension).json</AdditionalProperties>
-      </Solution>
-
-      <GraphSpecInputs Include="
-        @(Solution);
-        $(SubmoduleRoot)**\*.csproj;
-        $(SubmoduleRoot)**\dependencies.props" />
-      <GraphSpecOutputs Include="$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_GenerateRestoreGraphSpecs" DependsOnTargets="_PrepareRestoreGraphSpecs" Inputs="@(GraphSpecInputs)" Outputs="@(GraphSpecOutputs)">
-    <MSBuild
-      Projects="@(Solution)"
-      Targets="GenerateRestoreGraphFile"
-      Properties="BuildNumber=$(BuildNumber);KoreBuildRestoreTargetsImported=true"
-      BuildInParallel="$(BuildInParallel)"
-      ContinueOnError="true" />
-  </Target>
-
-  <Target Name="_GenerateBuildGraph" DependsOnTargets="_GenerateRestoreGraphSpecs">
-    <RepoTasks.CalculateBuildGraph
-      Repositories="@(Repository->WithMetadataValue('Build', 'true'))"
+  <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
+    <RepoTasks.AnalyzeBuildGraph
+      Solutions="@(Solution)"
+      Artifacts="@(ArtifactInfo)"
+      Dependencies="@(ExternalDependency)"
       StartGraphAt="$(BuildGraphOf)"
-      DefaultPackageVersion="$(Version)"
-      PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
-      <Output TaskParameter="RepositoriesToBuildInOrder" ItemName="RepositoryToBuildInOrder" />
-    </RepoTasks.CalculateBuildGraph>
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
+      <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
+    </RepoTasks.AnalyzeBuildGraph>
   </Target>
 
   <Target Name="_UpdateNuGetConfig">
@@ -164,7 +179,7 @@
       SourceUri="$(BuildDir)" />
   </Target>
 
-  <Target Name="CopyPackagesByCategory">
+  <Target Name="SplitPackages">
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" />
       <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
@@ -186,11 +201,12 @@
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
       <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
+      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(Version)" />
     </ItemGroup>
 
     <RepoTasks.VerifyCoherentVersions
       PackageFiles="@(ShippingPackageFiles)"
-      ExternalDependencies="@(ExternalDependency)" />
+      ExternalDependencies="@(ExternalDependency);@(ShippedExternalDependency)" />
   </Target>
 
 </Project>

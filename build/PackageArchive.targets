@@ -1,0 +1,74 @@
+<Project>
+  <PropertyGroup>
+    <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
+    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <TimestampSource>$(RepositoryRoot).deps\Signed\Packages\</TimestampSource>
+    <TimestampFreeSource>$(RepositoryRoot).deps\Signed\Packages-NoTimeStamp\</TimestampFreeSource>
+    <TimestampOutputPackageName>nuGetPackagesArchive.timestamped</TimestampOutputPackageName>
+    <TimestampFreeOutputPackageName>nuGetPackagesArchive.notimestamp</TimestampFreeOutputPackageName>
+  </PropertyGroup>
+
+  <Target Name="BuildFallbackArchive">
+    <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
+    <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
+    <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildFallbackArchive"
+      Properties="MetapackageRestoreSource=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false;MetapackageVersion=$(PackageVersion)" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildFallbackArchive"
+      Properties="MetapackageRestoreSource=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true;MetapackageVersion=$(PackageVersionNoTimestamp)" />
+  </Target>
+
+  <Target Name="_BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
+    <Error Text="MetapackageRestoreSource must be specified" Condition=" '$(MetapackageRestoreSource)' == '' " />
+    <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
+    <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
+    <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
+
+    <!-- Clear the directories -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <!-- Copy the archive template -->
+    <Copy SourceFiles="$(_TemplatesDirectory)Archive\Archive.csproj" DestinationFiles="$(_WorkRoot)Archive.csproj" />
+
+    <!-- Copy the archive template -->
+    <RepoTasks.AddArchiveReferences
+      ReferencePackagePath="$(_WorkRoot)Archive.csproj"
+      BuildArtifacts="@(ArtifactInfo)"
+      PackageArtifacts="@(PackageArtifact)"
+      ExternalDependencies="@(ExternalDependency)"
+      RemoveTimestamp="$(RemoveTimestamp)"
+      MetapackageVersion="$(MetapackageVersion)" />
+
+    <PropertyGroup>
+      <FallbackStagingDir>$(_WorkRoot)obj\$(OutputPackageName)</FallbackStagingDir>
+      <FallbackOutputDir>$(ArtifactsDir)lzma\</FallbackOutputDir>
+      <FallbackOutputPath>$(FallbackOutputDir)$(OutputPackageName).lzma</FallbackOutputPath>
+      <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(OutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
+      <_FallbackArchiveRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+    </ItemGroup>
+
+    <RepoTasks.GenerateRestoreSourcesPropsFile
+      Sources="@(_FallbackArchiveRestoreSources)"
+      OutputPath="$(GeneratedFallbackRestoreSourcesPropsPath)" />
+
+    <!-- Create the Staging Dir -->
+    <MakeDir Directories="$(FallbackStagingDir);$(FallbackOutputDir)" />
+
+    <!-- Restore the target project -->
+    <MSBuild
+      Projects="$(_WorkRoot)Archive.csproj"
+      Targets="Restore"
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
+
+    <!-- Create the archive -->
+    <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
+  </Target>
+</Project>
