@@ -193,13 +193,25 @@ namespace RepoTasks
                         RootDir = Path.GetDirectoryName(s.FullPath)
                     };
 
-                    var packages = artifacts.Where(a => a.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    var packages = artifacts
+                        .Where(a => a.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase))
+                        .ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
 
                     foreach (var proj in s.Projects)
                     {
-                        var projectGroup = packages.Any(p => p.PackageInfo.Id == proj.PackageId)
-                            ? repo.Projects
-                            : repo.SupportProjects;
+                        IList<Project> projectGroup;
+                        if (packages.ContainsKey(proj.PackageId))
+                        {
+                            // this project is a package producer and consumer
+                            packages.Remove(proj.PackageId);
+                            projectGroup = repo.Projects;
+                        }
+                        else
+                        {
+                            // this project is a package consumer
+                            projectGroup = repo.SupportProjects;
+                        }
+
 
                         projectGroup.Add(new Project(proj.PackageId)
                             {
@@ -209,6 +221,12 @@ namespace RepoTasks
                                     .SelectMany(f => f.Dependencies.Keys)
                                     .Concat(proj.Tools.Select(t => t.Id)), StringComparer.OrdinalIgnoreCase),
                             });
+                    }
+
+                    foreach (var packageId in packages.Keys)
+                    {
+                        // these packages are produced from something besides a csproj. e.g. .Sources packages
+                        repo.Projects.Add(new Project(packageId) { Repository = repo });
                     }
 
                     return repo;
