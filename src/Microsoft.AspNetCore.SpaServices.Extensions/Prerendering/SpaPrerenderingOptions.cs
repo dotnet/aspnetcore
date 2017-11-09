@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
         /// file automatically when the application runs. This property should be left as <c>null</c> in
         /// production applications.
         /// </summary>
-        public ISpaPrerendererBuilder BuildOnDemand { get; set; }
+        public ISpaPrerendererBuilder BootModuleBuilder { get; set; }
 
         /// <summary>
         /// Gets or sets the path, relative to your application root, of the JavaScript file

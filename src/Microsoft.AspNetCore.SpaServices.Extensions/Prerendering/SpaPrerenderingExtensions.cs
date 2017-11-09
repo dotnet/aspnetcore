@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             // If we're building on demand, start that process in the background now
-            var buildOnDemandTask = options.BuildOnDemand?.Build(spaBuilder);
+            var buildOnDemandTask = options.BootModuleBuilder?.Build(spaBuilder);
 
             // Get all the necessary context info that will be used for each prerendering call
             var applicationBuilder = spaBuilder.ApplicationBuilder;
