@@ -49,7 +49,7 @@
       <_NoTimestampPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersionNoTimestamp)" />
     </ItemGroup>
 
-    <RepoTasks.GeneratePackageVersionPropsFile
+    <GeneratePackageVersionPropsFile
       Packages="@(_NoTimestampPackages)"
       OutputPath="$(GeneratedNoTimestampPackageVersionPropsPath)" />
 
