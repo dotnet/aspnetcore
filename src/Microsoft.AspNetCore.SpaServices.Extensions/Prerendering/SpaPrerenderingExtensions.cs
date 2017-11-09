@@ -113,21 +113,19 @@ namespace Microsoft.AspNetCore.Builder
                         context.Response.Body = originalResponseStream;
                     }
 
-                    // If it's not a success response, we're not going to have any template HTML
-                    // to pass to the prerenderer.
-                    if (context.Response.StatusCode < 200 || context.Response.StatusCode >= 300)
+                    // If it isn't an HTML page that we can use as the template for prerendering,
+                    //  - ... because it's not text/html
+                    //  - ... or because it's an error
+                    // then prerendering doesn't apply to this request, so just pass through the
+                    // response as-is. Note that the non-text/html case is not an error: this is
+                    // typically how the SPA dev server responses for static content are returned
+                    // in development mode.
+                    var canPrerender = IsSuccessStatusCode(context.Response.StatusCode)
+                        && IsHtmlContentType(context.Response.ContentType);
+                    if (!canPrerender)
                     {
-                        var message = $"Prerendering failed because no HTML template could be obtained. " +
-                            $"Check that your SPA is compiling without errors. " +
-                            $"The {nameof(SpaApplicationBuilderExtensions.UseSpa)}() middleware returned " +
-                            $"a response with status code {context.Response.StatusCode}.";
-                        if (outputBuffer.Length > 0)
-                        {
-                            message += " and the following content: "
-                                + Encoding.UTF8.GetString(outputBuffer.GetBuffer());
-                        }
-
-                        throw new InvalidOperationException(message);
+                        await outputBuffer.CopyToAsync(context.Response.Body);
+                        return;
                     }
 
                     // Most prerendering logic will want to know about the original, unprerendered
@@ -159,6 +157,20 @@ namespace Microsoft.AspNetCore.Builder
                 }
             });
         }
+
+        private static bool IsHtmlContentType(string contentType)
+        {
+            if (string.Equals(contentType, "text/html", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return contentType != null
+                && contentType.StartsWith("text/html;", StringComparison.Ordinal);
+        }
+
+        private static bool IsSuccessStatusCode(int statusCode)
+            => statusCode >= 200 && statusCode < 300;
 
         private static void RemoveConditionalRequestHeaders(HttpRequest request)
         {
