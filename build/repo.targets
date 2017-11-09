@@ -162,6 +162,12 @@
       SourceName="Artifacts"
       Condition="%(Repository.Build)"
       SourceUri="$(BuildDir)" />
+    
+    <UpdatePackageSource
+      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
+      SourceName="MirroredArtifacts"
+      Condition="%(Repository.Build)"
+      SourceUri="$(IntermediateMirrorPackageDir)" />
   </Target>
 
   <Target Name="CopyPackagesByCategory">
