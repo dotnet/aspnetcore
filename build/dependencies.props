@@ -46,7 +46,7 @@
     <MicrosoftExtensionsConfigurationPackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsConfigurationPackageVersion>
     <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.0.0</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-25711-01</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>2.1.0-preview1-27474</MicrosoftExtensionsFileProvidersCompositePackageVersion>
