@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 
 namespace Microsoft.AspNetCore.SpaServices
@@ -26,11 +27,12 @@ namespace Microsoft.AspNetCore.SpaServices
                 return next();
             });
 
-            // Serve it as file from wwwroot (by default), or any other configured file provider
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = options.DefaultPageFileProvider
-            });
+            // Serve it as a static file
+            // Developers who need to host more than one SPA with distinct default pages can
+            // override the file provider
+            app.UseSpaStaticFilesInternal(
+                overrideFileProvider: options.DefaultPageFileProvider,
+                allowFallbackOnServingWebRootFiles: true);
 
             // If the default file didn't get served as a static file (usually because it was not
             // present on disk), the SPA is definitely not going to work.

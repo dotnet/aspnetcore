@@ -15,6 +15,7 @@
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreWebSocketsPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreWebSocketsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalPackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsFileProvidersPhysicalPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
