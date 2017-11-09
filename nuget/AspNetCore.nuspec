@@ -15,8 +15,8 @@
     <tags>Microsoft.AspNetCore.AspNetCoreModule</tags>
   </metadata>
   <files>
-    <file src="..\artifacts\build\AspNetCore\bin\Release\Win32\aspnetcore.dll" target="runtimes\win7\native\aspnetcore_x86.dll" />
-    <file src="..\artifacts\build\AspNetCore\bin\Release\x64\aspnetcore.dll" target="runtimes\win7\native\aspnetcore_x64.dll" />
+    <file src="..\artifacts\build\AspNetCore\bin\Release\Win32\aspnetcore.dll" target="runtimes\win7\native\x86\aspnetcore.dll" />
+    <file src="..\artifacts\build\AspNetCore\bin\Release\x64\aspnetcore.dll" target="runtimes\win7\native\x64\aspnetcore.dll" />
     <file src="..\artifacts\build\AspNetCore\bin\Release\x64\*.xml"/>
     <file src="..\tools\installancm.ps1"/>
     <file src="..\LICENSE.txt"/>
