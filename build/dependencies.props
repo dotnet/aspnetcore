@@ -63,7 +63,7 @@
 
   <ItemGroup>
     <!-- The consume compiler used by Kestrel. -->
-    <ExternalDependency Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta2-62211-02" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta2-62211-02" Source="$(RoslynFeed)" Private="true" Mirror="true" />
 
     <!-- These versions of roslyn must be used when building a VSIX. -->
     <!-- Suppress KRB2004 because this version differs from the version used by the runtime. -->

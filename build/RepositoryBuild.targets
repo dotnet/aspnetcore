@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="_BuildRepositories" DependsOnTargets="GenerateLineup">
+  <Target Name="_BuildRepositories" DependsOnTargets="GeneratePropsFiles">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
         <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
