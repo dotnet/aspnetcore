@@ -72,10 +72,17 @@ try {
                 continue
             }
 
-            Write-Verbose "About to update dependencies.props for $($submodule.module)"
-            & .\run.ps1 -Update upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
+            $koreBuildLock = "korebuild-lock.txt"
 
-            Invoke-Block { & git @gitConfigArgs add $depsFile "korebuild-lock.txt" }
+            $universeKoreBuildLock = (Join-Path $RepoRoot $koreBuildLock)
+            $submoduleKoreBuildLock = (Join-Path $submodule.path $koreBuildLock)
+
+            Copy-Item $universeKoreBuildLock $submoduleKoreBuildLock -Force
+
+            Write-Verbose "About to update dependencies.props for $($submodule.module)"
+            & .\run.ps1 upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
+
+            Invoke-Block { & git @gitConfigArgs add $depsFile $koreBuildLock }
             Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
 
             $sshUrl = "git@github.com:aspnet/$($submodule.module)"
