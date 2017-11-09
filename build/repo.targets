@@ -46,7 +46,7 @@
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
 
     <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
-    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath))" />
+    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath)) AND '%(ShippedRepository.Identity)' != ''" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
@@ -69,13 +69,15 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />
     </MSBuild>
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="'%(ShippedRepository.Identity)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
     </MSBuild>
 
@@ -144,7 +146,7 @@
 
     <ItemGroup>
       <Repository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
-      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" />
+      <ShippedRepository Update="%(Identity)" RootPath="$(SubmoduleRoot)%(Identity)\" Condition="'%(Identity)' != ''" />
     </ItemGroup>
   </Target>
 

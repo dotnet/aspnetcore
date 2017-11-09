@@ -61,45 +61,62 @@
     <RoslynDevPackageVersion>2.6.0-beta1-62023-02</RoslynDevPackageVersion>
   </PropertyGroup>
 
-    <ItemGroup>
+  <ItemGroup>
+    <!-- The consume compiler used by Kestrel. -->
+    <ExternalDependency Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta2-62211-02" Private="true" Mirror="true" />
+
     <!-- These versions of roslyn must be used when building a VSIX. -->
+    <!-- Suppress KRB2004 because this version differs from the version used by the runtime. -->
     <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisCommonPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftCodeAnalysisRemoteWorkspacesPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion</VariableName>
     </ExternalDependency>
   </ItemGroup>
@@ -131,6 +148,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="BuildBundlerMinifier" Version="2.4.337" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="BenchmarkDotNet" Version="0.10.9" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="EntityFramework" Version="6.1.3" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)" Private="true" />
@@ -148,16 +166,39 @@
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Build" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Features" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
+
+    <!-- Razor uses a custom version of roslyn packages -->
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Features" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="2.3.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+
     <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
@@ -165,12 +206,18 @@
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.0-preview1-408290725" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="1.0.5" TargetFramework="netcoreapp1.0" Source="$(DefaultNuGetFeed)">
+      <!-- Multiple versions of this package required to support all netcoreapp versions -->
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftNETCoreApp10PackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.NETCore.App" Version="1.1.2" TargetFramework="netcoreapp1.1" Source="$(DefaultNuGetFeed)">
+      <!-- Multiple versions of this package required to support all netcoreapp versions -->
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftNETCoreApp11PackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" TargetFramework="netcoreapp2.0" Source="$(DefaultNuGetFeed)">
+      <!-- Multiple versions of this package required to support all netcoreapp versions -->
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftNETCoreApp20PackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="1.0.0-rc3-003121" Source="$(DefaultNuGetFeed)" Private="true" />
@@ -182,7 +229,10 @@
     <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true">
+      <!-- This version should be used by runtime packages -->
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
     <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" Source="$(DefaultNuGetFeed)" Private="true" />
@@ -199,14 +249,30 @@
     <ExternalDependency Include="Mono.Addins" Version="1.3.7" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="MsgPack.Cli" Version="0.9.0-beta2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+
+    <ExternalDependency Include="NETStandard.Library" Version="1.6.1" Source="$(DefaultNuGetFeed)">
+      <!-- netstandard1.x -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>NETStandard16PackageVersion</VariableName>
+    </ExternalDependency>
+
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
+      <!-- netstandard2.0 -->
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
+
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)">
+      <!-- This version is used by runtime packages. -->
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
     <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)">
       <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
+      <NoWarn>KRB2004</NoWarn>
       <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="NuGet.Frameworks" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Oracle.ManagedDataAccess" Version="12.2.1100" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Remotion.Linq" Version="2.2.0-alpha-002" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="3.2.0" Source="$(DefaultNuGetFeed)" />
@@ -215,6 +281,7 @@
     <ExternalDependency Include="SQLitePCLRaw.core" Version="1.1.8" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="StackExchange.Redis.StrongName" Version="1.2.4" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="StreamJsonRpc" Version="1.1.92" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="StyleCop.Analyzers" Version="1.0.0" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="System.Buffers" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.CodeDom" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Collections.Immutable" Version="1.4.0" Source="$(DefaultNuGetFeed)" />
@@ -226,7 +293,15 @@
     <ExternalDependency Include="System.Composition.TypedParts" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Composition" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Configuration.ConfigurationManager" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.3.1" Source="$(DefaultNuGetFeed)" Private="true">
+      <!-- This version is used by EF's 1.1 benchmark project -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>Benchmarks_11_SystemDataSqlClientPackageVersion</VariableName>
+    </ExternalDependency>
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.0" Source="$(DefaultNuGetFeed)">
+      <!-- This version should be used by runtime packages. -->
+      <NoWarn>KRB2004</NoWarn>
+    </ExternalDependency>
     <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Interactive.Async" Version="3.1.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
