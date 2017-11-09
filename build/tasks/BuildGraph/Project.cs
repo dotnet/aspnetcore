@@ -23,6 +23,6 @@ namespace RepoTools.BuildGraph
 
         public Repository Repository { get; set; }
 
-        public ISet<string> PackageReferences { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public ISet<string> PackageReferences { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     }
 }

@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Build.Framework;
 
-namespace RepoTasks.ProjectModel
+namespace RepoTasks.Utilities
 {
     public class PackageCollection
     {

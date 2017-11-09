@@ -2,11 +2,11 @@
   <Target Name="_BuildRepositories" DependsOnTargets="GenerateLineup">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
-        <BuildGroup>%(RepositoryToBuildInOrder.Order)</BuildGroup>
-        <Repository>%(RepositoryToBuildInOrder.Identity)</Repository>
+        <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
+        <Repository>%(RepositoryBuildOrder.Identity)</Repository>
         <AdditionalProperties>
-          RepositoryToBuild=%(RepositoryToBuildInOrder.Identity);
-          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryToBuildInOrder.RootPath)))
+          RepositoryToBuild=%(RepositoryBuildOrder.Identity);
+          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryBuildOrder.RootPath)))
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -16,20 +16,34 @@
       <BatchBuilds Condition="'$(BatchBuilds)'==''">false</BatchBuilds>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PinnedArtifactInfo Include="@(ArtifactInfo)" Condition="'$(BuildGraphOf)' == ''" />
+    </ItemGroup>
+
+    <!-- If we are building a sub-graph, we need to re-examine the list of artifacts that will actual build. -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(SubmoduleRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Condition="'$(BuildGraphOf)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
+    </MSBuild>
+
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="$(BatchBuilds)"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
-      Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber)" />
+      Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
   </Target>
 
   <Target Name="_BuildRepository">
     <PropertyGroup>
+      <!-- Should reduce allowable package feeds to only nuget.org. -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber)</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 
       <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>

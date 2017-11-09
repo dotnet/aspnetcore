@@ -3,11 +3,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.ProjectModel" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
+    <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

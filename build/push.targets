@@ -1,42 +1,33 @@
 <Project>
   <Target Name="Push" DependsOnTargets="_PushNuGet;_PushNpm" />
 
-  <Target Name="_PushNuGet">
+  <ItemGroup>
+    <PackagesToPush Include="$(BuildDir)*.nupkg" />
+    <PackagesToPush Include="$(ArtifactsDir)mirror\*.nupkg" />
+    <PackagesToPush Include="$(LineupBuildDir)*.nupkg" />
+  </ItemGroup>
+
+  <Target Name="_PushNuGet" Condition="@(PackagesToPush->Count()) != 0">
     <Error Text="Missing required property: NuGetPublishFeed"  Condition=" '$(NuGetPublishFeed)' == '' "/>
-
-    <ItemGroup>
-      <_PackagesToPush Include="$(BuildDir)*.nupkg" />
-      <_PackagesToPush Include="$(ArtifactsDir)mirror\*.nupkg" />
-      <_LineupPackagesToPush Include="$(LineupBuildDir)*.nupkg" />
-    </ItemGroup>
-
     <PushNuGetPackages
-      Packages="@(_PackagesToPush)"
+      Packages="@(PackagesToPush)"
       Feed="$(NuGetPublishFeed)"
-      Condition="@(_PackagesToPush->Count()) != 0"
-      ApiKey="$(APIKey)" />
-
-    <PushNuGetPackages
-      Packages="@(_LineupPackagesToPush)"
-      Feed="$(NuGetPublishFeed)"
-      Condition="@(_LineupPackagesToPush->Count()) != 0"
       ApiKey="$(APIKey)" />
   </Target>
 
-  <Target Name="_PushNpm">
+  <ItemGroup>
+    <NpmModuleArtifact Include="$(BuildDir)*.tgz" />
+  </ItemGroup>
+
+  <Target Name="_PushNpm" Condition="@(NpmModuleArtifact->Count()) != 0">
     <Error Text="Missing required property: NpmRegistry"  Condition=" '$(NpmRegistry)' == '' "/>
 
     <PropertyGroup>
       <AuthTokenSetting>$(NpmRegistry.Replace("https:", "")):_authToken</AuthTokenSetting>
     </PropertyGroup>
 
-    <ItemGroup>
-      <NpmModuleArtifact Include="$(BuildDir)*.tgz" />
-    </ItemGroup>
-
     <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(APIKey)" Condition=" '$(APIKey)' != '' " />
     <Exec Command="npm publish --registry $(NpmRegistry) &quot;%(NpmModuleArtifact.Identity)&quot;"
-          Condition="@(NpmModuleArtifact->Count()) != 0"
           ContinueOnError="true">
       <Output TaskParameter="ExitCode" ItemName="ExitCodes" />
     </Exec>

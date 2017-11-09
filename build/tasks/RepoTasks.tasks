@@ -3,7 +3,17 @@
     <_RepoTaskAssembly>$(MSBuildThisFileDirectory)bin\publish\RepoTasks.dll</_RepoTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="RepoTasks.CalculateBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.AnalyzeBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CopyPackagesToSplitFolders" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.GenerateRestoreSourcesPropsFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyCoherentVersions" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.AddMetapackageReferences" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.AddArchiveReferences" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.AddRSReferences" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ResolveHostingStartupPackages" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.TrimDeps" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CreateCommonManifest" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ComposeNewStore" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ConsolidateManifests" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ReplaceInFile" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>
