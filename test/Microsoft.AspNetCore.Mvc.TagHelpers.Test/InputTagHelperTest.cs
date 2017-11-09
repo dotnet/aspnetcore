@@ -1052,6 +1052,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "text", null, "text" },
                     { "TEXT", null, "text" },
                     { "time", null, "time" },
+                    { "month", "{0:yyyy-MM}", "month" },
                     { "UInt16", null, "number" },
                     { "uint16", null, "number" },
                     { "UInt32", null, "number" },
@@ -1217,6 +1218,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("Time", Html5DateRenderingMode.CurrentCulture, "{0:t}", "time")]    // Format from [DataType].
         [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
+        [InlineData("Month", Html5DateRenderingMode.CurrentCulture, "{0:yyyy-MM}", "month")]
+        [InlineData("Month", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM}", "month")]
         [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
         [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
@@ -1377,6 +1380,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             [DataType(DataType.Time)]
             public DateTimeOffset Time { get; set; }
+
+            [DataType("month")]
+            public DateTimeOffset Month { get; set; }
         }
 
         private class NestedModel

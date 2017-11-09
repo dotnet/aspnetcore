@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 { "DateTime-local", DefaultEditorTemplates.DateTimeLocalInputTemplate },
                 { nameof(DateTimeOffset), DefaultEditorTemplates.DateTimeOffsetTemplate },
                 { "Time", DefaultEditorTemplates.TimeInputTemplate },
+                { "Month", DefaultEditorTemplates.MonthInputTemplate },
                 { typeof(byte).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(sbyte).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(short).Name, DefaultEditorTemplates.NumberInputTemplate },

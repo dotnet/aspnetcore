@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     { "DateTimeOffset", "__TextBox__ class='text-box single-line' type='text'" },
                     { "Time", "__TextBox__ class='text-box single-line' type='time'" },
                     { "time", "__TextBox__ class='text-box single-line' type='time'" },
+                    { "Month", "__TextBox__ class='text-box single-line' type='month'" },
+                    { "month", "__TextBox__ class='text-box single-line' type='month'" },
                     { "Byte", "__TextBox__ class='text-box single-line' type='number'" },
                     { "BYTE", "__TextBox__ class='text-box single-line' type='number'" },
                     { "SByte", "__TextBox__ class='text-box single-line' type='number'" },
@@ -825,6 +827,7 @@ Environment.NewLine;
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060", "datetime-local")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.060-05:00", "text")]
         [InlineData("time", "{0:t}", "03:04:05.060", "time")]
+        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
         public void Editor_FindsCorrectDateOrTimeTemplate(
             string dataTypeName,
             string editFormatString,
@@ -886,6 +889,7 @@ Environment.NewLine;
         [InlineData("datetime-local", null, "02/01/2000 03:04:05 -05:00", "datetime-local")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000-05:00", "text")]
         [InlineData("time", "{0:t}", "03:04", "time")]
+        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate_NotRfc3339(
             string dataTypeName,
@@ -950,6 +954,7 @@ Environment.NewLine;
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060", "datetime-local")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.060Z", "text")]
         [InlineData("time", "{0:t}", "03:04:05.060", "time")]
+        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
         public void Editor_FindsCorrectDateOrTimeTemplate_ForDateTime(
             string dataTypeName,
             string editFormatString,
@@ -1010,6 +1015,7 @@ Environment.NewLine;
         [InlineData("datetime-local", null, "02/01/2000 03:04:05", "datetime-local")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000Z", "text")]
         [InlineData("time", "{0:t}", "03:04", "time")]
+        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate_ForDateTimeNotRfc3339(
             string dataTypeName,
@@ -1076,6 +1082,8 @@ Environment.NewLine;
         [InlineData("datetime-local", Html5DateRenderingMode.Rfc3339, "datetime-local")]
         [InlineData("time", Html5DateRenderingMode.CurrentCulture, "time")]
         [InlineData("time", Html5DateRenderingMode.Rfc3339, "time")]
+        [InlineData("month", Html5DateRenderingMode.CurrentCulture, "month")]
+        [InlineData("month", Html5DateRenderingMode.Rfc3339, "month")]
         public void Editor_AppliesNonDefaultEditFormat(string dataTypeName, Html5DateRenderingMode renderingMode, string expectedType)
         {
             // Arrange
