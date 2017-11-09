@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SpaServices
             {
                 if (string.IsNullOrEmpty(value.Value))
                 {
-                    throw new ArgumentNullException($"The value for {nameof(DefaultPage)} cannot be null or empty.");
+                    throw new ArgumentException($"The value for {nameof(DefaultPage)} cannot be null or empty.");
                 }
 
                 _defaultPage = value;
