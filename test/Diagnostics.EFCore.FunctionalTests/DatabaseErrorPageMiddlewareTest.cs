@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
             public virtual async Task Invoke(HttpContext context)
             {
-                await context.Response.WriteAsync("Request Handled");
                 context.Response.StatusCode = (int)HttpStatusCode.OK;
+                await context.Response.WriteAsync("Request Handled");
             }
         }
 
