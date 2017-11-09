@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <ItemDefinitionGroup>
     <ExternalDependency>
@@ -31,6 +31,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
 
@@ -200,7 +201,6 @@
     </ExternalDependency>
 
     <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.0-preview1-408290725" Source="$(DefaultNuGetFeed)" />
