@@ -18,9 +18,12 @@ namespace FiltersWebSite
 
         public void OnResourceExecuted(ResourceExecutedContext context)
         {
-            context.HttpContext.Response.Headers.Append(
-                "filters", 
-                Name + " - OnResourceExecuted");
+            if (!context.HttpContext.Response.HasStarted)
+            {
+                context.HttpContext.Response.Headers.Append(
+                    "filters",
+                    Name + " - OnResourceExecuted");
+            }
         }
 
         public void OnResourceExecuting(ResourceExecutingContext context)
