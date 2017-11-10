@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
                     catch (Exception ex)
                     {
-                        closedTcs.TrySetException(ex);
+                        openedTcs.TrySetException(ex);
                     }
                 });
 
