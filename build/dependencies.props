@@ -31,6 +31,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
