@@ -4,9 +4,9 @@ The SignalR Protocol is a protocol for two-way RPC over any Message-based transp
 
 ## Terms
 
-* Caller - The node that is issuing an `Negotiation`, `Invocation`, `CancelInvocation` messages and receiving `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Caller and Callee for different invocations simultaneously)
-* Callee - The node that is receiving an `Negotiation`, `Invocation`, `CancelInvocation` messages and issuing `Completion`, `StreamItem` and `StreamCompletion` messages (a node can be both Callee and Caller for different invocations simultaneously)
-* Binder - The component on each node that handles mapping `Invocation` messages to method calls and return values to `Completion`, `StreamItem` and `StreamCompletion` messages
+* Caller - The node that is issuing an `Negotiation`, `Invocation`, `StreamInvocation`, `CancelInvocation` messages and receiving `Completion` and `StreamItem` messages (a node can be both Caller and Callee for different invocations simultaneously)
+* Callee - The node that is receiving an `Negotiation`, `Invocation`, `StreamInvocation`, `CancelInvocation` messages and issuing `Completion` and `StreamItem` messages (a node can be both Callee and Caller for different invocations simultaneously)
+* Binder - The component on each node that handles mapping `Invocation` and `StreamInvocation` messages to method calls and return values to `Completion` and `StreamItem` messages
 
 ## Transport Requirements
 
@@ -22,9 +22,9 @@ In the SignalR protocol, the following types of messages can be sent:
 
 * `Negotiation` Message - Sent by the client to negotiate the message format.
 * `Invocation` Message - Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.
+* `StreamInvocation` Message - Indicates a request to invoke a streaming method (the Target) with provided Arguments on the remote endpoint.
 * `StreamItem` Message - Indicates individual items of streamed response data from a previous Invocation message.
-* `Completion` Message - Indicates a previous Invocation has completed. Contains an error if the invocation concluded with an error, or the result of method invocation. The result will be absent for `void` methods.
-* `StreamCompletion` Message - Indicates a previous Invocation has completed, and no further `StreamItem` messages will be received. Contains an error if the invocation concluded with an error.
+* `Completion` Message - Indicates a previous Invocation or StreamInvocation has completed. Contains an error if the invocation concluded with an error or the result of a non-streaming method invocation. The result will be absent for `void` methods. In case of streaming invocations no further `StreamItem` messages will be received
 * `CancelInvocation` Message - Sent by the client to cancel a streaming invocation on the server.
 
 After opening a connection to the server the client must send a `Negotiation` message to the server as its first message. The negotiation message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. If the server does not support the protocol requested by the client or the first message received from the client is not a `Negotiation` message the server must close the connection.
@@ -54,10 +54,10 @@ There are three kinds of interactions between the Caller and the Callee:
 In order to perform a single invocation, the Caller follows the following basic flow:
 
 1. Allocate a unique `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
-2. Send an `Invocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
+2. Send an `Invocation` or `StreamingInvocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
 3. If the `Invocation` is marked as non-blocking (see "Non-Blocking Invocations" below), stop here and immediately yield back to the application.
-4. Wait for a `StreamItem`, `Completion` or `StreamCompletion` message with a matching `Invocation ID`
-5. If a `Completion` or `StreamCompletion` message arrives, go to 8
+4. Wait for a `StreamItem` or `Completion` message with a matching `Invocation ID`
+5. If a `Completion` message arrives, go to 8
 6. If the `StreamItem` message has a payload, dispatch the payload to the application (i.e. by yielding a result to an `IObservable`, or by collecting the result for dispatching in step 8)
 7. Go to 4
 8. Complete the invocation, dispatching the final payload item (if any) or the error (if any) to the application
@@ -72,30 +72,30 @@ Invocations can be marked as "Non-Blocking" in the `Invocation` message, which i
 
 ## Streaming
 
-The SignalR protocol allows for multiple `StreamItem` messages to be transmitted in response to an `Invocation` message, and allows the receiver to dispatch these results as they arrive, to allow for streaming data from one endpoint to another.
+The SignalR protocol allows for multiple `StreamItem` messages to be transmitted in response to a `StreamingInvocation` message, and allows the receiver to dispatch these results as they arrive, to allow for streaming data from one endpoint to another.
 
-On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `StreamCompletion` message.
+On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message.
 
-On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `StreamCompletion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `Invocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `StreamCompletion` message. The Caller is free to ignore any `StreamItem` messages as well as the `StreamCompletion` message after sending `CancelInvocation`.
+On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to handle the result. If the Caller expects only a single result, but multiple results are returned, or if the caller expects multiple results but only one result is returned, the Caller's Binder should yield an error. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `Completion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `StreamInvocation` message that started the stream. When the Callee receives a `CancelInvocation` message it will stop sending `StreamItem` messages and will send a `Completion` message. The Caller is free to ignore any `StreamItem` messages as well as the `Completion` message after sending `CancelInvocation`.
 
 ## Completion and results
 
-An Invocation is only considered completed when the `Completion` or `StreamCompletion` message is received. Receiving **any** message using the same `Invocation ID` after a `Completion` or `StreamCompletion` message has been received for that invocation is considered a protocol error and the recipient may immediately terminate the connection.
+An Invocation is only considered completed when the `Completion` message is received. Receiving **any** message using the same `Invocation ID` after a `Completion` message has been received for that invocation is considered a protocol error and the recipient may immediately terminate the connection.
 
-If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `StreamCompletion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. This is to ensure that the Caller can unambiguously determine the intended streaming behavior of the method.
+If a Callee is going to stream results, it **MUST** send each individual result in a separate `StreamItem` message, and complete the invocation with a `Completion`. If the Callee is going to return a single result, it **MUST** not send any `StreamItem` messages, and **MUST** send the single result in a `Completion` message. If the Callee receives an `Invocation` message for a method that would yield multiple results or the Callee receives a `StreamInvocationMessage` for a method that would return a single result it **MUST** complete the invocation with a `Completion` message containing an error.
 
 ## Errors
 
-Errors are indicated by the presence of the `error` field in a `Completion` or `StreamCompletion` message. Errors always indicate the immediate end of the invocation. In the case of streamed responses, the arrival of a `StreamCompletion` message indicating an error should **not** stop the dispatching of previously-received results. The error is only yielded after the previously-received results have been dispatched.
+Errors are indicated by the presence of the `error` field in a `Completion` message. Errors always indicate the immediate end of the invocation. In the case of streamed responses, the arrival of a `Completion` message indicating an error should **not** stop the dispatching of previously-received results. The error is only yielded after the previously-received results have been dispatched.
 
 If either endpoint commits a Protocol Error (see examples below), the other endpoint may immediately terminate the underlying connection.
 
 * It is a protocol error for any message to be missing a required field, or to have an unrecognized field.
-* It is a protocol error for a Caller to send a `StreamItem`, `Completion` or `StreamCompletion` message with an `Invocation ID` that has not been received in an `Invocation` message from the Callee
-* It is a protocol error for a Caller to send a `StreamItem`, `Completion` or `StreamCompletion` message in response to a Non-Blocking Invocation (see "Non-Blocking Invocations" above)
-* It is a protocol error for a Caller to send a `Completion` message when a `StreamItem` message has previously been sent for the same `Invocation ID`.
+* It is a protocol error for a Caller to send a `StreamItem` or `Completion` message with an `Invocation ID` that has not been received in an `Invocation` message from the Callee
+* It is a protocol error for a Caller to send a `StreamItem` or `Completion` message in response to a Non-Blocking Invocation (see "Non-Blocking Invocations" above)
+* It is a protocol error for a Caller to send a `Completion` message with a result when a `StreamItem` message has previously been sent for the same `Invocation ID`.
 * It is a protocol error for a Caller to send a `Completion` message carrying both a result and an error.
-* It is a protocol error for an `Invocation` message to have an `Invocation ID` that has already been used by *that* endpoint. However, it is **not an error** for one endpoint to use an `Invocation ID` that was previously used by the other endpoint (allowing each endpoint to track it's own IDs).
+* It is a protocol error for an `Invocation` or `StreamInvocation` message to have an `Invocation ID` that has already been used by *that* endpoint. However, it is **not an error** for one endpoint to use an `Invocation ID` that was previously used by the other endpoint (allowing each endpoint to track it's own IDs).
 
 ## Examples
 
@@ -180,19 +180,19 @@ S->C: Completion { Id = 42, Result = [ 0, 1, 2, 3, 4 ] }
 ### Streamed Result (`Stream` example above)
 
 ```
-C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
+C->S: StreamInvocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
 S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 S->C: StreamItem { Id = 42, Item = 2 }
 S->C: StreamItem { Id = 42, Item = 3 }
 S->C: StreamItem { Id = 42, Item = 4 }
-S->C: StreamCompletion { Id = 42 }
+S->C: Completion { Id = 42 }
 ```
 
 **NOTE:** The following is **NOT** an acceptable encoding of this invocation:
 
 ```
-C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
+C->S: StreamInvocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
 S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 S->C: StreamItem { Id = 42, Item = 2 }
@@ -200,18 +200,18 @@ S->C: StreamItem { Id = 42, Item = 3 }
 S->C: Completion { Id = 42, Result = 4 }
 ```
 
-This is invalid because the `Completion` is not a valid message to complete a streaming invocation.
+This is invalid because the `Completion` message for streaming invocations must not contain any result.
 
 ### Streamed Result with Error (`StreamFailure` example above)
 
 ```
-C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
+C->S: StreamInvocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
 S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 S->C: StreamItem { Id = 42, Item = 2 }
 S->C: StreamItem { Id = 42, Item = 3 }
 S->C: StreamItem { Id = 42, Item = 4 }
-S->C: StreamCompletion { Id = 42, Error = "Ran out of data!" }
+S->C: Completion { Id = 42, Error = "Ran out of data!" }
 ```
 
 This should manifest to the Calling code as a sequence which emits `0`, `1`, `2`, `3`, `4`, but then fails with the error `Ran out of data!`.
@@ -219,12 +219,12 @@ This should manifest to the Calling code as a sequence which emits `0`, `1`, `2`
 ### Streamed Result closed early (`Stream` example above)
 
 ```
-C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
+C->S: StreamInvocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
 S->C: StreamItem { Id = 42, Item = 0 }
 S->C: StreamItem { Id = 42, Item = 1 }
 C->S: CancelInvocation { Id = 42 }
 S->C: StreamItem { Id = 42, Item = 2} // This can be ignored
-S->C: StreamCompletion { Id = 42 } // This can be ignored
+S->C: Completion { Id = 42 } // This can be ignored
 ```
 
 ### Non-Blocking Call (`NonBlocking` example above)
@@ -267,6 +267,29 @@ Example (Non-Blocking):
     "type": 1,
     "invocationId": "123",
     "nonblocking": true,
+    "target": "Send",
+    "arguments": [
+        42,
+        "Test Message"
+    ]
+}
+```
+
+### StreamInvocation Message Encoding
+
+A `StreamInvocation` message is a JSON object with the following properties:
+
+* `type` - A `Number` with the literal value 4, indicating that this message is a StreamInvocation.
+* `invocationId` - A `String` encoding the `Invocation ID` for a message.
+* `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder.
+* `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section.
+
+Example:
+
+```json
+{
+    "type": 4,
+    "invocationId": "123",
     "target": "Send",
     "arguments": [
         42,
@@ -344,33 +367,6 @@ Example - The following `Completion` message is a protocol error because it has 
 }
 ```
 
-### StreamCompletion Message Encoding
-
-A `StreamCompletion` message is a JSON object with the following properties
-
-* `type` - A `Number` with the literal value `4`, indicating that this message is a `StreamCompletion`.
-* `invocationId` - A `String` encoding the `Invocation ID` for a message.
-* `error` - A `String` encoding the error message.
-
-Example - A `StreamCompletion` message with no error
-
-```json
-{
-    "type": 4,
-    "invocationId": "123"
-}
-```
-
-Example - A `StreamCompletion` message with an error
-
-```json
-{
-    "type": 4,
-    "invocationId": "123",
-    "error": "It didn't work!"
-}
-```
-
 ### CancelInvocation Message Encoding
 A `CancelInvocation` message is a JSON object with the following properties
 
@@ -405,10 +401,10 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 [1, InvocationId, NonBlocking, Target, [Arguments]]
 ```
 
-* `1` - Message Type - `1` indicates this is an `Invocation` message
-* InvocationId - A `String` encoding the Invocation ID for the message
-* NonBlocking - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above)
-* Target - A `String` encoding the Target name, as expected by the Callee's Binder
+* `1` - Message Type - `1` indicates this is an `Invocation` message.
+* InvocationId - A `String` encoding the Invocation ID for the message.
+* NonBlocking - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above).
+* Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
 
 Example:
@@ -428,6 +424,45 @@ is decoded as follows:
 * `0x79` - `y`
 * `0x7a` - `z`
 * `0xc3` - `true` (NonBlocking)
+* `0xa6` - string of length 6 (Target)
+* `0x6d` - `m`
+* `0x65` - `e`
+* `0x74` - `t`
+* `0x68` - `h`
+* `0x6f` - `o`
+* `0x64` - `d`
+* `0x91` - 1-element array (Arguments)
+* `0x2a` - `42` (Argument value)
+
+### StreamInvocation Message Encoding
+
+`StreamInvocation` messages have the following structure:
+
+```
+[4, InvocationId, Target, [Arguments]]
+```
+
+* `4` - Message Type - `4` indicates this is a `StreamInvocation` message.
+* InvocationId - A `String` encoding the Invocation ID for the message.
+* Target - A `String` encoding the Target name, as expected by the Callee's Binder.
+* Arguments - An Array containing arguments to apply to the method referred to in Target.
+
+Example:
+
+The following payload
+
+```
+0x94 0x04 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
+
+is decoded as follows:
+
+* `0x94` - 4-element array
+* `0x04` - `4` (Message Type - `StreamInvocation` message)
+* `0xa3` - string of length 3 (InvocationId)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
 * `0xa6` - string of length 6 (Target)
 * `0x6d` - `m`
 * `0x65` - `e`
@@ -542,58 +577,6 @@ is decoded as follows:
 * `0x7a` - `z`
 * `0x03` - `3` (ResultKind - Non-Void result)
 * `0x2a` - `42` (Result)
-
-### StreamCompletion Message Encoding
-
-`StreamCompletion` messages have the following structure
-
-```
-[4, InvocationId, Error?]
-```
-
-* `4` - Message Type - `4` indicates this is a `StreamCompletion` message
-* InvocationId - A `String` encoding the Invocation ID for the message
-* Error - An optional string containing an error message if the invocation failed. Absent if the invocation completed without error.
-
-Examples:
-
-#### Completion for Successful Invocations
-
-The following payload:
-```
-0x92 0x04 0xa3 0x78 0x79 0x7a
-```
-
-is decoded as follows:
-
-* `0x92` - 2-element array
-* `0x04` - `4` (Message Type - `StreamCompletion` message)
-* `0xa3` - string of length 3 (InvocationId)
-* `0x78` - `x`
-* `0x79` - `y`
-* `0x7a` - `z`
-
-#### Completion for Failed Invocations
-
-The following payload:
-```
-0x93 0x04 0xa3 0x78 0x79 0x7a 0xa5 0x45 0x72 0x72 0x6f 0x72
-```
-
-is decoded as follows:
-
-* `0x93` - 3-element array
-* `0x04` - `4` (Message Type - `StreamCompletion` message)
-* `0xa3` - string of length 3 (InvocationId)
-* `0x78` - `x`
-* `0x79` - `y`
-* `0x7a` - `z`
-* `0xa5` - string of length 5
-* `0x45` - `E`
-* `0x72` - `r`
-* `0x72` - `r`
-* `0x6f` - `o`
-* `0x72` - `r`
 
 ### CancelInvocation Message Encoding
 
