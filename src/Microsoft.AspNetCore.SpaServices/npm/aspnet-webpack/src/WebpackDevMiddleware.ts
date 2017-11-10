@@ -23,6 +23,7 @@ interface CreateDevServerOptions {
     hotModuleReplacementEndpointUrl: string;
 }
 
+type EsModuleExports<T> = { __esModule: true, default: T };
 type StringMap<T> = [(key: string) => T];
 
 // These are the options configured in C# and then JSON-serialized, hence the C#-style naming
@@ -39,7 +40,8 @@ type WebpackConfigOrArray = webpack.Configuration | webpack.Configuration[];
 interface WebpackConfigFunc {
     (env?: any): WebpackConfigOrArray;
 }
-type WebpackConfigFileExport = WebpackConfigOrArray | WebpackConfigFunc;
+type WebpackConfigExport = WebpackConfigOrArray | WebpackConfigFunc;
+type WebpackConfigModuleExports = WebpackConfigExport | EsModuleExports<WebpackConfigExport>;
 
 function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrClientOptions: StringMap<string>, hmrServerEndpoint: string) {
     // Build the final Webpack config based on supplied options
@@ -235,7 +237,11 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
     }
 
     // Read the webpack config's export, and normalize it into the more general 'array of configs' format
-    let webpackConfigExport: WebpackConfigFileExport = requireNewCopy(options.webpackConfigPath);
+    const webpackConfigModuleExports: WebpackConfigModuleExports = requireNewCopy(options.webpackConfigPath);
+    let webpackConfigExport = (webpackConfigModuleExports as EsModuleExports<{}>).__esModule === true
+        ? (webpackConfigModuleExports as EsModuleExports<WebpackConfigExport>).default
+        : (webpackConfigModuleExports as WebpackConfigExport);
+
     if (webpackConfigExport instanceof Function) {
         // If you export a function, we'll call it with an undefined 'env' arg, since we have nothing else
         // to pass. This is the same as what the webpack CLI tool does if you specify no '--env.x' values.
