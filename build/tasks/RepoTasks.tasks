@@ -7,4 +7,5 @@
   <UsingTask TaskName="RepoTasks.RenameEncodedFolders" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifySignedRuntimeStoreBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CreateTimestampFreeRuntimeStoreFiles" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>

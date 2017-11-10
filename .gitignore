@@ -28,6 +28,7 @@ project.lock.json
 .build
 .vscode
 .vs
+.deps
 global.json
-msbuild.log
-msbuild.binlog
+*.log
+*.binlog

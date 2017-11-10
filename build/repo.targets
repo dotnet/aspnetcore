@@ -7,7 +7,7 @@
 
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
-    <PrepareDependsOn>$(PrepareDependsOn);GatherInputs;ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedRuntimeStoreBinaries</VerifyDependsOn>
     <PublishDependsOn>Build;RunVSDrop;PushPackages</PublishDependsOn>
@@ -20,8 +20,6 @@
   <Target Name="SetupLocalBuild">
     <PropertyGroup>
       <LocalBuild>true</LocalBuild>
-      <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\dev\Latest</COHERENCE_DROP_LOCATION>
-      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\RuntimeStore\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
     </PropertyGroup>
   </Target>
 

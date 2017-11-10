@@ -5,8 +5,9 @@
       SignFiles;
       RebuildPackages;
       RebuildVSIXes;
-      RebuildPackageCaches;
-      CreateTimestampFreePackages
+      RebuildRuntimeStores;
+      CreateTimestampFreePackages;
+      CreateTimestampFreeRuntimeStores
     </SignDependsOn>
   </PropertyGroup>
 
@@ -21,6 +22,13 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;" />
 
+      <NoTimestampPackageBinaries Include="
+        $(UnsignedNoTimestampPackagesPath)**\*.dll;
+        $(UnsignedNoTimestampPackagesPath)**\*.exe;
+        $(UnsignedNoTimestampPackagesPath)**\*.psd1;
+        $(UnsignedNoTimestampPackagesPath)**\*.psm1;
+        $(UnsignedNoTimestampPackagesPath)**\*.ps1;" />
+
       <OobPackageBinaries Include="
         $(UnsignedOobPackagesPath)**\*.dll;
         $(UnsignedOobPackagesPath)**\*.exe;
@@ -30,24 +38,29 @@
 
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
-      <PackageCacheBinaries Include="
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
+      <RuntimeStoreBinaries Include="
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\system.*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
 
-      <PackageCacheThirdPartyBinaries Include="
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\remotion*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\serilog*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
-        $(UnsignedPackageCachePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
+      <RuntimeStoreThirdPartyBinaries Include="
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\remotion*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\serilog*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
+        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
+
+      <UnaccountedRuntimeStoreBinaries Include="$(UnsignedRuntimeStorePath)**\*.dll" Exclude="@(RuntimeStoreBinaries);@(RuntimeStoreThirdPartyBinaries)"/>
     </ItemGroup>
+
+    <Error Text="Additional binaries found in the runtime store which are not marked for signing: @(UnaccountedRuntimeStoreBinaries)" Condition="'@(UnaccountedRuntimeStoreBinaries)'!=''"/>
   </Target>
 
   <Target Name="SignFiles">
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
+        @(NoTimestampPackageBinaries);
         @(OobPackageBinaries);
         @(VSIXBinaries)" />
 
@@ -65,19 +78,19 @@
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(BinaryCodeSignCertificate);
-          JobName=PackageCacheBinaries;
+          JobName=RuntimeStoreBinaries;
           Description=Signing AspNetCore Package Cache binaries;
-          Files=@(PackageCacheBinaries)
+          Files=@(RuntimeStoreBinaries)
         </AdditionalProperties>
       </_SignProject>
 
-      <_SignProject Include="$(MSBuildProjectFullPath)">
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(RuntimeStoreThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(ThirdParthCodeSignCertificate);
           JobName=ThirdPartyBinaries;
           Description=Signing third party binaries;
-          Files=@(PackageCacheThirdPartyBinaries)
+          Files=@(RuntimeStoreThirdPartyBinaries)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
@@ -90,29 +103,45 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+      <NuSpecNoTimestamp Include="$(UnsignedNoTimestampPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
-
-      <_ZipProjects
-        Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath)" />
-      <_ZipProjects
-        Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="ZipRoot=%(NuSpecOob.RootDir)%(NuSpecOob.Directory);OutputDir=$(PackagesOobOutputPath)" />
-      <_ZipProjects
-        Include="$(MSBuildProjectFullPath)"
-        AdditionalProperties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath)" />
     </ItemGroup>
 
     <MSBuild
-      Projects="@(_ZipProjects)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="ZipFile"
-      BuildInParallel="$(BuildInParallel)"
-      Properties="Extension=.nupkg" />
+      Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
+      Condition="'@(NuSpec)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(NuSpecNoTimestamp.RootDir)%(NuSpecNoTimestamp.Directory);OutputDir=$(IntermediatePackagesNoTimestampOutputPath);Extension=.nupkg"
+      Condition="'@(NuSpecNoTimestamp)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(NuSpecOob.RootDir)%(NuSpecOob.Directory);OutputDir=$(PackagesOobOutputPath);Extension=.nupkg"
+      Condition="'@(NuSpecOob)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath);Extension=.nupkg"
+      Condition="'@(SymbolsNuSpec)'!=''" />
   </Target>
 
   <!-- Repacks and signs VSIXes -->
   <Target Name="RebuildVSIXes">
+    <ItemGroup>
+      <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
+    </ItemGroup>
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="_RebuildVSIXes"
+        Condition="'@(_VSIXManifest)'!=''" />
+  </Target>
+
+  <Target Name="_RebuildVSIXes">
     <ItemGroup>
       <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
       <VSIXManifest Include="@(_VSIXManifest)">
@@ -176,35 +205,28 @@
     <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
   </Target>
 
-  <!-- Repacks PackageCache -->
-  <Target Name="RebuildPackageCaches">
-    <MakeDir Directories="$(PackageCacheOutputPath)" />
+  <!-- Repacks RuntimeStore -->
+  <Target Name="RebuildRuntimeStores">
+    <MakeDir Directories="$(RuntimeStoreOutputPath)" />
 
     <ItemGroup>
-      <PackageCachesFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedPackageCachePath)&quot;))" />
-      <PackageCacheNuspec Include="$(CoherencePackageCacheDestinationDir)*.nuspec" />
+      <RuntimeStoresFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedRuntimeStorePath)&quot;))" />
     </ItemGroup>
 
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Properties="PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
-      Targets="RebuildPackageCache"/>
-
-    <ItemGroup>
-      <RuntimeStoreSymbols Include="$(CoherencePackageCacheDestinationDir)aspnetcore-symbols*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(RuntimeStoreSymbols)" DestinationFolder="$(PackageCacheOutputPath)" />
+      Properties="RuntimeStoreFile=%(RuntimeStoresFiles.Identity);OutDir=$(RuntimeStoreOutputPath)"
+      Targets="RebuildRuntimeStore"/>
   </Target>
 
-  <Target Name="RebuildPackageCache">
+  <Target Name="RebuildRuntimeStore">
     <PropertyGroup>
-      <WorkingDir>$(PackageCacheFile)</WorkingDir>
-      <PackageCacheName>$([System.IO.Path]::GetFileName($(PackageCacheFile)))</PackageCacheName>
-      <CreateTarGzip Condition="$(PackageCacheName.Contains('osx')) or $(PackageCacheName.Contains('linux'))">true</CreateTarGzip>
-      <OutputFile>$(OutDir)$(PackageCacheName)</OutputFile>
+      <WorkingDir>$(RuntimeStoreFile)</WorkingDir>
+      <RuntimeStoreName>$([System.IO.Path]::GetFileName($(RuntimeStoreFile)))</RuntimeStoreName>
+      <CreateTarGzip Condition="$(RuntimeStoreName.Contains('osx')) or $(RuntimeStoreName.Contains('linux'))">true</CreateTarGzip>
+      <OutputFile>$(OutDir)$(RuntimeStoreName)</OutputFile>
 
-      <OutputFile  Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
+      <OutputFile Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
       <OutputFile Condition="'$(CreateTarGzip)'!='true'">$(OutputFile).zip</OutputFile>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
@@ -231,6 +253,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackagesAlreadyTimestampFree Include="$(IntermediatePackagesNoTimestampOutputPath)*.nupkg" />
       <PackagesWithTimeStamp Include="$(PackagesDir)*.nupkg" />
       <OOBPackagesWithTimeStamp Include="$(OOBPackagesDir)*.nupkg" />
     </ItemGroup>
@@ -239,39 +262,38 @@
 
     <RepoTasks.CreateTimestampFreePackages
       PackagesWithTimeStamp="@(PackagesWithTimeStamp)"
+      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
       OutputDirectory="$(PackagesNoTimestampDir)" />
 
     <RepoTasks.CreateTimestampFreePackages
       PackagesWithTimeStamp="@(OOBPackagesWithTimeStamp)"
+      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
       OutputDirectory="$(OOBPackagesNoTimestampDir)" />
+  </Target>
 
+  <Target Name="CreateTimestampFreeRuntimeStores">
     <ItemGroup>
-      <TimeStampFreeMetaPackage Include="$(TimestampFreePackagesOutputPath)Microsoft.AspNetCore.All.*.nupkg" />
-      <TimeStampMetaPackage Include="$(PackagesDir)Microsoft.AspNetCore.All.*.nupkg" />
-    </ItemGroup>
-
-    <UnzipArchive
-      File="%(TimeStampFreeMetaPackage.FullPath)"
-      Destination="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
-
-    <ItemGroup>
-      <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\aspnetcore-store-*.xml" />
+      <MetapackageFile Include="$(DepsDirectory)store\Microsoft.AspNetCore.All.*.nupkg" />
     </ItemGroup>
 
     <PropertyGroup>
-      <VersionToReplace>-$(BuildNumber)</VersionToReplace>
-      <VersionReplacement>-final</VersionReplacement>
-      <VersionToReplace Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))">-rtm-$(BuildNumber)</VersionToReplace>
-      <VersionReplacement Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))"></VersionReplacement>
+      <VersionNumber>@(MetapackageFile->Metadata('Filename'))</VersionNumber>
+      <VersionNumber>$(VersionNumber.TrimStart('Microsoft.AspNetCore.All'))</VersionNumber>
     </PropertyGroup>
 
-    <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('$(VersionToReplace)','$(VersionReplacement)') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
-    <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('$(VersionToReplace)', '$(VersionReplacement)'))" />
+    <RepoTasks.CreateTimestampFreeRuntimeStoreFiles
+      VersionNumber="$(VersionNumber)"
+      RuntimeStoresDirectory="$(UnsignedRuntimeStorePath)"
+      OutputDirectory="$(TimestampFreeUnsignedRuntimeStorePath)" />
+
+    <ItemGroup>
+      <TimestampFreeRuntimeStoresFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(TimestampFreeUnsignedRuntimeStorePath)&quot;))" />
+    </ItemGroup>
 
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Targets="ZipFile"
-      Properties="ZipRoot=$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)\;OutputDir=$(TimestampFreePackagesOutputPath)" />
+      Properties="RuntimeStoreFile=%(TimestampFreeRuntimeStoresFiles.Identity);OutDir=$(TimestampFreeRuntimeStoreOutputPath)"
+      Targets="RebuildRuntimeStore"/>
   </Target>
 
   <Target Name="ZipFile">
