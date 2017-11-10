@@ -83,11 +83,19 @@ try {
             & .\run.ps1 upgrade deps --source $Source --id $LineupID --version $LineupVersion --deps-file $depsFile
 
             Invoke-Block { & git @gitConfigArgs add $depsFile $koreBuildLock }
-            Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
 
-            $sshUrl = "git@github.com:aspnet/$($submodule.module)"
-            Invoke-Block { & git remote set-url --push origin $sshUrl }
-            $updated_submodules += $submodule
+            & git diff --cached --quiet ./
+            if ($LASTEXITCODE -ne 0) {
+                Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
+
+                # Prepare this submodule for push
+                $sshUrl = "git@github.com:aspnet/$($submodule.module)"
+                Invoke-Block { & git remote set-url --push origin $sshUrl }
+                $updated_submodules += $submodule
+            }
+            else {
+                Write-Host "No changes in $($submodule.module)"
+            }
         }
         catch {
             Write-Warning "Error in $($submodule.module)"
@@ -103,11 +111,11 @@ try {
 
     if ($update_errors.Count -gt 0 ) {
         foreach ($update_error in $update_errors) {
-            if ($update_error -eq $null) {
+            if ($update_error.Message -eq $null) {
                 Write-Error "Error was null."
             }
             else {
-                Write-Error "$update_error.Repo error: $update_error.Message"
+                Write-Error "$($update_error.Repo) error: $($update_error.Message)"
             }
         }
 
@@ -115,6 +123,29 @@ try {
     }
     else {
         Write-Verbose "All updates successful!"
+    }
+
+    # Build each submodule to verify that it works after the update
+    $build_errors = @()
+    foreach ($submodule in $updated_submodules) {
+        Push-Location $submodule.path
+        try {
+            Invoke-Block { & .\run.ps1 default-build }
+        }
+        catch {
+            Write-Warning "Error in $($submodule.module): $_"
+            $build_errors += @{
+                Repo    = $submodule.module
+                Message = $_
+            }
+        }
+        finally {
+            Pop-Location
+        }
+    }
+
+    if ($build_errors.Count -gt 0 ) {
+        throw "Failed to build"
     }
 
     $shortMessage = "Pushing updates to repos."
