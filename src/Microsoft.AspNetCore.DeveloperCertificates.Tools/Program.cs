@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -22,6 +20,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         private const int ErrorSavingTheCertificate = 2;
         private const int ErrorExportingTheCertificate = 3;
         private const int ErrorTrustingTheCertificate = 4;
+        private const int ErrorUserCancelledTrustPrompt = 5;
+        private const int ErrorNoValidCertificateFound = 6;
+        private const int ErrorCertificateNotTrusted = 7;
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
@@ -44,6 +45,11 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "Password to use when exporting the certificate with the private key into a pfx file",
                         CommandOptionType.SingleValue);
 
+                    var check = c.Option(
+                        "-c|--check",
+                        "Check for the existence of the certificate but do not perform any action",
+                        CommandOptionType.NoValue);
+
                     CommandOption trust = null;
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
@@ -65,6 +71,10 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
+                        if (check.HasValue())
+                        {
+                            return CheckHttpsCertificate(check, trust, reporter);
+                        }
                         return EnsureHttpsCertificate(exportPath, password, trust, reporter);
                     });
                 });
@@ -83,6 +93,39 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 return CriticalError;
             }
+        }
+
+        private static int CheckHttpsCertificate(CommandOption check, CommandOption trust, IReporter reporter)
+        {
+            var now = DateTimeOffset.Now;
+            var certificateManager = new CertificateManager();
+            var certificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            if (certificates.Count == 0)
+            {
+                reporter.Verbose("No valid certificate found.");
+                return ErrorNoValidCertificateFound;
+            }
+            else
+            {
+                reporter.Verbose("A valid certificate was found.");
+            }
+
+            if (trust != null && trust.HasValue())
+            {
+                var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false);
+                if (!certificates.Any(c => certificateManager.IsTrusted(c)))
+                {
+                    reporter.Verbose($@"The following certificates were found, but none of them is trusted:
+{string.Join(Environment.NewLine, certificates.Select(c => $"{c.Subject} - {c.Thumbprint}"))}");
+                    return ErrorCertificateNotTrusted;
+                }
+                else
+                {
+                    reporter.Verbose("A trusted certificate was found.");
+                }
+            }
+
+            return Success;
         }
 
         private static int EnsureHttpsCertificate(CommandOption exportPath, CommandOption password, CommandOption trust, IReporter reporter)
@@ -135,6 +178,9 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                 case EnsureCertificateResult.FailedToTrustTheCertificate:
                     reporter.Warn("There was an error trusting HTTPS developer certificate.");
                     return ErrorTrustingTheCertificate;
+                case EnsureCertificateResult.UserCancelledTrustStep:
+                    reporter.Warn("The user cancelled the trust step.");
+                    return ErrorUserCancelledTrustPrompt;
                 default:
                     reporter.Error("Something went wrong. The HTTPS developer certificate could not be created.");
                     return CriticalError;
