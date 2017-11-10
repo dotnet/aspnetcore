@@ -29,6 +29,5 @@ project.lock.json
 .vscode
 .vs
 global.json
-korebuild-lock.txt
 msbuild.log
 msbuild.binlog
