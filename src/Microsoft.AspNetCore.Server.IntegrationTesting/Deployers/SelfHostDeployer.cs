@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0");
 
                     executableName = DotnetCommandName;
-                    executableArgs = $"run --framework {targetFramework} {DotnetArgumentSeparator}";
+                    executableArgs = $"run --no-restore --framework {targetFramework} {DotnetArgumentSeparator}";
                 }
 
                 executableArgs += $" --server.urls {hintUrl} "
