@@ -11,7 +11,7 @@
       <MSBuildExeArgs Include="
         $(MSBuildThisFileDirectory)vsdrop\drop.msbuild;
         /t:BuildAndPublishManifest;
-        /p:SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
+        /p:SignedVsixPath=$(SignedVSIXPath);
         /p:RepositoryRoot=$(RepositoryRoot);
         /p:ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
         /p:ManifestBuildBranch=$(BUILD_BRANCH);
