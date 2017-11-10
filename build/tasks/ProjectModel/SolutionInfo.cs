@@ -8,7 +8,7 @@ namespace RepoTasks.ProjectModel
 {
     internal class SolutionInfo
     {
-        public SolutionInfo(string fullPath, string configName, IReadOnlyList<ProjectInfo> projects, bool shouldBuild)
+        public SolutionInfo(string fullPath, string configName, IReadOnlyList<ProjectInfo> projects, bool shouldBuild, bool shipped)
         {
             if (string.IsNullOrEmpty(fullPath))
             {
@@ -24,11 +24,13 @@ namespace RepoTasks.ProjectModel
             ConfigName = configName;
             Projects = projects ?? throw new ArgumentNullException(nameof(projects));
             ShouldBuild = shouldBuild;
+            Shipped = shipped;
         }
 
         public string FullPath { get; }
         public string ConfigName { get; }
         public IReadOnlyList<ProjectInfo> Projects { get; }
         public bool ShouldBuild { get; }
+        public bool Shipped { get; }
     }
 }

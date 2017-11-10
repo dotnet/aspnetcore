@@ -85,12 +85,14 @@ namespace RepoTasks.ProjectModel
                 }
 
                 bool.TryParse(solution.GetMetadata("Build"), out var shouldBuild);
+                bool.TryParse(solution.GetMetadata("Shipped"), out var shipped);
 
                 var solutionInfo = new SolutionInfo(
                     solutionFile,
                     configName,
                     projects.ToArray(),
-                    shouldBuild);
+                    shouldBuild,
+                    shipped);
 
                 _buildEngine.RegisterTaskObject(key, solutionInfo, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: true);
 

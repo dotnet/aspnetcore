@@ -137,7 +137,7 @@ namespace RepoTasks
                     continue;
                 }
 
-                if (!solution.ShouldBuild)
+                if (!solution.ShouldBuild && solution.Shipped)
                 {
                     reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(solution.FullPath)));
                 }
