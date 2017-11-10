@@ -110,7 +110,8 @@
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
-      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(Repository.Build)' == 'true'" />
+      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(Repository.Build)' != 'true'" />
     </MSBuild>
 
     <!--
@@ -127,13 +128,14 @@
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
-      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
+      <Output TaskParameter="TargetOutputs" ItemName="_ShippedSolution" />
     </MSBuild>
 
     <ItemGroup>
       <Solution Update="@(Solution)" Build="true" />
+      <_ShippedSolution Update="@(_ShippedSolution)" Build="false" Shipped="true" />
       <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
-      <Solution Include="@(_NoBuildSolution)" />
+      <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
 
     <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
