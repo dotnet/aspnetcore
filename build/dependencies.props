@@ -269,6 +269,13 @@
     <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
       <!-- netstandard2.0 -->
       <NoWarn>KRB2004</NoWarn>
+      <VariableName>NETStandard20PackageVersion</VariableName>
+    </ExternalDependency>
+
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
+      <!-- netstandard2.0.1 -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>NETStandard201PackageVersion</VariableName>
     </ExternalDependency>
 
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
