@@ -42,6 +42,10 @@
     <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="2.1.0-preview1-25831-01" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostPolicy" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.App" Version="2.1.0-preview1-25907-02" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
 
