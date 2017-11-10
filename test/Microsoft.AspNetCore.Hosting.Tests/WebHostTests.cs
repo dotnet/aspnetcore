@@ -167,6 +167,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+                var lifetime2 = host.Services.GetRequiredService<Extensions.Hosting.IApplicationLifetime>();
                 var server = (FakeServer)host.Services.GetRequiredService<IServer>();
 
                 var cts = new CancellationTokenSource();
@@ -175,6 +176,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // Wait on the host to be started
                 lifetime.ApplicationStarted.WaitHandle.WaitOne();
+                Assert.True(lifetime2.ApplicationStarted.IsCancellationRequested);
 
                 Assert.Equal(1, server.StartInstances.Count);
                 Assert.Equal(0, server.StartInstances[0].DisposeCalls);
@@ -183,6 +185,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 // Wait on the host to shutdown
                 lifetime.ApplicationStopped.WaitHandle.WaitOne();
+                Assert.True(lifetime2.ApplicationStopped.IsCancellationRequested);
 
                 // Wait for RunAsync to finish to guarantee Disposal of WebHost
                 await runInBackground;
@@ -408,11 +411,14 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
 
                 Assert.False(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+                Assert.False(applicationLifetime2.ApplicationStarted.IsCancellationRequested);
 
                 await host.StartAsync();
                 Assert.True(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+                Assert.True(applicationLifetime2.ApplicationStarted.IsCancellationRequested);
             }
         }
 
@@ -424,17 +430,26 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
                 var stopped = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopped);
 
+                var started2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStarted);
+                var stopping2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStopping);
+                var stopped2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStopped);
+
                 await host.StartAsync();
                 Assert.True(applicationLifetime.ApplicationStarted.IsCancellationRequested);
+                Assert.True(applicationLifetime2.ApplicationStarted.IsCancellationRequested);
                 Assert.True(started.All(s => s));
+                Assert.True(started2.All(s => s));
                 host.Dispose();
                 Assert.True(stopping.All(s => s));
+                Assert.True(stopping2.All(s => s));
                 Assert.True(stopped.All(s => s));
+                Assert.True(stopped2.All(s => s));
             }
         }
 
@@ -663,18 +678,24 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var applicationLifetime2 = host.Services.GetService<Extensions.Hosting.IApplicationLifetime>();
 
                 var started = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStarted);
                 var stopping = RegisterCallbacksThatThrow(applicationLifetime.ApplicationStopping);
+
+                var started2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStarted);
+                var stopping2 = RegisterCallbacksThatThrow(applicationLifetime2.ApplicationStopping);
 
                 await host.StartAsync();
                 Assert.True(events1[0]);
                 Assert.True(events2[0]);
                 Assert.True(started.All(s => s));
+                Assert.True(started2.All(s => s));
                 host.Dispose();
                 Assert.True(events1[1]);
                 Assert.True(events2[1]);
                 Assert.True(stopping.All(s => s));
+                Assert.True(stopping2.All(s => s));
             }
         }
 
@@ -689,7 +710,9 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 await host.StartAsync();
                 var env = host.Services.GetService<IHostingEnvironment>();
+                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
                 Assert.Equal("Changed", env.EnvironmentName);
+                Assert.Equal("Changed", env2.EnvironmentName);
             }
         }
 
@@ -771,7 +794,9 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder().UseFakeServer().Build())
             {
                 var env = host.Services.GetService<IHostingEnvironment>();
+                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
                 Assert.Equal(EnvironmentName.Production, env.EnvironmentName);
+                Assert.Equal(EnvironmentName.Production, env2.EnvironmentName);
             }
         }
 
@@ -790,6 +815,8 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = CreateBuilder(config).UseFakeServer().Build())
             {
                 var env = host.Services.GetService<IHostingEnvironment>();
+                var env2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
+                Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
                 Assert.Equal(EnvironmentName.Staging, env.EnvironmentName);
             }
         }
@@ -990,7 +1017,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             private readonly IApplicationLifetime _lifetime;
 
-            public TestHostedService(IApplicationLifetime lifetime)
+            public TestHostedService(IApplicationLifetime lifetime, Extensions.Hosting.IApplicationLifetime lifetime2)
             {
                 _lifetime = lifetime;
             }

@@ -526,6 +526,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 Assert.Equal(expected, host.Services.GetService<IHostingEnvironment>().EnvironmentName);
+                Assert.Equal(expected, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().EnvironmentName);
             }
         }
 
@@ -568,6 +569,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 Assert.Equal("/", host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                Assert.Equal("/", host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
             }
         }
 
@@ -581,8 +583,13 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var basePath = host.Services.GetRequiredService<IHostingEnvironment>().ContentRootPath;
+                var basePath2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath;
+
                 Assert.True(Path.IsPathRooted(basePath));
                 Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath);
+
+                Assert.True(Path.IsPathRooted(basePath2));
+                Assert.EndsWith(Path.DirectorySeparatorChar + "testroot", basePath2);
             }
         }
 
@@ -596,6 +603,7 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 var appBase = AppContext.BaseDirectory;
                 Assert.Equal(appBase, host.Services.GetService<IHostingEnvironment>().ContentRootPath);
+                Assert.Equal(appBase, host.Services.GetService<Extensions.Hosting.IHostingEnvironment>().ContentRootPath);
             }
         }
 
@@ -620,7 +628,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
                 Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv.ApplicationName);
+                Assert.Equal(typeof(Startup).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
         }
 
@@ -634,7 +644,9 @@ namespace Microsoft.AspNetCore.Hosting
                 .Build())
             {
                 var hostingEnv = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnv2 = host.Services.GetService<Extensions.Hosting.IHostingEnvironment>();
                 Assert.Equal(typeof(StartupNoServices).Assembly.GetName().Name, hostingEnv.ApplicationName);
+                Assert.Equal(typeof(StartupNoServices).Assembly.GetName().Name, hostingEnv2.ApplicationName);
             }
         }
 
@@ -1046,7 +1058,7 @@ namespace Microsoft.AspNetCore.Hosting
                        .ConfigureServices(services => services.AddSingleton<ITestSink>(loggerProvider.Sink))
                        .ConfigureLogging((_, lf) => lf.AddProvider(loggerProvider))
                        .ConfigureAppConfiguration((context, configurationBuilder) => configurationBuilder.AddInMemoryCollection(
-                           new []
+                           new[]
                            {
                                new KeyValuePair<string,string>("testhostingstartup:config", "value")
                            }));

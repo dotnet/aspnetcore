@@ -76,6 +76,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _applicationServiceCollection = appServices;
             _hostingServiceProvider = hostingServiceProvider;
             _applicationServiceCollection.AddSingleton<IApplicationLifetime, ApplicationLifetime>();
+            // There's no way to to register multiple service types per definition. See https://github.com/aspnet/DependencyInjection/issues/360
+            _applicationServiceCollection.AddSingleton(sp =>
+            {
+                return sp.GetRequiredService<IApplicationLifetime>() as Extensions.Hosting.IApplicationLifetime;
+            });
             _applicationServiceCollection.AddSingleton<HostedServiceExecutor>();
         }
 

@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Hosting.Abstractions\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Hosting.Abstractions\Microsoft.Extensions.Hosting.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
