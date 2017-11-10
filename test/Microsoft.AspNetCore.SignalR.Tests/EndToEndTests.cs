@@ -165,7 +165,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
-                    var closeTcs = new TaskCompletionSource<object>();
                     connection.OnReceived((data, state) =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
@@ -178,22 +177,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         tcs.TrySetResult(Encoding.UTF8.GetString(data));
                         return Task.CompletedTask;
                     }, receiveTcs);
-
-                    connection.Closed += e =>
-                    {
-                        logger.LogInformation("Connection closed");
-                        if (e != null)
-                        {
-                            receiveTcs.TrySetException(e);
-                            closeTcs.TrySetException(e);
-                        }
-                        else
-                        {
-                            receiveTcs.TrySetResult(null);
-                            closeTcs.TrySetResult(null);
-                        }
-                        return Task.CompletedTask;
-                    };
 
                     logger.LogInformation("Starting connection to {url}", url);
                     await connection.StartAsync().OrTimeout();
@@ -225,8 +208,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Receiving message");
                     Assert.Equal(message, await receiveTcs.Task.OrTimeout());
                     logger.LogInformation("Completed receive");
-
-                    await closeTcs.Task.OrTimeout();
+                    await connection.Closed.OrTimeout();
                 }
                 catch (Exception ex)
                 {
@@ -344,24 +326,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var closeTcs = new TaskCompletionSource<object>();
 
-                    connection.Closed += e =>
-                    {
-                        logger.LogInformation("Connection closed");
-                        if (e != null)
-                        {
-                            closeTcs.TrySetException(e);
-                        }
-                        else
-                        {
-                            closeTcs.TrySetResult(null);
-                        }
-                        return Task.CompletedTask;
-                    };
-
                     logger.LogInformation("Starting connection to {url}", url);
                     await connection.StartAsync().OrTimeout();
 
-                    await closeTcs.Task.OrTimeout();
+                    await connection.Closed.OrTimeout();
                 }
                 catch (Exception ex)
                 {

@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
         private TaskCompletionSource<object> _startTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<object> _closedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private TaskQueue _eventQueue = new TaskQueue();
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public event Func<Exception, Task> Closed;
+        public Task Closed => _closedTcs.Task;
 
         public HttpConnection(Uri url)
             : this(url, TransportType.All)
@@ -116,10 +117,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     if (t.IsFaulted)
                     {
                         _startTcs.SetException(t.Exception.InnerException);
+                        _closedTcs.TrySetException(t.Exception.InnerException);
                     }
                     else if (t.IsCanceled)
                     {
                         _startTcs.SetCanceled();
+                        _closedTcs.SetCanceled();
                     }
                     else
                     {
@@ -190,19 +193,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     await Task.WhenAny(_eventQueue.Drain().NoThrow(), Task.Delay(_eventQueueDrainTimeout));
                     _httpClient?.Dispose();
 
-                    _logger.RaiseClosed(_connectionId);
-
-                    var closedEventHandler = Closed;
-                    if (closedEventHandler != null)
+                    _logger.CompleteClosed(_connectionId);
+                    if (t.IsFaulted)
                     {
-                        try
-                        {
-                            await closedEventHandler.Invoke(t.IsFaulted ? t.Exception.InnerException : null);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ExceptionThrownFromCallback(_connectionId, nameof(Closed), ex);
-                        }
+                        _closedTcs.TrySetException(t.Exception.InnerException);
+                    }
+                    if (t.IsCanceled)
+                    {
+                        _closedTcs.TrySetCanceled();
+                    }
+                    else
+                    {
+                        _closedTcs.TrySetResult(null);
                     }
                 });
 
@@ -463,6 +465,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 await _receiveLoopTask;
             }
 
+            _closedTcs.TrySetResult(null);
             _httpClient?.Dispose();
         }
 

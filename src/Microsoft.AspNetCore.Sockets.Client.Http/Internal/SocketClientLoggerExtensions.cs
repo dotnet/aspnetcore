@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _drainEvents =
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, new EventId(5, nameof(DrainEvents)), "{time}: Connection Id {connectionId}: Draining event queue.");
 
-        private static readonly Action<ILogger, DateTime, string, Exception> _raiseClosed =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, new EventId(6, nameof(RaiseClosed)), "{time}: Connection Id {connectionId}: Raising Closed event.");
+        private static readonly Action<ILogger, DateTime, string, Exception> _completeClosed =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, new EventId(6, nameof(CompleteClosed)), "{time}: Connection Id {connectionId}: Completing Closed task.");
 
         private static readonly Action<ILogger, DateTime, Uri, Exception> _establishingConnection =
             LoggerMessage.Define<DateTime, Uri>(LogLevel.Debug, new EventId(7, nameof(EstablishingConnection)), "{time}: Establishing Connection at: {url}.");
@@ -410,11 +410,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             }
         }
 
-        public static void RaiseClosed(this ILogger logger, string connectionId)
+        public static void CompleteClosed(this ILogger logger, string connectionId)
         {
             if (logger.IsEnabled(LogLevel.Debug))
             {
-                _raiseClosed(logger, DateTime.Now, connectionId, null);
+                _completeClosed(logger, DateTime.Now, connectionId, null);
             }
         }
 

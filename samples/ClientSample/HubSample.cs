@@ -36,31 +36,23 @@ namespace ClientSample
 
             try
             {
+                var sendCts = new CancellationTokenSource();
 
-                var cts = new CancellationTokenSource();
-                Console.CancelKeyPress += (sender, a) =>
+                Console.CancelKeyPress += async (sender, a) =>
                 {
                     a.Cancel = true;
                     Console.WriteLine("Stopping loops...");
-                    cts.Cancel();
+                    sendCts.Cancel();
+                    await connection.DisposeAsync();
                 };
 
                 // Set up handler
                 connection.On<string>("Send", Console.WriteLine);
 
-                connection.Closed += e =>
+                while (!connection.Closed.IsCompleted)
                 {
-                    Console.WriteLine("Connection closed.");
-                    cts.Cancel();
-                    return Task.CompletedTask;
-                };
-
-                var ctsTask = Task.Delay(-1, cts.Token);
-
-                while (!cts.Token.IsCancellationRequested)
-                {
-                    var completedTask = await Task.WhenAny(Task.Run(() => Console.ReadLine(), cts.Token), ctsTask);
-                    if (completedTask == ctsTask)
+                    var completedTask = await Task.WhenAny(Task.Run(() => Console.ReadLine()), connection.Closed);
+                    if (completedTask == connection.Closed)
                     {
                         break;
                     }
@@ -72,7 +64,7 @@ namespace ClientSample
                         break;
                     }
 
-                    await connection.InvokeAsync<object>("Send", line, cts.Token);
+                    await connection.InvokeAsync<object>("Send", line, sendCts.Token);
                 }
             }
             catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))

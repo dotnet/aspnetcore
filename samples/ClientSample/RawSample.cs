@@ -39,25 +39,19 @@ namespace ClientSample
             var connection = new HttpConnection(new Uri(baseUrl), loggerFactory);
             try
             {
-                var cts = new CancellationTokenSource();
                 connection.OnReceived(data => Console.Out.WriteLineAsync($"{Encoding.UTF8.GetString(data)}"));
-                connection.Closed += e =>
-                {
-                    cts.Cancel();
-                    return Task.CompletedTask;
-                };
 
                 await connection.StartAsync();
 
                 Console.WriteLine($"Connected to {baseUrl}");
-
-                Console.CancelKeyPress += (sender, a) =>
+                var cts = new CancellationTokenSource();
+                Console.CancelKeyPress += async (sender, a) =>
                 {
                     a.Cancel = true;
-                    cts.Cancel();
+                    await connection.DisposeAsync();
                 };
 
-                while (!cts.Token.IsCancellationRequested)
+                while (!connection.Closed.IsCompleted)
                 {
                     var line = await Task.Run(() => Console.ReadLine(), cts.Token);
 

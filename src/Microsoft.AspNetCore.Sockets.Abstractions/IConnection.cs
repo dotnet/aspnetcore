@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         IDisposable OnReceived(Func<byte[], object, Task> callback, object state);
 
-        event Func<Exception, Task> Closed;
+        Task Closed { get; }
 
         IFeatureCollection Features { get; }
     }
