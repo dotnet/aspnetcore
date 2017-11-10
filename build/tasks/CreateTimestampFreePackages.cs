@@ -191,7 +191,11 @@ namespace RepoTasks
             }
 
             var minVersion = StripBuildVersion(dependency.VersionRange.MinVersion);
-            return new PackageDependency(dependency.Id, new VersionRange(minVersion));
+            return new PackageDependency(
+                dependency.Id,
+                new VersionRange(minVersion),
+                include: dependency.Include,
+                exclude: dependency.Exclude);
         }
 
         private static NuGetVersion StripBuildVersion(NuGetVersion version)
