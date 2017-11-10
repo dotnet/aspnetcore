@@ -106,6 +106,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public string PublishedApplicationRootPath { get; set; }
 
+        public HostingModel HostingModel { get; set; }
+
         /// <summary>
         /// Environment variables to be set before starting the host.
         /// Not applicable for IIS Scenarios.

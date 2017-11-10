@@ -142,6 +142,13 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
                         DeploymentParameters.ServerConfigLocation = Path.GetTempFileName();
 
+                        if (serverConfig.Contains("[HostingModel]"))
+                        {
+                            var hostingModel = DeploymentParameters.HostingModel.ToString();
+                            serverConfig.Replace("[HostingModel]", hostingModel);
+                            Logger.LogDebug("Writing HostingModel '{hostingModel}' to config", hostingModel);
+                        }
+
                         Logger.LogDebug("Saving Config to {configPath}", DeploymentParameters.ServerConfigLocation);
 
                         if (Logger.IsEnabled(LogLevel.Trace))
