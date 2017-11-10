@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         /// <summary>
         /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
-        /// summary>
+        /// </summary>
         /// <returns>Task</returns>
         [Fact]
         public async Task SignOutSettingMessage()
