@@ -1,0 +1,6 @@
+<Project>
+  <Import Project="build\dependencies.props" />
+  <PropertyGroup>
+    <TreatWarningsAsError>true</TreatWarningsAsError>
+  </PropertyGroup>
+</Project>
