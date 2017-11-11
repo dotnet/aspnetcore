@@ -46,19 +46,27 @@ namespace Microsoft.AspNetCore.Hosting
                 hostBuilder.CaptureStartupErrors(true);
 
                 // TODO consider adding a configuration load where all variables needed are loaded from ANCM in one call.
-                var hResult = NativeMethods.http_get_application_paths(out var fullPath, out var virtualPath);
+                var iisConfigData = new IISConfigurationData();
+                var hResult = NativeMethods.http_get_application_properties(ref iisConfigData);
+
                 var exception = Marshal.GetExceptionForHR(hResult);
                 if (exception != null)
                 {
                     throw exception;
                 }
 
-                hostBuilder.UseContentRoot(fullPath);
+                hostBuilder.UseContentRoot(iisConfigData.pwzFullApplicationPath);
                 return hostBuilder.ConfigureServices(services =>
                 {
                     services.AddSingleton<IServer, IISHttpServer>();
-                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(virtualPath));
+                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(iisConfigData.pwzVirtualApplicationPath));
                     services.AddAuthenticationCore();
+                    services.Configure<IISOptions>(
+                        options =>
+                        {
+                            options.ForwardWindowsAuthentication = iisConfigData.fWindowsAuthEnabled || iisConfigData.fBasicAuthEnabled;
+                        }
+                    );
                 });
             }
 

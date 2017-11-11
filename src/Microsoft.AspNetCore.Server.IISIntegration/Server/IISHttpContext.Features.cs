@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
         private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
+        private static readonly Type IISHttpContextType = typeof(IISHttpContext);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
@@ -61,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _currentIHttpMinRequestBodyDataRateFeature = this;
             _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
+            _currentIHttpAuthenticationFeature = this;
         }
 
         internal object FastFeatureGet(Type key)
@@ -133,6 +135,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 return _currentIHttpSendFileFeature;
             }
+            if (key == IISHttpContextType)
+            {
+                return this;
+            }
+
             return ExtraFeatureGet(key);
         }
 
@@ -224,6 +231,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 _currentIHttpSendFileFeature = feature;
                 return;
+            }
+            if (key == IISHttpContextType)
+            {
+                throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
             };
             ExtraFeatureSet(key, feature);
         }

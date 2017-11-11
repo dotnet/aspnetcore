@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public unsafe static extern bool http_set_managed_context(IntPtr pHttpContext, IntPtr pvManagedContext);
 
         [DllImport(AspNetCoreModuleDll)]
-        public unsafe static extern int http_get_application_paths([MarshalAs(UnmanagedType.BStr)] out string fullPath, [MarshalAs(UnmanagedType.BStr)] out string virtualPath);
+        public unsafe static extern int http_get_application_properties(ref IISConfigurationData iiConfigData);
 
         [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern bool http_shutdown();
@@ -98,6 +98,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         [DllImport(AspNetCoreModuleDll)]
         internal unsafe static extern int http_response_set_known_header(IntPtr pHttpContext, int headerId, byte* pHeaderValue, ushort length, bool fReplace);
 
+        [DllImport(AspNetCoreModuleDll)]
+        public unsafe static extern int http_get_authentication_information(IntPtr pHttpContext, [MarshalAs(UnmanagedType.BStr)] out string authType, out IntPtr token);
+
         [DllImport("kernel32.dll")]
         public static extern IntPtr GetModuleHandle(string lpModuleName);
 
@@ -105,6 +108,5 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             return GetModuleHandle(AspNetCoreModuleDll) != IntPtr.Zero;
         }
-
     }
 }

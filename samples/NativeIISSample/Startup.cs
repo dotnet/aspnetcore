@@ -3,9 +3,11 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration;
 
 namespace NativeIISSample
 {
@@ -13,7 +15,7 @@ namespace NativeIISSample
     {
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IAuthenticationSchemeProvider authSchemeProvider)
         {
             app.Run(async (context) =>
             {
@@ -38,8 +40,8 @@ namespace NativeIISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
-                //var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
-                //await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
+                var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
+                await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
 
                 await context.Response.WriteAsync(Environment.NewLine);
 

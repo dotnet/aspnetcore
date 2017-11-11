@@ -10,9 +10,12 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
@@ -57,7 +60,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private CurrentOperationType _currentOperationType;
         private Task _currentOperation = Task.CompletedTask;
 
-        internal unsafe IISHttpContext(PipeFactory pipeFactory, IntPtr pHttpContext)
+        private const string NtlmString = "NTLM";
+        private const string NegotiateString = "Negotiate";
+        private const string BasicString = "Basic";
+
+        internal unsafe IISHttpContext(PipeFactory pipeFactory, IntPtr pHttpContext, IISOptions options)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pHttpContext))
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -120,6 +127,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 HttpResponseHeaders = new HeaderCollection(); // TODO Optimize for known headers
                 ResponseHeaders = HttpResponseHeaders;
 
+                if (options.ForwardWindowsAuthentication)
+                {
+                    WindowsUser = GetWindowsPrincipal();
+                    if (options.AutomaticAuthentication)
+                    {
+                        User = WindowsUser;
+                    }
+                }
+
                 ResetFeatureCollection();
             }
 
@@ -146,7 +162,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public int LocalPort { get; set; }
         public string RequestConnectionId { get; set; }
         public string TraceIdentifier { get; set; }
-
+        public ClaimsPrincipal User { get; set; }
+        internal WindowsPrincipal WindowsUser { get; set; } 
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
         public IPipe Input { get; set; }
@@ -827,7 +844,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     // TODO: dispose managed state (managed objects).
                     _thisHandle.Free();
                 }
-
+                if (WindowsUser?.Identity is WindowsIdentity wi)
+                {
+                    wi.Dispose();
+                }
                 disposedValue = true;
             }
         }
@@ -850,6 +870,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             Read,
             Write,
             Flush
+        }
+
+        private WindowsPrincipal GetWindowsPrincipal()
+        {
+            var hr = NativeMethods.http_get_authentication_information(_pHttpContext, out var authenticationType, out var token);
+
+            if (hr == 0 && token != IntPtr.Zero && authenticationType != null)
+            {
+                if ((authenticationType.Equals(NtlmString, StringComparison.OrdinalIgnoreCase)
+                    || authenticationType.Equals(NegotiateString, StringComparison.OrdinalIgnoreCase)
+                    || authenticationType.Equals(BasicString, StringComparison.OrdinalIgnoreCase)))
+                {
+                    return new WindowsPrincipal(new WindowsIdentity(token, authenticationType));
+                }
+            }
+            return null;
         }
     }
 }

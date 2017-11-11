@@ -7,10 +7,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
@@ -22,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                                             IHttpUpgradeFeature,
                                             IHttpConnectionFeature,
                                             IHttpRequestLifetimeFeature,
-                                            IHttpRequestIdentifierFeature
+                                            IHttpRequestIdentifierFeature,
+                                            IHttpAuthenticationFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -222,6 +225,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             get => TraceIdentifier;
             set => TraceIdentifier = value;
         }
+
+        ClaimsPrincipal IHttpAuthenticationFeature.User
+        {
+            get => User;
+            set => User = value;
+        }
+
+        public IAuthenticationHandler Handler { get; set; }
 
         object IFeatureCollection.this[Type key]
         {

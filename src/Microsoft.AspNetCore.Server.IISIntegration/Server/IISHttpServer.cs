@@ -6,9 +6,12 @@ using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -19,22 +22,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
-
         private PipeFactory _pipeFactory = new PipeFactory();
         private GCHandle _httpServerHandle;
-        private IApplicationLifetime _applicationLifetime;
+        private readonly IApplicationLifetime _applicationLifetime;
+        private readonly IAuthenticationSchemeProvider _authentication;
+        private readonly IISOptions _options;
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
-        public IISHttpServer(IApplicationLifetime applicationLifetime)
+        public IISHttpServer(IApplicationLifetime applicationLifetime, IAuthenticationSchemeProvider authentication, IOptions<IISOptions> options)
         {
             _applicationLifetime = applicationLifetime;
+            _authentication = authentication;
+            _options = options.Value;
+
+            if (_options.ForwardWindowsAuthentication)
+            {
+                authentication.AddScheme(new AuthenticationScheme(IISDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(IISServerAuthenticationHandler)));
+            }
         }
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
-            _iisContextFactory = new IISContextFactory<TContext>(_pipeFactory, application);
+            _iisContextFactory = new IISContextFactory<TContext>(_pipeFactory, application, _options);
 
             // Start the server by registering the callback
             NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
@@ -115,16 +126,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             private readonly IHttpApplication<T> _application;
             private readonly PipeFactory _pipeFactory;
+            private readonly IISOptions _options;
 
-            public IISContextFactory(PipeFactory pipeFactory, IHttpApplication<T> application)
+            public IISContextFactory(PipeFactory pipeFactory, IHttpApplication<T> application, IISOptions options)
             {
                 _application = application;
                 _pipeFactory = pipeFactory;
+                _options = options;
             }
 
             public IISHttpContext CreateHttpContext(IntPtr pHttpContext)
             {
-                return new IISHttpContextOfT<T>(_pipeFactory, _application, pHttpContext);
+                return new IISHttpContextOfT<T>(_pipeFactory, _application, pHttpContext, _options);
             }
         }
     }

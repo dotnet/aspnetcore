@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if NET461
-// Per https://github.com/dotnet/corefx/issues/5045, HttpClientHandler.UseDefaultCredentials does not work correctly in CoreFx.
-// We'll require the desktop HttpClient to run these tests.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -17,62 +18,49 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace IISIntegration.IISServerFunctionalTests
 {
-    public class NtlmAuthenticationTests : LoggedTest
+    public class AuthenticationTests : LoggedTest
     {
-        public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
+        public AuthenticationTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [Fact]
-        public Task NtlmAuthentication_Clr_X64()
+        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        public Task Authentication_InProcess_IISExpress()
         {
-            return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051);
+            return Authentication();
         }
 
-        [Fact]
-        public Task NtlmAuthentication_CoreClr_X64_Portable()
-        {
-            return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052);
-        }
-
-        private async Task NtlmAuthentication(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, int port)
+        private async Task Authentication()
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
-            var testName = $"NtlmAuthentication_{runtimeFlavor}";
+            var testName = $"Authentication_{RuntimeFlavor.CoreClr}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
+                var logger = loggerFactory.CreateLogger("AuthenticationTest");
 
-                var windowsRid = architecture == RuntimeArchitecture.x64
-                    ? "win7-x64"
-                    : "win7-x86";
-
-                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, RuntimeFlavor.CoreClr, architecture)
                 {
-                    ApplicationBaseUriHint = $"http://localhost:{port}",
-                    EnvironmentName = "NtlmAuthentication", // Will pick the Start class named 'StartupNtlmAuthentication'
-                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("NtlmAuthentation.config") : null,
-                    SiteName = "NtlmAuthenticationTestSite", // This is configured in the NtlmAuthentication.config
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-                    ApplicationType = applicationType,
-                    AdditionalPublishParameters = ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor
-                        ? "-r " + windowsRid
-                        : null
+                    ApplicationBaseUriHint = $"http://localhost:5051",
+                    EnvironmentName = "Authentication", // Will pick the Start class named 'StartupAuthentication',
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    SiteName = "HttpTestSite", // This is configured in the Http.config
+                    TargetFramework = "netcoreapp2.0",
+                    ApplicationType = ApplicationType.Portable
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
                     var httpClient = deploymentResult.HttpClient;
-                    httpClient.Timeout = TimeSpan.FromSeconds(5);
+                    deploymentResult.HttpClient.Timeout = TimeSpan.FromSeconds(5);
 
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
                     {
-                        return httpClient.GetAsync(string.Empty);
+                        return deploymentResult.HttpClient.GetAsync(string.Empty);
                     }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
 
                     var responseText = await response.Content.ReadAsStringAsync();

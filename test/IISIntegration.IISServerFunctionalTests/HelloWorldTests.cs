@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
         }
 
-        [Fact( Skip ="See https://github.com/aspnet/IISIntegration/issues/424")]
+        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
         public Task HelloWorld_InProcess_IISExpress_CoreClr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);

@@ -3,9 +3,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using System.Threading;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -13,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(PipeFactory pipeFactory, IHttpApplication<TContext> application, IntPtr pHttpContext)
-            : base(pipeFactory, pHttpContext)
+        public IISHttpContextOfT(PipeFactory pipeFactory, IHttpApplication<TContext> application, IntPtr pHttpContext, IISOptions options)
+            : base(pipeFactory, pHttpContext, options)
         {
             _application = application;
         }
