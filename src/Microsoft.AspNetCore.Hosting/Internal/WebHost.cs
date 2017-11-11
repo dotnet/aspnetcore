@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private readonly AggregateException _hostingStartupErrors;
 
         private IServiceProvider _applicationServices;
-        private RequestDelegate _application;
+        private ExceptionDispatchInfo _applicationServicesException;
         private ILogger<WebHost> _logger;
 
         private bool _stopped;
@@ -88,7 +89,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             get
             {
-                EnsureApplicationServices();
                 return _applicationServices;
             }
         }
@@ -97,15 +97,32 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             get
             {
+                EnsureServer();
                 return Server?.Features;
             }
         }
 
+        // Called immediately after the constructor so the properties can rely on it.
         public void Initialize()
         {
-            if (_application == null)
+            try
             {
-                _application = BuildApplication();
+                EnsureApplicationServices();
+            }
+            catch (Exception ex)
+            {
+                // EnsureApplicationServices may have failed due to a missing or throwing Startup class.
+                if (_applicationServices == null)
+                {
+                    _applicationServices = _applicationServiceCollection.BuildServiceProvider();
+                }
+
+                if (!_options.CaptureStartupErrors)
+                {
+                    throw;
+                }
+
+                _applicationServicesException = ExceptionDispatchInfo.Capture(ex);
             }
         }
 
@@ -120,13 +137,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
             _logger.Starting();
 
-            Initialize();
+            var application = BuildApplication();
 
             _applicationLifetime = _applicationServices.GetRequiredService<IApplicationLifetime>() as ApplicationLifetime;
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(_application, _logger, diagnosticSource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
 
             // Fire IApplicationLifetime.Started
@@ -183,7 +200,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             try
             {
-                EnsureApplicationServices();
+                _applicationServicesException?.Throw();
                 EnsureServer();
 
                 var builderFactory = _applicationServices.GetRequiredService<IApplicationBuilderFactory>();
@@ -203,12 +220,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             catch (Exception ex)
             {
-                // EnsureApplicationServices may have failed due to a missing or throwing Startup class.
-                if (_applicationServices == null)
-                {
-                    _applicationServices = _applicationServiceCollection.BuildServiceProvider();
-                }
-
                 if (!_options.SuppressStatusMessages)
                 {
                     // Write errors to standard out so they can be retrieved when not in development mode.

@@ -759,6 +759,7 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .Build())
             {
+                host.Start();
                 Assert.Equal(6, configureOrder);
             }
         }

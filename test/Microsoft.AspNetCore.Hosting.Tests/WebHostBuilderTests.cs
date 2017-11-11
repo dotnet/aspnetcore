@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Hosting
                     options.ValidateScopes = true;
                 });
 
-            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
+            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build().Start());
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Hosting
                     options.ValidateScopes = true;
                 });
 
-            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
+            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build().Start());
             Assert.True(configurationCallbackCalled);
         }
 
@@ -784,8 +784,9 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer());
 
-            using (builder.Build())
+            using (var host = builder.Build())
             {
+                host.Start();
                 Assert.NotNull(startup.ServiceADescriptor);
                 Assert.NotNull(startup.ServiceA);
             }
@@ -823,6 +824,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = (WebHost)builder.Build())
             {
+                host.Start();
                 var sink = host.Services.GetRequiredService<ITestSink>();
                 Assert.Contains(sink.Writes, w => w.State.ToString() == "From startup");
             }
@@ -920,6 +922,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             using (var host = (WebHost)builder.Build())
             {
+                host.Start();
                 var sink = host.Services.GetRequiredService<ITestSink>();
                 Assert.Contains(sink.Writes, w => w.Exception?.Message == "Startup exception");
             }
@@ -940,7 +943,7 @@ namespace Microsoft.AspNetCore.Hosting
                 })
                 .UseServer(new TestServer());
 
-            Assert.Throws<InvalidOperationException>(() => builder.Build());
+            Assert.Throws<InvalidOperationException>(() => builder.Build().Start());
 
             Assert.NotNull(testSink);
             Assert.Contains(testSink.Writes, w => w.Exception?.Message == "Startup exception");
