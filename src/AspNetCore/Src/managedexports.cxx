@@ -135,22 +135,38 @@ http_get_completion_info(
 // todo: we should not rely on IN_PROCESS_APPLICATION::GetInstance()
 // the signature should be changed. application's based address should be passed in
 //
+
+struct IISConfigurationData
+{
+    BSTR pwzFullApplicationPath;
+    BSTR pwzVirtualApplicationPath;
+    BOOL fWindowsAuthEnabled;
+    BOOL fBasicAuthEnabled;
+    BOOL fAnonymousAuthEnable;
+};
+
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT // TODO probably should make this a wide string
-http_get_application_paths(
-    _Out_ BSTR* pwzFullPath,
-    _Out_ BSTR* pwzVirtualPath
+http_get_application_properties(
+    _In_ IISConfigurationData* pIISCofigurationData
 )
 {
+    ASPNETCORE_CONFIG* pConfiguration = NULL;
     IN_PROCESS_APPLICATION* pApplication = IN_PROCESS_APPLICATION::GetInstance();
-
+    
     if (pApplication == NULL)
     {
         return E_FAIL;
     }
-    // These should be provided to the in process application as arguments?
-    *pwzFullPath = SysAllocString(pApplication->QueryConfig()->QueryApplicationFullPath()->QueryStr());
-    *pwzVirtualPath = SysAllocString(pApplication->QueryConfig()->QueryApplicationVirtualPath()->QueryStr());
+
+    pConfiguration = pApplication->QueryConfig();
+
+    pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pConfiguration->QueryApplicationFullPath()->QueryStr());
+    pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pConfiguration->QueryApplicationVirtualPath()->QueryStr());
+    pIISCofigurationData->fWindowsAuthEnabled = pConfiguration->QueryWindowsAuthEnabled();
+    pIISCofigurationData->fBasicAuthEnabled = pConfiguration->QueryBasicAuthEnabled();
+    pIISCofigurationData->fAnonymousAuthEnable = pConfiguration->QueryAnonymousAuthEnabled();
+
     return S_OK;
 }
 
@@ -380,5 +396,20 @@ http_response_set_known_header(
 {
     return pHttpContext->GetResponse()->SetHeader( dwHeaderId, pszHeaderValue, usHeaderValueLength, fReplace );
 }
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_get_authentication_information(
+    _In_ IHttpContext* pHttpContext,
+    _Out_ BSTR* pstrAuthType,
+    _Out_ VOID** pvToken
+)
+{
+    *pstrAuthType = SysAllocString(pHttpContext->GetUser()->GetAuthenticationType());
+    *pvToken = pHttpContext->GetUser()->GetPrimaryToken();
+
+    return S_OK;
+}
+
 
 // End of export
