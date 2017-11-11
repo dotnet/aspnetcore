@@ -19,7 +19,7 @@ The Razor syntax provides a fast, terse, clean, and lightweight way to combine s
 ```
 
 ### Enabling view compilation
-View compilation as part of publishing is enabled by default if you're referencing the Web SDK (`Microsoft.NET.Sdk.Web) that ships with .NET Core 2.0 or later versions. For older versions, add the `MvcRazorCompileOnPublish` property to your project:
+View compilation as part of publishing is enabled by default if you're referencing the Web SDK (`Microsoft.NET.Sdk.Web`) that ships with .NET Core 2.0 or later versions. For older versions, add the `MvcRazorCompileOnPublish` property to your project:
 
 ```xml
 <PropertyGroup>
