@@ -49,11 +49,11 @@ namespace RepoTasks
                 var packageVersion = buildArtifacts
                     .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                     .PackageInfo.Version.ToString();
-                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: [{packageVersion}]");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
-                packageReferenceElement.SetAttribute("Version", packageVersion);
+                packageReferenceElement.SetAttribute("Version", $"[{packageVersion}]");
                 packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);
@@ -63,11 +63,11 @@ namespace RepoTasks
             {
                 var packageName = package.ItemSpec;
                 var packageVersion = package.GetMetadata("Version");
-                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: [{packageVersion}]");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
-                packageReferenceElement.SetAttribute("Version", packageVersion);
+                packageReferenceElement.SetAttribute("Version", $"[{packageVersion}]");
                 packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);

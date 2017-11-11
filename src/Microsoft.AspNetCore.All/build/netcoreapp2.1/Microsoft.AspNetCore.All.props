@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <MicrosoftNETPlatformLibrary>Microsoft.AspNetCore.All</MicrosoftNETPlatformLibrary>
+    </PropertyGroup>
+</Project>

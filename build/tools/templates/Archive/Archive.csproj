@@ -3,9 +3,9 @@
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
-    <DotnetCliToolTargetFramework>netcoreapp2.0</DotnetCliToolTargetFramework>
+    <DotnetCliToolTargetFramework>netcoreapp2.1</DotnetCliToolTargetFramework>
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
     <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;</RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">

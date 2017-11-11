@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="common.props" />
-
   <PropertyGroup>
     <_BuildScriptsDirectory>$(MSBuildThisFileDirectory)tools\scripts\</_BuildScriptsDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>

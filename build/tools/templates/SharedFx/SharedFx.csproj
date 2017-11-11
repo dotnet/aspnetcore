@@ -1,30 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
 
   <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
     </RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
-
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSymbols>false</IncludeSymbols>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
-    <PackageTags>aspnetcore</PackageTags>
-    <Description>Microsoft.AspNetCore.All</Description>
-    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="build\**\*.props" PackagePath="%(Identity)" />
-    <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
+   <PackageReference Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
+   <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)"/>
   </ItemGroup>
-
 </Project>

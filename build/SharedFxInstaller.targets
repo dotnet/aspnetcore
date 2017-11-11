@@ -1,0 +1,262 @@
+<Project>
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabeledInstallers" />
+
+  <Target Name="_EnsureInstallerPrerequisites">
+    <MakeDir Directories="$(_InstallersOutputDir)" />
+
+    <!-- Check Docker server OS -->
+    <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" StandardOutputImportance="Normal" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
+    </Exec>
+
+    <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
+    <Error Text="Linux archive not found at $(SharedFxLinuxArchiveFilePath)." Condition="!Exists('$(SharedFxLinuxArchiveFilePath)')" />
+  </Target>
+
+  <Target Name="_DownloadInstallers">
+    <!-- Download dotnet installers -->
+    <MakeDir Directories="$(_InstallerSource)" />
+    <KoreBuild.Tasks.DownloadFile Uri="$(RuntimeTargzLink)$(DotNetAssetRootAccessTokenSuffix)" DestinationPath="$(_InstallerSource)$(DotnetRuntimeInstallerArchiveName)" />
+  </Target>
+
+  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
+    <PropertyGroup>
+      <HostingArchiveName>$(HostingInstallerName)-$(PackageVersion)-linux-x64.tar.gz</HostingArchiveName>
+    </PropertyGroup>
+
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Aspnet Hosting Bundle -->
+    <Exec Command="tar -xzf $(SharedFxLinuxArchiveFilePath) -C $(_WorkRoot)" />
+    <Exec Command="tar -xzf $(_InstallerSource)$(DotnetRuntimeInstallerArchiveName) -C $(_WorkRoot)" />
+
+    <!-- Create Aspnet Hosting Bundle tar.gz -->
+    <Exec Command="tar -czf $(_InstallersOutputDir)$(HostingArchiveName) -C $(_WorkRoot) ."/>
+  </Target>
+
+  <Target Name="_BuildDockerImage">
+    <Exec Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(Image) $(Image)" WorkingDirectory="$(_DockerDir)" />
+  </Target>
+
+  <Target Name="_RemoveDockerImage">
+    <Exec Command="docker rmi docker-image-$(Image)" />
+  </Target>
+
+  <Target Name="_GenerateRpm">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Extract archive if given -->
+    <MakeDir Directories="$(_WorkRoot)package_root\" />
+    <Exec Command="tar -xzf $(SharedFxArchive) -C $(_WorkRoot)package_root\" Condition="'$(SharedFxArchive)'!=''" />
+
+    <!-- Create layout: Create changelog -->
+    <PropertyGroup>
+      <ChangeLogProps>DATE=$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_NAME=$(RpmMaintainerName)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);MAINTAINER_EMAIL=$(RpmMaintainerEmail)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_VERSION=$(RpmVersion)</ChangeLogProps>
+      <ChangeLogProps>$(ChangeLogProps);PACKAGE_REVISION=$(RpmRevision)</ChangeLogProps>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate TemplateFile="$(_PackagingDir)changelog.in" OutputPath="$(_WorkRoot)templates/changelog" Properties="$(ChangeLogProps)" />
+
+    <!-- Run fpm -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(_DockerRootDir)
+      docker-image-$(Image)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(RpmInstallerPrefix)-$(RpmVersion)
+        -p $(_DockerRootDir)artifacts/installers/$(RpmInstallerPrefix)-$(RpmVersion)-$(RpmFileSuffix)
+        -v $(RpmVersion)
+        --iteration $(RpmRevision)
+        -a amd64
+        $(RpmArguments)
+        --rpm-changelog $(_DockerRootDir).w/templates/changelog
+        --rpm-summary &quot;$(RpmMSummary)&quot;
+        --description &quot;$(RpmDescription)&quot;
+        --maintainer &quot;$(RpmMaintainerName) &lt;$(RpmMaintainerEmail)&gt;&quot;
+        --vendor &quot;$(RpmVendor)&quot;
+        --license &quot;$(RpmLicense)&quot;
+        --url &quot;$(RpmHomepage)&quot;
+        $(_DockerRootDir).w/package_root/=&quot;$(RpmInstallRoot)/&quot;" />
+  </Target>
+
+  <Target Name="GenerateRpms" DependsOnTargets="_EnsureInstallerPrerequisites">
+     <PropertyGroup>
+      <Image>rhel.7</Image>
+      <RpmVendor>.NET Foundation</RpmVendor>
+      <RHInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet</RHInstallRoot>
+    </PropertyGroup>
+
+    <!-- Build Docker Image -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+
+    <ItemGroup>
+      <RpmHostingDependencies Include="$(SharedFxInstallerName)-$(PackageVersion)" Version="$(PackageVersion)" />
+      <RpmHostingDependencies Include="$(DotnetRuntimeInstallerName)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
+      <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
+      <RpmSharedFxDependencies Include="aspnetcore-store-2.0.3" Version="2.0.3" />
+      <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
+      <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RpmHostingArguments>@(RpmHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmHostingArguments>
+      <RpmSharedFxArguments>@(RpmSharedFxDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmSharedFxArguments>
+      <RpmRHSharedFxArguments>@(RpmRHSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmRHSharedFxArguments>
+      <RpmGenericSharedFxArguments>@(RpmGenericSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmGenericSharedFxArguments>
+
+      <RpmCommonArguments>Image=$(Image);RpmVendor=$(RpmVendor);RpmVersion=$(PackageVersion)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmMaintainerName=$(MaintainerName);RpmMaintainerEmail=$(MaintainerEmail)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmHomepage=$(Homepage);RpmRevision=$(PackageRevision)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmLicense=$(LicenseType)</RpmCommonArguments>
+      <RpmCommonGenericArguments>RpmFileSuffix=rhel.7-x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
+      <RpmCommonRHArguments>RpmFileSuffix=rh.rhel.7-x64.rpm;RpmInstallRoot=$(RHInstallRoot)</RpmCommonRHArguments>
+
+      <RpmCommonSharedFxArguments>RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</RpmCommonSharedFxArguments>
+      <RpmCommonSharedFxArguments>$(RpmCommonSharedFxArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonSharedFxArguments>
+
+      <RpmCommonHostingArguments>RpmInstallerPrefix=$(HostingInstallerName);RpmArguments=$(RpmHostingArguments)</RpmCommonHostingArguments>
+      <RpmCommonHostingArguments>$(RpmCommonHostingArguments);RpmMSummary=$(HostingSummary);RpmDescription=$(HostingDescription)</RpmCommonHostingArguments>
+
+      <RpmSharedFxProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);$(RpmCommonSharedFxArguments);RpmArguments=$(RpmGenericSharedFxArguments) $(RpmSharedFxArguments)</RpmSharedFxProps>
+      <RpmHostingProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);$(RpmCommonHostingArguments)</RpmHostingProps>
+      <RpmRHSharedFxProps>$(RpmCommonArguments);$(RpmCommonRHArguments);$(RpmCommonSharedFxArguments);RpmArguments=$(RpmRHSharedFxArguments) $(RpmSharedFxArguments)</RpmRHSharedFxProps>
+      <RpmRHHostingProps>$(RpmCommonArguments);$(RpmCommonRHArguments);$(RpmCommonHostingArguments)</RpmRHHostingProps>
+    </PropertyGroup>
+
+    <!-- Generic installers-->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmSharedFxProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmHostingProps)" />
+
+    <!-- RH installers-->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmRHSharedFxProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmRHHostingProps)" />
+
+    <!-- Remove Docker Image to save disk space -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
+  </Target>
+
+  <Target Name="RunDebTool">
+    <!-- Install dotnet-deb tool -->
+    <MSBuild Projects="$(_DebToolDir)dotnet-deb-tool-consumer.csproj" Targets="Restore" />
+
+    <!-- Build deb package -->
+    <Exec
+      Command="dotnet deb-tool -i $(_WorkLayoutDir) -o $(_WorkOutputDir) -n $(INSTALLER_NAME) -v $(INSTALLER_VERSION)"
+      WorkingDirectory="$(_DebToolDir)" />
+  </Target>
+
+  <Target Name="_GenerateDeb">
+    <!-- Create layout: Clear work directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Extract archive if given -->
+    <MakeDir Directories="$(_WorkLayoutDir)package_root\" />
+    <Exec Command="tar -xzf $(SharedFxArchive) -C $(_WorkLayoutDir)package_root/" Condition="'$(SharedFxArchive)'!=''" />
+
+    <!-- Create layout: Generate and Place debian_config.json -->
+    <PropertyGroup>
+      <DebConfigProps>MAINTAINER_NAME=$(MaintainerName)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);MAINTAINER_EMAIL=$(MaintainerEmail)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);HOMEPAGE=$(Homepage)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);INSTALL_ROOT=$(InstallRoot)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);PACKAGE_NAME=$(DebPrefix)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);PACKAGE_REVISION=$(PackageRevision)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);LICENSE_TYPE=$(LicenseType)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);SHORT_DESCRIPTION=$(DebSummary)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);LONG_DESCRIPTION=$(DebDescription)</DebConfigProps>
+      <DebConfigProps>$(DebConfigProps);DEBIAN_DEPENDENCIES=$(DebDependencies)</DebConfigProps>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate TemplateFile="$(DebConfigInFile)" OutputPath="$(_WorkLayoutDir)debian_config.json" Properties="$(DebConfigProps)" />
+
+    <!-- Build SharedFx and Hosting Bundle Deb package -->
+
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(_DockerRootDir)
+      -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+      -e INSTALLER_NAME=$(DebPrefix)-$(DebVersion)
+      -e INSTALLER_VERSION=$(DebVersion)
+      docker-image-$(Image)
+      ./build.sh /t:RunDebTool"
+      ContinueOnError="WarnAndContinue" />
+
+    <!-- Copy SharedFx and Hosting Bundle packages to output -->
+    <ItemGroup>
+      <GeneratedDebFiles Include="$(_WorkOutputDir)/*.deb" />
+    </ItemGroup>
+
+    <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
+
+    <Copy
+      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
+      SourceFiles="@(GeneratedDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+  </Target>
+
+  <Target Name="_GenerateDebOnPlatform">
+    <!-- Build Docker Image -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+
+    <ItemGroup>
+      <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
+      <_DebSharedFxDependencies Include="aspnetcore-store-2.0.3"/>
+      <_DebHostingDependencies Include="$(DotnetRuntimeInstallerName)"/>
+      <_DebHostingDependencies Include="$(SharedFxInstallerName)-$(Version)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": {}', ', ')</DebSharedFxDependencies>
+      <DebHostingDependencies>@(_DebHostingDependencies->'"%(Identity)": {}', ', ')</DebHostingDependencies>
+
+      <CommonProps>Image=$(Image);DebVersion=$(Version)</CommonProps>
+      <DebSharedFxProps>DebPrefix=$(SharedFxInstallerName);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebSharedFxProps>
+      <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</DebSharedFxProps>
+      <DebHostingProps>DebPrefix=$(HostingInstallerName);DebSummary=$(HostingSummary);DebDescription=$(HostingDescription)</DebHostingProps>
+      <DebHostingProps>$(DebHostingProps);DebDependencies=$(DebHostingDependencies)</DebHostingProps>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebSharedFxProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebHostingProps)" />
+
+    <!-- Remove Docker Image to save disk space -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
+  </Target>
+
+  <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=debian.8" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=ubuntu.14.04" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=ubuntu.16.04" />
+  </Target>
+
+  <Target Name="_GenerateRelabeledInstaller">
+    <ItemGroup>
+      <Installers Include="$(_InstallersOutputDir)*$(Source)*" />
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="%(Installers.FullPath)"
+      DestinationFiles="$([System.String]::Copy('%(Installers.FullPath)').Replace('$(Source)','$(Target)'))"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+  </Target>
+
+  <Target Name="GenerateRelabeledInstallers">
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=debian.8;Target=debian.9" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=ubuntu.16.04;Target=ubuntu.17.04" />
+  </Target>
+</Project>

@@ -16,4 +16,5 @@
   <UsingTask TaskName="RepoTasks.ComposeNewStore" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.ConsolidateManifests" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.ReplaceInFile" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ProcessSharedFrameworkDeps" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>

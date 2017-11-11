@@ -1,0 +1,142 @@
+<Project>
+  <Import Project="common.props" />
+  <Import Project="SharedFx.props" />
+
+  <Target Name="BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <PropertyGroup>
+      <MetapackageWorkDirectory>$(_WorkRoot)Microsoft.AspNetCore.All\</MetapackageWorkDirectory>
+      <_SharedFxProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</_SharedFxProps>
+      <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
+    </PropertyGroup>
+    <ItemGroup>
+      <AllMetapackageFiles Include="$(_AllMetapackageDir)**\*" />
+    </ItemGroup>
+
+    <!-- Move to working dir -->
+    <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
+    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+
+    <!-- Add references to project -->
+    <RepoTasks.AddMetapackageReferences
+      ReferencePackagePath="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
+      BuildArtifacts="@(ArtifactInfo)"
+      PackageArtifacts="@(PackageArtifact)"
+      ExternalDependencies="@(ExternalDependency)" />
+
+    <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
+    <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj" Targets="Restore" Properties="$(_SharedFxProps);_Target=Restore" />
+    <!-- Pack -->
+    <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj" Targets="Pack" Properties="$(_SharedFxProps);PackageOutputPath=$(BuildDir)" />
+  </Target>
+
+  <Target Name="BuildSharedFx" DependsOnTargets="ResolveCommitHash">
+    <ItemGroup>
+      <_AcceptableSharedFxRIDs Include="win7-x64;win7-x86;osx-x64;linux-x64"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RIDIsAcceptable Condition="'%(_AcceptableSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
+    </PropertyGroup>
+
+    <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(_AcceptableSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
+
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <PropertyGroup>
+      <SharedFxWorkDirectory>$(_WorkRoot)SharedFx\</SharedFxWorkDirectory>
+      <SharedFxOutputDirectory>$(_WorkRoot)Publish\</SharedFxOutputDirectory>
+      <SharedFxPublishDirectory>$(SharedFxOutputDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
+
+      <_SharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRID)</_SharedFxProps>
+      <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
+      <_SharedFxProps>$(_SharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</_SharedFxProps>
+      <_SharedFxProps>$(_SharedFxProps);AspNetUniverseBuildOffline=true</_SharedFxProps>
+    </PropertyGroup>
+
+    <!-- Move to working dir -->
+    <ItemGroup>
+      <SharedFxFiles Include="$(_TemplatesDir)SharedFx\**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SharedFxFiles)" DestinationFolder="$(SharedFxWorkDirectory)\%(RecursiveDir)" />
+    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+
+    <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
+    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
+      Targets="Restore"
+      Properties="$(_SharedFxProps);MicrosoftAspNetCoreAllVersion=$(PackageVersion);_Target=Restore" />
+
+    <!-- Publish -->
+    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
+      Targets="Publish"
+      Properties="$(_SharedFxProps);GenerateRuntimeConfigurationFiles=true;SelfContained=false;PublishDir=$(SharedFxPublishDirectory)" />
+
+    <!-- Clean deps.json -->
+    <RepoTasks.TrimDeps DepsFiles="$(SharedFxPublishDirectory)/SharedFx.deps.json" />
+
+    <!-- Clean up artifacts that publish generates which we don't need -->
+    <ItemGroup>
+      <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx" />
+      <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.dll" />
+      <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.pdb" />
+    </ItemGroup>
+
+    <Delete Files="@(ToDelete)" />
+
+    <!-- Rename deps file -->
+    <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.deps.json"
+          DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json" />
+
+    <!-- Rename runtimeconfig.json file -->
+    <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.runtimeconfig.json"
+          DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.runtimeconfig.json" />
+
+    <!-- Generate Runtime Graph -->
+    <PropertyGroup>
+      <RuntimeGraphGeneratorRuntime Condition="$([MSBuild]::IsOSPlatform('Windows'))">win</RuntimeGraphGeneratorRuntime>
+      <RuntimeGraphGeneratorRuntime Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</RuntimeGraphGeneratorRuntime>
+      <RuntimeGraphGeneratorRuntime Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</RuntimeGraphGeneratorRuntime>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SharedFxAssetsFile Include="$(SharedFxWorkDirectory)**\project.assets.json" />
+    </ItemGroup>
+
+    <ProcessSharedFrameworkDeps
+      AssetsFilePath="@(SharedFxAssetsFile)"
+      DepsFilePath="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json"
+      Runtime="$(RuntimeGraphGeneratorRuntime)" />
+
+    <!-- Generate .version file -->
+    <ItemGroup>
+      <VersionLines Include="$(CommitHash)" />
+      <VersionLines Include="$(PackageVersion)" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(SharedFxPublishDirectory)\.version"
+      Lines="@(VersionLines)"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <OutputZipFiles Include="$(SharedFxOutputDirectory)**\*" />
+    </ItemGroup>
+
+    <!-- Create archive -->
+    <ZipArchive
+      File="$(ArtifactsDir)aspnetcore-shared-$(PackageVersion)-$(SharedFxRID).zip"
+      SourceFiles="@(OutputZipFiles)"
+      WorkingDirectory="$(SharedFxOutputDirectory)"
+      Overwrite="true"
+      Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
+    <Exec
+      Command="tar -czf $(ArtifactsDir)aspnetcore-shared-$(PackageVersion)-$(SharedFxRID).tar.gz -C $(SharedFxOutputDirectory) ."
+      WorkingDirectory="$(SharedFxOutputDirectory)"
+      Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))"/>
+
+  </Target>
+</Project>
