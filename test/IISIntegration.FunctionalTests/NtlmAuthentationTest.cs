@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/IISIntegration/issues/472")]
         public Task NtlmAuthentication_Clr_X64()
         {
             return NtlmAuthentication(RuntimeFlavor.Clr, ApplicationType.Portable, port: 5051);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/IISIntegration/issues/472")]
         public Task NtlmAuthentication_CoreClr_X64_Portable()
         {
             return NtlmAuthentication(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 5052);
