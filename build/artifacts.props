@@ -120,6 +120,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Routing.UrlMatchingTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
