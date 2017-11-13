@@ -5,14 +5,14 @@ using System;
 
 namespace Microsoft.CodeAnalysis.Razor.Editor
 {
-    internal class DefaultEditorSettingsManager : EditorSettingsManager
+    internal class DefaultEditorSettingsManagerInternal : EditorSettingsManagerInternal
     {
         public override event EventHandler<EditorSettingsChangedEventArgs> Changed;
 
         private readonly object SettingsAccessorLock = new object();
         private EditorSettings _settings;
 
-        public DefaultEditorSettingsManager()
+        public DefaultEditorSettingsManagerInternal()
         {
             _settings = EditorSettings.Default;
         }

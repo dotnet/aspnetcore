@@ -9,8 +9,8 @@ using Microsoft.CodeAnalysis.Host.Mef;
 namespace Microsoft.CodeAnalysis.Razor.Editor
 {
     [Shared]
-    [ExportLanguageServiceFactory(typeof(EditorSettingsManager), RazorLanguage.Name)]
-    internal class DefaultEditorSettingsManagerFactory : ILanguageServiceFactory
+    [ExportLanguageServiceFactory(typeof(EditorSettingsManagerInternal), RazorLanguage.Name)]
+    internal class DefaultEditorSettingsManagerInternalFactory : ILanguageServiceFactory
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            return new DefaultEditorSettingsManager();
+            return new DefaultEditorSettingsManagerInternal();
         }
     }
 }

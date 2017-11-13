@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor.Editor
 {
-    public abstract class EditorSettingsManager : ILanguageService
+    internal abstract class EditorSettingsManagerInternal : ILanguageService
     {
         public abstract event EventHandler<EditorSettingsChangedEventArgs> Changed;
 

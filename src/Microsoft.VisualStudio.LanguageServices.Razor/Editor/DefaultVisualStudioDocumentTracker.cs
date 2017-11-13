@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     {
         private readonly string _filePath;
         private readonly ProjectSnapshotManager _projectManager;
-        private readonly EditorSettingsManager _editorSettingsManager;
+        private readonly EditorSettingsManagerInternal _editorSettingsManager;
         private readonly TextBufferProjectService _projectService;
         private readonly ITextBuffer _textBuffer;
         private readonly List<ITextView> _textViews;
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             string filePath,
             ProjectSnapshotManager projectManager,
             TextBufferProjectService projectService,
-            EditorSettingsManager editorSettingsManager,
+            EditorSettingsManagerInternal editorSettingsManager,
             Workspace workspace,
             ITextBuffer textBuffer)
         {
