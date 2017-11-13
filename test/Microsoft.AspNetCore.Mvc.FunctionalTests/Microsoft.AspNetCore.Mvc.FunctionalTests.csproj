@@ -2,16 +2,15 @@
   <Import Project="..\..\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <!-- Removing this is blocked by https://github.com/aspnet/Mvc/issues/5822 -->
-    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.1' OR '$(TargetFramework)' == 'netcoreapp2.0'  ">$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
     <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
+    <PlatformTarget Condition=" '$(TargetFramework)' == 'netcoreapp2.1' "></PlatformTarget>
 
     <DefineConstants Condition="'$(GenerateBaselines)'=='true'">$(DefineConstants);GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);__RemoveThisBitTo__GENERATE_BASELINES</DefineConstants>
     <DefineConstants>$(DefineConstants);FUNCTIONAL_TESTS</DefineConstants>
-
   </PropertyGroup>
 
   <ItemGroup>

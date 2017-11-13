@@ -1,7 +1,7 @@
 @inject FrameworkSpecificHelper MyHelper
 @{
     string value =
-#if NETCOREAPP2_0_CUSTOM_DEFINE
+#if NETCOREAPP2_0_CUSTOM_DEFINE || NETCOREAPP2_1_CUSTOM_DEFINE
     MyHelper.ExecuteNetCoreApp2_0Operation();
 #endif
 }
