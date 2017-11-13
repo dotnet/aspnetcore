@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <remarks>
         /// The <paramref name="purpose"/> parameter allows a token generator to be used for multiple types of token whilst
         /// insuring a token for one purpose cannot be used for another. For example if you specified a purpose of "Email" 
-        /// and validated it with the same purpose a token with the purpose of TOTP would not pass the heck even if it was
+        /// and validated it with the same purpose a token with the purpose of TOTP would not pass the check even if it was
         /// for the same user.
         /// 
         /// Implementations of <see cref="IUserTwoFactorTokenProvider{TUser}"/> should validate that purpose is not null or empty to
