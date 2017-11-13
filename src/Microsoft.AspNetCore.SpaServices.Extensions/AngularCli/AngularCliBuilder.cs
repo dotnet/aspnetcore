@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.NodeServices.Npm;
 using Microsoft.AspNetCore.NodeServices.Util;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
+using Microsoft.AspNetCore.SpaServices.Util;
 using System;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -46,11 +47,14 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 throw new InvalidOperationException($"To use {nameof(AngularCliBuilder)}, you must supply a non-empty value for the {nameof(SpaOptions.SourcePath)} property of {nameof(SpaOptions)} when calling {nameof(SpaApplicationBuilderExtensions.UseSpa)}.");
             }
 
-            var logger = AngularCliMiddleware.GetOrCreateLogger(spaBuilder.ApplicationBuilder);
+            var logger = LoggerFinder.GetOrCreateLogger(
+                spaBuilder.ApplicationBuilder,
+                nameof(AngularCliBuilder));
             var npmScriptRunner = new NpmScriptRunner(
                 sourcePath,
                 _npmScriptName,
-                "--watch");
+                "--watch",
+                null);
             npmScriptRunner.AttachToLogger(logger);
 
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))

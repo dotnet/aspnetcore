@@ -7,6 +7,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Collections.Generic;
 
 // This is under the NodeServices namespace because post 2.1 it will be moved to that package
 namespace Microsoft.AspNetCore.NodeServices.Npm
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
 
         private static Regex AnsiColorRegex = new Regex("\x001b\\[[0-9;]*m", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-        public NpmScriptRunner(string workingDirectory, string scriptName, string arguments)
+        public NpmScriptRunner(string workingDirectory, string scriptName, string arguments, IDictionary<string, string> envVars)
         {
             if (string.IsNullOrEmpty(workingDirectory))
             {
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
                 completeArguments = $"/c npm {completeArguments}";
             }
 
-            var process = LaunchNodeProcess(new ProcessStartInfo(npmExe)
+            var processStartInfo = new ProcessStartInfo(npmExe)
             {
                 Arguments = completeArguments,
                 UseShellExecute = false,
@@ -53,8 +54,17 @@ namespace Microsoft.AspNetCore.NodeServices.Npm
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 WorkingDirectory = workingDirectory
-            });
+            };
 
+            if (envVars != null)
+            {
+                foreach (var keyValuePair in envVars)
+                {
+                    processStartInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
+                }
+            }
+
+            var process = LaunchNodeProcess(processStartInfo);
             StdOut = new EventedStreamReader(process.StandardOutput);
             StdErr = new EventedStreamReader(process.StandardError);
         }
