@@ -4,6 +4,7 @@
   <Import Project="RuntimeStoreInstaller.targets" />
   <Import Project="PackageArchive.targets" />
   <Import Project="Templating.targets" />
+  <Import Project="Signing.targets" />
   <Import Project="push.targets" />
 
   <PropertyGroup>
@@ -12,7 +13,7 @@
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
 
-    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
+    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(SkipTests)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Build</_RepositoryBuildTargets>
     <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
     <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
@@ -25,7 +26,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages;Sign</PackageDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 

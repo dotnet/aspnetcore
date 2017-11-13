@@ -12,7 +12,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <BatchBuilds Condition="$(BuildInParallel) AND '$(CompileOnly)'=='true'">true</BatchBuilds>
+      <BatchBuilds Condition="$(BuildInParallel) AND '$(SkipTests)'=='true'">true</BatchBuilds>
       <BatchBuilds Condition="'$(BatchBuilds)'==''">false</BatchBuilds>
     </PropertyGroup>
 
