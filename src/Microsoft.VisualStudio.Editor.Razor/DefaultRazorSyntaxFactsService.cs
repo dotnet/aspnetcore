@@ -3,13 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [System.Composition.Shared]
+    [Export(typeof(RazorSyntaxFactsService))]
     internal class DefaultRazorSyntaxFactsService : RazorSyntaxFactsService
     {
         public override IReadOnlyList<ClassifiedSpan> GetClassifiedSpans(RazorSyntaxTree syntaxTree)

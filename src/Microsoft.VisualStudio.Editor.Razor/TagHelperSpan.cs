@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     public struct TagHelperSpan
     {
