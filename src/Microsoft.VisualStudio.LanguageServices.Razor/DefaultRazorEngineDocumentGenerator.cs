@@ -27,9 +27,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
             catch (Exception exception)
             {
-                throw new RazorLanguageServiceException(
-                    typeof(DefaultRazorEngineDocumentGenerator).FullName,
-                    nameof(GenerateDocumentAsync),
+                throw new InvalidOperationException(
+                    Resources.FormatUnexpectedException(
+                        typeof(DefaultRazorEngineDocumentGenerator).FullName,
+                        nameof(GenerateDocumentAsync)),
                     exception);
             }
         }

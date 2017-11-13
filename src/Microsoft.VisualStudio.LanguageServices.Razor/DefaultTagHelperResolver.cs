@@ -74,9 +74,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 _errorReporter.ReportError(exception, project);
 
-                throw new RazorLanguageServiceException(
-                    typeof(DefaultTagHelperResolver).FullName,
-                    nameof(GetTagHelpersAsync),
+                throw new InvalidOperationException(
+                    Resources.FormatUnexpectedException(
+                        typeof(DefaultTagHelperResolver).FullName,
+                        nameof(GetTagHelpersAsync)),
                     exception);
             }
         }
