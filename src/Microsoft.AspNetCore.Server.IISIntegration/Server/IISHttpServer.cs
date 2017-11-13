@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
-        private PipeFactory _pipeFactory = new PipeFactory();
+        private readonly BufferPool _bufferPool = new MemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly IAuthenticationSchemeProvider _authentication;
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
-            _iisContextFactory = new IISContextFactory<TContext>(_pipeFactory, application, _options);
+            _iisContextFactory = new IISContextFactory<TContext>(_bufferPool, application, _options);
 
             // Start the server by registering the callback
             NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _httpServerHandle.Free();
             }
 
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pHttpContext, IntPtr pvRequestContext)
@@ -125,19 +126,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private class IISContextFactory<T> : IISContextFactory
         {
             private readonly IHttpApplication<T> _application;
-            private readonly PipeFactory _pipeFactory;
+            private readonly BufferPool _bufferPool;
             private readonly IISOptions _options;
 
-            public IISContextFactory(PipeFactory pipeFactory, IHttpApplication<T> application, IISOptions options)
+            public IISContextFactory(BufferPool bufferPool, IHttpApplication<T> application, IISOptions options)
             {
                 _application = application;
-                _pipeFactory = pipeFactory;
+                _bufferPool = bufferPool;
                 _options = options;
             }
 
             public IISHttpContext CreateHttpContext(IntPtr pHttpContext)
             {
-                return new IISHttpContextOfT<T>(_pipeFactory, _application, pHttpContext, _options);
+                return new IISHttpContextOfT<T>(_bufferPool, _application, pHttpContext, _options);
             }
         }
     }

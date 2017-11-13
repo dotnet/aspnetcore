@@ -41,10 +41,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
-        private readonly PipeFactory _pipeFactory;
+        private readonly BufferPool _bufferPool;
 
         private GCHandle _thisHandle;
-        private BufferHandle _inputHandle;
+        private MemoryHandle _inputHandle;
         private IISAwaitable _operation = new IISAwaitable();
 
         private IISAwaitable _readWebSocketsOperation;
@@ -64,12 +64,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
-        internal unsafe IISHttpContext(PipeFactory pipeFactory, IntPtr pHttpContext, IISOptions options)
+        internal unsafe IISHttpContext(BufferPool bufferPool, IntPtr pHttpContext, IISOptions options)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pHttpContext))
         {
             _thisHandle = GCHandle.Alloc(this);
 
-            _pipeFactory = pipeFactory;
+            _bufferPool = bufferPool;
             _pHttpContext = pHttpContext;
 
             NativeMethods.http_set_managed_context(_pHttpContext, (IntPtr)_thisHandle);
@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
-            Input = _pipeFactory.Create(new PipeOptions { ReaderScheduler = TaskRunScheduler.Default });
-            var pipe = _pipeFactory.Create(new PipeOptions { ReaderScheduler = TaskRunScheduler.Default });
+            Input = new Pipe(new PipeOptions(_bufferPool, readerScheduler: TaskRunScheduler.Default));
+            var pipe = new Pipe(new PipeOptions(_bufferPool,  readerScheduler: TaskRunScheduler.Default));
             Output = new OutputProducer(pipe);
         }
 
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
                 // REVIEW: We don't really need this list since the memory is already pinned with the default pool,
                 // but shouldn't assume the pool implementation right now. Unfortunately, this causes a heap allocation...
-                var handles = new BufferHandle[nChunks];
+                var handles = new MemoryHandle[nChunks];
 
                 foreach (var b in buffer)
                 {
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
                     chunk.DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
                     chunk.fromMemory.BufferLength = (uint)b.Length;
-                    chunk.fromMemory.pBuffer = (IntPtr)handle.PinnedPointer;
+                    chunk.fromMemory.pBuffer = (IntPtr)handle.Pointer;
 
                     currentChunk++;
                 }
@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var hr = NativeMethods.http_read_request_bytes(
                             _pHttpContext,
-                            (byte*)_inputHandle.PinnedPointer,
+                            (byte*)_inputHandle.Pointer,
                             length,
                             out var dwReceivedBytes,
                             out bool fCompletionExpected);
@@ -679,7 +679,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             bool fCompletionExpected;
             hr = NativeMethods.http_websockets_read_bytes(
                                       _pHttpContext,
-                                      (byte*)_inputHandle.PinnedPointer,
+                                      (byte*)_inputHandle.Pointer,
                                       length,
                                       IISAwaitable.ReadCallback,
                                       (IntPtr)_thisHandle,

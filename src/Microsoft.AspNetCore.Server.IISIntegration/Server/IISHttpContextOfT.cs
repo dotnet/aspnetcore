@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Threading.Tasks;
 using System.Threading;
 using System.IO.Pipelines;
@@ -14,8 +15,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(PipeFactory pipeFactory, IHttpApplication<TContext> application, IntPtr pHttpContext, IISOptions options)
-            : base(pipeFactory, pHttpContext, options)
+        public IISHttpContextOfT(BufferPool bufferPool, IHttpApplication<TContext> application, IntPtr pHttpContext, IISOptions options)
+            : base(bufferPool, pHttpContext, options)
         {
             _application = application;
         }

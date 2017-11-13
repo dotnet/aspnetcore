@@ -107,10 +107,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // The flush task can't fail today
                 return Task.CompletedTask;
             }
-            return FlushAsyncAwaited(awaitable, writableBuffer.BytesWritten, cancellationToken);
+            return FlushAsyncAwaited(awaitable, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, long count, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters
