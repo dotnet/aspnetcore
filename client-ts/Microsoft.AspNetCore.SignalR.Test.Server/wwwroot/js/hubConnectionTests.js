@@ -343,4 +343,64 @@ describe('hubConnection', function () {
             });
         });
     });
+
+    eachTransport(function (transportType) {
+        describe(' over ' + signalR.TransportType[transportType] + ' transport', function () {
+
+            it('can connect to hub with authorization', function (done) {
+                var message = '你好，世界！';
+
+                var hubConnection;
+                getJwtToken('http://' + document.location.host + '/generateJwtToken')
+                    .then(jwtToken => {
+                        var options = {
+                            transport: transportType,
+                            logging: signalR.LogLevel.Trace,
+                            jwtBearer: function () {
+                                return jwtToken;
+                            }
+                        };
+                        hubConnection = new signalR.HubConnection('/authorizedhub', options);
+                        hubConnection.onclose(function (error) {
+                            expect(error).toBe(undefined);
+                            done();
+                        });
+                        return hubConnection.start();
+                    })
+                    .then(function() {
+                        return hubConnection.invoke('Echo', message);
+                    })
+                    .then(function(response) {
+                        expect(response).toEqual(message);
+                        return hubConnection.stop();
+                    })
+                    .catch(function(e) {
+                        fail(e);
+                        done();
+                    });
+            });
+        });
+    });
+
+    function getJwtToken(url) {
+        return new Promise((resolve, reject) => {
+            let xhr = new XMLHttpRequest();
+
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr.response || xhr.responseText);
+                }
+                else {
+                    reject(new Error(xhr.statusText));
+                }
+            };
+
+            xhr.onerror = () => {
+                reject(new Error(xhr.statusText));
+            }
+        });
+    }
 });

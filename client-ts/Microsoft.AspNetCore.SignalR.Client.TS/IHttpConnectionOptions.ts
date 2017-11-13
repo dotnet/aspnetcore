@@ -9,4 +9,5 @@ export interface IHttpConnectionOptions {
     httpClient?: IHttpClient;
     transport?: TransportType | ITransport;
     logging?: ILogger | LogLevel;
+    jwtBearer?: () => string;
 }

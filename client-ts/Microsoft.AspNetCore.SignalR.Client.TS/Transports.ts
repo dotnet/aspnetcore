@@ -27,16 +27,22 @@ export interface ITransport {
 
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
+    private readonly jwtBearer: () => string;
     private webSocket: WebSocket;
 
-    constructor(logger: ILogger) {
+    constructor(jwtBearer: () => string, logger: ILogger) {
         this.logger = logger;
+        this.jwtBearer = jwtBearer;
     }
 
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
 
         return new Promise<TransferMode>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
+            if (this.jwtBearer) {
+                let token = this.jwtBearer();
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
+            }
 
             let webSocket = new WebSocket(url);
             if (requestedTransferMode == TransferMode.Binary) {
@@ -96,12 +102,14 @@ export class WebSocketTransport implements ITransport {
 
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: IHttpClient;
+    private readonly jwtBearer: () => string;
     private readonly logger: ILogger;
     private eventSource: EventSource;
     private url: string;
 
-    constructor(httpClient: IHttpClient, logger: ILogger) {
+    constructor(httpClient: IHttpClient, jwtBearer: () => string, logger: ILogger) {
         this.httpClient = httpClient;
+        this.jwtBearer = jwtBearer;
         this.logger = logger;
     }
 
@@ -109,10 +117,15 @@ export class ServerSentEventsTransport implements ITransport {
         if (typeof (EventSource) === "undefined") {
             Promise.reject("EventSource not supported by the browser.");
         }
-        this.url = url;
 
+        this.url = url;
         return new Promise<TransferMode>((resolve, reject) => {
-            let eventSource = new EventSource(this.url);
+            if (this.jwtBearer) {
+                let token = this.jwtBearer();
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
+            }
+
+            let eventSource = new EventSource(url);
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
@@ -152,7 +165,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, data);
+        return send(this.httpClient, this.url, this.jwtBearer, data);
     }
 
     stop(): void {
@@ -168,14 +181,16 @@ export class ServerSentEventsTransport implements ITransport {
 
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: IHttpClient;
+    private readonly jwtBearer: () => string;
     private readonly logger: ILogger;
 
     private url: string;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
 
-    constructor(httpClient: IHttpClient, logger: ILogger) {
+    constructor(httpClient: IHttpClient, jwtBearer: () => string, logger: ILogger) {
         this.httpClient = httpClient;
+        this.jwtBearer = jwtBearer;
         this.logger = logger;
     }
 
@@ -249,6 +264,9 @@ export class LongPollingTransport implements ITransport {
         this.pollXhr = pollXhr;
 
         this.pollXhr.open("GET", `${url}&_=${Date.now()}`, true);
+        if (this.jwtBearer) {
+            this.pollXhr.setRequestHeader("Authorization", `Bearer ${this.jwtBearer()}`);
+        }
         if (transferMode === TransferMode.Binary) {
             this.pollXhr.responseType = "arraybuffer";
         }
@@ -259,7 +277,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, data);
+        return send(this.httpClient, this.url, this.jwtBearer, data);
     }
 
     stop(): void {
@@ -274,8 +292,12 @@ export class LongPollingTransport implements ITransport {
     onclose: TransportClosed;
 }
 
-const headers = new Map<string, string>();
+async function send(httpClient: IHttpClient, url: string, jwtBearer: () => string, data: any): Promise<void> {
+    let headers;
+    if (jwtBearer) {
+        headers = new Map<string, string>();
+        headers.set("Authorization", `Bearer ${jwtBearer()}`)
+    }
 
-async function send(httpClient: IHttpClient, url: string, data: any): Promise<void> {
     await httpClient.post(url, data, headers);
 }

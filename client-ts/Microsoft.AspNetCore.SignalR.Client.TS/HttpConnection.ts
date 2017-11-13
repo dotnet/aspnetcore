@@ -59,7 +59,14 @@ export class HttpConnection implements IConnection {
                 this.transport = this.createTransport(this.options.transport, [TransportType[TransportType.WebSockets]]);
             }
             else {
-                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.url), "");
+                let headers;
+                if (this.options.jwtBearer) {
+                    headers = new Map<string, string>();
+                    headers.set("Authorization", `Bearer ${this.options.jwtBearer()}`);
+                }
+
+                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.url), "", headers);
+
                 let negotiateResponse: INegotiateResponse = JSON.parse(negotiatePayload);
                 this.connectionId = negotiateResponse.connectionId;
 
@@ -101,13 +108,13 @@ export class HttpConnection implements IConnection {
             transport = TransportType[availableTransports[0]];
         }
         if (transport === TransportType.WebSockets && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new WebSocketTransport(this.logger);
+            return new WebSocketTransport(this.options.jwtBearer, this.logger);
         }
         if (transport === TransportType.ServerSentEvents && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new ServerSentEventsTransport(this.httpClient, this.logger);
+            return new ServerSentEventsTransport(this.httpClient, this.options.jwtBearer, this.logger);
         }
         if (transport === TransportType.LongPolling && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new LongPollingTransport(this.httpClient, this.logger);
+            return new LongPollingTransport(this.httpClient, this.options.jwtBearer, this.logger);
         }
 
         if (this.isITransport(transport)) {
