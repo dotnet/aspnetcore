@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                             continue;
                         }
 
-                        await SelectEndpointAsync(context, (Endpoint[])entry.Tag);
+                        await SelectEndpointAsync(context, (entry.Endpoints));
                         if (context.ShortCircuit != null)
                         {
                             Logger.RequestShortCircuited(context);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         private InboundRouteEntry MapInbound(
             RoutePattern routePattern,
-            object tag,
+            Endpoint[] endpoints,
             int order)
         {
             if (routePattern == null)
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 Precedence = RoutePrecedence.ComputeInbound(routePattern),
                 RoutePattern = routePattern,
                 Order = order,
-                Tag = tag
+                Endpoints = endpoints,
             };
 
             var constraintBuilder = new DispatcherValueConstraintBuilder(_constraintFactory, routePattern.RawText);

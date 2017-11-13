@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26927.0
+VisualStudioVersion = 15.0.27106.3000
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E966C37-7334-4D96-AAF6-9F49FBD166E3}"
 	ProjectSection(SolutionItems) = preProject
@@ -57,7 +57,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DispatcherSample", "samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Dispatcher.Performance", "benchmarks\Microsoft.AspNetCore.Dispatcher.Performance\Microsoft.AspNetCore.Dispatcher.Performance.csproj", "{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Dispatcher.FunctionalTest", "test\Microsoft.AspNetCore.Dispatcher.FunctionalTest\Microsoft.AspNetCore.Dispatcher.FunctionalTest.csproj", "{32107601-C9BE-467B-894C-C9F2E35F03E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Dispatcher.FunctionalTest", "test\Microsoft.AspNetCore.Dispatcher.FunctionalTest\Microsoft.AspNetCore.Dispatcher.FunctionalTest.csproj", "{32107601-C9BE-467B-894C-C9F2E35F03E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -6,13 +6,36 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
+#if ROUTING
+namespace Microsoft.AspNetCore.Routing.Tree
+#elif DISPATCHER
 namespace Microsoft.AspNetCore.Dispatcher
+#else
+#error
+#endif
 {
-    /// <summary>
-    /// A node in a <see cref="UrlMatchingTree"/>.
-    /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
+#if ROUTING
     public class UrlMatchingNode
+    {
+        /// <summary>
+        /// Initializes a new instance of <see cref="UrlMatchingNode"/>.
+        /// </summary>
+        /// <param name="length">The length of the path to this node in the <see cref="UrlMatchingTree"/>.</param>
+        public UrlMatchingNode(int length)
+        {
+            Depth = length;
+
+            Matches = new List<InboundMatch>();
+            Literals = new Dictionary<string, UrlMatchingNode>(StringComparer.OrdinalIgnoreCase);
+        }
+        
+        private string DebuggerToString()
+        {
+            return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.Template.TemplateText})"))}";
+        }
+#elif DISPATCHER
+    internal class UrlMatchingNode
     {
         /// <summary>
         /// Initializes a new instance of <see cref="UrlMatchingNode"/>.
@@ -26,10 +49,17 @@ namespace Microsoft.AspNetCore.Dispatcher
             Literals = new Dictionary<string, UrlMatchingNode>(StringComparer.OrdinalIgnoreCase);
         }
 
-        /// <summary>
-        /// Gets the length of the path to this node in the <see cref="UrlMatchingTree"/>.
-        /// </summary>
-        public int Depth { get; }
+        private string DebuggerToString()
+        {
+            return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.RoutePatternMatcher.RoutePattern.RawText})"))}";
+        }
+#else
+#error
+#endif
+    /// <summary>
+    /// Gets the length of the path to this node in the <see cref="UrlMatchingTree"/>.
+    /// </summary>
+    public int Depth { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this node represents a catch all segment.
@@ -51,31 +81,26 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         /// <summary>
         /// Gets or sets the <see cref="UrlMatchingNode"/> representing
-        /// parameter segments with constraints following this segment in the <see cref="TreeMatcher"/>.
+        /// parameter segments with constraints following this segment.
         /// </summary>
         public UrlMatchingNode ConstrainedParameters { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="UrlMatchingNode"/> representing
-        /// parameter segments following this segment in the <see cref="TreeMatcher"/>.
+        /// parameter segments following this segment.
         /// </summary>
         public UrlMatchingNode Parameters { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="UrlMatchingNode"/> representing
-        /// catch all parameter segments with constraints following this segment in the <see cref="TreeMatcher"/>.
+        /// catch all parameter segments with constraints following this segment.
         /// </summary>
         public UrlMatchingNode ConstrainedCatchAlls { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="UrlMatchingNode"/> representing
-        /// catch all parameter segments following this segment in the <see cref="TreeMatcher"/>.
+        /// catch all parameter segments following this segment.
         /// </summary>
         public UrlMatchingNode CatchAlls { get; set; }
-
-        private string DebuggerToString()
-        {
-            return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.RoutePatternMatcher.RoutePattern.RawText})"))}";
-        }
     }
 }

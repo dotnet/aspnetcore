@@ -6,6 +6,7 @@ Commonly used types:
 Microsoft.AspNetCore.Routing.Route
 Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);ROUTING</DefineConstants>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
@@ -13,6 +14,7 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
 
   <ItemGroup>
     <Compile Include="..\..\shared\Microsoft.AspNetCore.Routing.DecisionTree.Sources\**\*.cs" />
+    <Compile Include="..\..\shared\Microsoft.AspNetCore.Routing.UrlMatchingTree.Sources\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

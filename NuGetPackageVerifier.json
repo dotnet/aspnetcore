@@ -2,7 +2,8 @@
   "adx-nonshipping": {
     "rules": [],
     "packages": {
-      "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {}
+      "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {},
+      "Microsoft.AspNetCore.Routing.UrlMatchingTree.Sources": {}
     }
   },
   "Default": {
