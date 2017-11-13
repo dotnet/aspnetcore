@@ -3,28 +3,38 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.VisualStudio.Text;
+using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [System.Composition.Shared]
+    [Export(typeof(RazorIndentationFactsService))]
     internal class DefaultRazorIndentationFactsService : RazorIndentationFactsService
     {
-        public override int? GetDesiredIndentation(RazorSyntaxTree syntaxTree, int previousLineEndIndex, Func<int, string> getLineContent, int indentSize, int tabSize)
+        public override int? GetDesiredIndentation(
+            RazorSyntaxTree syntaxTree,
+            ITextSnapshot syntaxTreeSnapshot,
+            ITextSnapshotLine line,
+            int indentSize,
+            int tabSize)
         {
             if (syntaxTree == null)
             {
                 throw new ArgumentNullException(nameof(syntaxTree));
             }
 
-            if (previousLineEndIndex < 0)
+            if (syntaxTreeSnapshot == null)
             {
-                throw new ArgumentOutOfRangeException(nameof(previousLineEndIndex));
+                throw new ArgumentNullException(nameof(syntaxTreeSnapshot));
             }
 
-            if (getLineContent == null)
+            if (line == null)
             {
-                throw new ArgumentNullException(nameof(getLineContent));
+                throw new ArgumentNullException(nameof(line));
             }
 
             if (indentSize < 0)
@@ -36,6 +46,10 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 throw new ArgumentOutOfRangeException(nameof(tabSize));
             }
+
+            var previousLine = line.Snapshot.GetLineFromLineNumber(line.LineNumber - 1);
+            var trackingPoint = previousLine.Snapshot.CreateTrackingPoint(previousLine.End, PointTrackingMode.Negative);
+            var previousLineEndIndex = trackingPoint.GetPosition(syntaxTreeSnapshot);
 
             var simulatedChange = new SourceChange(previousLineEndIndex, 0, string.Empty);
             var owningSpan = LocateOwner(syntaxTree.Root, simulatedChange);
@@ -80,8 +94,8 @@ namespace Microsoft.CodeAnalysis.Razor
                             // We can't rely on the syntax trees representation of the source document because partial parses may have mutated
                             // the underlying SyntaxTree text buffer. Because of this, if we want to provide accurate indentations we need to
                             // operate on the current line representation as indicated by the provider.
-                            var line = getLineContent(currentSpan.Start.LineIndex);
-                            desiredIndentation = GetIndentLevelOfLine(line, tabSize) + indentSize;
+                            var lineText = line.Snapshot.GetLineFromLineNumber(currentSpan.Start.LineIndex).GetText();
+                            desiredIndentation = GetIndentLevelOfLine(lineText, tabSize) + indentSize;
                         }
                     }
 
