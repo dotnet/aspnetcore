@@ -28,6 +28,7 @@
   <!-- .NET Core feed -->
   <PropertyGroup>
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
+    <CoreFxVersion>4.5.0-preview1-25902-08</CoreFxVersion>
     <CoreSetupPackageVersion>2.1.0-preview1-25907-02</CoreSetupPackageVersion>
   </PropertyGroup>
 
@@ -63,28 +64,30 @@
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Memory" Version="$(CoreFxVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Threading.Channels" Version="$(CoreFxVersion)" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- CoreFX labs -->
   <PropertyGroup>
     <CoreFxLabFeed>https://dotnet.myget.org/f/dotnet-corefxlab/api/v3/index.json</CoreFxLabFeed>
+    <CoreFxLabVersion>0.1.0-alpha-002</CoreFxLabVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="System.Binary.Base64" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Binary" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Buffers.Experimental" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Buffers.Primitives" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Collections.Sequences" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Extensions" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Text.Primitives" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Formatting" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Text.Primitives" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Text.Utf8String" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Tasks.Channels" Version="0.1.0-e170811-6" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Buffers.Experimental" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Buffers.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Collections.Sequences" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipelines.Extensions" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipelines.Text.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipelines.Testing" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Text.Formatting" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Text.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Text.Utf8String" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- Roslyn -->
@@ -350,13 +353,11 @@
     <ExternalDependency Include="System.Management.Automation" Version="6.1.7601.17515" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Net.Http" Version="4.3.2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Reactive.Linq" Version="3.1.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Reflection.Emit" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Reflection.Metadata" Version="1.5.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Security.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
