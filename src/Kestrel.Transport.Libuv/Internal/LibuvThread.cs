@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            PipeFactory = new PipeFactory();
+            BufferPool = new MemoryPool();
             WriteReqPool = new WriteReqPool(this, _log);
         }
 
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public UvLoopHandle Loop { get { return _loop; } }
 
-        public PipeFactory PipeFactory { get; }
+        public BufferPool BufferPool { get; }
 
         public WriteReqPool WriteReqPool { get; }
 
@@ -295,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             finally
             {
-                PipeFactory.Dispose();
+                BufferPool.Dispose();
                 WriteReqPool.Dispose();
                 _threadTcs.SetResult(null);
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -15,16 +16,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private const int _ulongMaxValueLength = 20;
 
         private readonly IPipe _pipe;
-        private readonly PipeFactory _pipeFactory = new PipeFactory();
+        private readonly BufferPool _bufferPool = new MemoryPool();
 
         public PipelineExtensionTests()
         {
-            _pipe = _pipeFactory.Create();
+            _pipe = new Pipe(new PipeOptions(_bufferPool));
         }
 
         public void Dispose()
         {
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
         }
 
         [Theory]
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var writerBuffer = _pipe.Writer.Alloc();
             var writer = new WritableBufferWriter(writerBuffer);
-            PipelineExtensions.WriteNumeric(ref writer, number);
+            writer.WriteNumeric(number);
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             writer.Write(spacer);
 
             var bufferLength = writer.Span.Length;
-            PipelineExtensions.WriteNumeric(ref writer, ulong.MaxValue);
+            writer.WriteNumeric(ulong.MaxValue);
             Assert.NotEqual(bufferLength, writer.Span.Length);
 
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var writerBuffer = _pipe.Writer.Alloc();
             var writer = new WritableBufferWriter(writerBuffer);
-            PipelineExtensions.WriteAsciiNoValidation(ref writer, input);
+            writer.WriteAsciiNoValidation(input);
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
 
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // but it shouldn't produce more than one byte per character
             var writerBuffer = _pipe.Writer.Alloc();
             var writer = new WritableBufferWriter(writerBuffer);
-            PipelineExtensions.WriteAsciiNoValidation(ref writer, input);
+            writer.WriteAsciiNoValidation(input);
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
             var reader = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
 
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var writer = new WritableBufferWriter(writerBuffer);
             for (var i = 0; i < maxAscii; i++)
             {
-                PipelineExtensions.WriteAsciiNoValidation(ref writer, new string((char)i, 1));
+                writer.WriteAsciiNoValidation(new string((char)i, 1));
             }
             writerBuffer.FlushAsync().GetAwaiter().GetResult();
 
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(gapSize, writer.Span.Length);
 
             var bufferLength = writer.Span.Length;
-            PipelineExtensions.WriteAsciiNoValidation(ref writer, testString);
+            writer.WriteAsciiNoValidation(testString);
             Assert.NotEqual(bufferLength, writer.Span.Length);
 
             writerBuffer.FlushAsync().GetAwaiter().GetResult();

@@ -209,7 +209,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (pathEncoded)
                 {
                     // URI was encoded, unescape and then parse as UTF-8
+                    // Disabling warning temporary
+#pragma warning disable 618
                     var pathLength = UrlEncoder.Decode(path, path);
+#pragma warning restore 618
 
                     // Removing dot segments must be done after unescaping. From RFC 3986:
                     //

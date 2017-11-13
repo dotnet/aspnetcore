@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
@@ -93,31 +94,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestHttp1Connection<object> MakeHttp1Connection()
         {
-            var pipeFactory = new PipeFactory();
-            var pair = pipeFactory.CreateConnectionPair();
-            _pair = pair;
-
-            var serviceContext = new ServiceContext
+            using (var memoryPool = new MemoryPool())
             {
-                DateHeaderValueManager = new DateHeaderValueManager(),
-                ServerOptions = new KestrelServerOptions(),
-                Log = new MockTrace(),
-                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
-            };
+                var pair = PipeFactory.CreateConnectionPair(memoryPool);
+                _pair = pair;
 
-            var http1Connection = new TestHttp1Connection<object>(application: null, context: new Http1ConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = pipeFactory,
-                Application = pair.Application,
-                Transport = pair.Transport
-            });
+                var serviceContext = new ServiceContext
+                {
+                    DateHeaderValueManager = new DateHeaderValueManager(),
+                    ServerOptions = new KestrelServerOptions(),
+                    Log = new MockTrace(),
+                    HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
+                };
 
-            http1Connection.Reset();
-            http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
+                var http1Connection = new TestHttp1Connection<object>(
+                    application: null, context: new Http1ConnectionContext
+                    {
+                        ServiceContext = serviceContext,
+                        ConnectionFeatures = new FeatureCollection(),
+                        BufferPool = memoryPool,
+                        Application = pair.Application,
+                        Transport = pair.Transport
+                    });
 
-            return http1Connection;
+                http1Connection.Reset();
+                http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
+
+                return http1Connection;
+            }
         }
 
         [IterationCleanup]

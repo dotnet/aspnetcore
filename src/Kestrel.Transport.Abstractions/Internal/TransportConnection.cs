@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public string ConnectionId { get; set; }
 
-        public virtual PipeFactory PipeFactory { get; }
+        public virtual BufferPool BufferPool { get; }
         public virtual IScheduler InputWriterScheduler { get; }
         public virtual IScheduler OutputReaderScheduler { get; }
 

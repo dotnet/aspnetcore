@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private readonly UvStreamHandle _socket;
 
         private WritableBuffer? _currentWritableBuffer;
-        private BufferHandle _bufferHandle;
+        private MemoryHandle _bufferHandle;
 
         public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
         {
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             _bufferHandle = currentWritableBuffer.Buffer.Retain(true);
 
-            return handle.Libuv.buf_init((IntPtr)_bufferHandle.PinnedPointer, currentWritableBuffer.Buffer.Length);
+            return handle.Libuv.buf_init((IntPtr)_bufferHandle.Pointer, currentWritableBuffer.Buffer.Length);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)

@@ -1,16 +1,18 @@
-﻿namespace System.IO.Pipelines
+﻿using System.Buffers;
+
+namespace System.IO.Pipelines
 {
-    public static class PipeFactoryExtensions
+    public static class PipeFactory
     {
-        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(this PipeFactory pipeFactory)
+        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(BufferPool memoryPool)
         {
-            return pipeFactory.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+            return CreateConnectionPair(new PipeOptions(memoryPool), new PipeOptions(memoryPool));
         }
 
-        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(this PipeFactory pipeFactory, PipeOptions inputOptions, PipeOptions outputOptions)
+        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
         {
-            var input = pipeFactory.Create(inputOptions);
-            var output = pipeFactory.Create(outputOptions);
+            var input = new Pipe(inputOptions);
+            var output = new Pipe(outputOptions);
 
             var transportToApplication = new PipeConnection(output.Reader, input.Writer);
             var applicationToTransport = new PipeConnection(input.Reader, output.Writer);

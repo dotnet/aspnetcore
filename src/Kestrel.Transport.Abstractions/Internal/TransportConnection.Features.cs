@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipelines;
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => LocalPort = value;
         }
 
-        PipeFactory IConnectionTransportFeature.PipeFactory => PipeFactory;
+        BufferPool IConnectionTransportFeature.BufferPool => BufferPool;
 
         IPipeConnection IConnectionTransportFeature.Transport
         {

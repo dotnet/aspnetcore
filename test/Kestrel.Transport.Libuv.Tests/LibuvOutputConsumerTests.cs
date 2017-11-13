@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class LibuvOutputConsumerTests : IDisposable
     {
-        private readonly PipeFactory _pipeFactory;
+        private readonly BufferPool _bufferPool;
         private readonly MockLibuv _mockLibuv;
         private readonly LibuvThread _libuvThread;
 
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public LibuvOutputConsumerTests()
         {
-            _pipeFactory = new PipeFactory();
+            _bufferPool = new MemoryPool();
             _mockLibuv = new MockLibuv();
 
             var libuvTransport = new LibuvTransport(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions(0));
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public void Dispose()
         {
             _libuvThread.StopAsync(TimeSpan.FromSeconds(1)).Wait();
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
         }
 
         [Theory]
@@ -62,11 +63,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = maxResponseBufferSize ?? 0,
-                MaximumSizeLow = maxResponseBufferSize ?? 0,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: maxResponseBufferSize ?? 0,
+                maximumSizeLow: maxResponseBufferSize ?? 0
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -97,11 +99,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = 0,
-                MaximumSizeLow = 0,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: 0,
+                maximumSizeLow: 0
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -144,11 +147,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // ConnectionHandler will set MaximumSizeHigh/Low to 1 when MaxResponseBufferSize is zero.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = 1,
-                MaximumSizeLow = 1,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: 1,
+                maximumSizeLow: 1
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -199,11 +203,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             };
 
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = maxResponseBufferSize,
-                MaximumSizeLow = maxResponseBufferSize,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: maxResponseBufferSize,
+                maximumSizeLow: maxResponseBufferSize
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -262,11 +267,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 };
 
                 var pipeOptions = new PipeOptions
-                {
-                    ReaderScheduler = _libuvThread,
-                    MaximumSizeHigh = maxResponseBufferSize,
-                    MaximumSizeLow = maxResponseBufferSize,
-                };
+                (
+                    bufferPool: _bufferPool,
+                    readerScheduler: _libuvThread,
+                    maximumSizeHigh: maxResponseBufferSize,
+                    maximumSizeLow: maxResponseBufferSize
+                );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
                 {
@@ -331,11 +337,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var abortedSource = new CancellationTokenSource();
 
                 var pipeOptions = new PipeOptions
-                {
-                    ReaderScheduler = _libuvThread,
-                    MaximumSizeHigh = maxResponseBufferSize,
-                    MaximumSizeLow = maxResponseBufferSize,
-                };
+                (
+                    bufferPool: _bufferPool,
+                    readerScheduler: _libuvThread,
+                    maximumSizeHigh: maxResponseBufferSize,
+                    maximumSizeLow: maxResponseBufferSize
+                );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions, abortedSource))
                 {
@@ -423,11 +430,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var abortedSource = new CancellationTokenSource();
 
                 var pipeOptions = new PipeOptions
-                {
-                    ReaderScheduler = _libuvThread,
-                    MaximumSizeHigh = maxResponseBufferSize,
-                    MaximumSizeLow = maxResponseBufferSize,
-                };
+                (
+                    bufferPool: _bufferPool,
+                    readerScheduler: _libuvThread,
+                    maximumSizeHigh: maxResponseBufferSize,
+                    maximumSizeLow: maxResponseBufferSize
+                );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
                 {
@@ -506,11 +514,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var abortedSource = new CancellationTokenSource();
 
                 var pipeOptions = new PipeOptions
-                {
-                    ReaderScheduler = _libuvThread,
-                    MaximumSizeHigh = maxResponseBufferSize,
-                    MaximumSizeLow = maxResponseBufferSize,
-                };
+                (
+                    bufferPool: _bufferPool,
+                    readerScheduler: _libuvThread,
+                    maximumSizeHigh: maxResponseBufferSize,
+                    maximumSizeLow: maxResponseBufferSize
+                );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
                 {
@@ -587,11 +596,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             };
 
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = maxResponseBufferSize,
-                MaximumSizeLow = maxResponseBufferSize,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: maxResponseBufferSize,
+                maximumSizeLow: maxResponseBufferSize
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -647,11 +657,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = _libuvThread,
-                MaximumSizeHigh = maxResponseBufferSize ?? 0,
-                MaximumSizeLow = maxResponseBufferSize ?? 0,
-            };
+            (
+                bufferPool: _bufferPool,
+                readerScheduler: _libuvThread,
+                maximumSizeHigh: maxResponseBufferSize ?? 0,
+                maximumSizeLow: maxResponseBufferSize ?? 0
+            );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
             {
@@ -684,7 +695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         private Http1OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
-            var pair = _pipeFactory.CreateConnectionPair(pipeOptions, pipeOptions);
+            var pair = PipeFactory.CreateConnectionPair(pipeOptions, pipeOptions);
 
             var logger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext
@@ -701,7 +712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = _pipeFactory,
+                BufferPool = _bufferPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Application = pair.Application,
                 Transport = pair.Transport

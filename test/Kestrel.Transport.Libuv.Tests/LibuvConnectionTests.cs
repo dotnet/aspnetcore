@@ -55,13 +55,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task ConnectionDoesNotResumeAfterSocketCloseIfBackpressureIsApplied()
         {
             var mockConnectionHandler = new MockConnectionHandler();
-            mockConnectionHandler.InputOptions.MaximumSizeHigh = 3;
             var mockLibuv = new MockLibuv();
             var transportContext = new TestLibuvTransportContext() { ConnectionHandler = mockConnectionHandler };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
+            mockConnectionHandler.InputOptions = pool =>
+                new PipeOptions(
+                    bufferPool: pool,
+                    maximumSizeHigh: 3);
+
             // We don't set the output writer scheduler here since we want to run the callback inline
-            mockConnectionHandler.OutputOptions.ReaderScheduler = thread;
+
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(bufferPool: pool, readerScheduler: thread);
+
+
             Task connectionTask = null;
             try
             {
@@ -106,8 +113,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task ConnectionDoesNotResumeAfterReadCallbackScheduledAndSocketCloseIfBackpressureIsApplied()
         {
             var mockConnectionHandler = new MockConnectionHandler();
-            mockConnectionHandler.InputOptions.MaximumSizeHigh = 3;
-            mockConnectionHandler.InputOptions.MaximumSizeLow = 3;
             var mockLibuv = new MockLibuv();
             var transportContext = new TestLibuvTransportContext() { ConnectionHandler = mockConnectionHandler };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
@@ -118,8 +123,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 backPressure = () => a(o);
             });
-            mockConnectionHandler.InputOptions.WriterScheduler = mockScheduler.Object;
-            mockConnectionHandler.OutputOptions.ReaderScheduler = thread;
+            mockConnectionHandler.InputOptions = pool =>
+                new PipeOptions(
+                    bufferPool: pool,
+                    maximumSizeHigh: 3,
+                    maximumSizeLow: 3,
+                    writerScheduler: mockScheduler.Object);
+
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(bufferPool: pool, readerScheduler:thread );
+
             Task connectionTask = null;
             try
             {

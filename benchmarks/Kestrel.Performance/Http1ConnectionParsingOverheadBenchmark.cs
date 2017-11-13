@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http.Features;
@@ -22,8 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            var pipeFactory = new PipeFactory();
-            var pair = pipeFactory.CreateConnectionPair();
+            var bufferPool = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(bufferPool);
 
             var serviceContext = new ServiceContext
             {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = pipeFactory,
+                BufferPool = bufferPool,
                 TimeoutControl = new MockTimeoutControl(),
                 Application = pair.Application,
                 Transport = pair.Transport

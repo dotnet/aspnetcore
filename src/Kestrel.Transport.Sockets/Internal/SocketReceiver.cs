@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable ReceiveAsync(Buffer<byte> buffer)
+        public SocketAwaitable ReceiveAsync(Memory<byte> buffer)
         {
             var segment = buffer.GetArray();
 

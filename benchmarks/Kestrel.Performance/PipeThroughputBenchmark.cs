@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -14,13 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         private IPipe _pipe;
-        private PipeFactory _pipelineFactory;
+        private BufferPool _bufferPool;
 
         [IterationSetup]
         public void Setup()
         {
-            _pipelineFactory = new PipeFactory();
-            _pipe = _pipelineFactory.Create();
+            _bufferPool = new MemoryPool();
+            _pipe = new Pipe(new PipeOptions(_bufferPool));
         }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount)]

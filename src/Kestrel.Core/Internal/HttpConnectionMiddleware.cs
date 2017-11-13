@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                PipeFactory = connectionContext.PipeFactory,
+                BufferPool = connectionContext.BufferPool,
                 ConnectionAdapters = _connectionAdapters,
                 Transport = connectionContext.Transport,
                 Application = transportFeature.Application

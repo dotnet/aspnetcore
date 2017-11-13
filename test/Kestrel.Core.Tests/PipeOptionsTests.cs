@@ -1,8 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
             var mockScheduler = Mock.Of<IScheduler>();
-            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, readerScheduler: mockScheduler);
+            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, new MemoryPool(), readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.MaximumSizeHigh);
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
             var mockScheduler = Mock.Of<IScheduler>();
-            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, writerScheduler: mockScheduler);
+            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, new MemoryPool(), writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.MaximumSizeHigh);

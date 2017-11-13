@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             return _awaitable;
         }
 
-        private SocketAwaitable SendAsync(Buffer<byte> buffer)
+        private SocketAwaitable SendAsync(Memory<byte> buffer)
         {
             var segment = buffer.GetArray();
 

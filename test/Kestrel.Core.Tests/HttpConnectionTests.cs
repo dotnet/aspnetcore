@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
@@ -17,21 +18,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class HttpConnectionTests : IDisposable
     {
-        private readonly PipeFactory _pipeFactory;
+        private readonly BufferPool _bufferPool;
         private readonly HttpConnectionContext _httpConnectionContext;
         private readonly HttpConnection _httpConnection;
 
         public HttpConnectionTests()
         {
-            _pipeFactory = new PipeFactory();
-            var pair = _pipeFactory.CreateConnectionPair();
+            _bufferPool = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(_bufferPool);
 
             _httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = "0123456789",
                 ConnectionAdapters = new List<IConnectionAdapter>(),
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = _pipeFactory,
+                BufferPool = _bufferPool,
                 HttpConnectionId = long.MinValue,
                 Application = pair.Application,
                 Transport = pair.Transport,
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
         }
 
         [Fact]

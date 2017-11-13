@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -13,15 +14,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     public class MockConnectionHandler : IConnectionHandler
     {
-        public PipeOptions InputOptions { get; set; } = new PipeOptions();
-        public PipeOptions OutputOptions { get; set; } = new PipeOptions();
+        public Func<BufferPool, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool);
+        public Func<BufferPool, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool);
 
         public void OnConnection(IFeatureCollection features)
         {
             var connectionContext = new DefaultConnectionContext(features);
 
-            Input = connectionContext.PipeFactory.Create(InputOptions ?? new PipeOptions());
-            Output = connectionContext.PipeFactory.Create(OutputOptions ?? new PipeOptions());
+            Input = new Pipe(InputOptions(connectionContext.BufferPool));
+            Output = new Pipe(InputOptions(connectionContext.BufferPool));
 
             var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
 

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -13,25 +15,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class OutputProducerTests : IDisposable
     {
-        private readonly PipeFactory _pipeFactory;
+        private readonly BufferPool _bufferPool;
 
         public OutputProducerTests()
         {
-            _pipeFactory = new PipeFactory();
+            _bufferPool = new MemoryPool();
         }
 
         public void Dispose()
         {
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
         }
 
         [Fact]
         public void WritesNoopAfterConnectionCloses()
         {
             var pipeOptions = new PipeOptions
-            {
-                ReaderScheduler = Mock.Of<IScheduler>(),
-            };
+            (
+                bufferPool:_bufferPool,
+                readerScheduler: Mock.Of<IScheduler>()
+            );
 
             using (var socketOutput = CreateOutputProducer(pipeOptions))
             {
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Http1OutputProducer CreateOutputProducer(PipeOptions pipeOptions)
         {
-            var pipe = _pipeFactory.Create(pipeOptions);
+            var pipe = new Pipe(pipeOptions);
             var serviceContext = new TestServiceContext();
             var socketOutput = new Http1OutputProducer(
                 pipe.Reader,

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
@@ -9,6 +11,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
+using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -25,14 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private volatile bool _aborted;
 
-        internal SocketConnection(Socket socket, PipeFactory pipeFactory, ISocketsTrace trace)
+        internal SocketConnection(Socket socket, BufferPool bufferPool, ISocketsTrace trace)
         {
             Debug.Assert(socket != null);
-            Debug.Assert(pipeFactory != null);
+            Debug.Assert(bufferPool != null);
             Debug.Assert(trace != null);
 
             _socket = socket;
-            PipeFactory = pipeFactory;
+            BufferPool = bufferPool;
             _trace = trace;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
@@ -48,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _sender = new SocketSender(_socket);
         }
 
-        public override PipeFactory PipeFactory { get; }
+        public override BufferPool BufferPool { get; }
         public override IScheduler InputWriterScheduler => InlineScheduler.Default;
         public override IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
 

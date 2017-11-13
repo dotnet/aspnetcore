@@ -1,4 +1,5 @@
-﻿using System.IO.Pipelines;
+﻿using System.Buffers;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
 
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Protocols
 
         public override IFeatureCollection Features => _features.Collection;
 
-        public override PipeFactory PipeFactory => ConnectionTransportFeature.PipeFactory;
+        public override BufferPool BufferPool => ConnectionTransportFeature.BufferPool;
 
         public override IPipeConnection Transport
         {

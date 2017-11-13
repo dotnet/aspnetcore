@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
@@ -15,13 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     class TestInput : IDisposable
     {
         private MemoryPool _memoryPool;
-        private PipeFactory _pipelineFactory;
 
         public TestInput()
         {
             _memoryPool = new MemoryPool();
-            _pipelineFactory = new PipeFactory();
-            var pair = _pipelineFactory.CreateConnectionPair();
+            var pair = PipeFactory.CreateConnectionPair(_memoryPool);
             Transport = pair.Transport;
             Application = pair.Application;
 
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ConnectionFeatures = new FeatureCollection(),
                 Application = Application,
                 Transport = Transport,
-                PipeFactory = _pipelineFactory,
+                BufferPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 
@@ -42,8 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public IPipeConnection Transport { get; }
 
         public IPipeConnection Application { get; }
-
-        public PipeFactory PipeFactory => _pipelineFactory;
 
         public Http1ConnectionContext Http1ConnectionContext { get; }
 
@@ -67,7 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
-            _pipelineFactory.Dispose();
             _memoryPool.Dispose();
         }
     }

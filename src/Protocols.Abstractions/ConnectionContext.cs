@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +15,6 @@ namespace Microsoft.AspNetCore.Protocols
 
         public abstract IPipeConnection Transport { get; set; }
 
-        public abstract PipeFactory PipeFactory { get; }
+        public abstract BufferPool BufferPool { get; }
     }
 }

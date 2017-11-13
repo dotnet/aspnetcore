@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     StreamId = _incomingFrame.StreamId,
                     ServiceContext = _context.ServiceContext,
                     ConnectionFeatures = _context.ConnectionFeatures,
-                    PipeFactory = _context.PipeFactory,
+                    BufferPool = _context.BufferPool,
                     LocalEndPoint = _context.LocalEndPoint,
                     RemoteEndPoint = _context.RemoteEndPoint,
                     StreamLifetimeHandler = this,

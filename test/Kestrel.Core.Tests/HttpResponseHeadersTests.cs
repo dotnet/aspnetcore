@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO.Pipelines;
@@ -19,26 +20,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
-            var factory = new PipeFactory();
-            var pair = factory.CreateConnectionPair();
-            var http1ConnectionContext = new Http1ConnectionContext
+            using (var memoryPool = new MemoryPool())
             {
-                ServiceContext = new TestServiceContext(),
-                ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = factory,
-                Application = pair.Application,
-                Transport = pair.Transport,
-                TimeoutControl = null
-            };
+                var pair = PipeFactory.CreateConnectionPair(memoryPool);
+                var http1ConnectionContext = new Http1ConnectionContext
+                {
+                    ServiceContext = new TestServiceContext(),
+                    ConnectionFeatures = new FeatureCollection(),
+                    BufferPool = memoryPool,
+                    Application = pair.Application,
+                    Transport = pair.Transport,
+                    TimeoutControl = null
+                };
 
-            var http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+                var http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
 
-            http1Connection.Reset();
+                http1Connection.Reset();
 
-            IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
+                IDictionary<string, StringValues> headers = http1Connection.ResponseHeaders;
 
-            Assert.Equal(0, headers.Count);
-            Assert.False(headers.IsReadOnly);
+                Assert.Equal(0, headers.Count);
+                Assert.False(headers.IsReadOnly);
+            }
         }
 
         [Theory]

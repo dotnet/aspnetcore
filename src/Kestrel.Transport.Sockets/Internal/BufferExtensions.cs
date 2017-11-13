@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
     public static class BufferExtensions
     {
-        public static ArraySegment<byte> GetArray(this Buffer<byte> buffer)
+        public static ArraySegment<byte> GetArray(this Memory<byte> buffer)
         {
             ArraySegment<byte> result;
             if (!buffer.TryGetArray(out result))

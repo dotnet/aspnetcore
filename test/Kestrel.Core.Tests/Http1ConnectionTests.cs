@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly TestHttp1Connection<object> _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly PipeFactory _pipelineFactory;
+        private readonly BufferPool _pipelineFactory;
         private ReadCursor _consumed;
         private ReadCursor _examined;
         private Mock<ITimeoutControl> _timeoutControl;
@@ -52,8 +53,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http1ConnectionTests()
         {
-            _pipelineFactory = new PipeFactory();
-            var pair = _pipelineFactory.CreateConnectionPair();
+            _pipelineFactory = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(_pipelineFactory);
 
             _transport = pair.Transport;
             _application = pair.Application;
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = _pipelineFactory,
+                BufferPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
                 Application = pair.Application,
                 Transport = pair.Transport

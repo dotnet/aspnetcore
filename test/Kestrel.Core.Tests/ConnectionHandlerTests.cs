@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Set<IConnectionTransportFeature>(this);
             }
 
-            public PipeFactory PipeFactory { get; } = new PipeFactory();
+            public BufferPool BufferPool { get; } = new MemoryPool();
 
             public IPipeConnection Transport { get; set; }
             public IPipeConnection Application { get; set; }

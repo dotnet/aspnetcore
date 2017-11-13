@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
@@ -110,8 +111,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            var pipeFactory = new PipeFactory();
-            var pair = pipeFactory.CreateConnectionPair();
+            var bufferPool = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(bufferPool);
 
             var serviceContext = new ServiceContext
             {
@@ -121,15 +122,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new TestHttp1Connection<object>(application: null, context: new Http1ConnectionContext
-            {
-                ServiceContext = serviceContext,
-                ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = pipeFactory,
-                TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
-                Transport = pair.Transport
-            });
+            var http1Connection = new TestHttp1Connection<object>(
+                application: null, context: new Http1ConnectionContext
+                {
+                    ServiceContext = serviceContext,
+                    ConnectionFeatures = new FeatureCollection(),
+                    BufferPool = bufferPool,
+                    TimeoutControl = new MockTimeoutControl(),
+                    Application = pair.Application,
+                    Transport = pair.Transport
+                });
 
             http1Connection.Reset();
 

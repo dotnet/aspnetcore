@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -65,24 +66,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
 
-        private PipeFactory PipeFactory => _context.PipeFactory;
+        private BufferPool BufferPool => _context.BufferPool;
 
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
-        {
-            ReaderScheduler = _context.ServiceContext.ThreadPool,
-            WriterScheduler = InlineScheduler.Default,
-            MaximumSizeHigh = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            MaximumSizeLow = _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
-        };
+        (
+            bufferPool: BufferPool,
+            readerScheduler: _context.ServiceContext.ThreadPool,
+            writerScheduler: InlineScheduler.Default,
+            maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+        );
 
         internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
-        {
-            ReaderScheduler = InlineScheduler.Default,
-            WriterScheduler = InlineScheduler.Default,
-            MaximumSizeHigh = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
-            MaximumSizeLow = _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
-        };
+        (
+            bufferPool: BufferPool,
+            readerScheduler: InlineScheduler.Default,
+            writerScheduler: InlineScheduler.Default,
+            maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
+            maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
+        );
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
@@ -107,8 +110,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     adaptedPipeline = new AdaptedPipeline(transport,
                                                           application,
-                                                          PipeFactory.Create(AdaptedInputPipeOptions),
-                                                          PipeFactory.Create(AdaptedOutputPipeOptions));
+                                                          new Pipe(AdaptedInputPipeOptions),
+                                                          new Pipe(AdaptedOutputPipeOptions));
 
                     transport = adaptedPipeline;
                 }
@@ -180,7 +183,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 ConnectionId = _context.ConnectionId,
                 ConnectionFeatures = _context.ConnectionFeatures,
-                PipeFactory = PipeFactory,
+                BufferPool = BufferPool,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
@@ -197,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionId = _context.ConnectionId,
                 ServiceContext = _context.ServiceContext,
                 ConnectionFeatures = _context.ConnectionFeatures,
-                PipeFactory = PipeFactory,
+                BufferPool = BufferPool,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
                 Application = application,

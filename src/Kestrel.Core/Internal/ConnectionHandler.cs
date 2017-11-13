@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
@@ -34,10 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
             // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, transportFeature.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, transportFeature.OutputReaderScheduler);
+            var inputOptions = GetInputPipeOptions(_serviceContext, connectionContext.BufferPool, transportFeature.InputWriterScheduler);
+            var outputOptions = GetOutputPipeOptions(_serviceContext, connectionContext.BufferPool, transportFeature.OutputReaderScheduler);
 
-            var pair = connectionContext.PipeFactory.CreateConnectionPair(inputOptions, outputOptions);
+            var pair = PipeFactory.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
             connectionContext.ConnectionId = CorrelationIdGenerator.GetNextId();
@@ -81,21 +83,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // Internal for testing
-        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, IScheduler writerScheduler) => new PipeOptions
-        {
-            ReaderScheduler = serviceContext.ThreadPool,
-            WriterScheduler = writerScheduler,
-            MaximumSizeHigh = serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            MaximumSizeLow = serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
-        };
+        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, BufferPool bufferPool, IScheduler writerScheduler) => new PipeOptions
+        (
+            bufferPool: bufferPool,
+            readerScheduler: serviceContext.ThreadPool,
+            writerScheduler: writerScheduler,
+            maximumSizeHigh: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            maximumSizeLow: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+        );
 
-        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, IScheduler readerScheduler) => new PipeOptions
-        {
-            ReaderScheduler = readerScheduler,
-            WriterScheduler = serviceContext.ThreadPool,
-            MaximumSizeHigh = GetOutputResponseBufferSize(serviceContext),
-            MaximumSizeLow = GetOutputResponseBufferSize(serviceContext)
-        };
+        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, BufferPool bufferPool, IScheduler readerScheduler) => new PipeOptions
+        (
+            bufferPool: bufferPool,
+            readerScheduler: readerScheduler,
+            writerScheduler: serviceContext.ThreadPool,
+            maximumSizeHigh: GetOutputResponseBufferSize(serviceContext),
+            maximumSizeLow: GetOutputResponseBufferSize(serviceContext)
+        );
 
         private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
         {

@@ -28,12 +28,13 @@
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <SystemBuffersPackageVersion>4.4.0</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-e170811-6</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.4.0-preview3-25519-03</SystemMemoryPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.4.0</SystemNumericsVectorsPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.4.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemIOPipelinesPackageVersion>0.1.0-alpha-002</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesTestingPackageVersion>0.1.0-alpha-002</SystemIOPipelinesTestingPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview1-25902-08</SystemMemoryPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-25902-08</SystemNumericsVectorsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-25902-08</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.4.0</SystemSecurityCryptographyCngPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e170811-6</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-alpha-002</SystemTextEncodingsWebUtf8PackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.4.0</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.7.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>

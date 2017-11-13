@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             CancellationToken cancellationToken)
         {
             var writableBuffer = default(WritableBuffer);
-
+            long bytesWritten = 0;
             lock (_contextLock)
             {
                 if (_completed)
@@ -181,17 +181,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (buffer.Count > 0)
                 {
                     writer.Write(buffer.Array, buffer.Offset, buffer.Count);
+                    bytesWritten += buffer.Count;
                 }
 
                 writableBuffer.Commit();
             }
 
-            return FlushAsync(writableBuffer, cancellationToken);
+            return FlushAsync(writableBuffer, bytesWritten, cancellationToken);
         }
 
         // Single caller, at end of method - so inline
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Task FlushAsync(WritableBuffer writableBuffer, CancellationToken cancellationToken)
+        private Task FlushAsync(WritableBuffer writableBuffer, long bytesWritten, CancellationToken cancellationToken)
         {
             var awaitable = writableBuffer.FlushAsync(cancellationToken);
             if (awaitable.IsCompleted)
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // The flush task can't fail today
                 return Task.CompletedTask;
             }
-            return FlushAsyncAwaited(awaitable, writableBuffer.BytesWritten, cancellationToken);
+            return FlushAsyncAwaited(awaitable, bytesWritten, cancellationToken);
         }
 
         private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, long count, CancellationToken cancellationToken)

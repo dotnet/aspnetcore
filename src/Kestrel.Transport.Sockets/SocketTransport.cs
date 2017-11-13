@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketTransport : ITransport
     {
-        private readonly PipeFactory _pipeFactory = new PipeFactory();
+        private readonly BufferPool _bufferPool = new MemoryPool();
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionHandler _handler;
         private readonly IApplicationLifetime _appLifetime;
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public Task StopAsync()
         {
-            _pipeFactory.Dispose();
+            _bufferPool.Dispose();
             return Task.CompletedTask;
         }
 
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         var acceptSocket = await _listenSocket.AcceptAsync();
                         acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                        var connection = new SocketConnection(acceptSocket, _pipeFactory, _trace);
+                        var connection = new SocketConnection(acceptSocket, _bufferPool, _trace);
                         _ = connection.StartAsync(_handler);
                     }
                     catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
