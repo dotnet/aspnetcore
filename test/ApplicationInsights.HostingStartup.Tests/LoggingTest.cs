@@ -17,26 +17,22 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [Theory]
-        [InlineData(ApplicationType.Portable)]
-        [InlineData(ApplicationType.Standalone)]
-        public async Task DefaultAILogFiltersApplied(ApplicationType applicationType)
-        {
-            var responseText = await RunRequest(applicationType, "DefaultLogging");
-            AssertDefaultLogs(responseText);
-        }
+        [Fact]
+        public Task DefaultAILogFiltersApplied_ForNetCoreApp20_Portable() => DefaultAILogFiltersApplied("netcoreapp2.0", ApplicationType.Portable);
 
-        [Theory]
-        [InlineData(ApplicationType.Portable)]
-        [InlineData(ApplicationType.Standalone)]
-        public async Task CustomAILogFiltersApplied(ApplicationType applicationType)
-        {
-            var responseText = await RunRequest(applicationType, "CustomLogging");
-            AssertCustomLogs(responseText);
-        }
+        [Fact]
+        public Task DefaultAILogFiltersApplied_ForNetCoreApp20_Standalone() => DefaultAILogFiltersApplied("netcoreapp2.0", ApplicationType.Standalone);
 
-        private static void AssertDefaultLogs(string responseText)
+        [Fact]
+        public Task DefaultAILogFiltersApplied_ForNetCoreApp21_Portable() => DefaultAILogFiltersApplied("netcoreapp2.1", ApplicationType.Portable);
+
+        [Fact]
+        public Task DefaultAILogFiltersApplied_ForNetCoreApp21_Standalone() => DefaultAILogFiltersApplied("netcoreapp2.1", ApplicationType.Standalone);
+
+        private async Task DefaultAILogFiltersApplied(string targetFramework, ApplicationType applicationType)
         {
+            var responseText = await RunRequest(targetFramework, applicationType, "DefaultLogging");
+
             // Enabled by default
             Assert.Contains("System warning log", responseText);
             // Disabled by default
@@ -66,8 +62,21 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             Assert.Contains("Specific trace log", responseText);
         }
 
-        private static void AssertCustomLogs(string responseText)
+        [Fact]
+        public Task CustomAILogFiltersApplied_ForNetCoreApp20_Portable() => CustomAILogFiltersApplied("netcoreapp2.0", ApplicationType.Portable);
+
+        [Fact]
+        public Task CustomAILogFiltersApplied_ForNetCoreApp20_Standalone() => CustomAILogFiltersApplied("netcoreapp2.0", ApplicationType.Standalone);
+
+        [Fact]
+        public Task CustomAILogFiltersApplied_ForNetCoreApp21_Portable() => CustomAILogFiltersApplied("netcoreapp2.1", ApplicationType.Portable);
+
+        [Fact]
+        public Task CustomAILogFiltersApplied_ForNetCoreApp21_Standalone() => CustomAILogFiltersApplied("netcoreapp2.1", ApplicationType.Standalone);
+
+        private async Task CustomAILogFiltersApplied(string targetFramework, ApplicationType applicationType)
         {
+            var responseText = await RunRequest(targetFramework, applicationType, "CustomLogging");
             // Custom logger allows only namespaces with 'o' in the name
 
             Assert.DoesNotContain("System warning log", responseText);
@@ -90,7 +99,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
             Assert.DoesNotContain("Specific trace log", responseText);
         }
 
-        private async Task<string> RunRequest(ApplicationType applicationType, string environment)
+        private async Task<string> RunRequest(string targetFramework, ApplicationType applicationType, string environment)
         {
             string responseText;
             var testName = $"ApplicationInsightsLoggingTest_{applicationType}";

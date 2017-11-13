@@ -17,15 +17,19 @@ namespace ApplicationInsightsJavaScriptSnippetTest
         {
         }
 
-        [Theory]
-        [InlineData(ApplicationType.Portable)]
-        [InlineData(ApplicationType.Standalone)]
-        public async Task ScriptInjected(ApplicationType applicationType)
-        {
-            await JavaScriptSnippetInjectionTestSuite(applicationType);
-        }
+        [Fact]
+        public Task ScriptIsInjected_ForNetCoreApp20_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Standalone);
 
-        private async Task JavaScriptSnippetInjectionTestSuite(ApplicationType applicationType)
+        [Fact]
+        public Task ScriptIsInjected_ForNetCoreApp20_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.0", ApplicationType.Portable);
+
+        [Fact]
+        public Task ScriptIsInjected_ForNetCoreApp21_Standalone() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Standalone);
+
+        [Fact]
+        public Task ScriptIsInjected_ForNetCoreApp21_Portable() => JavaScriptSnippetInjectionTestSuite("netcoreapp2.1", ApplicationType.Portable);
+
+        private async Task JavaScriptSnippetInjectionTestSuite(string targetFramework, ApplicationType applicationType)
         {
             var testName = $"ApplicationInsightsJavaScriptSnippetTest_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -35,7 +39,7 @@ namespace ApplicationInsightsJavaScriptSnippetTest
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = targetFramework,
                     Configuration = GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = "JavaScript",
