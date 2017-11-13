@@ -53,9 +53,10 @@ namespace MusicStore
 
             builder.ConfigureLogging(factory =>
             {
-                var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
-
                 factory.AddConsole();
+
+                var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
+                factory.SetMinimumLevel(logLevel);
             });
 
             var host = builder.Build();
