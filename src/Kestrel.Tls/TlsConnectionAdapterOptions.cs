@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
     {
         public string CertificatePath { get; set; } = string.Empty;
 
-        public string PrivateKeyPath { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
 
         public HttpProtocols Protocols { get; set; }
     }

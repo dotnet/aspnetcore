@@ -9,11 +9,15 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tls
 {
     public class TlsStream : Stream
     {
+        // Error code that indicates that a handshake failed because unencrypted HTTP was sent
+        private const int SSL_ERROR_HTTP_REQUEST = 336130204;
+
         private static unsafe OpenSsl.alpn_select_cb_t _alpnSelectCallback = AlpnSelectCallback;
 
         private readonly Stream _innerStream;
@@ -36,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
             OpenSsl.OpenSSL_add_all_algorithms();
         }
 
-        public TlsStream(Stream innerStream, string certificatePath, string privateKeyPath, IEnumerable<string> protocols)
+        public TlsStream(Stream innerStream, string certificatePath, string password, IEnumerable<string> protocols)
         {
             _innerStream = innerStream;
             _protocols = ToWireFormat(protocols);
@@ -49,18 +53,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
                 throw new Exception("Unable to create SSL context.");
             }
 
+            if(OpenSsl.SSL_CTX_Set_Pfx(_ctx, certificatePath, password) != 1)
+            {
+                throw new InvalidOperationException("Unable to load PFX");
+            }
+
             OpenSsl.SSL_CTX_set_ecdh_auto(_ctx, 1);
-
-            if (OpenSsl.SSL_CTX_use_certificate_file(_ctx, certificatePath, 1) != 1)
-            {
-                throw new Exception("Unable to load certificate file.");
-            }
-
-            if (OpenSsl.SSL_CTX_use_PrivateKey_file(_ctx, privateKeyPath, 1) != 1)
-            {
-                throw new Exception("Unable to load private key file.");
-            }
-
+                       
             OpenSsl.SSL_CTX_set_alpn_select_cb(_ctx, _alpnSelectCallback, GCHandle.ToIntPtr(_protocolsHandle));
 
             _ssl = OpenSsl.SSL_new(_ctx);
@@ -181,9 +180,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
                     {
                         var error = OpenSsl.SSL_get_error(_ssl, ret);
 
-                        if (error != 2)
+                        if (error == 1)
                         {
-                            throw new IOException($"TLS handshake failed: {nameof(OpenSsl.SSL_do_handshake)} error {error}.");
+                            // SSL error, get it from the OpenSSL error queue
+                            error = OpenSsl.ERR_get_error();
+                            if (error == SSL_ERROR_HTTP_REQUEST)
+                            {
+                                throw new InvalidOperationException("Unencrypted HTTP traffic was sent to an HTTPS endpoint");
+                            }
+                            var errorString = OpenSsl.ERR_error_string(error);
+                            throw new IOException($"TLS handshake failed: {nameof(OpenSsl.SSL_do_handshake)} error {error}. {errorString}");
                         }
                     }
 

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -39,6 +40,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 DataPadLength = padLength.Value;
                 Payload.Slice(Length - padLength.Value).Fill(0);
             }
+        }
+
+        private void DataTraceFrame(ILogger logger)
+        {
+            logger.LogTrace("'DATA' Frame. Flags = {DataFlags}, PadLength = {PadLength}, PayloadLength = {PayloadLength}", DataFlags, DataPadLength, DataPayload.Count);
         }
     }
 }
