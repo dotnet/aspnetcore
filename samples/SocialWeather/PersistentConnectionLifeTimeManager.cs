@@ -40,7 +40,7 @@ namespace SocialWeather
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
 
-                connection.Transport.Out.TryWrite(ms.ToArray());
+                connection.Transport.Writer.TryWrite(ms.ToArray());
             }
         }
 

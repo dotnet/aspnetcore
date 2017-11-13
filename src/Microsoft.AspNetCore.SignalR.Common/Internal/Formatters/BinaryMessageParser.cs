@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
         private static int[] _numBitsToShift = new[] { 0, 7, 14, 21, 28 };
         private const int MaxLengthPrefixSize = 5;
 
-        public static bool TryParseMessage(ref ReadOnlyBuffer<byte> buffer, out ReadOnlyBuffer<byte> payload)
+        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
         {
             payload = default;
 

@@ -4,7 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 AssertMessage(output1);
 
-                Assert.False(output2.In.TryRead(out var item));
+                Assert.False(output2.Reader.TryRead(out var item));
             }
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 AssertMessage(output1);
 
-                Assert.False(output2.In.TryRead(out var item));
+                Assert.False(output2.Reader.TryRead(out var item));
             }
         }
 
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 AssertMessage(output1);
 
-                Assert.False(output2.In.TryRead(out var item));
+                Assert.False(output2.Reader.TryRead(out var item));
             }
         }
 
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.False(output.In.TryRead(out var item));
+                Assert.False(output.Reader.TryRead(out var item));
             }
         }
 
@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 AssertMessage(output);
-                Assert.False(output.In.TryRead(out var item));
+                Assert.False(output.Reader.TryRead(out var item));
             }
         }
 
@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 AssertMessage(output);
-                Assert.False(output.In.TryRead(out var item));
+                Assert.False(output.Reader.TryRead(out var item));
             }
         }
 
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.False(output.In.TryRead(out var item));
+                Assert.False(output.Reader.TryRead(out var item));
             }
         }
 
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager1.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 AssertMessage(output);
-                Assert.False(output.In.TryRead(out var item));
+                Assert.False(output.Reader.TryRead(out var item));
             }
         }
 
@@ -499,10 +499,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client = new TestClient())
             {
                 // Force an exception when writing to connection
-                var output = new Mock<Channel<HubMessage>>();
-                output.Setup(o => o.Out.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
+                var writer = new Mock<ChannelWriter<HubMessage>>();
+                writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
 
-                var connection = new HubConnectionContext(output.Object, client.Connection);
+                var connection = new HubConnectionContext(new MockChannel(writer.Object), client.Connection);
 
                 await manager2.OnConnectedAsync(connection).OrTimeout();
 
@@ -523,10 +523,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client = new TestClient())
             {
                 // Force an exception when writing to connection
-                var output = new Mock<Channel<HubMessage>>();
-                output.Setup(o => o.Out.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
+                var writer = new Mock<ChannelWriter<HubMessage>>();
+                writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
 
-                var connection = new HubConnectionContext(output.Object, client.Connection);
+                var connection = new HubConnectionContext(new MockChannel(writer.Object), client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -549,10 +549,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 var output2 = Channel.CreateUnbounded<HubMessage>();
 
                 // Force an exception when writing to connection
-                var output = new Mock<Channel<HubMessage>>();
-                output.Setup(o => o.Out.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
+                var writer = new Mock<ChannelWriter<HubMessage>>();
+                writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
 
-                var connection1 = new HubConnectionContext(output.Object, client1.Connection);
+                var connection1 = new HubConnectionContext(new MockChannel(writer.Object), client1.Connection);
                 var connection2 = new HubConnectionContext(output2, client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private void AssertMessage(Channel<HubMessage> channel)
         {
-            Assert.True(channel.In.TryRead(out var item));
+            Assert.True(channel.Reader.TryRead(out var item));
             var message = Assert.IsType<InvocationMessage>(item);
             Assert.Equal("Hello", message.Target);
             Assert.Single(message.Arguments);
@@ -582,6 +582,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private class MyHub : Hub
         {
+        }
+
+        private class MockChannel : Channel<HubMessage>
+        {
+            public MockChannel(ChannelWriter<HubMessage> writer = null)
+            {
+                Writer = writer;
+            }
         }
     }
 }

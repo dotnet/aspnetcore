@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets
                 connection.TransportCapabilities = TransferMode.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsTransport(connection.Application.In, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Reader, connection.ConnectionId, _loggerFactory);
 
                 await DoPersistentConnection(socketDelegate, sse, context, connection);
             }
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Sockets
                     context.Response.RegisterForDispose(timeoutSource);
                     context.Response.RegisterForDispose(tokenSource);
 
-                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.In, connection.ConnectionId, _loggerFactory);
+                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Reader, connection.ConnectionId, _loggerFactory);
 
                     // Start the transport
                     connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Sockets
                 if (resultTask == connection.ApplicationTask)
                 {
                     // Complete the transport (notifying it of the application error if there is one)
-                    connection.Transport.Out.TryComplete(connection.ApplicationTask.Exception);
+                    connection.Transport.Writer.TryComplete(connection.ApplicationTask.Exception);
 
                     // Wait for the transport to run
                     await connection.TransportTask;
@@ -408,9 +408,9 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             _logger.ReceivedBytes(connection.ConnectionId, buffer.Length);
-            while (!connection.Application.Out.TryWrite(buffer))
+            while (!connection.Application.Writer.TryWrite(buffer))
             {
-                if (!await connection.Application.Out.WaitToWriteAsync())
+                if (!await connection.Application.Writer.WaitToWriteAsync())
                 {
                     return;
                 }

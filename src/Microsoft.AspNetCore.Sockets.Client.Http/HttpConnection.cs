@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
         private readonly TimeSpan _eventQueueDrainTimeout = TimeSpan.FromSeconds(5);
-        private ReadableChannel<byte[]> Input => _transportChannel.In;
-        private WritableChannel<SendMessage> Output => _transportChannel.Out;
+        private ChannelReader<byte[]> Input => _transportChannel.Input;
+        private ChannelWriter<SendMessage> Output => _transportChannel.Output;
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
         private readonly TransportType _requestedTransportType = TransportType.All;
 

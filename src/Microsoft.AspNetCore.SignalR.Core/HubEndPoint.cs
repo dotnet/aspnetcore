@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Core.Internal;
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 try
                 {
-                    while (await output.In.WaitToReadAsync())
+                    while (await output.Reader.WaitToReadAsync())
                     {
-                        while (output.In.TryRead(out var hubMessage))
+                        while (output.Reader.TryRead(out var hubMessage))
                         {
                             var buffer = protocolReaderWriter.WriteMessage(hubMessage);
-                            while (await connection.Transport.Out.WaitToWriteAsync())
+                            while (await connection.Transport.Writer.WaitToWriteAsync())
                             {
-                                if (connection.Transport.Out.TryWrite(buffer))
+                                if (connection.Transport.Writer.TryWrite(buffer))
                                 {
                                     break;
                                 }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR
                 await _lifetimeManager.OnDisconnectedAsync(connectionContext);
 
                 // Nothing should be writing to the HubConnectionContext
-                output.Out.TryComplete();
+                output.Writer.TryComplete();
 
                 // This should unwind once we complete the output
                 await writingOutputTask;
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private static bool IsChannel(Type type, out Type payloadType)
         {
-            var channelType = type.AllBaseTypes().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ReadableChannel<>));
+            var channelType = type.AllBaseTypes().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ChannelReader<>));
             if (channelType == null)
             {
                 payloadType = null;

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
                     await longPollingTransport.Running.OrTimeout();
-                    Assert.True(transportToConnection.In.Completion.IsCompleted);
+                    Assert.True(transportToConnection.Reader.Completion.IsCompleted);
                 }
                 finally
                 {
@@ -135,9 +135,9 @@ namespace Microsoft.AspNetCore.Client.Tests
                     var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
-                    var data = await transportToConnection.In.ReadAllAsync().OrTimeout();
+                    var data = await transportToConnection.Reader.ReadAllAsync().OrTimeout();
                     await longPollingTransport.Running.OrTimeout();
-                    Assert.True(transportToConnection.In.Completion.IsCompleted);
+                    Assert.True(transportToConnection.Reader.Completion.IsCompleted);
                     Assert.Equal(2, data.Count);
                     Assert.Equal(Encoding.UTF8.GetBytes("Hello"), data[0]);
                     Assert.Equal(Encoding.UTF8.GetBytes("World"), data[1]);
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
                     var exception =
-                        await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion.OrTimeout());
+                        await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.Reader.Completion.OrTimeout());
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
@@ -207,16 +207,16 @@ namespace Microsoft.AspNetCore.Client.Tests
                     var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
-                    await connectionToTransport.Out.WriteAsync(new SendMessage());
+                    await connectionToTransport.Writer.WriteAsync(new SendMessage());
 
                     await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
 
                     // The channel needs to be drained for the Completion task to be completed
-                    while (transportToConnection.In.TryRead(out var message))
+                    while (transportToConnection.Reader.TryRead(out var message))
                     {
                     }
 
-                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.In.Completion);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.Reader.Completion);
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
@@ -248,12 +248,12 @@ namespace Microsoft.AspNetCore.Client.Tests
                     var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
-                    connectionToTransport.Out.Complete();
+                    connectionToTransport.Writer.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
 
                     await longPollingTransport.Running.OrTimeout();
-                    await connectionToTransport.In.Completion.OrTimeout();
+                    await connectionToTransport.Reader.Completion.OrTimeout();
                 }
                 finally
                 {
@@ -304,9 +304,9 @@ namespace Microsoft.AspNetCore.Client.Tests
 
                     // Pull Messages out of the channel
                     var messages = new List<byte[]>();
-                    while (await transportToConnection.In.WaitToReadAsync())
+                    while (await transportToConnection.Reader.WaitToReadAsync())
                     {
-                        while (transportToConnection.In.TryRead(out var message))
+                        while (transportToConnection.Reader.TryRead(out var message))
                         {
                             messages.Add(message);
                         }
@@ -358,16 +358,16 @@ namespace Microsoft.AspNetCore.Client.Tests
                     var tcs2 = new TaskCompletionSource<object>();
 
                     // Pre-queue some messages
-                    await connectionToTransport.Out.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("Hello"), tcs1)).OrTimeout();
-                    await connectionToTransport.Out.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("World"), tcs2)).OrTimeout();
+                    await connectionToTransport.Writer.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("Hello"), tcs1)).OrTimeout();
+                    await connectionToTransport.Writer.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("World"), tcs2)).OrTimeout();
 
                     // Start the transport
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
 
-                    connectionToTransport.Out.Complete();
+                    connectionToTransport.Writer.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
-                    await connectionToTransport.In.Completion.OrTimeout();
+                    await connectionToTransport.Reader.Completion.OrTimeout();
 
                     Assert.Single(sentRequests);
                     Assert.Equal(new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -22,12 +22,12 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private static Action<object> _abortedCallback = AbortConnection;
 
-        private readonly WritableChannel<HubMessage> _output;
+        private readonly ChannelWriter<HubMessage> _output;
         private readonly ConnectionContext _connectionContext;
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>();
 
-        public HubConnectionContext(WritableChannel<HubMessage> output, ConnectionContext connectionContext)
+        public HubConnectionContext(ChannelWriter<HubMessage> output, ConnectionContext connectionContext)
         {
             _output = output;
             _connectionContext = connectionContext;
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR
         private IHubFeature HubFeature => Features.Get<IHubFeature>();
 
         // Used by the HubEndPoint only
-        internal ReadableChannel<byte[]> Input => _connectionContext.Transport;
+        internal ChannelReader<byte[]> Input => _connectionContext.Transport;
 
         internal ExceptionDispatchInfo AbortException { get; private set; }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual HubProtocolReaderWriter ProtocolReaderWriter { get; set; }
 
-        public virtual WritableChannel<HubMessage> Output => _output;
+        public virtual ChannelWriter<HubMessage> Output => _output;
 
         // Currently used only for streaming methods
         internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>();

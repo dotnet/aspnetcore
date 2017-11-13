@@ -82,12 +82,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             connection.ApplicationTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Transport.In.WaitToReadAsync());
+                Assert.False(await connection.Transport.Reader.WaitToReadAsync());
             });
 
             connection.TransportTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Application.In.WaitToReadAsync());
+                Assert.False(await connection.Application.Reader.WaitToReadAsync());
             });
 
             connectionManager.CloseConnections();
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             appLifetime.StopApplication();
 
             // Connection should be disposed so this should complete immediately
-            Assert.False(await connection.Application.Out.WaitToWriteAsync().OrTimeout());
+            Assert.False(await connection.Application.Writer.WaitToWriteAsync().OrTimeout());
         }
 
         private static ConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)

@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         [MemberData(nameof(HubProtocols))]
         public void DefaultHubProtocolResolverTestsCanCreateSupportedProtocols(IHubProtocol protocol)
         {
-            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Out, new Mock<ConnectionContext>().Object);
+            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Writer, new Mock<ConnectionContext>().Object);
             Assert.IsType(
                 protocol.GetType(),
                 new DefaultHubProtocolResolver(Options.Create(new HubOptions())).GetProtocol(protocol.Name, mockConnection.Object));
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         [InlineData("dummy")]
         public void DefaultHubProtocolResolverThrowsForNotSupportedProtocol(string protocolName)
         {
-            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Out, new Mock<ConnectionContext>().Object);
+            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Writer, new Mock<ConnectionContext>().Object);
             var exception = Assert.Throws<NotSupportedException>(
                 () => new DefaultHubProtocolResolver(Options.Create(new HubOptions())).GetProtocol(protocolName, mockConnection.Object));
 

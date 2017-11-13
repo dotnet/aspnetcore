@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class MessageParserBenchmark
     {
         private static readonly Random Random = new Random();
-        private ReadOnlyBuffer<byte> _binaryInput;
-        private ReadOnlyBuffer<byte> _textInput;
+        private ReadOnlyMemory<byte> _binaryInput;
+        private ReadOnlyMemory<byte> _textInput;
 
         [Params(32, 64)]
         public int ChunkSize { get; set; }

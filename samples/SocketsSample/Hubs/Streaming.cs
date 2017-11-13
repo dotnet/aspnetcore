@@ -1,7 +1,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR;
 
 namespace SocketsSample.Hubs
@@ -15,7 +15,7 @@ namespace SocketsSample.Hubs
                              .Take(count);
         }
 
-        public ReadableChannel<int> ChannelCounter(int count, int delay)
+        public ChannelReader<int> ChannelCounter(int count, int delay)
         {
             var channel = Channel.CreateUnbounded<int>();
 
@@ -23,14 +23,14 @@ namespace SocketsSample.Hubs
             {
                 for (var i = 0; i < count; i++)
                 {
-                    await channel.Out.WriteAsync(i);
+                    await channel.Writer.WriteAsync(i);
                     await Task.Delay(delay);
                 }
 
-                channel.Out.TryComplete();
+                channel.Writer.TryComplete();
             });
 
-            return channel.In;
+            return channel.Reader;
         }
     }
 }

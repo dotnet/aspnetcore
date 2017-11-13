@@ -7,7 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Features;
@@ -268,8 +268,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 {
                     // The connection is now in the Disconnected state so the Received event for
                     // this message should not be raised
-                    channel.Out.TryWrite(Array.Empty<byte>());
-                    channel.Out.TryComplete();
+                    channel.Writer.TryWrite(Array.Empty<byte>());
+                    channel.Writer.TryComplete();
                     return Task.CompletedTask;
                 });
             mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             mockTransport.Setup(t => t.StopAsync())
                 .Returns(() =>
                 {
-                    channel.Out.TryComplete();
+                    channel.Writer.TryComplete();
                     return Task.CompletedTask;
                 });
             mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
@@ -330,14 +330,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             await connection.StartAsync();
-            channel.Out.TryWrite(Array.Empty<byte>());
+            channel.Writer.TryWrite(Array.Empty<byte>());
 
             // Ensure that the Received callback has been called before attempting the second write
             await callbackInvokedTcs.Task.OrTimeout();
-            channel.Out.TryWrite(Array.Empty<byte>());
+            channel.Writer.TryWrite(Array.Empty<byte>());
 
             // Ensure that SignalR isn't blocked by the receive callback
-            Assert.False(channel.In.TryRead(out var message));
+            Assert.False(channel.Reader.TryRead(out var message));
 
             closedTcs.SetResult(null);
 
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             mockTransport.Setup(t => t.StopAsync())
                 .Returns(() =>
                 {
-                    channel.Out.TryComplete();
+                    channel.Writer.TryComplete();
                     return Task.CompletedTask;
                 });
             mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
@@ -380,10 +380,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             connection.OnReceived(_ => blockReceiveCallbackTcs.Task);
 
             await connection.StartAsync();
-            channel.Out.TryWrite(Array.Empty<byte>());
+            channel.Writer.TryWrite(Array.Empty<byte>());
 
             // Ensure that SignalR isn't blocked by the receive callback
-            Assert.False(channel.In.TryRead(out var message));
+            Assert.False(channel.Reader.TryRead(out var message));
 
             await connection.DisposeAsync();
         }
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             mockTransport.Setup(t => t.StopAsync())
                 .Returns(() =>
                 {
-                    channel.Out.TryComplete();
+                    channel.Writer.TryComplete();
                     return Task.CompletedTask;
                 });
             mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
@@ -427,10 +427,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             await connection.StartAsync();
-            channel.Out.TryWrite(Array.Empty<byte>());
+            channel.Writer.TryWrite(Array.Empty<byte>());
 
             // Ensure that SignalR isn't blocked by the receive callback
-            Assert.False(channel.In.TryRead(out var message));
+            Assert.False(channel.Reader.TryRead(out var message));
 
             await connection.DisposeAsync();
         }
@@ -909,7 +909,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             mockTransport.Setup(t => t.StopAsync())
                 .Returns(() =>
                 {
-                    channel.Out.TryComplete();
+                    channel.Writer.TryComplete();
                     return Task.CompletedTask;
                 });
             mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Binary);

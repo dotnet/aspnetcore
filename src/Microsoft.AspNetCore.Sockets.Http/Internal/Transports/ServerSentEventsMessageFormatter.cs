@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
                 if (nextSliceStart >= payload.Length)
                 {
-                    payload = Span<byte>.Empty;
+                    payload = ReadOnlySpan<byte>.Empty;
                 }
                 else
                 {

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Span<byte> ConvertBufferToSpan(ReadableBuffer buffer)
+        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadableBuffer buffer)
         {
             if (buffer.IsSingleSpan)
             {

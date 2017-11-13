@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public class ServerSentEventsTransport : ITransport
     {
+        private static readonly MemoryPool _memoryPool = new MemoryPool();
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
 
-                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Writer.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
 
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             var stream = await response.Content.ReadAsStreamAsync();
-            var pipelineReader = stream.AsPipelineReader(cancellationToken);
+            var pipelineReader = StreamPipeConnection.CreateReader(new PipeOptions(_memoryPool), stream);
             var readCancellationRegistration = cancellationToken.Register(
                 reader => ((IPipeReader)reader).CancelPendingRead(), pipelineReader);
             try
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         switch (parseResult)
                         {
                             case ServerSentEventsMessageParser.ParseResult.Completed:
-                                _application.Out.TryWrite(buffer);
+                                _application.Writer.TryWrite(buffer);
                                 _parser.Reset();
                                 break;
                             case ServerSentEventsMessageParser.ParseResult.Incomplete:
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             _logger.TransportStopping(_connectionId);
             _transportCts.Cancel();
-            _application.Out.TryComplete();
+            _application.Writer.TryComplete();
 
             try
             {

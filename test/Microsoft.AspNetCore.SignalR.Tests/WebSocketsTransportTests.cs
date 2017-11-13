@@ -1,9 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var webSocketsTransport = new WebSocketsTransport(loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
                     TransferMode.Binary, connectionId: string.Empty);
-                connectionToTransport.Out.TryComplete();
+                connectionToTransport.Writer.TryComplete();
                 await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
             }
         }
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, transferMode, connectionId: string.Empty);
 
                 var sendTcs = new TaskCompletionSource<object>();
-                connectionToTransport.Out.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
+                connectionToTransport.Writer.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
                 try
                 {
                     await sendTcs.Task;
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // The echo endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
-                Assert.True(transportToConnection.In.TryRead(out var buffer));
+                Assert.True(transportToConnection.Reader.TryRead(out var buffer));
                 Assert.Equal(new byte[] { 0x42 }, buffer);
             }
         }

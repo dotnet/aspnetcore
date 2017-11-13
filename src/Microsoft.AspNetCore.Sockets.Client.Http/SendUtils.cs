@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
             IList<SendMessage> messages = null;
             try
             {
-                while (await application.In.WaitToReadAsync(transportCts.Token))
+                while (await application.Reader.WaitToReadAsync(transportCts.Token))
                 {
                     // Grab as many messages as we can from the channel
                     messages = new List<SendMessage>();
-                    while (!transportCts.IsCancellationRequested && application.In.TryRead(out SendMessage message))
+                    while (!transportCts.IsCancellationRequested && application.Reader.TryRead(out SendMessage message))
                     {
                         messages.Add(message);
                     }

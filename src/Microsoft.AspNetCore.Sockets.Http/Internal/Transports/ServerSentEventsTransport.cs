@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public class ServerSentEventsTransport : IHttpTransport
     {
-        private readonly ReadableChannel<byte[]> _application;
+        private readonly ChannelReader<byte[]> _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(ReadableChannel<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(ChannelReader<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;

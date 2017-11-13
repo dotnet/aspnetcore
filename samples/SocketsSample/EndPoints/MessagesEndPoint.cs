@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -20,9 +20,9 @@ namespace SocketsSample.EndPoints
 
             try
             {
-                while (await connection.Transport.In.WaitToReadAsync())
+                while (await connection.Transport.Reader.WaitToReadAsync())
                 {
-                    if (connection.Transport.In.TryRead(out var buffer))
+                    if (connection.Transport.Reader.TryRead(out var buffer))
                     {
                         // We can avoid the copy here but we'll deal with that later
                         var text = Encoding.UTF8.GetString(buffer);
@@ -50,7 +50,7 @@ namespace SocketsSample.EndPoints
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Transport.Out.WriteAsync(payload));
+                tasks.Add(c.Transport.Writer.WriteAsync(payload));
             }
 
             return Task.WhenAll(tasks);

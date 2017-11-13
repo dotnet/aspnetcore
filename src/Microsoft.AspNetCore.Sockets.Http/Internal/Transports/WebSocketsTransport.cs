@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             }
 
             // We're done writing
-            _application.Out.TryComplete();
+            _application.Writer.TryComplete();
 
             await socket.CloseOutputAsync(failed ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
@@ -160,9 +160,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 }
 
                 _logger.MessageToApplication(_connection.ConnectionId, messageBuffer.Length);
-                while (await _application.Out.WaitToWriteAsync())
+                while (await _application.Writer.WaitToWriteAsync())
                 {
-                    if (_application.Out.TryWrite(messageBuffer))
+                    if (_application.Writer.TryWrite(messageBuffer))
                     {
                         incomingMessage.Clear();
                         break;
@@ -173,10 +173,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
         private async Task StartSending(WebSocket ws)
         {
-            while (await _application.In.WaitToReadAsync())
+            while (await _application.Reader.WaitToReadAsync())
             {
                 // Get a frame from the application
-                while (_application.In.TryRead(out var buffer))
+                while (_application.Reader.TryRead(out var buffer))
                 {
                     if (buffer.Length > 0)
                     {

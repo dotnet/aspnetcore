@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Moq;
@@ -29,13 +29,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.True(output1.In.TryRead(out var item));
+                Assert.True(output1.Reader.TryRead(out var item));
                 var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
 
-                Assert.True(output2.In.TryRead(out item));
+                Assert.True(output2.Reader.TryRead(out item));
                 message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -63,13 +63,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.True(output1.In.TryRead(out var item));
+                Assert.True(output1.Reader.TryRead(out var item));
                 var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
 
-                Assert.False(output2.In.TryRead(out item));
+                Assert.False(output2.Reader.TryRead(out item));
             }
         }
 
@@ -93,13 +93,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.True(output1.In.TryRead(out var item));
+                Assert.True(output1.Reader.TryRead(out var item));
                 var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
 
-                Assert.False(output2.In.TryRead(out item));
+                Assert.False(output2.Reader.TryRead(out item));
             }
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.True(output.In.TryRead(out var item));
+                Assert.True(output.Reader.TryRead(out var item));
                 var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -130,11 +130,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // Force an exception when writing to connection
-                var output = new Mock<Channel<HubMessage>>();
-                output.Setup(o => o.Out.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
+                var writer = new Mock<ChannelWriter<HubMessage>>();
+                writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
 
                 var manager = new DefaultHubLifetimeManager<MyHub>();
-                var connection = new HubConnectionContext(output.Object, client.Connection);
+                var connection = new HubConnectionContext(new MockChannel(writer.Object), client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -167,6 +167,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private class MyHub : Hub
         {
 
+        }
+
+        private class MockChannel: Channel<HubMessage>
+        {
+
+            public MockChannel(ChannelWriter<HubMessage> writer = null)
+            {
+                Writer = writer;
+            }
         }
     }
 }

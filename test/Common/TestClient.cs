@@ -7,7 +7,7 @@ using System.IO;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
-            var options = new ChannelOptimizations { AllowSynchronousContinuations = synchronousCallbacks };
+            var options = new UnboundedChannelOptions { AllowSynchronousContinuations = synchronousCallbacks };
             var transportToApplication = Channel.CreateUnbounded<byte[]>(options);
             var applicationToTransport = Channel.CreateUnbounded<byte[]>(options);
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var memoryStream = new MemoryStream())
             {
                 NegotiationProtocol.WriteMessage(new NegotiationMessage(protocol.Name), memoryStream);
-                Application.Out.TryWrite(memoryStream.ToArray());
+                Application.Writer.TryWrite(memoryStream.ToArray());
             }
         }
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {
             var payload = _protocolReaderWriter.WriteMessage(message);
-            await Application.Out.WriteAsync(payload);
+            await Application.Writer.WriteAsync(payload);
             return message.InvocationId;
         }
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 if (message == null)
                 {
-                    if (!await Application.In.WaitToReadAsync())
+                    if (!await Application.Reader.WaitToReadAsync())
                     {
                         return null;
                     }
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public HubMessage TryRead()
         {
-            if (Application.In.TryRead(out var buffer) &&
+            if (Application.Reader.TryRead(out var buffer) &&
                 _protocolReaderWriter.ReadMessages(buffer, _invocationBinder, out var messages))
             {
                 return messages[0];

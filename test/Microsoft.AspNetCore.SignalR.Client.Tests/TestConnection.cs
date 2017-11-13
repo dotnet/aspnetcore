@@ -7,8 +7,9 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -34,8 +35,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public Task Closed => _closeTcs.Task;
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
-        public ReadableChannel<byte[]> SentMessages => _sentMessages.In;
-        public WritableChannel<byte[]> ReceivedMessages => _receivedMessages.Out;
+        public ChannelReader<byte[]> SentMessages => _sentMessages.Reader;
+        public ChannelWriter<byte[]> ReceivedMessages => _receivedMessages.Writer;
 
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
 
@@ -61,9 +62,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 throw new InvalidOperationException("Connection must be started before SendAsync can be called");
             }
 
-            while (await _sentMessages.Out.WaitToWriteAsync(cancellationToken))
+            while (await _sentMessages.Writer.WaitToWriteAsync(cancellationToken))
             {
-                if (_sentMessages.Out.TryWrite(data))
+                if (_sentMessages.Writer.TryWrite(data))
                 {
                     return;
                 }
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var json = JsonConvert.SerializeObject(jsonObject, Formatting.None);
             var bytes = FormatMessageToArray(Encoding.UTF8.GetBytes(json));
 
-            return _receivedMessages.Out.WriteAsync(bytes);
+            return _receivedMessages.Writer.WriteAsync(bytes);
         }
 
         private byte[] FormatMessageToArray(byte[] message)
@@ -116,9 +117,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 while (!token.IsCancellationRequested)
                 {
-                    while (await _receivedMessages.In.WaitToReadAsync(token))
+                    while (await _receivedMessages.Reader.WaitToReadAsync(token))
                     {
-                        while (_receivedMessages.In.TryRead(out var message))
+                        while (_receivedMessages.Reader.TryRead(out var message))
                         {
                             ReceiveCallback[] callbackCopies;
                             lock (_callbacks)

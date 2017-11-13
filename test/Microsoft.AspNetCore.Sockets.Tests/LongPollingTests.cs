@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var poll = new LongPollingTransport(CancellationToken.None, channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await poll.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -56,9 +56,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
+            await channel.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await poll.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -76,11 +76,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes(" "));
-            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes("World"));
+            await channel.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+            await channel.Writer.WriteAsync(Encoding.UTF8.GetBytes(" "));
+            await channel.Writer.WriteAsync(Encoding.UTF8.GetBytes("World"));
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await poll.ProcessRequestAsync(context, context.RequestAborted);
 

@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
-                client.Connection.Transport.In.TryRead(out var item);
+                client.Connection.Transport.Reader.TryRead(out var item);
 
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
-                client.Connection.Transport.In.TryRead(out var item);
+                client.Connection.Transport.Reader.TryRead(out var item);
 
                 await endPoint.OnConnectedAsync(client.Connection).OrTimeout();
             }
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await client.SendInvocationAsync(methodName, nonBlocking: true).OrTimeout();
 
                 // Nothing should have been written
-                Assert.False(client.Application.In.TryRead(out var buffer));
+                Assert.False(client.Application.Reader.TryRead(out var buffer));
 
                 // kill the connection
                 client.Dispose();
@@ -1595,7 +1595,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return new CountingObservable(count);
             }
 
-            public ReadableChannel<string> CounterChannel(int count)
+            public ChannelReader<string> CounterChannel(int count)
             {
                 var channel = Channel.CreateUnbounded<string>();
 
@@ -1603,17 +1603,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     for (int i = 0; i < count; i++)
                     {
-                        await channel.Out.WriteAsync(i.ToString());
+                        await channel.Writer.WriteAsync(i.ToString());
                     }
-                    channel.Out.Complete();
+                    channel.Writer.Complete();
                 });
 
-                return channel.In;
+                return channel.Reader;
             }
 
-            public ReadableChannel<string> BlockingStream()
+            public ChannelReader<string> BlockingStream()
             {
-                return Channel.CreateUnbounded<string>().In;
+                return Channel.CreateUnbounded<string>().Reader;
             }
 
             private class CountingObservable : IObservable<string>

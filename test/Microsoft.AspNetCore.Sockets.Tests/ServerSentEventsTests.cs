@@ -1,10 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             context.Features.Set<IHttpBufferingFeature>(feature);
             var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSEWritesMessages()
         {
-            var channel = Channel.CreateUnbounded<byte[]>(new ChannelOptimizations
+            var channel = Channel.CreateUnbounded<byte[]>(new UnboundedChannelOptions
             {
                 AllowSynchronousContinuations = true
             });
@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
-            await channel.Out.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
+            await channel.Writer.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
 
             Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
 
-            channel.Out.TryComplete();
+            channel.Writer.TryComplete();
 
             await task.OrTimeout();
         }
@@ -83,9 +83,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await channel.Out.WriteAsync(Encoding.UTF8.GetBytes(message));
+            await channel.Writer.WriteAsync(Encoding.UTF8.GetBytes(message));
 
-            Assert.True(channel.Out.TryComplete());
+            Assert.True(channel.Writer.TryComplete());
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
     {
         public byte[] Decode(byte[] payload)
         {
-            var buffer = new ReadOnlyBuffer<byte>(payload);
+            var buffer = new ReadOnlyMemory<byte>(payload);
             LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message);
 
             return Convert.FromBase64String(Encoding.UTF8.GetString(message.ToArray()));

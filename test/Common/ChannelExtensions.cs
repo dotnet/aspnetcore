@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace System.Threading.Tasks.Channels
+namespace System.Threading.Channels
 {
     internal static class ChannelExtensions
     {
-        public static async Task<List<T>> ReadAllAsync<T>(this ReadableChannel<T> channel)
+        public static async Task<List<T>> ReadAllAsync<T>(this ChannelReader<T> channel)
         {
             var list = new List<T>();
             while (await channel.WaitToReadAsync())

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _webSocket.Dispose();
                 _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
-               _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
-               return t;
+                _application.Writer.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                return t;
             }).Unwrap();
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.WebSocketClosed(_connectionId, receiveResult.CloseStatus);
 
-                            _application.Out.Complete(
+                            _application.Writer.Complete(
                                 receiveResult.CloseStatus == WebSocketCloseStatus.NormalClosure
                                 ? null
                                 : new InvalidOperationException(
@@ -135,9 +135,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         if (!_transportCts.Token.IsCancellationRequested)
                         {
                             _logger.MessageToApp(_connectionId, messageBuffer.Length);
-                            while (await _application.Out.WaitToWriteAsync(_transportCts.Token))
+                            while (await _application.Writer.WaitToWriteAsync(_transportCts.Token))
                             {
-                                if (_application.Out.TryWrite(messageBuffer))
+                                if (_application.Writer.TryWrite(messageBuffer))
                                 {
                                     incomingMessage.Clear();
                                     break;
@@ -173,9 +173,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             try
             {
-                while (await _application.In.WaitToReadAsync(_transportCts.Token))
+                while (await _application.Reader.WaitToReadAsync(_transportCts.Token))
                 {
-                    while (_application.In.TryRead(out SendMessage message))
+                    while (_application.Reader.TryRead(out SendMessage message))
                     {
                         try
                         {

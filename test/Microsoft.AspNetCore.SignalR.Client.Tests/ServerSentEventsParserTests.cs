@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
@@ -106,10 +107,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [InlineData(new[] { "data: Hello, World\r\n", ":comment\r\n", "\r\n" }, "Hello, World")]
         public async Task ParseMessageAcrossMultipleReadsSuccess(string[] messageParts, string expectedMessage)
         {
-            using (var pipeFactory = new PipeFactory())
+            var parser = new ServerSentEventsMessageParser();
+            using (var pool = new MemoryPool())
             {
-                var parser = new ServerSentEventsMessageParser();
-                var pipe = pipeFactory.Create();
+                var pipe = new Pipe(new PipeOptions(pool));
 
                 byte[] message = null;
                 ReadCursor consumed = default, examined = default;
@@ -152,9 +153,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [InlineData("data: B\r\ndata: SGVs", "bG8sIFdvcmxk\r\n\n\n", "There was an error in the frame format")]
         public async Task ParseMessageAcrossMultipleReadsFailure(string encodedMessagePart1, string encodedMessagePart2, string expectedMessage)
         {
-            using (var pipeFactory = new PipeFactory())
+            using (var pool = new MemoryPool())
             {
-                var pipe = pipeFactory.Create();
+                var pipe = new Pipe(new PipeOptions(pool));
 
                 // Read the first part of the message
                 await pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes(encodedMessagePart1));
@@ -173,7 +174,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var ex = Assert.Throws<FormatException>(() => parser.ParseMessage(result.Buffer, out consumed, out examined, out buffer));
                 Assert.Equal(expectedMessage, ex.Message);
-
             }
         }
 
@@ -181,9 +181,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [InlineData("data: foo\r\n\r\n", "data: bar\r\n\r\n")]
         public async Task ParseMultipleMessagesText(string message1, string message2)
         {
-            using (var pipeFactory = new PipeFactory())
+            using (var pool = new MemoryPool())
             {
-                var pipe = pipeFactory.Create();
+                var pipe = new Pipe(new PipeOptions(pool));
 
                 // Read the first part of the message
                 await pipe.Writer.WriteAsync(Encoding.UTF8.GetBytes(message1 + message2));

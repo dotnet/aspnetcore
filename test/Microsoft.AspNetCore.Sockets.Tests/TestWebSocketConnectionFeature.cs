@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var clientToServer = Channel.CreateUnbounded<WebSocketMessage>();
             var serverToClient = Channel.CreateUnbounded<WebSocketMessage>();
 
-            var clientSocket = new WebSocketChannel(serverToClient.In, clientToServer.Out);
-            var serverSocket = new WebSocketChannel(clientToServer.In, serverToClient.Out);
+            var clientSocket = new WebSocketChannel(serverToClient.Reader, clientToServer.Writer);
+            var serverSocket = new WebSocketChannel(clientToServer.Reader, serverToClient.Writer);
 
             Client = clientSocket;
             return Task.FromResult<WebSocket>(serverSocket);
@@ -35,14 +35,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
         public class WebSocketChannel : WebSocket
         {
-            private readonly ReadableChannel<WebSocketMessage> _input;
-            private readonly WritableChannel<WebSocketMessage> _output;
+            private readonly ChannelReader<WebSocketMessage> _input;
+            private readonly ChannelWriter<WebSocketMessage> _output;
 
             private WebSocketCloseStatus? _closeStatus;
             private string _closeStatusDescription;
             private WebSocketState _state;
 
-            public WebSocketChannel(ReadableChannel<WebSocketMessage> input, WritableChannel<WebSocketMessage> output)
+            public WebSocketChannel(ChannelReader<WebSocketMessage> input, ChannelWriter<WebSocketMessage> output)
             {
                 _input = input;
                 _output = output;

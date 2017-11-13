@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
                 _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
-                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Writer.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
 
@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var payload = await response.Content.ReadAsByteArrayAsync();
                         if (payload.Length > 0)
                         {
-                            while (!_application.Out.TryWrite(payload))
+                            while (!_application.Writer.TryWrite(payload))
                             {
-                                if (cancellationToken.IsCancellationRequested || !await _application.Out.WaitToWriteAsync(cancellationToken))
+                                if (cancellationToken.IsCancellationRequested || !await _application.Writer.WaitToWriteAsync(cancellationToken))
                                 {
                                     return;
                                 }

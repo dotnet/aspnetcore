@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             var buffer = ArrayPool<byte>.Shared.Rent(lenNumBytes + payload.Length);
             var bufferSpan = buffer.AsSpan();
 
-            new Span<byte>(lenBuffer, lenNumBytes).CopyTo(bufferSpan);
+            new ReadOnlySpan<byte>(lenBuffer, lenNumBytes).CopyTo(bufferSpan);
             bufferSpan = bufferSpan.Slice(lenNumBytes);
             payload.CopyTo(bufferSpan);
             output.Write(buffer, 0, lenNumBytes + payload.Length);

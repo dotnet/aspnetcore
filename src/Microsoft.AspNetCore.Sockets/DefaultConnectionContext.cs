@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Tasks.Channels;
+using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Features;
 
@@ -86,21 +86,21 @@ namespace Microsoft.AspNetCore.Sockets
                     // If the application task is faulted, propagate the error to the transport
                     if (ApplicationTask?.IsFaulted == true)
                     {
-                        Transport.Out.TryComplete(ApplicationTask.Exception.InnerException);
+                        Transport.Writer.TryComplete(ApplicationTask.Exception.InnerException);
                     }
                     else
                     {
-                        Transport.Out.TryComplete();
+                        Transport.Writer.TryComplete();
                     }
 
                     // If the transport task is faulted, propagate the error to the application
                     if (TransportTask?.IsFaulted == true)
                     {
-                        Application.Out.TryComplete(TransportTask.Exception.InnerException);
+                        Application.Writer.TryComplete(TransportTask.Exception.InnerException);
                     }
                     else
                     {
-                        Application.Out.TryComplete();
+                        Application.Writer.TryComplete();
                     }
 
                     var applicationTask = ApplicationTask ?? Task.CompletedTask;
