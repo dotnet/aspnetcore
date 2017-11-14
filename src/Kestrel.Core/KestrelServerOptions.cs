@@ -105,6 +105,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             ListenOptions.Add(listenOptions);
         }
 
+        public void ListenLocalhost(int port) => ListenLocalhost(port, options => { });
+
+        public void ListenLocalhost(int port, Action<ListenOptions> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            var listenOptions = new LocalhostListenOptions(port)
+            {
+                KestrelServerOptions = this,
+            };
+            configure(listenOptions);
+            ListenOptions.Add(listenOptions);
+        }
+
+        public void ListenAnyIP(int port) => ListenAnyIP(port, options => { });
+
+        public void ListenAnyIP(int port, Action<ListenOptions> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            var listenOptions = new AnyIPListenOptions(port)
+            {
+                KestrelServerOptions = this,
+            };
+            configure(listenOptions);
+            ListenOptions.Add(listenOptions);
+        }
+
         /// <summary>
         /// Bind to given Unix domain socket path.
         /// </summary>

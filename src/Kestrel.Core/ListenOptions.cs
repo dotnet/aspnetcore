@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
         /// </summary>
-        internal string GetDisplayName()
+        internal virtual string GetDisplayName()
         {
             var scheme = ConnectionAdapters.Any(f => f.IsHttps)
                 ? "https"
@@ -181,6 +182,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
 
             return app;
+        }
+
+        internal virtual async Task BindAsync(AddressBindContext context)
+        {
+            await AddressBinder.BindEndpointAsync(this, context).ConfigureAwait(false);
+            context.Addresses.Add(GetDisplayName());
         }
     }
 }

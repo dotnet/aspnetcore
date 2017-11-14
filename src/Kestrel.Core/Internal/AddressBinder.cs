@@ -47,17 +47,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             await strategy.BindAsync(context).ConfigureAwait(false);
         }
 
-        private class AddressBindContext
-        {
-            public ICollection<string> Addresses { get; set; }
-            public List<ListenOptions> ListenOptions { get; set; }
-            public KestrelServerOptions ServerOptions { get; set; }
-            public ILogger Logger { get; set; }
-            public IDefaultHttpsProvider DefaultHttpsProvider { get; set; }
-
-            public Func<ListenOptions, Task> CreateBinding { get; set; }
-        }
-
         private static IStrategy CreateStrategy(ListenOptions[] listenOptions, string[] addresses, bool preferAddresses)
         {
             var hasListenOptions = listenOptions.Length > 0;
@@ -109,10 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return true;
         }
 
-        private static Task BindEndpointAsync(IPEndPoint endpoint, AddressBindContext context)
-            => BindEndpointAsync(new ListenOptions(endpoint), context);
-
-        private static async Task BindEndpointAsync(ListenOptions endpoint, AddressBindContext context)
+        internal static async Task BindEndpointAsync(ListenOptions endpoint, AddressBindContext context)
         {
             try
             {
@@ -126,60 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             context.ListenOptions.Add(endpoint);
         }
 
-        private static async Task BindLocalhostAsync(ServerAddress address, AddressBindContext context, bool https)
-        {
-            if (address.Port == 0)
-            {
-                throw new InvalidOperationException(CoreStrings.DynamicPortOnLocalhostNotSupported);
-            }
-
-            var exceptions = new List<Exception>();
-
-            try
-            {
-                var options = new ListenOptions(new IPEndPoint(IPAddress.Loopback, address.Port));
-                await BindEndpointAsync(options, context).ConfigureAwait(false);
-                
-                if (https)
-                {
-                    options.KestrelServerOptions = context.ServerOptions;
-                    context.DefaultHttpsProvider.ConfigureHttps(options);
-                }
-            }
-            catch (Exception ex) when (!(ex is IOException))
-            {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, address, "IPv4 loopback", ex.Message);
-                exceptions.Add(ex);
-            }
-
-            try
-            {
-                var options = new ListenOptions(new IPEndPoint(IPAddress.IPv6Loopback, address.Port));
-                await BindEndpointAsync(options, context).ConfigureAwait(false);
-
-                if (https)
-                {
-                    options.KestrelServerOptions = context.ServerOptions;
-                    context.DefaultHttpsProvider.ConfigureHttps(options);
-                }
-            }
-            catch (Exception ex) when (!(ex is IOException))
-            {
-                context.Logger.LogWarning(0, CoreStrings.NetworkInterfaceBindingFailed, address, "IPv6 loopback", ex.Message);
-                exceptions.Add(ex);
-            }
-
-            if (exceptions.Count == 2)
-            {
-                throw new IOException(CoreStrings.FormatAddressBindingFailed(address), new AggregateException(exceptions));
-            }
-
-            // If StartLocalhost doesn't throw, there is at least one listener.
-            // The port cannot change for "localhost".
-            context.Addresses.Add(address.ToString());
-        }
-
-        private static async Task BindAddressAsync(string address, AddressBindContext context)
+        internal static ListenOptions ParseAddress(string address, KestrelServerOptions serverOptions, IDefaultHttpsProvider defaultHttpsProvider)
         {
             var parsedAddress = ServerAddress.FromUrl(address);
             var https = false;
@@ -202,47 +135,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             if (parsedAddress.IsUnixPipe)
             {
                 options = new ListenOptions(parsedAddress.UnixPipePath);
-                await BindEndpointAsync(options, context).ConfigureAwait(false);
-                context.Addresses.Add(options.GetDisplayName());
             }
             else if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
             {
                 // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-                await BindLocalhostAsync(parsedAddress, context, https).ConfigureAwait(false);
+                options = new LocalhostListenOptions(parsedAddress.Port);
+            }
+            else if (TryCreateIPEndPoint(parsedAddress, out var endpoint))
+            {
+                options = new ListenOptions(endpoint);
             }
             else
             {
-                if (TryCreateIPEndPoint(parsedAddress, out var endpoint))
-                {
-                    options = new ListenOptions(endpoint);
-                    await BindEndpointAsync(options, context).ConfigureAwait(false);
-                }
-                else
-                {
-                    // when address is 'http://hostname:port', 'http://*:port', or 'http://+:port'
-                    try
-                    {
-                        options = new ListenOptions(new IPEndPoint(IPAddress.IPv6Any, parsedAddress.Port));
-                        await BindEndpointAsync(options, context).ConfigureAwait(false);
-                    }
-                    catch (Exception ex) when (!(ex is IOException))
-                    {
-                        context.Logger.LogDebug(CoreStrings.FormatFallbackToIPv4Any(parsedAddress.Port));
-
-                        // for machines that do not support IPv6
-                        options = new ListenOptions(new IPEndPoint(IPAddress.Any, parsedAddress.Port));
-                        await BindEndpointAsync(options, context).ConfigureAwait(false);
-                    }
-                }
-
-                context.Addresses.Add(options.GetDisplayName());
+                // when address is 'http://hostname:port', 'http://*:port', or 'http://+:port'
+                options = new AnyIPListenOptions(parsedAddress.Port);
             }
 
-            if (https && options != null)
+            if (https)
             {
-                options.KestrelServerOptions = context.ServerOptions;
-                context.DefaultHttpsProvider.ConfigureHttps(options);
+                options.KestrelServerOptions = serverOptions;
+                defaultHttpsProvider.ConfigureHttps(options);
             }
+
+            return options;
         }
 
         private interface IStrategy
@@ -256,7 +171,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
 
-                await BindLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), context, https: false).ConfigureAwait(false);
+                await ParseAddress(Constants.DefaultServerAddress, context.ServerOptions, context.DefaultHttpsProvider)
+                    .BindAsync(context).ConfigureAwait(false);
             }
         }
 
@@ -308,9 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 foreach (var endpoint in _endpoints)
                 {
-                    await BindEndpointAsync(endpoint, context).ConfigureAwait(false);
-
-                    context.Addresses.Add(endpoint.GetDisplayName());
+                    await endpoint.BindAsync(context).ConfigureAwait(false);
                 }
             }
         }
@@ -328,7 +242,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 foreach (var address in _addresses)
                 {
-                    await BindAddressAsync(address, context).ConfigureAwait(false);
+                    await ParseAddress(address, context.ServerOptions, context.DefaultHttpsProvider)
+                        .BindAsync(context).ConfigureAwait(false);
                 }
             }
         }

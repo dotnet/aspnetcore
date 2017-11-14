@@ -76,6 +76,13 @@ namespace SampleApp
                         listenOptions.UseConnectionLogging();
                     });
 
+                    options.ListenLocalhost(basePort + 2, listenOptions =>
+                    {
+                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                    });
+
+                    options.ListenAnyIP(basePort + 3);
+
                     options.UseSystemd();
 
                     // The following section should be used to demo sockets

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -51,24 +51,49 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("randomhost")]
         [InlineData("+")]
         [InlineData("contoso.com")]
-        public async Task DefaultsToIPv6AnyOnInvalidIPAddress(string host)
+        public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
         {
-            var addresses = new ServerAddressesFeature();
-            addresses.Addresses.Add($"http://{host}");
             var options = new KestrelServerOptions();
+            var listenOptions = AddressBinder.ParseAddress($"http://{host}", options, Mock.Of<IDefaultHttpsProvider>());
+            Assert.IsType<AnyIPListenOptions>(listenOptions);
+            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
+            Assert.Equal(80, listenOptions.IPEndPoint.Port);
+        }
 
-            var tcs = new TaskCompletionSource<ListenOptions>();
-            await AddressBinder.BindAsync(addresses,
-                options,
-                NullLogger.Instance,
-                Mock.Of<IDefaultHttpsProvider>(),
-                endpoint =>
-                {
-                    tcs.TrySetResult(endpoint);
-                    return Task.CompletedTask;
-                });
-            var result = await tcs.Task;
-            Assert.Equal(IPAddress.IPv6Any, result.IPEndPoint.Address);
+        [Fact]
+        public void ParseAddressLocalhost()
+        {
+            var options = new KestrelServerOptions();
+            var listenOptions = AddressBinder.ParseAddress("http://localhost", options, Mock.Of<IDefaultHttpsProvider>());
+            Assert.IsType<LocalhostListenOptions>(listenOptions);
+            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
+            Assert.Equal(80, listenOptions.IPEndPoint.Port);
+        }
+
+        [Fact]
+        public void ParseAddressUnixPipe()
+        {
+            var options = new KestrelServerOptions();
+            var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", options, Mock.Of<IDefaultHttpsProvider>());
+            Assert.Equal(ListenType.SocketPath, listenOptions.Type);
+            Assert.Equal("/tmp/kestrel-test.sock", listenOptions.SocketPath);
+        }
+
+        [Theory]
+        [InlineData("http://10.10.10.10:5000/", "10.10.10.10", 5000)]
+        [InlineData("http://[::1]:5000", "::1", 5000)]
+        [InlineData("http://[::1]", "::1", 80)]
+        [InlineData("http://127.0.0.1", "127.0.0.1", 80)]
+        [InlineData("https://127.0.0.1", "127.0.0.1", 443)]
+        public void ParseAddressIP(string address, string ip, int port)
+        {
+            var options = new KestrelServerOptions();
+            var listenOptions = AddressBinder.ParseAddress(address, options, Mock.Of<IDefaultHttpsProvider>());
+            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
+            Assert.Equal(port, listenOptions.IPEndPoint.Port);
         }
 
         [Fact]

@@ -187,7 +187,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private Task RegisterAddresses_Success(string addressInput, string testUrl, int testPort = 0)
             => RegisterAddresses_Success(addressInput, new[] { testUrl }, testPort);
 
-        private async Task RegisterAddresses_StaticPort_Success(string addressInput, string[] testUrls)
+        private Task RegisterAddresses_StaticPort_Success(string addressInput, string[] testUrls) =>
+            RunTestWithStaticPort(port => RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port));
+
+        private async Task RunTestWithStaticPort(Func<int, Task> test)
         {
             var retryCount = 0;
             var errors = new List<Exception>();
@@ -197,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 try
                 {
                     var port = GetNextPort();
-                    await RegisterAddresses_Success($"{addressInput}:{port}", testUrls, port);
+                    await test(port);
                     return;
                 }
                 catch (XunitException)
@@ -254,34 +257,93 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private async Task RegisterIPEndPoint_StaticPort_Success(IPAddress address, string testUrl)
+        private Task RegisterIPEndPoint_StaticPort_Success(IPAddress address, string testUrl)
+            => RunTestWithStaticPort(port => RegisterIPEndPoint_Success(new IPEndPoint(address, port), testUrl, port));
+
+        [ConditionalFact]
+        public async Task ListenAnyIP_IPv4_Success()
         {
-            var retryCount = 0;
-            var errors = new List<Exception>();
+            await ListenAnyIP_Success(new[] { "http://localhost", "http://127.0.0.1" });
+        }
 
-            while (retryCount < MaxRetries)
+        [ConditionalFact]
+        [IPv6SupportedCondition]
+        public async Task ListenAnyIP_IPv6_Success()
+        {
+            await ListenAnyIP_Success(new[] { "http://[::1]", "http://localhost", "http://127.0.0.1" });
+        }
+
+        [ConditionalFact]
+        [NetworkIsReachable]
+        public async Task ListenAnyIP_HostName_Success()
+        {
+            var hostName = Dns.GetHostName();
+            await ListenAnyIP_Success(new[] { $"http://{hostName}" });
+        }
+
+        private async Task ListenAnyIP_Success(string[] testUrls, int testPort = 0)
+        {
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.ListenAnyIP(testPort);
+                })
+                .ConfigureLogging(_configureLoggingDelegate)
+                .Configure(ConfigureEchoAddress);
+
+            using (var host = hostBuilder.Build())
             {
-                try
-                {
-                    var port = GetNextPort();
-                    await RegisterIPEndPoint_Success(new IPEndPoint(address, port), testUrl, port);
-                    return;
-                }
-                catch (XunitException)
-                {
-                    throw;
-                }
-                catch (Exception ex)
-                {
-                    errors.Add(ex);
-                }
+                host.Start();
 
-                retryCount++;
+                foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
+                {
+                    var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
+
+                    // Compare the response with Uri.ToString(), rather than testUrl directly.
+                    // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
+                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                }
             }
+        }
 
-            if (errors.Any())
+        [ConditionalFact]
+        public async Task ListenLocalhost_IPv4LocalhostStaticPort_Success()
+        {
+            await ListenLocalhost_StaticPort_Success(new[] { "http://localhost", "http://127.0.0.1" });
+        }
+
+        [ConditionalFact]
+        [IPv6SupportedCondition]
+        public async Task ListenLocalhost_IPv6LocalhostStaticPort_Success()
+        {
+            await ListenLocalhost_StaticPort_Success(new[] { "http://localhost", "http://127.0.0.1", "http://[::1]" });
+        }
+
+        private Task ListenLocalhost_StaticPort_Success(string[] testUrls) =>
+            RunTestWithStaticPort(port => ListenLocalhost_Success(testUrls, port));
+
+        private async Task ListenLocalhost_Success(string[] testUrls, int testPort = 0)
+        {
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.ListenLocalhost(testPort);
+                })
+                .ConfigureLogging(_configureLoggingDelegate)
+                .Configure(ConfigureEchoAddress);
+
+            using (var host = hostBuilder.Build())
             {
-                throw new AggregateException(errors);
+                host.Start();
+
+                foreach (var testUrl in testUrls.Select(testUrl => $"{testUrl}:{(testPort == 0 ? host.GetPort() : testPort)}"))
+                {
+                    var response = await HttpClientSlim.GetStringAsync(testUrl, validateCertificate: false);
+
+                    // Compare the response with Uri.ToString(), rather than testUrl directly.
+                    // Required to handle IPv6 addresses with zone index, like "fe80::3%1"
+                    Assert.Equal(new Uri(testUrl).ToString(), response);
+                }
             }
         }
 
