@@ -112,16 +112,15 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                             // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
                             var ancmFile = Is64BitHost ? @"x64\aspnetcore.dll" : @"x86\aspnetcore.dll";
                             // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
-                            var ancmPath = Path.Combine(contentRoot, @"contentFiles\any\any\", ancmFile);
 
-                            if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmPath)))
+                            if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
                             {
-                                throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmPath);
+                                throw new FileNotFoundException("AspNetCoreModule could not be found.", ancmFile);
                             }
 
-                            Logger.LogDebug("Writing ANCMPath '{ancmPath}' to config", ancmPath);
+                            Logger.LogDebug("Writing ANCMPath '{ancmPath}' to config", ancmFile);
                             serverConfig =
-                                serverConfig.Replace("[ANCMPath]", ancmPath);
+                                serverConfig.Replace("[ANCMPath]", ancmFile);
                         }
 
                         Logger.LogDebug("Writing ApplicationPhysicalPath '{applicationPhysicalPath}' to config", contentRoot);
