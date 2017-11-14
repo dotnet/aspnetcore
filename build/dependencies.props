@@ -49,6 +49,7 @@
     <MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>2.1.0-preview1-27579</MicrosoftExtensionsObjectMethodExecutorSourcesPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27579</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview1-27579</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview1-27579</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>

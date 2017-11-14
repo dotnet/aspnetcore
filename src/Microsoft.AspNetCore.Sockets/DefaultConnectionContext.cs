@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Features;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Sockets
 {
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Sockets
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
+        internal ValueStopwatch ConnectionTimer { get; set; }
 
         public DefaultConnectionContext(string id, Channel<byte[]> transport, Channel<byte[]> application)
         {

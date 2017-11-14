@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _connectionReset =
             LoggerMessage.Define<DateTime, string>(LogLevel.Trace, new EventId(3, nameof(ConnectionReset)), "{time}: ConnectionId {connectionId}: Connection was reset.");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _connectionTimedOut =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Trace, new EventId(4, nameof(ConnectionTimedOut)), "{time}: ConnectionId {connectionId}: Connection timed out.");
+
         public static void CreatedNewConnection(this ILogger logger, string connectionId)
         {
             if (logger.IsEnabled(LogLevel.Debug))
@@ -42,6 +45,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             if (logger.IsEnabled(LogLevel.Error))
             {
                 _failedDispose(logger, DateTime.Now, connectionId, exception);
+            }
+        }
+
+        public static void ConnectionTimedOut(this ILogger logger, string connectionId)
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                _connectionTimedOut(logger, DateTime.Now, connectionId, null);
             }
         }
 

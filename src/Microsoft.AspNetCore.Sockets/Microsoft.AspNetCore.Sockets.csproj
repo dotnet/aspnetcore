@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(MicrosoftAspNetCoreHostingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
   </ItemGroup>
 
