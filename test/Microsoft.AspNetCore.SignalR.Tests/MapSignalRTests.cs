@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var ex = Assert.Throws<NotSupportedException>(() =>
             {
-                var builder = new WebHostBuilder()
+                using (var builder = new WebHostBuilder()
                         .UseKestrel()
                         .ConfigureServices(services =>
                         {
@@ -24,7 +24,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         {
                             app.UseSignalR(options => options.MapHub<InvalidHub>("overloads"));
                         })
-                        .Build();
+                        .Build())
+                {
+                    builder.Start();
+                }
             });
 
             Assert.Equal("Duplicate definitions of 'OverloadedMethod'. Overloading is not supported.", ex.Message);
@@ -34,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnHub()
         {
             var authCount = 0;
-            var builder = new WebHostBuilder()
+            using (var builder = new WebHostBuilder()
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {
@@ -47,7 +50,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         authCount += httpSocketOptions.AuthorizationData.Count;
                     }));
                 })
-                .Build();
+                .Build())
+            {
+                builder.Start();
+            }
 
             Assert.Equal(1, authCount);
         }
@@ -56,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnInheritedHub()
         {
             var authCount = 0;
-            var builder = new WebHostBuilder()
+            using (var builder = new WebHostBuilder()
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {
@@ -69,7 +75,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         authCount += httpSocketOptions.AuthorizationData.Count;
                     }));
                 })
-                .Build();
+                .Build())
+            {
+                builder.Start();
+            }
 
             Assert.Equal(1, authCount);
         }
@@ -78,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsMultipleAuthAttributesOnDoubleAuthHub()
         {
             var authCount = 0;
-            var builder = new WebHostBuilder()
+            using (var builder = new WebHostBuilder()
                 .UseKestrel()
                 .ConfigureServices(services =>
                 {
@@ -91,9 +100,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         authCount += httpSocketOptions.AuthorizationData.Count;
                     }));
                 })
-                .Build();
+                .Build())
+            {
+                builder.Start();
+            }
 
-            Assert.Equal(2, authCount);
+                Assert.Equal(2, authCount);
         }
 
         private class InvalidHub : Hub
