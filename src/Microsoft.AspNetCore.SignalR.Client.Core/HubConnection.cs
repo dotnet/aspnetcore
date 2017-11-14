@@ -126,6 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private async Task DisposeAsyncCore()
         {
             await _connection.DisposeAsync();
+            await Closed;
         }
 
         // TODO: Client return values/tasks?
@@ -334,7 +335,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private Task Shutdown(Exception ex = null)
+        private void Shutdown(Exception ex = null)
         {
             _logger.ShutdownConnection();
             if (ex != null)
@@ -360,7 +361,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
                 _pendingCalls.Clear();
             }
-            return Task.CompletedTask;
         }
 
         private async Task DispatchInvocationAsync(InvocationMessage invocation, CancellationToken cancellationToken)
