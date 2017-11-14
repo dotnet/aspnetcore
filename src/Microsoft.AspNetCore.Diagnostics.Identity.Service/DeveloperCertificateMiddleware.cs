@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
             await _next(context);
             void CreateDevelopmentCertificate()
             {
-#if NETCOREAPP2_0
+#if NETCOREAPP2_0 || NETCOREAPP2_1
                 using (var rsa = RSA.Create(2048))
                 {
                     var signingRequest = new CertificateRequest(

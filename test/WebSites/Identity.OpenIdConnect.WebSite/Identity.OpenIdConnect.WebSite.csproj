@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <UserSecretsId>aspnet-Identity.OpenIdConnect.WebSite-BE885A77-1D43-42D1-AAF2-050B19C01163</UserSecretsId>
   </PropertyGroup>
 
