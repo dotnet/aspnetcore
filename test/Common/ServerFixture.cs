@@ -17,33 +17,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
     public class ServerFixture<TStartup> : IDisposable
         where TStartup : class
     {
-        private ILoggerFactory _loggerFactory;
-        private ILogger _logger;
+        private readonly ILoggerFactory _loggerFactory;
+        private readonly ILogger _logger;
         private IWebHost _host;
         private IApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
 
-        public string BaseUrl { get; private set; }
+        public string WebSocketsUrl => Url.Replace("http", "ws");
 
-        public string WebSocketsUrl => BaseUrl.Replace("http", "ws");
+        public string Url { get; private set; }
 
         public ServerFixture()
         {
             var testLog = AssemblyTestLog.ForAssembly(typeof(ServerFixture<TStartup>).Assembly);
-            _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}" , out _loggerFactory, "ServerFixture");
+            _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "ServerFixture");
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
-            BaseUrl = "http://localhost:" + GetNextPort();
+            Url = "http://localhost:" + GetNextPort();
 
-            StartServer();
+            StartServer(Url);
         }
 
-        private void StartServer()
+        private void StartServer(string url)
         {
             _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
                 .UseKestrel()
-                .UseUrls(BaseUrl)
+                .UseUrls(url)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
 

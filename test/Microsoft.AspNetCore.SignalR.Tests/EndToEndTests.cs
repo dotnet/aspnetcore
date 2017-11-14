@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanStartAndStopConnectionUsingDefaultTransport()
         {
-            var url = _serverFixture.BaseUrl + "/echo";
+            var url = _serverFixture.Url + "/echo";
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
             var connection = new HttpConnection(new Uri(url));
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(TransportTypes))]
         public async Task CanStartAndStopConnectionUsingGivenTransport(TransportType transportType)
         {
-            var url = _serverFixture.BaseUrl + "/echo";
+            var url = _serverFixture.Url + "/echo";
             var connection = new HttpConnection(new Uri(url), transportType);
             await connection.StartAsync().OrTimeout();
             await connection.DisposeAsync().OrTimeout();
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
-                var url = _serverFixture.BaseUrl + "/echo";
+                var url = _serverFixture.Url + "/echo";
 
                 var mockHttpHandler = new Mock<HttpMessageHandler>();
                 mockHttpHandler.Protected()
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 const string message = "Major Key";
 
-                var url = _serverFixture.BaseUrl + "/echo";
+                var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
 
                 connection.Features.Set<ITransferModeFeature>(
@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.BaseUrl + "/echo";
+                var url = _serverFixture.Url + "/echo";
                 var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory);
                 connection.Features.Set<ITransferModeFeature>(
                     new TransferModeFeature { TransferMode = TransferMode.Binary });
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
-                var url = _serverFixture.BaseUrl + "/uncreatable";
+                var url = _serverFixture.Url + "/uncreatable";
 
                 var connection = new HubConnectionBuilder()
                         .WithUrl(new Uri(url))

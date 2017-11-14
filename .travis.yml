@@ -1,6 +1,8 @@
 language: csharp
-sudo: false
+sudo: required
 dist: trusty
+services:
+  - docker
 env:
   global:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -24,6 +26,7 @@ branches:
     - /^(.*\/)?ci-.*$/
     - /^rel\/.*/
 before_install:
-  - if test "$TRAVIS_OS_NAME" == "linux"; then nvm install $TRAVIS_NODE_VERSION; fi
+  # Pull redis docker image so when test creates container it doesn't time out
+  - if test "$TRAVIS_OS_NAME" == "linux"; then nvm install $TRAVIS_NODE_VERSION; docker pull redis; fi
 script:
   - ./build.sh
