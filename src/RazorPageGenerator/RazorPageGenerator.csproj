@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Builds Razor pages for views in a project. For internal use only.</Description>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>dotnet-razorpagegenerator</AssemblyName>
     <PackageId>RazorPageGenerator</PackageId>
     <OutputType>Exe</OutputType>

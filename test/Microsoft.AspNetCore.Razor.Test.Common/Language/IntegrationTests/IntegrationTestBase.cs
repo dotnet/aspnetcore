@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 CallContext.LogicalSetData("IntegrationTestBase_FileName", new ObjectHandle(value));
             }
-#elif NETCOREAPP2_0
+#elif NETCOREAPP2_0 || NETCOREAPP2_1
             get { return _fileName.Value; }
             set { _fileName.Value = value; }
 #endif
