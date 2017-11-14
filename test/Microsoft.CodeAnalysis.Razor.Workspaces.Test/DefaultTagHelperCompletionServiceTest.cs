@@ -994,8 +994,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private static DefaultTagHelperCompletionService CreateTagHelperCompletionFactsService()
         {
-            var tagHelperFactService = new DefaultTagHelperFactsService();
-            var completionFactService = new DefaultTagHelperCompletionService(tagHelperFactService);
+            var tagHelperFactsService = new DefaultTagHelperFactsServiceInternal();
+            var completionFactService = new DefaultTagHelperCompletionService(tagHelperFactsService);
 
             return completionFactService;
         }

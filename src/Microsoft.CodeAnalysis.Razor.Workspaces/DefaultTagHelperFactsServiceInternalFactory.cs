@@ -6,12 +6,12 @@ using Microsoft.CodeAnalysis.Host.Mef;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    [ExportLanguageServiceFactory(typeof(TagHelperFactsService), RazorLanguage.Name, ServiceLayer.Default)]
-    internal class DefaultTagHelperFactsServiceFactory : ILanguageServiceFactory
+    [ExportLanguageServiceFactory(typeof(TagHelperFactsServiceInternal), RazorLanguage.Name, ServiceLayer.Default)]
+    internal class DefaultTagHelperFactsServiceInternalFactory : ILanguageServiceFactory
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTagHelperFactsService();
+            return new DefaultTagHelperFactsServiceInternal();
         }
     }
 }

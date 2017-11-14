@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal class DefaultTagHelperFactsService : TagHelperFactsService
+    internal class DefaultTagHelperFactsServiceInternal : TagHelperFactsServiceInternal
     {
         public override TagHelperBinding GetTagHelperBinding(
             TagHelperDocumentContext documentContext,

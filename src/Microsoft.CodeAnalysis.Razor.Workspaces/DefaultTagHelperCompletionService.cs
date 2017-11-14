@@ -11,10 +11,10 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
-        private readonly TagHelperFactsService _tagHelperFactsService;
+        private readonly TagHelperFactsServiceInternal _tagHelperFactsService;
         private static readonly HashSet<TagHelperDescriptor> _emptyHashSet = new HashSet<TagHelperDescriptor>();
 
-        public DefaultTagHelperCompletionService(TagHelperFactsService tagHelperFactsService)
+        public DefaultTagHelperCompletionService(TagHelperFactsServiceInternal tagHelperFactsService)
         {
             _tagHelperFactsService = tagHelperFactsService;
         }

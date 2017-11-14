@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            var tagHelperFactsService = languageServices.GetRequiredService<TagHelperFactsService>();
+            var tagHelperFactsService = languageServices.GetRequiredService<TagHelperFactsServiceInternal>();
             return new DefaultTagHelperCompletionService(tagHelperFactsService);
         }
     }

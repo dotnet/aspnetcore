@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public abstract class TagHelperFactsService : ILanguageService
+    internal abstract class TagHelperFactsServiceInternal : ILanguageService
     {
         public abstract TagHelperBinding GetTagHelperBinding(TagHelperDocumentContext documentContext, string tagName, IEnumerable<KeyValuePair<string, string>> attributes, string parentTag, bool parentIsTagHelper);
 
