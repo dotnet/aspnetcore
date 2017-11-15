@@ -8,7 +8,7 @@
       Remove when fixed.
     -->
     <HasRuntimeOutput>true</HasRuntimeOutput>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp2.0'">win7-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(TargetFramework)' == 'net461'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
