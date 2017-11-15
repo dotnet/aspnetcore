@@ -4,9 +4,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultTagHelperCompletionServiceTest
     {

@@ -3,18 +3,30 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [System.Composition.Shared]
+    [Export(typeof(TagHelperCompletionService))]
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
         private readonly TagHelperFactsServiceInternal _tagHelperFactsService;
         private static readonly HashSet<TagHelperDescriptor> _emptyHashSet = new HashSet<TagHelperDescriptor>();
 
-        public DefaultTagHelperCompletionService(TagHelperFactsServiceInternal tagHelperFactsService)
+        [ImportingConstructor]
+        public DefaultTagHelperCompletionService(VisualStudioWorkspaceAccessor workspaceAccessor)
+        {
+            var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _tagHelperFactsService = razorLanguageServices.GetRequiredService<TagHelperFactsServiceInternal>();
+        }
+
+        // Internal for testing
+        internal DefaultTagHelperCompletionService(TagHelperFactsServiceInternal tagHelperFactsService)
         {
             _tagHelperFactsService = tagHelperFactsService;
         }

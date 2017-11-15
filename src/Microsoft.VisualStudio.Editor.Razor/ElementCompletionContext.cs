@@ -5,18 +5,17 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class AttributeCompletionContext
+    public sealed class ElementCompletionContext
     {
-        public AttributeCompletionContext(
+        public ElementCompletionContext(
             TagHelperDocumentContext documentContext,
             IEnumerable<string> existingCompletions,
-            string currentTagName,
-            string currentAttributeName,
+            string containingTagName,
             IEnumerable<KeyValuePair<string, string>> attributes,
-            string currentParentTagName,
-            bool currentParentIsTagHelper,
+            string containingParentTagName,
+            bool containingParentIsTagHelper,
             Func<string, bool> inHTMLSchema)
         {
             if (documentContext == null)
@@ -29,16 +28,6 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(existingCompletions));
             }
 
-            if (currentTagName == null)
-            {
-                throw new ArgumentNullException(nameof(currentTagName));
-            }
-
-            if (attributes == null)
-            {
-                throw new ArgumentNullException(nameof(attributes));
-            }
-
             if (inHTMLSchema == null)
             {
                 throw new ArgumentNullException(nameof(inHTMLSchema));
@@ -46,11 +35,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
             DocumentContext = documentContext;
             ExistingCompletions = existingCompletions;
-            CurrentTagName = currentTagName;
-            CurrentAttributeName = currentAttributeName;
+            ContainingTagName = containingTagName;
             Attributes = attributes;
-            CurrentParentTagName = currentParentTagName;
-            CurrentParentIsTagHelper = currentParentIsTagHelper;
+            ContainingParentTagName = containingParentTagName;
+            ContainingParentIsTagHelper = containingParentIsTagHelper;
             InHTMLSchema = inHTMLSchema;
         }
 
@@ -58,15 +46,13 @@ namespace Microsoft.CodeAnalysis.Razor
 
         public IEnumerable<string> ExistingCompletions { get; }
 
-        public string CurrentTagName { get; }
-
-        public string CurrentAttributeName { get; }
+        public string ContainingTagName { get; }
 
         public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
 
-        public string CurrentParentTagName { get; }
+        public string ContainingParentTagName { get; }
 
-        public bool CurrentParentIsTagHelper { get; }
+        public bool ContainingParentIsTagHelper { get; }
 
         public Func<string, bool> InHTMLSchema { get; }
     }
