@@ -45,7 +45,7 @@ function Get-Submodules {
         }
 
         try {
-            $data = @{
+            $data = [PSCustomObject] @{
                 path      = $_
                 module    = $_.Name
                 commit    = $(git rev-parse HEAD)
