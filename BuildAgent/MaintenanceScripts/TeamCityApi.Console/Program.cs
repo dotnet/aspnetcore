@@ -19,7 +19,7 @@ namespace TeamCityApi.Console
             {
                 return application.Execute(args);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 System.Console.Error.WriteLine($"Exception thrown: '{ex.ToString()}'");
                 return 1;

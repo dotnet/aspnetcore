@@ -19,6 +19,7 @@ namespace TeamCityApi
         private readonly string _ciUserName;
         private readonly string _ciPassword;
         private readonly IReporter _reporter;
+        private const int _defaultCount = 1000000;
 
         public TeamCityClient(string ciServer, string ciUserName, string ciPassword, IReporter reporter)
         {
@@ -33,15 +34,16 @@ namespace TeamCityApi
             }
         }
 
-        public IEnumerable<Test> GetTests(int buildId, string buildTypeId)
+        public IEnumerable<TestOccurrence> GetTests(int buildId, string buildTypeId)
         {
             var locator = $"build:(id:{buildId})";
+            var fields = "testOccurrence(test:id,id,name,status,duration,href)";
 
-            var url = $"httpAuth/app/rest/testOccurrences?locator={locator},count:1000000";
+            var url = $"httpAuth/app/rest/testOccurrences?locator={locator},count:{_defaultCount}&fields={fields}";
             using (var stream = MakeTeamCityRequest(url))
             {
-                var serializer = new XmlSerializer(typeof(Tests));
-                var tests = serializer.Deserialize(stream) as Tests;
+                var serializer = new XmlSerializer(typeof(TestOccurrences));
+                var tests = serializer.Deserialize(stream) as TestOccurrences;
 
                 foreach (var test in tests.TestList)
                 {
@@ -85,7 +87,7 @@ namespace TeamCityApi
         {
             var fields = "build(id,startDate,buildTypeId,status,branchName,webUrl)";
 
-            var url = $"httpAuth/app/rest/builds?locator={locator},count:1000000&fields={fields}";
+            var url = $"httpAuth/app/rest/builds?locator={locator},count:{_defaultCount}&fields={fields}";
             using (var stream = MakeTeamCityRequest(url))
             {
                 var serializer = new XmlSerializer(typeof(Builds));
@@ -125,7 +127,7 @@ namespace TeamCityApi
 
         public static string TCDateTime(DateTime date)
         {
-            return date.ToString("yyyyMMddTHHmmsszz") + "00";
+            return date.ToString("yyyyMMddTHHmmss") + "-0800";
         }
     }
 }

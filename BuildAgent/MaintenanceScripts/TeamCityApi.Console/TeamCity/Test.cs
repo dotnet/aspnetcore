@@ -9,25 +9,14 @@ using System.Xml.Serialization;
 namespace TeamCityApi
 {
     [XmlRoot("testOccurrences")]
-    public class Tests
+    public class TestOccurrences
     {
         [XmlElement("testOccurrence")]
-        public List<Test> TestList;
+        public List<TestOccurrence> TestList;
     }
 
-    public class Test
+    public class TestOccurrence
     {
-        [XmlAttribute("id")]
-        public string IdString { get; set; }
-
-        public string ID
-        {
-            get
-            {
-                return IdString.Split(",").First();
-            }
-        }
-
         [XmlAttribute("name")]
         public string Name { get; set; }
 
@@ -42,12 +31,13 @@ namespace TeamCityApi
         [XmlAttribute("ignored")]
         public bool Ignored { get; set; } = false;
 
-        public string Key
-        {
-            get
-            {
-                return $"{ID};{BuildTypeId}";
-            }
-        }
+        [XmlElement("test")]
+        public Test Test { get; set; }
+    }
+
+    public class Test
+    {
+        [XmlAttribute("id")]
+        public string ID { get; set; }
     }
 }

@@ -55,32 +55,29 @@ namespace TeamCityApi.Console.Commands
                     var tests = client.GetTests(build.Id, build.BuildTypeID);
                     foreach (var test in tests)
                     {
-                        if (!test.Ignored)
+                        if (!ts.TryGetValue(test.Test.ID, out var stats))
                         {
-                            if (!ts.TryGetValue(test.Key, out var stats))
-                            {
-                                stats = new TestStats(test);
-                                ts.Add(test.Key, stats);
-                            }
-
-                            stats.ConsiderTest(test);
+                            stats = new TestStats(test);
+                            ts.Add(test.Test.ID, stats);
                         }
+
+                        stats.ConsiderTest(test);
                     }
                 }
             }
 
             using (var csv = new StreamWriter(outputFile))
             {
-                csv.WriteLine("TestName,BuildTypeId,Count,Pass,Failed,Pass %");
+                csv.WriteLine("TestName,BuildTypeId,Count,Pass,Failed,Fail %");
 
                 var failedStats = ts
                     .Select(kvp => kvp.Value)
-                    .Where(s => s.PassPercent < 100)
-                    .OrderBy(s => s.PassPercent);
+                    .Where(s => s.FailPercent > 0)
+                    .OrderByDescending(s => s.FailPercent);
 
                 foreach (var stat in failedStats)
                 {
-                    csv.WriteLine($"{stat.Name.Replace(',', ':')},{stat.BuildTypeId},{stat.Count},{stat.Passed},{stat.Failed},{stat.PassPercent}");
+                    csv.WriteLine($"{stat.Name.Replace(',', ':')},{stat.BuildTypeId},{stat.Count},{stat.Passed},{stat.Failed},{stat.FailPercent}");
                 }
             }
 
@@ -92,27 +89,33 @@ namespace TeamCityApi.Console.Commands
             public string ID { get; }
             public string Name { get; }
             public string BuildTypeId { get; }
-            public int Count { get; set; }
+            public int Count
+            {
+                get
+                {
+                    return Passed + Failed + Skipped;
+                }
+            }
             public int Passed { get; set; }
             public int Failed { get; set; }
             public int Skipped { get; set; }
 
-            public float PassPercent
+            public float FailPercent
             {
                 get
                 {
-                    return ((float)Passed / Count) * 100;
+                    return ((float)Failed / Count) * 100;
                 }
             }
 
-            public TestStats(Test test)
+            public TestStats(TestOccurrence test)
             {
-                ID = test.ID;
+                ID = test.Test.ID;
                 Name = test.Name;
                 BuildTypeId = test.BuildTypeId;
             }
 
-            public void ConsiderTest(Test test)
+            public void ConsiderTest(TestOccurrence test)
             {
                 switch (test.Status)
                 {
