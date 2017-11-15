@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/Hosting/issues/1214")]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()
