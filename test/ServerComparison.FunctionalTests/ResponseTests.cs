@@ -24,15 +24,15 @@ namespace ServerComparison.FunctionalTests
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+#if NET461
+        [Theory]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseFormats_Windows_ContentLength(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
         }
+#endif
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
@@ -51,9 +51,8 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckContentLengthAsync, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+#if NET461
+        [Theory]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
         public Task ResponseFormats_Windows_Http10ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
@@ -61,15 +60,15 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp10ConnectionCloseAsync, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+
+        [Theory]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)] // https://github.com/aspnet/WebListener/issues/259
         // IIS will remove the "Connection: close" header https://github.com/aspnet/IISIntegration/issues/7
         public Task ResponseFormats_Windows_Http11ConnectionClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
         }
+#endif
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
@@ -87,15 +86,15 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckHttp11ConnectionCloseAsync, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+#if NET461
+        [Theory]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseFormats_Windows_Chunked(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
         }
+#endif
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
@@ -114,15 +113,15 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckChunkedAsync, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+#if NET461
+        [Theory]
         [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseFormats_Windows_ManuallyChunk(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
         }
+#endif
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
@@ -141,15 +140,15 @@ namespace ServerComparison.FunctionalTests
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAsync, applicationType);
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+#if NET461
+        [Theory]
         // [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)] // https://github.com/aspnet/IISIntegration/issues/7
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseFormats_Windows_ManuallyChunkAndClose(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
             return ResponseFormats(serverType, runtimeFlavor, architecture, CheckManuallyChunkedAndCloseAsync, applicationType);
         }
+#endif
 
         [Theory]
         [InlineData(ServerType.Kestrel, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, ApplicationType.Portable)]
@@ -161,6 +160,17 @@ namespace ServerComparison.FunctionalTests
 
         private async Task ResponseFormats(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, Func<HttpClient, ILogger, Task> scenario, ApplicationType applicationType, [CallerMemberName] string testName = null)
         {
+            var targetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" :
+#if NETCOREAPP2_0
+                "netcoreapp2.0";
+#elif NETCOREAPP2_1
+                "netcoreapp2.1";
+#elif NET461
+#error Tests targeting CLR must be compiled only on desktop.
+#else
+#error Target frameworks need to be updated.
+#endif
+
             testName = $"{testName}_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
