@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             var connectionContext = new DefaultConnectionContext(features);
 
             Input = new Pipe(InputOptions(connectionContext.BufferPool));
-            Output = new Pipe(InputOptions(connectionContext.BufferPool));
+            Output = new Pipe(OutputOptions(connectionContext.BufferPool));
 
             var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
 
