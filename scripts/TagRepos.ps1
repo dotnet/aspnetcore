@@ -46,7 +46,7 @@ Get-Submodules $RepoRoot -Shipping | % {
                 if ($WhatIfPreference) {
                     $gitPushArgs += '--dry-run'
                 }
-                Invoke-Block { & git push --dry-run @gitPushArgs origin "refs/tags/${tag}"  }
+                Invoke-Block { & git push @gitPushArgs origin "refs/tags/${tag}"  }
             }
 
             if ($WhatIfPreference) {
