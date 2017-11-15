@@ -14,17 +14,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var ex = Assert.Throws<NotSupportedException>(() =>
             {
-                using (var builder = new WebHostBuilder()
-                        .UseKestrel()
-                        .ConfigureServices(services =>
-                        {
-                            services.AddSignalR();
-                        })
-                        .Configure(app =>
-                        {
-                            app.UseSignalR(options => options.MapHub<InvalidHub>("overloads"));
-                        })
-                        .Build())
+                using (var builder = BuildWebHost(options => options.MapHub<InvalidHub>("overloads")))
                 {
                     builder.Start();
                 }
@@ -37,20 +27,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnHub()
         {
             var authCount = 0;
-            using (var builder = new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(services =>
-                {
-                    services.AddSignalR();
-                })
-                .Configure(app =>
-                {
-                    app.UseSignalR(options => options.MapHub<AuthHub>("path", httpSocketOptions =>
-                    {
-                        authCount += httpSocketOptions.AuthorizationData.Count;
-                    }));
-                })
-                .Build())
+            using (var builder = BuildWebHost(options => options.MapHub<AuthHub>("path", httpSocketOptions =>
+            {
+                authCount += httpSocketOptions.AuthorizationData.Count;
+            })))
             {
                 builder.Start();
             }
@@ -62,20 +42,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsAuthAttributeOnInheritedHub()
         {
             var authCount = 0;
-            using (var builder = new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(services =>
-                {
-                    services.AddSignalR();
-                })
-                .Configure(app =>
-                {
-                    app.UseSignalR(options => options.MapHub<InheritedAuthHub>("path", httpSocketOptions =>
-                    {
-                        authCount += httpSocketOptions.AuthorizationData.Count;
-                    }));
-                })
-                .Build())
+            using (var builder = BuildWebHost(options => options.MapHub<InheritedAuthHub>("path", httpSocketOptions =>
+            {
+                authCount += httpSocketOptions.AuthorizationData.Count;
+            })))
             {
                 builder.Start();
             }
@@ -87,25 +57,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void MapHubFindsMultipleAuthAttributesOnDoubleAuthHub()
         {
             var authCount = 0;
-            using (var builder = new WebHostBuilder()
-                .UseKestrel()
-                .ConfigureServices(services =>
-                {
-                    services.AddSignalR();
-                })
-                .Configure(app =>
-                {
-                    app.UseSignalR(options => options.MapHub<DoubleAuthHub>("path", httpSocketOptions =>
-                    {
-                        authCount += httpSocketOptions.AuthorizationData.Count;
-                    }));
-                })
-                .Build())
+            using (var builder = BuildWebHost(options => options.MapHub<DoubleAuthHub>("path", httpSocketOptions =>
+            {
+                authCount += httpSocketOptions.AuthorizationData.Count;
+            })))
             {
                 builder.Start();
             }
 
-                Assert.Equal(2, authCount);
+            Assert.Equal(2, authCount);
         }
 
         private class InvalidHub : Hub
@@ -131,6 +91,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Authorize]
         private class AuthHub : Hub
         {
+        }
+
+        private IWebHost BuildWebHost(Action<HubRouteBuilder> configure)
+        {
+            return new WebHostBuilder()
+                .UseKestrel()
+                .ConfigureServices(services =>
+                {
+                    services.AddSignalR();
+                })
+                .Configure(app =>
+                {
+                    app.UseSignalR(options => configure(options));
+                })
+                .Build();
         }
     }
 }
