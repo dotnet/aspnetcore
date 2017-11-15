@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                         {
                             // We need to pick the bitness based the OS / IIS Express, not the application.
                             // We'll eventually add support for choosing which IIS Express bitness to run: https://github.com/aspnet/Hosting/issues/880
-                            var ancmFile = Is64BitHost ? @"x64\aspnetcore.dll" : @"x86\aspnetcore.dll";
+                            var ancmFile = Path.Combine(contentRoot, Is64BitHost ? @"x64\aspnetcore.dll" : @"x86\aspnetcore.dll");
                             // Bin deployed by Microsoft.AspNetCore.AspNetCoreModule.nupkg
 
                             if (!File.Exists(Environment.ExpandEnvironmentVariables(ancmFile)))
