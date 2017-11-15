@@ -23,6 +23,13 @@
         "packageTypes": [
           "DotnetCliTool"
         ]
+      },
+      "Microsoft.AspNetCore.DeveloperCertificates.XPlat": {
+        "Exclusions": {
+          "DOC_MISSING": {
+            "lib/netcoreapp2.0/Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll": "Enter justification"
+          }
+        }
       }
     }
   },

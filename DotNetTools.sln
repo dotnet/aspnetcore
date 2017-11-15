@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26927.1
+VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66517987-2A5A-4330-B130-207039378FD4}"
 	ProjectSection(SolutionItems) = preProject
@@ -44,7 +44,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.To
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.csproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DeveloperCertificates.Tools", "src\Microsoft.AspNetCore.DeveloperCertificates.Tools\Microsoft.AspNetCore.DeveloperCertificates.Tools.csproj", "{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.Tools", "src\Microsoft.AspNetCore.DeveloperCertificates.Tools\Microsoft.AspNetCore.DeveloperCertificates.Tools.csproj", "{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat", "src\Microsoft.AspNetCore.DeveloperCertificates.XPlat\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj", "{96E71881-1465-44F5-B4B7-DF9B370FFD02}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -80,6 +82,10 @@ Global
 		{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96E71881-1465-44F5-B4B7-DF9B370FFD02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96E71881-1465-44F5-B4B7-DF9B370FFD02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96E71881-1465-44F5-B4B7-DF9B370FFD02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96E71881-1465-44F5-B4B7-DF9B370FFD02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,6 +98,7 @@ Global
 		{8A2E6961-6B12-4A8E-8215-3E7301D52EAC} = {F5B382BC-258F-46E1-AC3D-10E5CCD55134}
 		{53F3B53D-303A-4DAA-9C38-4F55195FA5B9} = {66517987-2A5A-4330-B130-207039378FD4}
 		{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8} = {66517987-2A5A-4330-B130-207039378FD4}
+		{96E71881-1465-44F5-B4B7-DF9B370FFD02} = {66517987-2A5A-4330-B130-207039378FD4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {57C07F14-2EAC-44FF-A277-B9221B4B2BF7}
