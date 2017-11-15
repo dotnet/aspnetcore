@@ -8,7 +8,6 @@ var TESTHUBENDPOINT_URL = '/testhub';
 describe('hubConnection', function () {
     eachTransportAndProtocol(function (transportType, protocol) {
         describe(protocol.name + ' over ' + signalR.TransportType[transportType] + ' transport', function () {
-
             it('can invoke server method and receive result', function (done) {
                 var message = '你好，世界！';
 
@@ -138,7 +137,7 @@ describe('hubConnection', function () {
                         // exception expected but none thrown
                         fail();
                     }).catch(function (e) {
-                        expect(e.message).toBe('Streaming methods must be invoked using the \'HubConnection.stream()\' method.');
+                        expect(e.message).toBe('The client attempted to invoke the streaming \'EmptyStream\' method in a non-streaming fashion.');
                     }).then(function () {
                         return hubConnection.stop();
                     }).then(function () {
@@ -163,7 +162,7 @@ describe('hubConnection', function () {
                         // exception expected but none thrown
                         fail();
                     }).catch(function (e) {
-                        expect(e.message).toBe('Streaming methods must be invoked using the \'HubConnection.stream()\' method.');
+                        expect(e.message).toBe('The client attempted to invoke the streaming \'Stream\' method in a non-streaming fashion.');
                     }).then(function () {
                         return hubConnection.stop();
                     }).then(function () {
@@ -187,13 +186,16 @@ describe('hubConnection', function () {
                 hubConnection.start().then(function () {
                     hubConnection.stream('StreamThrowException', errorMessage).subscribe({
                         next: function next(item) {
+                            hubConnection.stop();
                             fail();
                         },
                         error: function error(err) {
                             expect(err.message).toEqual('An error occurred.');
+                            hubConnection.stop();
                             done();
                         },
                         complete: function complete() {
+                            hubConnection.stop();
                             fail();
                         }
                     });
@@ -214,13 +216,16 @@ describe('hubConnection', function () {
                 hubConnection.start().then(function () {
                     hubConnection.stream('Echo', '42').subscribe({
                         next: function next(item) {
+                            hubConnection.stop();
                             fail();
                         },
                         error: function error(err) {
-                            expect(err.message).toEqual('Hub methods must be invoked using the \'HubConnection.invoke()\' method.');
+                            expect(err.message).toEqual('The client attempted to invoke the non-streaming \'Echo\' method in a streaming fashion.');
+                            hubConnection.stop();
                             done();
                         },
                         complete: function complete() {
+                            hubConnection.stop();
                             fail();
                         }
                     });
