@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -133,7 +132,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         // Internal for testing
-        internal void DocumentTracker_ContextChanged(object sender, EventArgs args)
+        internal void DocumentTracker_ContextChanged(object sender, ContextChangeEventArgs args)
         {
             _dispatcher.AssertForegroundThread();
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
@@ -27,7 +28,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private ProjectSnapshot _project;
         private string _projectPath;
 
-        public override event EventHandler ContextChanged;
+        public override event EventHandler<ContextChangeEventArgs> ContextChanged;
 
         public DefaultVisualStudioDocumentTracker(
             string filePath,
@@ -80,6 +81,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         internal override ProjectExtensibilityConfiguration Configuration => _project.Configuration;
 
         public override EditorSettings EditorSettings => _editorSettingsManager.Current;
+
+        public override IReadOnlyList<TagHelperDescriptor> TagHelpers => Array.Empty<TagHelperDescriptor>();
 
         public override bool IsSupportedProject => _isSupportedProject;
 
@@ -176,7 +179,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _projectManager.Changed += ProjectManager_Changed;
             _editorSettingsManager.Changed += EditorSettingsManager_Changed;
 
-            OnContextChanged(_project);
+            OnContextChanged(_project, ContextChangeKind.ProjectChanged);
         }
 
         private void Unsubscribe()
@@ -187,17 +190,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             // Detached from project.
             _isSupportedProject = false;
             _project = null;
-            OnContextChanged(project: null);
+            OnContextChanged(project: null, kind: ContextChangeKind.ProjectChanged);
         }
 
-        private void OnContextChanged(ProjectSnapshot project)
+        private void OnContextChanged(ProjectSnapshot project, ContextChangeKind kind)
         {
             _project = project;
 
             var handler = ContextChanged;
             if (handler != null)
             {
-                handler(this, EventArgs.Empty);
+                handler(this, new ContextChangeEventArgs(kind));
             }
         }
 
@@ -206,14 +209,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             if (_projectPath != null &&
                 string.Equals(_projectPath, e.Project.UnderlyingProject.FilePath, StringComparison.OrdinalIgnoreCase))
             {
-                OnContextChanged(e.Project);
+                if (e.Kind == ProjectChangeKind.TagHelpersChanged)
+                {
+                    OnContextChanged(e.Project, ContextChangeKind.TagHelpersChanged);
+                }
+                else
+                {
+                    OnContextChanged(e.Project, ContextChangeKind.ProjectChanged);
+                }
             }
         }
 
         // Internal for testing
         internal void EditorSettingsManager_Changed(object sender, EditorSettingsChangedEventArgs args)
         {
-            OnContextChanged(_project);
+            OnContextChanged(_project, ContextChangeKind.EditorSettingsChanged);
         }
     }
 }
