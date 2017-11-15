@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ namespace FunctionalTests
     public abstract class ApplicationTestFixture : IDisposable
     {
         private const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
-        private readonly object _deploymentLock = new object();
+        private static readonly SemaphoreSlim _deploymentLock = new SemaphoreSlim(initialCount: 1);
         private Task<DeploymentResult> _deploymentTask;
         private IApplicationDeployer _deployer;
 
@@ -30,14 +31,20 @@ namespace FunctionalTests
 
         protected abstract DeploymentParameters GetDeploymentParameters();
 
-        protected DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
-            => GetDeploymentParameters(ApplicationPath, ApplicationName, flavor);
+        protected DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor, string targetFramework)
+            => GetDeploymentParameters(ApplicationPath, ApplicationName, flavor, targetFramework);
 
-        public static DeploymentParameters GetDeploymentParameters(string applicationPath, string applicationName, RuntimeFlavor flavor)
+        public static DeploymentParameters GetDeploymentParameters(string applicationPath, string applicationName, RuntimeFlavor flavor, string targetFramework)
         {
-            var telemetryOptOut = new KeyValuePair<string, string>(
-                DotnetCLITelemetryOptOut,
-                "1");
+            // This determines the configuration of the the test project and consequently the configuration the src projects are most likely built in.
+            var projectConfiguration =
+#if DEBUG
+                "Debug";
+#elif RELEASE
+                "Release";
+#else
+#error Unknown configuration
+#endif
 
             var deploymentParameters = new DeploymentParameters(
                 applicationPath,
@@ -47,16 +54,18 @@ namespace FunctionalTests
             {
                 ApplicationName = applicationName,
                 PublishApplicationBeforeDeployment = true,
-                TargetFramework = flavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                 Configuration = "Release",
                 EnvironmentVariables =
                 {
-                    telemetryOptOut,
+                    new KeyValuePair<string, string>(DotnetCLITelemetryOptOut, "1"),
+                    new KeyValuePair<string, string>("SolutionConfiguration", projectConfiguration),
                 },
                 PublishEnvironmentVariables =
                 {
-                    telemetryOptOut,
+                    new KeyValuePair<string, string>(DotnetCLITelemetryOptOut, "1"),
+                    new KeyValuePair<string, string>("SolutionConfiguration", projectConfiguration),
                 },
+                TargetFramework = targetFramework,
             };
 
             return deploymentParameters;
@@ -74,8 +83,9 @@ namespace FunctionalTests
 
         public async Task<DeploymentResult> CreateDeploymentAsync(ILoggerFactory loggerFactory)
         {
-            lock (_deploymentLock)
+            try
             {
+                await _deploymentLock.WaitAsync(TimeSpan.FromSeconds(10));
                 if (_deploymentTask == null)
                 {
                     var deploymentParameters = GetDeploymentParameters();
@@ -90,6 +100,10 @@ namespace FunctionalTests
 
                     _deploymentTask = _deployer.DeployAsync();
                 }
+            }
+            finally
+            {
+                _deploymentLock.Release();
             }
 
             return await _deploymentTask;

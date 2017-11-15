@@ -29,10 +29,17 @@ namespace FunctionalTests
                 var applicationName = nameof(SimpleApp);
                 var applicationPath = ApplicationPaths.GetTestAppDirectory(applicationName);
                 var deploymentParameters = ApplicationTestFixture.GetDeploymentParameters(
-                    applicationPath, 
-                    applicationName, 
-                    RuntimeFlavor.CoreClr);
-                
+                    applicationPath,
+                    applicationName,
+                    RuntimeFlavor.CoreClr,
+#if NETCOREAPP2_0
+            "netcoreapp2.0");
+#elif NETCOREAPP2_1
+            "netcoreapp2.1");
+#else
+#error Target frameworks need to be updated
+#endif
+
                 // Deploy for a rid that does not exist on the current platform.
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -49,7 +56,7 @@ namespace FunctionalTests
 
                 // Act
                 var expectedFile = Path.Combine(
-                    deploymentParameters.PublishedApplicationRootPath, 
+                    deploymentParameters.PublishedApplicationRootPath,
                     $"{applicationName}.PrecompiledViews.dll");
                 Assert.True(File.Exists(expectedFile), $"Expected precompiled file {expectedFile} does not exist.");
             }
@@ -57,7 +64,7 @@ namespace FunctionalTests
 
         private class DotNetPublishDeployer : ApplicationDeployer
         {
-            public DotNetPublishDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory) 
+            public DotNetPublishDeployer(DeploymentParameters deploymentParameters, ILoggerFactory loggerFactory)
                 : base(deploymentParameters, loggerFactory)
             {
             }

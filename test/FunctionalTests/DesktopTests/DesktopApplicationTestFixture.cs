@@ -5,18 +5,18 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 
 namespace FunctionalTests
 {
-    public class CoreCLRApplicationTestFixture<TStartup> : ApplicationTestFixture
+    public class DesktopApplicationTestFixture<TStartup> : ApplicationTestFixture
     {
-        public CoreCLRApplicationTestFixture()
+        public DesktopApplicationTestFixture()
             : this(typeof(TStartup).Assembly.GetName().Name, null)
         {
         }
 
-        protected CoreCLRApplicationTestFixture(string applicationName, string applicationPath)
+        protected DesktopApplicationTestFixture(string applicationName, string applicationPath)
             : base(applicationName, applicationPath)
         {
         }
 
-        protected override DeploymentParameters GetDeploymentParameters() => base.GetDeploymentParameters(RuntimeFlavor.CoreClr);
+        protected override DeploymentParameters GetDeploymentParameters() => base.GetDeploymentParameters(RuntimeFlavor.Clr, "net461");
     }
 }
