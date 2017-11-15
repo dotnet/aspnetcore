@@ -53,7 +53,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" Metapackage="true" RuntimeStore="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="ship" Metapackage="true" RuntimeStore="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" Metapackage="false" RuntimeStore="false" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true" />
@@ -195,8 +195,8 @@
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.DependencyInjection.Specification.Tests" Category="ship" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="ship" Metapackage="true" RuntimeStore="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks" Category="noship" Metapackage="false" RuntimeStore="false" />
+    <PackageArtifact Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Category="noship" Metapackage="false" RuntimeStore="false" />
     <PackageArtifact Include="Microsoft.Extensions.DiagnosticAdapter" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.FileProviders.Composite" Category="ship" Metapackage="true" RuntimeStore="true" />
