@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class RawUrlHelper
     {
+        private static readonly byte[] _forwardSlashPath = Encoding.ASCII.GetBytes("/");
+
         /// <summary>
         /// Find the segment of the URI byte array which represents the path.
         /// </summary>
@@ -39,7 +42,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     if (pathStartIndex == -1)
                     {
                         // e.g. for request lines like: 'GET http://myserver' (no final '/')
-                        pathStartIndex = raw.Length;
+                        // At this point we can return a path with a slash.
+                        return new ArraySegment<byte>(_forwardSlashPath);
                     }
                 }
                 else

@@ -115,6 +115,23 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        public async Task Request_FullUriInRequestLine_ParsesPath()
+        {
+            string root;
+            using (var server = Utilities.CreateHttpServerReturnRoot("/", out root))
+            {
+                // Send a HTTP request with the request line:
+                // GET http://localhost:5001 HTTP/1.1
+                var responseTask = SendSocketRequestAsync(root, root);
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                Assert.Equal("/", context.Request.Path);
+                Assert.Equal("", context.Request.PathBase);
+                Assert.Equal(root, context.Request.RawUrl);
+                Assert.False(root.EndsWith("/")); // make sure root doesn't have a trailing slash
+            }
+        }
+
+        [ConditionalFact]
         public async Task Request_OptionsStar_EmptyPath()
         {
             string root;
