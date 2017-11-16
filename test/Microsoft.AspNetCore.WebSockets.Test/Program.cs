@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
         }
     }
 }
-#elif NETCOREAPP2_0
+#elif NETCOREAPP2_0 || NETCOREAPP2_1
 #else
 #error Target frameworks need to be updated
 #endif
