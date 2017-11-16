@@ -101,7 +101,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.RazorPages" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.TagHelpers" Category="ship" Metapackage="true" RuntimeStore="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Testing" Category="ship" Metapackage="false" RuntimeStore="false" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.NodeServices" Category="ship" Metapackage="true" RuntimeStore="true"/>
