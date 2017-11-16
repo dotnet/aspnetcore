@@ -32,7 +32,7 @@ namespace ServerComparison.FunctionalTests
 
         [ConditionalTheory]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
-        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable, Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [InlineData(ServerType.IISExpress, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         [InlineData(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, ApplicationType.Portable)]
         public Task ResponseCompression_Windows_NoCompression(ServerType serverType, RuntimeFlavor runtimeFlavor, RuntimeArchitecture architecture, ApplicationType applicationType)
         {
@@ -56,7 +56,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(serverType, runtimeFlavor, architecture, CheckNoCompressionAsync, applicationType, hostCompression: false);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_HostCompression()
@@ -64,7 +64,8 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, CheckHostCompressionAsync, ApplicationType.Portable, hostCompression: true);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_HostCompression_CLR()
@@ -88,7 +89,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(ServerType.WebListener, RuntimeFlavor.Clr, RuntimeArchitecture.x64, CheckAppCompressionAsync, ApplicationType.Portable, hostCompression: false);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_AppCompression()
@@ -113,7 +114,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(serverType, runtimeFlavor, architecture, CheckHostCompressionAsync, applicationType, hostCompression: false);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task ResponseCompression_Windows_AppAndHostCompression()
@@ -121,7 +122,7 @@ namespace ServerComparison.FunctionalTests
             return ResponseCompression(ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64, CheckAppCompressionAsync, ApplicationType.Standalone, hostCompression: true);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/ServerTests/issues/96")]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.CoreCLR)]
         public Task ResponseCompression_Windows_AppAndHostCompression_CLR()
         {
