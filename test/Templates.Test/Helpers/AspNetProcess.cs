@@ -30,8 +30,13 @@ namespace Templates.Test.Helpers
             if (publish)
             {
                 output.WriteLine("Publishing ASP.NET application...");
+
+                // Workaround for issue with runtime store not yet being published
+                // https://github.com/aspnet/Home/issues/2254#issuecomment-339709628
+                var extraArgs = "-p:PublishWithAspNetCoreTargetManifest=false";
+
                 ProcessEx
-                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), "publish -c Release")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"publish -c Release {extraArgs}")
                     .WaitForExit(assertSuccess: true);
                 workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
             }
