@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class MessageParserBenchmark
     {
         private static readonly Random Random = new Random();
-        private ReadOnlyMemory<byte> _binaryInput;
-        private ReadOnlyMemory<byte> _textInput;
+        private byte[] _binaryInput;
+        private byte[] _textInput;
 
         [Params(32, 64)]
         public int ChunkSize { get; set; }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            var buffer = _binaryInput;
+            ReadOnlySpan<byte> buffer = _binaryInput;
             if (!BinaryMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleTextMessage()
         {
-            var buffer = _textInput;
+            ReadOnlySpan<byte> buffer = _textInput;
             if (!TextMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
         [InlineData("12:Hello, World;", "Hello, World")]
         public void ReadTextMessage(string encoded, string payload)
         {
-            ReadOnlyMemory<byte> buffer = Encoding.UTF8.GetBytes(encoded);
+            ReadOnlySpan<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
             Assert.True(LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message));
             Assert.Equal(0, buffer.Length);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
         public void ReadMultipleMessages()
         {
             const string encoded = "0:;14:Hello,\r\nWorld!;";
-            ReadOnlyMemory<byte> buffer = Encoding.UTF8.GetBytes(encoded);
+            ReadOnlySpan<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
             var messages = new List<byte[]>();
             while (LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message))
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
         [InlineData("5:ABCDE")]
         public void ReadIncompleteMessages(string encoded)
         {
-            ReadOnlyMemory<byte> buffer = Encoding.UTF8.GetBytes(encoded);
+            ReadOnlySpan<byte> buffer = Encoding.UTF8.GetBytes(encoded);
             Assert.False(LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _));
         }
 
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
         [InlineData("5:ABCDEF", "Missing delimiter ';' after payload")]
         public void ReadInvalidMessages(string encoded, string expectedMessage)
         {
-            ReadOnlyMemory<byte> buffer = Encoding.UTF8.GetBytes(encoded);
             var ex = Assert.Throws<FormatException>(() =>
             {
+                ReadOnlySpan<byte> buffer = Encoding.UTF8.GetBytes(encoded);
                 LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal(expectedMessage, ex.Message);
@@ -77,11 +77,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
         [Fact]
         public void ReadInvalidEncodedMessage()
         {
-            // Invalid because first character is a UTF-8 "continuation" character
-            // We need to include the ':' so that
-            ReadOnlyMemory<byte> buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
             var ex = Assert.Throws<FormatException>(() =>
             {
+                // Invalid because first character is a UTF-8 "continuation" character
+                // We need to include the ':' so that
+                ReadOnlySpan<byte> buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
                 LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal("Invalid length: 'He�lo'", ex.Message);

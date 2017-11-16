@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
         /// Attempts to parse a message from the buffer. Returns 'false' if there is not enough data to complete a message. Throws an
         /// exception if there is a format error in the provided data.
         /// </summary>
-        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
+        public static bool TryParseMessage(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> payload)
         {
-            payload = default(ReadOnlyMemory<byte>);
+            payload = default;
 
-            if (!TryReadLength(buffer.Span, out var index, out var length))
+            if (!TryReadLength(buffer, out var index, out var length))
             {
                 return false;
             }
 
             var remaining = buffer.Slice(index);
 
-            if (!TryReadDelimiter(remaining.Span, LengthPrefixedTextMessageWriter.FieldDelimiter, "length"))
+            if (!TryReadDelimiter(remaining, LengthPrefixedTextMessageWriter.FieldDelimiter, "length"))
             {
                 return false;
             }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 
             remaining = remaining.Slice(length);
 
-            if (!TryReadDelimiter(remaining.Span, LengthPrefixedTextMessageWriter.MessageDelimiter, "payload"))
+            if (!TryReadDelimiter(remaining, LengthPrefixedTextMessageWriter.MessageDelimiter, "payload"))
             {
                 return false;
             }

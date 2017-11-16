@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
         private static int[] _numBitsToShift = new[] { 0, 7, 14, 21, 28 };
         private const int MaxLengthPrefixSize = 5;
 
-        public static bool TryParseMessage(ref ReadOnlyMemory<byte> buffer, out ReadOnlyMemory<byte> payload)
+        public static bool TryParseMessage(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> payload)
         {
             payload = default;
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
             var length = 0U;
             var numBytes = 0;
 
-            var lengthPrefixBuffer = buffer.Span.Slice(0, Math.Min(MaxLengthPrefixSize, buffer.Length));
+            var lengthPrefixBuffer = buffer.Slice(0, Math.Min(MaxLengthPrefixSize, buffer.Length));
             byte byteRead;
             do
             {
