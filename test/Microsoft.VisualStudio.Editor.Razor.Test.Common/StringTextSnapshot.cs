@@ -77,7 +77,20 @@ namespace Microsoft.VisualStudio.Text
             return matchingLine;
         }
 
-        public ITrackingPoint CreateTrackingPoint(int position, PointTrackingMode trackingMode) => throw new NotImplementedException();
+        public ITextSnapshotLine GetLineFromLineNumber(int lineNumber)
+        {
+            if (lineNumber < 0 || lineNumber >= _lines.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lineNumber));
+            }
+
+            return _lines[lineNumber];
+        }
+
+        public ITrackingPoint CreateTrackingPoint(int position, PointTrackingMode trackingMode)
+        {
+            return new SnapshotTrackingPoint(position);
+        }
 
         public ITrackingPoint CreateTrackingPoint(int position, PointTrackingMode trackingMode, TrackingFidelityMode trackingFidelity) => throw new NotImplementedException();
 
@@ -88,8 +101,6 @@ namespace Microsoft.VisualStudio.Text
         public ITrackingSpan CreateTrackingSpan(int start, int length, SpanTrackingMode trackingMode) => throw new NotImplementedException();
 
         public ITrackingSpan CreateTrackingSpan(int start, int length, SpanTrackingMode trackingMode, TrackingFidelityMode trackingFidelity) => throw new NotImplementedException();
-
-        public ITextSnapshotLine GetLineFromLineNumber(int lineNumber) => throw new NotImplementedException();
 
         public int GetLineNumberFromPosition(int position) => throw new NotImplementedException();
 
@@ -133,6 +144,30 @@ namespace Microsoft.VisualStudio.Text
             }
         }
 
+        private class SnapshotTrackingPoint : ITrackingPoint
+        {
+            private readonly int _position;
+
+            public SnapshotTrackingPoint(int position)
+            {
+                _position = position;
+            }
+
+            public ITextBuffer TextBuffer => throw new NotImplementedException();
+
+            public PointTrackingMode TrackingMode => throw new NotImplementedException();
+
+            public TrackingFidelityMode TrackingFidelity => throw new NotImplementedException();
+
+            public char GetCharacter(ITextSnapshot snapshot) => throw new NotImplementedException();
+
+            public SnapshotPoint GetPoint(ITextSnapshot snapshot) => throw new NotImplementedException();
+
+            public int GetPosition(ITextSnapshot snapshot) => _position;
+
+            public int GetPosition(ITextVersion version) => throw new NotImplementedException();
+        }
+
         private class SnapshotLine : ITextSnapshotLine
         {
             private readonly string _contentWithLineBreak;
@@ -153,7 +188,9 @@ namespace Microsoft.VisualStudio.Text
                 }
 
                 Start = new SnapshotPoint(owner, start);
+                End = new SnapshotPoint(owner, start + _content.Length);
                 Snapshot = owner;
+                LineNumber = (owner as StringTextSnapshot)._lines.Count;
             }
 
             public ITextSnapshot Snapshot { get; }
@@ -172,13 +209,13 @@ namespace Microsoft.VisualStudio.Text
 
             public string GetTextIncludingLineBreak() => _contentWithLineBreak;
 
-            public int LineNumber => throw new NotImplementedException();
+            public int LineNumber { get; }
+
+            public SnapshotPoint End { get; }
 
             public SnapshotSpan Extent => throw new NotImplementedException();
 
             public SnapshotSpan ExtentIncludingLineBreak => throw new NotImplementedException();
-
-            public SnapshotPoint End => throw new NotImplementedException();
 
             public SnapshotPoint EndIncludingLineBreak => throw new NotImplementedException();
         }

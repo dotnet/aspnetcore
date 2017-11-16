@@ -8,5 +8,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         Added,
         Removed,
         Changed,
+        TagHelpersChanged,
     }
 }

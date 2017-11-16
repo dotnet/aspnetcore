@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public abstract class TagHelperResolver : ILanguageService
+    internal abstract class TagHelperResolver : ILanguageService
     {
         public abstract TagHelperResolutionResult GetTagHelpers(Compilation compilation);
 

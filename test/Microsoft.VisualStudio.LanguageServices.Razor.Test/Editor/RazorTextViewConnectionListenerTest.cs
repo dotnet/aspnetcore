@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true &&
                 s.GetProjectPath(It.IsAny<IVsHierarchy>()) == "C:/Some/Path/TestProject.csproj");
 
-        private EditorSettingsManager EditorSettingsManager => new DefaultEditorSettingsManager();
+        private EditorSettingsManagerInternal EditorSettingsManager => new DefaultEditorSettingsManagerInternal();
 
         private Workspace Workspace { get; } = new AdhocWorkspace();
 

@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public abstract class RazorTemplateEngineFactoryService : ILanguageService
+    internal abstract class RazorTemplateEngineFactoryService : ILanguageService
     {
         public abstract RazorTemplateEngine Create(string projectPath, Action<IRazorEngineBuilder> configure);
     }

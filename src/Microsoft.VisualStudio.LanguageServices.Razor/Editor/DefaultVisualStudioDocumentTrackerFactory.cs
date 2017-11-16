@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly Workspace _workspace;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectManager;
-        private readonly EditorSettingsManager _editorSettingsManager;
+        private readonly EditorSettingsManagerInternal _editorSettingsManager;
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactory(
@@ -52,7 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
             var razorLanguageServices = workspace.Services.GetLanguageServices(RazorLanguage.Name);
             _projectManager = razorLanguageServices.GetRequiredService<ProjectSnapshotManager>();
-            _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManager>();
+            _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManagerInternal>();
         }
 
         public override VisualStudioDocumentTracker Create(ITextBuffer textBuffer)

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -13,11 +14,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public abstract class VisualStudioDocumentTracker
     {
-        public abstract event EventHandler ContextChanged;
+        public abstract event EventHandler<ContextChangeEventArgs> ContextChanged;
 
         internal abstract ProjectExtensibilityConfiguration Configuration { get; }
 
         public abstract EditorSettings EditorSettings { get; }
+
+        public abstract IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
 
         public abstract bool IsSupportedProject { get; }
 
