@@ -49,6 +49,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.Tools" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
