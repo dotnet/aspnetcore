@@ -62,7 +62,7 @@ namespace Templates.Test.SpaTemplateTest
         private void TestBasicNavigation(IWebDriver browser)
         {
             // <title> element gets project ID injected into it during template execution
-            Assert.Contains(ProjectName, browser.Title);
+            Assert.Contains(ProjectGuid, browser.Title);
 
             // Initially displays the home page
             Assert.Equal("Hello, world!", browser.GetText("h1"));

@@ -9,6 +9,16 @@
     "Framework": {
       "longName": "framework"
     },
+    "HttpPort": {
+      "isHidden": true
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""

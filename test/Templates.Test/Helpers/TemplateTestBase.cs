@@ -17,6 +17,7 @@ namespace Templates.Test
         private static object DotNetNewLock = new object();
 
         protected string ProjectName { get; set; }
+        protected string ProjectGuid { get; set; }
         protected string TemplateOutputDir { get; private set; }
         protected ITestOutputHelper Output { get; private set; }
 
@@ -25,7 +26,8 @@ namespace Templates.Test
             TemplatePackageInstaller.EnsureTemplatePackagesWereReinstalled(output);
 
             Output = output;
-            ProjectName = Guid.NewGuid().ToString().Replace("-", "");
+            ProjectGuid = Guid.NewGuid().ToString("N");
+            ProjectName = $"AspNet.Template.{ProjectGuid}";
 
             var assemblyPath = GetType().GetTypeInfo().Assembly.CodeBase;
             var assemblyUri = new Uri(assemblyPath, UriKind.Absolute);

@@ -18,14 +18,10 @@
   "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.EmptyWeb",
   "ports": [
     {
-      "name": "IISExpressPort",
-      "useHttps": false
-    },
-    {
-      "name": "KestrelPort",
-      "useHttps": false
+      "name": "HttpsPort",
+      "useHttps": true
     }
   ],
-  "includeLaunchSettings": true,
+  "excludeLaunchSettings": false,
   "minFullFrameworkVersion": "4.6.1"
 }

@@ -32,7 +32,6 @@ nuget.exe
 *.sln.ide
 node_modules
 **/[Cc]ompiler/[Rr]esources/**/*.js
-*launchSettings.json
 .build/
 .testPublish/
 .vscode

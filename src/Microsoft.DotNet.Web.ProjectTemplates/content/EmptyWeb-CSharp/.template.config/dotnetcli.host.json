@@ -13,14 +13,14 @@
       "longName": "no-restore",
       "shortName": ""
     },
-    "KestrelPort": {
+    "HttpPort": {
       "isHidden": true
     },
-    "IISExpressPort": {
+    "HttpsPort": {
       "isHidden": true
     },
-    "IncludeLaunchSettings": {
-      "longName": "use-launch-settings",
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
       "shortName": ""
     },
     "RuntimeFrameworkVersion": {

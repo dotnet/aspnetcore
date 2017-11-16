@@ -8,7 +8,9 @@
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
@@ -35,9 +37,9 @@
     <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.1.0-preview1-27644</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
     <NETStandardLibraryPackageVersion>2.0.0</NETStandardLibraryPackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
-    <SeleniumSupportPackageVersion>3.6.0</SeleniumSupportPackageVersion>
+    <SeleniumSupportPackageVersion>3.7.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
-    <SeleniumWebDriverPackageVersion>3.6.0</SeleniumWebDriverPackageVersion>
+    <SeleniumWebDriverPackageVersion>3.7.0</SeleniumWebDriverPackageVersion>
     <SystemSecurityPermissionsPackageVersion>4.4.0</SystemSecurityPermissionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.7.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>

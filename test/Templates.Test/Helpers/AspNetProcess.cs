@@ -8,6 +8,8 @@ using System.Net.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Certificates.Generation;
+using System.Threading;
 
 namespace Templates.Test.Helpers
 {
@@ -15,16 +17,28 @@ namespace Templates.Test.Helpers
     {
         private const string DefaultFramework = "netcoreapp2.0";
         private const string ListeningMessagePrefix = "Now listening on: ";
+        private static int Port = 5000 + new Random().Next(3000);
 
         private readonly ProcessEx _process;
         private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
+        private readonly int _httpsPort;
+        private readonly int _httpPort;
 
         public AspNetProcess(ITestOutputHelper output, string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
         {
             _output = output;
-            _httpClient = new HttpClient();
+            _httpClient = new HttpClient(new HttpClientHandler()
+            {
+                AllowAutoRedirect = true,
+                UseCookies = true,
+                CookieContainer = new CookieContainer(),
+                ServerCertificateCustomValidationCallback = (m, c, ch, p) => true
+            });
+
+            var now = DateTimeOffset.Now;
+            new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
 
             var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
             if (publish)
@@ -48,9 +62,12 @@ namespace Templates.Test.Helpers
                     .WaitForExit(assertSuccess: true);
             }
 
+            _httpPort = Interlocked.Increment(ref Port);
+            _httpsPort = Interlocked.Increment(ref Port);
             var envVars = new Dictionary<string, string>
             {
-                { "ASPNETCORE_URLS", "http://127.0.0.1:0" }
+                { "ASPNETCORE_URLS", $"http://localhost:{_httpPort};https://localhost:{_httpsPort}" },
+                { "ASPNETCORE_HTTPS_PORT", $"{_httpsPort}" }
             };
 
             if (!publish)

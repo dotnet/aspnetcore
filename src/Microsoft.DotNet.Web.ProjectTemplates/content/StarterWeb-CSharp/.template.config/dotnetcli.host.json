@@ -60,17 +60,14 @@
       "longName": "no-restore",
       "shortName": ""
     },
+    "HttpPort": {
+      "isHidden": true
+    },
     "HttpsPort": {
       "isHidden": true
     },
-    "KestrelPort": {
-      "isHidden": true
-    },
-    "IISExpressPort": {
-      "isHidden": true
-    },
-    "IncludeLaunchSettings": {
-      "longName": "use-launch-settings",
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
       "shortName": ""
     },
     "UserSecretsId": {

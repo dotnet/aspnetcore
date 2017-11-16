@@ -40,19 +40,11 @@
   ],
   "ports": [
     {
-      "name": "IISExpressPort",
-      "useHttps": false
-    },
-    {
-      "name": "KestrelPort",
-      "useHttps": false
-    },
-    {
       "name": "HttpsPort",
       "useHttps": true
     }
   ],
+  "excludeLaunchSettings": false,
   "azureReplyUrlPortName": "HttpsPort",
-  "includeLaunchSettings": true,
   "minFullFrameworkVersion": "4.6.1"
 }

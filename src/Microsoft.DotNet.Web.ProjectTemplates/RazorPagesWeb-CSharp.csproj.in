@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="${MicrosoftAspNetCoreAuthenticationCookiesPackageVersion}" Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="${MicrosoftAspNetCoreMvcPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="${MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion}" PrivateAssets="All" />

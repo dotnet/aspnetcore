@@ -1,6 +1,16 @@
 {
 "$schema": "http://json.schemastore.org/dotnetcli.host",
   "symbolInfo": {
+    "HttpPort": {
+      "isHidden": true
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
     "TargetFrameworkOverride": {
       "isHidden": "true",
       "longName": "target-framework-override",

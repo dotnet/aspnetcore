@@ -2,10 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(MicrosoftExtensionsProcessSourcesPackageVersion)" PrivateAssets="All" />

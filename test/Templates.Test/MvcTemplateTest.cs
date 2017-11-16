@@ -24,7 +24,7 @@ namespace Templates.Test
         [InlineData(null)]
         [InlineData("F#")]
         public void MvcTemplate_NoAuth_Works_NetCore(string languageOverride)
-            => MvcTemplate_NoAuthImpl(null, languageOverride);
+            => MvcTemplate_NoAuthImpl(null, languageOverride: languageOverride);
 
         private void MvcTemplate_NoAuthImpl(string targetFrameworkOverride, string languageOverride)
         {

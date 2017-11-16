@@ -26,7 +26,7 @@
     {
       "modifiers": [
         {
-          "condition": "(!IncludeLaunchSettings)",
+          "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
           ]
@@ -41,47 +41,51 @@
       "datatype": "string",
       "defaultValue": "2.1.0-preview2-25624-02"
     },
-    "IncludeLaunchSettings": {
+    "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to include launchSettings.json in the generated template."
+      "description": "Whether to exclude launchSettings.json from the generated template."
     },
-    "KestrelPort": {
+    "HttpPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use to configure Kestrel in launchSettings.json."
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
     },
-    "KestrelPortGenerated": {
+    "HttpPortGenerated": {
       "type": "generated",
       "generator": "port"
     },
-    "KestrelPortReplacer": {
+    "HttpPortReplacer": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
-        "sourceVariableName": "KestrelPort",
-        "fallbackVariableName": "KestrelPortGenerated"
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
       },
-      "replaces": "5000"
+      "replaces": "8080"
     },
-    "IISExpressPort": {
+    "HttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use to configure IIS Express in launchSettings.json."
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
     },
-    "IISExpressPortGenerated": {
+    "HttpsPortGenerated": {
       "type": "generated",
-      "generator": "port"
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
     },
-    "IISExpressPortReplacer": {
+    "HttpsPortReplacer": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
-        "sourceVariableName": "IISExpressPort",
-        "fallbackVariableName": "IISExpressPortGenerated"
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
       },
-      "replaces": "55556"
+      "replaces": "44300"
     },
     "TargetFrameworkOverride": {
       "type": "parameter",

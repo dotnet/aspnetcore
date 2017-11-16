@@ -16,5 +16,12 @@
   "uiFilters": [
     "oneaspnet"
   ],
+  "ports": [
+    {
+      "name": "HttpsPort",
+      "useHttps": true
+    }
+  ],
+  "excludeLaunchSettings": false,
   "minFullFrameworkVersion": "4.6.1"
 }

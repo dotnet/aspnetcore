@@ -74,7 +74,7 @@
           ]
         },
         {
-          "condition": "(!IncludeLaunchSettings && !WindowsAuth)",
+          "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
           ]
@@ -207,11 +207,11 @@
       "defaultValue": "aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
       "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
     },
-    "IncludeLaunchSettings": {
+    "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "description": "Whether to include launchSettings.json in the generated template."
+      "description": "Whether to exclude launchSettings.json in the generated template."
     },
     "skipRestore": {
       "type": "parameter",
@@ -225,10 +225,28 @@
       "defaultValue": "false",
       "description": "Whether or not to include BrowserLink in the project"
     },
+    "HttpPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use for the HTTP endpoint in launchSettings.json."
+    },
+    "HttpPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "HttpPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpPort",
+        "fallbackVariableName": "HttpPortGenerated"
+      },
+      "replaces": "8080"
+    },
     "HttpsPort": {
       "type": "parameter",
       "datatype": "integer",
-      "description": "Port number to use to configure SSL in launchSettings.json."
+      "description": "Port number to use for the HTTPS endpoint in launchSettings.json."
     },
     "HttpsPortGenerated": {
       "type": "generated",
@@ -245,43 +263,7 @@
         "sourceVariableName": "HttpsPort",
         "fallbackVariableName": "HttpsPortGenerated"
       },
-      "replaces": "43434"
-    },
-    "KestrelPort": {
-      "type": "parameter",
-      "datatype": "integer",
-      "description": "Port number to use to configure Kestrel in launchSettings.json."
-    },
-    "KestrelPortGenerated": {
-      "type": "generated",
-      "generator": "port"
-    },
-    "KestrelPortReplacer": {
-      "type": "generated",
-      "generator": "coalesce",
-      "parameters": {
-        "sourceVariableName": "KestrelPort",
-        "fallbackVariableName": "KestrelPortGenerated"
-      },
-      "replaces": "5001"
-    },
-    "IISExpressPort": {
-      "type": "parameter",
-      "datatype": "integer",
-      "description": "Port number to use to configure IIS Express in launchSettings.json."
-    },
-    "IISExpressPortGenerated": {
-      "type": "generated",
-      "generator": "port"
-    },
-    "IISExpressPortReplacer": {
-      "type": "generated",
-      "generator": "coalesce",
-      "parameters": {
-        "sourceVariableName": "IISExpressPort",
-        "fallbackVariableName": "IISExpressPortGenerated"
-      },
-      "replaces": "55556"
+      "replaces": "44300"
     },
     "OrganizationalAuth": {
       "type": "computed",
