@@ -579,12 +579,6 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     }
 
     // The first argument is mostly ignored
-    hr = strDotnetExeLocation.Append(pszDotnetExeString);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
     argv[0] = strDotnetExeLocation.QueryStr();
     PATH::ConvertPathToFullPath(m_pConfiguration->QueryArguments()->QueryStr(),
                                 m_pConfiguration->QueryApplicationFullPath()->QueryStr(),
