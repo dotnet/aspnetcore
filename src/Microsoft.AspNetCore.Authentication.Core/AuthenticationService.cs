@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication
             var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to authenticate for the scheme: {scheme}");
+                throw await CreateMissingHandlerException(scheme);
             }
 
             var result = await handler.AuthenticateAsync();
@@ -96,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication
             var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
+                throw await CreateMissingHandlerException(scheme);
             }
 
             await handler.ChallengeAsync(properties);
@@ -124,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication
             var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No authentication handler is configured to handle the scheme: {scheme}");
+                throw await CreateMissingHandlerException(scheme);
             }
 
             await handler.ForbidAsync(properties);
@@ -155,13 +156,19 @@ namespace Microsoft.AspNetCore.Authentication
                 }
             }
 
-            var handler = await Handlers.GetHandlerAsync(context, scheme) as IAuthenticationSignInHandler;
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No IAuthenticationSignInHandler is configured to handle sign in for the scheme: {scheme}");
+                throw await CreateMissingSignInHandlerException(scheme);
             }
 
-            await handler.SignInAsync(principal, properties);
+            var signInHandler = handler as IAuthenticationSignInHandler;
+            if (signInHandler == null)
+            {
+                throw await CreateMismatchedSignInHandlerException(scheme, handler);
+            }
+
+            await signInHandler.SignInAsync(principal, properties);
         }
 
         /// <summary>
@@ -183,13 +190,114 @@ namespace Microsoft.AspNetCore.Authentication
                 }
             }
 
-            var handler = await Handlers.GetHandlerAsync(context, scheme) as IAuthenticationSignOutHandler;
+            var handler = await Handlers.GetHandlerAsync(context, scheme);
             if (handler == null)
             {
-                throw new InvalidOperationException($"No IAuthenticationSignOutHandler is configured to handle sign out for the scheme: {scheme}");
+                throw await CreateMissingSignOutHandlerException(scheme);
             }
 
-            await handler.SignOutAsync(properties);
+            var signOutHandler = handler as IAuthenticationSignOutHandler;
+            if (signOutHandler == null)
+            {
+                throw await CreateMismatchedSignOutHandlerException(scheme, handler);
+            }
+
+            await signOutHandler.SignOutAsync(properties);
+        }
+
+        private async Task<Exception> CreateMissingHandlerException(string scheme)
+        {
+            var schemes = string.Join(", ", (await Schemes.GetAllSchemesAsync()).Select(sch => sch.Name));
+
+            var footer = $" Did you forget to call AddAuthentication().Add[SomeAuthHandler](\"{scheme}\",...)?";
+
+            if (string.IsNullOrEmpty(schemes))
+            {
+                return new InvalidOperationException(
+                    $"No authentication handlers are registered." + footer);
+            }
+
+            return new InvalidOperationException(
+                $"No authentication handler is registered for the scheme '{scheme}'. The registered schemes are: {schemes}." + footer);
+        }
+
+        private async Task<string> GetAllSignInSchemeNames()
+        {
+            return string.Join(", ", (await Schemes.GetAllSchemesAsync())
+                .Where(sch => typeof(IAuthenticationSignInHandler).IsAssignableFrom(sch.HandlerType))
+                .Select(sch => sch.Name));
+        }
+
+        private async Task<Exception> CreateMissingSignInHandlerException(string scheme)
+        {
+            var schemes = await GetAllSignInSchemeNames();
+
+            // CookieAuth is the only implementation of sign-in.
+            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+
+            if (string.IsNullOrEmpty(schemes))
+            {
+                return new InvalidOperationException(
+                    $"No sign-in authentication handlers are registered." + footer);
+            }
+
+            return new InvalidOperationException(
+                $"No sign-in authentication handler is registered for the scheme '{scheme}'. The registered sign-in schemes are: {schemes}." + footer);
+        }
+
+        private async Task<Exception> CreateMismatchedSignInHandlerException(string scheme, IAuthenticationHandler handler)
+        {
+            var schemes = await GetAllSignInSchemeNames();
+
+            var mismatchError = $"The authentication handler registered for scheme '{scheme}' is '{handler.GetType().Name}' which cannot be used for SignInAsync. ";
+
+            if (string.IsNullOrEmpty(schemes))
+            {
+                // CookieAuth is the only implementation of sign-in.
+                return new InvalidOperationException(mismatchError
+                    + $"Did you intended to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
+            }
+
+            return new InvalidOperationException(mismatchError + $"The registered sign-in schemes are: {schemes}.");
+        }
+
+        private async Task<string> GetAllSignOutSchemeNames()
+        {
+            return string.Join(", ", (await Schemes.GetAllSchemesAsync())
+                .Where(sch => typeof(IAuthenticationSignOutHandler).IsAssignableFrom(sch.HandlerType))
+                .Select(sch => sch.Name));
+        }
+
+        private async Task<Exception> CreateMissingSignOutHandlerException(string scheme)
+        {
+            var schemes = await GetAllSignOutSchemeNames();
+
+            var footer = $" Did you forget to call AddAuthentication().AddCookies(\"{scheme}\",...)?";
+
+            if (string.IsNullOrEmpty(schemes))
+            {
+                // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
+                return new InvalidOperationException($"No sign-out authentication handlers are registered." + footer);
+            }
+
+            return new InvalidOperationException(
+                $"No sign-out authentication handler is registered for the scheme '{scheme}'. The registered sign-out schemes are: {schemes}." + footer);
+        }
+
+        private async Task<Exception> CreateMismatchedSignOutHandlerException(string scheme, IAuthenticationHandler handler)
+        {
+            var schemes = await GetAllSignOutSchemeNames();
+
+            var mismatchError = $"The authentication handler registered for scheme '{scheme}' is '{handler.GetType().Name}' which cannot be used for {nameof(SignOutAsync)}. ";
+
+            if (string.IsNullOrEmpty(schemes))
+            {
+                // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
+                return new InvalidOperationException(mismatchError
+                    + $"Did you intended to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
+            }
+
+            return new InvalidOperationException(mismatchError + $"The registered sign-out schemes are: {schemes}.");
         }
     }
 }

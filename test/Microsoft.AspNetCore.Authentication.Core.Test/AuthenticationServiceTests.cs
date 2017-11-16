@@ -13,6 +13,51 @@ namespace Microsoft.AspNetCore.Authentication
     public class AuthenticationServiceTests
     {
         [Fact]
+        public async Task AuthenticateThrowsForSchemeMismatch()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.AuthenticateAsync("base");
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.AuthenticateAsync("missing"));
+            Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
+        public async Task ChallengeThrowsForSchemeMismatch()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.ChallengeAsync("base");
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.ChallengeAsync("missing"));
+            Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
+        public async Task ForbidThrowsForSchemeMismatch()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<BaseHandler>("base", "whatever");
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.ForbidAsync("base");
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("missing"));
+            Assert.Contains("base", ex.Message);
+        }
+
+        [Fact]
         public async Task CanOnlySignInIfSupported()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
@@ -26,9 +71,13 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices = services;
 
             await context.SignInAsync("uber", new ClaimsPrincipal(), null);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("base", new ClaimsPrincipal(), null));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("base", new ClaimsPrincipal(), null));
+            Assert.Contains("uber", ex.Message);
+            Assert.Contains("signin", ex.Message);
             await context.SignInAsync("signin", new ClaimsPrincipal(), null);
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("signout", new ClaimsPrincipal(), null));
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("signout", new ClaimsPrincipal(), null));
+            Assert.Contains("uber", ex.Message);
+            Assert.Contains("signin", ex.Message);
         }
 
         [Fact]
@@ -45,7 +94,9 @@ namespace Microsoft.AspNetCore.Authentication
             context.RequestServices = services;
 
             await context.SignOutAsync("uber");
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("base"));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("base"));
+            Assert.Contains("uber", ex.Message);
+            Assert.Contains("signout", ex.Message);
             await context.SignOutAsync("signout");
             await context.SignOutAsync("signin");
         }
@@ -64,8 +115,10 @@ namespace Microsoft.AspNetCore.Authentication
             await context.AuthenticateAsync();
             await context.ChallengeAsync();
             await context.ForbidAsync();
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
+            Assert.Contains("cannot be used for SignOutAsync", ex.Message);
+            ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            Assert.Contains("cannot be used for SignInAsync", ex.Message);
         }
 
         [Fact]
@@ -119,7 +172,8 @@ namespace Microsoft.AspNetCore.Authentication
             await context.ChallengeAsync();
             await context.ForbidAsync();
             await context.SignOutAsync();
-            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            Assert.Contains("cannot be used for SignInAsync", ex.Message);
         }
 
         [Fact]
