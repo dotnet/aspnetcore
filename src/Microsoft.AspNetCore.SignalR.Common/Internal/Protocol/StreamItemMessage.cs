@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class StreamItemMessage : HubMessage
+    public class StreamItemMessage : HubInvocationMessage
     {
         public object Item { get; }
 

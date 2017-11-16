@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,12 +13,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public class MessagePackHubProtocol : IHubProtocol
     {
-        private const int InvocationMessageType = 1;
-        private const int StreamItemMessageType = 2;
-        private const int CompletionMessageType = 3;
-        private const int StreamInvocationMessageType = 4;
-        private const int CancelInvocationMessageType = 5;
-
         private const int ErrorResult = 1;
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
@@ -62,16 +56,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
                 switch (messageType)
                 {
-                    case InvocationMessageType:
+                    case HubProtocolConstants.InvocationMessageType:
                         return CreateInvocationMessage(unpacker, binder);
-                    case StreamInvocationMessageType:
+                    case HubProtocolConstants.StreamInvocationMessageType:
                         return CreateStreamInvocationMessage(unpacker, binder);
-                    case StreamItemMessageType:
+                    case HubProtocolConstants.StreamItemMessageType:
                         return CreateStreamItemMessage(unpacker, binder);
-                    case CompletionMessageType:
+                    case HubProtocolConstants.CompletionMessageType:
                         return CreateCompletionMessage(unpacker, binder);
-                    case CancelInvocationMessageType:
+                    case HubProtocolConstants.CancelInvocationMessageType:
                         return CreateCancelInvocationMessage(unpacker);
+                    case HubProtocolConstants.PingMessageType:
+                        return PingMessage.Instance;
                     default:
                         throw new FormatException($"Invalid message type: {messageType}.");
                 }
@@ -155,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             object result = null;
             var hasResult = false;
 
-            switch(resultKind)
+            switch (resultKind)
             {
                 case ErrorResult:
                     error = ReadString(unpacker, "error");
@@ -212,6 +208,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 case CancelInvocationMessage cancelInvocationMessage:
                     WriteCancelInvocationMessage(cancelInvocationMessage, packer);
                     break;
+                case PingMessage pingMessage:
+                    WritePingMessage(pingMessage, packer);
+                    break;
                 default:
                     throw new FormatException($"Unexpected message type: {message.GetType().Name}");
             }
@@ -220,7 +219,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private void WriteInvocationMessage(InvocationMessage invocationMessage, Packer packer)
         {
             packer.PackArrayHeader(5);
-            packer.Pack(InvocationMessageType);
+            packer.Pack(HubProtocolConstants.InvocationMessageType);
             packer.PackString(invocationMessage.InvocationId);
             packer.Pack(invocationMessage.NonBlocking);
             packer.PackString(invocationMessage.Target);
@@ -230,7 +229,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private void WriteStreamInvocationMessage(StreamInvocationMessage streamInvocationMessage, Packer packer)
         {
             packer.PackArrayHeader(4);
-            packer.Pack(StreamInvocationMessageType);
+            packer.Pack(HubProtocolConstants.StreamInvocationMessageType);
             packer.PackString(streamInvocationMessage.InvocationId);
             packer.PackString(streamInvocationMessage.Target);
             packer.PackObject(streamInvocationMessage.Arguments, _serializationContext);
@@ -239,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private void WriteStreamingItemMessage(StreamItemMessage streamItemMessage, Packer packer)
         {
             packer.PackArrayHeader(3);
-            packer.Pack(StreamItemMessageType);
+            packer.Pack(HubProtocolConstants.StreamItemMessageType);
             packer.PackString(streamItemMessage.InvocationId);
             packer.PackObject(streamItemMessage.Item, _serializationContext);
         }
@@ -253,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             packer.PackArrayHeader(3 + (resultKind != VoidResult ? 1 : 0));
 
-            packer.Pack(CompletionMessageType);
+            packer.Pack(HubProtocolConstants.CompletionMessageType);
             packer.PackString(completionMessage.InvocationId);
             packer.Pack(resultKind);
             switch (resultKind)
@@ -270,8 +269,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private void WriteCancelInvocationMessage(CancelInvocationMessage cancelInvocationMessage, Packer packer)
         {
             packer.PackArrayHeader(2);
-            packer.Pack(CancelInvocationMessageType);
+            packer.Pack(HubProtocolConstants.CancelInvocationMessageType);
             packer.PackString(cancelInvocationMessage.InvocationId);
+        }
+
+        private void WritePingMessage(PingMessage pingMessage, Packer packer)
+        {
+            packer.PackArrayHeader(1);
+            packer.Pack(HubProtocolConstants.PingMessageType);
         }
 
         private static string ReadInvocationId(Unpacker unpacker)

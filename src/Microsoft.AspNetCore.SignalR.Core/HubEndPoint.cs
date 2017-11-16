@@ -303,6 +303,10 @@ namespace Microsoft.AspNetCore.SignalR
                                         }
                                         break;
 
+                                    case PingMessage _:
+                                        // We don't care about pings
+                                        break;
+
                                     // Other kind of message we weren't expecting
                                     default:
                                         _logger.UnsupportedMessageReceived(hubMessage.GetType().FullName);

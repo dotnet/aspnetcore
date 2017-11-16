@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class CompletionMessage : HubMessage
+    public class CompletionMessage : HubInvocationMessage
     {
         public string Error { get; }
         public object Result { get; }

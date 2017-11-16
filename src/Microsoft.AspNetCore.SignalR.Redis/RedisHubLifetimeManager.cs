@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _ackHandler.Dispose();
         }
 
-        private static async Task WriteAsync(HubConnectionContext connection, HubMessage hubMessage)
+        private static async Task WriteAsync(HubConnectionContext connection, HubInvocationMessage hubMessage)
         {
             while (await connection.Output.WaitToWriteAsync())
             {
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     _logger.ReceivedFromChannel(_channelNamePrefix);
 
-                    var message = DeserializeMessage<HubMessage>(data);
+                    var message = DeserializeMessage<HubInvocationMessage>(data);
 
                     var tasks = new List<Task>(_connections.Count);
 
@@ -519,7 +519,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var message = DeserializeMessage<HubMessage>(data);
+                    var message = DeserializeMessage<HubInvocationMessage>(data);
 
                     await WriteAsync(connection, message);
                 }
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var message = DeserializeMessage<HubMessage>(data);
+                    var message = DeserializeMessage<HubInvocationMessage>(data);
 
                     await WriteAsync(connection, message);
                 }
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var message = DeserializeMessage<HubMessage>(data);
+                    var message = DeserializeMessage<HubInvocationMessage>(data);
 
                     var tasks = new List<Task>(group.Connections.Count);
                     foreach (var groupConnection in group.Connections)

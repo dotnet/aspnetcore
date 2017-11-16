@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public abstract class HubMethodInvocationMessage : HubMessage
+    public abstract class HubMethodInvocationMessage : HubInvocationMessage
     {
         private readonly ExceptionDispatchInfo _argumentBindingException;
         private readonly object[] _arguments;

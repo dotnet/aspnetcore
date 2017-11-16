@@ -3,10 +3,10 @@
 
 import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
-import { HttpConnection} from "./HttpConnection"
+import { HttpConnection } from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage, HubInvocationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -61,15 +61,18 @@ export class HubConnection {
                 case MessageType.Invocation:
                     this.invokeClientMethod(<InvocationMessage>message);
                     break;
-                case MessageType.Result:
+                case MessageType.StreamItem:
                 case MessageType.Completion:
-                    let callback = this.callbacks.get(message.invocationId);
+                    let callback = this.callbacks.get((<HubInvocationMessage>message).invocationId);
                     if (callback != null) {
                         if (message.type === MessageType.Completion) {
-                            this.callbacks.delete(message.invocationId);
+                            this.callbacks.delete((<HubInvocationMessage>message).invocationId);
                         }
                         callback(message);
                     }
+                    break;
+                case MessageType.Ping:
+                    // Don't care about pings
                     break;
                 default:
                     this.logger.log(LogLevel.Warning, "Invalid message type: " + data);

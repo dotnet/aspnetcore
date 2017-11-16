@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        private async Task WriteAsync(HubConnectionContext connection, HubMessage hubMessage)
+        private async Task WriteAsync(HubConnectionContext connection, HubInvocationMessage hubMessage)
         {
             while (await connection.Output.WaitToWriteAsync())
             {

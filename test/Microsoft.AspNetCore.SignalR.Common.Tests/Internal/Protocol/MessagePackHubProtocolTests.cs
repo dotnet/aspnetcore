@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, new[] { new CustomObject(), new CustomObject() }) } },
 
             new object[] { new[] { new CancelInvocationMessage("xyz") } },
+            
+            new object[] { new[] { PingMessage.Instance } },
 
             new object[]
             {
@@ -59,8 +61,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string", new CustomObject()),
                     new CompletionMessage("xyz", error: null, result: 42, hasResult: true),
                     new StreamItemMessage("xyz", null),
+                    PingMessage.Instance,
                     new StreamInvocationMessage("xyz", "method", null, 42, "string", new CustomObject()),
-                    new CompletionMessage("xyz", error: null, result: new CustomObject(), hasResult: true)
+                    new CompletionMessage("xyz", error: null, result: new CustomObject(), hasResult: true),
                 }
             }
         };
@@ -273,12 +276,22 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 {
                     0x04, 0x92, 0x05, 0xa1, 0x30
                 }
-            }
+            },
+            new object[]
+            {
+                PingMessage.Instance,
+                new byte[]
+                {
+                    0x02,
+                    0x91, // message array length = 1 (fixarray)
+                    0x06, // type = 6 = Ping (fixnum)
+                }
+            },
         };
 
         [Theory]
         [MemberData(nameof(MessageAndPayload))]
-        public void UserObjectAreSerializedAsMaps(HubMessage message, byte[] expectedPayload)
+        public void SerializeMessageTest(HubMessage message, byte[] expectedPayload)
         {
             using (var memoryStream = new MemoryStream())
             {

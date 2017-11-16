@@ -3,9 +3,11 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class CancelInvocationMessage : HubInvocationMessage
+    public class PingMessage : HubMessage
     {
-        public CancelInvocationMessage(string invocationId) : base(invocationId)
+        public static readonly PingMessage Instance = new PingMessage();
+
+        private PingMessage()
         {
         }
     }

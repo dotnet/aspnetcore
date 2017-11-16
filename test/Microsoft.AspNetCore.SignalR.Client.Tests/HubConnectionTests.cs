@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -189,13 +189,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
         private class MockHubProtocol : IHubProtocol
         {
-            private HubMessage _parsed;
+            private HubInvocationMessage _parsed;
             private Exception _error;
 
             public int ParseCalls { get; private set; } = 0;
             public int WriteCalls { get; private set; } = 0;
 
-            public static MockHubProtocol ReturnOnParse(HubMessage parsed)
+            public static MockHubProtocol ReturnOnParse(HubInvocationMessage parsed)
             {
                 return new MockHubProtocol
                 {

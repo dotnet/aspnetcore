@@ -7,8 +7,8 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -1306,6 +1306,30 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await client.SendInvocationAsync(nameof(MethodHub.SendAnonymousObject)).OrTimeout();
 
                 await Assert.ThrowsAsync<SerializationException>(() => endPointLifetime.OrTimeout());
+            }
+        }
+
+        [Fact]
+        public async Task AcceptsPingMessages()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(false, new JsonHubProtocol()))
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection).OrTimeout();
+                await client.Connected.OrTimeout();
+
+                // Send a ping
+                await client.SendHubMessageAsync(PingMessage.Instance).OrTimeout();
+
+                // Now do an invocation to make sure we processed the ping message
+                var completion = await client.InvokeAsync(nameof(MethodHub.ValueMethod)).OrTimeout();
+                Assert.NotNull(completion);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
             }
         }
 

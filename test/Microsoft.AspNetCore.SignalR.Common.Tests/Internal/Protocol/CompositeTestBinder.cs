@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public CompositeTestBinder(HubMessage[] hubMessages)
         {
-            _hubMessages = hubMessages;
+            _hubMessages = hubMessages.Where(IsBindableMessage).ToArray();
         }
 
         public Type[] GetParameterTypes(string methodName)
@@ -27,6 +28,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             index++;
             return new TestBinder(_hubMessages[index - 1]).GetReturnType(invocationId);
+        }
+
+        private bool IsBindableMessage(HubMessage arg)
+        {
+            return arg is CompletionMessage ||
+                arg is InvocationMessage ||
+                arg is StreamItemMessage ||
+                arg is StreamInvocationMessage;
         }
     }
 }

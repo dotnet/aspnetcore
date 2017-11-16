@@ -3,10 +3,13 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class CancelInvocationMessage : HubInvocationMessage
+    public abstract class HubInvocationMessage : HubMessage
     {
-        public CancelInvocationMessage(string invocationId) : base(invocationId)
+        public string InvocationId { get; }
+
+        protected HubInvocationMessage(string invocationId)
         {
+            InvocationId = invocationId;
         }
     }
 }

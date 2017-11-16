@@ -3,32 +3,37 @@
 
 export const enum MessageType {
     Invocation = 1,
-    Result,
-    Completion,
-    StreamInvocation
+    StreamItem = 2,
+    Completion = 3,
+    StreamInvocation = 4,
+    CancelInvocation = 5,
+    Ping = 6,
 }
 
 export interface HubMessage {
     readonly type: MessageType;
+}
+
+export interface HubInvocationMessage extends HubMessage {
     readonly invocationId: string;
 }
 
-export interface InvocationMessage extends HubMessage {
+export interface InvocationMessage extends HubInvocationMessage {
     readonly target: string;
     readonly arguments: Array<any>;
     readonly nonblocking?: boolean;
 }
 
-export interface StreamInvocationMessage extends HubMessage {
+export interface StreamInvocationMessage extends HubInvocationMessage {
     readonly target: string;
     readonly arguments: Array<any>
 }
 
-export interface ResultMessage extends HubMessage {
+export interface ResultMessage extends HubInvocationMessage {
     readonly item?: any;
 }
 
-export interface CompletionMessage extends HubMessage {
+export interface CompletionMessage extends HubInvocationMessage {
     readonly error?: string;
     readonly result?: any;
 }

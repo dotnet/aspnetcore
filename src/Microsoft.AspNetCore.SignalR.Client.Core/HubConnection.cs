@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public IDisposable On(string methodName, Type[] parameterTypes, Func<object[], object, Task> handler, object state)
         {
             var invocationHandler = new InvocationHandler(parameterTypes, handler, state);
-            var invocationList = _handlers.AddOrUpdate(methodName,  _ => new List<InvocationHandler> { invocationHandler },
+            var invocationList = _handlers.AddOrUpdate(methodName, _ => new List<InvocationHandler> { invocationHandler },
                 (_, invocations) =>
                 {
                     lock (invocations)
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return SendHubMessage(invocationMessage, irq);
         }
 
-        private async Task SendHubMessage(HubMessage hubMessage, InvocationRequest irq)
+        private async Task SendHubMessage(HubInvocationMessage hubMessage, InvocationRequest irq)
         {
             try
             {
@@ -327,6 +327,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                 return;
                             }
                             DispatchInvocationStreamItemAsync(streamItem, irq);
+                            break;
+                        case PingMessage _:
+                            // Nothing to do on receipt of a ping.
                             break;
                         default:
                             throw new InvalidOperationException($"Unexpected message type: {message.GetType().FullName}");

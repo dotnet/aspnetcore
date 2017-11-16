@@ -5,13 +5,12 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
-using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -384,6 +383,39 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 Assert.Equal(42, await invocationTcs.Task.OrTimeout());
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task AcceptsPingMessages()
+        {
+            var connection = new TestConnection(TransferMode.Text);
+            var hubConnection = new HubConnection(connection,
+                new JsonHubProtocol(), new LoggerFactory());
+
+            try
+            {
+                await hubConnection.StartAsync().OrTimeout();
+
+                // Ignore negotiate message
+                await connection.ReadSentTextMessageAsync().OrTimeout();
+
+                // Send an invocation
+                var invokeTask = hubConnection.InvokeAsync("Foo");
+
+                // Receive the ping mid-invocation so we can see that the rest of the flow works fine
+                await connection.ReceiveJsonMessage(new { type = 6 }).OrTimeout();
+
+                // Receive a completion
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
+
+                // Ensure the invokeTask completes properly
+                await invokeTask.OrTimeout();
             }
             finally
             {

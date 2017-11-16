@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,47 +16,60 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public bool Equals(HubMessage x, HubMessage y)
         {
-            if (!string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal))
+            // Types should be equal
+            if (!Equals(x.GetType(), y.GetType()))
             {
                 return false;
             }
 
-            return InvocationMessagesEqual(x, y) || StreamItemMessagesEqual(x, y) || CompletionMessagesEqual(x, y)
-                || StreamInvocationMessagesEqual(x, y) || CancelInvocationMessagesEqual(x, y);
+            switch (x)
+            {
+                case InvocationMessage invocationMessage:
+                    return InvocationMessagesEqual(invocationMessage, (InvocationMessage)y);
+                case StreamItemMessage streamItemMessage:
+                    return StreamItemMessagesEqual(streamItemMessage, (StreamItemMessage)y);
+                case CompletionMessage completionMessage:
+                    return CompletionMessagesEqual(completionMessage, (CompletionMessage)y);
+                case StreamInvocationMessage streamInvocationMessage:
+                    return StreamInvocationMessagesEqual(streamInvocationMessage, (StreamInvocationMessage)y);
+                case CancelInvocationMessage cancelItemMessage:
+                    return string.Equals(cancelItemMessage.InvocationId, ((CancelInvocationMessage)y).InvocationId, StringComparison.Ordinal);
+                case PingMessage pingMessage:
+                    // If the types are equal (above), then we're done.
+                    return true;
+                default:
+                    throw new InvalidOperationException($"Unknown message type: {x.GetType().FullName}");
+            }
         }
 
-        private bool CompletionMessagesEqual(HubMessage x, HubMessage y)
+        private bool CompletionMessagesEqual(CompletionMessage x, CompletionMessage y)
         {
-            return x is CompletionMessage left && y is CompletionMessage right &&
-                string.Equals(left.Error, right.Error, StringComparison.Ordinal) &&
-                left.HasResult == right.HasResult &&
-                (Equals(left.Result, right.Result) || SequenceEqual(left.Result, right.Result));
+            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+                string.Equals(x.Error, y.Error, StringComparison.Ordinal) &&
+                x.HasResult == y.HasResult &&
+                (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
         }
 
-        private bool StreamItemMessagesEqual(HubMessage x, HubMessage y)
+        private bool StreamItemMessagesEqual(StreamItemMessage x, StreamItemMessage y)
         {
-            return x is StreamItemMessage left && y is StreamItemMessage right &&
-                (Equals(left.Item, right.Item) || SequenceEqual(left.Item, right.Item));
+            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+                (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
         }
 
-        private bool InvocationMessagesEqual(HubMessage x, HubMessage y)
+        private bool InvocationMessagesEqual(InvocationMessage x, InvocationMessage y)
         {
-            return x is InvocationMessage left && y is InvocationMessage right &&
-                string.Equals(left.Target, right.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(left.Arguments, right.Arguments) &&
-                left.NonBlocking == right.NonBlocking;
+            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
+                ArgumentListsEqual(x.Arguments, y.Arguments) &&
+                x.NonBlocking == y.NonBlocking;
         }
 
-        private bool StreamInvocationMessagesEqual(HubMessage x, HubMessage y)
+        private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
         {
-            return x is StreamInvocationMessage left && y is StreamInvocationMessage right &&
-                string.Equals(left.Target, right.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(left.Arguments, right.Arguments) &&
-                left.NonBlocking == right.NonBlocking;
-        }
-        private bool CancelInvocationMessagesEqual(HubMessage x, HubMessage y)
-        {
-            return x is CancelInvocationMessage && y is CancelInvocationMessage;
+            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+                string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
+                ArgumentListsEqual(x.Arguments, y.Arguments) &&
+                x.NonBlocking == y.NonBlocking;
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)

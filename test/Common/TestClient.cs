@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     throw new InvalidOperationException("Connection aborted!");
                 }
 
-                if (!string.Equals(message.InvocationId, invocationId))
+                if (message is HubInvocationMessage hubInvocationMessage && !string.Equals(hubInvocationMessage.InvocationId, invocationId))
                 {
                     throw new NotSupportedException("TestClient does not support multiple outgoing invocations!");
                 }
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     throw new InvalidOperationException("Connection aborted!");
                 }
 
-                if (!string.Equals(message.InvocationId, invocationId))
+                if (message is HubInvocationMessage hubInvocationMessage && !string.Equals(hubInvocationMessage.InvocationId, invocationId))
                 {
                     throw new NotSupportedException("TestClient does not support multiple outgoing invocations!");
                 }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var payload = _protocolReaderWriter.WriteMessage(message);
             await Application.Writer.WriteAsync(payload);
-            return message.InvocationId;
+            return message is HubInvocationMessage hubMessage ? hubMessage.InvocationId : null;
         }
 
         public async Task<HubMessage> ReadAsync()
