@@ -137,7 +137,7 @@ namespace Templates.Test.Helpers
             if (_process != null && !_process.HasExited)
             {
                 _process.Kill();
-                _process.WaitForExit();
+                _process.WaitForExit(5000);
             }
         }
 
