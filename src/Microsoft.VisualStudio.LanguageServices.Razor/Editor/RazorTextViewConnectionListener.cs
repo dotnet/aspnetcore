@@ -8,6 +8,8 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
@@ -20,14 +22,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     internal class RazorTextViewConnectionListener : IWpfTextViewConnectionListener
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly TextBufferProjectService _projectService;
         private readonly RazorEditorFactoryService _editorFactoryService;
         private readonly Workspace _workspace;
 
         [ImportingConstructor]
         public RazorTextViewConnectionListener(
+            TextBufferProjectService projectService,
             RazorEditorFactoryService editorFactoryService,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
+            if (projectService == null)
+            {
+                throw new ArgumentNullException(nameof(projectService));
+            }
+
             if (editorFactoryService == null)
             {
                 throw new ArgumentNullException(nameof(editorFactoryService));
@@ -38,6 +47,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(workspace));
             }
 
+            _projectService = projectService;
             _editorFactoryService = editorFactoryService;
             _workspace = workspace;
 
@@ -47,12 +57,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
         internal RazorTextViewConnectionListener(
             ForegroundDispatcher foregroundDispatcher,
+            TextBufferProjectService projectService,
             RazorEditorFactoryService editorFactoryService,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (projectService == null)
+            {
+                throw new ArgumentNullException(nameof(projectService));
             }
 
             if (editorFactoryService == null)
@@ -66,6 +82,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _foregroundDispatcher = foregroundDispatcher;
+            _projectService = projectService;
             _editorFactoryService = editorFactoryService;
             _workspace = workspace;
         }
@@ -92,6 +109,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 if (!textBuffer.IsRazorBuffer())
                 {
                     continue;
+                }
+
+                var hierarchy = _projectService.GetHierarchy(textBuffer);
+                if (!_projectService.IsSupportedProject(hierarchy))
+                {
+                    return;
                 }
 
                 if (!_editorFactoryService.TryGetDocumentTracker(textBuffer, out var documentTracker) ||

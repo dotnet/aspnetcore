@@ -16,6 +16,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
+        private const string DotNetCoreCapability = "(CSharp|VB)&CPS";
+
         private readonly RunningDocumentTable _documentTable;
         private readonly ITextDocumentFactoryService _documentFactory;
 
@@ -79,7 +81,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(hierarchy));
             }
 
-            return hierarchy.IsCapabilityMatch("DotNetCoreWeb");
+            try
+            {
+                return hierarchy.IsCapabilityMatch(DotNetCoreCapability);
+            }
+            catch (NotSupportedException)
+            {
+                // IsCapabilityMatch throws a NotSupportedException if it can't create a BooleanSymbolExpressionEvaluator COM object
+            }
+            catch (ObjectDisposedException)
+            {
+                // IsCapabilityMatch throws an ObjectDisposedException if the underlying hierarchy has been disposed.
+            }
+
+            return false;
         }
     }
 }

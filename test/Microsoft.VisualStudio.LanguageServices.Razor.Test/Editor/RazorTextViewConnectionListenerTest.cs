@@ -34,12 +34,32 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         private IContentType NonRazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(It.IsAny<string>()) == false);
 
+        private TextBufferProjectService SupportedProjectService { get; } = Mock.Of<TextBufferProjectService>(s => s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true);
+
+        private TextBufferProjectService UnsupportedProjectService { get; } = Mock.Of<TextBufferProjectService>(s => s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == false);
+
+        [ForegroundFact]
+        public void SubjectBuffersConnected_ForNonRazorCoreProject_DoesNothing()
+        {
+            // Arrange
+            var editorFactoryService = new Mock<RazorEditorFactoryService>(MockBehavior.Strict);
+            var factory = new RazorTextViewConnectionListener(Dispatcher, UnsupportedProjectService, editorFactoryService.Object, Workspace);
+            var textView = Mock.Of<IWpfTextView>();
+            var buffers = new Collection<ITextBuffer>()
+            {
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+            };
+
+            // Act & Assert
+            factory.SubjectBuffersConnected(textView, ConnectionReason.BufferGraphChange, buffers);
+        }
+
         [ForegroundFact]
         public void SubjectBuffersConnected_ForNonRazorTextBuffer_DoesNothing()
         {
             // Arrange
             var editorFactoryService = new Mock<RazorEditorFactoryService>(MockBehavior.Strict);
-            var factory = new RazorTextViewConnectionListener(Dispatcher, editorFactoryService.Object, Workspace);
+            var factory = new RazorTextViewConnectionListener(Dispatcher, SupportedProjectService, editorFactoryService.Object, Workspace);
             var textView = Mock.Of<IWpfTextView>();
             var buffers = new Collection<ITextBuffer>()
             {
@@ -61,7 +81,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
             VisualStudioDocumentTracker documentTracker = new DefaultVisualStudioDocumentTracker("AFile", ProjectManager, ProjectService, EditorSettingsManager, Workspace, buffers[0]);
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(factoryService => factoryService.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
-            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, editorFactoryService, Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, SupportedProjectService, editorFactoryService, Workspace);
 
             // Act
             textViewListener.SubjectBuffersConnected(textView, ConnectionReason.BufferGraphChange, buffers);
@@ -93,7 +113,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             tracker.AddTextView(textView1);
             tracker.AddTextView(textView2);
             buffers[1].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
-            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, SupportedProjectService, Mock.Of<RazorEditorFactoryService>(), Workspace);
 
             // Act
             textViewListener.SubjectBuffersDisconnected(textView2, ConnectionReason.BufferGraphChange, buffers);
@@ -107,10 +127,28 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         }
 
         [ForegroundFact]
+        public void SubjectBuffersDisconnected_FoNonRazorCoreProject_DoesNothing()
+        {
+            // Arrange
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, UnsupportedProjectService, Mock.Of<RazorEditorFactoryService>(), Workspace);
+            var textView = Mock.Of<IWpfTextView>();
+            var buffers = new Collection<ITextBuffer>()
+            {
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+            };
+
+            // Act
+            textViewListener.SubjectBuffersDisconnected(textView, ConnectionReason.BufferGraphChange, buffers);
+
+            // Assert
+            Assert.False(buffers[0].Properties.ContainsProperty(typeof(VisualStudioDocumentTracker)));
+        }
+
+        [ForegroundFact]
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithoutTracker_DoesNothing()
         {
             // Arrange
-            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, SupportedProjectService, Mock.Of<RazorEditorFactoryService>(), Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
