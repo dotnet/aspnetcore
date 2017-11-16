@@ -3,8 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.FunctionalTests</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.FunctionalTests</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <DefineConstants>$(DefineConstants);SOCKETS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>
@@ -16,7 +15,7 @@
     <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
     <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
   </ItemGroup>
 

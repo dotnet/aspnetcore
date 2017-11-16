@@ -3,8 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Core.Tests</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Core.Tests</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 

@@ -3,8 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <ServerGarbageCollection>true</ServerGarbageCollection>
   </PropertyGroup>
