@@ -94,6 +94,11 @@ namespace Microsoft.AspNetCore.Builder
                 // HTML content so it can be passed as a template to the prerenderer.
                 RemoveConditionalRequestHeaders(context.Request);
 
+                // Make sure we're not capturing compressed content, because then we'd have
+                // to decompress it. Since this sub-request isn't leaving the machine, there's
+                // little to no benefit in having compression on it.
+                var originalAcceptEncodingValue = GetAndRemoveAcceptEncodingHeader(context.Request);
+
                 // Capture the non-prerendered responses, which in production will typically only
                 // be returning the default SPA index.html page (because other resources will be
                 // served statically from disk). We will use this as a template in which to inject
@@ -111,6 +116,11 @@ namespace Microsoft.AspNetCore.Builder
                     finally
                     {
                         context.Response.Body = originalResponseStream;
+
+                        if (!string.IsNullOrEmpty(originalAcceptEncodingValue))
+                        {
+                            context.Request.Headers[HeaderNames.AcceptEncoding] = originalAcceptEncodingValue;
+                        }
                     }
 
                     // If it isn't an HTML page that we can use as the template for prerendering,
@@ -179,6 +189,20 @@ namespace Microsoft.AspNetCore.Builder
             request.Headers.Remove(HeaderNames.IfNoneMatch);
             request.Headers.Remove(HeaderNames.IfUnmodifiedSince);
             request.Headers.Remove(HeaderNames.IfRange);
+        }
+
+        private static string GetAndRemoveAcceptEncodingHeader(HttpRequest request)
+        {
+            var headers = request.Headers;
+            var value = (string)null;
+
+            if (headers.ContainsKey(HeaderNames.AcceptEncoding))
+            {
+                value = headers[HeaderNames.AcceptEncoding];
+                headers.Remove(HeaderNames.AcceptEncoding);
+            }
+
+            return value;
         }
 
         private static (string, string) GetUnencodedUrlAndPathQuery(HttpContext httpContext)
