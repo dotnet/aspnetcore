@@ -66,13 +66,16 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 sourcePath, npmScriptName, null, envVars);
             npmScriptRunner.AttachToLogger(logger);
 
-            Match openBrowserLine;
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
             {
                 try
                 {
-                    openBrowserLine = await npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("Local:\\s*(http\\S+)", RegexOptions.None, RegexMatchTimeout),
+                    // Although the React dev server may eventually tell us the URL it's listening on,
+                    // it doesn't do so until it's finished compiling, and even then only if there were
+                    // no compiler warnings. So instead of waiting for that, consider it ready as soon
+                    // as it starts listening for requests.
+                    await npmScriptRunner.StdOut.WaitForMatch(
+                        new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout),
                         StartupTimeout);
                 }
                 catch (EndOfStreamException ex)
@@ -91,8 +94,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                 }
             }
 
-            var uri = new Uri(openBrowserLine.Groups[1].Value);
-            return uri.Port;
+            return portNumber;
         }
     }
 }
