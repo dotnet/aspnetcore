@@ -45,5 +45,30 @@ namespace ServerComparison.FunctionalTests
 
             return content;
         }
+
+        public static string GetTargetFramework(RuntimeFlavor runtimeFlavor)
+        {
+            if (runtimeFlavor == RuntimeFlavor.Clr)
+            {
+#if NET461
+                return "net461";
+#elif NETCOREAPP2_0 || NETCOREAPP2_1
+#else
+#error Tests targeting CLR must be compiled only on desktop.
+#endif
+            }
+            else if (runtimeFlavor == RuntimeFlavor.CoreClr)
+            {
+#if NETCOREAPP2_0
+                return "netcoreapp2.0";
+#elif NETCOREAPP2_1 || NET461
+                return "netcoreapp2.1";
+#else
+#error Target frameworks need to be updated.
+#endif
+            }
+
+            throw new ArgumentException($"Unknown RuntimeFlavor '{runtimeFlavor}");
+        }
     }
 }
