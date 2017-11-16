@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <UserSecretsId>aspnet-ChatSample-f11cf018-e0a8-49fa-b749-4c0eb5c9150b</UserSecretsId>
     <!-- Don't create a NuGet package -->
     <IsPackable>false</IsPackable>
