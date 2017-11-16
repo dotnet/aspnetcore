@@ -9,6 +9,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
     public static class LengthPrefixedTextMessageParser
     {
         private const int Int32OverflowLength = 10;
+        private const char FieldDelimiter = ':';
+        private const char MessageDelimiter = ';';
 
         /// <summary>
         /// Attempts to parse a message from the buffer. Returns 'false' if there is not enough data to complete a message. Throws an
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 
             var remaining = buffer.Slice(index);
 
-            if (!TryReadDelimiter(remaining, LengthPrefixedTextMessageWriter.FieldDelimiter, "length"))
+            if (!TryReadDelimiter(remaining, FieldDelimiter, "length"))
             {
                 return false;
             }
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 
             remaining = remaining.Slice(length);
 
-            if (!TryReadDelimiter(remaining, LengthPrefixedTextMessageWriter.MessageDelimiter, "payload"))
+            if (!TryReadDelimiter(remaining, MessageDelimiter, "payload"))
             {
                 return false;
             }
@@ -56,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
         {
             length = 0;
             // Read until the first ':' to find the length
-            index = buffer.IndexOf((byte)LengthPrefixedTextMessageWriter.FieldDelimiter);
+            index = buffer.IndexOf((byte)FieldDelimiter);
 
             if (index == -1)
             {
