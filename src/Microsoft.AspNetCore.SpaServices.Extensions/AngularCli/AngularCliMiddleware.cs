@@ -10,6 +10,8 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Threading;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
@@ -89,11 +91,46 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var serverInfo = new AngularCliServerInfo { Port = uri.Port };
 
             // Even after the Angular CLI claims to be listening for requests, there's a short
-            // period where it will give an error if you make a request too quickly. Give it
-            // a moment to finish starting up.
-            await Task.Delay(500);
+            // period where it will give an error if you make a request too quickly
+            await WaitForAngularCliServerToAcceptRequests(uri);
 
             return serverInfo;
+        }
+
+        private static async Task WaitForAngularCliServerToAcceptRequests(Uri cliServerUri)
+        {
+            // To determine when it's actually ready, try making HEAD requests to '/'. If it
+            // produces any HTTP response (even if it's 404) then it's ready. If it rejects the
+            // connection then it's not ready.
+            const int MaxAttempts = 10;
+            const int SecondsBetweenAttempts = 1;
+
+            var attemptsMade = 0;
+            var client = new HttpClient();
+
+            while (true)
+            {
+                try
+                {
+                    // If we get any HTTP response, the CLI server is ready
+                    await client.SendAsync(
+                        new HttpRequestMessage(HttpMethod.Head, cliServerUri),
+                        new CancellationTokenSource(1000).Token);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    attemptsMade++;
+                    if (attemptsMade >= MaxAttempts)
+                    {
+                        throw new InvalidOperationException(
+                            "Timed out waiting for the @angular/cli server to accept HTTP requests. " +
+                            "See inner exception for details.", ex);
+                    }
+
+                    Thread.Sleep(SecondsBetweenAttempts * 1000);
+                }
+            }
         }
 
         class AngularCliServerInfo
