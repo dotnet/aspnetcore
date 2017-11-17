@@ -9,6 +9,7 @@
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27488</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27488</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25907-02</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.4.0</SystemTextEncodingsWebPackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>
