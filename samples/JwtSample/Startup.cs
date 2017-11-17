@@ -38,6 +38,7 @@ namespace JwtSample
                     options.TokenValidationParameters =
                     new TokenValidationParameters
                     {
+                        LifetimeValidator = (before, expires, token, parameters) => expires > DateTime.UtcNow,
                         ValidateAudience = false,
                         ValidateIssuer = false,
                         ValidateActor = false,
@@ -76,7 +77,7 @@ namespace JwtSample
         {
             var claims = new[] { new Claim(ClaimTypes.NameIdentifier, httpContext.Request.Query["user"]) };
             var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
-            var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.Now.AddSeconds(30), signingCredentials: credentials);
+            var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddSeconds(30), signingCredentials: credentials);
             return JwtTokenHandler.WriteToken(token);
         }
     }

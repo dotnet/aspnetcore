@@ -63,7 +63,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     return;
                 }
             });
-
         }
 
         private string GenerateJwtToken()
