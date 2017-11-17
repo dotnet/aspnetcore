@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             SameSite = SameSiteMode.Lax,
             HttpOnly = true,
             SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            IsEssential = true,
         };
 
         /// <summary>

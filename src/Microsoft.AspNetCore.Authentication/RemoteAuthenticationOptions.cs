@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Authentication
                 HttpOnly = true,
                 SameSite = SameSiteMode.None,
                 SecurePolicy = CookieSecurePolicy.SameAsRequest,
+                IsEssential = true,
             };
         }
 

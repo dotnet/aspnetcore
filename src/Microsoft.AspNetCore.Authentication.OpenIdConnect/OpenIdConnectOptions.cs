@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 HttpOnly = true,
                 SameSite = SameSiteMode.None,
                 SecurePolicy = CookieSecurePolicy.SameAsRequest,
+                IsEssential = true,
             };
         }
 

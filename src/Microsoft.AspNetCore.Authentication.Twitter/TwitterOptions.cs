@@ -35,6 +35,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 SecurePolicy = CookieSecurePolicy.SameAsRequest,
                 HttpOnly = true,
                 SameSite = SameSiteMode.Lax,
+                IsEssential = true,
             };
         }
 

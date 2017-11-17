@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.27004.2002
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{4D2B6A51-2F9F-44F5-8131-EA5CAC053652}"
 	ProjectSection(SolutionItems) = preProject
@@ -71,6 +71,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authorization.Policy", "src\Microsoft.AspNetCore.Authorization.Policy\Microsoft.AspNetCore.Authorization.Policy.csproj", "{58194599-F07D-47A3-9DF2-E21A22C5EF9E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookiePolicySample", "samples\CookiePolicySample\CookiePolicySample.csproj", "{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -462,6 +464,22 @@ Global
 		{58194599-F07D-47A3-9DF2-E21A22C5EF9E}.Release|x64.Build.0 = Release|Any CPU
 		{58194599-F07D-47A3-9DF2-E21A22C5EF9E}.Release|x86.ActiveCfg = Release|Any CPU
 		{58194599-F07D-47A3-9DF2-E21A22C5EF9E}.Release|x86.Build.0 = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|x64.Build.0 = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Debug|x86.Build.0 = Debug|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|x64.ActiveCfg = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|x64.Build.0 = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|x86.ActiveCfg = Release|Any CPU
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -491,6 +509,7 @@ Global
 		{3A7AD414-EBDE-4F92-B307-4E8F19B6117E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 		{51563775-C659-4907-9BAF-9995BAB87D01} = {7BF11F3A-60B6-4796-B504-579C67FFBA34}
 		{58194599-F07D-47A3-9DF2-E21A22C5EF9E} = {4D2B6A51-2F9F-44F5-8131-EA5CAC053652}
+		{24A28F5D-E5A9-4CA8-B0D2-924A1F8BE14E} = {F8C0AA27-F3FB-4286-8E4C-47EF86B539FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}
