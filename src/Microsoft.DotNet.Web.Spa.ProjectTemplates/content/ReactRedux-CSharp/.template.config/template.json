@@ -72,16 +72,6 @@
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true
-    },
-    {
-      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
-      "description": "\n\n-------------------------------------------------------------------\nIMPORTANT: Before running this project on the command line,\n           you must restore NPM packages by running \"npm install\"\n-------------------------------------------------------------------\n",
-      "manualInstructions": [
-        {
-          "text": "Run \"npm install\""
-        }
-      ]
     }
   ]
 }
