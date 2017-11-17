@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Sockets
             socketConfig(socketBuilder);
             var socket = socketBuilder.Build();
             _routes.MapRoute(path, c => _dispatcher.ExecuteAsync(c, options, socket));
+            _routes.MapRoute(path + "/negotiate", c => _dispatcher.ExecuteNegotiateAsync(c, options));
         }
 
         public void MapEndPoint<TEndPoint>(string path) where TEndPoint : EndPoint

@@ -220,7 +220,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 // Get a connection ID from the server
                 logger.EstablishingConnection(url);
-                using (var request = new HttpRequestMessage(HttpMethod.Options, url))
+                var urlBuilder = new UriBuilder(url);
+                if (!urlBuilder.Path.EndsWith("/"))
+                {
+                    urlBuilder.Path += "/";
+                }
+                urlBuilder.Path += "negotiate";
+
+                using (var request = new HttpRequestMessage(HttpMethod.Post, urlBuilder.Uri))
                 {
                     request.Headers.UserAgent.Add(Constants.UserAgentHeader);
                     using (var response = await httpClient.SendAsync(request))

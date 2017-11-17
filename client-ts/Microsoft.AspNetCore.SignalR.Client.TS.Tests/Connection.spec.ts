@@ -6,7 +6,7 @@ import { HttpConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpCo
 import { IHttpConnectionOptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHttpConnectionOptions"
 import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
 import { ITransport, TransportType, TransferMode } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
-import { eachTransport } from "./Common";
+import { eachTransport, eachEndpointUrl } from "./Common";
 
 describe("Connection", () => {
     it("cannot be created with relative url if document object is not present", () => {
@@ -24,7 +24,7 @@ describe("Connection", () => {
     it("starting connection fails if getting id fails", async (done) => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     return Promise.reject("error");
                 },
                 get(url: string): Promise<string> {
@@ -50,7 +50,7 @@ describe("Connection", () => {
     it("cannot start a running connection", async (done) => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     connection.start()
                         .then(() => {
                             fail();
@@ -84,7 +84,7 @@ describe("Connection", () => {
     it("cannot start a stopped connection", async (done) => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     return Promise.reject("error");
                 },
                 get(url: string): Promise<string> {
@@ -118,7 +118,7 @@ describe("Connection", () => {
     it("can stop a starting connection", async (done) => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     connection.stop();
                     return Promise.resolve("{}");
                 },
@@ -165,7 +165,7 @@ describe("Connection", () => {
 
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     return Promise.resolve("{ \"connectionId\": \"42\" }");
                 },
                 get(url: string): Promise<string> {
@@ -191,6 +191,39 @@ describe("Connection", () => {
         done();
     });
 
+    eachEndpointUrl((givenUrl: string, expectedUrl: string) => {
+        it("negotiate request puts 'negotiate' at the end of the path", async done => {
+            let negotiateUrl: string;
+            let connection: HttpConnection;
+            let options: IHttpConnectionOptions = {
+                httpClient: <IHttpClient>{
+                    post(url: string): Promise<string> {
+                        negotiateUrl = url;
+                        connection.stop();
+                        return Promise.resolve("{}");
+                    },
+                    get(url: string): Promise<string> {
+                        connection.stop();
+                        return Promise.resolve("");
+                    }
+                },
+                logging: null
+            } as IHttpConnectionOptions;
+
+            connection = new HttpConnection(givenUrl, options);
+
+            try {
+                await connection.start();
+                done();
+            } catch (e) {
+                fail();
+                done();
+            }
+
+            expect(negotiateUrl).toBe(expectedUrl);
+        });
+    });
+
     eachTransport((requestedTransport: TransportType) => {
         // OPTIONS is not sent when WebSockets transport is explicitly requested
         if (requestedTransport === TransportType.WebSockets) {
@@ -199,7 +232,7 @@ describe("Connection", () => {
         it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
             let options: IHttpConnectionOptions = {
                 httpClient: <IHttpClient>{
-                    options(url: string): Promise<string> {
+                    post(url: string): Promise<string> {
                         return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
                     },
                     get(url: string): Promise<string> {
@@ -226,7 +259,7 @@ describe("Connection", () => {
     it("cannot be started if no transport available on server and no transport requested", async done => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
                 },
                 get(url: string): Promise<string> {
@@ -248,10 +281,10 @@ describe("Connection", () => {
         }
     });
 
-    it('does not send OPTIONS request if WebSockets transport requested explicitly', async done => {
+    it('does not send negotiate request if WebSockets transport requested explicitly', async done => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
+                post(url: string): Promise<string> {
                     return Promise.reject("Should not be called");
                 },
                 get(url: string): Promise<string> {
@@ -270,7 +303,7 @@ describe("Connection", () => {
         }
         catch (e) {
             // WebSocket is created when the transport is connecting which happens after
-            // OPTIONS request would be sent. No better/easier way to test this.
+            // negotiate request would be sent. No better/easier way to test this.
             expect(e.message).toBe("WebSocket is not defined");
             done();
         }
@@ -295,7 +328,7 @@ describe("Connection", () => {
 
             let options: IHttpConnectionOptions = {
                 httpClient: <IHttpClient>{
-                    options(url: string): Promise<string> {
+                    post(url: string): Promise<string> {
                         return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
                     },
                     get(url: string): Promise<string> {

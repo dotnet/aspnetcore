@@ -12,13 +12,13 @@ A transport is required to have the following attributes:
 
 The only transport which fully implements the duplex requirement is WebSockets, the others are "half-transports" which implement one end of the duplex connection. They are used in combination to achieve a duplex connection.
 
-Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The term `[connection-id]` is used to refer to the connection ID provided by the `OPTIONS [endpoint-base]` request.
+Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The term `[connection-id]` is used to refer to the connection ID provided by the `POST [endpoint-base]/negotiate` request.
 
 **NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets non-`1000 Normal Closure` close frames; in these cases the connection should be considered to be terminated.
 
-## `OPTIONS [endpoint-base]` request
+## `POST [endpoint-base]/negotiate` request
 
-The `OPTIONS [endpoint-base]` request is used to establish connection between the client and the server. The response to the `OPTIONS [endpoint-base]` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `OPTIONS [endpoint-base]` request
+The `POST [endpoint-base]/negotiate` request is used to establish connection between the client and the server. The response to the `POST [endpoint-base]/negotiate` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `POST [endpoint-base]/negotiate` request
 
 ```
 {
@@ -29,7 +29,7 @@ The `OPTIONS [endpoint-base]` request is used to establish connection between th
 
 ## WebSockets (Full Duplex)
 
-The WebSockets transport is unique in that it is full duplex, and a persistent connection that can be established in a single operation. As a result, the client is not required to use the `OPTIONS [endpoint-base]` request to establish a connection in advance. It also includes all the necessary metadata in it's own frame metadata.
+The WebSockets transport is unique in that it is full duplex, and a persistent connection that can be established in a single operation. As a result, the client is not required to use the `POST [endpoint-base]/negotiate` request to establish a connection in advance. It also includes all the necessary metadata in it's own frame metadata.
 
 The WebSocket transport is activated by making a WebSocket connection to `[endpoint-base]`. The **optional** `connectionId` query string value is used to identify the connection to attach to. If there is no `connectionId` query string value, a new connection is established. If the parameter is specified but there is no connection with the specified ID value, a `404 Not Found` response is returned. Upon receiving this request, the connection is established and the server responds with a WebSocket upgrade (`101 Switching Protocols`) immediately ready for frames to be sent/received. The WebSocket OpCode field is used to indicate the type of the frame (Text or Binary).
 
@@ -41,7 +41,7 @@ Errors while establishing the connection are handled by returning a `500 Server 
 
 HTTP Post is a half-transport, it is only able to send messages from the Client to the Server, as such it is **always** used with one of the other half-transports which can send from Server to Client (Server Sent Events and Long Polling).
 
-This transport requires that a connection be established using the `OPTIONS [endpoint-base]` request.
+This transport requires that a connection be established using the `POST [endpoint-base]/negotiate` request.
 
 The HTTP POST request is made to the URL `[endpoint-base]`. The **mandatory** `connectionId` query string value is used to identify the connection to send to. If there is no `connectionId` query string value, a `400 Bad Request` response is returned. Upon receipt of the **entire** payload, the server will process the payload and responds with `200 OK` if the payload was successfully processed. If a client makes another request to `/` while an existing request is outstanding, the new request is immediately terminated by the server with the `409 Conflict` status code.
 
@@ -51,7 +51,7 @@ If the relevant connection has been terminated, a `404 Not Found` status code is
 
 ## Server-Sent Events (Server-to-Client only)
 
-Server-Sent Events (SSE) is a protocol specified by WHATWG at [https://html.spec.whatwg.org/multipage/comms.html#server-sent-events](https://html.spec.whatwg.org/multipage/comms.html#server-sent-events). It is capable of sending data from server to client only, so it must be paired with the HTTP Post transport. It also requires a connection already be established using the `OPTIONS [endpoint-base]` request.
+Server-Sent Events (SSE) is a protocol specified by WHATWG at [https://html.spec.whatwg.org/multipage/comms.html#server-sent-events](https://html.spec.whatwg.org/multipage/comms.html#server-sent-events). It is capable of sending data from server to client only, so it must be paired with the HTTP Post transport. It also requires a connection already be established using the `POST [endpoint-base]/negotiate` request.
 
 
 The protocol is similar to Long Polling in that the client opens a request to an endpoint and leaves it open. The server transmits frames as "events" using the SSE protocol. The protocol encodes a single event as a sequence of key-value pair lines, separated by `:` and using any of `\r\n`, `\n` or `\r` as line-terminators, followed by a final blank line. Keys can be duplicated and their values are concatenated with `\n`. So the following represents two events:
@@ -73,7 +73,7 @@ In this transport, the client establishes an SSE connection to `[endpoint-base]`
 
 ## Long Polling (Server-to-Client only)
 
-Long Polling is a server-to-client half-transport, so it is always paired with HTTP Post. It requires a connection already be established using the `OPTIONS [endpoint-base]` request.
+Long Polling is a server-to-client half-transport, so it is always paired with HTTP Post. It requires a connection already be established using the `POST [endpoint-base]/negotiate` request.
 
 Long Polling requires that the client poll the server for new messages. Unlike traditional polling, if there is no data available, the server will simply wait for messages to be dispatched. At some point, the server, client or an upstream proxy will likely terminate the connection, at which point the client should immediately re-send the request. Long Polling is the only transport that allows a "reconnection" where a new request can be received while the server believes an existing request is in process. This can happen because of a time out. When this happens, the existing request is immediately terminated with status code `204 No Content`. Any messages which have already been written to the existing request will be flushed and considered sent. In the case of a server side timeout with no data, a `200 OK` with a 0 `Content-Length` will be sent and the client should poll again for more data.
 

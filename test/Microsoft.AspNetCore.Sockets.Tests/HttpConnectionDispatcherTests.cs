@@ -37,12 +37,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             services.AddOptions();
             var ms = new MemoryStream();
             context.Request.Path = "/foo";
-            context.Request.Method = "OPTIONS";
+            context.Request.Method = "POST";
             context.Response.Body = ms;
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions());
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
             var connectionId = negotiateResponse.Value<string>("connectionId");
             Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
@@ -64,12 +61,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             services.AddOptions();
             var ms = new MemoryStream();
             context.Request.Path = "/foo";
-            context.Request.Method = "OPTIONS";
+            context.Request.Method = "POST";
             context.Response.Body = ms;
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions { Transports = transports }, app);
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions { Transports = transports });
 
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
             var availableTransports = (TransportType)0;
