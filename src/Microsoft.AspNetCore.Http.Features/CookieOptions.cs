@@ -59,5 +59,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns>The max-age date and time for the cookie.</returns>
         public TimeSpan? MaxAge { get; set; }
+
+        /// <summary>
+        /// Indicates if this cookie is essential for the application to function correctly. If true then
+        /// consent policy checks may be bypassed. The default value is false.
+        /// </summary>
+        public bool IsEssential { get; set; }
     }
 }

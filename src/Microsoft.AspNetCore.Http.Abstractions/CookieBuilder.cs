@@ -73,6 +73,12 @@ namespace Microsoft.AspNetCore.Http
         public virtual TimeSpan? MaxAge { get; set; }
 
         /// <summary>
+        /// Indicates if this cookie is essential for the application to function correctly. If true then
+        /// consent policy checks may be bypassed. The default value is false.
+        /// </summary>
+        public virtual bool IsEssential { get; set; }
+
+        /// <summary>
         /// Creates the cookie options from the given <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
@@ -99,6 +105,7 @@ namespace Microsoft.AspNetCore.Http
                 HttpOnly = HttpOnly,
                 MaxAge = MaxAge,
                 Domain = Domain,
+                IsEssential = IsEssential,
                 Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
                 Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.Value) : default(DateTimeOffset?)
             };
