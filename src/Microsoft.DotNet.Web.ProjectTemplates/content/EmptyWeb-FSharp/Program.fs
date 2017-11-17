@@ -20,6 +20,6 @@ module Program =
 
     [<EntryPoint>]
     let main args =
-        BuildWebHost(args).Build().Run()
+        CreateWebHostBuilder(args).Build().Run()
 
         exitCode
