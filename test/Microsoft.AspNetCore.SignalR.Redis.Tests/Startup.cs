@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR()
-                .AddRedis();
+                .AddRedis(options =>
+                {
+                    // We start the servers before starting redis so we want to time them out ASAP
+                    options.Options.ConnectTimeout = 1;
+                });
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

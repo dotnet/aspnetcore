@@ -58,16 +58,17 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
             // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
             // use redis base docker image
-            return RunProcess(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", logger);
+            // 10 second timeout to allow redis image to be downloaded
+            return RunProcess(_path, $"run --rm -p 6379:6379 --name {_dockerContainerName} -d redis", logger, TimeSpan.FromSeconds(10));
         }
 
         public int Stop(ILogger logger)
         {
             logger.LogInformation("Stopping docker container");
-            return RunProcess(_path, $"stop {_dockerContainerName}", logger);
+            return RunProcess(_path, $"stop {_dockerContainerName}", logger, TimeSpan.FromSeconds(5));
         }
 
-        private static int RunProcess(string fileName, string arugments, ILogger logger)
+        private static int RunProcess(string fileName, string arugments, ILogger logger, TimeSpan timeout)
         {
             var process = new Process
             {
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             process.BeginErrorReadLine();
             process.BeginOutputReadLine();
 
-            process.WaitForExit(5000);
+            process.WaitForExit((int)timeout.TotalMilliseconds);
 
             return exitCode;
         }
