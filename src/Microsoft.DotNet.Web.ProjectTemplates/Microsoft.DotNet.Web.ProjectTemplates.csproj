@@ -18,7 +18,6 @@
       MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion=$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion);
       MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion=$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion);
       MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion);
-      MicrosoftAspNetCoreHttpsPolicyPackageVersion=$(MicrosoftAspNetCoreHttpsPolicyPackageVersion);
       MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion=$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion);
       MicrosoftAspNetCoreMvcPackageVersion=$(MicrosoftAspNetCoreMvcPackageVersion);
       MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion=$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion);
