@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -1053,6 +1054,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "TEXT", null, "text" },
                     { "time", null, "time" },
                     { "month", "{0:yyyy-MM}", "month" },
+                    { "week", null, "week" },
                     { "UInt16", null, "number" },
                     { "uint16", null, "number" },
                     { "UInt32", null, "number" },
@@ -1220,6 +1222,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
         [InlineData("Month", Html5DateRenderingMode.CurrentCulture, "{0:yyyy-MM}", "month")]
         [InlineData("Month", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM}", "month")]
+        [InlineData("Week", Html5DateRenderingMode.CurrentCulture, null, "week")]
+        [InlineData("Week", Html5DateRenderingMode.Rfc3339, null, "week")]
         [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
         [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
@@ -1291,6 +1295,210 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(string.Empty, output.Content.GetContent());
             Assert.Empty(output.PostContent.GetContent());
             Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        // Html5DateRenderingMode.Rfc3339 is enabled by default.
+        [Theory]
+        [InlineData("Date", "2000-01-02", "date")]
+        [InlineData("DateTime", "2000-01-02T03:04:05.060", "datetime-local")]
+        [InlineData("DateTimeLocal", "2000-01-02T03:04:05.060", "datetime-local")]
+        [InlineData("DateTimeOffset", "2000-01-02T03:04:05.060Z", "text")]
+        [InlineData("Time", "03:04:05.060", "time")]
+        [InlineData("Month", "2000-01", "month")]
+        [InlineData("Week", "1999-W52", "week")]
+        public async Task ProcessAsync_CallsGenerateTextBox_ProducesExpectedValue_ForDateTime(
+            string propertyName,
+            string expectedValue,
+            string expectedType)
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", propertyName },
+                { "name", propertyName },
+                { "value", expectedValue },
+            };
+
+            var context = new TagHelperContext(
+                tagName: "input",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedType,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var model = new DateTime(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 60,
+                kind: DateTimeKind.Utc);
+
+            var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
+            var tagHelper = GetTagHelper(
+                htmlGenerator,
+                model: model,
+                propertyName: propertyName,
+                metadataProvider: metadataProvider);
+            tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedType, output.TagName);
+        }
+
+        // Html5DateRenderingMode.Rfc3339 can be disabled.
+        [Theory]
+        [InlineData("Date", null, "02/01/2000", "date")]
+        [InlineData("Date", "{0:d}", "02/01/2000", "date")]
+        [InlineData("DateTime", null, "02/01/2000 03:04:05", "datetime-local")]
+        [InlineData("DateTimeLocal", null, "02/01/2000 03:04:05", "datetime-local")]
+        [InlineData("DateTimeOffset", null, "02/01/2000 03:04:05", "text")]
+        [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000Z", "text")]
+        [InlineData("Time", null, "03:04", "time")]
+        [InlineData("Time", "{0:t}", "03:04", "time")]
+        [InlineData("Month", null, "2000-01", "month")]
+        [InlineData("Month", "{0:yyyy/MM}", "2000/01", "month")]
+        [InlineData("Week", null, "1999-W52", "week")]
+        [InlineData("Week", "{0:yyyy/'W1'}", "2000/W1", "week")]
+        [ReplaceCulture]
+        public async Task ProcessAsync_CallsGenerateTextBox_ProducesExpectedValue_ForDateTimeNotRfc3339(
+            string propertyName,
+            string editFormatString,
+            string expectedValue,
+            string expectedType)
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", propertyName },
+                { "name", propertyName },
+                { "value", expectedValue },
+            };
+
+            var context = new TagHelperContext(
+                tagName: "input",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedType,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            
+            var model = new DateTime(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 60,
+                kind: DateTimeKind.Utc);
+
+            var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
+            var tagHelper = GetTagHelper(
+                htmlGenerator,
+                model: model,
+                propertyName: propertyName,
+                metadataProvider: metadataProvider);
+            tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.CurrentCulture;
+            tagHelper.Format = editFormatString;
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedType, output.TagName);
+        }
+
+        // Html5DateRenderingMode.Rfc3339 can be disabled.
+        [Theory]
+        [InlineData("Month", "month")]
+        [InlineData("Week", "week")]
+        [ReplaceCulture]
+        public async Task ProcessAsync_CallsGenerateTextBox_ProducesExpectedValue_OverridesDefaultFormat(
+            string propertyName,
+            string expectedType)
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", propertyName },
+                { "name", propertyName },
+                { "value", "non-default format string" },
+            };
+
+            var context = new TagHelperContext(
+                tagName: "input",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+
+            var output = new TagHelperOutput(
+                expectedType,
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
+                    new DefaultTagHelperContent()))
+            {
+                TagMode = TagMode.SelfClosing,
+            };
+
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
+            var model = new DateTime(
+                year: 2000,
+                month: 1,
+                day: 2,
+                hour: 3,
+                minute: 4,
+                second: 5,
+                millisecond: 60,
+                kind: DateTimeKind.Utc);
+
+            var htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(metadataProvider);
+            var tagHelper = GetTagHelper(
+                htmlGenerator,
+                model: model,
+                propertyName: propertyName,
+                metadataProvider: metadataProvider);
+            tagHelper.ViewContext.Html5DateRenderingMode = Html5DateRenderingMode.CurrentCulture;
+            tagHelper.Format = "non-default format string";
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedType, output.TagName);
         }
 
         private static InputTagHelper GetTagHelper(
@@ -1383,6 +1591,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             [DataType("month")]
             public DateTimeOffset Month { get; set; }
+
+            [DataType("week")]
+            public DateTimeOffset Week { get; set; }
         }
 
         private class NestedModel

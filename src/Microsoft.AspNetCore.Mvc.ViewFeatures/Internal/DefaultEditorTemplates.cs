@@ -372,10 +372,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static IHtmlContent MonthInputTemplate(IHtmlHelper htmlHelper)
         {
-            // A new HTML5 input type that only will be rendered in Rfc3339 mode
+            // "month" is a new HTML5 input type that only will be rendered in Rfc3339 mode
             htmlHelper.Html5DateRenderingMode = Html5DateRenderingMode.Rfc3339;
             ApplyRfc3339DateFormattingIfNeeded(htmlHelper, "{0:yyyy-MM}");
             return GenerateTextBox(htmlHelper, inputType: "month");
+        }
+
+        public static IHtmlContent WeekInputTemplate(IHtmlHelper htmlHelper)
+        {
+            return GenerateTextBox(htmlHelper, inputType: "week");
         }
 
         public static IHtmlContent NumberInputTemplate(IHtmlHelper htmlHelper)

@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetStringAsync("http://localhost/HtmlGeneration_Home/Enum");
 
             // Assert
-            Assert.Equal($"Vrijdag{Environment.NewLine}Month: January", response, ignoreLineEndingDifferences: true);
+            Assert.Equal($"Vrijdag{Environment.NewLine}Month: FirstOne", response, ignoreLineEndingDifferences: true);
         }
 
         [Theory]

@@ -53,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 { nameof(DateTimeOffset), DefaultEditorTemplates.DateTimeOffsetTemplate },
                 { "Time", DefaultEditorTemplates.TimeInputTemplate },
                 { "Month", DefaultEditorTemplates.MonthInputTemplate },
+                { "Week", DefaultEditorTemplates.WeekInputTemplate },
                 { typeof(byte).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(sbyte).Name, DefaultEditorTemplates.NumberInputTemplate },
                 { typeof(short).Name, DefaultEditorTemplates.NumberInputTemplate },

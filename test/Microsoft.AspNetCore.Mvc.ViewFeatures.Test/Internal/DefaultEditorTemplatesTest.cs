@@ -59,6 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     { "time", "__TextBox__ class='text-box single-line' type='time'" },
                     { "Month", "__TextBox__ class='text-box single-line' type='month'" },
                     { "month", "__TextBox__ class='text-box single-line' type='month'" },
+                    { "Week", "__TextBox__ class='text-box single-line' type='week'" },
+                    { "week", "__TextBox__ class='text-box single-line' type='week'" },
                     { "Byte", "__TextBox__ class='text-box single-line' type='number'" },
                     { "BYTE", "__TextBox__ class='text-box single-line' type='number'" },
                     { "SByte", "__TextBox__ class='text-box single-line' type='number'" },
@@ -813,7 +815,7 @@ Environment.NewLine;
             // Act
             var result = helper.Editor(
                 string.Empty,
-                new { htmlAttributes = new { type = "datetime" }});
+                new { htmlAttributes = new { type = "datetime" } });
 
             // Assert
             Assert.Equal(expectedInput, HtmlContentUtilities.HtmlContentToString(result));
@@ -822,16 +824,23 @@ Environment.NewLine;
         // Html5DateRenderingMode.Rfc3339 is enabled by default.
         [Theory]
         [InlineData(null, null, "2000-01-02T03:04:05.060-05:00", "text")]
-        [InlineData("date", "{0:d}", "2000-01-02", "date")]
+        [InlineData("date", null, "2000-01-02", "date")]
+        [InlineData("date", "{0:d}", "02/01/2000", "date")]
         [InlineData("datetime", null, "2000-01-02T03:04:05.060", "datetime-local")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060", "datetime-local")]
-        [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.060-05:00", "text")]
-        [InlineData("time", "{0:t}", "03:04:05.060", "time")]
+        [InlineData("DateTimeOffset", null, "2000-01-02T03:04:05.060-05:00", "text")]
+        [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000-05:00", "text")]
+        [InlineData("time", null, "03:04:05.060", "time")]
+        [InlineData("time", "{0:t}", "03:04", "time")]
+        [InlineData("month", null, "2000-01", "month")]
         [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
-        public void Editor_FindsCorrectDateOrTimeTemplate(
+        [InlineData("week", null, "1999-W52", "week")]
+        [InlineData("week", "{0:yyyy-'W1'}", "2000-W1", "week")]
+        [ReplaceCulture]
+        public void Editor_FindsCorrectDateOrTimeTemplate_WithTimeOffset(
             string dataTypeName,
             string editFormatString,
-            string expectedFormat,
+            string expectedValue,
             string expectedType)
         {
             // Arrange
@@ -840,7 +849,7 @@ Environment.NewLine;
                 $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 expectedType +
-                "]]\" value=\"HtmlEncode[[" + expectedFormat + "]]\" />";
+                "]]\" value=\"HtmlEncode[[" + expectedValue + "]]\" />";
 
             var offset = TimeSpan.FromHours(-5);
             var model = new DateTimeOffset(
@@ -865,6 +874,7 @@ Environment.NewLine;
             {
                 dd.DataTypeName = dataTypeName;
                 dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+                dd.HasNonDefaultEditFormat = true;
             });
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -884,17 +894,23 @@ Environment.NewLine;
         // Html5DateRenderingMode.Rfc3339 can be disabled.
         [Theory]
         [InlineData(null, null, "02/01/2000 03:04:05 -05:00", "text")]
+        [InlineData("date", null, "02/01/2000 03:04:05 -05:00", "date")]
         [InlineData("date", "{0:d}", "02/01/2000", "date")]
         [InlineData("datetime", null, "02/01/2000 03:04:05 -05:00", "datetime-local")]
         [InlineData("datetime-local", null, "02/01/2000 03:04:05 -05:00", "datetime-local")]
+        [InlineData("DateTimeOffset", null, "02/01/2000 03:04:05 -05:00", "text")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000-05:00", "text")]
+        [InlineData("time", null, "02/01/2000 03:04:05 -05:00", "time")]
         [InlineData("time", "{0:t}", "03:04", "time")]
+        [InlineData("month", null, "2000-01", "month")]
         [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
+        [InlineData("week", null, "1999-W52", "week")]
+        [InlineData("week", "{0:yyyy-'W1'}", "2000-W1", "week")]
         [ReplaceCulture]
-        public void Editor_FindsCorrectDateOrTimeTemplate_NotRfc3339(
+        public void Editor_FindsCorrectDateOrTimeTemplate_WithTimeOffset_NotRfc3339(
             string dataTypeName,
             string editFormatString,
-            string expectedFormat,
+            string expectedValue,
             string expectedType)
         {
             // Arrange
@@ -904,7 +920,7 @@ Environment.NewLine;
                 $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 expectedType +
-                "]]\" value=\"HtmlEncode[[" + expectedFormat + "]]\" />";
+                "]]\" value=\"HtmlEncode[[" + expectedValue + "]]\" />";
 
             var offset = TimeSpan.FromHours(-5);
             var model = new DateTimeOffset(
@@ -929,6 +945,7 @@ Environment.NewLine;
             {
                 dd.DataTypeName = dataTypeName;
                 dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+                dd.HasNonDefaultEditFormat = true;
             });
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -949,16 +966,23 @@ Environment.NewLine;
         // Html5DateRenderingMode.Rfc3339 is enabled by default.
         [Theory]
         [InlineData(null, null, "2000-01-02T03:04:05.060", "datetime-local")]
-        [InlineData("date", "{0:d}", "2000-01-02", "date")]
+        [InlineData("date", null, "2000-01-02", "date")]
+        [InlineData("date", "{0:d}", "02/01/2000", "date")]
         [InlineData("datetime", null, "2000-01-02T03:04:05.060", "datetime-local")]
         [InlineData("datetime-local", null, "2000-01-02T03:04:05.060", "datetime-local")]
-        [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.060Z", "text")]
-        [InlineData("time", "{0:t}", "03:04:05.060", "time")]
-        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
+        [InlineData("DateTimeOffset", null, "2000-01-02T03:04:05.060Z", "text")]
+        [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000Z", "text")]
+        [InlineData("time", null, "03:04:05.060", "time")]
+        [InlineData("time", "{0:t}", "03:04", "time")]
+        [InlineData("month", null, "2000-01", "month")]
+        [InlineData("month", "{0:yyyy/MM}", "2000/01", "month")]
+        [InlineData("week", null, "1999-W52", "week")]
+        [InlineData("Week", "{0:yyyy/'W1'}", "2000/W1", "week")]
+        [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate_ForDateTime(
             string dataTypeName,
             string editFormatString,
-            string expectedFormat,
+            string expectedValue,
             string expectedType)
         {
             // Arrange
@@ -967,7 +991,7 @@ Environment.NewLine;
                 $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 expectedType +
-                "]]\" value=\"HtmlEncode[[" + expectedFormat + "]]\" />";
+                "]]\" value=\"HtmlEncode[[" + expectedValue + "]]\" />";
 
             var model = new DateTime(
                 year: 2000,
@@ -991,6 +1015,7 @@ Environment.NewLine;
             {
                 dd.DataTypeName = dataTypeName;
                 dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+                dd.HasNonDefaultEditFormat = true;
             });
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1010,17 +1035,22 @@ Environment.NewLine;
         // Html5DateRenderingMode.Rfc3339 can be disabled.
         [Theory]
         [InlineData(null, null, "02/01/2000 03:04:05", "datetime-local")]
+        [InlineData("date", null, "02/01/2000 03:04:05", "date")]
         [InlineData("date", "{0:d}", "02/01/2000", "date")]
         [InlineData("datetime", null, "02/01/2000 03:04:05", "datetime-local")]
         [InlineData("datetime-local", null, "02/01/2000 03:04:05", "datetime-local")]
+        [InlineData("DateTimeOffset", null, "02/01/2000 03:04:05", "text")]
         [InlineData("DateTimeOffset", "{0:o}", "2000-01-02T03:04:05.0600000Z", "text")]
         [InlineData("time", "{0:t}", "03:04", "time")]
-        [InlineData("month", "{0:yyyy-MM}", "2000-01", "month")]
+        [InlineData("month", null, "2000-01", "month")]
+        [InlineData("month", "{0:yyyy/MM}", "2000/01", "month")]
+        [InlineData("week", null, "1999-W52", "week")]
+        [InlineData("Week", "{0:yyyy/'W1'}", "2000/W1", "week")]
         [ReplaceCulture]
         public void Editor_FindsCorrectDateOrTimeTemplate_ForDateTimeNotRfc3339(
             string dataTypeName,
             string editFormatString,
-            string expectedFormat,
+            string expectedValue,
             string expectedType)
         {
             // Arrange
@@ -1030,7 +1060,7 @@ Environment.NewLine;
                 $"data-val-required=\"HtmlEncode[[{requiredMessage}]]\" id=\"HtmlEncode[[FieldPrefix]]\" " +
                 "name=\"HtmlEncode[[FieldPrefix]]\" type=\"HtmlEncode[[" +
                 expectedType +
-                "]]\" value=\"HtmlEncode[[" + expectedFormat + "]]\" />";
+                "]]\" value=\"HtmlEncode[[" + expectedValue + "]]\" />";
 
             var model = new DateTime(
                 year: 2000,
@@ -1054,6 +1084,7 @@ Environment.NewLine;
             {
                 dd.DataTypeName = dataTypeName;
                 dd.EditFormatString = editFormatString; // What [DataType] does for given type.
+                dd.HasNonDefaultEditFormat = true;
             });
 
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(
@@ -1084,6 +1115,8 @@ Environment.NewLine;
         [InlineData("time", Html5DateRenderingMode.Rfc3339, "time")]
         [InlineData("month", Html5DateRenderingMode.CurrentCulture, "month")]
         [InlineData("month", Html5DateRenderingMode.Rfc3339, "month")]
+        [InlineData("week", Html5DateRenderingMode.CurrentCulture, "week")]
+        [InlineData("week", Html5DateRenderingMode.Rfc3339, "week")]
         public void Editor_AppliesNonDefaultEditFormat(string dataTypeName, Html5DateRenderingMode renderingMode, string expectedType)
         {
             // Arrange

@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 { "DateTime-local", "datetime-local" },
                 { nameof(DateTimeOffset), "text" },
                 { "Time", "time" },
+                { "Week", "week" },
                 { "Month", "month" },
                 { nameof(Byte), "number" },
                 { nameof(SByte), "number" },
@@ -326,9 +327,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var format = Format;
             if (string.IsNullOrEmpty(format))
             {
-                format = GetFormat(modelExplorer, inputTypeHint, inputType);
+                if (!modelExplorer.Metadata.HasNonDefaultEditFormat &&
+                    string.Equals("week", inputType, StringComparison.OrdinalIgnoreCase) &&
+                    (modelExplorer.Model is DateTime || modelExplorer.Model is DateTimeOffset))
+                {
+                    modelExplorer = modelExplorer.GetExplorerForModel(FormatWeekHelper.GetFormattedWeek(modelExplorer));
+                }
+                else
+                {
+                    format = GetFormat(modelExplorer, inputTypeHint, inputType);
+                }
             }
-
             var htmlAttributes = new Dictionary<string, object>
             {
                 { "type", inputType }
@@ -381,7 +390,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             string format;
             if (string.Equals("month", inputType, StringComparison.OrdinalIgnoreCase))
             {
-                // A new HTML5 input type that only will be rendered in Rfc3339 mode
+                // "month" is a new HTML5 input type that only will be rendered in Rfc3339 mode
                 format = "{0:yyyy-MM}";
             }
             else if (string.Equals("decimal", inputTypeHint, StringComparison.OrdinalIgnoreCase) &&

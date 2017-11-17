@@ -9,12 +9,10 @@ using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -239,10 +237,6 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 new ValidationAttributeAdapterProvider(),
                 localizationOptionsAccesor.Object,
                 stringLocalizerFactory: null));
-            var optionsAccessor = new Mock<IOptions<MvcViewOptions>>();
-            optionsAccessor
-                .SetupGet(o => o.Value)
-                .Returns(options);
 
             var urlHelperFactory = new Mock<IUrlHelperFactory>();
             urlHelperFactory
@@ -253,17 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             if (htmlGenerator == null)
             {
-                var attributeProvider = new DefaultValidationHtmlAttributeProvider(
-                    optionsAccessor.Object,
-                    provider,
-                    new ClientValidatorCache());
-                htmlGenerator = new DefaultHtmlGenerator(
-                    Mock.Of<IAntiforgery>(),
-                    optionsAccessor.Object,
-                    provider,
-                    urlHelperFactory.Object,
-                    new HtmlTestEncoder(),
-                    attributeProvider);
+                htmlGenerator = HtmlGeneratorUtilities.GetHtmlGenerator(provider, urlHelperFactory.Object, options);
             }
 
             // TemplateRenderer will Contextualize this transient service.
