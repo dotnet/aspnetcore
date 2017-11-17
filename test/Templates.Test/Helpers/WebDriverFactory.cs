@@ -2,6 +2,7 @@
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.Firefox;
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
@@ -20,10 +21,19 @@ namespace Templates.Test.Helpers
             // Where possible, it's preferable to use Edge because it's
             // far faster to automate than Chrome/Firefox. But on AppVeyor
             // only Firefox is available.
-            var result = IsAppVeyor ? new FirefoxDriver() : (IWebDriver)new EdgeDriver();
+            var result = IsAppVeyor ? CreateFirefoxDriver() : CreateEdgeDriver();
             result.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
             return result;
         }
+
+        private static IWebDriver CreateEdgeDriver()
+            => new EdgeDriver(EdgeDriverService.CreateDefaultService(BinDir));
+
+        private static IWebDriver CreateFirefoxDriver()
+            => new FirefoxDriver(FirefoxDriverService.CreateDefaultService(BinDir));
+
+        private static string BinDir
+            => Path.GetDirectoryName(typeof(WebDriverFactory).Assembly.Location);
 
         private static int GetWindowsVersion()
         {
