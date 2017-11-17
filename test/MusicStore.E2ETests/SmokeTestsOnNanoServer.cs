@@ -246,7 +246,7 @@ namespace E2ETests
                     _remoteDeploymentConfig.AccountName,
                     _remoteDeploymentConfig.AccountPassword)
                 {
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = Helpers.GetTargetFramework(RuntimeFlavor.CoreClr),
                     ApplicationBaseUriHint = applicationBaseUrl,
                     ApplicationType = applicationType
                 };

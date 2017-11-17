@@ -45,6 +45,7 @@ namespace E2ETests
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
+#if NETCOREAPP2_1 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
         [ConditionalFact]
         public Task NtlmAuthenticationTest_WebListener_CLR()
         {
@@ -56,6 +57,7 @@ namespace E2ETests
         {
             return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
         }
+#endif
 
         private async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
@@ -70,7 +72,7 @@ namespace E2ETests
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'

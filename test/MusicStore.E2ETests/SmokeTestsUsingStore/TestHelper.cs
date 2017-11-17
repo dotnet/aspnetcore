@@ -22,7 +22,7 @@ namespace E2ETests.SmokeTestsUsingStore
 
         public async Task SmokeTestSuite(ServerType serverType)
         {
-            var targetFramework = "netcoreapp2.0";
+            var targetFramework = Helpers.GetTargetFramework(RuntimeFlavor.CoreClr);
             var testName = $"SmokeTestsUsingStore_{serverType}";
             using (StartLog(out var loggerFactory, testName))
             {

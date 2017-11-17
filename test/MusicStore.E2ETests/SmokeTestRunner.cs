@@ -37,7 +37,7 @@ namespace E2ETests
                     SiteName = "MusicStoreTestSite",
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = runtimeFlavor == RuntimeFlavor.CoreClr ? "netcoreapp2.0" : "net461",
+                    TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>

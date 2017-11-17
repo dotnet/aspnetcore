@@ -1,3 +1,4 @@
+#if NETCOREAPP2_1 // Avoid running CLR based tests once on netcoreapp2.0 and netcoreapp2.1 each
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -38,3 +39,4 @@ namespace E2ETests
             => _testRunner.RunTests(serverType, runtimeFlavor, applicationType, RuntimeArchitecture.x86);
     }
 }
+#endif
