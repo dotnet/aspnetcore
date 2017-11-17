@@ -10,7 +10,7 @@ branches:
     - /^rel\/.*/
     - /^(.*\/)?ci-.*$/
 build_script:
-  - ps: .\build.ps1
+  - ps: .\build.cmd
 clone_depth: 1
 environment:
   global:
