@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core hosting infrastructure and startup logic for web applications running within a Windows service.</Description>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;hosting</PackageTags>
@@ -10,7 +10,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System.ServiceProcess" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessVersion)" />
   </ItemGroup>
 
 </Project>
