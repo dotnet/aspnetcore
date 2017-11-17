@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
+using System.Threading;
 
 namespace Templates.Test.Helpers
 {
@@ -92,14 +93,44 @@ namespace Templates.Test.Helpers
         public void AssertNotFound(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.NotFound);
 
-        public void AssertStatusCode(string requestUrl, HttpStatusCode statusCode)
+        public void AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 new Uri(_listeningUri, requestUrl));
 
+            if (!string.IsNullOrEmpty(acceptContentType))
+            {
+                request.Headers.Add("Accept", acceptContentType);
+            }
+
             var response = _httpClient.SendAsync(request).Result;
             Assert.Equal(statusCode, response.StatusCode);
+        }
+
+        public void AssertStatusCodeWithRetry(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
+        {
+            const int MaxAttempts = 3;
+
+            for (var attemptNumber = 1; ; attemptNumber++)
+            {
+                try
+                {
+                    AssertStatusCode(requestUrl, statusCode, acceptContentType);
+                    return;
+                }
+                catch
+                {
+                    if (attemptNumber >= MaxAttempts)
+                    {
+                        _output.WriteLine($"Giving up requesting '{requestUrl}' after {attemptNumber} attempts.");
+                        throw;
+                    }
+
+                    _output.WriteLine($"Request to '{requestUrl}' failed, but will retry...");
+                    Thread.Sleep(3000);
+                }
+            }
         }
 
         public IWebDriver VisitInBrowser()
