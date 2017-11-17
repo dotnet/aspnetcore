@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// <summary>
         /// The status code to redirect the response to.
         /// </summary>
-        public int RedirectStatusCode { get; set; } = StatusCodes.Status301MovedPermanently;
+        public int RedirectStatusCode { get; set; } = StatusCodes.Status302Found;
 
         /// <summary>
         /// The TLS port to be added to the redirected URL.
