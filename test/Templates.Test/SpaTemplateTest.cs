@@ -46,11 +46,7 @@ namespace Templates.Test
         {
             using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
             {
-                // TODO: Remove the retry from here. Instead, work around the issue in the actual
-                // SpaServices.Extensions code (by retrying). The issue is that @angular/cli rejects
-                // connections for the first second or so after it claims to be listening.
-                // However, you do still need to keep sending "Accept: text/html" or it returns 404.
-                aspNetProcess.AssertStatusCodeWithRetry("/", HttpStatusCode.OK, "text/html");
+                aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
 
                 if (WebDriverFactory.HostSupportsBrowserAutomation)
                 {
