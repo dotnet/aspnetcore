@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27107.1
+VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AspNetCore", "src\AspNetCore\AspNetCore.vcxproj", "{439824F9-1455-4CC4-BD79-B44FA0A16552}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -23,8 +23,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketClientEXE", "test\WebSocketClientEXE\WebSocketClientEXE.csproj", "{4062EA94-75F5-4691-86DC-C8594BA896DE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,8 +34,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|Win32.ActiveCfg = Debug|Win32
-		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|Win32.Build.0 = Debug|Win32
+		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|Win32.ActiveCfg = Release|x64
+		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|Win32.Build.0 = Release|x64
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|x64.ActiveCfg = Debug|x64
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Debug|x64.Build.0 = Debug|x64
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Release|Any CPU.ActiveCfg = Release|Win32
@@ -46,8 +44,8 @@ Global
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Release|x64.ActiveCfg = Release|x64
 		{439824F9-1455-4CC4-BD79-B44FA0A16552}.Release|x64.Build.0 = Release|x64
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|Win32.ActiveCfg = Debug|Win32
-		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|Win32.Build.0 = Debug|Win32
+		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|Win32.ActiveCfg = Release|x64
+		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|Win32.Build.0 = Release|x64
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|x64.ActiveCfg = Debug|x64
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Debug|x64.Build.0 = Debug|x64
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE}.Release|Any CPU.ActiveCfg = Release|Win32
@@ -79,18 +77,6 @@ Global
 		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|Win32.Build.0 = Release|Any CPU
 		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|x64.ActiveCfg = Release|Any CPU
 		{030225D8-4EE8-47E5-B692-2A96B3B51A38}.Release|x64.Build.0 = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|Win32.ActiveCfg = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|Win32.Build.0 = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Debug|x64.Build.0 = Debug|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|Win32.ActiveCfg = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|Win32.Build.0 = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|x64.ActiveCfg = Release|Any CPU
-		{4062EA94-75F5-4691-86DC-C8594BA896DE}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,7 +86,6 @@ Global
 		{4787A64F-9A3E-4867-A55A-70CB4B2B2FFE} = {FDD2EDF8-1B62-4978-9815-9D95260B8B91}
 		{4DDA7560-AA29-4161-A5EA-A7E8F3997321} = {02F461DC-5166-4E88-AAD5-CF110016A647}
 		{030225D8-4EE8-47E5-B692-2A96B3B51A38} = {02F461DC-5166-4E88-AAD5-CF110016A647}
-		{4062EA94-75F5-4691-86DC-C8594BA896DE} = {02F461DC-5166-4E88-AAD5-CF110016A647}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0967E9B4-FEE7-40D7-860A-23E340E65840}

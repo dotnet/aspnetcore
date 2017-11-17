@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <AspNetCoreModuleVersionMajor>7</AspNetCoreModuleVersionMajor> 
+    <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor> 
+    <AspNetCoreModuleVersionPatch>1987</AspNetCoreModuleVersionPatch> 
+    <AspNetCoreModuleVersionSuffix>-RTM</AspNetCoreModuleVersionSuffix> 
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
+    <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+  </PropertyGroup>
+</Project>

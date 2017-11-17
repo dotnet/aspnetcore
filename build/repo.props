@@ -1,11 +1,17 @@
 <Project>
   <ItemGroup>
-    <DotNetCoreRuntime Include="1.0.5" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.TestSites.Standard\*.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\WebSocketClientEXE\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\AspNetCoreModule.Test\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
 
   <PropertyGroup>
-    <VSTestCLIRunSettings>RunConfiguration.TargetPlatform=x64</VSTestCLIRunSettings>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- These properties are use by the automation that updates dependencies.props -->
+    <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 </Project>
