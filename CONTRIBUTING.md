@@ -16,7 +16,7 @@ For non-security related bugs please log a new issue in the appropriate GitHub r
 * [Identity](https://github.com/aspnet/Identity)
 * [MVC](https://github.com/aspnet/Mvc)
 * [Razor](https://github.com/aspnet/Razor)
-* [Templates](https://github.com/aspnet/Templates)
+* [Templates](https://github.com/dotnet/templating)
 * [Tooling](https://github.com/aspnet/Tooling)
 * [SignalR](https://github.com/aspnet/SignalR)
 
