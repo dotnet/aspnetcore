@@ -1,40 +1,24 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Testing.xunit;
 using OpenQA.Selenium;
 using System.Net;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Templates.Test
+namespace Templates.Test.SpaTemplateTest
 {
-    public class SpaTemplateTest : TemplateTestBase
+    public class SpaTemplateTestBase : TemplateTestBase
     {
-        public SpaTemplateTest(ITestOutputHelper output) : base(output)
+        public SpaTemplateTestBase(ITestOutputHelper output) : base(output)
         {
         }
 
-        [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
-        // Just use 'angular' as representative for .NET 4.6.1 coverage, as
-        // the client-side code isn't affected by the .NET runtime choice
-        [InlineData("angular")]
-        public void SpaTemplate_Works_NetFramework(string template)
-            => SpaTemplateImpl("net461", template);
-
-        [Theory]
-        [InlineData("angular")]
-        [InlineData("react")]
-        [InlineData("reactredux")]
-        [InlineData("aurelia")]
-        [InlineData("knockout")]
-        [InlineData("vue")]
-        public void SpaTemplate_Works_NetCore(string template)
-            => SpaTemplateImpl(null, template);
-
-        private void SpaTemplateImpl(string targetFrameworkOverride, string template)
+        // Rather than using [Theory] to pass each of the different values for 'template',
+        // it's important to distribute the SPA template tests over different test classes
+        // so they can be run in parallel. Xunit doesn't parallelize within a test class.
+        protected void SpaTemplateImpl(string targetFrameworkOverride, string template)
         {
             RunDotNetNew(template, targetFrameworkOverride);
             RunNpmInstall();
