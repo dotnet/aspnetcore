@@ -1,0 +1,12 @@
+<Project>
+    <PropertyGroup>
+        <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+
+        <!-- Should match the version running on the Pis -->
+        <RuntimeFrameworkVersion>2.1.0-preview1-25915-01</RuntimeFrameworkVersion>
+        <NETStandardImplicitPackageVersion>2.1.0-preview1-25915-01</NETStandardImplicitPackageVersion>
+
+        <!-- Needed when deploying to ARM32 -->
+        <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
+    </PropertyGroup>
+</Project>
