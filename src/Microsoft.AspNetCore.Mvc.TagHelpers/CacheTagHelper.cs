@@ -108,8 +108,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // The returned value is ignored, we only do this so that
             // the compiler doesn't complain about the returned task
             // not being awaited
-            var localTcs = MemoryCache.Set(cacheKey, tcs.Task, options);
+            _ = MemoryCache.Set(cacheKey, tcs.Task, options);
 
+            IHtmlContent content;
             try
             {
                 // The entry is set instead of assigning a value to the
@@ -118,24 +119,26 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                 // Use the CreateEntry to ensure a cache scope is created that will copy expiration tokens from
                 // cache entries created from the GetChildContentAsync call to the current entry.
-                IHtmlContent content;
                 var entry = MemoryCache.CreateEntry(cacheKey);
 
-                    // The result is processed inside an entry
-                    // such that the tokens are inherited.
+                // The result is processed inside an entry
+                // such that the tokens are inherited.
 
-                    var result = ProcessContentAsync(output);
-                    content = await result;
-                    options.SetSize(GetSize(content));
-                    entry.SetOptions(options);
+                var result = ProcessContentAsync(output);
+                content = await result;
+                options.SetSize(GetSize(content));
+                entry.SetOptions(options);
 
-                    entry.Value = result;
+                entry.Value = result;
 
-                tcs.SetResult(content);
                 // An entry gets committed to the cache when disposed gets called. We only want to do this when
                 // the content has been correctly generated (didn't throw an exception). For that reason the entry
                 // can't be put inside a using block.
                 entry.Dispose();
+
+                // Set the result on the TCS once we've commited the entry to the cache since commiting to the cache
+                // may throw.
+                tcs.SetResult(content);
                 return content;
             }
             catch (Exception ex)
@@ -144,7 +147,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 tokenSource.Cancel();
 
                 // Fail the TCS so other awaiters see the exception.
-                tcs.SetException(ex);
+                tcs.TrySetException(ex);
                 throw;
             }
             finally
