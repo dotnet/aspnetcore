@@ -5,8 +5,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Dispatcher.Internal;
-
 #if ROUTING
+using Microsoft.AspNetCore.Routing.Template;
+
 namespace Microsoft.AspNetCore.Routing.Tree
 #elif DISPATCHER
 namespace Microsoft.AspNetCore.Dispatcher
@@ -115,5 +116,4 @@ namespace Microsoft.AspNetCore.Dispatcher
             Current = null;
         }
     }
-
 }

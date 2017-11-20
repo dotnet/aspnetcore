@@ -52,9 +52,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                     continue;
                 }
 
-                object value;
                 var parameter = (RoutePatternParameter)part;
-                if (Defaults.TryGetValue(parameter.Name, out value))
+                if (Defaults.TryGetValue(parameter.Name, out var value))
                 {
                     _hasDefaultValue[i] = true;
                     _defaultValues[i] = value;

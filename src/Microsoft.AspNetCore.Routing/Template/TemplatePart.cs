@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 Text = literal.Content;
             }
-            else if (other.IsParameter && other is Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternParameter parameter)
+            else if (other.IsParameter && other is Dispatcher.Patterns.RoutePatternParameter parameter)
             {
                 // Text is unused by TemplatePart and assumed to be null when the part is a parameter.
                 Name = parameter.Name;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 DefaultValue = parameter.DefaultValue;
                 InlineConstraints = parameter.Constraints?.Select(p => new InlineConstraint(p));
             }
-            else if (other.IsSeparator && other is Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternSeparator separator)
+            else if (other.IsSeparator && other is Dispatcher.Patterns.RoutePatternSeparator separator)
             {
                 Text = separator.Content;
                 IsOptionalSeperator = true;
