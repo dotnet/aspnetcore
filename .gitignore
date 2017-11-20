@@ -8,7 +8,6 @@ packages/
 artifacts/
 PublishProfiles/
 .vs/
-bower_components/
 node_modules/
 debugSettings.json
 project.lock.json
