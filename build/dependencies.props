@@ -366,7 +366,7 @@
     <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Security.Permissions" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Security.Principal.Windows" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview1-25914-04" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Text.Encoding.CodePages" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Text.Encodings.Web" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Threading.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
