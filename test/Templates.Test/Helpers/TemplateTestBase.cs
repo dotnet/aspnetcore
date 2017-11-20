@@ -16,6 +16,7 @@ namespace Templates.Test
     public class TemplateTestBase : IDisposable
     {
         private static object DotNetNewLock = new object();
+        private static object NpmInstallLock = new object();
 
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
@@ -75,26 +76,13 @@ namespace Templates.Test
 
         protected void InstallNpmPackages(string relativePath)
         {
-            var fullPath = Path.Combine(TemplateOutputDir, relativePath);
-
-            if (!HasYarnInstalled())
+            // It's not safe to run multiple NPM installs in parallel
+            // https://github.com/npm/npm/issues/2500
+            lock (NpmInstallLock)
             {
-                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using npm because yarn is not installed...");
+                var fullPath = Path.Combine(TemplateOutputDir, relativePath);
+                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using npm...");
                 RunViaShell(fullPath, "npm install");
-            }
-            else
-            {
-                // Current versions of NPM produce random errors when run on Windows
-                // (e.g., https://github.com/npm/npm/issues/19004). Plus, it's very slow to
-                // restore the SPA template packages. To make CI faster and more reliable, use
-                // Yarn to install the packages. To make Yarn respect the npm-shrinkwrap.json
-                // files, run a script that temporarily replaces the package.json content using
-                // dependency information from npm-shrinkwrap.json.
-                var installViaYarnWithShrinkwrapScriptPath = Path.Combine(
-                    Path.GetDirectoryName(typeof(TemplateTestBase).Assembly.Location),
-                    @"..\..\..\Helpers\Node\install-via-yarn-with-shrinkwrap.js");
-                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using yarn...");
-                RunViaShell(fullPath, $"node {installViaYarnWithShrinkwrapScriptPath}");
             }
         }
 
@@ -106,19 +94,6 @@ namespace Templates.Test
             ProcessEx
                 .Run(Output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"")
                 .WaitForExit(assertSuccess: true);
-        }
-
-        private bool HasYarnInstalled()
-        {
-            try
-            {
-                RunViaShell(TemplateOutputDir, "yarn --version");
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         protected void AssertDirectoryExists(string path, bool shouldExist)
