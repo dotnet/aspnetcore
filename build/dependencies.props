@@ -25,6 +25,7 @@
     <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.1.0-preview1-27625</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview1-27625</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview1-27625</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
+    <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-preview1-27625</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftExtensionsSecretManagerToolsPackageVersion>2.1.0-preview1-27625</MicrosoftExtensionsSecretManagerToolsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25907-02</MicrosoftNETCoreApp21PackageVersion>

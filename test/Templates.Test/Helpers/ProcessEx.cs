@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Internal;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -136,8 +137,7 @@ namespace Templates.Test.Helpers
         {
             if (_process != null && !_process.HasExited)
             {
-                _process.Kill();
-                _process.WaitForExit(5000);
+                _process.KillTree();
             }
         }
 

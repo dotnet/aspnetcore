@@ -26,7 +26,9 @@ namespace Templates.Test.SpaTemplateTest
             // For some SPA templates, the NPM root directory is './ClientApp'. In other
             // templates it's at the project root. Strictly speaking we shouldn't have
             // to do the NPM restore in tests because it should happen automatically at
-            // build time, but the tests run a lot faster this way because we can use Yarn.
+            // build time, but by doing it up front we can avoid having multiple NPM
+            // installs run concurrently which otherwise causes errors when tests run
+            // in parallel.
             if (File.Exists(Path.Combine(TemplateOutputDir, "ClientApp", "package.json")))
             {
                 InstallNpmPackages("ClientApp");
