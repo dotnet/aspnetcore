@@ -1,0 +1,17 @@
+﻿<Project>
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
+
+  <PropertyGroup Label="RestoreSources">
+    <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+      https://dotnet.myget.org/F/roslyn/api/v3/index.json;
+    </RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+</Project>
