@@ -15,6 +15,8 @@ namespace Templates.Test
 {
     public class TemplateTestBase : IDisposable
     {
+        private static object DotNetNewLock = new object();
+
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
         protected ITestOutputHelper Output { get; private set; }
@@ -63,7 +65,12 @@ namespace Templates.Test
                 args += $" -lang {language}";
             }
 
-            ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            lock (DotNetNewLock)
+            {
+                ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
+            }
         }
 
         protected void RunNpmInstall()
