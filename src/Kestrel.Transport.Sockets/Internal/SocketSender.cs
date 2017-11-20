@@ -48,16 +48,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private SocketAwaitable SendAsync(Memory<byte> buffer)
         {
-            var segment = buffer.GetArray();
-
             // The BufferList getter is much less expensive then the setter.
             if (_eventArgs.BufferList != null)
             {
                 _eventArgs.BufferList = null;
             }
 
-            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+#if NETCOREAPP2_1
+            _eventArgs.SetBuffer(buffer);
+#else
+            var segment = buffer.GetArray();
 
+            _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+#endif
             if (!_socket.SendAsync(_eventArgs))
             {
                 _awaitable.Complete(_eventArgs.BytesTransferred, _eventArgs.SocketError);
