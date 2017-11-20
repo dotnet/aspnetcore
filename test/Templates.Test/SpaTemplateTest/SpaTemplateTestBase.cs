@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using OpenQA.Selenium;
+using System.IO;
 using System.Net;
 using Templates.Test.Helpers;
 using Xunit;
@@ -21,7 +22,20 @@ namespace Templates.Test.SpaTemplateTest
         protected void SpaTemplateImpl(string targetFrameworkOverride, string template)
         {
             RunDotNetNew(template, targetFrameworkOverride);
-            RunNpmInstall();
+
+            // For some SPA templates, the NPM root directory is './ClientApp'. In other
+            // templates it's at the project root. Strictly speaking we shouldn't have
+            // to do the NPM restore in tests because it should happen automatically at
+            // build time, but the tests run a lot faster this way because we can use Yarn.
+            if (File.Exists(Path.Combine(TemplateOutputDir, "ClientApp", "package.json")))
+            {
+                InstallNpmPackages("ClientApp");
+            }
+            else if (File.Exists(Path.Combine(TemplateOutputDir, "package.json")))
+            {
+                InstallNpmPackages(".");
+            }
+
             TestApplication(targetFrameworkOverride, publish: false);
             TestApplication(targetFrameworkOverride, publish: true);
         }

@@ -73,15 +73,52 @@ namespace Templates.Test
             }
         }
 
-        protected void RunNpmInstall()
+        protected void InstallNpmPackages(string relativePath)
         {
-            // The first time this runs on any given CI agent it may take several minutes.
-            // If the agent has NPM 5+ installed, it should be quite a lot quicker on
-            // subsequent runs because of package caching.
-            var (exe, args) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            var fullPath = Path.Combine(TemplateOutputDir, relativePath);
+
+            if (!HasYarnInstalled())
+            {
+                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using npm because yarn is not installed...");
+                RunViaShell(fullPath, "npm install");
+            }
+            else
+            {
+                // Current versions of NPM produce random errors when run on Windows
+                // (e.g., https://github.com/npm/npm/issues/19004). Plus, it's very slow to
+                // restore the SPA template packages. To make CI faster and more reliable, use
+                // Yarn to install the packages. To make Yarn respect the npm-shrinkwrap.json
+                // files, run a script that temporarily replaces the package.json content using
+                // dependency information from npm-shrinkwrap.json.
+                var installViaYarnWithShrinkwrapScriptPath = Path.Combine(
+                    Path.GetDirectoryName(typeof(TemplateTestBase).Assembly.Location),
+                    @"..\..\..\Helpers\Node\install-via-yarn-with-shrinkwrap.js");
+                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using yarn...");
+                RunViaShell(fullPath, $"node {installViaYarnWithShrinkwrapScriptPath}");
+            }
+        }
+
+        private void RunViaShell(string workingDirectory, string commandAndArgs)
+        {
+            var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? ("cmd", "/c")
                 : ("bash", "-c");
-            ProcessEx.Run(Output, TemplateOutputDir, exe, args + " \"npm install\"").WaitForExit(assertSuccess: true);
+            ProcessEx
+                .Run(Output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"")
+                .WaitForExit(assertSuccess: true);
+        }
+
+        private bool HasYarnInstalled()
+        {
+            try
+            {
+                RunViaShell(TemplateOutputDir, "yarn --version");
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         protected void AssertDirectoryExists(string path, bool shouldExist)
