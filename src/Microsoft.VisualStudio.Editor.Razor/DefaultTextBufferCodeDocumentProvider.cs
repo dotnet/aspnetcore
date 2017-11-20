@@ -12,19 +12,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(TextBufferCodeDocumentProvider))]
     internal class DefaultTextBufferCodeDocumentProvider : TextBufferCodeDocumentProvider
     {
-        private readonly RazorEditorFactoryService _editorFactoryService;
-
-        [ImportingConstructor]
-        public DefaultTextBufferCodeDocumentProvider(RazorEditorFactoryService editorFactoryService)
-        {
-            if (editorFactoryService == null)
-            {
-                throw new ArgumentNullException(nameof(editorFactoryService));
-            }
-
-            _editorFactoryService = editorFactoryService;
-        }
-
         public override bool TryGetFromBuffer(ITextBuffer textBuffer, out RazorCodeDocument codeDocument)
         {
             if (textBuffer == null)
@@ -32,7 +19,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            if (_editorFactoryService.TryGetParser(textBuffer, out var parser) && parser.CodeDocument != null)
+            if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioRazorParser), out VisualStudioRazorParser parser) && parser.CodeDocument != null)
             {
                 codeDocument = parser.CodeDocument;
                 return true;
