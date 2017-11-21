@@ -4,11 +4,11 @@
   </Target>
 
   <Target Name="AcquireTools">
-    <MakeDir Directories="$(OneESTools)nuget" />
-    <DownloadFile Source="https://devdiv.pkgs.visualstudio.com/_apis/public/nuget/client/CredentialProviderBundle.zip" Destination="$(OneESTools)\nuget\bundle.zip" />
-    <UnzipArchive File="$(OneESTools)nuget\bundle.zip" Destination="$(OneESTools)nuget" Overwrite="true" />
+    <MakeDir Directories="$(OneESToolsPath)nuget" />
+    <DownloadFile Source="https://devdiv.pkgs.visualstudio.com/_apis/public/nuget/client/CredentialProviderBundle.zip" Destination="$(OneESToolsPath)\nuget\bundle.zip" />
+    <UnzipArchive File="$(OneESToolsPath)nuget\bundle.zip" Destination="$(OneESToolsPath)nuget" Overwrite="true" />
 
-    <Exec Command="$(OneESTools)nuget\nuget.exe
+    <Exec Command="$(OneESToolsPath)nuget\nuget.exe
       restore $(MSBuildThisFileDirectory)packages.config
       -Output $(OneESToolsPath)
       -Source https://devdiv.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json" />
