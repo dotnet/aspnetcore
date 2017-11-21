@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     {
         internal static StringBuilder AppendUpperInvariant(this StringBuilder builder, string value)
         {
-            if (string.IsNullOrEmpty(value))
+            if (!string.IsNullOrEmpty(value))
             {
                 builder.EnsureCapacity(builder.Length + value.Length);
                 for (var i = 0; i < value.Length; i++)
