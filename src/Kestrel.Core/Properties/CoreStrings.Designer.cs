@@ -1704,6 +1704,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatServiceCertificateRequired()
             => GetString("ServiceCertificateRequired");
 
+        /// <summary>
+        /// No listening endpoints were configured. Binding to {address0} and {address1} by default.
+        /// </summary>
+        internal static string BindingToDefaultAddresses
+        {
+            get => GetString("BindingToDefaultAddresses");
+        }
+
+        /// <summary>
+        /// No listening endpoints were configured. Binding to {address0} and {address1} by default.
+        /// </summary>
+        internal static string FormatBindingToDefaultAddresses(object address0, object address1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("BindingToDefaultAddresses", "address0", "address1"), address0, address1);
+
+        /// <summary>
+        /// The requested certificate {subject} could not be found in {storeLocation}/{storeName} with AllowInvalid setting: {allowInvalid}.
+        /// </summary>
+        internal static string CertNotFoundInStore
+        {
+            get => GetString("CertNotFoundInStore");
+        }
+
+        /// <summary>
+        /// The requested certificate {subject} could not be found in {storeLocation}/{storeName} with AllowInvalid setting: {allowInvalid}.
+        /// </summary>
+        internal static string FormatCertNotFoundInStore(object subject, object storeLocation, object storeName, object allowInvalid)
+            => string.Format(CultureInfo.CurrentCulture, GetString("CertNotFoundInStore", "subject", "storeLocation", "storeName", "allowInvalid"), subject, storeLocation, storeName, allowInvalid);
+
+        /// <summary>
+        /// The endpoint {endpointName} is missing the required 'Url' parameter.
+        /// </summary>
+        internal static string EndpointMissingUrl
+        {
+            get => GetString("EndpointMissingUrl");
+        }
+
+        /// <summary>
+        /// The endpoint {endpointName} is missing the required 'Url' parameter.
+        /// </summary>
+        internal static string FormatEndpointMissingUrl(object endpointName)
+            => string.Format(CultureInfo.CurrentCulture, GetString("EndpointMissingUrl", "endpointName"), endpointName);
+
+        /// <summary>
+        /// Unable to configure HTTPS endpoint. No server certificate was specified and the default developer certificate could not be found. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
+        /// </summary>
+        internal static string NoCertSpecifiedNoDevelopmentCertificateFound
+        {
+            get => GetString("NoCertSpecifiedNoDevelopmentCertificateFound");
+        }
+
+        /// <summary>
+        /// Unable to configure HTTPS endpoint. No server certificate was specified and the default developer certificate could not be found. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
+        /// </summary>
+        internal static string FormatNoCertSpecifiedNoDevelopmentCertificateFound()
+            => GetString("NoCertSpecifiedNoDevelopmentCertificateFound");
+
+        /// <summary>
+        /// The endpoint {endpointName} specified multiple certificate sources.
+        /// </summary>
+        internal static string MultipleCertificateSources
+        {
+            get => GetString("MultipleCertificateSources");
+        }
+
+        /// <summary>
+        /// The endpoint {endpointName} specified multiple certificate sources.
+        /// </summary>
+        internal static string FormatMultipleCertificateSources(object endpointName)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MultipleCertificateSources", "endpointName"), endpointName);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

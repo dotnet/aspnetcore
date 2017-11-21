@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -14,8 +13,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,6 +28,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class HttpsTests
     {
+        private KestrelServerOptions CreateServerOptions()
+        {
+            var serverOptions = new KestrelServerOptions();
+            serverOptions.ApplicationServices = new ServiceCollection()
+                .AddLogging()
+                .BuildServiceProvider();
+            return serverOptions;
+        }
+
+        [Fact]
+        public void UseHttpsDefaultsToDefaultCert()
+        {
+            var serverOptions = CreateServerOptions();
+            var defaultCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            serverOptions.DefaultCertificate = defaultCert;
+
+            serverOptions.ListenLocalhost(5000, options =>
+            {
+                options.UseHttps();
+            });
+
+            serverOptions.ListenLocalhost(5001, options =>
+            {
+                options.UseHttps(opt =>
+                {
+                    Assert.Equal(defaultCert, opt.ServerCertificate);
+                });
+            });
+        }
+
+        [Fact]
+        public void ConfigureHttpsDefaultsOverridesDefaultCert()
+        {
+            var serverOptions = CreateServerOptions();
+            var defaultCert = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+            serverOptions.DefaultCertificate = defaultCert;
+            serverOptions.ConfigureHttpsDefaults(options =>
+            {
+                Assert.Equal(defaultCert, options.ServerCertificate);
+                options.ServerCertificate = null;
+                options.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+            });
+            serverOptions.ListenLocalhost(5000, options =>
+            {
+                options.UseHttps(opt =>
+                {
+                    Assert.Null(opt.ServerCertificate);
+                    Assert.Equal(ClientCertificateMode.RequireCertificate, opt.ClientCertificateMode);
+
+                    // So UseHttps won't throw
+                    opt.ServerCertificate = defaultCert;
+                });
+            });
+        }
+
         [Fact]
         public async Task EmptyRequestLoggedAsInformation()
         {
@@ -270,10 +327,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                        listenOptions.UseHttps(o =>
                         {
-                            ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword"),
-                            HandshakeTimeout = TimeSpan.FromSeconds(1)
+                            o.ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword");
+                            o.HandshakeTimeout = TimeSpan.FromSeconds(1);
                         });
                     });
                 })

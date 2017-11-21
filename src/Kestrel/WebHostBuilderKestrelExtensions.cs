@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Hosting
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 services.AddSingleton<IServer, KestrelServer>();
-                services.AddSingleton<IDefaultHttpsProvider, DefaultHttpsProvider>();
             });
         }
 

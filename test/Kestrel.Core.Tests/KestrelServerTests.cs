@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -21,12 +21,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class KestrelServerTests
     {
+        private KestrelServerOptions CreateServerOptions()
+        {
+            var serverOptions = new KestrelServerOptions();
+            serverOptions.ApplicationServices = new ServiceCollection()
+                .AddLogging()
+                .BuildServiceProvider();
+            return serverOptions;
+        }
+
         [Fact]
         public void StartWithInvalidAddressThrows()
         {
             var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
 
-            using (var server = CreateServer(new KestrelServerOptions(), testLogger))
+            using (var server = CreateServer(CreateServerOptions(), testLogger))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("http:/asdf");
 
@@ -40,34 +49,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void StartWithHttpsAddressConfiguresHttpsEndpoints()
         {
-            var mockDefaultHttpsProvider = new Mock<IDefaultHttpsProvider>();
-
-            using (var server = CreateServer(new KestrelServerOptions(), mockDefaultHttpsProvider.Object))
+            var options = CreateServerOptions();
+            options.DefaultCertificate = TestResources.GetTestCertificate();
+            using (var server = CreateServer(options))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
 
                 StartDummyApplication(server);
 
-                mockDefaultHttpsProvider.Verify(provider => provider.ConfigureHttps(It.IsAny<ListenOptions>()), Times.Once);
+                Assert.True(server.Options.ListenOptions.Any());
+                Assert.Contains(server.Options.ListenOptions[0].ConnectionAdapters, adapter => adapter.IsHttps);
             }
         }
  
         [Fact]
         public void KestrelServerThrowsUsefulExceptionIfDefaultHttpsProviderNotAdded()
         {
-            using (var server = CreateServer(new KestrelServerOptions(), defaultHttpsProvider: null, throwOnCriticalErrors: false))
+            using (var server = CreateServer(CreateServerOptions(), throwOnCriticalErrors: false))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
 
                 var ex = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
-                Assert.Equal(CoreStrings.UnableToConfigureHttpsBindings, ex.Message);
+                Assert.Equal(CoreStrings.NoCertSpecifiedNoDevelopmentCertificateFound, ex.Message);
             }
         }
  
         [Fact]
         public void KestrelServerDoesNotThrowIfNoDefaultHttpsProviderButNoHttpUrls()
         {
-            using (var server = CreateServer(new KestrelServerOptions(), defaultHttpsProvider: null))
+            using (var server = CreateServer(CreateServerOptions()))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("http://127.0.0.1:0");
 
@@ -78,12 +88,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void KestrelServerDoesNotThrowIfNoDefaultHttpsProviderButManualListenOptions()
         {
-            var mockDefaultHttpsProvider = new Mock<IDefaultHttpsProvider>();
-
-            var serverOptions = new KestrelServerOptions();
+            var serverOptions = CreateServerOptions();
             serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0));
 
-            using (var server = CreateServer(serverOptions, defaultHttpsProvider: null))
+            using (var server = CreateServer(serverOptions))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
 
@@ -322,9 +330,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
         }
 
-        private static KestrelServer CreateServer(KestrelServerOptions options, IDefaultHttpsProvider defaultHttpsProvider, bool throwOnCriticalErrors = true)
+        private static KestrelServer CreateServer(KestrelServerOptions options, bool throwOnCriticalErrors = true)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }), defaultHttpsProvider);
+            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }));
         }
 
         private static void StartDummyApplication(IServer server)

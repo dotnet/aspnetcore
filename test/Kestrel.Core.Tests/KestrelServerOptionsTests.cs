@@ -29,5 +29,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.True(options.AllowSynchronousIO);
         }
+
+        [Fact]
+        public void ConfigureEndpointDefaultsAppliesToNewEndpoints()
+        {
+            var options = new KestrelServerOptions();
+            options.ListenLocalhost(5000);
+
+            Assert.True(options.ListenOptions[0].NoDelay);
+
+            options.ConfigureEndpointDefaults(opt =>
+            {
+                opt.NoDelay = false;
+            });
+
+            options.Listen(new IPEndPoint(IPAddress.Loopback, 5000), opt =>
+            {
+                // ConfigureEndpointDefaults runs before this callback
+                Assert.False(opt.NoDelay);
+            });
+            Assert.False(options.ListenOptions[1].NoDelay);
+
+            options.ListenLocalhost(5000, opt =>
+            {
+                Assert.False(opt.NoDelay);
+                opt.NoDelay = true; // Can be overriden
+            });
+            Assert.True(options.ListenOptions[2].NoDelay);
+
+
+            options.ListenAnyIP(5000, opt =>
+            {
+                Assert.False(opt.NoDelay);
+            });
+            Assert.False(options.ListenOptions[3].NoDelay);
+        }
     }
 }

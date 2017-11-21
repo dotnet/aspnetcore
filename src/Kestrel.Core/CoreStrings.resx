@@ -480,4 +480,19 @@
   <data name="ServiceCertificateRequired" xml:space="preserve">
     <value>The server certificate parameter is required.</value>
   </data>
+  <data name="BindingToDefaultAddresses" xml:space="preserve">
+    <value>No listening endpoints were configured. Binding to {address0} and {address1} by default.</value>
+  </data>
+  <data name="CertNotFoundInStore" xml:space="preserve">
+    <value>The requested certificate {subject} could not be found in {storeLocation}/{storeName} with AllowInvalid setting: {allowInvalid}.</value>
+  </data>
+  <data name="EndpointMissingUrl" xml:space="preserve">
+    <value>The endpoint {endpointName} is missing the required 'Url' parameter.</value>
+  </data>
+  <data name="NoCertSpecifiedNoDevelopmentCertificateFound" xml:space="preserve">
+    <value>Unable to configure HTTPS endpoint. No server certificate was specified and the default developer certificate could not be found. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054</value>
+  </data>
+  <data name="MultipleCertificateSources" xml:space="preserve">
+    <value>The endpoint {endpointName} specified multiple certificate sources.</value>
+  </data>
 </root>

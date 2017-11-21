@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -20,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public static async Task BindAsync(IServerAddressesFeature addresses,
             KestrelServerOptions serverOptions,
             ILogger logger,
-            IDefaultHttpsProvider defaultHttpsProvider,
             Func<ListenOptions, Task> createBinding)
         {
             var listenOptions = serverOptions.ListenOptions;
@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ListenOptions = listenOptions,
                 ServerOptions = serverOptions,
                 Logger = logger,
-                DefaultHttpsProvider = defaultHttpsProvider ?? UnconfiguredDefaultHttpsProvider.Instance,
                 CreateBinding = createBinding
             };
 
@@ -112,10 +111,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             context.ListenOptions.Add(endpoint);
         }
 
-        internal static ListenOptions ParseAddress(string address, KestrelServerOptions serverOptions, IDefaultHttpsProvider defaultHttpsProvider)
+        internal static ListenOptions ParseAddress(string address, out bool https)
         {
             var parsedAddress = ServerAddress.FromUrl(address);
-            var https = false;
+            https = false;
 
             if (parsedAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
@@ -151,12 +150,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 options = new AnyIPListenOptions(parsedAddress.Port);
             }
 
-            if (https)
-            {
-                options.KestrelServerOptions = serverOptions;
-                defaultHttpsProvider.ConfigureHttps(options);
-            }
-
             return options;
         }
 
@@ -169,10 +162,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             public async Task BindAsync(AddressBindContext context)
             {
-                context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
+                var httpDefault = ParseAddress(Constants.DefaultServerAddress, out var https);
+                context.ServerOptions.ApplyEndpointDefaults(httpDefault);
+                await httpDefault.BindAsync(context).ConfigureAwait(false);
 
-                await ParseAddress(Constants.DefaultServerAddress, context.ServerOptions, context.DefaultHttpsProvider)
-                    .BindAsync(context).ConfigureAwait(false);
+                // Conditional https default, only if a cert is available
+                var httpsDefault = ParseAddress(Constants.DefaultServerHttpsAddress, out https);
+                context.ServerOptions.ApplyEndpointDefaults(httpsDefault);
+
+                if (httpsDefault.ConnectionAdapters.Any(f => f.IsHttps)
+                    || httpsDefault.TryUseHttps())
+                {
+                    await httpsDefault.BindAsync(context).ConfigureAwait(false);
+                    context.Logger.LogDebug(CoreStrings.BindingToDefaultAddresses,
+                        Constants.DefaultServerAddress, Constants.DefaultServerHttpsAddress);
+                }
+                else
+                {
+                    // No default cert is available, do not bind to the https endpoint.
+                    context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
+                }
             }
         }
 
@@ -242,26 +251,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 foreach (var address in _addresses)
                 {
-                    await ParseAddress(address, context.ServerOptions, context.DefaultHttpsProvider)
-                        .BindAsync(context).ConfigureAwait(false);
+                    var options = ParseAddress(address, out var https);
+                    context.ServerOptions.ApplyEndpointDefaults(options);
+
+                    if (https && !options.ConnectionAdapters.Any(f => f.IsHttps))
+                    {
+                        options.UseHttps();
+                    }
+
+                    await options.BindAsync(context).ConfigureAwait(false);
                 }
-            }
-        }
-
-        private class UnconfiguredDefaultHttpsProvider : IDefaultHttpsProvider
-        {
-            public static readonly UnconfiguredDefaultHttpsProvider Instance = new UnconfiguredDefaultHttpsProvider();
-
-            private UnconfiguredDefaultHttpsProvider()
-            {
-            }
-
-            public void ConfigureHttps(ListenOptions listenOptions)
-            {
-                // We have to throw here. If this is called, it's because the user asked for "https" binding but for some
-                // reason didn't provide a certificate and didn't use the "DefaultHttpsProvider". This means if we no-op,
-                // we'll silently downgrade to HTTP, which is bad.
-                throw new InvalidOperationException(CoreStrings.UnableToConfigureHttpsBindings);
             }
         }
     }

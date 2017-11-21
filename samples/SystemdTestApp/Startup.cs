@@ -5,18 +5,15 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace SampleApp
+namespace SystemdTestApp
 {
     public class Startup
     {
@@ -50,30 +47,9 @@ namespace SampleApp
                 {
                     factory.AddConsole();
                 })
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    var env = hostingContext.HostingEnvironment;
-                    config.AddJsonFile("appsettings.json", optional: true)
-                          .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true);
-                })
                 .UseKestrel((context, options) =>
                 {
-                    if (context.HostingEnvironment.IsDevelopment())
-                    {
-                        ShowConfig(context.Configuration);
-                    }
-
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
-
-                    options.ConfigureEndpointDefaults(opt =>
-                    {
-                        opt.Protocols = HttpProtocols.Http1;
-                    });
-
-                    options.ConfigureHttpsDefaults(httpsOptions =>
-                    {
-                        httpsOptions.SslProtocols = SslProtocols.Tls12;
-                    });
 
                     // Run callbacks on the transport thread
                     options.ApplicationSchedulingMode = SchedulingMode.Inline;
@@ -92,36 +68,6 @@ namespace SampleApp
                         listenOptions.UseConnectionLogging();
                     });
 
-                    options.ListenLocalhost(basePort + 2, listenOptions =>
-                    {
-                        // Use default dev cert
-                        listenOptions.UseHttps();
-                    });
-
-                    options.ListenAnyIP(basePort + 3);
-
-                    options.ListenAnyIP(basePort + 4, listenOptions =>
-                    {
-                        listenOptions.UseHttps(StoreName.My, "aspnet.test", allowInvalid: true);
-                    });
-
-                    options
-                        .Configure()
-                        .Endpoint(IPAddress.Loopback, basePort + 5)
-                        .LocalhostEndpoint(basePort + 6)
-                        .Load();
-
-                    options
-                        .Configure(context.Configuration.GetSection("Kestrel"))
-                        .Endpoint("NamedEndpoint", opt =>
-                        {
-                            opt.ListenOptions.Protocols = HttpProtocols.Http1;
-                        })
-                        .Endpoint("NamedHttpsEndpoint", opt =>
-                        {
-                            opt.HttpsOptions.SslProtocols = SslProtocols.Tls12;
-                        });
-
                     options.UseSystemd();
 
                     // The following section should be used to demo sockets
@@ -139,17 +85,8 @@ namespace SampleApp
                      // options.ThreadCount = 4;
                  });
             }
-                
-            return hostBuilder.Build().RunAsync();
-        }
 
-        private static void ShowConfig(IConfiguration config)
-        {
-            foreach (var pair in config.GetChildren())
-            {
-                Console.WriteLine($"{pair.Path} - {pair.Value}");
-                ShowConfig(pair);
-            }
+            return hostBuilder.Build().RunAsync();
         }
     }
 }

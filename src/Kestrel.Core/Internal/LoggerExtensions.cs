@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Internal
             LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(0, nameof(LocatedDevelopmentCertificate)), "Using development certificate: {certificateSubjectName} (Thumbprint: {certificateThumbprint})");
 
         private static readonly Action<ILogger, Exception> _unableToLocateDevelopmentCertificate =
-            LoggerMessage.Define(LogLevel.Error, new EventId(1, nameof(UnableToLocateDevelopmentCertificate)), "Unable to locate an appropriate development https certificate.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(UnableToLocateDevelopmentCertificate)), "Unable to locate an appropriate development https certificate.");
 
         public static void LocatedDevelopmentCertificate(this ILogger logger, X509Certificate2 certificate) => _locatedDevelopmentCertificate(logger, certificate.Subject, certificate.Thumbprint, null);
 

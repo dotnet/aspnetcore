@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 
 namespace Microsoft.AspNetCore.Testing
 {
@@ -11,5 +12,10 @@ namespace Microsoft.AspNetCore.Testing
 
         public static string TestCertificatePath { get; } = Path.Combine(_baseDir, "testCert.pfx");
         public static string GetCertPath(string name) => Path.Combine(_baseDir, name);
+
+        public static X509Certificate2 GetTestCertificate()
+        {
+            return new X509Certificate2(TestCertificatePath, "testPassword");
+        }
     }
 }

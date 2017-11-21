@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -56,6 +59,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public KestrelServerLimits Limits { get; } = new KestrelServerLimits();
 
         /// <summary>
+        /// Provides a configuration source where endpoints will be loaded from on server start.
+        /// The default is null.
+        /// </summary>
+        public KestrelConfigurationLoader ConfigurationLoader { get; set; }
+
+        /// <summary>
+        /// A default configuration action for all endpoints. Use for Listen, configuration, the default url, and URLs.
+        /// </summary>
+        private Action<ListenOptions> EndpointDefaults { get; set; } = _ => { };
+
+        /// <summary>
+        /// A default configuration action for all https endpoints.
+        /// </summary>
+        private Action<HttpsConnectionAdapterOptions> HttpsDefaults { get; set; } = _ => { };
+
+        /// <summary>
+        /// The default server certificate for https endpoints. This is applied before HttpsDefaults.
+        /// </summary>
+        internal X509Certificate2 DefaultCertificate { get; set; }
+
+        /// <summary>
+        /// Specifies a configuration Action to run for each newly created endpoint. Calling this again will replace
+        /// the prior action.
+        /// </summary>
+        public void ConfigureEndpointDefaults(Action<ListenOptions> configureOptions)
+        {
+            EndpointDefaults = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
+        }
+
+        internal void ApplyEndpointDefaults(ListenOptions listenOptions)
+        {
+            listenOptions.KestrelServerOptions = this;
+            EndpointDefaults(listenOptions);
+        }
+
+        /// <summary>
+        /// Specifies a configuration Action to run for each newly created https endpoint. Calling this again will replace
+        /// the prior action.
+        /// </summary>
+        public void ConfigureHttpsDefaults(Action<HttpsConnectionAdapterOptions> configureOptions)
+        {
+            HttpsDefaults = configureOptions ?? throw new ArgumentNullException(nameof(configureOptions));
+        }
+
+        internal void ApplyHttpsDefaults(HttpsConnectionAdapterOptions httpsOptions)
+        {
+            httpsOptions.ServerCertificate = DefaultCertificate;
+            HttpsDefaults(httpsOptions);
+        }
+
+        /// <summary>
+        /// Creates a configuration loader for setting up Kestrel.
+        /// </summary>
+        public KestrelConfigurationLoader Configure()
+        {
+            var loader = new KestrelConfigurationLoader(this, new ConfigurationBuilder().Build());
+            ConfigurationLoader = loader;
+            return loader;
+        }
+
+        /// <summary>
+        /// Creates a configuration loader for setting up Kestrel that takes an IConfiguration as input.
+        /// This configuration must be scoped to the configuration section for Kestrel.
+        /// </summary>
+        public KestrelConfigurationLoader Configure(IConfiguration config)
+        {
+            var loader = new KestrelConfigurationLoader(this, config);
+            ConfigurationLoader = loader;
+            return loader;
+        }
+
+        /// <summary>
         /// Bind to given IP address and port.
         /// </summary>
         public void Listen(IPAddress address, int port)
@@ -100,13 +175,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(endPoint) { KestrelServerOptions = this };
+            var listenOptions = new ListenOptions(endPoint);
+            ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
             ListenOptions.Add(listenOptions);
         }
 
+        /// <summary>
+        /// Listens on ::1 and 127.0.0.1 with the given port. Requesting a dynamic port by specifying 0 is not supported
+        /// for this type of endpoint.
+        /// </summary>
         public void ListenLocalhost(int port) => ListenLocalhost(port, options => { });
 
+        /// <summary>
+        /// Listens on ::1 and 127.0.0.1 with the given port. Requesting a dynamic port by specifying 0 is not supported
+        /// for this type of endpoint.
+        /// </summary>
         public void ListenLocalhost(int port, Action<ListenOptions> configure)
         {
             if (configure == null)
@@ -114,16 +198,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new LocalhostListenOptions(port)
-            {
-                KestrelServerOptions = this,
-            };
+            var listenOptions = new LocalhostListenOptions(port);
+            ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
             ListenOptions.Add(listenOptions);
         }
 
+        /// <summary>
+        /// Listens on all IPs using IPv6 [::], or IPv4 0.0.0.0 if IPv6 is not supported.
+        /// </summary>
         public void ListenAnyIP(int port) => ListenAnyIP(port, options => { });
 
+        /// <summary>
+        /// Listens on all IPs using IPv6 [::], or IPv4 0.0.0.0 if IPv6 is not supported.
+        /// </summary>
         public void ListenAnyIP(int port, Action<ListenOptions> configure)
         {
             if (configure == null)
@@ -131,10 +219,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new AnyIPListenOptions(port)
-            {
-                KestrelServerOptions = this,
-            };
+            var listenOptions = new AnyIPListenOptions(port);
+            ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
             ListenOptions.Add(listenOptions);
         }
@@ -166,7 +252,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(socketPath) { KestrelServerOptions = this };
+            var listenOptions = new ListenOptions(socketPath);
+            ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
             ListenOptions.Add(listenOptions);
         }
@@ -190,7 +277,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(handle) { KestrelServerOptions = this };
+            var listenOptions = new ListenOptions(handle);
+            ApplyEndpointDefaults(listenOptions);
             configure(listenOptions);
             ListenOptions.Add(listenOptions);
         }
