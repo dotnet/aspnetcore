@@ -207,8 +207,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_Approvers Include="$(CodeSignApprovers)" />
-
       <_ResponseFileLines Include="$(LauncherTarget)" />
       <_ResponseFileLines Include="/p:MicroBuildPluginsSigningDirectory=$(OneESToolsPath)MicroBuild.Plugins.Signing.1.0.402\" />
       <_ResponseFileLines Include="/p:BinariesDirectory=$(IntermediateOutputPath)" />
@@ -225,7 +223,7 @@
       Lines="@(_ResponseFileLines)"
       Overwrite="true" />
 
-    <!-- <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" /> -->
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" />
 
     <Move SourceFiles="%(_MappedFile.MappedPath)" DestinationFiles="%(_MappedFile.Identity)" OverwriteReadOnlyFiles="true" />
   </Target>
