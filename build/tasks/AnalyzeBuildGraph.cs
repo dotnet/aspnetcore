@@ -61,7 +61,12 @@ namespace RepoTasks
 
             Log.LogMessage(MessageImportance.High, $"Beginning cross-repo analysis on {Solutions.Length} solutions. Hang tight...");
 
-            var solutions = factory.Create(Solutions, props, _cts.Token);
+            if (!props.TryGetValue("Configuration", out var defaultConfig))
+            {
+                defaultConfig = "Debug";
+            }
+
+            var solutions = factory.Create(Solutions, props, defaultConfig, _cts.Token);
             Log.LogMessage($"Found {solutions.Count} and {solutions.Sum(p => p.Projects.Count)} projects");
 
             if (_cts.IsCancellationRequested)
