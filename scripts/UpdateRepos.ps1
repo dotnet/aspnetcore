@@ -54,21 +54,17 @@ if ($GitAuthorEmail) {
 
 Push-Location $ModuleDirectory
 try {
-    # Init all submodules
-    Write-Verbose "Updating submodules..."
-    Invoke-Block { & git submodule update --init } | Out-Null
-    Write-Verbose "Submodules updated."
 
-    $update_errors = @()
+    $build_errors = @()
+    # Get-Submodules also update --init's them
     $submodules = Get-Submodules $RepoRoot
-    $updated_submodules = @()
     foreach ($submodule in $submodules) {
         Push-Location $submodule.path
         try {
             $depsFile = Join-Path (Join-Path $($submodule.path) "build") "dependencies.props"
 
             if (!(Test-Path $depsFile)) {
-                Write-Warning "No build\dependencies.props file exists for $($submodule.module)."
+                Write-Warning "No build\dependencies.props file exists for '$($submodule.module)'."
                 continue
             }
 
@@ -84,6 +80,7 @@ try {
 
             Invoke-Block { & git @gitConfigArgs add $depsFile $koreBuildLock }
 
+            # If there were any changes test and push.
             & git diff --cached --quiet ./
             if ($LASTEXITCODE -ne 0) {
                 Invoke-Block { & git @gitConfigArgs commit --quiet -m "Update dependencies.props`n`n[auto-updated: dependencies]" @GitCommitArgs }
@@ -91,7 +88,30 @@ try {
                 # Prepare this submodule for push
                 $sshUrl = "git@github.com:aspnet/$($submodule.module)"
                 Invoke-Block { & git remote set-url --push origin $sshUrl }
-                $updated_submodules += $submodule
+
+                # Test the submodule
+                try {
+                    Invoke-Block { & .\run.ps1 default-build }
+                }
+                catch {
+                    Write-Warning "Error in $($submodule.module): $_"
+                    $build_errors += @{
+                        Repo    = $submodule.module
+                        Message = $_
+                    }
+                    continue
+                }
+
+                # Push the changes
+                if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue("Pushing updates to repos.", 'Push the changes to these repos?')))) {
+                    try {
+                        Invoke-Block { & git @gitConfigArgs push origin HEAD:$submodule.branch}
+                    }
+                    catch {
+                        Write-Warning "Error in pushing $($submodule.module): $_"
+                        continue
+                    }
+                }
             }
             else {
                 Write-Host "No changes in $($submodule.module)"
@@ -99,45 +119,6 @@ try {
         }
         catch {
             Write-Warning "Error in $($submodule.module)"
-            $update_errors += @{
-                Repo    = $submodule.module
-                Message = $_
-            }
-        }
-        finally {
-            Pop-Location
-        }
-    }
-
-    if ($update_errors.Count -gt 0 ) {
-        foreach ($update_error in $update_errors) {
-            if ($update_error.Message -eq $null) {
-                Write-Error "Error was null."
-            }
-            else {
-                Write-Error "$($update_error.Repo) error: $($update_error.Message)"
-            }
-        }
-
-        throw 'Failed to update'
-    }
-    else {
-        Write-Verbose "All updates successful!"
-    }
-
-    # Build each submodule to verify that it works after the update
-    $build_errors = @()
-    foreach ($submodule in $updated_submodules) {
-        Push-Location $submodule.path
-        try {
-            Invoke-Block { & .\run.ps1 default-build }
-        }
-        catch {
-            Write-Warning "Error in $($submodule.module): $_"
-            $build_errors += @{
-                Repo    = $submodule.module
-                Message = $_
-            }
         }
         finally {
             Pop-Location
@@ -146,27 +127,6 @@ try {
 
     if ($build_errors.Count -gt 0 ) {
         throw "Failed to build"
-    }
-
-    $shortMessage = "Pushing updates to repos."
-    if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue($shortMessage, 'Push the changes to these repos?')))) {
-        $push_errors = @()
-        foreach ($submodule in $updated_submodules) {
-            Push-Location $submodule.path
-            try {
-                Invoke-Block { & git @gitConfigArgs push origin HEAD:$submodule.branch}
-            }
-            catch {
-                $push_errors += $_
-            }
-            finally {
-                Pop-Location
-            }
-        }
-
-        if ($push_errors.Count -gt 0 ) {
-            throw 'Failed to push'
-        }
     }
 }
 finally {
