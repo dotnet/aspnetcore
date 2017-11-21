@@ -3,11 +3,22 @@
     <RemoveDir Directories="$(ArtifactsDir);$(IntermediateOutputPath)" />
   </Target>
 
+  <Target Name="AcquireTools">
+    <MakeDir Directories="$(OneESTools)nuget" />
+    <DownloadFile Source="https://devdiv.pkgs.visualstudio.com/_apis/public/nuget/client/CredentialProviderBundle.zip" Destination="$(OneESTools)\nuget\bundle.zip" />
+    <UnzipArchive File="$(OneESTools)nuget\bundle.zip" Destination="$(OneESTools)nuget" Overwrite="true" />
+
+    <Exec Command="$(OneESTools)nuget\nuget.exe
+      restore $(MSBuildThisFileDirectory)packages.config
+      -Output $(OneESToolsPath)
+      -Source https://devdiv.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json" />
+  </Target>
+
   <Target Name="ExtractInputs">
     <ItemGroup>
       <UnsignedPackages Include="$(DepsDirectory)ship\*.nupkg" />
       <!--
-        Packages that were already produced in the no-teimstamp configuration, such as aspnet/Templating packages.
+        Packages that were already produced in the no-timestamp configuration, such as aspnet/Templating packages.
         When present, they should prevent the CreateNotTimestamp target from producing a new nupkg.
         Instead, we just do simple signing and repackage.
        -->

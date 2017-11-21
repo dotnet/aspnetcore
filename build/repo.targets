@@ -7,7 +7,7 @@
 
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
-    <PrepareDependsOn>$(PrepareDependsOn);ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);ExtractInputs;AcquireTools;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedRuntimeStoreBinaries</VerifyDependsOn>
     <PublishDependsOn>Build;RunVSDrop;PushPackages</PublishDependsOn>

@@ -6,8 +6,8 @@
         <VSSetupPackagesRestorePath>$(WorkingDirectory)packages</VSSetupPackagesRestorePath>
 
         <SimplifiedWixCompilerTasksPath>$(VSSetupPackagesRestorePath)\Microsoft.Wix4.Tools\tools\bin\swc.exe</SimplifiedWixCompilerTasksPath>
-        <SimplifiedWixTargets>$(VSSetupPackagesRestorePath)\MicroBuild.Plugins.SwixBuild\tools\SimplifiedWix.targets</SimplifiedWixTargets>
-        <SwixBuildTargets>$(VSSetupPackagesRestorePath)\MicroBuild.Plugins.SwixBuild\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+        <SimplifiedWixTargets>$(OneESToolsPath)MicroBuild.Plugins.SwixBuild.1.0.216\tools\SimplifiedWix.targets</SimplifiedWixTargets>
+        <SwixBuildTargets>$(OneESToolsPath)\MicroBuild.Plugins.SwixBuild.1.0.216\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
     </PropertyGroup>
 
     <PropertyGroup>

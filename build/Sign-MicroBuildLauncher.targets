@@ -1,0 +1,18 @@
+<Project>
+  <UsingTask TaskName="SignFiles" AssemblyFile="$(MicroBuildPluginsSigningDirectory)\build\MicroBuild.Signing.dll" />
+
+  <Target Name="SignFiles">
+    <ItemGroup>
+      <FilesToSign Include="$(FilesToSign)">
+        <Authenticode>$(Certificate)</Authenticode>
+      </FilesToSign>
+    </ItemGroup>
+
+    <SignFiles
+      Files="@(FilesToSign)"
+      Type="$(SignType)"
+      BinariesDirectory="$(BinariesDirectory)"
+      IntermediatesDirectory="$(IntermediatesDirectory)"
+      Condition=" '@(FilesToSign)' != '' " />
+  </Target>
+</Project>

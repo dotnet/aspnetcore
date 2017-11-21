@@ -15,7 +15,8 @@
         /p:RepositoryRoot=$(RepositoryRoot);
         /p:ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
         /p:ManifestBuildBranch=$(BUILD_BRANCH);
-        /p:ManifestBuildNumber=$(BUILD_NUMBER)" />
+        /p:ManifestBuildNumber=$(BUILD_NUMBER);
+        /p:OneESToolsPath=$(OneESToolsPath)" />
     </ItemGroup>
 
     <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" Condition="Exists($(RazorVSIXFullPath))" />

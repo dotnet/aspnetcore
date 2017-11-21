@@ -10,6 +10,7 @@
 
     <!-- Working directories -->
     <IntermediateOutputPath>$(RepositoryRoot)obj\</IntermediateOutputPath>
+    <OneESToolsPath>$(IntermediateOutputPath)one-es\</OneESToolsPath>
     <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>

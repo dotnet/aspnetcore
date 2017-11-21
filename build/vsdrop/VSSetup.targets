@@ -3,9 +3,6 @@
     <Import Project="VSSetup.props" Condition="'$(VSSetupProps)' != '1'"/>
 
     <ItemGroup>
-        <VSSetupPackages Include="MicroBuild.Plugins.SwixBuild">
-            <Source>"https://devdiv.pkgs.visualstudio.com/DefaultCollection/_packaging/MicroBuildToolset/nuget/v3/index.json"</Source>
-        </VSSetupPackages>
         <VSSetupPackages Include="Microsoft.Wix4.Tools">
             <Source>"https://mseng.pkgs.visualstudio.com/_packaging/VS/nuget/v3/index.json"</Source>
         </VSSetupPackages>
@@ -16,9 +13,9 @@
 
     <!-- Restore packages need to run various commands for SWIX, Drop publishing, etc. -->
     <Target Name="VSSetupRestorePackages">
-        <Error Text="NuGetExe is undefined or does not exist: $(NuGetExe)" Condition="'$(NuGetExe)' == '' OR !EXISTS('$(NuGetExe)')" />
+        <Error Text="OneESToolsPath is undefined or does not exist: $(OneESToolsPath)" Condition="'$(OneESToolsPath)' == '' OR !EXISTS('$(OneESToolsPath)')" />
 
-        <Exec Command="$(NuGetExe) install %(VSSetupPackages.Identity) -source %(Source) -excludeversion -outputdirectory $(VSSetupPackagesRestorePath) -noninteractive -prerelease" />
+        <Exec Command="$(OneESToolsPath)nuget\nuget.exe install %(VSSetupPackages.Identity) -source %(Source) -excludeversion -outputdirectory $(VSSetupPackagesRestorePath) -noninteractive -prerelease" />
     </Target>
 
     <Target Name="BuildManifests" DependsOnTargets="GetManifests">
