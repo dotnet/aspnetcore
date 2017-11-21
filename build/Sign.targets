@@ -176,7 +176,7 @@
       DestinationFolder="$(SignedVSIXPath)" />
   </Target>
 
-  <Target Name="SubmitCodeSign">
+  <Target Name="SubmitCodeSign" DependsOnTargets="GetToolsets">
     <PropertyGroup>
       <SignType>$(PB_SignType)</SignType>
       <SignType Condition="'$(SignType)'=='' OR '$(LocalBuild)'=='true'">test</SignType>
@@ -225,7 +225,7 @@
       Lines="@(_ResponseFileLines)"
       Overwrite="true" />
 
-    <Exec Command="msbuild @$(ResponseFilePath)" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" />
 
     <Move SourceFiles="%(_MappedFile.MappedPath)" DestinationFiles="%(_MappedFile.Identity)" OverwriteReadOnlyFiles="true" />
   </Target>
