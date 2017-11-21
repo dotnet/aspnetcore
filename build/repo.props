@@ -1,8 +1,8 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 </Project>
