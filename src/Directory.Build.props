@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
-    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryPackageVersion)" />
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandard20PackageVersion)" />
   </ItemGroup>
 
 </Project>

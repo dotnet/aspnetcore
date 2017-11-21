@@ -5,7 +5,7 @@
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">
       $(RestoreSources);
-      https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
     </RestoreSources>
