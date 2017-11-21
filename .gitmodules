@@ -2,6 +2,10 @@
 	path = modules/Antiforgery
 	url = https://github.com/aspnet/Antiforgery.git
 	branch = dev
+[submodule "modules/AuthSamples"]
+	path = modules/AuthSamples
+	url = https://github.com/aspnet/AuthSamples.git
+	branch = dev
 [submodule "modules/AzureIntegration"]
 	path = modules/AzureIntegration
 	url = https://github.com/aspnet/AzureIntegration.git
