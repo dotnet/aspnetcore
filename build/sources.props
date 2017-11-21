@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup Label="RestoreSources">
@@ -7,6 +7,7 @@
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json;
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+      https://vside.myget.org/F/vssdk/api/v3/index.json;
     </RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
       $(RestoreSources);
