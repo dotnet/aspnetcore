@@ -6,8 +6,6 @@
       RebuildPackages;
       RebuildVSIXes;
       RebuildRuntimeStores;
-      CreateTimestampFreePackages;
-      CreateTimestampFreeRuntimeStores
     </SignDependsOn>
   </PropertyGroup>
 
@@ -21,13 +19,6 @@
         $(UnsignedPackagesPath)**\*.psd1;
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;" />
-
-      <NoTimestampPackageBinaries Include="
-        $(UnsignedNoTimestampPackagesPath)**\*.dll;
-        $(UnsignedNoTimestampPackagesPath)**\*.exe;
-        $(UnsignedNoTimestampPackagesPath)**\*.psd1;
-        $(UnsignedNoTimestampPackagesPath)**\*.psm1;
-        $(UnsignedNoTimestampPackagesPath)**\*.ps1;" />
 
       <OobPackageBinaries Include="
         $(UnsignedOobPackagesPath)**\*.dll;
@@ -60,7 +51,6 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
-        @(NoTimestampPackageBinaries);
         @(OobPackageBinaries);
         @(VSIXBinaries)" />
 
@@ -103,7 +93,6 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
-      <NuSpecNoTimestamp Include="$(UnsignedNoTimestampPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
     </ItemGroup>
@@ -113,11 +102,6 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
       Condition="'@(NuSpec)'!=''" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="ZipFile"
-      Properties="ZipRoot=%(NuSpecNoTimestamp.RootDir)%(NuSpecNoTimestamp.Directory);OutputDir=$(IntermediatePackagesNoTimestampOutputPath);Extension=.nupkg"
-      Condition="'@(NuSpecNoTimestamp)'!=''" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="ZipFile"
@@ -241,59 +225,6 @@
     <Exec Command="&quot;$(ZipExePath)&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ZipExePath)&quot; a -y -si &quot;$(OutputFile)&quot;"
        WorkingDirectory="$(WorkingDir)"
        Condition="'$(CreateTarGzip)' == 'true'" />
-  </Target>
-
-  <Target Name="CreateTimestampFreePackages">
-    <PropertyGroup>
-      <PackagesDir>$(ArtifactsDir)Signed\Packages\</PackagesDir>
-      <PackagesNoTimestampDir>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</PackagesNoTimestampDir>
-
-      <OOBPackagesDir>$(ArtifactsDir)Signed\OobPackages\</OOBPackagesDir>
-      <OOBPackagesNoTimestampDir>$(ArtifactsDir)Signed\OobPackages-NoTimeStamp\</OOBPackagesNoTimestampDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PackagesAlreadyTimestampFree Include="$(IntermediatePackagesNoTimestampOutputPath)*.nupkg" />
-      <PackagesWithTimeStamp Include="$(PackagesDir)*.nupkg" />
-      <OOBPackagesWithTimeStamp Include="$(OOBPackagesDir)*.nupkg" />
-    </ItemGroup>
-
-    <MakeDir Directories="$(PackagesNoTimestampDir);$(OOBPackagesNoTimestampDir)" />
-
-    <RepoTasks.CreateTimestampFreePackages
-      PackagesWithTimeStamp="@(PackagesWithTimeStamp)"
-      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
-      OutputDirectory="$(PackagesNoTimestampDir)" />
-
-    <RepoTasks.CreateTimestampFreePackages
-      PackagesWithTimeStamp="@(OOBPackagesWithTimeStamp)"
-      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
-      OutputDirectory="$(OOBPackagesNoTimestampDir)" />
-  </Target>
-
-  <Target Name="CreateTimestampFreeRuntimeStores">
-    <ItemGroup>
-      <MetapackageFile Include="$(DepsDirectory)store\Microsoft.AspNetCore.All.*.nupkg" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <VersionNumber>@(MetapackageFile->Metadata('Filename'))</VersionNumber>
-      <VersionNumber>$(VersionNumber.TrimStart('Microsoft.AspNetCore.All'))</VersionNumber>
-    </PropertyGroup>
-
-    <RepoTasks.CreateTimestampFreeRuntimeStoreFiles
-      VersionNumber="$(VersionNumber)"
-      RuntimeStoresDirectory="$(UnsignedRuntimeStorePath)"
-      OutputDirectory="$(TimestampFreeUnsignedRuntimeStorePath)" />
-
-    <ItemGroup>
-      <TimestampFreeRuntimeStoresFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(TimestampFreeUnsignedRuntimeStorePath)&quot;))" />
-    </ItemGroup>
-
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Properties="RuntimeStoreFile=%(TimestampFreeRuntimeStoresFiles.Identity);OutDir=$(TimestampFreeRuntimeStoreOutputPath)"
-      Targets="RebuildRuntimeStore"/>
   </Target>
 
   <Target Name="ZipFile">

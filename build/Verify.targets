@@ -37,18 +37,16 @@
       Condition="Exists('$(BinScopeEXE)')" />
   </Target>
 
-  <!-- Runs NuGetPackageVerifier on signed (timestamped and timestamp-free packages -->
+  <!-- Runs NuGetPackageVerifier on signed packages -->
   <Target Name="VerifySignedPackages">
     <PropertyGroup>
       <SignedDir>$(ArtifactsDir)Signed</SignedDir>
       <SignedPackagesDir>$(SignedDir)Packages\</SignedPackagesDir>
-      <NoTimestampPackagesDir>$(SignedDir)Packages-NoTimeStamp\</NoTimestampPackagesDir>
       <OOBPackagesDir>$(SignedDir)OobPackages</OOBPackagesDir>
-      <NoTimestampOOBPackagesDir>$(SignedDir)OobPackages-NoTimeStamp</NoTimestampOOBPackagesDir>
     </PropertyGroup>
 
     <ItemGroup>
-      <DirectoriesToScan Include="$(SignedPackagesDir);$(NoTimestampPackagesDir);$(OOBPackagesDir);$(NoTimestampOOBPackagesDir)" />
+      <DirectoriesToScan Include="$(SignedPackagesDir);$(OOBPackagesDir);" />
     </ItemGroup>
 
     <VerifyPackages
