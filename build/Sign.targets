@@ -178,7 +178,7 @@
 
   <Target Name="SubmitCodeSign" DependsOnTargets="GetToolsets">
     <PropertyGroup>
-      <SignType>$(PB_SignType)</SignType>
+      <SignType Condition="'$(PB_SignType)'!=''">$(PB_SignType)</SignType>
       <SignType Condition="'$(SignType)'=='' OR '$(LocalBuild)'=='true'">test</SignType>
       <LauncherTarget>$(MSBuildThisFileDirectory)Sign-MicroBuildLauncher.targets</LauncherTarget>
       <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
@@ -225,7 +225,7 @@
       Lines="@(_ResponseFileLines)"
       Overwrite="true" />
 
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" />
+    <!-- <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" /> -->
 
     <Move SourceFiles="%(_MappedFile.MappedPath)" DestinationFiles="%(_MappedFile.Identity)" OverwriteReadOnlyFiles="true" />
   </Target>

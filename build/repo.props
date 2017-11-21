@@ -3,7 +3,6 @@
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
-    <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
 
     <!-- Directories to copy files to -->
     <CoherenceSignedDestinationDir>$(ArtifactsDir)Signed\</CoherenceSignedDestinationDir>
