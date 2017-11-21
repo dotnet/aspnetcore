@@ -1,6 +1,7 @@
-<Project>
+﻿<Project>
 
   <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
