@@ -7,7 +7,7 @@
         "windows"
       ],
       "includePrerelease": true,
-      "minVersion": "15.4",
+      "minVersion": "15.0.26730.03",
       "requiredWorkloads": [
         "Microsoft.VisualStudio.Component.VSSDK"
       ]
