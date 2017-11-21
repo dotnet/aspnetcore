@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         private IValidationStrategy _strategy;
 
         /// <summary>
+        /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false. 
+        /// </summary>
+        public bool ValidateComplexTypesIfChildValidationFails { get; set; }
+
+        /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
@@ -236,7 +241,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             }
 
             // Double-checking HasReachedMaxErrors just in case this model has no properties.
-            if (isValid && !_modelState.HasReachedMaxErrors)
+            // If validation has failed for any children, only validate the parent if ValidateComplexTypesIfChildValidationFails is true.
+            if ((isValid || ValidateComplexTypesIfChildValidationFails) && !_modelState.HasReachedMaxErrors)
             {
                 isValid &= ValidateNode();
             }
