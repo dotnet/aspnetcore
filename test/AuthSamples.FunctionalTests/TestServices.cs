@@ -43,13 +43,21 @@ namespace AuthSamples.FunctionalTests
             Func<HttpClient, ILogger, CancellationToken, Task> validator)
         {
             var logger = loggerFactory.CreateLogger(siteName);
+            var targetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" :
+#if NETCOREAPP2_0
+                "netcoreapp2.0";
+#elif NETCOREAPP2_1
+                "netcoreapp2.1";
+#else
+#error Target frameworks need to be updated.
+#endif
 
             var deploymentParameters = new DeploymentParameters(GetApplicationDirectory(siteName), serverType, runtimeFlavor, architecture)
             {
                 SiteName = "HttpTestSite",
                 ServerConfigTemplateContent = serverType == ServerType.Nginx ? File.ReadAllText(Path.Combine(WorkingDirectory, "nginx.conf")) : string.Empty,
                 PublishApplicationBeforeDeployment = true,
-                TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
+                TargetFramework = targetFramework,
                 ApplicationType = applicationType
             };
 
