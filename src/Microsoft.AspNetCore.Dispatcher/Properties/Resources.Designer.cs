@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             => string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_InvalidParameterName"), p0);
 
         /// <summary>
-        /// The route template cannot start with a '/' or '~' character.
+        /// The route template cannot start with a '~' character.
         /// </summary>
         internal static string TemplateRoute_InvalidRouteTemplate
         {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         }
 
         /// <summary>
-        /// The route template cannot start with a '/' or '~' character.
+        /// The route template cannot start with a '~' character.
         /// </summary>
         internal static string FormatTemplateRoute_InvalidRouteTemplate()
             => GetString("TemplateRoute_InvalidRouteTemplate");

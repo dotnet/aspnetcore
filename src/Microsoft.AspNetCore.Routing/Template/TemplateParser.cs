@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             try
             {
-                var inner = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePattern.Parse(routeTemplate);
+                var inner = RoutePattern.Parse(routeTemplate);
                 return new RouteTemplate(inner);
             }
             catch (ArgumentException ex) when (ex.InnerException is RoutePatternException)

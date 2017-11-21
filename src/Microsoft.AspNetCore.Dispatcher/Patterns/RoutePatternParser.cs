@@ -33,13 +33,9 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
                 throw new ArgumentNullException(nameof(pattern));
             }
 
-            if (IsInvalidPattern(pattern))
-            {
-                throw new RoutePatternException(pattern, Resources.TemplateRoute_InvalidRouteTemplate);
-            }
+            var trimmedPattern = TrimPrefix(pattern);
 
-            var context = new TemplateParserContext(pattern);
-            var builder = RoutePatternBuilder.Create(pattern);
+            var context = new TemplateParserContext(trimmedPattern);
             var segments = new List<RoutePatternPathSegment>();
 
             while (context.MoveNext())
@@ -69,6 +65,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
             if (IsAllValid(context, segments))
             {
+                var builder = RoutePatternBuilder.Create(pattern);
                 for (var i = 0; i < segments.Count; i++)
                 {
                     builder.PathSegments.Add(segments[i]);
@@ -257,7 +254,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
         private static bool ParseLiteral(TemplateParserContext context, List<RoutePatternPart> parts)
         {
             context.Mark();
-            
+
             while (true)
             {
                 if (context.Current == Separator)
@@ -469,10 +466,21 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             return true;
         }
 
-        private static bool IsInvalidPattern(string routeTemplate)
+        private static string TrimPrefix(string routePattern)
         {
-            return routeTemplate.StartsWith("~", StringComparison.Ordinal) ||
-                   routeTemplate.StartsWith("/", StringComparison.Ordinal);
+            if (routePattern.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return routePattern.Substring(2);
+            }
+            else if (routePattern.StartsWith("/", StringComparison.Ordinal))
+            {
+                return routePattern.Substring(1);
+            }
+            else if (routePattern.StartsWith("~", StringComparison.Ordinal))
+            {
+                throw new RoutePatternException(routePattern, Resources.TemplateRoute_InvalidRouteTemplate);
+            }
+            return routePattern;
         }
 
         [DebuggerDisplay("{DebuggerToString()}")]
@@ -555,8 +563,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
                 }
                 else if (_mark.HasValue)
                 {
-                    return _template.Substring(0, _mark.Value) + 
-                        "|" + 
+                    return _template.Substring(0, _mark.Value) +
+                        "|" +
                         _template.Substring(_mark.Value, _index - _mark.Value) +
                         "|" +
                         _template.Substring(_index);

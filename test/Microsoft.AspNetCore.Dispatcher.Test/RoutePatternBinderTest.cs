@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Dispatcher.Patterns;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -652,6 +651,28 @@ namespace Microsoft.AspNetCore.Dispatcher
         }
 
         [Fact]
+        public void GetUrlWithLeadingTildeSlash()
+        {
+            RunTest(
+                "~/foo",
+                null,
+                null,
+                new DispatcherValueCollection(new { }),
+                "/UrlEncode[[foo]]");
+        }
+
+        [Fact]
+        public void GetUrlWithLeadingSlash()
+        {
+            RunTest(
+                "/foo",
+                null,
+                null,
+                new DispatcherValueCollection(new { }),
+                "/UrlEncode[[foo]]");
+        }
+
+        [Fact]
         public void GetUrlWithCatchAllWithValue()
         {
             RunTest(
@@ -1192,8 +1213,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                     foreach (var kvp in expectedParts.Parameters)
                     {
-                        string value;
-                        Assert.True(actualParts.Parameters.TryGetValue(kvp.Key, out value));
+                        Assert.True(actualParts.Parameters.TryGetValue(kvp.Key, out var value));
                         Assert.Equal(kvp.Value, value);
                     }
                 }

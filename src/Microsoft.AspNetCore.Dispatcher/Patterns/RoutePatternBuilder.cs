@@ -58,8 +58,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
                 var segment = PathSegments[i];
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
-                    var parameter = segment.Parts[j] as RoutePatternParameter;
-                    if (parameter != null)
+                    if (segment.Parts[j] is RoutePatternParameter parameter)
                     {
                         parameters.Add(parameter);
                     }

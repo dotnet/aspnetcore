@@ -74,8 +74,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 // If it's a parameter subsegment, examine the current value to see if it matches the new value
                 var parameterName = parameter.Name;
 
-                object newParameterValue;
-                var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
+                var hasNewParameterValue = values.TryGetValue(parameterName, out var newParameterValue);
 
                 object currentParameterValue = null;
                 var hasCurrentParameterValue = ambientValues != null &&
@@ -179,8 +178,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                     continue;
                 }
 
-                object value;
-                if (values.TryGetValue(filter.Key, out value))
+                if (values.TryGetValue(filter.Key, out var value))
                 {
                     if (!RoutePartsEqual(value, filter.Value))
                     {
