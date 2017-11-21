@@ -31,10 +31,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             _logToken = testLog.StartTestLog(null, $"{nameof(RedisServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "RedisServerFixture");
             _logger = _loggerFactory.CreateLogger<RedisServerFixture<TStartup>>();
 
+            Docker.Default.Start(_logger);
+
             FirstServer = StartServer();
             SecondServer = StartServer();
-
-            Docker.Default.Start(_logger);
         }
 
         private ServerFixture<TStartup> StartServer()
