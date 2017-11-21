@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private static bool UpgradeAvailable = (Environment.OSVersion.Version >= new Version(6, 2));
 
-        protected readonly IntPtr _pHttpContext;
+        protected readonly IntPtr _pInProcessHandler;
 
         private bool _wasUpgraded;
         private int _statusCode;
@@ -63,15 +63,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
-        internal unsafe IISHttpContext(MemoryPool memoryPool, IntPtr pHttpContext, IISOptions options)
-            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pHttpContext))
+        internal unsafe IISHttpContext(MemoryPool memoryPool, IntPtr pInProcessHandler, IISOptions options)
+            : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pInProcessHandler))
         {
             _thisHandle = GCHandle.Alloc(this);
 
             _memoryPool = memoryPool;
-            _pHttpContext = pHttpContext;
+            _pInProcessHandler = pInProcessHandler;
 
-            NativeMethods.http_set_managed_context(_pHttpContext, (IntPtr)_thisHandle);
+            NativeMethods.http_set_managed_context(pInProcessHandler, (IntPtr)_thisHandle);
             unsafe
             {
                 Method = GetVerb();
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             unsafe
             {
                 var hr = 0;
-                hr = NativeMethods.http_flush_response_bytes(_pHttpContext, out var fCompletionExpected);
+                hr = NativeMethods.http_flush_response_bytes(_pInProcessHandler, out var fCompletionExpected);
                 if (!fCompletionExpected)
                 {
                     _operation.Complete(hr, 0);
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             fixed (byte* pReasonPhrase = reasonPhraseBytes)
             {
                 // This copies data into the underlying buffer
-                NativeMethods.http_set_response_status_code(_pHttpContext, (ushort)StatusCode, pReasonPhrase);
+                NativeMethods.http_set_response_status_code(_pInProcessHandler, (ushort)StatusCode, pReasonPhrase);
             }
 
             HttpResponseHeaders.IsReadOnly = true;
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         {
                             fixed (byte* pHeaderValue = headerValueBytes)
                             {
-                                NativeMethods.http_response_set_unknown_header(_pHttpContext, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                                NativeMethods.http_response_set_unknown_header(_pInProcessHandler, pHeaderName, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
                             }
                         }
                     }
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                         var headerValueBytes = Encoding.UTF8.GetBytes(headerValues[i]);
                         fixed (byte* pHeaderValue = headerValueBytes)
                         {
-                            NativeMethods.http_response_set_known_header(_pHttpContext, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
+                            NativeMethods.http_response_set_known_header(_pInProcessHandler, knownHeaderIndex, pHeaderValue, (ushort)headerValueBytes.Length, fReplace: false);
                         }
                     }
                 }
@@ -592,11 +592,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     chunk.fromMemory.BufferLength = (uint)buffer.Length;
                     if (_wasUpgraded)
                     {
-                        hr = NativeMethods.http_websockets_write_bytes(_pHttpContext, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
+                        hr = NativeMethods.http_websockets_write_bytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
                     }
                     else
                     {
-                        hr = NativeMethods.http_write_response_bytes(_pHttpContext, pDataChunks, nChunks, out fCompletionExpected);
+                        hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
                     }
                 }
             }
@@ -625,11 +625,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
                 if (_wasUpgraded)
                 {
-                    hr = NativeMethods.http_websockets_write_bytes(_pHttpContext, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
+                    hr = NativeMethods.http_websockets_write_bytes(_pInProcessHandler, pDataChunks, nChunks, IISAwaitable.WriteCallback, (IntPtr)_thisHandle, out fCompletionExpected);
                 }
                 else
                 {
-                    hr = NativeMethods.http_write_response_bytes(_pHttpContext, pDataChunks, nChunks, out fCompletionExpected);
+                    hr = NativeMethods.http_write_response_bytes(_pInProcessHandler, pDataChunks, nChunks, out fCompletionExpected);
                 }
                 // Free the handles
                 foreach (var handle in handles)
@@ -659,7 +659,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private unsafe IISAwaitable ReadAsync(int length)
         {
             var hr = NativeMethods.http_read_request_bytes(
-                            _pHttpContext,
+                            _pInProcessHandler,
                             (byte*)_inputHandle.Pointer,
                             length,
                             out var dwReceivedBytes,
@@ -677,7 +677,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             int dwReceivedBytes;
             bool fCompletionExpected;
             hr = NativeMethods.http_websockets_read_bytes(
-                                      _pHttpContext,
+                                      _pInProcessHandler,
                                       (byte*)_inputHandle.Pointer,
                                       length,
                                       IISAwaitable.ReadCallback,
@@ -790,13 +790,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             Debug.Assert(!_operation.HasContinuation, "Pending async operation!");
 
-            var hr = NativeMethods.http_set_completion_status(_pHttpContext, requestNotificationStatus);
+            var hr = NativeMethods.http_set_completion_status(_pInProcessHandler, requestNotificationStatus);
             if (hr != NativeMethods.S_OK)
             {
                 throw Marshal.GetExceptionForHR(hr);
             }
 
-            hr = NativeMethods.http_post_completion(_pHttpContext, 0);
+            hr = NativeMethods.http_post_completion(_pInProcessHandler, 0);
             if (hr != NativeMethods.S_OK)
             {
                 throw Marshal.GetExceptionForHR(hr);
@@ -805,7 +805,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public void IndicateCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS notificationStatus)
         {
-            NativeMethods.http_indicate_completion(_pHttpContext, notificationStatus);
+            NativeMethods.http_indicate_completion(_pInProcessHandler, notificationStatus);
         }
 
         internal void OnAsyncCompletion(int hr, int cbBytes)
@@ -873,7 +873,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private WindowsPrincipal GetWindowsPrincipal()
         {
-            var hr = NativeMethods.http_get_authentication_information(_pHttpContext, out var authenticationType, out var token);
+            var hr = NativeMethods.http_get_authentication_information(_pInProcessHandler, out var authenticationType, out var token);
 
             if (hr == 0 && token != IntPtr.Zero && authenticationType != null)
             {
