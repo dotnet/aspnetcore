@@ -69,7 +69,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             var filePath = textDocument.FilePath;
-            var tracker = new DefaultVisualStudioDocumentTracker(filePath, _projectManager, _projectService, _editorSettingsManager, _workspace, textBuffer);
+            var project = _projectService.GetHostProject(textBuffer);
+            if (project == null)
+            {
+                Debug.Fail("Text buffer should belong to a project.");
+                return null;
+            }
+
+            var projectPath = _projectService.GetProjectPath(project);
+
+            var tracker = new DefaultVisualStudioDocumentTracker(filePath, projectPath, _projectManager, _editorSettingsManager, _workspace, textBuffer);
 
             return tracker;
         }

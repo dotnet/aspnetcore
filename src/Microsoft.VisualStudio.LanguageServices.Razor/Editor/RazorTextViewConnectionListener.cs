@@ -4,12 +4,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
-using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
@@ -22,58 +19,38 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     internal class RazorTextViewConnectionListener : IWpfTextViewConnectionListener
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly TextBufferProjectService _projectService;
-        private readonly RazorEditorFactoryService _editorFactoryService;
         private readonly Workspace _workspace;
+        private readonly RazorDocumentManager _documentManager;
 
         [ImportingConstructor]
         public RazorTextViewConnectionListener(
-            TextBufferProjectService projectService,
-            RazorEditorFactoryService editorFactoryService,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
+            RazorDocumentManager documentManager)
         {
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
-            }
-
-            if (editorFactoryService == null)
-            {
-                throw new ArgumentNullException(nameof(editorFactoryService));
-            }
-
             if (workspace == null)
             {
                 throw new ArgumentNullException(nameof(workspace));
             }
 
-            _projectService = projectService;
-            _editorFactoryService = editorFactoryService;
-            _workspace = workspace;
+            if (documentManager == null)
+            {
+                throw new ArgumentNullException(nameof(documentManager));
+            }
 
+            _workspace = workspace;
+            _documentManager = documentManager;
             _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
         }
 
         // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
         internal RazorTextViewConnectionListener(
             ForegroundDispatcher foregroundDispatcher,
-            TextBufferProjectService projectService,
-            RazorEditorFactoryService editorFactoryService,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            Workspace workspace,
+            RazorDocumentManager documentManager)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
-            }
-
-            if (editorFactoryService == null)
-            {
-                throw new ArgumentNullException(nameof(editorFactoryService));
             }
 
             if (workspace == null)
@@ -81,10 +58,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(workspace));
             }
 
+            if (documentManager == null)
+            {
+                throw new ArgumentNullException(nameof(documentManager));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
-            _projectService = projectService;
-            _editorFactoryService = editorFactoryService;
             _workspace = workspace;
+            _documentManager = documentManager;
         }
 
         public Workspace Workspace => _workspace;
@@ -103,29 +84,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            for (var i = 0; i < subjectBuffers.Count; i++)
-            {
-                var textBuffer = subjectBuffers[i];
-                if (!textBuffer.IsRazorBuffer())
-                {
-                    continue;
-                }
-
-                var hierarchy = _projectService.GetHierarchy(textBuffer);
-                if (!_projectService.IsSupportedProject(hierarchy))
-                {
-                    return;
-                }
-
-                if (!_editorFactoryService.TryGetDocumentTracker(textBuffer, out var documentTracker) ||
-                    !(documentTracker is DefaultVisualStudioDocumentTracker tracker))
-                {
-                    Debug.Fail("Tracker should always be available given our expectations of the VS workflow.");
-                    return;
-                }
-
-                tracker.AddTextView(textView);
-            }
+            _documentManager.OnTextViewOpened(textView, subjectBuffers);
         }
 
         public void SubjectBuffersDisconnected(IWpfTextView textView, ConnectionReason reason, Collection<ITextBuffer> subjectBuffers)
@@ -142,21 +101,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
             _foregroundDispatcher.AssertForegroundThread();
 
-            // This means a Razor buffer has be detached from this ITextView or the ITextView is closing. Since we keep a 
-            // list of all of the open text views for each text buffer, we need to update the tracker.
-            //
-            // Notice that this method is called *after* changes are applied to the text buffer(s). We need to check every
-            // one of them for a tracker because the content type could have changed.
-            for (var i = 0; i < subjectBuffers.Count; i++)
-            {
-                var textBuffer = subjectBuffers[i];
-
-                DefaultVisualStudioDocumentTracker documentTracker;
-                if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out documentTracker))
-                {
-                    documentTracker.RemoveTextView(textView);
-                }
-            }
+            _documentManager.OnTextViewClosed(textView, subjectBuffers);
         }
     }
 }

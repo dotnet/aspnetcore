@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
@@ -41,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _documentTable = new RunningDocumentTable(services);
         }
 
-        public override IVsHierarchy GetHierarchy(ITextBuffer textBuffer)
+        public override object GetHostProject(ITextBuffer textBuffer)
         {
             if (textBuffer == null)
             {
@@ -63,24 +64,27 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return hierarchy;
         }
 
-        public override string GetProjectPath(IVsHierarchy hierarchy)
+        public override string GetProjectPath(object project)
         {
-            if (hierarchy == null)
+            if (project == null)
             {
-                throw new ArgumentNullException(nameof(hierarchy));
+                throw new ArgumentNullException(nameof(project));
             }
+
+            var hierarchy = (IVsHierarchy)project;
 
             ErrorHandler.ThrowOnFailure(((IVsProject)hierarchy).GetMkDocument((uint)VSConstants.VSITEMID.Root, out var path), VSConstants.E_NOTIMPL);
             return path;
         }
 
-        public override bool IsSupportedProject(IVsHierarchy hierarchy)
+        public override bool IsSupportedProject(object project)
         {
-            if (hierarchy == null)
+            if (project == null)
             {
-                throw new ArgumentNullException(nameof(hierarchy));
+                throw new ArgumentNullException(nameof(project));
             }
 
+            var hierarchy = (IVsHierarchy)project;
             try
             {
                 return hierarchy.IsCapabilityMatch(DotNetCoreCapability);

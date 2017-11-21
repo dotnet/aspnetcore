@@ -8,5 +8,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         ProjectChanged,
         EditorSettingsChanged,
         TagHelpersChanged,
+        ImportsChanged,
     }
 }

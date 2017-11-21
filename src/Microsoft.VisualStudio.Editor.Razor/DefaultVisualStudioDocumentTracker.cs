@@ -5,35 +5,31 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultVisualStudioDocumentTracker : VisualStudioDocumentTracker
     {
         private readonly string _filePath;
+        private readonly string _projectPath;
         private readonly ProjectSnapshotManager _projectManager;
         private readonly EditorSettingsManagerInternal _editorSettingsManager;
-        private readonly TextBufferProjectService _projectService;
         private readonly ITextBuffer _textBuffer;
         private readonly List<ITextView> _textViews;
         private readonly Workspace _workspace;
         private bool _isSupportedProject;
         private ProjectSnapshot _project;
-        private string _projectPath;
 
         public override event EventHandler<ContextChangeEventArgs> ContextChanged;
 
         public DefaultVisualStudioDocumentTracker(
             string filePath,
+            string projectPath,
             ProjectSnapshotManager projectManager,
-            TextBufferProjectService projectService,
             EditorSettingsManagerInternal editorSettingsManager,
             Workspace workspace,
             ITextBuffer textBuffer)
@@ -43,14 +39,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
+            if (projectPath == null)
+            {
+                throw new ArgumentNullException(nameof(projectPath));
+            }
+
             if (projectManager == null)
             {
                 throw new ArgumentNullException(nameof(projectManager));
-            }
-
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
             }
 
             if (editorSettingsManager == null)
@@ -69,8 +65,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _filePath = filePath;
+            _projectPath = projectPath;
             _projectManager = projectManager;
-            _projectService = projectService;
             _editorSettingsManager = editorSettingsManager;
             _textBuffer = textBuffer;
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
@@ -108,11 +104,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             if (!_textViews.Contains(textView))
             {
                 _textViews.Add(textView);
-
-                if (_textViews.Count == 1)
-                {
-                    Subscribe();
-                }
             }
         }
 
@@ -126,11 +117,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             if (_textViews.Contains(textView))
             {
                 _textViews.Remove(textView);
-
-                if (_textViews.Count == 0)
-                {
-                    Unsubscribe();
-                }
             }
         }
 
@@ -147,42 +133,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return null;
         }
 
-        private void Subscribe()
+        public void Subscribe()
         {
-            // Fundamentally we have a Razor half of the world as as soon as the document is open - and then later 
-            // the C# half of the world will be initialized. This code is in general pretty tolerant of 
-            // unexpected /impossible states.
-            //
-            // We also want to successfully shut down if the buffer is something other than .cshtml.
-            IVsHierarchy hierarchy = null;
-            string projectPath = null;
-            var isSupportedProject = false;
-
-            if (_textBuffer.ContentType.IsOfType(RazorLanguage.ContentType) &&
-
-                // We expect the document to have a hierarchy even if it's not a real 'project'.
-                // However the hierarchy can be null when the document is in the process of closing.
-                (hierarchy = _projectService.GetHierarchy(_textBuffer)) != null)
-            {
-                projectPath = _projectService.GetProjectPath(hierarchy);
-                isSupportedProject = _projectService.IsSupportedProject(hierarchy);
-            }
-
-            if (!isSupportedProject || projectPath == null)
-            {
-                return;
-            }
-
-            _isSupportedProject = isSupportedProject;
-            _projectPath = projectPath;
-            _project = _projectManager.GetProjectWithFilePath(projectPath);
-            _projectManager.Changed += ProjectManager_Changed;
             _editorSettingsManager.Changed += EditorSettingsManager_Changed;
+            _projectManager.Changed += ProjectManager_Changed;
+
+            _isSupportedProject = true;
+            _project = _projectManager.GetProjectWithFilePath(_projectPath);
 
             OnContextChanged(_project, ContextChangeKind.ProjectChanged);
         }
 
-        private void Unsubscribe()
+        public void Unsubscribe()
         {
             _projectManager.Changed -= ProjectManager_Changed;
             _editorSettingsManager.Changed -= EditorSettingsManager_Changed;
@@ -190,6 +152,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             // Detached from project.
             _isSupportedProject = false;
             _project = null;
+
             OnContextChanged(project: null, kind: ContextChangeKind.ProjectChanged);
         }
 
