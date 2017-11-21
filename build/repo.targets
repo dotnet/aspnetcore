@@ -154,8 +154,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_UpdateNuGetConfig;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
-
+     DependsOnTargets="_PrepareRepositories;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
 
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
     <RepoTasks.AnalyzeBuildGraph
@@ -166,28 +165,6 @@
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
-  </Target>
-
-  <Target Name="_UpdateNuGetConfig">
-    <UpdatePackageSource
-      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
-      SourceName="Dependencies"
-      SourceUri="$(_DependencyPackagesDirectory)"
-      Condition="Exists('$(_DependencyPackagesDirectory)') AND %(Repository.Build)" />
-
-    <MakeDir Directories="$(BuildDir)" Condition="!Exists('$(BuildDir)')" />
-
-    <UpdatePackageSource
-      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
-      SourceName="Artifacts"
-      Condition="%(Repository.Build)"
-      SourceUri="$(BuildDir)" />
-
-    <UpdatePackageSource
-      NuGetConfigPath="%(Repository.RootPath)NuGet.config"
-      SourceName="MirroredArtifacts"
-      Condition="%(Repository.Build)"
-      SourceUri="$(IntermediateMirrorPackageDir)" />
   </Target>
 
   <Target Name="SplitPackages">
