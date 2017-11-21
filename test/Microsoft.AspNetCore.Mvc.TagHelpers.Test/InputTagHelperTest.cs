@@ -1190,7 +1190,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     tagHelper.For.ModelExplorer,
                     tagHelper.For.Name,
                     null,                                   // value
-                    "{0:yyyy-MM-ddTHH:mm:ss.fffK}",
+                    @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}",
                     htmlAttributes))                    // htmlAttributes
                 .Returns(tagBuilder)
                 .Verifiable();
@@ -1213,20 +1213,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("Date", Html5DateRenderingMode.CurrentCulture, "{0:d}", "date")]    // Format from [DataType].
         [InlineData("Date", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
         [InlineData("DateTime", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
-        [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}", "datetime-local")]
         [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "text")]
-        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
+        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}", "text")]
         [InlineData("DateTimeLocal", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
-        [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}", "datetime-local")]
         [InlineData("Time", Html5DateRenderingMode.CurrentCulture, "{0:t}", "time")]    // Format from [DataType].
-        [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
+        [InlineData("Time", Html5DateRenderingMode.Rfc3339, @"{0:HH\:mm\:ss.fff}", "time")]
         [InlineData("Month", Html5DateRenderingMode.CurrentCulture, "{0:yyyy-MM}", "month")]
         [InlineData("Month", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM}", "month")]
         [InlineData("Week", Html5DateRenderingMode.CurrentCulture, null, "week")]
         [InlineData("Week", Html5DateRenderingMode.Rfc3339, null, "week")]
         [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
-        [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
-        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
+        [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}", "datetime-local")]
+        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}", "text")]
         public async Task ProcessAsync_CallsGenerateTextBox_AddsExpectedAttributesForRfc3339(
             string propertyName,
             Html5DateRenderingMode dateRenderingMode,

@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { "date", "{0:yyyy-MM-dd}" },
-                { "datetime", "{0:yyyy-MM-ddTHH:mm:ss.fffK}" },
-                { "datetime-local", "{0:yyyy-MM-ddTHH:mm:ss.fff}" },
-                { "time", "{0:HH:mm:ss.fff}" },
+                { "datetime", @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}" },
+                { "datetime-local", @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}" },
+                { "time", @"{0:HH\:mm\:ss.fff}" },
             };
 
         /// <summary>

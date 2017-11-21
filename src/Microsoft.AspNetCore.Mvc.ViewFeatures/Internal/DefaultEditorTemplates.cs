@@ -348,13 +348,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static IHtmlContent DateTimeOffsetTemplate(IHtmlHelper htmlHelper)
         {
-            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, "{0:yyyy-MM-ddTHH:mm:ss.fffK}");
+            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, @"{0:yyyy-MM-ddTHH\:mm\:ss.fffK}");
             return GenerateTextBox(htmlHelper, inputType: "text");
         }
 
         public static IHtmlContent DateTimeLocalInputTemplate(IHtmlHelper htmlHelper)
         {
-            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, "{0:yyyy-MM-ddTHH:mm:ss.fff}");
+            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, @"{0:yyyy-MM-ddTHH\:mm\:ss.fff}");
             return GenerateTextBox(htmlHelper, inputType: "datetime-local");
         }
 
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static IHtmlContent TimeInputTemplate(IHtmlHelper htmlHelper)
         {
-            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, "{0:HH:mm:ss.fff}");
+            ApplyRfc3339DateFormattingIfNeeded(htmlHelper, @"{0:HH\:mm\:ss.fff}");
             return GenerateTextBox(htmlHelper, inputType: "time");
         }
 
