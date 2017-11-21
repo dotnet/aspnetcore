@@ -10,10 +10,9 @@
     <PrepareDependsOn>$(PrepareDependsOn);ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedRuntimeStoreBinaries</VerifyDependsOn>
-    <PublishDependsOn>Build;RunVSDrop;PushPackages</PublishDependsOn>
+    <PublishDependsOn>Build;RunVSDrop;$(PublishDependsOn);PushPackages</PublishDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetFilesToPublish</GetArtifactInfoDependsOn>
   </PropertyGroup>
-
-  <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
 
   <Target Name="LocalBuild" DependsOnTargets="SetupLocalBuild;Package" />
 

@@ -167,7 +167,7 @@
 
       <_ResponseFileLines Include="--approver=%(_Approvers.Identity)" />
       <_ResponseFileLines Include="--cert=$(Certificate)" />
-      <_ResponseFileLines Include="--local-build" Condition="'$(LocalBuild)'=='true'" />
+      <_ResponseFileLines Include="--local-build" Condition="'$(SignType)'!='real' OR '$(LocalBuild)'=='true'" />
       <_ResponseFileLines Include="--description=$(Description)" />
       <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
       <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />

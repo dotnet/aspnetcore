@@ -21,16 +21,23 @@
     <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" Condition="Exists($(RazorVSIXFullPath))" />
   </Target>
 
-  <Target Name="PushPackages">
+  <Target Name="GetFilesToPublish">
     <ItemGroup>
-      <PackagesToPush Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
-      <PackagesToPush Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
-      <PackagesToPush Include="$(CoherenceDestinationDir)ext\*.nupkg" />
-      <PackagesToPush Include="$(CoherenceDestinationDir)noship\*.nupkg" />
+      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
+      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
+      <PackagesToPublish Include="$(CoherenceDestinationDir)ext\*.nupkg" />
+      <PackagesToPublish Include="$(CoherenceDestinationDir)noship\*.nupkg" />
+
+      <FilesToPublish Include="$(CoherenceSignedDestinationDir)store\*.zip" />
+      <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(FileRelativePathBase)/%(FileName)%(Extension)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="PushPackages" DependsOnTargets="GetArtifactInfo">
+    <Error Message="No packages found to publish" Condition="@(PackagesToPublish->Count()) == 0" />
 
     <PushNuGetPackages
-      Packages="@(PackagesToPush)"
+      Packages="@(PackagesToPublish)"
       Feed="$(PublishFeed)"
       ApiKey="$(APIKey)" />
   </Target>
