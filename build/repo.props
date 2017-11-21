@@ -3,13 +3,13 @@
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
+    <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
 
     <!-- Directories to copy files to -->
     <CoherenceSignedDestinationDir>$(ArtifactsDir)Signed\</CoherenceSignedDestinationDir>
 
     <!-- Working directories -->
     <IntermediateOutputPath>$(RepositoryRoot)obj\</IntermediateOutputPath>
-    <OneESToolsPath>$(IntermediateOutputPath)one-es\</OneESToolsPath>
     <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>

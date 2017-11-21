@@ -176,45 +176,24 @@
       DestinationFolder="$(SignedVSIXPath)" />
   </Target>
 
-  <Target Name="SubmitCodeSign" DependsOnTargets="GetToolsets">
-    <PropertyGroup>
-      <SignType Condition="'$(PB_SignType)'!=''">$(PB_SignType)</SignType>
-      <SignType Condition="'$(SignType)'=='' OR '$(LocalBuild)'=='true'">test</SignType>
-      <LauncherTarget>$(MSBuildThisFileDirectory)Sign-MicroBuildLauncher.targets</LauncherTarget>
-      <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
-      <MapDirectory>$(IntermediateOutputPath)map\$(JobName)\</MapDirectory>
-    </PropertyGroup>
-
+  <Target Name="SubmitCodeSign">
     <ItemGroup>
-      <_Files Remove="@(_Files)" />
+      <_Approvers Include="$(CodeSignApprovers)" />
       <_Files Include="$(Files)" />
+
+      <_ResponseFileLines Include="--approver=%(_Approvers.Identity)" />
+      <_ResponseFileLines Include="--cert=$(Certificate)" />
+      <_ResponseFileLines Include="--local-build" Condition="'$(LocalBuild)'=='true'" />
+      <_ResponseFileLines Include="--description=$(Description)" />
+      <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
+      <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
+      <_ResponseFileLines Include="-f=%(_Files.Identity)" />
     </ItemGroup>
-
-    <RemoveDir Directories="$(MapDirectory)" Condition="Exists('$(MapDirectory)')" />
-    <MakeDir Directories="$(MapDirectory)" />
-
-    <!--
-    Map the files to sign to an intermediate directory with fixed length file names.
-    This avoids running in to long path issues when the signing job attempts to read \ write
-    files in deeply nested directory structures such as the ones created in the runtime store.
-    -->
-    <MapToFixedLengthPath Files="@(_Files)" MapDirectory="$(MapDirectory)">
-      <Output TaskParameter="Output" ItemName="_MappedFile" />
-    </MapToFixedLengthPath>
 
     <PropertyGroup>
-      <FilesToSign>@(_MappedFile -> '%(MappedPath)', '%3B')</FilesToSign>
+      <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
+      <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net462\CodeSign.exe</CodeSignExeOutputPath>
     </PropertyGroup>
-
-    <ItemGroup>
-      <_ResponseFileLines Include="$(LauncherTarget)" />
-      <_ResponseFileLines Include="/p:MicroBuildPluginsSigningDirectory=$(OneESToolsPath)MicroBuild.Plugins.Signing.1.0.402\" />
-      <_ResponseFileLines Include="/p:BinariesDirectory=$(IntermediateOutputPath)" />
-      <_ResponseFileLines Include="/p:IntermediatesDirectory=$(IntermediateOutputPath)" />
-      <_ResponseFileLines Include="/p:Certificate=$(Certificate)" />
-      <_ResponseFileLines Include="/p:SignType=$(SignType)" />
-      <_ResponseFileLines Include="/p:FilesToSign=&quot;$(FilesToSign)&quot;" />
-    </ItemGroup>
 
     <Message Text="Executing code sign job $(JobName)..." Importance="High" />
 
@@ -223,9 +202,7 @@
       Lines="@(_ResponseFileLines)"
       Overwrite="true" />
 
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(ResponseFilePath)&quot;" />
-
-    <Move SourceFiles="%(_MappedFile.MappedPath)" DestinationFiles="%(_MappedFile.Identity)" OverwriteReadOnlyFiles="true" />
+    <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
   </Target>
 
   <!-- Repacks RuntimeStore -->
