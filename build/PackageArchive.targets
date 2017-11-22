@@ -2,12 +2,11 @@
   <PropertyGroup>
     <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
-    <SignedPackagesSource>$(RepositoryRoot).deps\Signed\Packages\</SignedPackagesSource>
+    <MetapackageRestoreSource>$(RepositoryRoot).deps\Signed\Packages\</MetapackageRestoreSource>
     <LzmaOutputPackageName>nuGetPackagesArchive-$(PackageVersion)</LzmaOutputPackageName>
   </PropertyGroup>
 
   <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
-    <Error Text="MetapackageRestoreSource must be specified" Condition=" '$(MetapackageRestoreSource)' == '' " />
     <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
     <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
 
