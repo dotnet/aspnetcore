@@ -15,7 +15,7 @@
     <Reference Include="System.ServiceProcess" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-    <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerVersion)" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="$(SystemServiceProcessServiceControllerPackageVersion)" />
   </ItemGroup>
 
 </Project>
