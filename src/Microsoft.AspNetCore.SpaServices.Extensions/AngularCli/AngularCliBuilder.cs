@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         }
 
         /// <inheritdoc />
-        public Task Build(ISpaBuilder spaBuilder)
+        public async Task Build(ISpaBuilder spaBuilder)
         {
             var sourcePath = spaBuilder.Options.SourcePath;
             if (string.IsNullOrEmpty(sourcePath))
@@ -57,18 +57,27 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 null);
             npmScriptRunner.AttachToLogger(logger);
 
+            using (var stdOutReader = new EventedStreamStringReader(npmScriptRunner.StdOut))
             using (var stdErrReader = new EventedStreamStringReader(npmScriptRunner.StdErr))
             {
                 try
                 {
-                    return npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("chunk", RegexOptions.None, RegexMatchTimeout),
+                    await npmScriptRunner.StdOut.WaitForMatch(
+                        new Regex("Date", RegexOptions.None, RegexMatchTimeout),
                         BuildTimeout);
                 }
                 catch (EndOfStreamException ex)
                 {
                     throw new InvalidOperationException(
-                        $"The NPM script '{_npmScriptName}' exited without indicating success. " +
+                        $"The NPM script '{_npmScriptName}' exited without indicating success.\n" +
+                        $"Output was: {stdOutReader.ReadAsString()}\n" +
+                        $"Error output was: {stdErrReader.ReadAsString()}", ex);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    throw new InvalidOperationException(
+                        $"The NPM script '{_npmScriptName}' timed out without indicating success. " +
+                        $"Output was: {stdOutReader.ReadAsString()}\n" +
                         $"Error output was: {stdErrReader.ReadAsString()}", ex);
                 }
             }
