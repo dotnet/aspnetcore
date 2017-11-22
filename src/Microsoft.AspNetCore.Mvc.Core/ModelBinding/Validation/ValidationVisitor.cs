@@ -15,25 +15,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// </summary>
     public class ValidationVisitor
     {
-        protected IModelValidatorProvider ValidatorProvider { get; }
-        protected IModelMetadataProvider MetadataProvider { get; }
-        protected ValidatorCache Cache { get; }
-        protected ActionContext Context { get; }
-        protected ModelStateDictionary ModelState { get; }
-        protected ValidationStateDictionary ValidationState { get; }
-        protected ValidationStack CurrentPath { get; }
-
-        protected object Container { get; set; }
-        protected string Key { get; set; }
-        protected object Model { get; set; }
-        protected ModelMetadata Metadata { get; set; }
-        protected IValidationStrategy Strategy { get; set; }
-
-        /// <summary>
-        /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false. 
-        /// </summary>
-        public bool ValidateComplexTypesIfChildValidationFails { get; set; }
-
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.
         /// </summary>
@@ -74,7 +55,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             ModelState = actionContext.ModelState;
             CurrentPath = new ValidationStack();
         }
+        
+        protected IModelValidatorProvider ValidatorProvider { get; }
+        protected IModelMetadataProvider MetadataProvider { get; }
+        protected ValidatorCache Cache { get; }
+        protected ActionContext Context { get; }
+        protected ModelStateDictionary ModelState { get; }
+        protected ValidationStateDictionary ValidationState { get; }
+        protected ValidationStack CurrentPath { get; }
 
+        protected object Container { get; set; }
+        protected string Key { get; set; }
+        protected object Model { get; set; }
+        protected ModelMetadata Metadata { get; set; }
+        protected IValidationStrategy Strategy { get; set; }
+
+        /// <summary>
+        /// Indicates whether validation of a complex type should be performed if validation fails for any of its children. The default behavior is false. 
+        /// </summary>
+        public bool ValidateComplexTypesIfChildValidationFails { get; set; }
         /// <summary>
         /// Validates a object.
         /// </summary>
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <param name="key">The model prefix key.</param>
         /// <param name="model">The model object.</param>
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
-        public virtual bool Validate(ModelMetadata metadata, string key, object model)
+        public bool Validate(ModelMetadata metadata, string key, object model)
         {
             return Validate(metadata, key, model, alwaysValidateAtTopLevel: false);
         }
