@@ -8,6 +8,12 @@
     <SkipTests>false</SkipTests>
     <SkipTests Condition="'$(CompileOnly)' == 'true'">true</SkipTests>
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
+
+    <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
+    <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
+
+    <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
+    <DependencyMirrorPackageDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorPackageDir>
   </PropertyGroup>
 
   <Import Project="artifacts.props" />

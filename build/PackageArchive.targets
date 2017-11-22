@@ -22,7 +22,7 @@
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)"
-      MetapackageVersion="$(MetapackageVersion)" />
+      MetapackageVersion="$(PackageVersion)" />
 
     <PropertyGroup>
       <FallbackStagingDir>$(_WorkRoot)obj\$(LzmaOutputPackageName)</FallbackStagingDir>
@@ -33,7 +33,7 @@
 
     <ItemGroup>
       <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
-      <_FallbackArchiveRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+      <_FallbackArchiveRestoreSources Include="$(DependencyMirrorPackageDir)" Condition="Exists($(DependencyMirrorPackageDir))" />
     </ItemGroup>
 
     <RepoTasks.GenerateRestoreSourcesPropsFile

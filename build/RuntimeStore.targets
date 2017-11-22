@@ -2,8 +2,6 @@
   <Import Project="common.props" />
 
   <PropertyGroup>
-    <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
-    <_DependencyMirrorDirectory>$(RepositoryRoot).deps\mirror\</_DependencyMirrorDirectory>
     <_BuildScriptsDirectory>$(MSBuildThisFileDirectory)tools\scripts\</_BuildScriptsDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_RuntimeStoreWorkDirectory>$(_WorkRoot).rw\</_RuntimeStoreWorkDirectory>
@@ -92,13 +90,13 @@
       <RSReferenceNupkgFile Include="$(RSReferencesWorkDirectory)**\*.nupkg" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RSReferenceNupkgFile)" DestinationFolder="$(_DependencyBuildDirectory)" />
+    <Copy SourceFiles="@(RSReferenceNupkgFile)" DestinationFolder="$(DependencyPackageDir)" />
   </Target>
 
   <Target Name="_PrepareRuntimeStoreBuildAssets">
     <ItemGroup>
-      <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
-      <_RuntimeStoreRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+      <_RuntimeStoreRestoreSources Include="$(DependencyPackageDir)" Condition="Exists($(DependencyPackageDir))" />
+      <_RuntimeStoreRestoreSources Include="$(DependencyMirrorPackageDir)" Condition="Exists($(DependencyMirrorPackageDir))" />
       <_RuntimeStoreRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
     </ItemGroup>
 
@@ -220,7 +218,7 @@
 
   <Target Name="AddManifestsToMetapackage">
     <ItemGroup>
-      <MetaPackageNupkg Include="$(_DependencyBuildDirectory)Microsoft.AspNetCore.All.*.nupkg" />
+      <MetaPackageNupkg Include="$(DependencyPackageDir)Microsoft.AspNetCore.All.*.nupkg" />
       <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
     </ItemGroup>
 
