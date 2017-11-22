@@ -4,8 +4,7 @@
     <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
     <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
     <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
-    <_TimestampRSSource>$(RepositoryRoot).deps\Signed\Store\</_TimestampRSSource>
-    <_TimestampFreeRSSource>$(RepositoryRoot).deps\Signed\Store-TimestampFree\</_TimestampFreeRSSource>
+    <_RuntimeStoreSource>$(RepositoryRoot).deps\Signed\Store\</_RuntimeStoreSource>
     <_InstallerSource>$(RepositoryRoot).deps\Installers\</_InstallerSource>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
@@ -15,6 +14,7 @@
 
     <RSInstallerName>aspnetcore-store</RSInstallerName>
     <HostingInstallerName>dotnet-hosting</HostingInstallerName>
+    <HostingArchiveName>$(HostingInstallerName)-$(PackageVersion)-linux-x64.tar.gz</HostingArchiveName>
     <RSDebConfigFile>$(_PackagingDir)store_debian_config.json</RSDebConfigFile>
     <HostingDebConfigFile>$(_PackagingDir)hosting_debian_config.json</HostingDebConfigFile>
 
@@ -24,9 +24,8 @@
 
     <RuntimeStore200LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.</RuntimeStore200LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
-    <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
-    <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
-    <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</TimestampFreeLinuxRSArchive>
+    <RuntimeStoreArchivePrefix>$(_RuntimeStoreSource)aspnetcore-store-$(PackageVersion)-</RuntimeStoreArchivePrefix>
+    <RuntimeStoreLinuxArchiveFilePath>$(RuntimeStoreArchivePrefix)linux-x64.tar.gz</RuntimeStoreLinuxArchiveFilePath>
   </PropertyGroup>
 
   <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
@@ -42,20 +41,8 @@
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
 
     <Error
-      Text="Timestamp linux archive not found. Expected it to exist in $(TimestampRSArchive)."
-      Condition="!Exists('$(TimestampRSArchive)')" />
-    <Error
-      Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeLinuxRSArchive)."
-      Condition="!Exists('$(TimestampFreeLinuxRSArchive)')" />
-    <Error
-      Text="Non-timestamp osx archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)osx-x64.tar.gz."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz')" />
-    <Error
-      Text="Non-timestamp winx64 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x64.zip."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x64.zip')" />
-    <Error
-      Text="Non-timestamp winx86 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x86.zip."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.zip')" />
+      Text="Linux archive not found. Expected it to exist in $(RuntimeStoreLinuxArchiveFilePath)."
+      Condition="!Exists('$(RuntimeStoreLinuxArchiveFilePath)')" />
   </Target>
 
   <Target Name="_EnsureInstallerDirectory" >
@@ -121,22 +108,10 @@
       <_DependentArchives Include="$(_InstallerSource)Build.RS.linux.tar.gz" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <DependentArchives>@(_DependentArchives)</DependentArchives>
-      <HostingArchiveName>$(HostingInstallerName)-$(Version)-linux-x64.tar.gz</HostingArchiveName>
-      <TimestampFreeHostingArchiveName>$(HostingInstallerName)-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</TimestampFreeHostingArchiveName>
-    </PropertyGroup>
-
-    <!-- Timestamp hosting bundle -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampRSArchive);OutputArchiveName=$(HostingArchiveName)" />
-    <!-- Timestamp free hosting bundle -->
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeLinuxRSArchive);OutputArchiveName=$(TimestampFreeHostingArchiveName)" />
+      Properties="DependentArchives=@(_DependentArchives);RSArchive=$(RuntimeStoreLinuxArchiveFilePath);OutputArchiveName=$(HostingArchiveName)" />
   </Target>
 
   <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory;_DownloadInstallers">
@@ -150,16 +125,16 @@
 
     <ItemGroup>
       <TargzArchives Include="Build.RS.linux.tar.gz">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <RSArchive>$(RuntimeStoreArchivePrefix)linux-x64.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx.tar.gz">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <RSArchive>$(RuntimeStoreArchivePrefix)osx-x64.tar.gz</RSArchive>
       </TargzArchives>
       <ZipArchives Include="Build.RS.winx64.zip">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+        <RSArchive>$(RuntimeStoreArchivePrefix)win7-x64.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86.zip">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
+        <RSArchive>$(RuntimeStoreArchivePrefix)win7-x86.zip</RSArchive>
       </ZipArchives>
     </ItemGroup>
 
@@ -313,17 +288,10 @@
       <HostingDependencies Include="dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)">
         <Version>$(MicrosoftNETCoreApp20PackageVersion)</Version>
       </HostingDependencies>
-      <TimestampFreeHostingDependencies Include="$(RSInstallerName)-$(PackageVersionNoTimestamp)">
-        <Version>$(PackageVersionNoTimestamp)</Version>
-      </TimestampFreeHostingDependencies>
-      <TimestampFreeHostingDependencies Include="dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)">
-        <Version>$(MicrosoftNETCoreApp20PackageVersion)</Version>
-      </TimestampFreeHostingDependencies>
     </ItemGroup>
 
     <PropertyGroup>
       <HostingFPMArguments>@(HostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingFPMArguments>
-      <TimestampFreeHostingFPMArguments>@(TimestampFreeHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</TimestampFreeHostingFPMArguments>
       <RSDependencyArguments>@(RSDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RSDependencyArguments>
       <RHRSArguments>$(RSDependencyArguments) @(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHRSArguments>
       <GenericRSArguments>$(RSDependencyArguments) @(GenericStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GenericRSArguments>
@@ -342,48 +310,28 @@
       <CommonHostingArguments>$(CommonHostingArguments);RPMSummary=@(_HostingSummary);RPMDescription=@(_HostingDescription)</CommonHostingArguments>
       <CommonHostingArguments>$(CommonHostingArguments);RPMLicense=@(_HostingLicense);RPMHomepage=@(_HostingHomepage)</CommonHostingArguments>
 
-      <TimestampRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampRSArguments>
-      <TimestampRSArguments>$(TimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(GenericRSArguments)</TimestampRSArguments>
+      <RS_RPM_Arguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</RS_RPM_Arguments>
+      <RS_RPM_Arguments>$(RS_RPM_Arguments);RSArchive=$(RuntimeStoreLinuxArchiveFilePath);RPMVersion=$(PackageVersion);RPMArguments=$(GenericRSArguments)</RS_RPM_Arguments>
 
-      <TimestampFreeRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampFreeRSArguments>
-      <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
+      <Hosting_RPM_RedHat_Arguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</Hosting_RPM_RedHat_Arguments>
+      <Hosting_RPM_RedHat_Arguments>$(Hosting_RPM_RedHat_Arguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</Hosting_RPM_RedHat_Arguments>
 
-      <TimestampHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampHostingArguments>
-      <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</TimestampHostingArguments>
+      <RS_RPM_RedHat_Arguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RS_RPM_RedHat_Arguments>
+      <RS_RPM_RedHat_Arguments>$(RS_RPM_RedHat_Arguments);RSArchive=$(RuntimeStoreLinuxArchiveFilePath);RPMVersion=$(PackageVersion);RPMArguments=$(RHRSArguments)</RS_RPM_RedHat_Arguments>
 
-      <TimestampFreeHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampFreeHostingArguments>
-      <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(TimestampFreeHostingFPMArguments)</TimestampFreeHostingArguments>
-
-      <RHTimestampRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampRSArguments>
-      <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
-
-      <RHTimestampFreeRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampFreeRSArguments>
-      <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
-
-      <RHTimestampHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampHostingArguments>
-      <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</RHTimestampHostingArguments>
-
-      <RHTimestampFreeHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampFreeHostingArguments>
-      <RHTimestampFreeHostingArguments>$(RHTimestampFreeHostingArguments);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(TimestampFreeHostingFPMArguments)</RHTimestampFreeHostingArguments>
+      <Hosting_RPM_Arguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</Hosting_RPM_Arguments>
+      <Hosting_RPM_Arguments>$(Hosting_RPM_Arguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</Hosting_RPM_Arguments>
     </PropertyGroup>
 
-    <!-- General Timestamp runtime store -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampRSArguments)" />
-    <!-- General Timestamp free runtime store -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeRSArguments)" />
-    <!-- General Timestamp hosting bundle -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampHostingArguments)" />
-    <!-- General Timestamp free hosting bundle -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeHostingArguments)" />
+    <!-- General runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RS_RPM_Arguments)" />
+    <!-- General hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(Hosting_RPM_RedHat_Arguments)" />
 
-    <!-- RH Timestamp runtime store -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampRSArguments)" />
-    <!-- RH Timestamp free runtime store -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeRSArguments)" />
-    <!-- RH Timestamp hosting bundle -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampHostingArguments)" />
-    <!-- RH Timestamp free hosting bundle -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeHostingArguments)" />
+    <!-- RH runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RS_RPM_RedHat_Arguments)" />
+    <!-- RH hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(Hosting_RPM_Arguments)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
@@ -464,19 +412,11 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version)" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp)" />
+      Properties="$(CommonRSArguments);RSArchive=$(RuntimeStoreLinuxArchiveFilePath);DebVersion=$(Version)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
       Properties="$(CommonHostingArguments);DebVersion=$(Version)" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GenerateDeb"
-      Properties="$(CommonHostingArguments);DebVersion=$(PackageVersionNoTimestamp)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
@@ -484,7 +424,7 @@
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
     <PropertyGroup>
-      <CommonArguments>Version=$(Version);TimestampFreeVersion=$(PackageVersionNoTimestamp)</CommonArguments>
+      <CommonArguments>Version=$(Version)</CommonArguments>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=debian.8" />

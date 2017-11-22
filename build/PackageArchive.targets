@@ -2,29 +2,12 @@
   <PropertyGroup>
     <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
-    <TimestampSource>$(RepositoryRoot).deps\Signed\Packages\</TimestampSource>
-    <TimestampFreeSource>$(RepositoryRoot).deps\Signed\Packages-NoTimeStamp\</TimestampFreeSource>
-    <TimestampOutputPackageName>nuGetPackagesArchive.timestamped</TimestampOutputPackageName>
-    <TimestampFreeOutputPackageName>nuGetPackagesArchive.notimestamp</TimestampFreeOutputPackageName>
+    <SignedPackagesSource>$(RepositoryRoot).deps\Signed\Packages\</SignedPackagesSource>
+    <LzmaOutputPackageName>nuGetPackagesArchive-$(PackageVersion)</LzmaOutputPackageName>
   </PropertyGroup>
 
-  <Target Name="BuildFallbackArchive">
-    <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
-    <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
-    <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_BuildFallbackArchive"
-      Properties="MetapackageRestoreSource=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false;MetapackageVersion=$(PackageVersion)" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_BuildFallbackArchive"
-      Properties="MetapackageRestoreSource=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true;MetapackageVersion=$(PackageVersionNoTimestamp)" />
-  </Target>
-
-  <Target Name="_BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
     <Error Text="MetapackageRestoreSource must be specified" Condition=" '$(MetapackageRestoreSource)' == '' " />
-    <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
     <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
     <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
 
@@ -40,14 +23,13 @@
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)"
-      RemoveTimestamp="$(RemoveTimestamp)"
       MetapackageVersion="$(MetapackageVersion)" />
 
     <PropertyGroup>
-      <FallbackStagingDir>$(_WorkRoot)obj\$(OutputPackageName)</FallbackStagingDir>
+      <FallbackStagingDir>$(_WorkRoot)obj\$(LzmaOutputPackageName)</FallbackStagingDir>
       <FallbackOutputDir>$(ArtifactsDir)lzma\</FallbackOutputDir>
-      <FallbackOutputPath>$(FallbackOutputDir)$(OutputPackageName).lzma</FallbackOutputPath>
-      <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(OutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
+      <FallbackOutputPath>$(FallbackOutputDir)$(LzmaOutputPackageName).lzma</FallbackOutputPath>
+      <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(LzmaOutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
     </PropertyGroup>
 
     <ItemGroup>

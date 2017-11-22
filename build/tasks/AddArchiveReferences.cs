@@ -20,9 +20,6 @@ namespace RepoTasks
         public string MetaPackageVersion { get; set; }
 
         [Required]
-        public bool RemoveTimestamp { get; set; }
-
-        [Required]
         public ITaskItem[] BuildArtifacts { get; set; }
 
         [Required]
@@ -61,11 +58,6 @@ namespace RepoTasks
                         .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                         .PackageInfo.Version.ToString();
 
-                if (RemoveTimestamp)
-                {
-                    packageVersion = VersionUtilities.GetTimestampFreeVersion(packageVersion);
-                }
-
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
@@ -94,11 +86,6 @@ namespace RepoTasks
                 var packageVersion = buildArtifacts
                     .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                     .PackageInfo.Version.ToString();
-
-                if (RemoveTimestamp)
-                {
-                    packageVersion = VersionUtilities.GetTimestampFreeVersion(packageVersion);
-                }
 
                 Log.LogMessage(MessageImportance.High, $" - Tool: {packageName} Version: {packageVersion}");
 
