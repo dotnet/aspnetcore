@@ -78,6 +78,11 @@
         }
       }
     },
+    "@nguniversal/module-map-ngfactory-loader": {
+      "version": "5.0.0-beta.5",
+      "from": "@nguniversal/module-map-ngfactory-loader@latest",
+      "resolved": "https://registry.npmjs.org/@nguniversal/module-map-ngfactory-loader/-/module-map-ngfactory-loader-5.0.0-beta.5.tgz"
+    },
     "@schematics/angular": {
       "version": "0.1.3",
       "dev": true

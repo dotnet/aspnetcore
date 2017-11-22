@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve --deploy-url=/dist/ --output-hashing=media --extract-css",
     "build": "ng build --deploy-url=/dist/ --output-hashing=media --extract-css",
-    "build:ssr": "ng build --deploy-url=/dist/ --output-hashing=media --extract-css --bundle-dependencies=all --app=ssr",
+    "build:ssr": "ng build --deploy-url=/dist/ --output-hashing=media --extract-css --app=ssr",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
@@ -23,6 +23,7 @@
     "@angular/platform-browser-dynamic": "^5.0.0",
     "@angular/platform-server": "^5.0.0",
     "@angular/router": "^5.0.0",
+    "@nguniversal/module-map-ngfactory-loader": "^5.0.0-beta.5",
     "aspnet-prerendering": "^3.0.1",
     "bootstrap": "^3.3.7",
     "core-js": "^2.4.1",
