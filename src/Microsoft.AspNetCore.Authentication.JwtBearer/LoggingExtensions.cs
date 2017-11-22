@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging
             _tokenValidationFailed = LoggerMessage.Define<string>(
                 eventId: 1,
                 logLevel: LogLevel.Information,
-                formatString: "Failed to validate the token {Token}.");
+                formatString: "Failed to validate the token {Token}");
             _tokenValidationSucceeded = LoggerMessage.Define(
                 eventId: 2,
                 logLevel: LogLevel.Information,
