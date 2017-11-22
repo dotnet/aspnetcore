@@ -19,7 +19,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages;Sign</PackageDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
