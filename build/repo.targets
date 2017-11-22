@@ -5,7 +5,6 @@
   <Import Project="PackageArchive.targets" />
   <Import Project="Templating.targets" />
   <Import Project="Signing.targets" />
-  <Import Project="push.targets" />
 
   <PropertyGroup>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(SkipTests)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
