@@ -57,5 +57,31 @@ namespace Microsoft.AspNetCore.Hosting
                 services.Configure(options);
             });
         }
+
+        /// <summary>
+        /// Specify Kestrel as the server to be used by the web host.
+        /// </summary>
+        /// <param name="hostBuilder">
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+        /// </param>
+        /// <param name="configureOptions">A callback to configure Kestrel options.</param>
+        /// <returns>
+        /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+        /// </returns>
+        public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, KestrelServerOptions> configureOptions)
+        {
+            if (configureOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions));
+            }
+
+            return hostBuilder.UseKestrel().ConfigureServices((context, services) =>
+            {
+                services.Configure<KestrelServerOptions>(options =>
+                {
+                    configureOptions(context, options);
+                });
+            });
+        }
     }
 }

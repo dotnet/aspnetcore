@@ -13,15 +13,6 @@ namespace Http2SampleApp
     {
         public static void Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build();
-
-            if (!ushort.TryParse(configuration["BASE_PORT"], NumberStyles.None, CultureInfo.InvariantCulture, out var basePort))
-            {
-                basePort = 5000;
-            }
-
             var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging((_, factory) =>
                 {
@@ -29,8 +20,10 @@ namespace Http2SampleApp
                     factory.SetMinimumLevel(LogLevel.Trace);
                     factory.AddConsole();
                 })
-                .UseKestrel(options =>
+                .UseKestrel((context, options) =>
                 {
+                    var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
+
                     // Run callbacks on the transport thread
                     options.ApplicationSchedulingMode = SchedulingMode.Inline;
 

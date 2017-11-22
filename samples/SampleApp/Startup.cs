@@ -43,22 +43,15 @@ namespace SampleApp
                 Console.WriteLine("Unobserved exception: {0}", e.Exception);
             };
 
-            var configuration = new ConfigurationBuilder()
-                .AddEnvironmentVariables()
-                .Build();
-
-            if (!ushort.TryParse(configuration["BASE_PORT"], NumberStyles.None, CultureInfo.InvariantCulture, out var basePort))
-            {
-                basePort = 5000;
-            }
-
             var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.AddConsole();
                 })
-                .UseKestrel(options =>
+                .UseKestrel((context, options) =>
                 {
+                    var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
+
                     // Run callbacks on the transport thread
                     options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
