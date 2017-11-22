@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
-    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
+    <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
 </Project>
