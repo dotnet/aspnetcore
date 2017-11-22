@@ -1,6 +1,0 @@
-<Project>
-  <Target Name="Sign">
-    <!-- We only support 'public' signing for now, which for us just means building our assemblies using our public strong-name key...which we do by default anyways. -->
-    <Error Text="SignType '$(SignType)' is not yet supported on this repo." Condition="'$(SignType)' != 'public'" />
-  </Target>
-</Project>
