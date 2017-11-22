@@ -23,4 +23,8 @@
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Web.Xdt.Extensions.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
    </ItemGroup>
 
- </Project>
+   <ItemGroup>
+     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+   </ItemGroup>
+</Project>
