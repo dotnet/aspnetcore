@@ -23,23 +23,53 @@
 
   <Target Name="GetFilesToPublish">
     <ItemGroup>
+      <!--
+      PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
+      Ensure that this only contains artifacts we produce (and not mirrored dependencies) since that would result in conflicts.
+       -->
       <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
       <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
-      <PackagesToPublish Include="$(CoherenceDestinationDir)ext\*.nupkg" />
-      <PackagesToPublish Include="$(CoherenceDestinationDir)noship\*.nupkg" />
 
       <FilesToPublish Include="$(CoherenceSignedDestinationDir)store\*.zip" />
       <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(FileRelativePathBase)/%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="PushPackages" DependsOnTargets="GetArtifactInfo">
-    <Error Message="No packages found to publish" Condition="@(PackagesToPublish->Count()) == 0" />
+  <Target Name="PushNuGetPackages" DependsOnTargets="GetArtifactInfo">
+    <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
+    <ItemGroup>
+      <_PackagesToPublish Include="@(PackagesToPublish)" />
+      <_PackagesToPublish Include="$(DepsDirectory)noship\*.nupkg" />
+      <_PackagesToPublish Include="$(DepsDirectory)mirror\*.nupkg" />
+      <_PackagesToPublish Include="$(DepsDirectory)lineups\*.nupkg" />
+    </ItemGroup>
+
+    <Error Message="No packages found to publish" Condition="@(_PackagesToPublish->Count()) == 0" />
 
     <PushNuGetPackages
       Packages="@(PackagesToPublish)"
       Feed="$(PublishFeed)"
       ApiKey="$(APIKey)" />
+  </Target>
+
+  <ItemGroup>
+    <NpmModuleArtifact Include="$(DepsDirectory)build\*.tgz" />
+  </ItemGroup>
+
+  <Target Name="PushNPMPackages" Condition="@(NpmModuleArtifact->Count()) != 0">
+    <Error Text="Missing required property: NpmRegistry"  Condition=" '$(NpmRegistry)' == '' "/>
+
+    <PropertyGroup>
+      <AuthTokenSetting>$(NpmRegistry.Replace("https:", "")):_authToken</AuthTokenSetting>
+    </PropertyGroup>
+
+    <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(APIKey)" Condition=" '$(APIKey)' != '' " />
+    <Exec Command="npm publish --registry $(NpmRegistry) &quot;%(NpmModuleArtifact.Identity)&quot;"
+          ContinueOnError="true">
+      <Output TaskParameter="ExitCode" ItemName="ExitCodes" />
+    </Exec>
+    <Exec Command="npm config delete $(AuthTokenSetting)" Condition=" '$(APIKey)' != '' "/>
+    <Error Text="Publishing npm modules failed" Condition="%(ExitCodes.Identity) > 0"/>
   </Target>
 
 </Project>
