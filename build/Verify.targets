@@ -43,6 +43,7 @@
       <SignedDir>$(ArtifactsDir)Signed</SignedDir>
       <SignedPackagesDir>$(SignedDir)Packages\</SignedPackagesDir>
       <OOBPackagesDir>$(SignedDir)OobPackages</OOBPackagesDir>
+      <ExcludedRules Condition="'$(SignType)' != 'real'">AuthenticodeSigningRule</ExcludedRules>
     </PropertyGroup>
 
     <ItemGroup>
@@ -52,11 +53,12 @@
     <VerifyPackages
       ArtifactDirectory="%(DirectoriesToScan.Identity)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
-      Condition="Exists('%(DirectoriesToScan.Identity)')" />
+      Condition="Exists('%(DirectoriesToScan.Identity)')"
+      ExcludedRules="$(ExcludedRules)" />
   </Target>
 
   <!-- Ensures binaries in the runtime store are correctly authenticode signed -->
-  <Target Name="VerifySignedRuntimeStoreBinaries">
+  <Target Name="VerifySignedRuntimeStoreBinaries" Condition="'$(SignType)' == 'real'">
     <ItemGroup>
       <SignedRuntimeStoreBinaries Include="$(UnsignedRuntimeStorePath)**\*.dll" Exclude="$(UnsignedRuntimeStorePath)*.*"/>
     </ItemGroup>
