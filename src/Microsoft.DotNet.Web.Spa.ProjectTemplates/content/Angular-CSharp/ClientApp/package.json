@@ -4,8 +4,8 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --deploy-url=/dist/ --extract-css",
-    "build": "ng build --deploy-url=/dist/ --extract-css",
+    "start": "ng serve --extract-css",
+    "build": "ng build --extract-css",
     "build:ssr": "npm run build -- --app=ssr",
     "test": "ng test",
     "lint": "ng lint",

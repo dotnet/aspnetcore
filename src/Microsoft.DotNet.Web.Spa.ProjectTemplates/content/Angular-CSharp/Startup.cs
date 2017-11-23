@@ -19,6 +19,12 @@ namespace AngularSpa
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+
+            // In production, the Angular files will be served from this directory
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -34,6 +40,7 @@ namespace AngularSpa
             }
 
             app.UseStaticFiles();
+            app.UseSpaStaticFiles();
 
             app.UseMvc(routes =>
             {
@@ -44,7 +51,6 @@ namespace AngularSpa
 
             app.UseSpa(spa =>
             {
-                spa.Options.DefaultPage = "/dist/index.html";
                 spa.Options.SourcePath = "ClientApp";
 
                 /*
