@@ -13,10 +13,15 @@
         Configuration=$(Configuration);
         IsFinalBuild=$(IsFinalBuild);
       </TemplateProjProperties>
+      <TemplateProjTargets>Restore;Compile;Package</TemplateProjTargets>
+      <TemplateProjTargets Condition="'$(SkipTests)' != 'true'">
+        $(TemplateProjTargets);
+        Test;
+      </TemplateProjTargets>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Restore;Compile;Package"
+             Targets="$(TemplateProjTargets)"
              Properties="$(TemplateProjProperties)" />
 
     <ItemGroup>
