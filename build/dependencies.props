@@ -68,10 +68,10 @@
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Memory" Version="4.5.0-preview1-25902-08" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Numerics.Vectors" Version="4.5.0-preview1-25902-08" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.0-preview1-25902-08" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Channels" Version="4.5.0-preview1-25902-08" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Memory" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Numerics.Vectors" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Threading.Channels" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- CoreFX labs -->
