@@ -6,7 +6,7 @@
     "ng": "ng",
     "start": "ng serve --extract-css",
     "build": "ng build --extract-css",
-    "build:ssr": "npm run build -- --app=ssr",
+    "build:ssr": "npm run build -- --app=ssr --output-hashing=media",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
