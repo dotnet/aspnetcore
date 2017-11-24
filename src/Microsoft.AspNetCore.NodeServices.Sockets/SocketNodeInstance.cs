@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.NodeServices.Sockets
     /// <summary>
     /// A specialisation of the OutOfProcessNodeInstance base class that uses a lightweight binary streaming protocol
     /// to perform RPC invocations. The physical transport is Named Pipes on Windows, or Domain Sockets on Linux/Mac.
-    /// For details on the binary streaming protocol, see
-    /// Microsoft.AspNetCore.NodeServices.HostingModels.VirtualConnections.VirtualConnectionClient.
+    /// For details on the binary streaming protocol, see <see cref="Microsoft.AspNetCore.NodeServices.Sockets.VirtualConnections.VirtualConnectionClient" />
     /// The advantage versus using HTTP for RPC is that this is faster (not surprisingly - there's much less overhead
     /// because we don't need most of the functionality of HTTP.
     ///
