@@ -29,13 +29,14 @@ namespace Templates.Test.SpaTemplateTest
             // build time, but by doing it up front we can avoid having multiple NPM
             // installs run concurrently which otherwise causes errors when tests run
             // in parallel.
-            if (File.Exists(Path.Combine(TemplateOutputDir, "ClientApp", "package.json")))
+            var clientAppSubdirPath = Path.Combine(TemplateOutputDir, "ClientApp");
+            if (File.Exists(Path.Combine(clientAppSubdirPath, "package.json")))
             {
-                InstallNpmPackages("ClientApp");
+                Npm.RestoreWithRetry(Output, clientAppSubdirPath);
             }
             else if (File.Exists(Path.Combine(TemplateOutputDir, "package.json")))
             {
-                InstallNpmPackages(".");
+                Npm.RestoreWithRetry(Output, TemplateOutputDir);
             }
 
             TestApplication(targetFrameworkOverride, publish: false);

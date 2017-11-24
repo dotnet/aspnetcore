@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 using Templates.Test.Helpers;
@@ -16,7 +15,6 @@ namespace Templates.Test
     public class TemplateTestBase : IDisposable
     {
         private static object DotNetNewLock = new object();
-        private static object NpmInstallLock = new object();
 
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
@@ -72,28 +70,6 @@ namespace Templates.Test
             {
                 ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
             }
-        }
-
-        protected void InstallNpmPackages(string relativePath)
-        {
-            // It's not safe to run multiple NPM installs in parallel
-            // https://github.com/npm/npm/issues/2500
-            lock (NpmInstallLock)
-            {
-                var fullPath = Path.Combine(TemplateOutputDir, relativePath);
-                Output.WriteLine($"Restoring NPM packages in '{relativePath}' using npm...");
-                RunViaShell(fullPath, "npm install");
-            }
-        }
-
-        private void RunViaShell(string workingDirectory, string commandAndArgs)
-        {
-            var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? ("cmd", "/c")
-                : ("bash", "-c");
-            ProcessEx
-                .Run(Output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"")
-                .WaitForExit(assertSuccess: true);
         }
 
         protected void AssertDirectoryExists(string path, bool shouldExist)

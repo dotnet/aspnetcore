@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using Xunit.Abstractions;
 
@@ -40,6 +41,15 @@ namespace Templates.Test.Helpers
             var proc = Process.Start(startInfo);
 
             return new ProcessEx(output, proc);
+        }
+
+        public static void RunViaShell(ITestOutputHelper output, string workingDirectory, string commandAndArgs)
+        {
+            var (shellExe, argsPrefix) = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? ("cmd", "/c")
+                : ("bash", "-c");
+            Run(output, workingDirectory, shellExe, $"{argsPrefix} \"{commandAndArgs}\"")
+                .WaitForExit(assertSuccess: true);
         }
 
         public ProcessEx(ITestOutputHelper output, Process proc)
