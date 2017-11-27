@@ -225,6 +225,16 @@
     <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10202" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
+  <!-- VS SDK -->
+  <PropertyGroup>
+    <VSSDKFeed>https://vside.myget.org/F/vssdk/api/v3/index.json</VSSDKFeed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" />
+  </ItemGroup>
+
   <!-- nuget.org -->
   <PropertyGroup>
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
@@ -308,8 +318,6 @@
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="3.0.1" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.Owin" Version="3.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true">
       <!-- This version should be used by runtime packages -->
       <NoWarn>KRB2004</NoWarn>
