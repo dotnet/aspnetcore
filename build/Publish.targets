@@ -47,7 +47,7 @@
     <Error Message="No packages found to publish" Condition="@(_PackagesToPublish->Count()) == 0" />
 
     <PushNuGetPackages
-      Packages="@(PackagesToPublish)"
+      Packages="@(_PackagesToPublish)"
       Feed="$(PublishFeed)"
       ApiKey="$(APIKey)" />
   </Target>
