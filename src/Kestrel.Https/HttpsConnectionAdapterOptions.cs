@@ -6,6 +6,7 @@ using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
@@ -50,6 +51,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// Specifies allowable SSL protocols. Defaults to <see cref="SslProtocols.Tls12" /> and <see cref="SslProtocols.Tls11"/>.
         /// </summary>
         public SslProtocols SslProtocols { get; set; }
+
+        /// <summary>
+        /// The protocols enabled on this endpoint.
+        /// </summary>
+        /// <remarks>Defaults to HTTP/1.x only.</remarks>
+        internal HttpProtocols HttpProtocols { get; set; }
 
         /// <summary>
         /// Specifies whether the certificate revocation list is checked during authentication.

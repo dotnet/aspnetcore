@@ -2,12 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
@@ -64,6 +67,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         {
             SslStream sslStream;
             bool certificateRequired;
+            var feature = new TlsConnectionFeature();
+            context.Features.Set<ITlsConnectionFeature>(feature);
 
             if (_options.ClientCertificateMode == ClientCertificateMode.NoCertificate)
             {
@@ -114,8 +119,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             try
             {
+#if NETCOREAPP2_1
+                var sslOptions = new SslServerAuthenticationOptions()
+                {
+                    ServerCertificate = _serverCertificate,
+                    ClientCertificateRequired = certificateRequired,
+                    EnabledSslProtocols = _options.SslProtocols,
+                    CertificateRevocationCheckMode = _options.CheckCertificateRevocation ? X509RevocationMode.Online : X509RevocationMode.NoCheck,
+                    ApplicationProtocols = new List<SslApplicationProtocol>()
+                };
+
+                // This is order sensitive
+                if ((_options.HttpProtocols & HttpProtocols.Http2) != 0)
+                {
+                    sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http2);
+                }
+
+                if ((_options.HttpProtocols & HttpProtocols.Http1) != 0)
+                {
+                    sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
+                }
+
+                await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
+#else
                 await sslStream.AuthenticateAsServerAsync(_serverCertificate, certificateRequired,
                         _options.SslProtocols, _options.CheckCertificateRevocation);
+#endif
             }
             catch (OperationCanceledException)
             {
@@ -134,11 +163,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 timeoutFeature.CancelTimeout();
             }
 
-            // Always set the feature even though the cert might be null
-            context.Features.Set<ITlsConnectionFeature>(new TlsConnectionFeature
+#if NETCOREAPP2_1
+            // Don't allocate in the common case, see https://github.com/dotnet/corefx/issues/25432
+            if (sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http11)
             {
-                ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate)
-            });
+                feature.ApplicationProtocol = "http/1.1";
+            }
+            else if (sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            {
+                feature.ApplicationProtocol = "h2";
+            }
+            else
+            {
+                feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.ToString();
+            }
+
+            context.Features.Set<ITlsApplicationProtocolFeature>(feature);
+#endif
+            feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);
 
             return new HttpsAdaptedConnection(sslStream);
         }
