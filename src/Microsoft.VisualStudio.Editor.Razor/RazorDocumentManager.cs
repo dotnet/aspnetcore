@@ -9,8 +9,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal abstract class RazorDocumentManager
     {
-        public abstract void OnTextViewOpened(ITextView textView, IList<ITextBuffer> subjectBuffers);
+        public abstract void OnTextViewOpened(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers);
 
-        public abstract void OnTextViewClosed(ITextView textView, IList<ITextBuffer> subjectBuffers);
+        public abstract void OnTextViewClosed(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers);
     }
 }

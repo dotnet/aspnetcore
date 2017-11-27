@@ -2,34 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     [ContentType(RazorLanguage.ContentType)]
     [TextViewRole(PredefinedTextViewRoles.Document)]
-    [Export(typeof(IWpfTextViewConnectionListener))]
-    internal class RazorTextViewConnectionListener : IWpfTextViewConnectionListener
+    [Export(typeof(ITextViewConnectionListener))]
+    internal class RazorTextViewConnectionListener : ITextViewConnectionListener
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
-        private readonly Workspace _workspace;
         private readonly RazorDocumentManager _documentManager;
 
         [ImportingConstructor]
         public RazorTextViewConnectionListener(
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace,
+            VisualStudioWorkspaceAccessor workspaceAccessor,
             RazorDocumentManager documentManager)
         {
-            if (workspace == null)
+            if (workspaceAccessor == null)
             {
-                throw new ArgumentNullException(nameof(workspace));
+                throw new ArgumentNullException(nameof(workspaceAccessor));
             }
 
             if (documentManager == null)
@@ -37,25 +34,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(documentManager));
             }
 
-            _workspace = workspace;
             _documentManager = documentManager;
-            _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
+            _foregroundDispatcher = workspaceAccessor.Workspace.Services.GetRequiredService<ForegroundDispatcher>();
         }
 
         // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
         internal RazorTextViewConnectionListener(
             ForegroundDispatcher foregroundDispatcher,
-            Workspace workspace,
             RazorDocumentManager documentManager)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
-            if (workspace == null)
-            {
-                throw new ArgumentNullException(nameof(workspace));
             }
 
             if (documentManager == null)
@@ -64,13 +54,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-            _workspace = workspace;
             _documentManager = documentManager;
         }
 
-        public Workspace Workspace => _workspace;
-
-        public void SubjectBuffersConnected(IWpfTextView textView, ConnectionReason reason, Collection<ITextBuffer> subjectBuffers)
+        public void SubjectBuffersConnected(ITextView textView, ConnectionReason reason, IReadOnlyCollection<ITextBuffer> subjectBuffers)
         {
             if (textView == null)
             {
@@ -87,7 +74,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _documentManager.OnTextViewOpened(textView, subjectBuffers);
         }
 
-        public void SubjectBuffersDisconnected(IWpfTextView textView, ConnectionReason reason, Collection<ITextBuffer> subjectBuffers)
+        public void SubjectBuffersDisconnected(ITextView textView, ConnectionReason reason, IReadOnlyCollection<ITextBuffer> subjectBuffers)
         {
             if (textView == null)
             {

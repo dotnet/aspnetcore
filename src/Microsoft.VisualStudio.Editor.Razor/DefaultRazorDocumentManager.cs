@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _projectService = projectService;
         }
 
-        public override void OnTextViewOpened(ITextView textView, IList<ITextBuffer> subjectBuffers)
+        public override void OnTextViewOpened(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers)
         {
             if (textView == null)
             {
@@ -48,9 +48,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(subjectBuffers));
             }
 
-            for (var i = 0; i < subjectBuffers.Count; i++)
+            foreach (var textBuffer in subjectBuffers)
             {
-                var textBuffer = subjectBuffers[i];
                 if (!textBuffer.IsRazorBuffer())
                 {
                     continue;
@@ -77,7 +76,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        public override void OnTextViewClosed(ITextView textView, IList<ITextBuffer> subjectBuffers)
+        public override void OnTextViewClosed(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers)
         {
             if (textView == null)
             {
@@ -94,10 +93,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             //
             // Notice that this method is called *after* changes are applied to the text buffer(s). We need to check every
             // one of them for a tracker because the content type could have changed.
-            for (var i = 0; i < subjectBuffers.Count; i++)
+            foreach (var textBuffer in subjectBuffers)
             {
-                var textBuffer = subjectBuffers[i];
-
                 DefaultVisualStudioDocumentTracker documentTracker;
                 if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out documentTracker))
                 {

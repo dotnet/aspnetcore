@@ -3,13 +3,12 @@
 
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class RazorTextViewConnectionListenerTest : ForegroundDispatcherTestBase
     {
@@ -17,13 +16,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_CallsRazorDocumentManager_OnTextViewOpened()
         {
             // Arrange
-            var textView = Mock.Of<IWpfTextView>();
+            var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>();
-            var workspace = new AdhocWorkspace();
             var documentManager = new Mock<RazorDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(d => d.OnTextViewOpened(textView, buffers)).Verifiable();
 
-            var listener = new RazorTextViewConnectionListener(Dispatcher, workspace, documentManager.Object);
+            var listener = new RazorTextViewConnectionListener(Dispatcher, documentManager.Object);
 
             // Act
             listener.SubjectBuffersConnected(textView, ConnectionReason.BufferGraphChange, buffers);
@@ -36,13 +34,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersDisonnected_CallsRazorDocumentManager_OnTextViewClosed()
         {
             // Arrange
-            var textView = Mock.Of<IWpfTextView>();
+            var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>();
             var workspace = new AdhocWorkspace();
             var documentManager = new Mock<RazorDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(d => d.OnTextViewClosed(textView, buffers)).Verifiable();
 
-            var listener = new RazorTextViewConnectionListener(Dispatcher, workspace, documentManager.Object);
+            var listener = new RazorTextViewConnectionListener(Dispatcher, documentManager.Object);
 
             // Act
             listener.SubjectBuffersDisconnected(textView, ConnectionReason.BufferGraphChange, buffers);
