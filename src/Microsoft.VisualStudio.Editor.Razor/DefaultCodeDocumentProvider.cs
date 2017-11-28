@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -18,7 +18,26 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         [ImportingConstructor]
         public DefaultCodeDocumentProvider(
-            RazorTextBufferProvider bufferProvider, 
+            RazorTextBufferProvider bufferProvider,
+            VisualStudioWorkspaceAccessor workspaceAccessor)
+        {
+            if (bufferProvider == null)
+            {
+                throw new ArgumentNullException(nameof(bufferProvider));
+            }
+
+            if (workspaceAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
+            _bufferProvider = bufferProvider;
+            _codeDocumentProvider = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<TextBufferCodeDocumentProvider>();
+        }
+
+        // Internal for testing
+        internal DefaultCodeDocumentProvider(
+            RazorTextBufferProvider bufferProvider,
             TextBufferCodeDocumentProvider codeDocumentProvider)
         {
             if (bufferProvider == null)

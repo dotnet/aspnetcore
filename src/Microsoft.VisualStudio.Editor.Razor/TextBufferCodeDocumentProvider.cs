@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal abstract class TextBufferCodeDocumentProvider
+    internal abstract class TextBufferCodeDocumentProvider : ILanguageService
     {
         public abstract bool TryGetFromBuffer(ITextBuffer textBuffer, out RazorCodeDocument codeDocument);
     }
