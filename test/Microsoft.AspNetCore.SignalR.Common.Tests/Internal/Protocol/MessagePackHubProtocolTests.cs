@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, new[] { new CustomObject(), new CustomObject() }) } },
 
             new object[] { new[] { new CancelInvocationMessage("xyz") } },
-            
+
             new object[] { new[] { PingMessage.Instance } },
 
             new object[]

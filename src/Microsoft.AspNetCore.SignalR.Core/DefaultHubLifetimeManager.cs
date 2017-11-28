@@ -69,7 +69,13 @@ namespace Microsoft.AspNetCore.SignalR
 
         private Task InvokeAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
         {
-            var tasks = new List<Task>(_connections.Count);
+            var count = _connections.Count;
+            if (count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            var tasks = new List<Task>(count);
             var message = CreateInvocationMessage(methodName, args);
 
             // TODO: serialize once per format by providing a different stream?

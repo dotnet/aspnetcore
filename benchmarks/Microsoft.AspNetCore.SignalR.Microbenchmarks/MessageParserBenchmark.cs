@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class MessageParserBenchmark
     {
         private static readonly Random Random = new Random();
