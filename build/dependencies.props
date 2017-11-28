@@ -231,8 +231,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.CoreUtility" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.Data" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.Logic" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI.Wpf" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- nuget.org -->
@@ -330,8 +335,6 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.Web.Administration" Version="7.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Mono.Addins" Version="1.3.7" Source="$(DefaultNuGetFeed)" Private="true" />
