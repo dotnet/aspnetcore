@@ -1,6 +1,8 @@
 ASP.NET Core MVC
 ===
 
+**Note: For ASP.NET MVC 5.x, Web API 2.x, and Web Pages 3.x (not ASP.NET Core), please go to https://github.com/aspnet/AspNetWebStack**
+
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/969jbosi0qwc1awg/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/mvc/branch/dev)
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/Mvc.svg?branch=dev)](https://travis-ci.org/aspnet/Mvc)
