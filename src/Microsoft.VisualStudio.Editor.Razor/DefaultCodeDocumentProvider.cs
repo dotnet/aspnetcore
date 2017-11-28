@@ -14,25 +14,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class DefaultCodeDocumentProvider : RazorCodeDocumentProvider
     {
         private readonly RazorTextBufferProvider _bufferProvider;
-        private readonly IEnumerable<TextBufferCodeDocumentProvider> _codeDocumentProviders;
+        private readonly TextBufferCodeDocumentProvider _codeDocumentProvider;
 
         [ImportingConstructor]
         public DefaultCodeDocumentProvider(
             RazorTextBufferProvider bufferProvider, 
-            [ImportMany] IEnumerable<TextBufferCodeDocumentProvider> codeDocumentProviders)
+            TextBufferCodeDocumentProvider codeDocumentProvider)
         {
             if (bufferProvider == null)
             {
                 throw new ArgumentNullException(nameof(bufferProvider));
             }
 
-            if (codeDocumentProviders == null)
+            if (codeDocumentProvider == null)
             {
-                throw new ArgumentNullException(nameof(codeDocumentProviders));
+                throw new ArgumentNullException(nameof(codeDocumentProvider));
             }
 
             _bufferProvider = bufferProvider;
-            _codeDocumentProviders = codeDocumentProviders;
+            _codeDocumentProvider = codeDocumentProvider;
         }
 
         public override bool TryGetFromDocument(TextDocument document, out RazorCodeDocument codeDocument)
@@ -49,12 +49,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return false;
             }
 
-            foreach (var codeDocumentProvider in _codeDocumentProviders)
+            if (_codeDocumentProvider.TryGetFromBuffer(textBuffer, out codeDocument))
             {
-                if (codeDocumentProvider.TryGetFromBuffer(textBuffer, out codeDocument))
-                {
-                    return true;
-                }
+                return true;
             }
 
             // A Razor code document has not yet been associated with the buffer yet.
