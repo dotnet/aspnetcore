@@ -389,12 +389,12 @@
     <ExternalDependency Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="WindowsAzure.Storage" Version="8.1.4" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="xunit.abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.analyzers" Version="0.7.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.assert" Version="2.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.core" Version="2.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.extensibility.core" Version="2.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.0" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="xunit" Version="2.3.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="xunit.analyzers" Version="0.8.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="xunit.assert" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="xunit.core" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="xunit.extensibility.core" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="xunit" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
   </ItemGroup>
 
 </Project>
