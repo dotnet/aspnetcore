@@ -17,6 +17,10 @@ update=false
 repo_path="$DIR"
 channel=''
 tools_source=''
+package_version_props_url=''
+access_token_suffix=''
+restore_sources=''
+msbuild_args=''
 
 #
 # Functions
@@ -35,6 +39,9 @@ __usage() {
     echo "    -d|--dotnet-home <DIR>                    The directory where .NET Core tools will be stored. Defaults to '\$DOTNET_HOME' or '\$HOME/.dotnet."
     echo "    --path <PATH>                             The directory to build. Defaults to the directory containing the script."
     echo "    -s|--tools-source|-ToolsSource <URL>      The base url where build tools can be downloaded. Overrides the value from the config file."
+    echo "    --package-version-props-url <URL>         The url of the package versions props path containing dependency versions."
+    echo "    --access-token <Token>                    The query string to append to any blob store access for PackageVersionPropsUrl, if any."
+    echo "    --restore-sources <Sources>               Semi-colon delimited list of additional NuGet feeds to use as part of restore."
     echo "    -u|--update                               Update to the latest KoreBuild even if the lock file is present."
     echo ""
     echo "Description:"
@@ -164,18 +171,29 @@ while [[ $# -gt 0 ]]; do
             tools_source="${1:-}"
             [ -z "$tools_source" ] && __usage
             ;;
+        --package-version-props-url|-PackageVersionPropsUrl)
+            shift
+            package_version_props_url="${1:-}"
+            [ -z "$package_version_props_url" ] && __usage
+            ;;
+        --access-token-suffix|-AccessTokenSuffix)
+            shift
+            access_token_suffix="${1:-}"
+            [ -z "$access_token_suffix" ] && __usage
+            ;;
+        --restore-sources|-RestoreSources)
+            shift
+            resourceSources="${1:-}"
+            [ -z "$restore_sources" ] && __usage
+            ;;
         -u|--update|-Update)
             update=true
             ;;
         --verbose|-Verbose)
             verbose=true
             ;;
-        --)
-            shift
-            break
-            ;;
         *)
-            break
+            msbuild_args+="\"$1\" "
             ;;
     esac
     shift
@@ -215,9 +233,22 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
+if [ "$package_version_props_url" ]; then
+    intermediate_dir="$repo_path/obj"
+    props_file_path="$intermediate_dir/external-dependencies.props"
+    mkdir -p "$intermediate_dir"
+    __get_remote_file "$package_version_props_url" "$props_file_path"
+    msbuild_args+="-p:DotNetPackageVersionPropsPath=\"$props_file_path\" "
+fi
+
+if [ "$restore_sources" ]; then
+    msbuild_args+="-p:DotNetRestoreSources=\"$restore_sources\" "
+fi
+
 [ -z "$channel" ] && channel='dev'
 [ -z "$tools_source" ] && tools_source='https://aspnetcore.blob.core.windows.net/buildtools'
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
-invoke_korebuild_command "$command" "$@"
+
+invoke_korebuild_command "$command" "$msbuild_args"

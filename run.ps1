@@ -29,8 +29,17 @@ Updates KoreBuild to the latest version even if a lock file is present.
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
 
-.PARAMETER Arguments
-Arguments to be passed to the command
+.PARAMETER PackageVersionPropsUrl
+(optional) the url of the package versions props path containing dependency versions.
+
+.PARAMETER AccessTokenSuffix
+(optional) the query string to append to any blob store access for PackageVersionPropsUrl, if any.
+
+.PARAMETER RestoreSources
+(optional) Semi-colon delimited list of additional NuGet feeds to use as part of restore.
+
+.PARAMETER MSBuildArguments
+Additional MSBuild arguments to be passed through.
 
 .NOTES
 This function will create a file $PSScriptRoot/korebuild-lock.txt. This lock file can be committed to source, but does not have to be.
@@ -63,8 +72,11 @@ param(
     [Alias('u')]
     [switch]$Update,
     [string]$ConfigFile,
+    [string]$PackageVersionPropsUrl = $null,
+    [string]$AccessTokenSuffix = $null,
+    [string]$RestoreSources = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$Arguments
+    [string[]]$MSBuildArguments
 )
 
 Set-StrictMode -Version 2
@@ -177,6 +189,18 @@ if (!$DotNetHome) {
 if (!$Channel) { $Channel = 'dev' }
 if (!$ToolsSource) { $ToolsSource = 'https://aspnetcore.blob.core.windows.net/buildtools' }
 
+if ($PackageVersionPropsUrl) {
+    $IntermediateDir = Join-Path $PSScriptRoot 'obj'
+    $PropsFilePath = Join-Path $IntermediateDir 'external-dependencies.props'
+    New-Item -ItemType Directory $IntermediateDir -ErrorAction Ignore | Out-Null
+    Get-RemoteFile "${PackageVersionPropsUrl}${AccessTokenSuffix}" $PropsFilePath
+    $MSBuildArguments += "-p:DotNetPackageVersionPropsPath=$PropsFilePath"
+}
+
+if ($RestoreSources) {
+    $MSBuildArguments = "-p:DotNetRestoreSources=$RestoreSources"
+}
+
 # Execute
 
 $korebuildPath = Get-KoreBuild
@@ -184,7 +208,7 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile
-    Invoke-KoreBuildCommand $Command @Arguments
+    Invoke-KoreBuildCommand $Command @MSBuildArguments
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore

@@ -92,20 +92,22 @@
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
       <_LineupPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
 
-      <_LineupSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
-      <_LineupSources Include="$(BuildDir)" />
-      <_LineupSources Include="$(IntermediateExternalPackageDir)" />
-      <_LineupSources Include="$(IntermediateMirrorPackageDir)" />
+      <_RestoreSources Include="$(DotNetRestoreSources)" Condition="'$(DotNetRestoreSources)' != ''" />
+      <_RestoreSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
+      <_RestoreSources Include="$(BuildDir)" />
+      <_RestoreSources Include="$(IntermediateExternalPackageDir)" />
+      <_RestoreSources Include="$(IntermediateMirrorPackageDir)" />
     </ItemGroup>
 
     <GeneratePackageVersionPropsFile
       Packages="@(_LineupPackages)"
-      OutputPath="$(GeneratedPackageVersionPropsPath)" />
+      OutputPath="$(GeneratedPackageVersionPropsPath)"
+      AdditionalImports="$(DotNetPackageVersionPropsPath)" />
 
     <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
-      Sources="@(_LineupSources)"
+      Sources="@(_RestoreSources)"
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
