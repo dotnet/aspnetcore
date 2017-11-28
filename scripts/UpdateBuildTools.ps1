@@ -64,16 +64,6 @@ try {
         exit 0
     }
 
-    $deps = Get-Content "$RepoRoot/build/dependencies.props" `
-    | % {
-        if ($_ -like '*<InternalAspNetCoreSdkPackageVersion>*') {
-            "    <InternalAspNetCoreSdkPackageVersion>$newVersion</InternalAspNetCoreSdkPackageVersion>"
-        } else {
-            $_
-        }
-    }
-    $deps | Set-Content -Encoding UTF8 "$RepoRoot/build/dependencies.props"
-
     Invoke-Block { git add "$RepoRoot/korebuild-lock.txt" }
     Invoke-Block { git add "$RepoRoot/build/dependencies.props" }
 
@@ -85,11 +75,11 @@ try {
 
         $gitConfigArgs = @()
         if ($GitAuthorName) {
-            $gitConfigArgs += '-c',"user.name=$GitAuthorName"
+            $gitConfigArgs += '-c', "user.name=$GitAuthorName"
         }
 
         if ($GitAuthorEmail) {
-            $gitConfigArgs += '-c',"user.email=$GitAuthorEmail"
+            $gitConfigArgs += '-c', "user.email=$GitAuthorEmail"
         }
 
         Invoke-Block { git @gitConfigArgs commit -m $message @GitCommitArgs }
