@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class EnumTypeModelBinderProvider : IModelBinderProvider
     {
-        private readonly bool _allowBindingUndefinedValueToEnumType;
+        private readonly MvcOptions _options;
 
-        public EnumTypeModelBinderProvider(bool allowBindingUndefinedValueToEnumType)
+        public EnumTypeModelBinderProvider(MvcOptions options)
         {
-            _allowBindingUndefinedValueToEnumType = allowBindingUndefinedValueToEnumType;
+            _options = options;
         }
 
         /// <inheritdoc />
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.Metadata.IsEnum)
             {
                 return new EnumTypeModelBinder(
-                    _allowBindingUndefinedValueToEnumType,
+                    _options.AllowBindingUndefinedValueToEnumType,
                     context.Metadata.UnderlyingOrModelType);
             }
 

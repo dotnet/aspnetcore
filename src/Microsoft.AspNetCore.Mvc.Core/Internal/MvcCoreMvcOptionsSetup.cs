@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             options.ModelBinderProviders.Add(new BodyModelBinderProvider(options.InputFormatters, _readerFactory, _loggerFactory, options));
             options.ModelBinderProviders.Add(new HeaderModelBinderProvider());
             options.ModelBinderProviders.Add(new FloatingPointTypeModelBinderProvider());
-            options.ModelBinderProviders.Add(new EnumTypeModelBinderProvider(options.AllowBindingUndefinedValueToEnumType));
+            options.ModelBinderProviders.Add(new EnumTypeModelBinderProvider(options));
             options.ModelBinderProviders.Add(new SimpleTypeModelBinderProvider());
             options.ModelBinderProviders.Add(new CancellationTokenModelBinderProvider());
             options.ModelBinderProviders.Add(new ByteArrayModelBinderProvider());

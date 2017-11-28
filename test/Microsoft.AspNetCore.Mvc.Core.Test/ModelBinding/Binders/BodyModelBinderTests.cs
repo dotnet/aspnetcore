@@ -799,7 +799,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             private readonly bool _throwNonInputFormatterException;
 
             public TestableJsonInputFormatter(bool throwNonInputFormatterException)
-                : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider())
+                : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider(), new MvcOptions())
             {
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
@@ -863,7 +863,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             private readonly bool _throwNonInputFormatterException;
 
             public DerivedJsonInputFormatter(bool throwNonInputFormatterException)
-                : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider())
+                : base(GetLogger(), new JsonSerializerSettings(), ArrayPool<char>.Shared, new DefaultObjectPoolProvider(), new MvcOptions())
             {
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }

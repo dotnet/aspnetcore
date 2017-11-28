@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
         private readonly ObjectPoolProvider _objectPoolProvider;
+        private readonly MvcOptions _options;
         private readonly bool _suppressInputFormatterBuffering;
         private readonly bool _suppressJsonDeserializationExceptionMessages;
 
@@ -43,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public JsonInputFormatter(
             ILogger logger,
             JsonSerializerSettings serializerSettings,
@@ -65,6 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public JsonInputFormatter(
             ILogger logger,
             JsonSerializerSettings serializerSettings,
@@ -90,6 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
         /// <param name="suppressJsonDeserializationExceptionMessages">If <see langword="true"/>, JSON deserialization exception messages will replaced by a generic message in model state.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public JsonInputFormatter(
             ILogger logger,
             JsonSerializerSettings serializerSettings,
@@ -124,6 +128,59 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             _objectPoolProvider = objectPoolProvider;
             _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
             _suppressJsonDeserializationExceptionMessages = suppressJsonDeserializationExceptionMessages;
+
+            SupportedEncodings.Add(UTF8EncodingWithoutBOM);
+            SupportedEncodings.Add(UTF16EncodingLittleEndian);
+
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationJson);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.TextJson);
+            SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="JsonInputFormatter"/>.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger"/>.</param>
+        /// <param name="serializerSettings">
+        /// The <see cref="JsonSerializerSettings"/>. Should be either the application-wide settings
+        /// (<see cref="MvcJsonOptions.SerializerSettings"/>) or an instance
+        /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
+        /// </param>
+        /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
+        /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        public JsonInputFormatter(
+            ILogger logger,
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            ObjectPoolProvider objectPoolProvider,
+            MvcOptions options)
+        {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (serializerSettings == null)
+            {
+                throw new ArgumentNullException(nameof(serializerSettings));
+            }
+
+            if (charPool == null)
+            {
+                throw new ArgumentNullException(nameof(charPool));
+            }
+
+            if (objectPoolProvider == null)
+            {
+                throw new ArgumentNullException(nameof(objectPoolProvider));
+            }
+
+            _logger = logger;
+            SerializerSettings = serializerSettings;
+            _charPool = new JsonArrayPool<char>(charPool);
+            _objectPoolProvider = objectPoolProvider;
+            _options = options;
 
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
@@ -172,7 +229,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var request = context.HttpContext.Request;
 
-            if (!request.Body.CanSeek && !_suppressInputFormatterBuffering)
+            var suppressInputFormatterBuffering = _options?.SuppressInputFormatterBuffering ?? _suppressInputFormatterBuffering;
+
+            if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
                 // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously 
                 // read everything into a buffer, and then seek back to the beginning. 
@@ -352,8 +411,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // we regard as having safe messages to expose to clients
             var isJsonExceptionType =
                 exception is JsonReaderException || exception is JsonSerializationException;
+            var suppressJsonDeserializationExceptionMessages = _options?.SuppressJsonDeserializationExceptionMessagesInModelState ?? _suppressJsonDeserializationExceptionMessages;
             var suppressOriginalMessage =
-                _suppressJsonDeserializationExceptionMessages || !isJsonExceptionType;
+                suppressJsonDeserializationExceptionMessages || !isJsonExceptionType;
             return suppressOriginalMessage
                 ? exception
                 : new InputFormatterException(exception.Message, exception);

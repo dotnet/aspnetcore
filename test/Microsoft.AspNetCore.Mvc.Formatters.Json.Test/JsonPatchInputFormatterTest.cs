@@ -30,8 +30,57 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
+#pragma warning disable CS0618
             var formatter =
                 new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+#pragma warning restore CS0618
+            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/json";
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+
+            Assert.True(httpContext.Request.Body.CanSeek);
+            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
+
+            result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+        }
+
+        [Fact]
+        public async Task BuffersRequestBody_UsingDefaultOptions()
+        {
+            // Arrange
+            var logger = GetLogger();
+            var formatter =
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -77,8 +126,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             // Arrange
             var logger = GetLogger();
+#pragma warning disable CS0618
             var formatter =
                 new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, suppressInputFormatterBuffering: true);
+#pragma warning restore CS0618
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -106,6 +157,57 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
             Assert.Equal("John", patchDoc.Operations[0].value);
 
+            Assert.False(httpContext.Request.Body.CanSeek);
+            result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            Assert.Null(result.Model);
+        }
+
+        [Fact]
+        public async Task SuppressInputFormatterBufferingSetToTrue_UsingMutatedOptions_DoesNotBufferRequestBody()
+        {
+            // Arrange
+            var logger = GetLogger();
+            var mvcOptions = new MvcOptions();
+            mvcOptions.SuppressInputFormatterBuffering = false;
+            var formatter = new JsonPatchInputFormatter(
+                logger,
+                _serializerSettings,
+                ArrayPool<char>.Shared,
+                _objectPoolProvider,
+                mvcOptions);
+            var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
+            var contentBytes = Encoding.UTF8.GetBytes(content);
+
+            var modelState = new ModelStateDictionary();
+            var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.ContentType = "application/json";
+            var provider = new EmptyModelMetadataProvider();
+            var metadata = provider.GetMetadataForType(typeof(JsonPatchDocument<Customer>));
+            var context = new InputFormatterContext(
+                httpContext,
+                modelName: string.Empty,
+                modelState: modelState,
+                metadata: metadata,
+                readerFactory: new TestHttpRequestStreamReaderFactory().CreateReader);
+
+            // Act
+            // Mutate options after passing into the constructor to make sure that the value type is not store in the constructor
+            mvcOptions.SuppressInputFormatterBuffering = true;
+            var result = await formatter.ReadAsync(context);
+
+            // Assert
+            Assert.False(result.HasError);
+            var patchDoc = Assert.IsType<JsonPatchDocument<Customer>>(result.Model);
+            Assert.Equal("add", patchDoc.Operations[0].op);
+            Assert.Equal("Customer/Name", patchDoc.Operations[0].path);
+            Assert.Equal("John", patchDoc.Operations[0].value);
+
+            Assert.False(httpContext.Request.Body.CanSeek);
             result = await formatter.ReadAsync(context);
 
             // Assert
@@ -119,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var logger = GetLogger();
             var formatter =
-                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\":\"add\",\"path\":\"Customer/Name\",\"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -151,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var logger = GetLogger();
             var formatter =
-                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}," +
                 "{\"op\": \"remove\", \"path\" : \"Customer/Name\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
@@ -190,7 +292,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var logger = GetLogger();
             var formatter =
-                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -220,7 +322,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var logger = GetLogger();
             var formatter =
-                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 
@@ -251,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var logger = GetLogger();
             var formatter =
-                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider);
+                new JsonPatchInputFormatter(logger, _serializerSettings, ArrayPool<char>.Shared, _objectPoolProvider, new MvcOptions());
             var content = "[{\"op\": \"add\", \"path\" : \"Customer/Name\", \"value\":\"John\"}]";
             var contentBytes = Encoding.UTF8.GetBytes(content);
 

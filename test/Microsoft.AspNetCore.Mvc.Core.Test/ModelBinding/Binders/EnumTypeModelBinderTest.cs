@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -281,7 +282,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     { modelName, valueProviderValue }
                 }
             };
-            var binderProvider = new EnumTypeModelBinderProvider(allowBindingUndefinedValueToEnumType);
+            var binderProvider = new EnumTypeModelBinderProvider(new MvcOptions
+            {
+                AllowBindingUndefinedValueToEnumType = allowBindingUndefinedValueToEnumType
+            });
             var binder = binderProvider.GetBinder(binderProviderContext);
             return (bindingContext, binder);
         }
