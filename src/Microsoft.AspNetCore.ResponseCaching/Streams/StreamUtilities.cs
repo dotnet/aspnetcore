@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     internal static class StreamUtilities
     {
         /// <summary>
-        /// The segment size for buffering the response body in bytes. The default is set to 84 KB.
+        /// The segment size for buffering the response body in bytes. The default is set to 80 KB (81920 Bytes) to avoid allocations on the LOH.
         /// </summary>
         // Internal for testing
-        internal static int BodySegmentSize { get; set; } = 84 * 1024;
+        internal static int BodySegmentSize { get; set; } = 81920;
 
         internal static IAsyncResult ToIAsyncResult(Task task, AsyncCallback callback, object state)
         {
