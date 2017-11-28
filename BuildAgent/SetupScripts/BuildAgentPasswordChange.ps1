@@ -6,21 +6,9 @@ param(
     [string]$teamAgentServiceAccountPassword
 )
 
-$agents = @()
-$allLines = Get-Content("$PSScriptRoot\agentlist.txt")
-foreach ($line in $allLines) 
-{
-    $line=$line.Trim()
+Import-Module -Scope Local -Force $PSScriptRoot/agentlist.psm1
 
-    if ( -Not ([string]::IsNullOrEmpty($line)))
-    {
-        # Ignore lines which could be comments
-        if ( -Not $line.StartsWith("#"))
-        {
-            $agents=$agents + $line
-        }
-    }
-}
+$agents = Get-Agents | ? { ($_.OS -eq 'Windows') -and ($_.Category -ne 'Codesign') } | % { $_.Name }
 
 $PWord = ConvertTo-SecureString –String $teamAgentServiceAccountPassword –AsPlainText -Force
 $creds = New-Object –TypeName System.Management.Automation.PSCredential –ArgumentList $teamAgentServiceAccountName, $PWord
