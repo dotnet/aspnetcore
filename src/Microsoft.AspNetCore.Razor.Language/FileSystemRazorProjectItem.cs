@@ -30,6 +30,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string PhysicalPath => File.FullName;
 
-        public override Stream Read() => File.OpenRead();
+        public override Stream Read() => new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
     }
 }

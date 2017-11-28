@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -30,11 +31,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private Workspace Workspace => new AdhocWorkspace();
 
+        private ImportDocumentManager ImportDocumentManager => Mock.Of<ImportDocumentManager>();
+
         [Fact]
         public void EditorSettingsManager_Changed_TriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var called = false;
             documentTracker.ContextChanged += (sender, args) =>
             {
@@ -54,7 +57,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectChanged_TriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
 
             var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
@@ -78,7 +81,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_TagHelpersChanged_TriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
 
             var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
@@ -102,7 +105,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_IgnoresUnknownProject()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
 
             var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Other/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
@@ -122,10 +125,49 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
+        public void Import_Changed_ImportAssociatedWithDocument_TriggersContextChanged()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
+
+            var called = false;
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                Assert.Equal(ContextChangeKind.ImportsChanged, args.Kind);
+                called = true;
+            };
+
+            var importChangedArgs = new ImportChangedEventArgs("path/to/import", ImportChangeKind.Changed, new[] { FilePath });
+
+            // Act
+            documentTracker.Import_Changed(null, importChangedArgs);
+
+            // Assert
+            Assert.True(called);
+        }
+
+        [Fact]
+        public void Import_Changed_UnrelatedImport_DoesNothing()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
+
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                throw new InvalidOperationException();
+            };
+
+            var importChangedArgs = new ImportChangedEventArgs("path/to/import", ImportChangeKind.Changed, new[] { "path/to/differentfile" });
+
+            // Act & Assert (Does not throw)
+            documentTracker.Import_Changed(null, importChangedArgs);
+        }
+
+        [Fact]
         public void Subscribe_SetsSupportedProjectAndTriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var called = false;
             documentTracker.ContextChanged += (sender, args) =>
             {
@@ -145,7 +187,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void Unsubscribe_ResetsSupportedProjectAndTriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
 
             // Subscribe once to set supported project
             documentTracker.Subscribe();
@@ -169,7 +211,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_AddsToTextViewCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView = Mock.Of<ITextView>();
 
             // Act
@@ -183,7 +225,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_DoesNotAddDuplicateTextViews()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView = Mock.Of<ITextView>();
 
             // Act
@@ -198,7 +240,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void AddTextView_AddsMultipleTextViewsToCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView1 = Mock.Of<ITextView>();
             var textView2 = Mock.Of<ITextView>();
 
@@ -217,7 +259,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_RemovesTextViewFromCollection_SingleItem()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView = Mock.Of<ITextView>();
             documentTracker.AddTextView(textView);
 
@@ -232,7 +274,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_RemovesTextViewFromCollection_MultipleItems()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView1 = Mock.Of<ITextView>();
             var textView2 = Mock.Of<ITextView>();
             var textView3 = Mock.Of<ITextView>();
@@ -254,7 +296,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void RemoveTextView_NoopsWhenRemovingTextViewNotInCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
             var textView1 = Mock.Of<ITextView>();
             documentTracker.AddTextView(textView1);
             var textView2 = Mock.Of<ITextView>();

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 
@@ -14,13 +15,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(RazorDocumentManager))]
     internal class DefaultRazorDocumentManager : RazorDocumentManager
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorEditorFactoryService _editorFactoryService;
         private readonly TextBufferProjectService _projectService;
 
         [ImportingConstructor]
         public DefaultRazorDocumentManager(
             RazorEditorFactoryService editorFactoryService,
-            TextBufferProjectService projectService)
+            TextBufferProjectService projectService,
+            VisualStudioWorkspaceAccessor workspaceAccessor)
         {
             if (editorFactoryService == null)
             {
@@ -32,8 +35,40 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(projectService));
             }
 
+            if (workspaceAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
             _editorFactoryService = editorFactoryService;
             _projectService = projectService;
+            _foregroundDispatcher = workspaceAccessor.Workspace.Services.GetRequiredService<ForegroundDispatcher>();
+        }
+
+        // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
+        internal DefaultRazorDocumentManager(
+            RazorEditorFactoryService editorFactoryService,
+            TextBufferProjectService projectService,
+            ForegroundDispatcher foregroundDispatcher)
+        {
+            if (editorFactoryService == null)
+            {
+                throw new ArgumentNullException(nameof(editorFactoryService));
+            }
+
+            if (projectService == null)
+            {
+                throw new ArgumentNullException(nameof(projectService));
+            }
+
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _editorFactoryService = editorFactoryService;
+            _projectService = projectService;
+            _foregroundDispatcher = foregroundDispatcher;
         }
 
         public override void OnTextViewOpened(ITextView textView, IEnumerable<ITextBuffer> subjectBuffers)
@@ -47,6 +82,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 throw new ArgumentNullException(nameof(subjectBuffers));
             }
+
+            _foregroundDispatcher.AssertForegroundThread();
 
             foreach (var textBuffer in subjectBuffers)
             {
@@ -87,6 +124,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 throw new ArgumentNullException(nameof(subjectBuffers));
             }
+
+            _foregroundDispatcher.AssertForegroundThread();
 
             // This means a Razor buffer has be detached from this ITextView or the ITextView is closing. Since we keep a 
             // list of all of the open text views for each text buffer, we need to update the tracker.

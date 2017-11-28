@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ProjectSnapshotManager _projectManager;
         private readonly EditorSettingsManagerInternal _editorSettingsManager;
         private readonly ITextBuffer _textBuffer;
+        private readonly ImportDocumentManager _importDocumentManager;
         private readonly List<ITextView> _textViews;
         private readonly Workspace _workspace;
         private bool _isSupportedProject;
@@ -32,7 +33,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ProjectSnapshotManager projectManager,
             EditorSettingsManagerInternal editorSettingsManager,
             Workspace workspace,
-            ITextBuffer textBuffer)
+            ITextBuffer textBuffer,
+            ImportDocumentManager importDocumentManager)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -64,11 +66,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
+            if (importDocumentManager == null)
+            {
+                throw new ArgumentNullException(nameof(importDocumentManager));
+            }
+
             _filePath = filePath;
             _projectPath = projectPath;
             _projectManager = projectManager;
             _editorSettingsManager = editorSettingsManager;
             _textBuffer = textBuffer;
+            _importDocumentManager = importDocumentManager;
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
 
             _textViews = new List<ITextView>();
@@ -135,8 +143,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public void Subscribe()
         {
+            _importDocumentManager.OnSubscribed(this);
+
             _editorSettingsManager.Changed += EditorSettingsManager_Changed;
             _projectManager.Changed += ProjectManager_Changed;
+            _importDocumentManager.Changed += Import_Changed;
 
             _isSupportedProject = true;
             _project = _projectManager.GetProjectWithFilePath(_projectPath);
@@ -146,8 +157,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public void Unsubscribe()
         {
+            _importDocumentManager.OnUnsubscribed(this);
+
             _projectManager.Changed -= ProjectManager_Changed;
             _editorSettingsManager.Changed -= EditorSettingsManager_Changed;
+            _importDocumentManager.Changed -= Import_Changed;
 
             // Detached from project.
             _isSupportedProject = false;
@@ -188,6 +202,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal void EditorSettingsManager_Changed(object sender, EditorSettingsChangedEventArgs args)
         {
             OnContextChanged(_project, ContextChangeKind.EditorSettingsChanged);
+        }
+
+        // Internal for testing
+        internal void Import_Changed(object sender, ImportChangedEventArgs args)
+        {
+            foreach (var path in args.AssociatedDocuments)
+            {
+                if (string.Equals(_filePath, path, StringComparison.OrdinalIgnoreCase))
+                {
+                    OnContextChanged(_project, ContextChangeKind.ImportsChanged);
+                    break;
+                }
+            }
         }
     }
 }

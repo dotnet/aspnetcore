@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
@@ -71,7 +72,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(project));
             }
 
-            var hierarchy = (IVsHierarchy)project;
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
 
             ErrorHandler.ThrowOnFailure(((IVsProject)hierarchy).GetMkDocument((uint)VSConstants.VSITEMID.Root, out var path), VSConstants.E_NOTIMPL);
             return path;
@@ -84,7 +86,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(project));
             }
 
-            var hierarchy = (IVsHierarchy)project;
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
+
             try
             {
                 return hierarchy.IsCapabilityMatch(DotNetCoreCapability);
@@ -108,7 +112,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(project));
             }
 
-            var hierarchy = (IVsHierarchy)project;
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
+
             if (ErrorHandler.Failed(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out var name)))
             {
                 return null;

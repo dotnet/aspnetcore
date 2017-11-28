@@ -184,7 +184,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             var result = new List<RazorSourceDocument>();
 
-
             var importProjectItems = GetImportItems(projectItem);
             foreach (var importItem in importProjectItems)
             {

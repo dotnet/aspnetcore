@@ -20,6 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly TextBufferProjectService _projectService;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
         private readonly Workspace _workspace;
+        private readonly ImportDocumentManager _importDocumentManager;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectManager;
         private readonly EditorSettingsManagerInternal _editorSettingsManager;
@@ -28,7 +29,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public DefaultVisualStudioDocumentTrackerFactory(
             TextBufferProjectService projectService,
             ITextDocumentFactoryService textDocumentFactory,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            VisualStudioWorkspaceAccessor workspaceAccessor,
+            ImportDocumentManager importDocumentManager)
         {
             if (projectService == null)
             {
@@ -40,17 +42,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(textDocumentFactory));
             }
 
-            if (workspace == null)
+            if (workspaceAccessor == null)
             {
-                throw new ArgumentNullException(nameof(workspace));
+                throw new ArgumentNullException(nameof(workspaceAccessor));
             }
 
             _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
-            _workspace = workspace;
+            _workspace = workspaceAccessor.Workspace;
+            _importDocumentManager = importDocumentManager;
 
-            _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
-            var razorLanguageServices = workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _foregroundDispatcher = _workspace.Services.GetRequiredService<ForegroundDispatcher>();
+            var razorLanguageServices = _workspace.Services.GetLanguageServices(RazorLanguage.Name);
             _projectManager = razorLanguageServices.GetRequiredService<ProjectSnapshotManager>();
             _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManagerInternal>();
         }
@@ -78,7 +81,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
             var projectPath = _projectService.GetProjectPath(project);
 
-            var tracker = new DefaultVisualStudioDocumentTracker(filePath, projectPath, _projectManager, _editorSettingsManager, _workspace, textBuffer);
+            var tracker = new DefaultVisualStudioDocumentTracker(filePath, projectPath, _projectManager, _editorSettingsManager, _workspace, textBuffer, _importDocumentManager);
 
             return tracker;
         }
