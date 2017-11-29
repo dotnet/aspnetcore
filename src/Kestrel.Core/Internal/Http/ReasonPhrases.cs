@@ -222,9 +222,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                     default:
                         var predefinedReasonPhrase = WebUtilities.ReasonPhrases.GetReasonPhrase(statusCode);
+                        // https://tools.ietf.org/html/rfc7230#section-3.1.2 requires trailing whitespace regardless of reason phrase
+                        var formattedStatusCode = statusCode.ToString(CultureInfo.InvariantCulture) + " ";
                         return string.IsNullOrEmpty(predefinedReasonPhrase)
-                            ? Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture))
-                            : Encoding.ASCII.GetBytes(statusCode.ToString(CultureInfo.InvariantCulture) + " " + predefinedReasonPhrase);
+                            ? Encoding.ASCII.GetBytes(formattedStatusCode)
+                            : Encoding.ASCII.GetBytes(formattedStatusCode + predefinedReasonPhrase);
 
                 }
             }
