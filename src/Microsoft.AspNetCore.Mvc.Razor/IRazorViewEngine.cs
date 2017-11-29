@@ -15,9 +15,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/>.</param>
-        /// <param name="pageName">The name of the page.</param>
+        /// <param name="pageName">The name or path of the page.</param>
         /// <returns>The <see cref="RazorPageResult"/> of locating the page.</returns>
-        /// <remarks><seealso cref="IViewEngine.FindView"/>.</remarks>
+        /// <remarks>
+        /// <remarks>Use <see cref="GetPage(string, string)"/> when the absolute or relative
+        /// path of the page is known.</remarks>
+        /// <seealso cref="IViewEngine.FindView"/>.
+        /// </remarks>
         RazorPageResult FindPage(ActionContext context, string pageName);
 
         /// <summary>

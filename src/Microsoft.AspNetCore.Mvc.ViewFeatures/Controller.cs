@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a <see cref="ViewResult"/> object by specifying a <paramref name="viewName"/>.
         /// </summary>
-        /// <param name="viewName">The name of the view that is rendered to the response.</param>
+        /// <param name="viewName">The name or path of the view that is rendered to the response.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
         public virtual ViewResult View(string viewName)
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a <see cref="ViewResult"/> object by specifying a <paramref name="viewName"/>
         /// and the <paramref name="model"/> to be rendered by the view.
         /// </summary>
-        /// <param name="viewName">The name of the view that is rendered to the response.</param>
+        /// <param name="viewName">The name or path of the view that is rendered to the response.</param>
         /// <param name="model">The model that is rendered by the view.</param>
         /// <returns>The created <see cref="ViewResult"/> object for the response.</returns>
         [NonAction]
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates a <see cref="PartialViewResult"/> object by specifying a <paramref name="viewName"/>.
         /// </summary>
-        /// <param name="viewName">The name of the view that is rendered to the response.</param>
+        /// <param name="viewName">The name or path of the partial view that is rendered to the response.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]
         public virtual PartialViewResult PartialView(string viewName)
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Creates a <see cref="PartialViewResult"/> object by specifying a <paramref name="viewName"/>
         /// and the <paramref name="model"/> to be rendered by the partial view.
         /// </summary>
-        /// <param name="viewName">The name of the partial view that is rendered to the response.</param>
+        /// <param name="viewName">The name or path of the partial view that is rendered to the response.</param>
         /// <param name="model">The model that is rendered by the partial view.</param>
         /// <returns>The created <see cref="PartialViewResult"/> object for the response.</returns>
         [NonAction]

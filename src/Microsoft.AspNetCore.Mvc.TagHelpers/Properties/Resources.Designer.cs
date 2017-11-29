@@ -178,6 +178,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         internal static string FormatArgumentCannotContainHtmlSpace()
             => GetString("ArgumentCannotContainHtmlSpace");
 
+        /// <summary>
+        /// The partial view '{0}' was not found. The following locations were searched:{1}
+        /// </summary>
+        internal static string ViewEngine_PartialViewNotFound
+        {
+            get => GetString("ViewEngine_PartialViewNotFound");
+        }
+
+        /// <summary>
+        /// The partial view '{0}' was not found. The following locations were searched:{1}
+        /// </summary>
+        internal static string FormatViewEngine_PartialViewNotFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ViewEngine_PartialViewNotFound"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

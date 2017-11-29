@@ -61,8 +61,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     // Only attribute order should differ.
                     { "Order", "/HtmlGeneration_Order/Submit" },
                     { "OrderUsingHtmlHelpers", "/HtmlGeneration_Order/Submit" },
+                    // Testing PartialTagHelper
+                    { "PartialTagHelperWithoutModel", null },
+                    { "Warehouse", null },
                     // Testing InputTagHelpers invoked in the partial views
                     { "ProductList", "/HtmlGeneration_Product" },
+                    { "ProductListUsingTagHelpers", "/HtmlGeneration_Product" },
                     // Testing the ScriptTagHelper
                     { "Script", null },
                 };

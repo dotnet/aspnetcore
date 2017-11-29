@@ -13,9 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
         /// <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The <see cref="ActionContext"/>.</param>
-        /// <param name="viewName">The name of the view.</param>
+        /// <param name="viewName">The name or path of the view that is rendered to the response.</param>
         /// <param name="isMainPage">Determines if the page being found is the main page for an action.</param>
         /// <returns>The <see cref="ViewEngineResult"/> of locating the view.</returns>
+        /// <remarks>Use <see cref="GetView(string, string, bool)"/> when the absolute or relative
+        /// path of the view is known.</remarks>
         ViewEngineResult FindView(ActionContext context, string viewName, bool isMainPage);
 
         /// <summary>

@@ -153,4 +153,7 @@
   <data name="ArgumentCannotContainHtmlSpace" xml:space="preserve">
     <value>Value cannot contain HTML space characters.</value>
   </data>
+  <data name="ViewEngine_PartialViewNotFound" xml:space="preserve">
+    <value>The partial view '{0}' was not found. The following locations were searched:{1}</value>
+  </data>
 </root>

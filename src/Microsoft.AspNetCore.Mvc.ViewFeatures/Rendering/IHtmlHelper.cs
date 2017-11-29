@@ -570,7 +570,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// Renders HTML markup for the specified partial view.
         /// </summary>
         /// <param name="partialViewName">
-        /// The name of the partial view used to create the HTML markup. Must not be <c>null</c>.
+        /// The name or path of the partial view used to create the HTML markup. Must not be <c>null</c>.
         /// </param>
         /// <param name="model">A model to pass into the partial view.</param>
         /// <param name="viewData">A <see cref="ViewDataDictionary"/> to pass into the partial view.</param>

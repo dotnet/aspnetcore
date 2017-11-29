@@ -108,6 +108,8 @@ namespace HtmlGenerationWebSite.Controllers
             return View(_products);
         }
 
+        public IActionResult ProductListUsingTagHelpers() => View(_products);
+
         public IActionResult EmployeeList()
         {
             var employees = new List<Employee>
@@ -165,6 +167,22 @@ namespace HtmlGenerationWebSite.Controllers
             return View(warehouse);
         }
 
+        public IActionResult Warehouse()
+        {
+            var warehouse = new Warehouse
+            {
+                City = "City_1",
+                Employee = new Employee
+                {
+                    Name = "EmployeeName_1",
+                    OfficeNumber = "Number_1",
+                    Address = "Address_1",
+                }
+            };
+
+            return View(warehouse);
+        }
+
         public IActionResult Environment()
         {
             return View();
@@ -209,5 +227,7 @@ namespace HtmlGenerationWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult PartialTagHelperWithoutModel() => View();
     }
 }

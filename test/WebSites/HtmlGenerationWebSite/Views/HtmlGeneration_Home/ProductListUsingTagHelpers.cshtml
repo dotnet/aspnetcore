@@ -1,0 +1,25 @@
+@using HtmlGenerationWebSite.Models
+@model IList<Product>
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<html>
+<head>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <form asp-action="Index" asp-controller="HtmlGeneration_Product" asp-antiforgery="true">
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <div>
+                <label asp-for="@Model[i].HomePage" class="product"></label>
+                <input asp-for="@Model[i].HomePage" type="url" size="50" disabled="disabled" readonly="readonly" />
+            </div>
+            <partial name="_ProductPartial" asp-for="@Model[i]" />
+        }
+        @* Print the HtmlFieldPrefix outside of the partial tag helper to ensure it hasn't been modified *@
+        <div>HtmlFieldPrefix = @ViewData.TemplateInfo.HtmlFieldPrefix</div>
+        <input type="submit" />
+    </form>
+</body>
+</html>
