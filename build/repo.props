@@ -1,14 +1,20 @@
 ﻿<Project>
+  <Import Project="dependencies.props" />
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISIntegration.FunctionalTests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISIntegration.IISServerFunctionalTests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
   </ItemGroup>
-
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+  </ItemGroup>
 </Project>
