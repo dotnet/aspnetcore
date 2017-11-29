@@ -28,11 +28,11 @@
   <!-- .NET Core feed -->
   <PropertyGroup>
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
-    <CoreSetupPackageVersion>2.1.0-preview1-25907-02</CoreSetupPackageVersion>
+    <CoreSetupPackageVersion>2.1.0-preview1-25915-01</CoreSetupPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.CSharp" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.CSharp" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" TargetFramework="netcoreapp2.1" Source="$(DotNetCoreFeed)" Mirror="true">
@@ -43,8 +43,8 @@
     <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="2.1.0-preview1-25831-01" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="2.1.0-preview1-25915-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
@@ -70,49 +70,49 @@
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Buffers" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.CodeDom" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Collections.Immutable" Version="1.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.AttributedModel" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Convention" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Hosting" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Runtime" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.TypedParts" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition" Version="1.2.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Configuration.ConfigurationManager" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true">
+    <ExternalDependency Include="System.Buffers" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.CodeDom" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Collections.Immutable" Version="1.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition.AttributedModel" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition.Convention" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition.Hosting" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition.Runtime" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition.TypedParts" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Composition" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Configuration.ConfigurationManager" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true">
       <!-- This version should be used by runtime packages. -->
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
-    <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Packaging" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Ports" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Json" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Memory" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Numerics.Vectors" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.Metadata" Version="1.6.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.AccessControl" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.ProtectedData" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Permissions" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Principal.Windows" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.AccessControl" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Channels" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="4.9.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.Packaging" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.Ports" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Json" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Memory" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Numerics.Vectors" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Reflection.Metadata" Version="1.6.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Cryptography.ProtectedData" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Permissions" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Security.Principal.Windows" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Text.Encodings.Web" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Threading.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Threading.Channels" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="4.9.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="4.5.0-preview2-25707-02" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ValueTuple" Version="4.5.0-preview1-25922-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.ValueTuple" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
 
   <!-- CoreFX labs -->
