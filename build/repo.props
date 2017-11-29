@@ -1,7 +1,10 @@
 ﻿<Project>
+  <Import Project="dependencies.props" />
+
   <PropertyGroup>
     <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectsToPack Include="$(RepositoryRoot)client-ts\Microsoft.AspNetCore.SignalR.Client.TS\*.csproj" />
   </ItemGroup>
@@ -10,4 +13,9 @@
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+  </ItemGroup>
 </Project>
