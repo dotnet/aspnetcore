@@ -489,7 +489,7 @@ Partial that does not specify Layout
         public async Task ViewEngine_NormalizesPathsReturnedByViewLocationExpanders()
         {
             // Arrange
-            var expected = 
+            var expected =
 @"Layout
 Page
 Partial";
@@ -498,7 +498,7 @@ Partial";
             var responseContent = await Client.GetStringAsync("/BackSlash");
 
             // Assert
-            Assert.Equal(expected, responseContent.Trim());
+            Assert.Equal(expected, responseContent, ignoreLineEndingDifferences: true);
         }
 
         [Fact]

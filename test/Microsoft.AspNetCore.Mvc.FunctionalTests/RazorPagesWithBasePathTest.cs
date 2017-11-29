@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -130,27 +129,29 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915
             //Arrange
-            var expected = $"Hello from _ViewStart{Environment.NewLine}Hello from /Pages/WithViewStart/Index.cshtml!";
+            var expected = @"Hello from _ViewStart
+Hello from /Pages/WithViewStart/Index.cshtml!";
 
             // Act
             var response = await Client.GetStringAsync("/WithViewStart");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
         public async Task ViewStart_IsDiscoveredForFilesOutsidePageRoot()
         {
             //Arrange
-            var newLine = Environment.NewLine;
-            var expected = $"Hello from _ViewStart at root{newLine}Hello from _ViewStart{newLine}Hello from page";
+            var expected = @"Hello from _ViewStart at root
+Hello from _ViewStart
+Hello from page";
 
             // Act
             var response = await Client.GetStringAsync("/WithViewStart/ViewStartAtRoot");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -212,14 +213,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetStringAsync("/TagHelper/CrossPost");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
         public async Task FormActionTagHelper_WithPage_AllowsPostingToAnotherPage()
         {
             //Arrange
-            var expected = 
+            var expected =
 @"<button formaction=""/TagHelper/CrossPost/10"" />
 <input type=""submit"" formaction=""/TagHelper/CrossPost/10"" />
 <input type=""image"" formaction=""/TagHelper/CrossPost/10"" />
@@ -231,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetStringAsync("/TagHelper/FormAction");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
         [Fact]

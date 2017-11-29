@@ -40,8 +40,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-            responseContent = responseContent.Trim();
-
             var forgeryToken = AntiforgeryTestHelper.RetrieveAntiforgeryToken(responseContent, "SimpleForms");
 #if GENERATE_BASELINES
             // Reverse usual substitution and insert a format item into the new file content.
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             ResourceFile.UpdateFile(_resourcesAssembly, outputFile, expectedContent, responseContent);
 #else
             expectedContent = string.Format(expectedContent, forgeryToken);
-            Assert.Equal(expectedContent.Trim(), responseContent, ignoreLineEndingDifferences: true);
+            Assert.Equal(expectedContent, responseContent.Trim(), ignoreLineEndingDifferences: true);
 #endif
         }
 
@@ -577,13 +575,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915
             //Arrange
-            var expected = $"Hello from _ViewStart{Environment.NewLine}Hello from /Pages/WithViewStart/Index.cshtml!";
+            var expected = @"Hello from _ViewStart
+Hello from /Pages/WithViewStart/Index.cshtml!";
 
             // Act
             var response = await Client.GetStringAsync("/Pages/WithViewStart");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -791,7 +790,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             var response = await Client.GetStringAsync("InjectedPageProperties");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -968,7 +967,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         {
             // Arrange
             var expected =
-            @"<form method=""post"" action=""/Pages/TagHelper/CrossPost""></form>
+@"<form method=""post"" action=""/Pages/TagHelper/CrossPost""></form>
 <a href=""/Pages/TagHelper/SelfPost/12"" />
 <input type=""image"" formaction=""/Pages/TagHelper/CrossPost#my-fragment"" />";
 
@@ -976,7 +975,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             var response = await Client.GetStringAsync("/Pages/TagHelper/SiblingLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -984,7 +983,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         {
             // Arrange
             var expected =
-            @"<form method=""post"" action=""/Pages/TagHelper/SubDir/SubDirPage""></form>
+@"<form method=""post"" action=""/Pages/TagHelper/SubDir/SubDirPage""></form>
 <a href=""/Pages/TagHelper/SubDir/SubDirPage/12"" />
 <input type=""image"" formaction=""/Pages/TagHelper/SubDir/SubDirPage#my-fragment"" />";
 
@@ -992,7 +991,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             var response = await Client.GetStringAsync("/Pages/TagHelper/SubDirectoryLinks");
 
             // Assert
-            Assert.Equal(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
@@ -1000,7 +999,8 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         {
             // Arrange
             var expected =
-            @"<form method=""post"" action=""/HelloWorld""></form>
+@"<form method=""post"" action=""/Pages/TagHelper/SubDirectoryLinks""></form>
+<form method=""post"" action=""/HelloWorld""></form>
 <a href=""/Pages/Redirects/RedirectToIndex"" />
 <input type=""image"" formaction=""/Pages/Admin#my-fragment"" />";
 
@@ -1008,20 +1008,7 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             var response = await Client.GetStringAsync("/Pages/TagHelper/PathTraversalLinks");
 
             // Assert
-            Assert.EndsWith(expected, response.Trim());
-        }
-
-        [Fact]
-        public async Task TagHelpers_SupportsRelativeNavigation()
-        {
-            // Arrange
-            var expected = @"<form method=""post"" action=""/Pages/TagHelper/SubDirectoryLinks""></form>";
-
-            // Act
-            var response = await Client.GetStringAsync("/Pages/TagHelper/PathTraversalLinks");
-
-            // Assert
-            Assert.StartsWith(expected, response.Trim());
+            Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
         [Fact]
