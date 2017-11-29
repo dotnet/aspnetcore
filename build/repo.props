@@ -1,8 +1,10 @@
 ﻿<Project>
+  <Import Project="dependencies.props" />
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.LanguageServices.Razor.Test\Microsoft.VisualStudio.LanguageServices.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.Editor.Razor.Test\Microsoft.VisualStudio.Editor.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'"/>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.Editor.Razor.Test\Microsoft.VisualStudio.Editor.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Performance\Microsoft.AspNetCore.Razor.Performance.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj" />
@@ -14,4 +16,9 @@
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>
     <LineupPackageRestoreSource>https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</LineupPackageRestoreSource>
   </PropertyGroup>
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+  </ItemGroup>
 </Project>
