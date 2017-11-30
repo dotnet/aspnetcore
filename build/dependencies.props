@@ -222,7 +222,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10202" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10223" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- VS SDK -->
