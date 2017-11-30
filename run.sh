@@ -250,5 +250,4 @@ fi
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
-
-invoke_korebuild_command "$command" "$msbuild_args"
+invoke_korebuild_command "$command" $msbuild_args
