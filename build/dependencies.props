@@ -1,5 +1,7 @@
 ﻿<Project>
 
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
   <ItemDefinitionGroup>
     <ExternalDependency>
       <!-- The NuGet package version. Floating versions not allowed. -->
@@ -29,13 +31,16 @@
   <PropertyGroup>
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
     <CoreSetupPackageVersion>2.1.0-preview1-25915-01</CoreSetupPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>$(CoreSetupPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
+    <!-- We don't set MicrosoftNETCoreAppPackageVersion anywhere in code. However, this may be included in DotNetPackageVersionPropsPath. -->
+    <MicrosoftNETCoreApp21PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <ExternalDependency Include="Microsoft.CSharp" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" TargetFramework="netcoreapp2.1" Source="$(DotNetCoreFeed)" Mirror="true">
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" TargetFramework="netcoreapp2.1" Source="$(DotNetCoreFeed)" Mirror="true">
       <!-- Multiple versions of this package required to support all netcoreapp versions -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftNETCoreApp21PackageVersion</VariableName>
@@ -243,7 +248,7 @@
   <!-- nuget.org -->
   <PropertyGroup>
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.3</MicrosoftNETCoreApp20PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

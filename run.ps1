@@ -32,6 +32,9 @@ The path to the configuration file that stores values. Defaults to korebuild.jso
 .PARAMETER PackageVersionPropsUrl
 (optional) the url of the package versions props path containing dependency versions.
 
+.PARAMETER AssetRootUrl
+(optional) the base url for acquiring build assets from an orchestrated build
+
 .PARAMETER AccessTokenSuffix
 (optional) the query string to append to any blob store access for PackageVersionPropsUrl, if any.
 
@@ -198,7 +201,15 @@ if ($PackageVersionPropsUrl) {
 }
 
 if ($RestoreSources) {
-    $MSBuildArguments = "-p:DotNetRestoreSources=$RestoreSources"
+    $MSBuildArguments += "-p:DotNetRestoreSources=$RestoreSources"
+}
+
+if ($AssetRootUrl) {
+    $MSBuildArguments += "-p:DotNetAssetRootUrl=$AssetRootUrl"
+}
+
+if ($AccessTokenSuffix) {
+    $MSBuildArguments += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
 }
 
 # Execute
