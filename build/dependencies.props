@@ -1,405 +1,209 @@
 ﻿<Project>
+  <PropertyGroup>
+    <BenchmarkDotNetPackageVersion>0.10.9</BenchmarkDotNetPackageVersion>
+    <Benchmarks_11_SystemDataSqlClientPackageVersion>4.3.1</Benchmarks_11_SystemDataSqlClientPackageVersion>
+    <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
+    <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
+    <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
+    <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
+    <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15616</InternalAspNetCoreSdkPackageVersion>
+    <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10202</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>2.1.0-preview1-15616</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
+    <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.2</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
+    <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
+    <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.0.0-preview</MicrosoftAzureServicesAppAuthenticationPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>15.3.409</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildPackageVersion>15.3.409</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildRuntimePackageVersion>15.3.409</MicrosoftBuildRuntimePackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>15.3.409</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.3.409</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.3.1</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisEditorFeaturesPackageVersion>2.3.1</MicrosoftCodeAnalysisEditorFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.3.1</MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <MicrosoftCodeAnalysisFeaturesPackageVersion>2.3.1</MicrosoftCodeAnalysisFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>2.3.1</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisVisualBasicPackageVersion>2.3.1</MicrosoftCodeAnalysisVisualBasicPackageVersion>
+    <MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.3.1</MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.3.1</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCSharpPackageVersion>4.5.0-preview1-25914-04</MicrosoftCSharpPackageVersion>
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-25711-01</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-25711-01</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
+    <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.1</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0-preview2-41113220915</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
+    <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-25915-02</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
+    <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
+    <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
+    <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>
+    <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
+    <MicrosoftVisualStudioCoreUtilityPackageVersion>15.6.161-preview</MicrosoftVisualStudioCoreUtilityPackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.6.161-preview</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioLanguageServicesPackageVersion>2.3.1</MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
+    <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
+    <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
+    <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
+    <MicrosoftVisualStudioShellInterop120PackageVersion>12.0.30110</MicrosoftVisualStudioShellInterop120PackageVersion>
+    <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50727</MicrosoftVisualStudioShellInterop80PackageVersion>
+    <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30729</MicrosoftVisualStudioShellInterop90PackageVersion>
+    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6071</MicrosoftVisualStudioShellInteropPackageVersion>
+    <MicrosoftVisualStudioTextDataPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextDataPackageVersion>
+    <MicrosoftVisualStudioTextLogicPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextLogicPackageVersion>
+    <MicrosoftVisualStudioTextUIPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIPackageVersion>
+    <MicrosoftVisualStudioTextUIWpfPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIWpfPackageVersion>
+    <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
+    <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-25914-04</MicrosoftWin32RegistryPackageVersion>
+    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
+    <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>
+    <NETStandard201PackageVersion>2.0.1</NETStandard201PackageVersion>
+    <NETStandard20PackageVersion>2.0.0</NETStandard20PackageVersion>
+    <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
+    <NuGetFrameworksPackageVersion>4.3.0</NuGetFrameworksPackageVersion>
+    <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
+    <RemotionLinqPackageVersion>2.2.0-alpha-002</RemotionLinqPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-25915-01</RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-25915-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX86MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-25915-01</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
+    <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.8</SQLitePCLRawBundleSqlcipherPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.8</SQLitePCLRawCorePackageVersion>
+    <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
+    <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
+    <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
+    <SystemBuffersExperimentalPackageVersion>0.1.0-alpha-002</SystemBuffersExperimentalPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview1-25914-04</SystemBuffersPackageVersion>
+    <SystemBuffersPrimitivesPackageVersion>0.1.0-alpha-002</SystemBuffersPrimitivesPackageVersion>
+    <SystemCodeDomPackageVersion>4.5.0-preview1-25914-04</SystemCodeDomPackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-25914-04</SystemCollectionsImmutablePackageVersion>
+    <SystemCollectionsSequencesPackageVersion>0.1.0-alpha-002</SystemCollectionsSequencesPackageVersion>
+    <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview1-25914-04</SystemComponentModelAnnotationsPackageVersion>
+    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview1-25914-04</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>1.2.0-preview1-25914-04</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>1.2.0-preview1-25914-04</SystemCompositionHostingPackageVersion>
+    <SystemCompositionPackageVersion>1.2.0-preview1-25914-04</SystemCompositionPackageVersion>
+    <SystemCompositionRuntimePackageVersion>1.2.0-preview1-25914-04</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview1-25914-04</SystemCompositionTypedPartsPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>4.5.0-preview1-25914-04</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.5.0-preview1-25914-04</SystemDataSqlClientPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview1-25914-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
+    <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview1-25914-04</SystemIOFileSystemAccessControlPackageVersion>
+    <SystemIOPackagingPackageVersion>4.5.0-preview1-25914-04</SystemIOPackagingPackageVersion>
+    <SystemIOPipelinesExtensionsPackageVersion>0.1.0-alpha-002</SystemIOPipelinesExtensionsPackageVersion>
+    <SystemIOPipelinesPackageVersion>0.1.0-alpha-002</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesTestingPackageVersion>0.1.0-alpha-002</SystemIOPipelinesTestingPackageVersion>
+    <SystemIOPipelinesTextPrimitivesPackageVersion>0.1.0-alpha-002</SystemIOPipelinesTextPrimitivesPackageVersion>
+    <SystemIOPipesAccessControlPackageVersion>4.5.0-preview1-25914-04</SystemIOPipesAccessControlPackageVersion>
+    <SystemIOPortsPackageVersion>4.5.0-preview1-25914-04</SystemIOPortsPackageVersion>
+    <SystemJsonPackageVersion>4.5.0-preview1-25914-04</SystemJsonPackageVersion>
+    <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview1-25914-04</SystemMemoryPackageVersion>
+    <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
+    <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview1-25914-04</SystemNetHttpWinHttpHandlerPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-25914-04</SystemNumericsVectorsPackageVersion>
+    <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
+    <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview1-25914-04</SystemReflectionDispatchProxyPackageVersion>
+    <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.6.0-preview1-25914-04</SystemReflectionMetadataPackageVersion>
+    <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview1-25914-04</SystemReflectionTypeExtensionsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-25914-04</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
+    <SystemSecurityAccessControlPackageVersion>4.5.0-preview1-25914-04</SystemSecurityAccessControlPackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-25914-04</SystemSecurityCryptographyCngPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>4.5.0-preview1-25914-04</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>4.5.0-preview1-25914-04</SystemSecurityCryptographyProtectedDataPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.5.0-preview1-25914-04</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>4.5.0-preview1-25914-04</SystemSecurityPermissionsPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview1-25914-04</SystemSecurityPrincipalWindowsPackageVersion>
+    <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview1-25914-04</SystemServiceProcessServiceControllerPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>4.5.0-preview1-25914-04</SystemTextEncodingCodePagesPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>4.5.0-preview1-25914-04</SystemTextEncodingsWebPackageVersion>
+    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-alpha-002</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemTextFormattingPackageVersion>0.1.0-alpha-002</SystemTextFormattingPackageVersion>
+    <SystemTextPrimitivesPackageVersion>0.1.0-alpha-002</SystemTextPrimitivesPackageVersion>
+    <SystemTextUtf8StringPackageVersion>0.1.0-alpha-002</SystemTextUtf8StringPackageVersion>
+    <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-25914-04</SystemThreadingAccessControlPackageVersion>
+    <SystemThreadingChannelsPackageVersion>4.5.0-preview1-25914-04</SystemThreadingChannelsPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-25914-04</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-25707-02</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemValueTuplePackageVersion>4.5.0-preview1-25914-04</SystemValueTuplePackageVersion>
+    <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCSharpPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisFeaturesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisFeaturesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisRemoteWorkspacesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisRemoteWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisVisualBasicPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
+    <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
+    <XunitAbstractionsPackageVersion>2.0.1</XunitAbstractionsPackageVersion>
+    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitAssertPackageVersion>2.3.1</XunitAssertPackageVersion>
+    <XunitCorePackageVersion>2.3.1</XunitCorePackageVersion>
+    <XunitExtensibilityCorePackageVersion>2.3.1</XunitExtensibilityCorePackageVersion>
+    <XunitPackageVersion>2.3.1</XunitPackageVersion>
+    <XunitRunnerVisualstudioPackageVersion>2.3.1</XunitRunnerVisualstudioPackageVersion>
+  </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
 
-  <ItemDefinitionGroup>
-    <ExternalDependency>
-      <!-- The NuGet package version. Floating versions not allowed. -->
-      <Version></Version>
-      <!-- Where does this pacakge come from -->
-      <Source></Source>
-      <!-- A list of warnings to suppress. -->
-      <NoWarn></NoWarn>
-      <!-- This dependency is 'Private', aka. it should not end up as a public-facing external dependency. This is validated by checking the nuspec on generated packages. -->
-      <Private>false</Private>
-      <!-- When true, this dependency should be mirrored to aspnetcore's nightly build feeds. -->
-      <Mirror>false</Mirror>
-      <!-- When true, this dependency will be included in the metapackage. -->
-      <Metapackage>false</Metapackage>
-      <!-- When true, this dependency will be included in the runtime store. -->
-      <RuntimeStore>false</RuntimeStore>
-      <!-- When true, this dependency will be used to generate a deps.json for hosting startup that will be included in the runtime store. -->
-      <HostingStartup>false</HostingStartup>
-      <!-- When true, this dependency will be included in the LZMA. -->
-      <LZMA>false</LZMA>
-      <!-- When true, this tool dependency will be included in the metapackage. -->
-      <LZMATools>false</LZMATools>
-    </ExternalDependency>
-  </ItemDefinitionGroup>
-
-  <!-- .NET Core feed -->
   <PropertyGroup>
-    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
-    <CoreSetupPackageVersion>2.1.0-preview1-25915-01</CoreSetupPackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>$(CoreSetupPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
     <!-- We don't set MicrosoftNETCoreAppPackageVersion anywhere in code. However, this may be included in DotNetPackageVersionPropsPath. -->
     <MicrosoftNETCoreApp21PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
   </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.CSharp" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.1.0-preview2-25711-01" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp21PackageVersion)" TargetFramework="netcoreapp2.1" Source="$(DotNetCoreFeed)" Mirror="true">
-      <!-- Multiple versions of this package required to support all netcoreapp versions -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp21PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="2.1.0-preview1-25915-02" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Buffers" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.CodeDom" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Collections.Immutable" Version="1.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.AttributedModel" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Convention" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Hosting" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.Runtime" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition.TypedParts" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Composition" Version="1.2.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Configuration.ConfigurationManager" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true">
-      <!-- This version should be used by runtime packages. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Packaging" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Ports" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Json" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Memory" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Numerics.Vectors" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.Metadata" Version="1.6.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.ProtectedData" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Permissions" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Security.Principal.Windows" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.AccessControl" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Channels" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="4.9.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="4.5.0-preview2-25707-02" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.ValueTuple" Version="4.5.0-preview1-25914-04" Source="$(DotNetCoreFeed)" Mirror="true" />
-  </ItemGroup>
-
-  <!-- CoreFX labs -->
-  <PropertyGroup>
-    <CoreFxLabFeed>https://dotnet.myget.org/f/dotnet-corefxlab/api/v3/index.json</CoreFxLabFeed>
-    <CoreFxLabVersion>0.1.0-alpha-002</CoreFxLabVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="System.Buffers.Experimental" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Buffers.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Collections.Sequences" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Extensions" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Text.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Testing" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Formatting" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Text.Primitives" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Text.Utf8String" Version="$(CoreFxLabVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-  </ItemGroup>
-
-  <!-- Roslyn -->
-  <PropertyGroup>
-    <RoslynFeed>https://dotnet.myget.org/F/roslyn/api/v3/index.json</RoslynFeed>
-    <RoslynDevPackageVersion>2.6.0-beta1-62023-02</RoslynDevPackageVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <!-- The consume compiler used by Kestrel. -->
-    <ExternalDependency Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta2-62211-02" Source="$(RoslynFeed)" Private="true" Mirror="true" />
-
-    <!-- These versions of roslyn must be used when building a VSIX. -->
-    <!-- Suppress KRB2004 because this version differs from the version used by the runtime. -->
-    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisCommonPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisCSharpPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisFeaturesPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftCodeAnalysisRemoteWorkspacesPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion</VariableName>
-    </ExternalDependency>
-  </ItemGroup>
-
-  <!-- ASP.NET Core Tools feed -->
-  <PropertyGroup>
-    <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
-    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
-  </ItemGroup>
-
-  <!-- ASP.NET Core Module -->
-  <PropertyGroup>
-    <AspNetCoreModuleFeed>https://dotnet.myget.org/F/aspnetcoremodule/api/v3/index.json</AspNetCoreModuleFeed>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10223" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
-  </ItemGroup>
-
-  <!-- VS SDK -->
-  <PropertyGroup>
-    <VSSDKFeed>https://vside.myget.org/F/vssdk/api/v3/index.json</VSSDKFeed>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.VisualStudio.CoreUtility" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.Data" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.Logic" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI.Wpf" version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.6.161-preview" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
-  </ItemGroup>
-
-  <!-- nuget.org -->
-  <PropertyGroup>
-    <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.3</MicrosoftNETCoreApp20PackageVersion>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="BuildBundlerMinifier" Version="2.4.337" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="BenchmarkDotNet" Version="0.10.9" Source="$(DefaultNuGetFeed)" Private="true"/>
-    <ExternalDependency Include="EntityFramework" Version="6.1.3" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="FSharp.NET.Sdk" Version="1.0.5" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Google.Protobuf" Version="3.1.0" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Libuv" Version="1.10.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="2.3.2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="1.1.3" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.0-preview" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Framework" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Runtime" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build" Version="15.3.409" Source="$(DefaultNuGetFeed)" />
-
-    <!-- Razor uses a custom version of roslyn packages -->
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Features" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="2.3.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.0-preview2-41113220915" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="1.0.5" TargetFramework="netcoreapp1.0" Source="$(DefaultNuGetFeed)">
-      <!-- Multiple versions of this package required to support all netcoreapp versions -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp10PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="1.1.2" TargetFramework="netcoreapp1.1" Source="$(DefaultNuGetFeed)">
-      <!-- Multiple versions of this package required to support all netcoreapp versions -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp11PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" TargetFramework="netcoreapp2.0" Source="$(DefaultNuGetFeed)">
-      <!-- Multiple versions of this package required to support all netcoreapp versions -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>MicrosoftNETCoreApp20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="1.0.0-rc3-003121" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="3.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Owin.Security" Version="3.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Owin.Testing" Version="3.0.1" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.Owin" Version="3.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true">
-      <!-- This version should be used by runtime packages -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.Web.Administration" Version="7.0.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Mono.Addins" Version="1.3.7" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="MsgPack.Cli" Version="0.9.0-beta2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="NETStandard.Library" Version="1.6.1" Source="$(DefaultNuGetFeed)">
-      <!-- netstandard1.x -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandard16PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
-      <!-- netstandard2.0 -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandard20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
-      <!-- netstandard2.0.1 -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandard201PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)">
-      <!-- This version is used by runtime packages. -->
-      <NoWarn>KRB2004</NoWarn>
-    </ExternalDependency>
-    <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)">
-      <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NuGet.Frameworks" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Oracle.ManagedDataAccess" Version="12.2.1100" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Remotion.Linq" Version="2.2.0-alpha-002" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Serilog.Sinks.File" Version="3.2.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="1.1.8" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="1.1.8" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="SQLitePCLRaw.core" Version="1.1.8" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="StackExchange.Redis.StrongName" Version="1.2.4" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="StreamJsonRpc" Version="1.1.92" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="StyleCop.Analyzers" Version="1.0.0" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.3.1" Source="$(DefaultNuGetFeed)" Private="true">
-      <!-- This version is used by EF's 1.1 benchmark project -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>Benchmarks_11_SystemDataSqlClientPackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="System.Interactive.Async" Version="3.1.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Management.Automation" Version="6.1.7601.17515" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Net.Http" Version="4.3.2" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Reactive.Linq" Version="3.1.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Reflection.Emit" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="WindowsAzure.Storage" Version="8.1.4" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.analyzers" Version="0.8.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.assert" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.core" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.extensibility.core" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.1" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="xunit" Version="2.3.1" Source="$(DefaultNuGetFeed)" />
-  </ItemGroup>
-
 </Project>
