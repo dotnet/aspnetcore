@@ -202,18 +202,18 @@
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)" Private="true"/>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
       <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandardImplicitPackageVersion</VariableName>
       <TargetFramework>netstandard2.0</TargetFramework>
     </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
       <!-- We have a dependency on NS.Library from the .NET Framework tfm in aspnet/EventNotification. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandardLibraryPackageVersion</VariableName>
       <TargetFramework>net461</TargetFramework>
     </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)">
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
       <!-- We have a dependency on NS.Library from a few .NET Framework packages in aspnet/Razor. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandardLibraryPackageVersion</VariableName>

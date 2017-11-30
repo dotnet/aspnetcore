@@ -5,6 +5,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <EnableApiCheck>false</EnableApiCheck>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <DotnetCliToolTargetFramework>netcoreapp2.0</DotnetCliToolTargetFramework>
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
     <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;</RestoreSources>
@@ -19,5 +21,9 @@
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)"/>
+  </ItemGroup>
 
 </Project>
