@@ -78,6 +78,7 @@ param(
     [string]$PackageVersionPropsUrl = $null,
     [string]$AccessTokenSuffix = $null,
     [string]$RestoreSources = $null,
+    [string]$AssetRootUrl = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
 )
