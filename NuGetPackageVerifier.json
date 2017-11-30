@@ -4,7 +4,8 @@
             "AdxVerificationCompositeRule"
         ],
         "packages": {
-          "Microsoft.AspNetCore.AzureAppServicesIntegration": { }
+          "Microsoft.AspNetCore.AzureAppServicesIntegration": { },
+          "Microsoft.Extensions.ApplicationModelDetection": { }
         }
     },
     "Default": { // Rules to run for packages not listed in any other set.
