@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 using Moq;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -11,11 +13,20 @@ namespace Microsoft.AspNetCore.Mvc
     {
         public static Stream GetThrowingStream()
         {
-            var mock = new Mock<Stream>();
-            mock.Verify(m => m.Flush(), Times.Never());
-            mock.Verify(m => m.FlushAsync(It.IsAny<CancellationToken>()), Times.Never());
+            return new NonFlushingStream();
+        }
 
-            return mock.Object;
+        private class NonFlushingStream : MemoryStream
+        {
+            public override void Flush()
+            {
+                throw new InvalidOperationException("Flush should not have been called.");
+            }
+
+            public override Task FlushAsync(CancellationToken cancellationToken)
+            {
+                throw new InvalidOperationException("FlushAsync should not have been called.");
+            }
         }
     }
 }

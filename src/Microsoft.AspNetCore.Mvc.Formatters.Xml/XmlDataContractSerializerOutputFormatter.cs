@@ -203,6 +203,26 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             return XmlWriter.Create(writer, xmlWriterSettings);
         }
 
+        /// <summary>
+        /// Creates a new instance of <see cref="XmlWriter"/> using the given <see cref="TextWriter"/> and
+        /// <see cref="XmlWriterSettings"/>.
+        /// </summary>
+        /// <param name="context">The formatter context associated with the call.</param>
+        /// <param name="writer">
+        /// The underlying <see cref="TextWriter"/> which the <see cref="XmlWriter"/> should write to.
+        /// </param>
+        /// <param name="xmlWriterSettings">
+        /// The <see cref="XmlWriterSettings"/>.
+        /// </param>
+        /// <returns>A new instance of <see cref="XmlWriter"/>.</returns>
+        public virtual XmlWriter CreateXmlWriter(
+            OutputFormatterWriteContext context,
+            TextWriter writer,
+            XmlWriterSettings xmlWriterSettings)
+        {
+            return CreateXmlWriter(writer, xmlWriterSettings);
+        }
+
         /// <inheritdoc />
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
@@ -235,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             using (var textWriter = context.WriterFactory(context.HttpContext.Response.Body, writerSettings.Encoding))
             {
-                using (var xmlWriter = CreateXmlWriter(textWriter, writerSettings))
+                using (var xmlWriter = CreateXmlWriter(context, textWriter, writerSettings))
                 {
                     dataContractSerializer.WriteObject(xmlWriter, value);
                 }

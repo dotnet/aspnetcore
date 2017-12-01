@@ -682,6 +682,42 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.False(canWriteResult);
         }
 
+        public static TheoryData<bool, object, string> CanIndentOutputConditionallyData
+        {
+            get
+            {
+                var obj = new DummyClass { SampleInt = 10 };
+                var newLine = Environment.NewLine;
+                return new TheoryData<bool, object, string>()
+                {
+                    { true, obj, "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                    $"{newLine}  <SampleInt>10</SampleInt>{newLine}</DummyClass>" },
+                    { false, obj, "<DummyClass xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\">" +
+                        "<SampleInt>10</SampleInt></DummyClass>" }
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(CanIndentOutputConditionallyData))]
+        public async Task CanIndentOutputConditionally(bool indent, object input, string expectedOutput)
+        {
+            // Arrange
+            var formatter = new IndentingXmlDataContractSerializerOutputFormatter();
+            var outputFormatterContext = GetOutputFormatterContext(input, input.GetType());
+            outputFormatterContext.HttpContext.Request.QueryString = new QueryString("?indent=" + indent);
+
+            // Act
+            await formatter.WriteAsync(outputFormatterContext);
+
+            // Assert
+            var body = outputFormatterContext.HttpContext.Response.Body;
+            body.Position = 0;
+
+            var content = new StreamReader(body).ReadToEnd();
+            Assert.Equal(expectedOutput, content);
+        }
+
         private OutputFormatterWriteContext GetOutputFormatterContext(
             object outputValue,
             Type outputType,
@@ -696,20 +732,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
         private static HttpContext GetHttpContext(string contentType)
         {
-            var request = new Mock<HttpRequest>();
-
-            var headers = new HeaderDictionary();
-            headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset.ToString();
-            request.Setup(r => r.ContentType).Returns(contentType);
-            request.SetupGet(r => r.Headers).Returns(headers);
-
-            var response = new Mock<HttpResponse>();
-            response.SetupGet(f => f.Body).Returns(new MemoryStream());
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext.SetupGet(c => c.Request).Returns(request.Object);
-            httpContext.SetupGet(c => c.Response).Returns(response.Object);
-            return httpContext.Object;
+            var httpContext = new DefaultHttpContext();
+            var request = httpContext.Request;
+            request.Headers["Accept-Charset"] = MediaTypeHeaderValue.Parse(contentType).Charset.ToString();
+            request.ContentType = contentType;
+            httpContext.Response.Body = new MemoryStream();
+            return httpContext;
         }
 
         private class TestXmlDataContractSerializerOutputFormatter : XmlDataContractSerializerOutputFormatter
@@ -723,6 +751,22 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             }
         }
 
+        private class IndentingXmlDataContractSerializerOutputFormatter : XmlDataContractSerializerOutputFormatter
+        {
+            public override XmlWriter CreateXmlWriter(
+                OutputFormatterWriteContext context,
+                TextWriter writer,
+                XmlWriterSettings xmlWriterSettings)
+            {
+                var request = context.HttpContext.Request;
+                if (request.Query["indent"] == "True")
+                {
+                    xmlWriterSettings.Indent = true;
+                }
+
+                return base.CreateXmlWriter(context, writer, xmlWriterSettings);
+            }
+        }
         public class Customer
         {
             public Customer(int id)
