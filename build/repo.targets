@@ -4,12 +4,21 @@
       <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
       <AppsArtifactDirectory>$(RepositoryRoot)artifacts\apps</AppsArtifactDirectory>
       <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
-      <SiteExtensionProjectDirectory>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\</SiteExtensionProjectDirectory>
+      <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\extensions</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
       <DotnetChannel>master</DotnetChannel>
       <DotnetVersion>coherent</DotnetVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <SiteExtensions Include="AspNetCoreTestBundle">
+      <Project>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj</Project>
+    </SiteExtensions>
+    <SiteExtensions Include="AspNetCoreRuntime">
+      <Project>$(RepositoryRoot)src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj</Project>
+    </SiteExtensions>
+  </ItemGroup>
 
   <Target Name="_AddTestRuntimes">
     <ItemGroup>
@@ -25,10 +34,6 @@
   </Target>
 
   <Target Name="BuildSiteExtension" DependsOnTargets="_AddSiteExtensionRuntimes;InstallDotNet">
-
-    <PropertyGroup>
-      <CliVersionRelativePath>build\dotnet.version</CliVersionRelativePath>
-    </PropertyGroup>
     <ItemGroup>
       <RuntimeArchiveItems Include="$(RuntimeArchives)" />
       <DotNetCacheArchiveItems Include="$(DotNetCacheArchives)" />
@@ -37,15 +42,15 @@
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
-    <MSBuild Projects="$(SiteExtensionProjectDirectory)Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj"
+    <MSBuild Projects="%(SiteExtensions.Project)"
       Targets="Restore;Pack"
-      Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber)" />
+      Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
 
   </Target>
 
   <Target Name="PushSiteExtension">
     <ItemGroup>
-      <RepositoryNupkgs Include="$(SiteExtensionProjectDirectory)bin\$(Configuration)\*.nupkg" />
+      <RepositoryNupkgs Include="$(SiteExtensionOutputDirectory)\%(SiteExtensions.Identity).*.nupkg" />
     </ItemGroup>
 
     <PushNuGetPackages
@@ -69,12 +74,13 @@
 
   </Target>
 
-  <!--
-   git deploy creates read-only files which msbuild is unable to remove
-   NOTE: we run tests only on windows
-   -->
   <Target Name="CleanArtifactsApplications" BeforeTargets="CleanArtifacts" >
+    <!--
+      git deploy creates read-only files which msbuild is unable to remove
+      NOTE: we run tests only on windows
+    -->
     <Exec Command="rmdir /S /Q &quot;$(AppsArtifactDirectory)&quot;" Condition="Exists($(AppsArtifactDirectory))" />
+    <RemoveDir Directories="$(SiteExtensionOutputDirectory)" Condition="Exists($(SiteExtensionOutputDirectory))" />
   </Target>
 
 </Project>

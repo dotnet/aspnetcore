@@ -1,6 +1,6 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27016.1
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{5916BEB5-0969-469B-976C-A392E015DFAC}"
 EndProject
@@ -11,9 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FF9B744E-6C5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2FFE2B87-BF8A-4B38-ADAB-2FE2F9BC4A7C}"
 	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
-		build\dependencies.props = build\dependencies.props
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
@@ -46,13 +46,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureA
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.TestBundle", "src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj", "{1EC31DA1-131D-4257-B001-BE8391E6077E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Web.Xdt.Extensions.Tests", "test\Microsoft.Web.Xdt.Extensions.Tests\Microsoft.Web.Xdt.Extensions.Tests.csproj", "{809AEE05-1B28-4E31-8959-776B249BD725}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions.Tests", "test\Microsoft.Web.Xdt.Extensions.Tests\Microsoft.Web.Xdt.Extensions.Tests.csproj", "{809AEE05-1B28-4E31-8959-776B249BD725}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests", "test\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests.csproj", "{491A857A-3529-4375-985D-D748F9F01476}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests", "test\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests.csproj", "{491A857A-3529-4375-985D-D748F9F01476}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.ApplicationModelDetection", "src\Microsoft.Extensions.ApplicationModelDetection\Microsoft.Extensions.ApplicationModelDetection.csproj", "{F0CABFE8-A5B1-487B-A451-A486D26742D3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Extensions.ApplicationModelDetection.Tests", "test\Microsoft.Extensions.ApplicationModelDetection.Tests\Microsoft.Extensions.ApplicationModelDetection.Tests.csproj", "{15664836-2B94-4D2D-AC18-6DED01FCCCBD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Runtime.SiteExtension", "src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj", "{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -124,6 +126,10 @@ Global
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -145,6 +151,7 @@ Global
 		{491A857A-3529-4375-985D-D748F9F01476} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
+		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5743DFE7-1AA5-439D-84AE-A480EA389927}

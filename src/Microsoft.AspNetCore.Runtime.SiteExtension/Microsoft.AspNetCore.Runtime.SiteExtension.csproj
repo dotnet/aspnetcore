@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>ASP.NET Core Runtime Extensions</Title>
+    <TargetFramework>net461</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;AzureSiteExtension</PackageTags>
+    <PackageType>AzureSiteExtension</PackageType>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeSource>false</IncludeSource>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <PackageId>Microsoft.AspNetCore.Runtime.SiteExtension</PackageId>
+    <!-- These need to be set manually because this is not marked as a shipping (to nuget.org) package. https://github.com/aspnet/AzureIntegration/issues/38 -->
+    <PackageLicenseUrl>https://github.com/aspnet/AzureIntegration/blob/rel/2.0.0-preview1/LICENSE.txt</PackageLicenseUrl>
+    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
+    <PackageProjectUrl>https://www.asp.net/</PackageProjectUrl>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="applicationHost.xdt" />
+    <Content Include="install.cmd" />
+    <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
+    <Content Include="$(AspNetCoreModuleX86Location)" PackagePath="content\ancm\x86" />
+    <Content Include="$(AspNetCoreModuleX64Location)" PackagePath="content\ancm\x64" />
+
+    <Content Include="$(DotnetHomeDirectory)**\*.*" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
+
