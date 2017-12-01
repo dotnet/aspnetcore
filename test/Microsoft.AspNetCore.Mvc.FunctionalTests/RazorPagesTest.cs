@@ -292,6 +292,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task PageHandlerCanReturnBadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost/Pages/HandlerWithParameter");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+            Assert.Equal("Parameter cannot be null.", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task HelloWorld_CanGetContent()
         {
             // Arrange

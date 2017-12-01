@@ -1487,6 +1487,35 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         [Fact]
+        public void BadRequest_SetsStatusCode()
+        {
+            // Arrange
+            var page = new TestPage();
+
+            // Act
+            var result = page.BadRequest();
+
+            // Assert
+            Assert.IsType<BadRequestResult>(result);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public void BadRequest_SetsStatusCodeAndResponseContent()
+        {
+            // Arrange
+            var page = new TestPage();
+
+            // Act
+            var result = page.BadRequest("Test Content");
+
+            // Assert
+            Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
+            Assert.Equal("Test Content", result.Value);
+        }
+
+        [Fact]
         public void NotFound_SetsStatusCode()
         {
             // Arrange

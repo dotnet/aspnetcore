@@ -1750,7 +1750,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
-        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
@@ -1787,7 +1787,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
         /// </summary>
-        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual UnprocessableEntityObjectResult UnprocessableEntity(ModelStateDictionary modelState)
@@ -1820,7 +1820,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
         /// </summary>
-        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
+        /// <param name="modelState">The <see cref="ModelStateDictionary" /> containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual ConflictObjectResult Conflict(ModelStateDictionary modelState)
