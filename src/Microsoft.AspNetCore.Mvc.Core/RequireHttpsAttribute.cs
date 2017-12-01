@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public int Order { get; set; }
+        /// <value>Default is <c>int.MinValue + 50</c> to run this <see cref="IAuthorizationFilter"/> early.</value>
+        public int Order { get; set; } = int.MinValue + 50;
 
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized. Confirms requests are received over
