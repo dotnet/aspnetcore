@@ -96,7 +96,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     Resources.FormatTempDataProperties_PublicGetterSetter(property.DeclaringType.FullName, property.Name, nameof(TempDataAttribute)));
             }
 
-            if (!(property.PropertyType.GetTypeInfo().IsPrimitive || property.PropertyType == typeof(string)))
+            var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+
+            if (!(propertyType.GetTypeInfo().IsPrimitive || propertyType == typeof(string)))
             {
                 throw new InvalidOperationException(
                     Resources.FormatTempDataProperties_PrimitiveTypeOrString(property.DeclaringType.FullName, property.Name, nameof(TempDataAttribute)));

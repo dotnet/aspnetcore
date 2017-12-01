@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             => string.Format(CultureInfo.CurrentCulture, GetString("ViewEnginesAreRequired"), p0, p1, p2);
 
         /// <summary>
-        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be of primitive or string type.
+        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be a primitive or string type.
         /// </summary>
         internal static string TempDataProperties_PrimitiveTypeOrString
         {
@@ -803,7 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be of primitive or string type.
+        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be a primitive or string type.
         /// </summary>
         internal static string FormatTempDataProperties_PrimitiveTypeOrString(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("TempDataProperties_PrimitiveTypeOrString"), p0, p1, p2);

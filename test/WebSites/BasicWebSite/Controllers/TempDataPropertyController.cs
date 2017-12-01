@@ -13,10 +13,14 @@ namespace BasicWebSite.Controllers
         [TempData]
         public string Message { get; set; }
 
+        [TempData]
+        public int? NullableInt { get; set; }
+
         [HttpPost]
         public IActionResult CreateForView(Person person)
         {
             Message = "Success (from Temp Data)";
+            NullableInt = 100;
             return RedirectToAction("DetailsView", person);
         }
 
@@ -24,35 +28,38 @@ namespace BasicWebSite.Controllers
         public IActionResult Create(Person person)
         {
             Message = "Success (from Temp Data)";
+            NullableInt = 100;
             return RedirectToAction("Details", person);
         }
 
         public IActionResult DetailsView(Person person)
         {
             ViewData["Message"] = Message;
+            ViewData["NullableInt"] = NullableInt;
             return View(person);
         }
 
         public string Details(Person person)
         {
-            return $"{Message} for person {person.FullName} with id {person.id}.";
+            return $"{Message}{NullableInt} for person {person.FullName} with id {person.id}.";
         }
 
         public StatusCodeResult CreateNoRedirect(Person person)
         {
             Message = "Success (from Temp Data)";
+            NullableInt = 100;
             return new OkResult();
         }
 
         public string TempDataKept()
         {
             TempData.Keep();
-            return Message;
+            return Message + NullableInt;
         }
 
         public string ReadTempData()
         {
-            return Message;
+            return Message + NullableInt;
         }
     }
 }
