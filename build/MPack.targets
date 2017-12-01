@@ -24,7 +24,7 @@
       <MPackSourcesDir>$(MSBuildArtifactsDir)sources\</MPackSourcesDir>
       <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net461\</AddinOutputPath>
       <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
-      <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net46\</LanguageServiceOutputPath>
+      <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net461\</LanguageServiceOutputPath>
       <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
       <MPackFileName>$(MPackName).mpack</MPackFileName>
       <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
@@ -40,6 +40,11 @@
       <Output TaskParameter="Result" ItemName="LanguageServiceAssemblies" />
     </XmlPeek>
 
+    <!-- We need to resolve the addin dependencies to generate an addin.info for the mpack -->
+    <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Dependencies/Addin">
+      <Output TaskParameter="Result" ItemName="AddinDependencies" />
+    </XmlPeek>
+
     <ItemGroup>
       <AddinInfoLines Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
       <AddinInfoLines Include="  &lt;Runtime&gt;" />
@@ -47,6 +52,7 @@
       <AddinInfoLines Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
       <AddinInfoLines Include="  &lt;/Runtime&gt;" />
       <AddinInfoLines Include="  &lt;Dependencies&gt;" />
+      <AddinInfoLines Include="    %(AddinDependencies.Identity)" />
       <AddinInfoLines Include="  &lt;/Dependencies&gt;" />
       <AddinInfoLines Include="&lt;/Addin&gt;" />
     </ItemGroup>

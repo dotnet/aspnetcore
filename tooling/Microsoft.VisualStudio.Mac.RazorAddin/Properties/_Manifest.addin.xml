@@ -7,9 +7,17 @@
     <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
     <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     <Import assembly="Microsoft.CodeAnalysis.Razor.dll" />
-    <Import assembly="Microsoft.CodeAnalysis.CSharp.dll" />
     <Import assembly="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />
   </Runtime>
   <Dependencies>
+    <Addin id="::MonoDevelop.Core" version="7.4" />
+    <Addin id="::MonoDevelop.Ide" version="7.4" />
   </Dependencies>
+  
+  <!-- MEF catalog -->
+  <Extension path="/MonoDevelop/Ide/Composition">
+    <Assembly file="Microsoft.VisualStudio.Editor.Razor.dll" />
+    <Assembly file="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Assembly file="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />
+  </Extension> 
 </ExtensionModel>

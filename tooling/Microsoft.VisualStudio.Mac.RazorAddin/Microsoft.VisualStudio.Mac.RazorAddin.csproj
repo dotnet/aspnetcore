@@ -23,6 +23,14 @@
     <AssemblyAttribute Include="Mono.Addins.AddinAuthorAttribute">
       <_Parameter1>$(Authors)</_Parameter1>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
+      <_Parameter1>::MonoDevelop.Ide</_Parameter1>
+      <_Parameter2>7.4</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDependencyAttribute">
+      <_Parameter1>::MonoDevelop.Core</_Parameter1>
+      <_Parameter2>7.4</_Parameter2>
+    </AssemblyAttribute>
     </ItemGroup>
 
   <ItemGroup>

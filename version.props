@@ -6,10 +6,13 @@
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <!-- VS for Mac does not like letters in package versions -->
+    <AddinBuildNumber Condition="'$(BuildNumber)' == 't000'">99999</AddinBuildNumber>
+    <AddinBuildNumber Condition="'$(AddinBuildNumber)' == ''">$(BuildNumber)</AddinBuildNumber>
+    
     
     <!-- Properties for VS for Mac addin -->
     <VSForMacVersion>7.0</VSForMacVersion>
-    <AddinVersion Condition="'$(BuildNumber)'!=''">$(VSForMacVersion).$(BuildNumber)</AddinVersion>
-    <AddinVersion Condition="'$(BuildNumber)'==''">$(VSForMacVersion).999999</AddinVersion>
+    <AddinVersion>$(VSForMacVersion).$(AddinBuildNumber)</AddinVersion>
   </PropertyGroup>
 </Project>
