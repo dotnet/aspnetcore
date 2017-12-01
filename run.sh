@@ -183,7 +183,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         --restore-sources|-RestoreSources)
             shift
-            resourceSources="${1:-}"
+            restore_sources="${1:-}"
             [ -z "$restore_sources" ] && __usage
             ;;
         -u|--update|-Update)
@@ -242,7 +242,7 @@ if [ "$package_version_props_url" ]; then
 fi
 
 if [ "$restore_sources" ]; then
-    msbuild_args+="-p:DotNetRestoreSources=\"$restore_sources\" "
+    msbuild_args+="-p:DotNetAdditionalRestoreSources=\"$restore_sources\" "
 fi
 
 [ -z "$channel" ] && channel='dev'

@@ -202,7 +202,7 @@ if ($PackageVersionPropsUrl) {
 }
 
 if ($RestoreSources) {
-    $MSBuildArguments += "-p:DotNetRestoreSources=$RestoreSources"
+    $MSBuildArguments += "-p:DotNetAdditionalRestoreSources=$RestoreSources"
 }
 
 if ($AssetRootUrl) {
