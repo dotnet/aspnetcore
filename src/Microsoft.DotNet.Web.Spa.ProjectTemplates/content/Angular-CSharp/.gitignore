@@ -183,8 +183,6 @@ orleans.codegen.cs
 
 /node_modules
 
-/yarn.lock
-
 # RIA/Silverlight projects
 Generated_Code/
 
