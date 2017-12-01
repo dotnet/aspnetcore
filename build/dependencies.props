@@ -75,6 +75,7 @@
     <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-25914-04</MicrosoftWin32RegistryPackageVersion>
     <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MonoDevelopSdkPackageVersion>1.0.0</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
     <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>

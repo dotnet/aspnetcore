@@ -223,6 +223,13 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" Source="$(VSSDKFeed)" Private="true" Mirror="true" />
   </ItemGroup>
+  <!-- VS for Mac -->
+  <PropertyGroup>
+    <VSForMacFeed>https://vside.myget.org/F/vsmac/api/v3/index.json</VSForMacFeed>
+  </PropertyGroup>
+  <ItemGroup>
+    <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" Source="$(VSForMacFeed)" Private="true" Mirror="true" />
+  </ItemGroup>
   <!-- nuget.org -->
   <PropertyGroup>
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
