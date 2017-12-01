@@ -16,4 +16,4 @@ environment:
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 test: off
 deploy: off
-image: Previous Visual Studio 2017
+image: Visual Studio 2017
