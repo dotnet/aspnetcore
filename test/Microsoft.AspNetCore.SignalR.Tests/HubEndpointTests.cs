@@ -11,6 +11,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
@@ -496,6 +497,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var result = (await client.InvokeAsync(nameof(MethodHub.VoidMethod)).OrTimeout()).Result;
 
                 Assert.Null(result);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task HubMethodCanBeRenamedWithAttribute()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = (await client.InvokeAsync("RenamedMethod").OrTimeout()).Result;
+
+                // json serializer makes this a long
+                Assert.Equal(43L, result);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task HubMethodNameAttributeIsInherited()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = (await client.InvokeAsync("RenamedVirtualMethod").OrTimeout()).Result;
+
+                // json serializer makes this a long
+                Assert.Equal(34L, result);
 
                 // kill the connection
                 client.Dispose();
@@ -1747,6 +1794,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return 43;
             }
 
+            [HubMethodName("RenamedMethod")]
+            public int ATestMethodThatIsRenamedByTheAttribute()
+            {
+                return 43;
+            }
+
             public string Echo(string data)
             {
                 return data;
@@ -1807,6 +1860,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 return num - 10;
             }
+
+            public override int VirtualMethodRenamed()
+            {
+                return 34;
+            }
         }
 
         private class BaseHub : TestHub
@@ -1819,6 +1877,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public virtual int VirtualMethod(int num)
             {
                 return num;
+            }
+
+            [HubMethodName("RenamedVirtualMethod")]
+            public virtual int VirtualMethodRenamed()
+            {
+                return 43;
             }
         }
 

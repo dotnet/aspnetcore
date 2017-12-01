@@ -598,7 +598,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
-                var methodName = methodInfo.Name;
+                var methodName =
+                    methodInfo.GetCustomAttribute<HubMethodNameAttribute>()?.Name ??
+                    methodInfo.Name;
 
                 if (_methods.ContainsKey(methodName))
                 {
