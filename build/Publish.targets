@@ -30,7 +30,7 @@
       <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
       <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
 
-      <FilesToPublish Include="$(CoherenceSignedDestinationDir)store\*.zip" />
+      <FilesToPublish Include="$(CoherenceSignedDestinationDir)SharedFx\*.zip" />
       <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(FileRelativePathBase)/%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>

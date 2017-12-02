@@ -9,7 +9,7 @@
   <PropertyGroup>
     <PrepareDependsOn>$(PrepareDependsOn);ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
-    <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedRuntimeStoreBinaries</VerifyDependsOn>
+    <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedSharedFxBinaries</VerifyDependsOn>
     <PublishDependsOn>Build;RunVSDrop;$(PublishDependsOn);PushNuGetPackages;PushNPMPackages</PublishDependsOn>
     <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetFilesToPublish</GetArtifactInfoDependsOn>
   </PropertyGroup>

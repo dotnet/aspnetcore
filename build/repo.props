@@ -13,7 +13,7 @@
     <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
-    <RuntimeStoreOutputPath>$(ArtifactsDir)Signed\Store\</RuntimeStoreOutputPath>
+    <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
 
@@ -22,7 +22,7 @@
     <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
     <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
     <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
-    <UnsignedRuntimeStorePath>$(IntermediateOutputPath)RS\</UnsignedRuntimeStorePath>
+    <UnsignedSharedFxPath>$(IntermediateOutputPath)SharedFx\</UnsignedSharedFxPath>
     <SignedAllMetapackagePath>$(IntermediateOutputPath)SignedAllMetapackage\</SignedAllMetapackagePath>
     <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
     <UnsignedBinariesPath>$(IntermediateOutputPath)FilesToSign\</UnsignedBinariesPath>

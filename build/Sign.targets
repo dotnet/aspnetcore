@@ -5,7 +5,7 @@
       SignFiles;
       RebuildPackages;
       RebuildVSIXes;
-      RebuildRuntimeStores;
+      RebuildSharedFxs;
     </SignDependsOn>
   </PropertyGroup>
 
@@ -29,22 +29,22 @@
 
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
-      <RuntimeStoreBinaries Include="
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\system.*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
+      <SharedFxBinaries Include="
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\microsoft.*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\system.*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
 
-      <RuntimeStoreThirdPartyBinaries Include="
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\remotion*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\serilog*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
-        $(UnsignedRuntimeStorePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
+      <SharedFxThirdPartyBinaries Include="
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\remotion*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\serilog*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
+        $(UnsignedSharedFxPath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
 
-      <UnaccountedRuntimeStoreBinaries Include="$(UnsignedRuntimeStorePath)**\*.dll" Exclude="@(RuntimeStoreBinaries);@(RuntimeStoreThirdPartyBinaries)"/>
+      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
     </ItemGroup>
 
-    <Error Text="Additional binaries found in the runtime store which are not marked for signing: @(UnaccountedRuntimeStoreBinaries)" Condition="'@(UnaccountedRuntimeStoreBinaries)'!=''"/>
+    <Error Text="Additional binaries found in the aspnetcore shared framework which are not marked for signing: @(UnaccountedSharedFxBinaries)" Condition="'@(UnaccountedSharedFxBinaries)'!=''"/>
   </Target>
 
   <Target Name="SignFiles">
@@ -68,19 +68,19 @@
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(BinaryCodeSignCertificate);
-          JobName=RuntimeStoreBinaries;
+          JobName=SharedFxBinaries;
           Description=Signing AspNetCore Package Cache binaries;
-          Files=@(RuntimeStoreBinaries)
+          Files=@(SharedFxBinaries)
         </AdditionalProperties>
       </_SignProject>
 
-      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(RuntimeStoreThirdPartyBinaries)'!=''" >
+      <_SignProject Include="$(MSBuildProjectFullPath)" Condition="'@(SharedFxThirdPartyBinaries)'!=''" >
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
           Certificate=$(ThirdParthCodeSignCertificate);
           JobName=ThirdPartyBinaries;
           Description=Signing third party binaries;
-          Files=@(RuntimeStoreThirdPartyBinaries)
+          Files=@(SharedFxThirdPartyBinaries)
         </AdditionalProperties>
       </_SignProject>
     </ItemGroup>
@@ -189,26 +189,26 @@
     <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
   </Target>
 
-  <!-- Repacks RuntimeStore -->
-  <Target Name="RebuildRuntimeStores">
-    <MakeDir Directories="$(RuntimeStoreOutputPath)" />
+  <!-- Repacks aspnetcore shared framework -->
+  <Target Name="RebuildSharedFxs">
+    <MakeDir Directories="$(SharedFxOutputPath)" />
 
     <ItemGroup>
-      <RuntimeStoresFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedRuntimeStorePath)&quot;))" />
+      <SharedFxFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedSharedFxPath)&quot;))" />
     </ItemGroup>
 
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
-      Properties="RuntimeStoreFile=%(RuntimeStoresFiles.Identity);OutDir=$(RuntimeStoreOutputPath)"
-      Targets="RebuildRuntimeStore"/>
+      Properties="SharedFxFile=%(SharedFxFiles.Identity);OutDir=$(SharedFxOutputPath)"
+      Targets="RebuildSharedFx"/>
   </Target>
 
-  <Target Name="RebuildRuntimeStore">
+  <Target Name="RebuildSharedFx">
     <PropertyGroup>
-      <WorkingDir>$(RuntimeStoreFile)</WorkingDir>
-      <RuntimeStoreName>$([System.IO.Path]::GetFileName($(RuntimeStoreFile)))</RuntimeStoreName>
-      <CreateTarGzip Condition="$(RuntimeStoreName.Contains('osx')) or $(RuntimeStoreName.Contains('linux'))">true</CreateTarGzip>
-      <OutputFile>$(OutDir)$(RuntimeStoreName)</OutputFile>
+      <WorkingDir>$(SharedFxFile)</WorkingDir>
+      <SharedFxName>$([System.IO.Path]::GetFileName($(SharedFxFile)))</SharedFxName>
+      <CreateTarGzip Condition="$(SharedFxName.Contains('osx')) or $(SharedFxName.Contains('linux'))">true</CreateTarGzip>
+      <OutputFile>$(OutDir)$(SharedFxName)</OutputFile>
 
       <OutputFile Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
       <OutputFile Condition="'$(CreateTarGzip)'!='true'">$(OutputFile).zip</OutputFile>

@@ -9,25 +9,21 @@
       <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\Microsoft.Data.Sqlite*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
-      <UnsignedRuntimeStores Include="$(DepsDirectory)store\*.zip" />
+      <UnsignedSharedFx Include="$(DepsDirectory)SharedFx\*.zip" />
       <PoliCheckPackages Include="$(DepsDirectory)symbols\*.nupkg" />
-      <UpdatedMetapackageNupkg Include="$(DepsDirectory)store\Microsoft.AspNetCore.All.*.nupkg" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
-      <_UnzipFiles Include="@(UnsignedRuntimeStores)" Destination="$(UnsignedRuntimeStorePath)" />
+      <_UnzipFiles Include="@(UnsignedSharedFx)" Destination="$(UnsignedSharedFxPath)" />
       <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
     <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
     <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
-    <Error Text="No runtime store found for signing." Condition="'@(UnsignedRuntimeStores)'==''" />
-    <Error Text="No metapackage found for signing." Condition="'@(UpdatedMetapackageNupkg)'==''" />
-
-    <Copy SourceFiles="@(UpdatedMetapackageNupkg)" DestinationFolder="$(DepsDirectory)ship" />
+    <Error Text="No aspnetcore shared framework found for signing." Condition="'@(UnsignedSharedFx)'==''" />
 
     <UnzipArchive
       File="%(_UnzipFiles.FullPath)"

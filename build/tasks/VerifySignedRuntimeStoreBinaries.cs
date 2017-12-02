@@ -10,10 +10,10 @@ using Microsoft.Build.Utilities;
 
 namespace RepoTasks
 {
-    public class VerifySignedRuntimeStoreBinaries : Task
+    public class VerifySignedSharedFxBinaries : Task
     {
         /// <summary>
-        /// The runtime store binaries to check for authenticode signing.
+        /// The aspnetcore shared framework binaries to check for authenticode signing.
         /// </summary>
         /// <returns></returns>
         [Required]
