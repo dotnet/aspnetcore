@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var serviceContext = new ServiceContext
             {
                 ServerOptions = new KestrelServerOptions(),
-                HttpParserFactory = f => NullParser<Http1ParsingHandler>.Instance
+                HttpParser = NullParser<Http1ParsingHandler>.Instance
             };
 
             var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext

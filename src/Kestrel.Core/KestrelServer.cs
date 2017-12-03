@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return new ServiceContext
             {
                 Log = trace,
-                HttpParserFactory = handler => new HttpParser<Http1ParsingHandler>(handler.Connection.ServiceContext.Log.IsEnabled(LogLevel.Information)),
+                HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
                 ThreadPool = threadPool,
                 SystemClock = systemClock,
                 DateHeaderValueManager = dateHeaderValueManager,

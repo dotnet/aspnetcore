@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context)
         {
             _context = context;
-            _parser = ServiceContext.HttpParserFactory(new Http1ParsingHandler(this));
+            _parser = ServiceContext.HttpParser;
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 

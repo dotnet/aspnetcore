@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
-                HttpParserFactory = serviceContextPrimary.HttpParserFactory,
+                HttpParser = serviceContextPrimary.HttpParser,
             };
             var builderSecondary = new ConnectionBuilder();
             builderSecondary.UseHttpServer(serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")), HttpProtocols.Http1);
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
                 ServerOptions = serviceContextPrimary.ServerOptions,
                 ThreadPool = serviceContextPrimary.ThreadPool,
-                HttpParserFactory = serviceContextPrimary.HttpParserFactory,
+                HttpParser = serviceContextPrimary.HttpParser,
             };
             var builderSecondary = new ConnectionBuilder();
             builderSecondary.UseHttpServer(serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")), HttpProtocols.Http1);
