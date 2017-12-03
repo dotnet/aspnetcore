@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             var headers = Context.Connection.GetHttpContext().Request.Headers;
             return headerNames.Select(h => (string)headers[h]);
         }
+
+        public string GetCookieValue(string cookieName)
+        {
+            return Context.Connection.GetHttpContext().Request.Cookies[cookieName];
+        }
     }
 
     public class DynamicTestHub : DynamicHub

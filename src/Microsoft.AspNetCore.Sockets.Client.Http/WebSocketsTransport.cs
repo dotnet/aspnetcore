@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public WebSocketsTransport(HttpOptions httpOptions, ILoggerFactory loggerFactory)
         {
             _webSocket = new ClientWebSocket();
+
             if (httpOptions?.Headers != null)
             {
                 foreach (var header in httpOptions.Headers)
@@ -48,6 +49,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.JwtBearerTokenFactory()}");
             }
+
+            httpOptions?.WebSocketOptions?.Invoke(_webSocket.Options);
 
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }

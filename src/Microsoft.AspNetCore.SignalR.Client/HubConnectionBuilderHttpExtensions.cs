@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net.Http;
+using System.Net.WebSockets;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Client.Http;
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly string HttpMessageHandlerKey = "HttpMessageHandler";
         public static readonly string HeadersKey = "Headers";
         public static readonly string JwtBearerTokenFactoryKey = "JwtBearerTokenFactory";
+        public static readonly string WebSocketOptionsKey = "WebSocketOptions";
 
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url)
         {
@@ -42,7 +44,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     HttpMessageHandler = hubConnectionBuilder.GetMessageHandler(),
                     Headers = headers != null ? new ReadOnlyDictionary<string, string>(headers) : null,
-                    JwtBearerTokenFactory = hubConnectionBuilder.GetJwtBearerTokenFactory()
+                    JwtBearerTokenFactory = hubConnectionBuilder.GetJwtBearerTokenFactory(),
+                    WebSocketOptions = hubConnectionBuilder.GetWebSocketOptions(),
                 };
 
                 return new HttpConnection(url,
@@ -96,6 +99,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
+        public static IHubConnectionBuilder WithWebSocketOptions(this IHubConnectionBuilder hubConnectionBuilder, Action<ClientWebSocketOptions> configureWebSocketOptions)
+        {
+            if (configureWebSocketOptions == null)
+            {
+                throw new ArgumentNullException(nameof(configureWebSocketOptions));
+            }
+
+            hubConnectionBuilder.AddSetting(WebSocketOptionsKey, configureWebSocketOptions);
+
+            return hubConnectionBuilder;
+        }
+
         public static TransportType GetTransport(this IHubConnectionBuilder hubConnectionBuilder)
         {
             if (hubConnectionBuilder.TryGetSetting<TransportType>(TransportTypeKey, out var transportType))
@@ -130,6 +145,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             return null;
+        }
+
+        public static Action<ClientWebSocketOptions> GetWebSocketOptions(this IHubConnectionBuilder hubConnectionBuilder)
+        {
+            hubConnectionBuilder.TryGetSetting<Action<ClientWebSocketOptions>>(WebSocketOptionsKey, out var webSocketOptions);
+            return webSocketOptions;
         }
     }
 }

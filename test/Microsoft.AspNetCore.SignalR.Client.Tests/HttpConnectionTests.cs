@@ -6,8 +6,8 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Client.Http;
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 httpOptions: new HttpOptions { HttpMessageHandler = mockHttpHandler.Object });
 
             var onReceivedInvoked = false;
-            connection.OnReceived( _ =>
+            connection.OnReceived(_ =>
             {
                 onReceivedInvoked = true;
                 return Task.CompletedTask;
@@ -432,10 +432,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null,
                 httpOptions: new HttpOptions { HttpMessageHandler = mockHttpHandler.Object });
-            connection.OnReceived( _ =>
-                {
-                    throw new OperationCanceledException();
-                });
+            connection.OnReceived(_ =>
+            {
+                throw new OperationCanceledException();
+            });
 
             await connection.StartAsync();
             channel.Writer.TryWrite(Array.Empty<byte>());
@@ -960,7 +960,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         [InlineData("http://fakeuri.org/endpoint", "http://fakeuri.org/endpoint/negotiate")]
         [InlineData("http://fakeuri.org/endpoint/", "http://fakeuri.org/endpoint/negotiate")]
         [InlineData("http://fakeuri.org/endpoint?q=1/0", "http://fakeuri.org/endpoint/negotiate?q=1/0")]
-        public async Task query(string requested, string expectedNegotiate)
+        public async Task CorrectlyHandlesQueryStringWhenAppendingNegotiateToUrl(string requested, string expectedNegotiate)
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
