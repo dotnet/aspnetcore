@@ -380,6 +380,6 @@
   <ItemGroup Condition="'$(DotNetRestoreSources)'!=''">
     <ExternalDependency
       Update="@(ExternalDependency->WithMetadataValue('Source', '$(DotNetCoreFeed)'));@(ExternalDependency->WithMetadataValue('Source', '$(RoslynFeed)'))"
-      Source="$(DotNetRestoreSources);%(ExternalDependency.Source)" />
+      Source="$(DotNetAdditionalRestoreSources);%(ExternalDependency.Source)" />
   </ItemGroup>
 </Project>
