@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26923.0
+VisualStudioVersion = 15.0.27110.0
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 	ProjectSection(SolutionItems) = preProject
@@ -56,14 +56,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.TS", "client-ts\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj", "{333526A4-633B-491A-AC45-CC62A0012D1C}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6CEC3DC2-5B01-45A8-8F0D-8531315DA90B}"
-	ProjectSection(SolutionItems) = preProject
-		test\Common\ChannelExtensions.cs = test\Common\ChannelExtensions.cs
-		test\Common\ServerFixture.cs = test\Common\ServerFixture.cs
-		test\Common\TaskExtensions.cs = test\Common\TaskExtensions.cs
-		test\Common\TestHelpers.cs = test\Common\TestHelpers.cs
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-ts", "client-ts", "{3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}"
 	ProjectSection(SolutionItems) = preProject
 		client-ts\package.json = client-ts\package.json
@@ -91,7 +83,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Signal
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtSample", "samples\JwtSample\JwtSample.csproj", "{6A7491D3-3C97-49BD-A71C-433AED657F30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JwtClientSample", "samples\JwtClientSample\JwtClientSample.csproj", "{1A953296-E869-4DE2-A693-FD5FCDE27057}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtClientSample", "samples\JwtClientSample\JwtClientSample.csproj", "{1A953296-E869-4DE2-A693-FD5FCDE27057}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Tests.Utils", "test\Microsoft.AspNetCore.SignalR.Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj", "{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -207,6 +201,10 @@ Global
 		{1A953296-E869-4DE2-A693-FD5FCDE27057}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A953296-E869-4DE2-A693-FD5FCDE27057}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A953296-E869-4DE2-A693-FD5FCDE27057}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -228,7 +226,6 @@ Global
 		{354335AB-CEE9-4434-A641-78058F6EFE56} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{455B68D2-C5B6-4BF4-A685-964B07AFAAF8} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{333526A4-633B-491A-AC45-CC62A0012D1C} = {3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}
-		{6CEC3DC2-5B01-45A8-8F0D-8531315DA90B} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{96771B3F-4D18-41A7-A75B-FF38E76AAC89} = {8A4582C8-DC59-4B61-BCE7-119FBAA99EFB}
 		{75E342F6-5445-4E7E-9143-6D9AE62C2B1E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{F2E4FBD6-9AEA-4A82-BAC9-3FAACA677DF8} = {DA69F624-5398-4884-87E4-B816698CDE65}
@@ -240,6 +237,7 @@ Global
 		{0B083AE6-86CA-4E0B-AE02-59154D1FD005} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 		{6A7491D3-3C97-49BD-A71C-433AED657F30} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{1A953296-E869-4DE2-A693-FD5FCDE27057} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
+		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}

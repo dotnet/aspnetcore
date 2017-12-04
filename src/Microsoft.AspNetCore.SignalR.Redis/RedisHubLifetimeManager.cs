@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var connection = _connections[connectionId];
             if (connection != null)
             {
-                return WriteAsync(connection, message);
+                return connection.WriteAsync(message);
             }
 
             return PublishAsync(_channelNamePrefix + "." + connectionId, message);
@@ -370,17 +370,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _ackHandler.Dispose();
         }
 
-        private static async Task WriteAsync(HubConnectionContext connection, HubInvocationMessage hubMessage)
-        {
-            while (await connection.Output.WaitToWriteAsync())
-            {
-                if (connection.Output.TryWrite(hubMessage))
-                {
-                    break;
-                }
-            }
-        }
-
         private string GetInvocationId()
         {
             var invocationId = Interlocked.Increment(ref _nextInvocationId);
@@ -410,7 +399,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                     foreach (var connection in _connections)
                     {
-                        tasks.Add(WriteAsync(connection, message));
+                        tasks.Add(connection.WriteAsync(message));
                     }
 
                     await Task.WhenAll(tasks);
@@ -441,7 +430,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     {
                         if (!excludedIds.Contains(connection.ConnectionId))
                         {
-                            tasks.Add(WriteAsync(connection, message));
+                            tasks.Add(connection.WriteAsync(message));
                         }
                     }
 
@@ -521,7 +510,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     var message = DeserializeMessage<HubInvocationMessage>(data);
 
-                    await WriteAsync(connection, message);
+                    await connection.WriteAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -542,7 +531,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     var message = DeserializeMessage<HubInvocationMessage>(data);
 
-                    await WriteAsync(connection, message);
+                    await connection.WriteAsync(message);
                 }
                 catch (Exception ex)
                 {
@@ -563,7 +552,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     var tasks = new List<Task>(group.Connections.Count);
                     foreach (var groupConnection in group.Connections)
                     {
-                        tasks.Add(WriteAsync(groupConnection, message));
+                        tasks.Add(groupConnection.WriteAsync(message));
                     }
 
                     await Task.WhenAll(tasks);

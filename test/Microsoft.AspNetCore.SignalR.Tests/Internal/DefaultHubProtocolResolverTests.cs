@@ -7,6 +7,7 @@ using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Newtonsoft.Json;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         [MemberData(nameof(HubProtocols))]
         public void DefaultHubProtocolResolverTestsCanCreateSupportedProtocols(IHubProtocol protocol)
         {
-            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Writer, new Mock<ConnectionContext>().Object);
+            var mockConnection = new Mock<HubConnectionContext>(new Mock<ConnectionContext>().Object, TimeSpan.FromSeconds(30), NullLoggerFactory.Instance);
             Assert.IsType(
                 protocol.GetType(),
                 new DefaultHubProtocolResolver(Options.Create(new HubOptions())).GetProtocol(protocol.Name, mockConnection.Object));
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         [InlineData("dummy")]
         public void DefaultHubProtocolResolverThrowsForNotSupportedProtocol(string protocolName)
         {
-            var mockConnection = new Mock<HubConnectionContext>(Channel.CreateUnbounded<HubMessage>().Writer, new Mock<ConnectionContext>().Object);
+            var mockConnection = new Mock<HubConnectionContext>(new Mock<ConnectionContext>().Object, TimeSpan.FromSeconds(30), NullLoggerFactory.Instance);
             var exception = Assert.Throws<NotSupportedException>(
                 () => new DefaultHubProtocolResolver(Options.Create(new HubOptions())).GetProtocol(protocolName, mockConnection.Object));
 

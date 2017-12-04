@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
-using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -957,6 +957,32 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
             Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SetsInherentKeepAliveFeatureOnFirstLongPollingRequest()
+        {
+            var manager = CreateConnectionManager();
+            var connection = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest("/foo", connection);
+
+            var services = new ServiceCollection();
+            services.AddEndPoint<TestEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<TestEndPoint>();
+            var app = builder.Build();
+            var options = new HttpSocketOptions();
+            options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
+
+            Assert.Null(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
+
+            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+
+            Assert.NotNull(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
+            Assert.Equal(options.LongPolling.PollTimeout, connection.Features.Get<IConnectionInherentKeepAliveFeature>().KeepAliveInterval);
         }
 
         private class RejectHandler : TestAuthenticationHandler

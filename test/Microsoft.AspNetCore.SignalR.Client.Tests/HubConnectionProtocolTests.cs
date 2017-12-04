@@ -8,7 +8,6 @@ using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;

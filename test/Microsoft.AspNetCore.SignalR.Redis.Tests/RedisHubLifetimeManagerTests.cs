@@ -3,12 +3,15 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
-using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -23,24 +26,21 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output1 = Channel.CreateUnbounded<HubMessage>();
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
                 var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(),
                 Options.Create(new RedisOptions()
                 {
                     Factory = t => new TestConnectionMultiplexer()
                 }));
-                var connection1 = new HubConnectionContext(output1, client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.OnConnectedAsync(connection2).OrTimeout();
 
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output1);
-                AssertMessage(output2);
+                await AssertMessageAsync(client1);
+                await AssertMessageAsync(client2);
             }
         }
 
@@ -50,16 +50,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output1 = Channel.CreateUnbounded<HubMessage>();
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
                 var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(),
                 Options.Create(new RedisOptions()
                 {
                     Factory = t => new TestConnectionMultiplexer()
                 }));
-                var connection1 = new HubConnectionContext(output1, client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.OnConnectedAsync(connection2).OrTimeout();
@@ -68,9 +65,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output1);
+                await AssertMessageAsync(client1);
 
-                Assert.False(output2.Reader.TryRead(out var item));
+                await connection1.DisposeAsync().OrTimeout();
+                await connection2.DisposeAsync().OrTimeout();
+                Assert.Null(client2.TryRead());
             }
         }
 
@@ -80,16 +79,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output1 = Channel.CreateUnbounded<HubMessage>();
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
                 var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(),
                 Options.Create(new RedisOptions()
                 {
                     Factory = t => new TestConnectionMultiplexer()
                 }));
-                var connection1 = new HubConnectionContext(output1, client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.OnConnectedAsync(connection2).OrTimeout();
@@ -98,9 +94,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output1);
+                await AssertMessageAsync(client1);
 
-                Assert.False(output2.Reader.TryRead(out var item));
+                await connection1.DisposeAsync().OrTimeout();
+                await connection2.DisposeAsync().OrTimeout();
+                Assert.Null(client2.TryRead());
             }
         }
 
@@ -109,19 +107,20 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         {
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
                 var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(),
                 Options.Create(new RedisOptions()
                 {
                     Factory = t => new TestConnectionMultiplexer()
                 }));
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
                 await manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
+                await connection.DisposeAsync().OrTimeout();
+
+                await AssertMessageAsync(client);
             }
         }
 
@@ -153,19 +152,16 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output1 = Channel.CreateUnbounded<HubMessage>();
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
-                var connection1 = new HubConnectionContext(output1, client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager1.OnConnectedAsync(connection1).OrTimeout();
                 await manager2.OnConnectedAsync(connection2).OrTimeout();
 
                 await manager1.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output1);
-                AssertMessage(output2);
+                await AssertMessageAsync(client1);
+                await AssertMessageAsync(client2);
             }
         }
 
@@ -186,11 +182,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output1 = Channel.CreateUnbounded<HubMessage>();
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
-                var connection1 = new HubConnectionContext(output1, client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager1.OnConnectedAsync(connection1).OrTimeout();
                 await manager2.OnConnectedAsync(connection2).OrTimeout();
@@ -199,9 +192,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output1);
+                await AssertMessageAsync(client1);
 
-                Assert.False(output2.Reader.TryRead(out var item));
+                await connection1.DisposeAsync().OrTimeout();
+                await connection2.DisposeAsync().OrTimeout();
+                Assert.Null(client2.TryRead());
             }
         }
 
@@ -221,15 +216,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
                 await manager2.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
+                await AssertMessageAsync(client);
             }
         }
 
@@ -249,9 +242,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
@@ -259,7 +250,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
+                await AssertMessageAsync(client);
             }
         }
 
@@ -274,9 +265,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -286,7 +275,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.False(output.Reader.TryRead(out var item));
+                await connection.DisposeAsync().OrTimeout();
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -301,9 +291,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -327,9 +315,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
@@ -351,9 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
@@ -361,7 +345,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
+                await connection.DisposeAsync().OrTimeout();
+
+                await AssertMessageAsync(client);
             }
         }
 
@@ -375,9 +361,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -386,8 +370,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
-                Assert.False(output.Reader.TryRead(out var item));
+                await connection.DisposeAsync().OrTimeout();
+
+                await AssertMessageAsync(client);
+                await connection.DisposeAsync().OrTimeout();
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -405,9 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
@@ -416,8 +401,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
-                Assert.False(output.Reader.TryRead(out var item));
+                await connection.DisposeAsync().OrTimeout();
+
+                await AssertMessageAsync(client);
+                await connection.DisposeAsync().OrTimeout();
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -435,9 +423,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
@@ -445,13 +431,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
+                await AssertMessageAsync(client);
 
                 await manager2.RemoveGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
                 await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
-                Assert.False(output.Reader.TryRead(out var item));
+                await connection.DisposeAsync().OrTimeout();
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -469,9 +456,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
             using (var client = new TestClient())
             {
-                var output = Channel.CreateUnbounded<HubMessage>();
-
-                var connection = new HubConnectionContext(output, client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection);
 
                 // Add connection to both "servers" to see if connection receives message twice
                 await manager1.OnConnectedAsync(connection).OrTimeout();
@@ -479,8 +464,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager1.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
-                AssertMessage(output);
-                Assert.False(output.Reader.TryRead(out var item));
+                await connection.DisposeAsync().OrTimeout();
+
+                await AssertMessageAsync(client);
+                Assert.Null(client.TryRead());
             }
         }
 
@@ -502,7 +489,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 var writer = new Mock<ChannelWriter<HubMessage>>();
                 writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
 
-                var connection = new HubConnectionContext(new MockChannel(writer.Object), client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection, new MockChannel(writer.Object));
 
                 await manager2.OnConnectedAsync(connection).OrTimeout();
 
@@ -526,7 +513,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 var writer = new Mock<ChannelWriter<HubMessage>>();
                 writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
 
-                var connection = new HubConnectionContext(new MockChannel(writer.Object), client.Connection);
+                var connection = HubConnectionContextUtils.Create(client.Connection, new MockChannel(writer.Object));
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
@@ -546,14 +533,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             using (var client1 = new TestClient())
             using (var client2 = new TestClient())
             {
-                var output2 = Channel.CreateUnbounded<HubMessage>();
-
                 // Force an exception when writing to connection
                 var writer = new Mock<ChannelWriter<HubMessage>>();
                 writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception());
 
-                var connection1 = new HubConnectionContext(new MockChannel(writer.Object), client1.Connection);
-                var connection2 = new HubConnectionContext(output2, client2.Connection);
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection, new MockChannel(writer.Object));
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
 
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.AddGroupAsync(connection1.ConnectionId, "group");
@@ -563,18 +548,17 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.InvokeGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
                 // connection1 will throw when receiving a group message, we are making sure other connections
                 // are not affected by another connection throwing
-                AssertMessage(output2);
+                await AssertMessageAsync(client2);
 
                 // Repeat to check that group can still be sent to
                 await manager.InvokeGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
-                AssertMessage(output2);
+                await AssertMessageAsync(client2);
             }
         }
 
-        private void AssertMessage(Channel<HubMessage> channel)
+        private async Task AssertMessageAsync(TestClient client)
         {
-            Assert.True(channel.Reader.TryRead(out var item));
-            var message = Assert.IsType<InvocationMessage>(item);
+            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync());
             Assert.Equal("Hello", message.Target);
             Assert.Single(message.Arguments);
             Assert.Equal("World", (string)message.Arguments[0]);

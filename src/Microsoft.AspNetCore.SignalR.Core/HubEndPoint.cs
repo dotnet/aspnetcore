@@ -8,17 +8,14 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Core.Internal;
-using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -28,13 +25,11 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubEndPoint<THub> : IInvocationBinder where THub : Hub
     {
-        private static readonly Base64Encoder Base64Encoder = new Base64Encoder();
-        private static readonly PassThroughEncoder PassThroughEncoder = new PassThroughEncoder();
-
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
 
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly IHubContext<THub> _hubContext;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<HubEndPoint<THub>> _logger;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IHubProtocolResolver _protocolResolver;
@@ -45,15 +40,16 @@ namespace Microsoft.AspNetCore.SignalR
                            IHubProtocolResolver protocolResolver,
                            IHubContext<THub> hubContext,
                            IOptions<HubOptions> hubOptions,
-                           ILogger<HubEndPoint<THub>> logger,
+                           ILoggerFactory loggerFactory,
                            IServiceScopeFactory serviceScopeFactory,
                            IUserIdProvider userIdProvider)
         {
             _protocolResolver = protocolResolver;
             _lifetimeManager = lifetimeManager;
             _hubContext = hubContext;
+            _loggerFactory = loggerFactory;
             _hubOptions = hubOptions.Value;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<HubEndPoint<THub>>();
             _serviceScopeFactory = serviceScopeFactory;
             _userIdProvider = userIdProvider;
 
@@ -62,50 +58,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
-            var output = Channel.CreateUnbounded<HubMessage>();
+            var connectionContext = new HubConnectionContext(connection, _hubOptions.KeepAliveInterval, _loggerFactory);
 
-            // Set the hub feature before doing anything else. This stores
-            // all the relevant state for a SignalR Hub connection.
-            connection.Features.Set<IHubFeature>(new HubFeature());
-
-            var connectionContext = new HubConnectionContext(output, connection);
-
-            if (!await ProcessNegotiate(connectionContext))
+            if (!await connectionContext.NegotiateAsync(_hubOptions.NegotiateTimeout, _protocolResolver, _userIdProvider))
             {
                 return;
             }
 
-            connectionContext.UserIdentifier = _userIdProvider.GetUserId(connectionContext);
-
-            // Hubs support multiple producers so we set up this loop to copy
-            // data written to the HubConnectionContext's channel to the transport channel
-            var protocolReaderWriter = connectionContext.ProtocolReaderWriter;
-            async Task WriteToTransport()
-            {
-                try
-                {
-                    while (await output.Reader.WaitToReadAsync())
-                    {
-                        while (output.Reader.TryRead(out var hubMessage))
-                        {
-                            var buffer = protocolReaderWriter.WriteMessage(hubMessage);
-                            while (await connection.Transport.Writer.WaitToWriteAsync())
-                            {
-                                if (connection.Transport.Writer.TryWrite(buffer))
-                                {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    connectionContext.Abort(ex);
-                }
-            }
-
-            var writingOutputTask = WriteToTransport();
+            // We don't need to hold this task, it's also held internally and awaited by DisposeAsync.
+            _ = connectionContext.StartAsync();
 
             try
             {
@@ -116,61 +77,10 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 await _lifetimeManager.OnDisconnectedAsync(connectionContext);
 
-                // Nothing should be writing to the HubConnectionContext
-                output.Writer.TryComplete();
-
-                // This should unwind once we complete the output
-                await writingOutputTask;
+                await connectionContext.DisposeAsync();
             }
         }
 
-        private async Task<bool> ProcessNegotiate(HubConnectionContext connection)
-        {
-            try
-            {
-                using (var cts = new CancellationTokenSource())
-                {
-                    cts.CancelAfter(_hubOptions.NegotiateTimeout);
-                    while (await connection.Input.WaitToReadAsync(cts.Token))
-                    {
-                        while (connection.Input.TryRead(out var buffer))
-                        {
-                            if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
-                            {
-                                var protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
-
-                                var transportCapabilities = connection.Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
-                                    ?? throw new InvalidOperationException("Unable to read transport capabilities.");
-
-                                var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
-                                    ? (IDataEncoder)Base64Encoder
-                                    : PassThroughEncoder;
-
-                                var transferModeFeature = connection.Features.Get<ITransferModeFeature>() ??
-                                    throw new InvalidOperationException("Unable to read transfer mode.");
-
-                                transferModeFeature.TransferMode =
-                                    (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) != 0)
-                                        ? TransferMode.Binary
-                                        : TransferMode.Text;
-
-                                connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
-
-                                _logger.UsingHubProtocol(protocol.Name);
-
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.NegotiateCanceled();
-            }
-
-            return false;
-        }
 
         private async Task RunHubAsync(HubConnectionContext connection)
         {
@@ -352,9 +262,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task SendMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            while (await connection.Output.WaitToWriteAsync())
+            while (await connection.Output.Writer.WaitToWriteAsync())
             {
-                if (connection.Output.TryWrite(hubMessage))
+                if (connection.Output.Writer.TryWrite(hubMessage))
                 {
                     return;
                 }

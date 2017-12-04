@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
@@ -65,7 +65,7 @@
             });
 
             click('connectButton', function () {
-                connection = new signalR.HubConnection('/streaming', { transport: transportType, logger: logger });
+                connection = new signalR.HubConnection('/streaming', { transport: transportType, logging: logger });
 
                 connection.onclose(function () {
                     channelButton.disabled = true;

@@ -1,10 +1,12 @@
 using System;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -32,7 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
                 var transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
                 var connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), transport, application);
 
-                _hubLifetimeManager.OnConnectedAsync(new HubConnectionContext(Channel.CreateUnbounded<HubMessage>(), connection)).Wait();
+                _hubLifetimeManager.OnConnectedAsync(new HubConnectionContext(connection, Timeout.InfiniteTimeSpan, NullLoggerFactory.Instance)).Wait();
             }
 
             _hubContext = new HubContext<Hub>(_hubLifetimeManager);

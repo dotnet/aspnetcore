@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,7 +18,11 @@ namespace SocketsSample
         {
             services.AddSockets();
 
-            services.AddSignalR();
+            services.AddSignalR(options =>
+            {
+                // Faster pings for testing
+                options.KeepAliveInterval = TimeSpan.FromSeconds(5);
+            });
             // .AddRedis();
 
             services.AddCors(o =>

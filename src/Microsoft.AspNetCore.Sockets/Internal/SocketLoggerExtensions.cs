@@ -24,6 +24,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _connectionTimedOut =
             LoggerMessage.Define<DateTime, string>(LogLevel.Trace, new EventId(4, nameof(ConnectionTimedOut)), "{time}: ConnectionId {connectionId}: Connection timed out.");
 
+        private static readonly Action<ILogger, DateTime, Exception> _scanningConnections =
+            LoggerMessage.Define<DateTime>(LogLevel.Trace, new EventId(5, nameof(ScanningConnections)), "{time}: Scanning connections.");
+
+        private static readonly Action<ILogger, DateTime, TimeSpan, Exception> _scannedConnections =
+            LoggerMessage.Define<DateTime, TimeSpan>(LogLevel.Trace, new EventId(6, nameof(ScannedConnections)), "{time}: Scanned connections in {duration}.");
+
         public static void CreatedNewConnection(this ILogger logger, string connectionId)
         {
             if (logger.IsEnabled(LogLevel.Debug))
@@ -61,6 +67,22 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             if (logger.IsEnabled(LogLevel.Trace))
             {
                 _connectionReset(logger, DateTime.Now, connectionId, exception);
+            }
+        }
+
+        public static void ScanningConnections(this ILogger logger)
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                _scanningConnections(logger, DateTime.Now, null);
+            }
+        }
+
+        public static void ScannedConnections(this ILogger logger, TimeSpan duration)
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                _scannedConnections(logger, DateTime.Now, duration, null);
             }
         }
     }

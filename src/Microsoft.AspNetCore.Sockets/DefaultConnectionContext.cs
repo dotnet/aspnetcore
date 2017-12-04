@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Internal;
@@ -18,8 +18,11 @@ namespace Microsoft.AspNetCore.Sockets
                                             IConnectionMetadataFeature,
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
+                                            IConnectionHeartbeatFeature,
                                             ITransferModeFeature
     {
+        private List<(Action<object> handler, object state)> _heartbeatHandlers = new List<(Action<object> handler, object state)>();
+
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
@@ -39,6 +42,7 @@ namespace Microsoft.AspNetCore.Sockets
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<ITransferModeFeature>(this);
+            Features.Set<IConnectionHeartbeatFeature>(this);
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -68,6 +72,19 @@ namespace Microsoft.AspNetCore.Sockets
         public TransferMode TransportCapabilities { get; set; }
 
         public TransferMode TransferMode { get; set; }
+
+        public void OnHeartbeat(Action<object> action, object state)
+        {
+            _heartbeatHandlers.Add((action, state));
+        }
+
+        public void TickHeartbeat()
+        {
+            foreach (var (handler, state) in _heartbeatHandlers)
+            {
+                handler(state);
+            }
+        }
 
         public async Task DisposeAsync()
         {

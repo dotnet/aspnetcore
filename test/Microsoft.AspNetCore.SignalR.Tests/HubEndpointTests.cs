@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -1377,6 +1376,85 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotWritePingMessagesIfSufficientOtherMessagesAreSent()
+        {
+            var serviceProvider = CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                    options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)));
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(false, new JsonHubProtocol()))
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection).OrTimeout();
+
+                await client.Connected.OrTimeout();
+
+                // Echo a bunch of stuff, waiting 10ms between each, until 500ms have elapsed
+                DateTime start = DateTime.UtcNow;
+                while ((DateTime.UtcNow - start).TotalMilliseconds <= 500.0)
+                {
+                    await client.SendInvocationAsync("Echo", "foo").OrTimeout();
+                    await Task.Delay(10);
+                }
+
+                // Shut down
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+
+                // We shouldn't have any ping messages
+                HubMessage message;
+                var counter = 0;
+                while ((message = await client.ReadAsync()) != null)
+                {
+                    counter += 1;
+                    Assert.IsNotType<PingMessage>(message);
+                }
+                Assert.InRange(counter, 1, 50);
+            }
+        }
+
+        [Fact]
+        public async Task WritesPingMessageIfNothingWrittenWhenKeepAliveIntervalElapses()
+        {
+            var serviceProvider = CreateServiceProvider(services =>
+                services.Configure<HubOptions>(options =>
+                    options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)));
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(false, new JsonHubProtocol()))
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection).OrTimeout();
+                await client.Connected.OrTimeout();
+
+                // Wait 500 ms, but make sure to yield some time up to unblock concurrent threads
+                // This is useful on AppVeyor because it's slow enough to end up with no time
+                // being available for the endpoint to run.
+                for (var i = 0; i < 50; i += 1)
+                {
+                    client.Connection.TickHeartbeat();
+                    await Task.Yield();
+                    await Task.Delay(10);
+                }
+
+                // Shut down
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+
+                // We should have all pings
+                HubMessage message;
+                var counter = 0;
+                while ((message = await client.ReadAsync().OrTimeout()) != null)
+                {
+                    counter += 1;
+                    Assert.Same(PingMessage.Instance, message);
+                }
+                Assert.InRange(counter, 1, 10);
             }
         }
 
