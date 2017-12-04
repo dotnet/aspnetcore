@@ -4,17 +4,17 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <BenchmarkDotNetPackageVersion>0.10.9</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15576</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15620</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>2.1.0-preview1-27723</MicrosoftAspNetCoreHtmlAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27723</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.3.1</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.3.1</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
+    <MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>2.1.0-preview1-27723</MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-25711-01</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsWebEncodersPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.1.0-preview1-27723</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview1-27723</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25907-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
     <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
@@ -32,7 +32,7 @@
     <NETStandard20PackageVersion>2.0.0</NETStandard20PackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
-    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.4.1</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview1-25914-04</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
@@ -43,9 +43,9 @@
     <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
-    <XunitAnalyzersPackageVersion>0.7.0</XunitAnalyzersPackageVersion>
-    <XunitPackageVersion>2.3.0</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.3.0</XunitRunnerVisualStudioPackageVersion>
+    <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
+    <XunitPackageVersion>2.3.1</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
