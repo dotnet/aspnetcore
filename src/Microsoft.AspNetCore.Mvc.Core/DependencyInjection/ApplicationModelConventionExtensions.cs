@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 
@@ -148,11 +149,16 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentNullException(nameof(application));
                 }
 
-                foreach (var controller in application.Controllers)
+                // Create copies of collections of controllers, actions and parameters as users could modify
+                // these collections from within the convention itself.
+                var controllers = application.Controllers.ToArray();
+                foreach (var controller in controllers)
                 {
-                    foreach (var action in controller.Actions)
+                    var actions = controller.Actions.ToArray();
+                    foreach (var action in actions)
                     {
-                        foreach (var parameter in action.Parameters)
+                        var parameters = action.Parameters.ToArray();
+                        foreach (var parameter in parameters)
                         {
                             _parameterModelConvention.Apply(parameter);
                         }
@@ -183,9 +189,13 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentNullException(nameof(application));
                 }
 
-                foreach (var controller in application.Controllers)
+                // Create copies of collections of controllers, actions and parameters as users could modify
+                // these collections from within the convention itself.
+                var controllers = application.Controllers.ToArray();
+                foreach (var controller in controllers)
                 {
-                    foreach (var action in controller.Actions)
+                    var actions = controller.Actions.ToArray();
+                    foreach (var action in actions)
                     {
                         _actionModelConvention.Apply(action);
                     }
@@ -215,7 +225,8 @@ namespace Microsoft.Extensions.DependencyInjection
                     throw new ArgumentNullException(nameof(application));
                 }
 
-                foreach (var controller in application.Controllers)
+                var controllers = application.Controllers.ToArray();
+                foreach (var controller in controllers)
                 {
                     _controllerModelConvention.Apply(controller);
                 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -109,6 +110,82 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void ApplicationModelConventions_CopiesControllerModelCollectionOnApply()
+        {
+            // Arrange
+            var applicationModel = new ApplicationModel();
+            applicationModel.Controllers.Add(
+                new ControllerModel(typeof(HelloController).GetTypeInfo(), new List<object>())
+                {
+                    Application = applicationModel
+                });
+
+            var controllerModelConvention = new ControllerModelCollectionModifyingConvention();
+            var conventions = new List<IApplicationModelConvention>();
+            conventions.Add(controllerModelConvention);
+
+            // Act & Assert
+            ApplicationModelConventions.ApplyConventions(applicationModel, conventions);
+        }
+
+        [Fact]
+        public void ApplicationModelConventions_CopiesActionModelCollectionOnApply()
+        {
+            // Arrange
+            var controllerType = typeof(HelloController).GetTypeInfo();
+            var applicationModel = new ApplicationModel();
+            var controllerModel = new ControllerModel(controllerType, new List<object>())
+            {
+                Application = applicationModel
+            };
+            controllerModel.Actions.Add(
+                new ActionModel(controllerType.GetMethod(nameof(HelloController.GetHello)), new List<object>())
+                {
+                    Controller = controllerModel
+                });
+            applicationModel.Controllers.Add(controllerModel);
+
+            var actionModelConvention = new ActionModelCollectionModifyingConvention();
+            var conventions = new List<IApplicationModelConvention>();
+            conventions.Add(actionModelConvention);
+
+            // Act & Assert
+            ApplicationModelConventions.ApplyConventions(applicationModel, conventions);
+        }
+
+        [Fact]
+        public void ApplicationModelConventions_CopiesParameterModelCollectionOnApply()
+        {
+            // Arrange
+            var controllerType = typeof(HelloController).GetTypeInfo();
+            var app = new ApplicationModel();
+            var controllerModel = new ControllerModel(controllerType, new List<object>())
+            {
+                Application = app
+            };
+            app.Controllers.Add(controllerModel);
+            var actionModel = new ActionModel(controllerType.GetMethod(nameof(HelloController.GetInfo)), new List<object>())
+            {
+                Controller = controllerModel
+            };
+            controllerModel.Actions.Add(actionModel);
+            var parameterModel = new ParameterModel(
+                controllerType.GetMethod(nameof(HelloController.GetInfo)).GetParameters()[0],
+                new List<object>())
+            {
+                Action = actionModel
+            };
+            actionModel.Parameters.Add(parameterModel);
+
+            var parameterModelConvention = new ParameterModelCollectionModifyingConvention();
+            var conventions = new List<IApplicationModelConvention>();
+            conventions.Add(parameterModelConvention);
+
+            // Act & Assert
+            ApplicationModelConventions.ApplyConventions(app, conventions);
+        }
+
+        [Fact]
         public void GenericRemoveType_RemovesAllOfType()
         {
             // Arrange
@@ -149,6 +226,11 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 return "Hello";
             }
+
+            public string GetInfo(int id)
+            {
+                return "GetInfo(int id)";
+            }
         }
 
         private class WorldController
@@ -180,6 +262,38 @@ namespace Microsoft.Extensions.DependencyInjection
             public void Apply(ControllerModel controller)
             {
                 controller.Properties.Add("TestProperty", "TestValue");
+            }
+        }
+
+        private class ControllerModelCollectionModifyingConvention : IControllerModelConvention
+        {
+            public void Apply(ControllerModel controller)
+            {
+                controller.Application.Controllers.Remove(controller);
+            }
+        }
+
+        private class TestApplicationModelConvention : IApplicationModelConvention
+        {
+            public void Apply(ApplicationModel application)
+            {
+                application.Controllers.RemoveAt(0);
+            }
+        }
+
+        private class ActionModelCollectionModifyingConvention : IActionModelConvention
+        {
+            public void Apply(ActionModel action)
+            {
+                action.Controller.Actions.Remove(action);
+            }
+        }
+
+        private class ParameterModelCollectionModifyingConvention : IParameterModelConvention
+        {
+            public void Apply(ParameterModel parameter)
+            {
+                parameter.Action.Parameters.Remove(parameter);
             }
         }
     }
