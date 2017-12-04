@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     TimeoutControl = null
                 };
 
-                var http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+                var http1Connection = new Http1Connection(http1ConnectionContext);
 
                 http1Connection.Reset();
 

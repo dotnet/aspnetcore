@@ -1987,7 +1987,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private async Task InitializeConnectionAsync(RequestDelegate application)
         {
-            _connectionTask = _connection.ProcessAsync(new DummyApplication(application));
+            _connectionTask = _connection.ProcessRequestsAsync(new DummyApplication(application));
 
             await SendPreambleAsync().ConfigureAwait(false);
             await SendSettingsAsync();

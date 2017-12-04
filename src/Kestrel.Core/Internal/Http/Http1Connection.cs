@@ -6,13 +6,12 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Text;
 using System.Text.Encodings.Web.Utf8;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class Http1Connection : HttpProtocol
+    public partial class Http1Connection : HttpProtocol, IRequestProcessor
     {
         private const byte ByteAsterisk = (byte)'*';
         private const byte ByteForwardSlash = (byte)'/';
@@ -146,6 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 TimeoutControl.CancelTimeout();
             }
+
             return result;
         }
 
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             QueryString = query.GetAsciiStringNonNullCharacters();
         }
 
-        private unsafe static string GetUtf8String(Span<byte> path)
+        private static unsafe string GetUtf8String(Span<byte> path)
         {
             // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
             // copy to an array
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        protected void EnsureHostHeaderExists()
+        private void EnsureHostHeaderExists()
         {
             if (_httpVersion == Http.HttpVersion.Http10)
             {

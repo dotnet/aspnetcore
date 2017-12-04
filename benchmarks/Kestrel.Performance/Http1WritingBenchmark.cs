@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly Task _psuedoAsyncTask = Task.FromResult(27);
         private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
 
-        private readonly TestHttp1Connection<object> _http1Connection;
+        private readonly TestHttp1Connection _http1Connection;
         private (IPipeConnection Transport, IPipeConnection Application) _pair;
 
         private readonly byte[] _writeData;
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return _http1Connection.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
         }
 
-        private TestHttp1Connection<object> MakeHttp1Connection()
+        private TestHttp1Connection MakeHttp1Connection()
         {
             using (var memoryPool = new MemoryPool())
             {
@@ -107,15 +107,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                     HttpParser = new HttpParser<Http1ParsingHandler>()
                 };
 
-                var http1Connection = new TestHttp1Connection<object>(
-                    application: null, context: new Http1ConnectionContext
-                    {
-                        ServiceContext = serviceContext,
-                        ConnectionFeatures = new FeatureCollection(),
-                        BufferPool = memoryPool,
-                        Application = pair.Application,
-                        Transport = pair.Transport
-                    });
+                var http1Connection = new TestHttp1Connection(new Http1ConnectionContext
+                {
+                    ServiceContext = serviceContext,
+                    ConnectionFeatures = new FeatureCollection(),
+                    BufferPool = memoryPool,
+                    Application = pair.Application,
+                    Transport = pair.Transport
+                });
 
                 http1Connection.Reset();
                 http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);

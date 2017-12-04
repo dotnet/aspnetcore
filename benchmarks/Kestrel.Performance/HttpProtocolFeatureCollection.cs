@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     [ParameterizedJobConfig(typeof(CoreConfig))]
     public class HttpProtocolFeatureCollection
     {
-        private readonly Http1Connection<object> _http1Connection;
+        private readonly Http1Connection _http1Connection;
         private IFeatureCollection _collection;
 
         [Benchmark(Baseline = true)]
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),

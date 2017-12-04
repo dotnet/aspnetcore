@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
@@ -16,7 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler, IHttpHeadersHandler
+    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler, IHttpHeadersHandler, IRequestProcessor
     {
         private enum RequestHeaderParsingState
         {
@@ -93,13 +94,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _frameWriter.Abort(ex);
         }
 
-        public void Stop()
+        public void StopProcessingNextRequest()
         {
             _stopping = true;
             Input.CancelPendingRead();
         }
 
-        public async Task ProcessAsync<TContext>(IHttpApplication<TContext> application)
+        public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
             Exception error = null;
             var errorCode = Http2ErrorCode.NO_ERROR;
@@ -391,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             else
             {
                 // Start a new stream
-                _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
+                _currentHeadersStream = new Http2Stream(new Http2StreamContext
                 {
                     ConnectionId = ConnectionId,
                     StreamId = _incomingFrame.StreamId,
@@ -412,7 +413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _currentHeadersStream.Reset();
 
                 var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
-                await DecodeHeadersAsync(endHeaders, _incomingFrame.HeadersPayload);
+                await DecodeHeadersAsync(application, endHeaders, _incomingFrame.HeadersPayload);
             }
         }
 
@@ -541,7 +542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            Stop();
+            StopProcessingNextRequest();
             return Task.CompletedTask;
         }
 
@@ -602,7 +603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             else
             {
-                return DecodeHeadersAsync(endHeaders, _incomingFrame.Payload);
+                return DecodeHeadersAsync(application, endHeaders, _incomingFrame.Payload);
             }
         }
 
@@ -616,7 +617,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private Task DecodeHeadersAsync(bool endHeaders, Span<byte> payload)
+        private Task DecodeHeadersAsync<TContext>(IHttpApplication<TContext> application, bool endHeaders, Span<byte> payload)
         {
             try
             {
@@ -624,7 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 if (endHeaders)
                 {
-                    StartStream();
+                    StartStream(application);
                     ResetRequestHeaderParsingState();
                 }
             }
@@ -652,7 +653,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        private void StartStream()
+        private void StartStream<TContext>(IHttpApplication<TContext> application)
         {
             if (!_isMethodConnect && (_parsedPseudoHeaderFields & _mandatoryRequestPseudoHeaderFields) != _mandatoryRequestPseudoHeaderFields)
             {
@@ -663,7 +664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
-            _ = _currentHeadersStream.ProcessRequestsAsync();
+            _ = _currentHeadersStream.ProcessRequestsAsync(application);
         }
 
         private void ResetRequestHeaderParsingState()

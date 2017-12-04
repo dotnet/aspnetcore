@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         public ReadableBuffer _buffer;
-        public Http1Connection<object> _http1Connection;
+        public Http1Connection _http1Connection;
 
         [IterationSetup]
         public void Setup()
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = NullParser<Http1ParsingHandler>.Instance
             };
 
-            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),

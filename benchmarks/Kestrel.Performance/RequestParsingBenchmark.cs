@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     {
         public IPipe Pipe { get; set; }
 
-        public Http1Connection<object> Http1Connection { get; set; }
+        public Http1Connection Http1Connection { get; set; }
 
         [IterationSetup]
         public void Setup()
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
+            var http1Connection = new Http1Connection(new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),

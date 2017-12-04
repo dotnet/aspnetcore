@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -30,26 +29,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     {
         private readonly IPipeConnection _transport;
         private readonly IPipeConnection _application;
-        private readonly TestHttp1Connection<object> _http1Connection;
+        private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
         private readonly BufferPool _pipelineFactory;
         private ReadCursor _consumed;
         private ReadCursor _examined;
         private Mock<ITimeoutControl> _timeoutControl;
-
-        private class TestHttp1Connection<TContext> : Http1Connection<TContext>
-        {
-            public TestHttp1Connection(IHttpApplication<TContext> application, Http1ConnectionContext context)
-                : base(application, context)
-            {
-            }
-
-            public Task ProduceEndAsync()
-            {
-                return ProduceEnd();
-            }
-        }
 
         public Http1ConnectionTests()
         {
@@ -71,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Transport = pair.Transport
             };
 
-            _http1Connection = new TestHttp1Connection<object>(application: null, context: _http1ConnectionContext);
+            _http1Connection = new TestHttp1Connection(_http1ConnectionContext);
             _http1Connection.Reset();
         }
 
@@ -509,7 +495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ProcessRequestsAsyncEnablesKeepAliveTimeout()
         {
-            var requestProcessingTask = _http1Connection.ProcessRequestsAsync();
+            var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.StopProcessingNextRequest));
@@ -594,7 +580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task RequestProcessingTaskIsUnwrapped()
         {
-            var requestProcessingTask = _http1Connection.ProcessRequestsAsync();
+            var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
             await _application.Output.WriteAsync(data);
@@ -723,7 +709,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers0 = MakeHeaders(header0Count);
             var headers1 = MakeHeaders(header1Count, header0Count);
 
-            var requestProcessingTask = _http1Connection.ProcessRequestsAsync();
+            var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
             await WaitForCondition(TimeSpan.FromSeconds(1), () => _http1Connection.RequestHeaders != null);
@@ -757,7 +743,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var headers0 = MakeHeaders(header0Count);
             var headers1 = MakeHeaders(header1Count, header0Count);
 
-            var requestProcessingTask = _http1Connection.ProcessRequestsAsync();
+            var requestProcessingTask = _http1Connection.ProcessRequestsAsync<object>(null);
 
             await _application.Output.WriteAsync(Encoding.ASCII.GetBytes("GET / HTTP/1.0\r\n"));
             await WaitForCondition(TimeSpan.FromSeconds(1), () => _http1Connection.RequestHeaders != null);

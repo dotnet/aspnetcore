@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 
-            Http1Connection = new Http1Connection<object>(null, Http1ConnectionContext);
+            Http1Connection = new Http1Connection(Http1ConnectionContext);
             Http1Connection.HttpResponseControl = Mock.Of<IHttpResponseControl>();
         }
 
