@@ -561,7 +561,7 @@ Typically, when you change a source file, the effects appear in your local brows
 First ensure you already have a working Webpack dev middleware setup. Then, install the `webpack-hot-middleware` NPM module:
 
 ```
-npm install --save webpack-hot-middleware
+npm install --save-dev webpack-hot-middleware
 ```
 
 At the top of your `Startup.cs` file, add the following namespace reference:
@@ -620,7 +620,7 @@ app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
 Also, install the NPM module `aspnet-webpack-react`, e.g.:
 
 ```
-npm install --save aspnet-webpack-react
+npm install --save-dev aspnet-webpack-react
 ```
 
 Now if you edit any React component (e.g., in `.jsx` or `.tsx` files), the updated component will be injected into the running application, and will even preserve its in-memory state.
