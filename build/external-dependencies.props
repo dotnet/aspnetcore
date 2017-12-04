@@ -377,7 +377,7 @@
     <ExternalDependency Include="xunit" Version="$(XunitPackageVersion)" Source="$(DefaultNuGetFeed)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetRestoreSources)'!=''">
+  <ItemGroup Condition="'$(DotNetAdditionalRestoreSources)'!=''">
     <ExternalDependency
       Update="@(ExternalDependency->WithMetadataValue('Source', '$(DotNetCoreFeed)'));@(ExternalDependency->WithMetadataValue('Source', '$(RoslynFeed)'))"
       Source="$(DotNetAdditionalRestoreSources);%(ExternalDependency.Source)" />
