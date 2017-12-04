@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" />
+    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" />
 
     <ExcludeFromTest
       Condition="'$(AntaresTests)' != ''"
