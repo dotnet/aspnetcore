@@ -5,7 +5,7 @@
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15549</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.0.0</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27424</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.0.0</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.0.0</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>2.0.0</MicrosoftExtensionsLoggingPackageVersion>
