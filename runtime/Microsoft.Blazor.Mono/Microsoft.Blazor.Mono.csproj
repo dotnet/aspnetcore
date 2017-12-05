@@ -6,8 +6,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <Target Name="PackageMono" BeforeTargets="Build">
-    <CallTarget Targets="OptimizeMono" />
+  <Target Name="PackageMono" BeforeTargets="Build" DependsOnTargets="OptimizeMono">
   </Target>
 
 </Project>
