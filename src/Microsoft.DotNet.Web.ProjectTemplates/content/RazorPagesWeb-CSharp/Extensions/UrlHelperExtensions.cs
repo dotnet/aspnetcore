@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Mvc
                 protocol: scheme);
         }
 
-        public static string ResetPasswordCallbackLink(this IUrlHelper urlHelper, string userId, string code, string scheme)
+        public static string ResetPasswordCallbackLink(this IUrlHelper urlHelper, string code, string scheme)
         {
             return urlHelper.Page(
                 "/Account/ResetPassword",
                 pageHandler: null,
-                values: new { userId, code },
+                values: new { code },
                 protocol: scheme);
         }
     }
