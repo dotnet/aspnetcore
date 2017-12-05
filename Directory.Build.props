@@ -1,5 +1,7 @@
 <Project>
   <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+
   <PropertyGroup>
     <GenerateSourceLinkFile>false</GenerateSourceLinkFile>
   </PropertyGroup>

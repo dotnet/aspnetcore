@@ -1,0 +1,7 @@
+<Project>
+  <Import Project="dependencies.props" />
+
+  <ItemGroup>
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
+  </ItemGroup>
+</Project>

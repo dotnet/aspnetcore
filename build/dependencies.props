@@ -5,32 +5,32 @@
 
   <PropertyGroup Label="PackageVersions">
     <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-16007</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAllPackageVersion>2.0.3-rtm-207</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
-    <MicrosoftAspNetCorePackageVersion>2.0.1-rtm-207</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreSpaServicesPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreSpaServicesPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.0.1-rtm-207</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.0.3</MicrosoftAspNetCoreAllPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.0.1</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.0.1</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.0.1</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.0.1</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.0.1</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.0.1</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.0.1</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
+    <MicrosoftAspNetCorePackageVersion>2.0.1</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreSpaServicesPackageVersion>2.0.1</MicrosoftAspNetCoreSpaServicesPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.0.1</MicrosoftAspNetCoreStaticFilesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.0.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.3.409</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.3.409</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.0.1-rtm-207</MicrosoftEntityFrameworkCoreDesignPackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.0.1-rtm-207</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.0.1-rtm-207</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.0.1-rtm-207</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
-    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.0.1-rtm-207</MicrosoftEntityFrameworkCoreToolsPackageVersion>
+    <MicrosoftEntityFrameworkCoreDesignPackageVersion>2.0.1</MicrosoftEntityFrameworkCoreDesignPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.0.1</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.0.1</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.0.1</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.0.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.0.0</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsSecretManagerToolsPackageVersion>2.0.0</MicrosoftExtensionsSecretManagerToolsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
-    <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
-    <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.0.1-rtm-207</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
-    <RuntimeFrameworkVersion Condition="'$(TargetFramework)' == 'netcoreapp2.0'">2.0.2-servicing-25728-02</RuntimeFrameworkVersion>
+    <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.0.1</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.0.1</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
+    <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.0.1</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.3</MicrosoftNETCoreApp20PackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.6.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Company.WebApplication1.Models.ManageViewModels
 {
@@ -15,9 +16,10 @@ namespace Company.WebApplication1.Models.ManageViewModels
             [Display(Name = "Verification Code")]
             public string Code { get; set; }
 
-            [ReadOnly(true)]
+            [BindNever]
             public string SharedKey { get; set; }
 
+            [BindNever]
             public string AuthenticatorUri { get; set; }
     }
 }
