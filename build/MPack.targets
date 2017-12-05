@@ -34,6 +34,7 @@
     </PropertyGroup>
     
     <MakeDir Directories="$(MPackSourcesDir)" Condition="!Exists('$(MPackSourcesDir)')" />
+    <Delete Files="$(MPackOutputPath)" Condition="Exists('$(MPackOutputPath)')" />
 
     <!-- We need to resolve the language service assemblies to generate an addin.info for the mpack -->
     <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Runtime/Import/@assembly">
