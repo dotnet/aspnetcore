@@ -13,12 +13,15 @@ import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
 import { ILogger, LogLevel } from "./ILogger"
 import { ConsoleLogger, NullLogger, LoggerFactory } from "./Loggers"
 import { IHubConnectionOptions } from "./IHubConnectionOptions"
+import { setTimeout, clearTimeout } from "timers";
 
 export { TransportType } from "./Transports"
 export { HttpConnection } from "./HttpConnection"
 export { JsonHubProtocol } from "./JsonHubProtocol"
 export { LogLevel, ILogger } from "./ILogger"
 export { ConsoleLogger, NullLogger } from "./Loggers"
+
+const DEFAULT_SERVER_TIMEOUT_IN_MS: number = 30 * 1000;
 
 export class HubConnection {
     private readonly connection: IConnection;
@@ -28,9 +31,14 @@ export class HubConnection {
     private methods: Map<string, ((...args: any[]) => void)[]>;
     private id: number;
     private closedCallbacks: ConnectionClosed[];
+    private timeoutHandle: NodeJS.Timer;
+    private serverTimeoutInMilliseconds: number;
 
     constructor(urlOrConnection: string | IConnection, options: IHubConnectionOptions = {}) {
         options = options || {};
+
+        this.serverTimeoutInMilliseconds = options.serverTimeoutInMilliseconds || DEFAULT_SERVER_TIMEOUT_IN_MS;
+
         if (typeof urlOrConnection === "string") {
             this.connection = new HttpConnection(urlOrConnection, options);
         }
@@ -51,6 +59,10 @@ export class HubConnection {
     }
 
     private processIncomingData(data: any) {
+        if (this.timeoutHandle !== undefined) {
+            clearTimeout(this.timeoutHandle);
+        }
+
         // Parse the messages
         let messages = this.protocol.parseMessages(data);
 
@@ -79,6 +91,21 @@ export class HubConnection {
                     break;
             }
         }
+
+        this.configureTimeout();
+    }
+
+    private configureTimeout() {
+        if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
+            // Set the timeout timer
+            this.timeoutHandle = setTimeout(() => this.serverTimeout(), this.serverTimeoutInMilliseconds);
+        }
+    }
+
+    private serverTimeout() {
+        // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
+        // Terminate the connection
+        this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
 
     private invokeClientMethod(invocationMessage: InvocationMessage) {
@@ -122,6 +149,8 @@ export class HubConnection {
         if (requestedTransferMode === TransferMode.Binary && actualTransferMode === TransferMode.Text) {
             this.protocol = new Base64EncodedHubProtocol(this.protocol);
         }
+
+        this.configureTimeout();
     }
 
     stop(): void {

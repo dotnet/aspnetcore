@@ -89,7 +89,7 @@ export class HttpConnection implements IConnection {
                     ? TransferMode.Binary
                     : TransferMode.Text;
 
-            this.features.transferMode = await this.transport.connect(this.url, requestedTransferMode);
+            this.features.transferMode = await this.transport.connect(this.url, requestedTransferMode, this);
 
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
@@ -144,7 +144,7 @@ export class HttpConnection implements IConnection {
         return this.transport.send(data);
     }
 
-    async stop(): Promise<void> {
+    async stop(error? : Error): Promise<void> {
         let previousState = this.connectionState;
         this.connectionState = ConnectionState.Disconnected;
 
@@ -154,10 +154,10 @@ export class HttpConnection implements IConnection {
         catch (e) {
             // this exception is returned to the user as a rejected Promise from the start method
         }
-        this.stopConnection(/*raiseClosed*/ previousState == ConnectionState.Connected);
+        this.stopConnection(/*raiseClosed*/ previousState == ConnectionState.Connected, error);
     }
 
-    private stopConnection(raiseClosed: Boolean, error?: any) {
+    private stopConnection(raiseClosed: Boolean, error?: Error) {
         if (this.transport) {
             this.transport.stop();
             this.transport = null;

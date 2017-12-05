@@ -320,7 +320,7 @@ describe("Connection", () => {
                 // mode: TransferMode : TransferMode.Text
                 connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> { return Promise.resolve(transportTransferMode); },
                 send(data: any): Promise<void> { return Promise.resolve(); },
-                stop(): void {},
+                stop(): void { },
                 onreceive: null,
                 onclose: null,
                 mode: transportTransferMode

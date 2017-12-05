@@ -5,6 +5,7 @@ import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
 import { HttpError } from "./HttpError"
 import { ILogger, LogLevel } from "./ILogger"
+import { IConnection } from "./IConnection"
 
 export enum TransportType {
     WebSockets,
@@ -18,7 +19,7 @@ export const enum TransferMode {
 }
 
 export interface ITransport {
-    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode>;
+    connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode>;
     send(data: any): Promise<void>;
     stop(): void;
     onreceive: DataReceived;
@@ -35,7 +36,7 @@ export class WebSocketTransport implements ITransport {
         this.jwtBearer = jwtBearer;
     }
 
-    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
+    connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
 
         return new Promise<TransferMode>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
@@ -113,7 +114,7 @@ export class ServerSentEventsTransport implements ITransport {
         this.logger = logger;
     }
 
-    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
+    connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
         if (typeof (EventSource) === "undefined") {
             Promise.reject("EventSource not supported by the browser.");
         }
@@ -194,9 +195,12 @@ export class LongPollingTransport implements ITransport {
         this.logger = logger;
     }
 
-    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
+    connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
         this.url = url;
         this.shouldPoll = true;
+
+        // Set a flag indicating we have inherent keep-alive in this transport.
+        connection.features.inherentKeepAlive = true;
 
         if (requestedTransferMode === TransferMode.Binary && (typeof new XMLHttpRequest().responseType !== "string")) {
             // This will work if we fix: https://github.com/aspnet/SignalR/issues/742

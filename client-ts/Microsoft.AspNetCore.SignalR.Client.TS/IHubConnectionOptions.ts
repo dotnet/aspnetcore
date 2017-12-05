@@ -7,4 +7,5 @@ import { ILogger, LogLevel } from "./ILogger"
 
 export interface IHubConnectionOptions extends IHttpConnectionOptions {
     protocol?: IHubProtocol;
+    serverTimeoutInMilliseconds?: number;
 }

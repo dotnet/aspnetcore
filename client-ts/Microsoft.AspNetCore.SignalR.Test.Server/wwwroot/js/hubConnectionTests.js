@@ -56,7 +56,7 @@ describe('hubConnection', function () {
                 });
 
                 hubConnection.start().then(function () {
-                    hubConnection.send('SendCustomObject', { Name: 'test', Value: 42});
+                    hubConnection.send('SendCustomObject', { Name: 'test', Value: 42 });
                 }).catch(function (e) {
                     fail(e);
                     done();
@@ -258,7 +258,7 @@ describe('hubConnection', function () {
                 hubConnection.start().then(function () {
                     return hubConnection.invoke('InvokeWithString', message);
                 })
-                .then(function() {
+                .then(function () {
                     return hubConnection.stop();
                 })
                 .catch(function (e) {
@@ -367,18 +367,42 @@ describe('hubConnection', function () {
                         });
                         return hubConnection.start();
                     })
-                    .then(function() {
+                    .then(function () {
                         return hubConnection.invoke('Echo', message);
                     })
-                    .then(function(response) {
+                    .then(function (response) {
                         expect(response).toEqual(message);
                         return hubConnection.stop();
                     })
-                    .catch(function(e) {
+                    .catch(function (e) {
                         fail(e);
                         done();
                     });
             });
+
+            if (transportType != signalR.TransportType.LongPolling) {
+                it("terminates if no messages received within timeout interval", function (done) {
+                    var options = {
+                        transport: transportType,
+                        logging: signalR.LogLevel.Trace,
+                        serverTimeoutInMilliseconds: 100
+                    };
+
+                    var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                    var timeout = setTimeout(200, function () {
+                        fail("Server timeout did not fire within expected interval");
+                    });
+
+                    hubConnection.start().then(function () {
+                        hubConnection.onclose(function (error) {
+                            clearTimeout(timeout);
+                            expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
+                            done();
+                        });
+                    });
+                });
+            }
         });
     });
 
