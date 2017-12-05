@@ -105,7 +105,7 @@ try {
                 # Push the changes
                 if (-not $NoPush -and ($Force -or ($PSCmdlet.ShouldContinue("Pushing updates to repos.", 'Push the changes to these repos?')))) {
                     try {
-                        Invoke-Block { & git @gitConfigArgs push origin HEAD:$submodule.branch}
+                        Invoke-Block { & git @gitConfigArgs push origin HEAD:$($submodule.branch)}
                     }
                     catch {
                         Write-Warning "Error in pushing $($submodule.module): $_"

@@ -7,11 +7,11 @@
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15616</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10223</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>2.1.0-preview1-15616</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(InternalAspNetCoreSdkPackageVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
     <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.2</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
