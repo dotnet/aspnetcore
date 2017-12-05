@@ -10,7 +10,7 @@ namespace Blazor.E2ETest.Tests
     public class HelloWorldTest : StaticSiteTestBase
     {
         public HelloWorldTest(BrowserFixture browserFixture, StaticServerFixture serverFixture)
-            : base(browserFixture, serverFixture, @"samples\HelloWorld")
+            : base(browserFixture, serverFixture, "HelloWorld")
         {
         }
 

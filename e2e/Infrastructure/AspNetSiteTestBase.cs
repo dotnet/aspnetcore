@@ -3,27 +3,24 @@
 
 using OpenQA.Selenium;
 using System;
-using System.IO;
 using Xunit;
 
 namespace Blazor.E2ETest.Infrastructure
 {
-    public class StaticSiteTestBase
-        : IClassFixture<BrowserFixture>, IClassFixture<StaticServerFixture>
+    public class AspNetSiteTestBase<TStartup>
+        : IClassFixture<BrowserFixture>, IClassFixture<AspNetServerFixture>
     {
         public IWebDriver Browser { get; }
 
         private Uri _serverRootUri;
 
-        public StaticSiteTestBase(
+        public AspNetSiteTestBase(
             BrowserFixture browserFixture,
-            StaticServerFixture serverFixture,
-            string sampleSiteName)
+            AspNetServerFixture serverFixture)
         {
             Browser = browserFixture.Browser;
 
-            // Start a static files web server for the specified directory
-            var serverRootUriString = serverFixture.StartAndGetUrl(sampleSiteName);
+            var serverRootUriString = serverFixture.StartAndGetUrl(typeof(TStartup));
             _serverRootUri = new Uri(serverRootUriString);
         }
 
