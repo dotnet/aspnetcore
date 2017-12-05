@@ -6,7 +6,13 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <Target Name="PackageMono" BeforeTargets="Build" DependsOnTargets="OptimizeMono">
+  <Target Name="EmbedMonoResources" BeforeTargets="PreBuildEvent" DependsOnTargets="OptimizeMono">
+    <ItemGroup>
+      <MonoResourcesToEmbed Include="$(MonoOptimizedDir)**" />
+      <EmbeddedResource Include="@(MonoResourcesToEmbed)">
+        <LogicalName>mono:%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+      </EmbeddedResource>
+    </ItemGroup>
   </Target>
 
 </Project>
