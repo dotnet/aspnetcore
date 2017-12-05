@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\mono\mono.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="PackageMono" BeforeTargets="Build">
+    <CallTarget Targets="OptimizeMono" />
+  </Target>
+
+</Project>
