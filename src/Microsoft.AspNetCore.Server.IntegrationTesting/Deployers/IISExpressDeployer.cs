@@ -47,8 +47,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             get
             {
-                return RuntimeInformation.OSArchitecture == Architecture.X64
-                    || RuntimeInformation.OSArchitecture == Architecture.Arm64;
+                return Environment.Is64BitOperatingSystem;
             }
         }
 
