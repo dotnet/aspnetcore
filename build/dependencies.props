@@ -119,7 +119,6 @@
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
-    <SystemBuffersExperimentalPackageVersion>0.1.0-alpha-002</SystemBuffersExperimentalPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview1-25914-04</SystemBuffersPackageVersion>
     <SystemBuffersPrimitivesPackageVersion>0.1.0-alpha-002</SystemBuffersPrimitivesPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview1-25914-04</SystemCodeDomPackageVersion>
