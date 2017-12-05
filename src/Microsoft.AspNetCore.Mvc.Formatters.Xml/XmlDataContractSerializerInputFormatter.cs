@@ -28,24 +28,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
         private readonly bool _suppressInputFormatterBuffering;
+        private readonly MvcOptions _options;
         private DataContractSerializerSettings _serializerSettings;
 
         /// <summary>
-        /// Initializes a new instance of DataContractSerializerInputFormatter
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
         /// </summary>
-        public XmlDataContractSerializerInputFormatter() :
-            this(suppressInputFormatterBuffering: false)
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
+        public XmlDataContractSerializerInputFormatter()
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of DataContractSerializerInputFormatter
-        /// </summary>
-        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
-        public XmlDataContractSerializerInputFormatter(bool suppressInputFormatterBuffering)
-        {
-            _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
-
             SupportedEncodings.Add(UTF8EncodingWithoutBOM);
             SupportedEncodings.Add(UTF16EncodingLittleEndian);
 
@@ -57,6 +48,29 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             WrapperProviderFactories = new List<IWrapperProviderFactory>();
             WrapperProviderFactories.Add(new SerializableErrorWrapperProviderFactory());
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
+        /// </summary>
+        /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
+        public XmlDataContractSerializerInputFormatter(bool suppressInputFormatterBuffering)
+            : this()
+        {
+            _suppressInputFormatterBuffering = suppressInputFormatterBuffering;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="XmlDataContractSerializerInputFormatter"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        public XmlDataContractSerializerInputFormatter(MvcOptions options)
+#pragma warning disable CS0618
+            : this()
+#pragma warning restore CS0618
+        {
+            _options = options;
         }
 
         /// <summary>
@@ -126,7 +140,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var request = context.HttpContext.Request;
 
-            if (!request.Body.CanSeek && !_suppressInputFormatterBuffering)
+            var suppressInputFormatterBuffering = _options?.SuppressInputFormatterBuffering ?? _suppressInputFormatterBuffering;
+
+            if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
                 // XmlDataContractSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously 
                 // read everything into a buffer, and then seek back to the beginning. 

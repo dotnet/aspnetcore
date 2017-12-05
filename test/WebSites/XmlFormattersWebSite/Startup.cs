@@ -30,7 +30,7 @@ namespace XmlFormattersWebSite
                 // request information (Ex: Accept header).
                 // So here we instead clear out the default supported media types and create new
                 // ones which are distinguishable between formatters.
-                var xmlSerializerInputFormatter = new XmlSerializerInputFormatter();
+                var xmlSerializerInputFormatter = new XmlSerializerInputFormatter(new MvcOptions());
                 xmlSerializerInputFormatter.SupportedMediaTypes.Clear();
                 xmlSerializerInputFormatter.SupportedMediaTypes.Add(
                     new MediaTypeHeaderValue("application/xml-xmlser"));
@@ -44,7 +44,7 @@ namespace XmlFormattersWebSite
                 xmlSerializerOutputFormatter.SupportedMediaTypes.Add(
                     new MediaTypeHeaderValue("text/xml-xmlser"));
 
-                var dcsInputFormatter = new XmlDataContractSerializerInputFormatter();
+                var dcsInputFormatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
                 dcsInputFormatter.SupportedMediaTypes.Clear();
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/xml-dcs"));
                 dcsInputFormatter.SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/xml-dcs"));
