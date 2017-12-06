@@ -20,13 +20,27 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
         {
             Browser = browserFixture.Browser;
 
-            var serverRootUriString = serverFixture.StartAndGetUrl(typeof(TStartup));
-            _serverRootUri = new Uri(serverRootUriString);
+            if (!serverFixture.IsStarted)
+            {
+                serverFixture.Start(typeof(TStartup));
+            }
+
+            _serverRootUri = serverFixture.RootUri;
         }
 
-        public void Navigate(string relativeUrl)
+        public void Navigate(string relativeUrl, bool noReload = false)
         {
             var absoluteUrl = new Uri(_serverRootUri, relativeUrl);
+
+            if (noReload)
+            {
+                var existingUrl = Browser.Url;
+                if (string.Equals(existingUrl, absoluteUrl.AbsoluteUri, StringComparison.Ordinal))
+                {
+                    return;
+                }
+            }
+
             Browser.Navigate().GoToUrl(absoluteUrl);
         }
     }

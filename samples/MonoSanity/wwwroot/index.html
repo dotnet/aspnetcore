@@ -12,7 +12,7 @@
     <form id="addNumbers">
       <input id="addNumberA" value="123" /> +
       <input id="addNumberB" value="456" /> =
-      <input id="addNumberResult" readonly />
+      <input id="addNumbersResult" readonly />
       <button type="submit" disabled>Go</button>
     </form>
   </fieldset>
@@ -53,7 +53,7 @@
       var a = parseInt(el('addNumberA').value);
       var b = parseInt(el('addNumberB').value);
       var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'AddNumbers', [a, b]);
-      el('addNumberResult').value = result;
+      el('addNumbersResult').value = result;
     }
 
     el('repeatString').onsubmit = function (evt) {

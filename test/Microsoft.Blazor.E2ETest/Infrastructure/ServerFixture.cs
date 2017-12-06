@@ -12,6 +12,9 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public abstract class ServerFixture : IDisposable
     {
+        public bool IsStarted => RootUri != null;
+        public Uri RootUri { get; private set; }
+
         private IWebHost _host;
 
         public void Dispose()
@@ -19,10 +22,15 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
             _host.StopAsync();
         }
 
-        protected string StartAndGetUrl(IWebHost host)
+        protected void Start(IWebHost host)
         {
-            _host = host;
-            return StartWebHostInBackgroundThread();
+            if (_host != null)
+            {
+                throw new InvalidOperationException("Server is already started.");
+            }
+
+            _host = host ?? throw new ArgumentNullException(nameof(host));
+            RootUri = new Uri(StartWebHostInBackgroundThread());
         }
 
         protected static string FindSolutionDir()

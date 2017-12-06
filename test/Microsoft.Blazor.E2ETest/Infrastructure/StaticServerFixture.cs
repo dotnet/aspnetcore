@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -9,7 +10,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class StaticServerFixture : ServerFixture
     {
-        public string StartAndGetUrl(string sampleSiteName)
+        public void Start(string sampleSiteName)
         {
             var sampleSitePath = Path.Combine(
                 FindSolutionDir(),
@@ -24,7 +25,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
                 .UseUrls("http://127.0.0.1:0")
                 .Build();
 
-            return StartAndGetUrl(host);
+            Start(host);
         }
 
         private class Startup

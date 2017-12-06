@@ -10,7 +10,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class AspNetServerFixture : ServerFixture
     {
-        public string StartAndGetUrl(Type startupType)
+        public void Start(Type startupType)
         {
             var sampleSitePath = Path.Combine(
                 FindSolutionDir(),
@@ -23,7 +23,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
                 .UseUrls("http://127.0.0.1:0")
                 .Build();
 
-            return StartAndGetUrl(host);
+            Start(host);
         }
     }
 }

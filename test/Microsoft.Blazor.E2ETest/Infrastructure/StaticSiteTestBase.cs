@@ -22,9 +22,12 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
         {
             Browser = browserFixture.Browser;
 
-            // Start a static files web server for the specified directory
-            var serverRootUriString = serverFixture.StartAndGetUrl(sampleSiteName);
-            _serverRootUri = new Uri(serverRootUriString);
+            if (!serverFixture.IsStarted)
+            {
+                serverFixture.Start(sampleSiteName);
+            }
+
+            _serverRootUri = serverFixture.RootUri;
         }
 
         public void Navigate(string relativeUrl)
