@@ -1,0 +1,16 @@
+{
+  "name": "blazor.host.client",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/emscripten": "0.0.31",
+    "typescript": "^2.6.1",
+    "webpack": "^3.8.1",
+    "ts-loader": "^3.2.0"
+  }
+}

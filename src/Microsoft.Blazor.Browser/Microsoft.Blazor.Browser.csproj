@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
+    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <DefaultItemExcludes>${DefaultItemExcludes};node_modules\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <Target Name="RunWebpack" BeforeTargets="PreBuildEvent">
+    <RemoveDir Directories="dist" />
+    <Exec Command="npm run build" WorkingDirectory="$(MSBuildThisFileDirectory)" />
+    <ItemGroup>
+      <EmbeddedResource Include="dist/blazor.js" LogicalName="blazor.js" />
+    </ItemGroup>
+  </Target>
+</Project>
