@@ -12,6 +12,7 @@ namespace MonoSanity
         {
             app.UseDeveloperExceptionPage();
             app.UseFileServer();
+            app.UseBlazor();
         }
     }
 }

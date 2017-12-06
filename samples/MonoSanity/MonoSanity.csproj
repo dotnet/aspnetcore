@@ -8,4 +8,8 @@
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\runtime\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
+  </ItemGroup>
+
 </Project>
