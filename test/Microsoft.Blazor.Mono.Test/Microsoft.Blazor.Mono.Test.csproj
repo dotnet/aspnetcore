@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\runtime\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj" />
   </ItemGroup>
 
 </Project>

@@ -26,18 +26,18 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "HelloWorld", "samples\Hello
 		SlnRelativePath = "samples\HelloWorld\"
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "runtime", "runtime", "{B867E038-B3CE-43E3-9292-61568C46CDEB}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B867E038-B3CE-43E3-9292-61568C46CDEB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mono", "mono", "{7B5CAAB1-A3EB-44F7-87E3-A13ED89FC17D}"
 	ProjectSection(SolutionItems) = preProject
-		runtime\mono\mono.targets = runtime\mono\mono.targets
+		src\mono\mono.targets = src\mono\mono.targets
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono", "runtime\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj", "{39FEC72D-AF52-47A3-B63D-7BF0E4335248}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono", "src\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj", "{39FEC72D-AF52-47A3-B63D-7BF0E4335248}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "samples\MonoSanity\MonoSanity.csproj", "{7C53BB6B-5906-4753-B507-C9FCC2F7E5B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Server", "runtime\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj", "{5A694793-3257-4D37-BB74-4A41B3894685}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Server", "src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj", "{5A694793-3257-4D37-BB74-4A41B3894685}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}"
 EndProject
@@ -45,7 +45,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono.Test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.E2ETest", "test\Microsoft.Blazor.E2ETest\Microsoft.Blazor.E2ETest.csproj", "{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoSanityClient", "samples\MonoSanityClient\MonoSanityClient.csproj", "{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "samples\MonoSanityClient\MonoSanityClient.csproj", "{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\runtime\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
     <ProjectReference Include="..\MonoSanityClient\MonoSanityClient.csproj" />
   </ItemGroup>
 
