@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Builder
             {
                 { ".dll", MediaTypeNames.Application.Octet },
                 { ".js", "application/javascript" },
-                { ".wasm", MediaTypeNames.Application.Octet }
+                { ".mem", MediaTypeNames.Application.Octet },
+                { ".wasm", MediaTypeNames.Application.Octet },
             });
         }
     }

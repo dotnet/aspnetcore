@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono.Test"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.E2ETest", "test\Microsoft.Blazor.E2ETest\Microsoft.Blazor.E2ETest.csproj", "{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonoSanityClient", "samples\MonoSanityClient\MonoSanityClient.csproj", "{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +77,10 @@ Global
 		{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -87,6 +93,7 @@ Global
 		{5A694793-3257-4D37-BB74-4A41B3894685} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{118484D3-3993-45CE-97C1-6F28A517529B} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
 		{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
+		{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

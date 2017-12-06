@@ -18,6 +18,7 @@ namespace Microsoft.Blazor.Mono.Test
             var expectedFiles = new[]
             {
                 "/asmjs/mono.asm.js",
+                "/asmjs/mono.js.mem",
                 "/wasm/mono.wasm",
                 "/bcl/mscorlib.dll",
                 "/bcl/Facades/System.Collections.dll",

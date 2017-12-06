@@ -1,8 +1,83 @@
+<!DOCTYPE html>
 <html>
 <head>
   <title>Mono sanity check</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
 </head>
 <body>
-  <h1>Hello, world!</h1>
+  <p>Simple sanity check to ensure the Mono runtime works in basic cases.</p>
+
+  <fieldset>
+    <legend>Add numbers</legend>
+    <form id="addNumbers">
+      <input id="addNumberA" value="123" /> +
+      <input id="addNumberB" value="456" /> =
+      <input id="addNumberResult" readonly />
+      <button type="submit" disabled>Go</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Repeat string</legend>
+    <form id="repeatString">
+      <input id="repeatStringStr" value="Hello" /> *
+      <input id="repeatStringCount" value="3" type="number" /> =
+      <input id="repeatStringResult" readonly />
+      <button type="submit" disabled>Go</button>
+    </form>
+  </fieldset>
+
+  <fieldset>
+    <legend>Trigger exception</legend>
+    <form id="triggerException">
+      <input id="triggerExceptionMessage" value="Your message here" />
+      <button type="submit" disabled>Go</button>
+      <div><textarea rows="5" cols="80" readonly id="triggerExceptionMessageStackTrace"></textarea></div>
+    </form>
+  </fieldset>
+
+  <p id="loadingIndicator">Loading...</p>
+
+  <script src="loader.js"></script>
+  <script>
+    initMono(['/clientBin/MonoSanityClient.dll'], function () {
+      var buttons = document.getElementsByTagName('button');
+      for (var i = 0; i < buttons.length; i++) {
+        buttons[i].disabled = false;
+      }
+      el('loadingIndicator').style.display = 'none';
+    });
+
+    el('addNumbers').onsubmit = function (evt) {
+      evt.preventDefault();
+      var a = parseInt(el('addNumberA').value);
+      var b = parseInt(el('addNumberB').value);
+      var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'AddNumbers', [a, b]);
+      el('addNumberResult').value = result;
+    }
+
+    el('repeatString').onsubmit = function (evt) {
+      evt.preventDefault();
+      var str = el('repeatStringStr').value;
+      var count = parseInt(el('repeatStringCount').value);
+      var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'RepeatString', [str, count]);
+      el('repeatStringResult').value = result;
+    }
+
+    el('triggerException').onsubmit = function (evt) {
+      evt.preventDefault();
+      var message = el('triggerExceptionMessage').value;
+      try {
+        invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'TriggerException', [message]);
+        el('triggerExceptionMessageStackTrace').value = 'WARNING: No exception occurred';
+      } catch (ex) {
+        el('triggerExceptionMessageStackTrace').value = ex.toString();
+      }
+    }
+
+    function el(id) {
+      return document.getElementById(id);
+    }
+  </script>
 </body>
 </html>

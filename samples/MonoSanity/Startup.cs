@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using MonoSanityClient;
+using System.IO;
+using System.Net.Mime;
 
 namespace MonoSanity
 {
@@ -13,6 +16,28 @@ namespace MonoSanity
             app.UseDeveloperExceptionPage();
             app.UseFileServer();
             app.UseBlazor();
+            
+            ServeSingleStaticFile(app, 
+                "/clientBin/MonoSanityClient.dll",
+                typeof(Examples).Assembly.Location);            
+        }
+
+        private void ServeSingleStaticFile(IApplicationBuilder app, string url, string physicalPath)
+        {
+            // This is not implemented efficiently (e.g., doesn't support cache control headers)
+            // so don't use this in real applications. Use 'UseStaticFiles' or similar instead.
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path == url)
+                {
+                    context.Response.ContentType = MediaTypeNames.Application.Octet;
+                    return File.OpenRead(physicalPath).CopyToAsync(context.Response.Body);
+                }
+                else
+                {
+                    return next();
+                }
+            });
         }
     }
 }
