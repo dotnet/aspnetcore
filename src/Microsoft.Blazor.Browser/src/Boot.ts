@@ -1,2 +1,1 @@
-﻿const abc: string = "Hello";
-alert(abc);
+﻿console.log('Blazor is loading');

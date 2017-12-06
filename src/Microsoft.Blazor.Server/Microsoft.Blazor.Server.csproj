@@ -6,9 +6,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
     <ProjectReference Include="..\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj" />
   </ItemGroup>
 
