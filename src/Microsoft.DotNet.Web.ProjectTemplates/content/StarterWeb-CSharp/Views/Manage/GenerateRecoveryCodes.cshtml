@@ -1,24 +1,26 @@
-﻿@model GenerateRecoveryCodesViewModel
-@{
-    ViewData["Title"] = "Recovery codes";
+﻿@{
+    ViewData["Title"] = "Generate two-factor authentication (2FA) recovery codes";
     ViewData.AddActivePage(ManageNavPages.TwoFactorAuthentication);
 }
 
-<h4>@ViewData["Title"]</h4>
+<h2>@ViewData["Title"]</h2>
+
 <div class="alert alert-warning" role="alert">
     <p>
         <span class="glyphicon glyphicon-warning-sign"></span>
-        <strong>Put these codes in a safe place.</strong>
+        <strong>This action generates new recovery codes.</strong>
     </p>
     <p>
         If you lose your device and don't have the recovery codes you will lose access to your account.
     </p>
+    <p>
+        Generating new recovery codes does not change the keys used in authenticator apps. If you wish to change the key
+        used in an authenticator app you should <a asp-action="ResetAuthenticatorWarning">reset your authenticator keys.</a>
+    </p>
 </div>
-<div class="row">
-    <div class="col-md-12">
-        @for (var row = 0; row < Model.RecoveryCodes.Count(); row += 2)
-        {
-            <code>@Model.RecoveryCodes[row]</code><text>&nbsp;</text><code>@Model.RecoveryCodes[row + 1]</code><br />
-        }
-    </div>
+
+<div>
+    <form asp-action="GenerateRecoveryCodes" method="post" class="form-group">
+        <button class="btn btn-danger" type="submit">Generate Recovery Codes</button>
+    </form>
 </div>

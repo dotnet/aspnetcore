@@ -23,9 +23,23 @@ namespace Company.WebApplication1.Pages.Account.Manage
             _logger = logger;
         }
 
-        public string[] RecoveryCodes { get; set; }
-
         public async Task<IActionResult> OnGetAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                throw new ApplicationException($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (!user.TwoFactorEnabled)
+            {
+                throw new ApplicationException($"Cannot generate recovery codes for user with ID '{user.Id}' because they do not have 2FA enabled.");
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -39,11 +53,11 @@ namespace Company.WebApplication1.Pages.Account.Manage
             }
 
             var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-            RecoveryCodes = recoveryCodes.ToArray();
+            TempData["RecoveryCodes"] = recoveryCodes.ToArray();
 
             _logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", user.Id);
 
-            return Page();
+            return RedirectToPage("./ShowRecoveryCodes");
         }
     }
 }

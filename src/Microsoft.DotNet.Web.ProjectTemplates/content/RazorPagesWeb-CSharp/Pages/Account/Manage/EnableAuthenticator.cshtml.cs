@@ -20,7 +20,7 @@ namespace Company.WebApplication1.Pages.Account.Manage
         private readonly ILogger<EnableAuthenticatorModel> _logger;
         private readonly UrlEncoder _urlEncoder;
 
-        private const string AuthenicatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+        private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
         public EnableAuthenticatorModel(
             UserManager<ApplicationUser> userManager,
@@ -90,7 +90,10 @@ namespace Company.WebApplication1.Pages.Account.Manage
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", user.Id);
-            return RedirectToPage("./GenerateRecoveryCodes");
+
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            TempData["RecoveryCodes"] = recoveryCodes.ToArray();
+            return RedirectToPage("./ShowRecoveryCodes");
         }
 
         private async Task LoadSharedKeyAndQrCodeUriAsync(ApplicationUser user)
@@ -127,7 +130,7 @@ namespace Company.WebApplication1.Pages.Account.Manage
         private string GenerateQrCodeUri(string email, string unformattedKey)
         {
             return string.Format(
-                AuthenicatorUriFormat,
+                AuthenticatorUriFormat,
                 _urlEncoder.Encode("Company.WebApplication1"),
                 _urlEncoder.Encode(email),
                 unformattedKey);
