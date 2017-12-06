@@ -168,5 +168,5 @@
 	branch = release/2.0.0
 [submodule "modules/Templating"]
 	path = modules/Templating
-	url = https://github.com/aspnet/Templating.git
+	url = https://github.com/aspnet/Templating-Private.git
 	branch = release/2.0.0
