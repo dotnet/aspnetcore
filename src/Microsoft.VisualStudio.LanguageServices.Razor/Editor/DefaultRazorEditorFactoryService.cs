@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 
@@ -21,6 +22,34 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         [ImportingConstructor]
         public DefaultRazorEditorFactoryService(
+            VisualStudioDocumentTrackerFactory documentTrackerFactory,
+            VisualStudioRazorParserFactory parserFactory,
+            VisualStudioWorkspaceAccessor workspaceAccessor)
+        {
+            if (documentTrackerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(documentTrackerFactory));
+            }
+
+            if (parserFactory == null)
+            {
+                throw new ArgumentNullException(nameof(parserFactory));
+            }
+
+            if (workspaceAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
+            _documentTrackerFactory = documentTrackerFactory;
+            _parserFactory = parserFactory;
+
+            var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _braceSmartIndenterFactory = razorLanguageServices.GetRequiredService<BraceSmartIndenterFactory>();
+        }
+
+        // Internal for testing
+        internal DefaultRazorEditorFactoryService(
             VisualStudioDocumentTrackerFactory documentTrackerFactory,
             VisualStudioRazorParserFactory parserFactory,
             BraceSmartIndenterFactory braceSmartIndenterFactory)
