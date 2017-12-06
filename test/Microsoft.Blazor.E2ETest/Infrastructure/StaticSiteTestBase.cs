@@ -6,7 +6,7 @@ using System;
 using System.IO;
 using Xunit;
 
-namespace Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class StaticSiteTestBase
         : IClassFixture<BrowserFixture>, IClassFixture<StaticServerFixture>

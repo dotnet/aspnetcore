@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\samples\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
   </ItemGroup>
 
 </Project>

@@ -5,7 +5,7 @@ using System.IO;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class StaticServerFixture : ServerFixture
     {

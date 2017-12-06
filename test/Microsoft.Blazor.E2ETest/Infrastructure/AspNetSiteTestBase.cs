@@ -5,7 +5,7 @@ using OpenQA.Selenium;
 using System;
 using Xunit;
 
-namespace Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class AspNetSiteTestBase<TStartup>
         : IClassFixture<BrowserFixture>, IClassFixture<AspNetServerFixture>

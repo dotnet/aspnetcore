@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 
-namespace Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public abstract class ServerFixture : IDisposable
     {

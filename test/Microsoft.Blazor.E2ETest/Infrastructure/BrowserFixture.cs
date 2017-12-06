@@ -6,7 +6,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using System;
 
-namespace Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
     public class BrowserFixture : IDisposable
     {
