@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <!-- This project will not ship in 2.0.x -->
+    <IsPackable>false</IsPackable>
     <Description>ASP.NET Core Identity Service Diagnostics Middleware.</Description>
     <TargetFrameworks>netcoreapp2.0;netstandard2.0</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
