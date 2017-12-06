@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-   <PackageReference Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
+   <PackageReference Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" ExcludeAssets="Build" />
    <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)"/>
   </ItemGroup>
 </Project>
