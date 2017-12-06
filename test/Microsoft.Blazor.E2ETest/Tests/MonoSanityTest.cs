@@ -45,6 +45,17 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Assert.Equal("TestTestTestTestTest", GetValue(Browser, "repeatStringResult"));
         }
 
+        [Fact]
+        public void CanTriggerException()
+        {
+            Navigate("/", noReload: true);
+
+            SetValue(Browser, "triggerExceptionMessage", "Hello from test");
+            Browser.FindElement(By.CssSelector("#triggerException button")).Click();
+
+            Assert.Contains("Hello from test", GetValue(Browser, "triggerExceptionMessageStackTrace"));
+        }
+
         private static string GetValue(IWebDriver webDriver, string elementId)
         {
             var element = webDriver.FindElement(By.Id(elementId));
