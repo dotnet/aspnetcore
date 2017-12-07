@@ -1,37 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading;
 
-namespace Microsoft.Blazor.E2ETest.Infrastructure
+namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
 {
     public abstract class ServerFixture : IDisposable
     {
-        public bool IsStarted => RootUri != null;
-        public Uri RootUri { get; private set; }
+        public Uri RootUri => _rootUriInitializer.Value;
 
-        private IWebHost _host;
+        private readonly Lazy<Uri> _rootUriInitializer;
 
-        public void Dispose()
+        public ServerFixture()
         {
-            _host.StopAsync();
+            _rootUriInitializer = new Lazy<Uri>(() =>
+                new Uri(StartAndGetRootUri()));
         }
 
-        protected void Start(IWebHost host)
-        {
-            if (_host != null)
-            {
-                throw new InvalidOperationException("Server is already started.");
-            }
+        public abstract void Dispose();
 
-            _host = host ?? throw new ArgumentNullException(nameof(host));
-            RootUri = new Uri(StartWebHostInBackgroundThread());
-        }
+        protected abstract string StartAndGetRootUri();
 
         protected static string FindSolutionDir()
         {
@@ -62,21 +52,17 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure
             }
         }
 
-        private string StartWebHostInBackgroundThread()
+        protected static void RunInBackgroundThread(Action action)
         {
-            var serverStarted = new ManualResetEvent(false);
+            var isDone = new ManualResetEvent(false);
 
             new Thread(() =>
             {
-                _host.Start();
-                serverStarted.Set();
+                action();
+                isDone.Set();
             }).Start();
 
-            serverStarted.WaitOne();
-
-            return _host.ServerFeatures
-                .Get<IServerAddressesFeature>()
-                .Addresses.Single();
+            isDone.WaitOne();
         }
     }
 }

@@ -2,14 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.E2ETest.Infrastructure;
+using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
 {
-    public class MonoSanityTest : AspNetSiteTestBase<MonoSanity.Startup>
+    public class MonoSanityTest : ServerTestBase<AspNetSiteServerFixture<MonoSanity.Startup>>
     {
-        public MonoSanityTest(BrowserFixture browserFixture, AspNetServerFixture serverFixture)
+        public MonoSanityTest(BrowserFixture browserFixture, AspNetSiteServerFixture<MonoSanity.Startup> serverFixture)
             : base(browserFixture, serverFixture)
         {
         }

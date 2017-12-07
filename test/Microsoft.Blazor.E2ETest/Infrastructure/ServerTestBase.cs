@@ -1,36 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using OpenQA.Selenium;
+using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using System;
 using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Infrastructure
 {
-    public class AspNetSiteTestBase<TStartup>
-        : IClassFixture<BrowserFixture>, IClassFixture<AspNetServerFixture>
+    public abstract class ServerTestBase<TServerFixture>
+        : BrowserTestBase, IClassFixture<TServerFixture>
+        where TServerFixture: ServerFixture
     {
-        public IWebDriver Browser { get; }
+        private readonly TServerFixture _serverFixture;
 
-        private Uri _serverRootUri;
-
-        public AspNetSiteTestBase(
-            BrowserFixture browserFixture,
-            AspNetServerFixture serverFixture)
+        public ServerTestBase(BrowserFixture browserFixture, TServerFixture serverFixture)
+            : base(browserFixture)
         {
-            Browser = browserFixture.Browser;
-
-            if (!serverFixture.IsStarted)
-            {
-                serverFixture.Start(typeof(TStartup));
-            }
-
-            _serverRootUri = serverFixture.RootUri;
+            _serverFixture = serverFixture;
         }
 
         public void Navigate(string relativeUrl, bool noReload = false)
         {
-            var absoluteUrl = new Uri(_serverRootUri, relativeUrl);
+            var absoluteUrl = new Uri(_serverFixture.RootUri, relativeUrl);
 
             if (noReload)
             {
