@@ -27,6 +27,26 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task DefaultConstructor_DeniesAnonymousUsers()
+        {
+            // Arrange
+            var authorizationContext = GetAuthorizationContext(anonymous: true);
+            // The type 'AuthorizeFilter' is both a filter by itself and also a filter factory.
+            // The default filter provider first checks if a type is a filter factory and creates an instance of
+            // this filter.
+            var authorizeFilterFactory = new AuthorizeFilter();
+            var filterFactory = authorizeFilterFactory as IFilterFactory;
+            var authorizeFilter = (AuthorizeFilter)filterFactory.CreateInstance(
+                authorizationContext.HttpContext.RequestServices);
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.IsType<ChallengeResult>(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task AuthorizeFilter_CreatedWithAuthorizeData_ThrowsWhenOnAuthorizationAsyncIsCalled()
         {
             // Arrange

@@ -23,6 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
         /// <summary>
+        /// Initializes a new <see cref="AuthorizeFilter"/> instance.
+        /// </summary>
+        public AuthorizeFilter()
+            : this(authorizeData: new[] { new AuthorizeAttribute() })
+        {
+        }
+
+        /// <summary>
         /// Initialize a new <see cref="AuthorizeFilter"/> instance.
         /// </summary>
         /// <param name="policy">Authorization policy to be used.</param>
