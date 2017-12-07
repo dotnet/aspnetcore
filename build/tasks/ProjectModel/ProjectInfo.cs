@@ -10,7 +10,6 @@ namespace RepoTasks.ProjectModel
     internal class ProjectInfo
     {
         public ProjectInfo(string fullPath,
-            string projectExtensionsPath,
             IReadOnlyList<ProjectFrameworkInfo> frameworks,
             IReadOnlyList<DotNetCliReferenceInfo> tools,
             bool isPackable,
@@ -28,7 +27,6 @@ namespace RepoTasks.ProjectModel
             FullPath = fullPath;
             FileName = Path.GetFileName(fullPath);
             Directory = Path.GetDirectoryName(FullPath);
-            ProjectExtensionsPath = projectExtensionsPath ?? Path.Combine(Directory, "obj");
             IsPackable = isPackable;
             PackageId = packageId;
             PackageVersion = packageVersion;
@@ -36,7 +34,6 @@ namespace RepoTasks.ProjectModel
 
         public string FullPath { get; }
         public string FileName { get; }
-        public string ProjectExtensionsPath { get; }
         public string Directory { get; }
         public string PackageId { get; }
         public string PackageVersion { get; }
@@ -44,5 +41,6 @@ namespace RepoTasks.ProjectModel
 
         public IReadOnlyList<ProjectFrameworkInfo> Frameworks { get; }
         public IReadOnlyList<DotNetCliReferenceInfo> Tools { get; }
+        public SolutionInfo SolutionInfo { get; internal set; }
     }
 }

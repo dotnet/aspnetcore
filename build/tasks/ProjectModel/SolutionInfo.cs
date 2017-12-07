@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace RepoTasks.ProjectModel
 {
@@ -20,13 +21,20 @@ namespace RepoTasks.ProjectModel
                 throw new ArgumentException(nameof(configName));
             }
 
+            Directory = Path.GetDirectoryName(fullPath);
             FullPath = fullPath;
             ConfigName = configName;
             Projects = projects ?? throw new ArgumentNullException(nameof(projects));
             ShouldBuild = shouldBuild;
             Shipped = shipped;
+
+            foreach (var proj in Projects)
+            {
+                proj.SolutionInfo = this;
+            }
         }
 
+        public string Directory { get; }
         public string FullPath { get; }
         public string ConfigName { get; }
         public IReadOnlyList<ProjectInfo> Projects { get; }

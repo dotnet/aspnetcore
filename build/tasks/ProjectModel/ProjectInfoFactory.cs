@@ -27,7 +27,6 @@ namespace RepoTasks.ProjectModel
         {
             var project = GetProject(path, projectCollection);
             var instance = project.CreateProjectInstance(ProjectInstanceSettings.ImmutableWithFastItemLookup);
-            var projExtPath = instance.GetPropertyValue("MSBuildProjectExtensionsPath");
 
             var targetFrameworks = instance.GetPropertyValue("TargetFrameworks");
             var targetFramework = instance.GetPropertyValue("TargetFramework");
@@ -59,11 +58,17 @@ namespace RepoTasks.ProjectModel
 
             var tools = GetTools(instance).ToArray();
             bool.TryParse(instance.GetPropertyValue("IsPackable"), out var isPackable);
+
+            if (isPackable)
+            {
+                // the default packable setting is disabled for projects referencing this package.
+                isPackable = !frameworks.SelectMany(f => f.Dependencies.Keys).Any(d => d.Equals("Microsoft.NET.Test.Sdk", StringComparison.OrdinalIgnoreCase));
+            }
+
             var packageId = instance.GetPropertyValue("PackageId");
             var packageVersion = instance.GetPropertyValue("PackageVersion");
 
             return new ProjectInfo(path,
-                projExtPath,
                 frameworks,
                 tools,
                 isPackable,
@@ -88,6 +93,8 @@ namespace RepoTasks.ProjectModel
             var globalProps = new Dictionary<string, string>()
             {
                 ["DesignTimeBuild"] = "true",
+                 // Isolate the project from post-restore side effects
+                ["ExcludeRestorePackageImports"] = "true",
             };
 
             var project = new Project(xml,

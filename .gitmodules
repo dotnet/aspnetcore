@@ -68,8 +68,8 @@
 	branch = release/2.0.0
 [submodule "modules/Mvc"]
 	path = modules/Mvc
-	url = https://github.com/aspnet/Mvc.git
-	branch = release/2.0.0
+	url = https://github.com/aspnet/Mvc-Private.git
+	branch = release/2.0.0-MSRC
 [submodule "modules/MvcPrecompilation"]
 	path = modules/MvcPrecompilation
 	url = https://github.com/aspnet/MvcPrecompilation.git
@@ -169,4 +169,4 @@
 [submodule "modules/Templating"]
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating-Private.git
-	branch = release/2.0.0
+	branch = release/2.0.0-MSRC

@@ -142,6 +142,12 @@
   </Target>
 
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
+    <RepoTasks.CheckRepoGraph
+      Solutions="@(Solution)"
+      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
+      Repositories="@(Repository);@(ShippedRepository)"
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
+
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"

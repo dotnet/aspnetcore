@@ -4,6 +4,7 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.AnalyzeBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CheckRepoGraph" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CopyPackagesToSplitFolders" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.DownloadNuGetPackages" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GeneratePackageVersionPropsFile" AssemblyFile="$(_RepoTaskAssembly)" />

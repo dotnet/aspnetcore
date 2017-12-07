@@ -59,9 +59,12 @@ namespace RepoTasks
             var factory = new SolutionInfoFactory(Log, BuildEngine5);
             var props = MSBuildListSplitter.GetNamedProperties(Properties);
 
-            Log.LogMessage(MessageImportance.High, $"Beginning cross-repo analysis on {Solutions.Length} solutions. Hang tight...");
+            if (!props.TryGetValue("Configuration", out var defaultConfig))
+            {
+                defaultConfig = "Debug";
+            }
 
-            var solutions = factory.Create(Solutions, props, _cts.Token);
+            var solutions = factory.Create(Solutions, props, defaultConfig, _cts.Token);
             Log.LogMessage($"Found {solutions.Count} and {solutions.Sum(p => p.Projects.Count)} projects");
 
             if (_cts.IsCancellationRequested)

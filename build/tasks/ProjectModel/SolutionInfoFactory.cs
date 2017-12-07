@@ -27,7 +27,7 @@ namespace RepoTasks.ProjectModel
             _buildEngine = buildEngine;
         }
 
-        public IReadOnlyList<SolutionInfo> Create(IEnumerable<ITaskItem> solutionItems, IDictionary<string, string> properties, CancellationToken ct)
+        public IReadOnlyList<SolutionInfo> Create(IEnumerable<ITaskItem> solutionItems, IDictionary<string, string> properties, string defaultConfig, CancellationToken ct)
         {
             var timer = Stopwatch.StartNew();
 
@@ -49,7 +49,7 @@ namespace RepoTasks.ProjectModel
 
                 if (solutionProps.TryGetValue("Configuration", out var configName))
                 {
-                    solutionProps["Configuration"] = configName = "Debug";
+                    solutionProps["Configuration"] = configName = defaultConfig;
                 }
 
                 var key = $"SlnInfo:{solutionFile}:{configName}";
