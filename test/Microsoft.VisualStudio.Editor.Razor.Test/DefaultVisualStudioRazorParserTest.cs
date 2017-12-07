@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Moq;
@@ -36,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
 
             // Act & Assert
@@ -52,7 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
 
             // Act & Assert
@@ -68,7 +66,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>());
+                Mock.Of<VisualStudioCompletionBroker>());
             parser.Dispose();
 
             // Act & Assert
@@ -84,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
@@ -112,7 +110,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 var called = false;
                 parser.DocumentStructureChanged += (sender, e) => called = true;
@@ -141,7 +139,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>())
+                Mock.Of<VisualStudioCompletionBroker>())
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -171,7 +169,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>())
+                Mock.Of<VisualStudioCompletionBroker>())
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -200,7 +198,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 parser.StartParser();
 
@@ -224,7 +222,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 // Act
                 parser.StartParser();
@@ -244,7 +242,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: true),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 // Act
                 var result = parser.TryReinitializeParser();
@@ -263,7 +261,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: false),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>()))
+                Mock.Of<VisualStudioCompletionBroker>()))
             {
                 // Act
                 var result = parser.TryReinitializeParser();

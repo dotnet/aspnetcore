@@ -2,45 +2,47 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.Composition;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
-using Microsoft.VisualStudio.Language.Intellisense;
-using TemplateEngineFactoryService = Microsoft.CodeAnalysis.Razor.RazorTemplateEngineFactoryService;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [System.Composition.Shared]
-    [Export(typeof(VisualStudioRazorParserFactory))]
     internal class DefaultVisualStudioRazorParserFactory : VisualStudioRazorParserFactory
     {
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly TemplateEngineFactoryService _templateEngineFactoryService;
-        private readonly ICompletionBroker _completionBroker;
+        private readonly RazorTemplateEngineFactoryService _templateEngineFactoryService;
+        private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly ErrorReporter _errorReporter;
 
-        [ImportingConstructor]
         public DefaultVisualStudioRazorParserFactory(
-            ICompletionBroker completionBroker,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            ForegroundDispatcher dispatcher,
+            ErrorReporter errorReporter,
+            VisualStudioCompletionBroker completionBroker,
+            RazorTemplateEngineFactoryService templateEngineFactoryService)
         {
+            if (dispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(dispatcher));
+            }
+
+            if (errorReporter == null)
+            {
+                throw new ArgumentNullException(nameof(errorReporter));
+            }
+
             if (completionBroker == null)
             {
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
-            if (workspace == null)
+            if (templateEngineFactoryService == null)
             {
-                throw new ArgumentNullException(nameof(workspace));
+                throw new ArgumentNullException(nameof(templateEngineFactoryService));
             }
 
+            _dispatcher = dispatcher;
+            _errorReporter = errorReporter;
             _completionBroker = completionBroker;
-            _dispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
-            _errorReporter = workspace.Services.GetRequiredService<ErrorReporter>();
-            var razorLanguageServices = workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _templateEngineFactoryService = razorLanguageServices.GetRequiredService<TemplateEngineFactoryService>();
+            _templateEngineFactoryService = templateEngineFactoryService;
         }
 
         public override VisualStudioRazorParser Create(VisualStudioDocumentTracker documentTracker)

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
-using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 using Timer = System.Threading.Timer;
@@ -28,7 +27,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal ChangeReference _latestChangeReference;
 
         private readonly object IdleLock = new object();
-        private readonly ICompletionBroker _completionBroker;
+        private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
         private readonly RazorTemplateEngineFactoryService _templateEngineFactory;
@@ -50,7 +49,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             VisualStudioDocumentTracker documentTracker,
             RazorTemplateEngineFactoryService templateEngineFactory,
             ErrorReporter errorReporter,
-            ICompletionBroker completionBroker)
+            VisualStudioCompletionBroker completionBroker)
         {
             if (dispatcher == null)
             {

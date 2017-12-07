@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -711,37 +710,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private class TestCompletionBroker : ICompletionBroker
+        private class TestCompletionBroker : VisualStudioCompletionBroker
         {
-            public ICompletionSession CreateCompletionSession(ITextView textView, ITrackingPoint triggerPoint, bool trackCaret)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DismissAllSessions(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ReadOnlyCollection<ICompletionSession> GetSessions(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsCompletionActive(ITextView textView)
-            {
-                return false;
-            }
-
-            public ICompletionSession TriggerCompletion(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ICompletionSession TriggerCompletion(ITextView textView, ITrackingPoint triggerPoint, bool trackCaret)
-            {
-                throw new NotImplementedException();
-            }
+            public override bool IsCompletionActive(ITextView textView) => false;
         }
     }
 }
