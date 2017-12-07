@@ -3,19 +3,22 @@
 
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.Blazor.DevHost.Server
 {
     internal class Program
     {
-        public static void Main(string[] args)
+        internal static IWebHost BuildWebHost(string[] args)
         {
-            BuildWebHost(args).Run();
-        }
+            var configuration = new ConfigurationBuilder()
+                .AddCommandLine(args)
+                .Build();
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+            return WebHost.CreateDefaultBuilder(args)
+                .UseConfiguration(configuration)
                 .UseStartup<Startup>()
                 .Build();
+        }
     }
 }
