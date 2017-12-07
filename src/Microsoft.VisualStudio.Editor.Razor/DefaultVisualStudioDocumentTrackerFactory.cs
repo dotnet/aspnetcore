@@ -2,19 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [System.Composition.Shared]
-    [Export(typeof(VisualStudioDocumentTrackerFactory))]
     internal class DefaultVisualStudioDocumentTrackerFactory : VisualStudioDocumentTrackerFactory
     {
         private readonly TextBufferProjectService _projectService;
@@ -25,13 +21,30 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly ProjectSnapshotManager _projectManager;
         private readonly EditorSettingsManagerInternal _editorSettingsManager;
 
-        [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactory(
+            ForegroundDispatcher foregroundDispatcher,
+            ProjectSnapshotManager projectManager,
+            EditorSettingsManagerInternal editorSettingsManager,
             TextBufferProjectService projectService,
             ITextDocumentFactoryService textDocumentFactory,
-            VisualStudioWorkspaceAccessor workspaceAccessor,
-            ImportDocumentManager importDocumentManager)
+            ImportDocumentManager importDocumentManager,
+            Workspace workspace)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (projectManager == null)
+            {
+                throw new ArgumentNullException(nameof(projectManager));
+            }
+
+            if (editorSettingsManager == null)
+            {
+                throw new ArgumentNullException(nameof(editorSettingsManager));
+            }
+
             if (projectService == null)
             {
                 throw new ArgumentNullException(nameof(projectService));
@@ -42,20 +55,23 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(textDocumentFactory));
             }
 
-            if (workspaceAccessor == null)
+            if (importDocumentManager == null)
             {
-                throw new ArgumentNullException(nameof(workspaceAccessor));
+                throw new ArgumentNullException(nameof(importDocumentManager));
             }
 
+            if (workspace == null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+            _projectManager = projectManager;
+            _editorSettingsManager = editorSettingsManager;
             _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
-            _workspace = workspaceAccessor.Workspace;
             _importDocumentManager = importDocumentManager;
-
-            _foregroundDispatcher = _workspace.Services.GetRequiredService<ForegroundDispatcher>();
-            var razorLanguageServices = _workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _projectManager = razorLanguageServices.GetRequiredService<ProjectSnapshotManager>();
-            _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManagerInternal>();
+            _workspace = workspace;
         }
 
         public override VisualStudioDocumentTracker Create(ITextBuffer textBuffer)

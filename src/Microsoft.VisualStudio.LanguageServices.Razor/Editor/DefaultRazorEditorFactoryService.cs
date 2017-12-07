@@ -21,23 +21,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly BraceSmartIndenterFactory _braceSmartIndenterFactory;
 
         [ImportingConstructor]
-        public DefaultRazorEditorFactoryService(
-            VisualStudioDocumentTrackerFactory documentTrackerFactory,
-            VisualStudioWorkspaceAccessor workspaceAccessor)
+        public DefaultRazorEditorFactoryService(VisualStudioWorkspaceAccessor workspaceAccessor)
         {
-            if (documentTrackerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(documentTrackerFactory));
-            }
-
             if (workspaceAccessor == null)
             {
                 throw new ArgumentNullException(nameof(workspaceAccessor));
             }
 
-            _documentTrackerFactory = documentTrackerFactory;
-
             var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _documentTrackerFactory = razorLanguageServices.GetRequiredService<VisualStudioDocumentTrackerFactory>();
             _parserFactory = razorLanguageServices.GetRequiredService<VisualStudioRazorParserFactory>();
             _braceSmartIndenterFactory = razorLanguageServices.GetRequiredService<BraceSmartIndenterFactory>();
         }
