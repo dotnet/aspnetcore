@@ -9,16 +9,12 @@ namespace Microsoft.Blazor.DevHost.Server
 {
     internal class Program
     {
-        internal static IWebHost BuildWebHost(string[] args)
-        {
-            var configuration = new ConfigurationBuilder()
-                .AddCommandLine(args)
-                .Build();
-
-            return WebHost.CreateDefaultBuilder(args)
-                .UseConfiguration(configuration)
+        internal static IWebHost BuildWebHost(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseConfiguration(new ConfigurationBuilder()
+                    .AddCommandLine(args)
+                    .Build())
                 .UseStartup<Startup>()
                 .Build();
-        }
     }
 }

@@ -8,11 +8,12 @@ using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
 {
-    public class MonoSanityTest : ServerTestBase<AspNetSiteServerFixture<MonoSanity.Startup>>
+    public class MonoSanityTest : ServerTestBase<AspNetSiteServerFixture>
     {
-        public MonoSanityTest(BrowserFixture browserFixture, AspNetSiteServerFixture<MonoSanity.Startup> serverFixture)
+        public MonoSanityTest(BrowserFixture browserFixture, AspNetSiteServerFixture serverFixture)
             : base(browserFixture, serverFixture)
         {
+            serverFixture.BuildWebHostMethod = MonoSanity.Program.BuildWebHost;
         }
 
         [Fact]

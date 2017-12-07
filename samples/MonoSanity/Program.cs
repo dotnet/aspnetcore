@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace MonoSanity
 {
@@ -15,6 +16,9 @@ namespace MonoSanity
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
+                .UseConfiguration(new ConfigurationBuilder()
+                    .AddCommandLine(args)
+                    .Build())
                 .UseStartup<Startup>()
                 .Build();
     }
