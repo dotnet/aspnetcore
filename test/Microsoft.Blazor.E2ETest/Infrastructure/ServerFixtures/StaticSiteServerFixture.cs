@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
 {
+    // Although this is not used for anything meaningful related to Blazor yet, it
+    // will be used later when there's a mechanism for publishing standalone Blazor
+    // apps as a set of purely static files and we need E2E testing on the result.
+
     public class StaticSiteServerFixture : WebHostServerFixture
     {
         public string SampleSiteName { get; set; }
