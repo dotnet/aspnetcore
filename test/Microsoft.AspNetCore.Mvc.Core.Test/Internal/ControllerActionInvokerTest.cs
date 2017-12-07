@@ -34,44 +34,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         #region Diagnostics
 
         [Fact]
-        public async Task Invoke_Success_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
-
-            var displayName = "A.B.C";
-            var actionDescriptor = Mock.Of<ControllerActionDescriptor>(a => a.DisplayName == displayName);
-            actionDescriptor.MethodInfo = typeof(TestController).GetMethod(nameof(TestController.ActionMethod));
-            actionDescriptor.ControllerTypeInfo = typeof(TestController).GetTypeInfo();
-            actionDescriptor.FilterDescriptors = new List<FilterDescriptor>();
-            actionDescriptor.Parameters = new List<ParameterDescriptor>();
-            actionDescriptor.BoundProperties = new List<ParameterDescriptor>();
-
-            var filter = Mock.Of<IFilterMetadata>();
-            var invoker = CreateInvoker(
-                new[] { filter },
-                actionDescriptor,
-                controller: new TestController(),
-                logger: logger);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            Assert.Single(sink.Scopes);
-            Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
-
-            Assert.Equal(4, sink.Writes.Count);
-            Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
-            Assert.Equal($"Executing action method {displayName} with arguments ((null)) - ModelState is Valid", sink.Writes[1].State?.ToString());
-            Assert.Equal($"Executed action method {displayName}, returned result {Result.GetType().FullName}.", sink.Writes[2].State?.ToString());
-            // This message has the execution time embedded, which we don't want to verify.
-            Assert.StartsWith($"Executed action {displayName} ", sink.Writes[3].State?.ToString());
-        }
-
-        [Fact]
         public async Task Invoke_WritesDiagnostic_ActionSelected()
         {
             // Arrange

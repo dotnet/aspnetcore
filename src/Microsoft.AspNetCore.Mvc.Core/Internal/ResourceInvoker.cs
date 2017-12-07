@@ -89,6 +89,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     _logger.ExecutingAction(_actionContext.ActionDescriptor);
 
+                    _logger.AuthorizationFiltersExecutionPlan(_filters);
+                    _logger.ResourceFiltersExecutionPlan(_filters);
+                    _logger.ActionFiltersExecutionPlan(_filters);
+                    _logger.ExceptionFiltersExecutionPlan(_filters);
+                    _logger.ResultFiltersExecutionPlan(_filters);
+
                     var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
 
                     try
@@ -146,6 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionContext = _actionContext;
 
             _diagnosticSource.BeforeActionResult(actionContext, result);
+            _logger.BeforeExecutingActionResult(result);
 
             try
             {
@@ -154,6 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             finally
             {
                 _diagnosticSource.AfterActionResult(actionContext, result);
+                _logger.AfterExecutingActionResult(result);
             }
         }
 
@@ -210,6 +218,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var authorizationContext = _authorizationContext;
 
                         _diagnosticSource.BeforeOnAuthorizationAsync(authorizationContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.AuthorizationFilter,
+                            nameof(IAsyncAuthorizationFilter.OnAuthorizationAsync),
+                            filter);
 
                         var task = filter.OnAuthorizationAsync(authorizationContext);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -230,6 +242,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var authorizationContext = _authorizationContext;
 
                         _diagnosticSource.AfterOnAuthorizationAsync(authorizationContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.AuthorizationFilter,
+                            nameof(IAsyncAuthorizationFilter.OnAuthorizationAsync),
+                            filter);
 
                         if (authorizationContext.Result != null)
                         {
@@ -248,10 +264,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var authorizationContext = _authorizationContext;
 
                         _diagnosticSource.BeforeOnAuthorization(authorizationContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.AuthorizationFilter,
+                            nameof(IAuthorizationFilter.OnAuthorization),
+                            filter);
 
                         filter.OnAuthorization(authorizationContext);
 
                         _diagnosticSource.AfterOnAuthorization(authorizationContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.AuthorizationFilter,
+                            nameof(IAuthorizationFilter.OnAuthorization),
+                            filter);
 
                         if (authorizationContext.Result != null)
                         {
@@ -330,6 +354,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resourceExecutingContext = _resourceExecutingContext;
 
                         _diagnosticSource.BeforeOnResourceExecution(resourceExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResourceFilter,
+                            nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
+                            filter);
 
                         var task = filter.OnResourceExecutionAsync(resourceExecutingContext, InvokeNextResourceFilterAwaitedAsync);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -357,6 +385,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                             };
 
                             _diagnosticSource.AfterOnResourceExecution(_resourceExecutedContext, filter);
+                            _logger.AfterExecutingMethodOnFilter(
+                                FilterTypeConstants.ResourceFilter,
+                                nameof(IAsyncResourceFilter.OnResourceExecutionAsync),
+                                filter);
 
                             // A filter could complete a Task without setting a result
                             if (_resourceExecutingContext.Result != null)
@@ -377,10 +409,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resourceExecutingContext = _resourceExecutingContext;
 
                         _diagnosticSource.BeforeOnResourceExecuting(resourceExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResourceFilter,
+                            nameof(IResourceFilter.OnResourceExecuting),
+                            filter);
 
                         filter.OnResourceExecuting(resourceExecutingContext);
 
                         _diagnosticSource.AfterOnResourceExecuting(resourceExecutingContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ResourceFilter,
+                            nameof(IResourceFilter.OnResourceExecuting),
+                            filter);
 
                         if (resourceExecutingContext.Result != null)
                         {
@@ -413,10 +453,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resourceExecutedContext = _resourceExecutedContext;
 
                         _diagnosticSource.BeforeOnResourceExecuted(resourceExecutedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResourceFilter,
+                            nameof(IResourceFilter.OnResourceExecuted),
+                            filter);
 
                         filter.OnResourceExecuted(resourceExecutedContext);
 
                         _diagnosticSource.AfterOnResourceExecuted(resourceExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ResourceFilter,
+                            nameof(IResourceFilter.OnResourceExecuted),
+                            filter);
 
                         goto case State.ResourceEnd;
                     }
@@ -440,9 +488,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
 
                 case State.ResourceInside:
-                {
-                    goto case State.ExceptionBegin;
-                }
+                    {
+                        goto case State.ExceptionBegin;
+                    }
 
                 case State.ExceptionBegin:
                     {
@@ -500,6 +548,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (exceptionContext?.Exception != null && !exceptionContext.ExceptionHandled)
                         {
                             _diagnosticSource.BeforeOnExceptionAsync(exceptionContext, filter);
+                            _logger.BeforeExecutingMethodOnFilter(
+                                FilterTypeConstants.ExceptionFilter,
+                                nameof(IAsyncExceptionFilter.OnExceptionAsync),
+                                filter);
 
                             var task = filter.OnExceptionAsync(exceptionContext);
                             if (task.Status != TaskStatus.RanToCompletion)
@@ -523,6 +575,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var exceptionContext = _exceptionContext;
 
                         _diagnosticSource.AfterOnExceptionAsync(exceptionContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ExceptionFilter,
+                            nameof(IAsyncExceptionFilter.OnExceptionAsync),
+                            filter);
 
                         if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                         {
@@ -559,10 +615,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         if (exceptionContext?.Exception != null && !exceptionContext.ExceptionHandled)
                         {
                             _diagnosticSource.BeforeOnException(exceptionContext, filter);
+                            _logger.BeforeExecutingMethodOnFilter(
+                                FilterTypeConstants.ExceptionFilter,
+                                nameof(IExceptionFilter.OnException),
+                                filter);
 
                             filter.OnException(exceptionContext);
 
                             _diagnosticSource.AfterOnException(exceptionContext, filter);
+                            _logger.AfterExecutingMethodOnFilter(
+                                FilterTypeConstants.ExceptionFilter,
+                                nameof(IExceptionFilter.OnException),
+                                filter);
 
                             if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                             {
@@ -710,6 +774,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resultExecutingContext = _resultExecutingContext;
 
                         _diagnosticSource.BeforeOnResultExecution(resultExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IAsyncResultFilter.OnResultExecutionAsync),
+                            filter);
 
                         var task = filter.OnResultExecutionAsync(resultExecutingContext, InvokeNextResultFilterAwaitedAsync);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -746,6 +814,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         }
 
                         _diagnosticSource.AfterOnResultExecution(_resultExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IAsyncResultFilter.OnResultExecutionAsync),
+                            filter);
+
                         goto case State.ResultEnd;
                     }
 
@@ -758,10 +831,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resultExecutingContext = _resultExecutingContext;
 
                         _diagnosticSource.BeforeOnResultExecuting(resultExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IResultFilter.OnResultExecuting),
+                            filter);
 
                         filter.OnResultExecuting(resultExecutingContext);
 
                         _diagnosticSource.AfterOnResultExecuting(resultExecutingContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IResultFilter.OnResultExecuting),
+                            filter);
 
                         if (_resultExecutingContext.Cancel)
                         {
@@ -800,10 +881,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var resultExecutedContext = _resultExecutedContext;
 
                         _diagnosticSource.BeforeOnResultExecuted(resultExecutedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IResultFilter.OnResultExecuted),
+                            filter);
 
                         filter.OnResultExecuted(resultExecutedContext);
 
                         _diagnosticSource.AfterOnResultExecuted(resultExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            FilterTypeConstants.ResultFilter,
+                            nameof(IResultFilter.OnResultExecuted),
+                            filter);
 
                         goto case State.ResultEnd;
                     }
@@ -1123,6 +1212,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             ResultInside,
             ResultEnd,
             InvokeEnd,
+        }
+
+        private static class FilterTypeConstants
+        {
+            public const string AuthorizationFilter = "Authorization Filter";
+            public const string ResourceFilter = "Resource Filter";
+            public const string ActionFilter = "Action Filter";
+            public const string ExceptionFilter = "Exception Filter";
+            public const string ResultFilter = "Result Filter";
         }
     }
 }

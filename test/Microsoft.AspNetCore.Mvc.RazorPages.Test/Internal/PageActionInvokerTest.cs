@@ -36,36 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         #region Diagnostics
 
         [Fact]
-        public async Task Invoke_Success_LogsCorrectValues()
-        {
-            // Arrange
-            var sink = new TestSink();
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-            var logger = loggerFactory.CreateLogger<PageActionInvoker>();
-
-            var actionDescriptor = CreateDescriptorForSimplePage();
-
-            var displayName = "/A/B/C";
-            actionDescriptor.DisplayName = displayName;
-
-            var invoker = CreateInvoker(filters: null, actionDescriptor: actionDescriptor, logger: logger);
-
-            // Act
-            await invoker.InvokeAsync();
-
-            // Assert
-            Assert.Single(sink.Scopes);
-            Assert.Equal(displayName, sink.Scopes[0].Scope?.ToString());
-
-            Assert.Equal(4, sink.Writes.Count);
-            Assert.Equal($"Executing action {displayName}", sink.Writes[0].State?.ToString());
-            Assert.Equal($"Executing handler method OnGetHandler1 with arguments ((null)) - ModelState is Valid", sink.Writes[1].State?.ToString());
-            Assert.Equal($"Executed handler method OnGetHandler1, returned result {typeof(PageResult).FullName}.", sink.Writes[2].State?.ToString());
-            // This message has the execution time embedded, which we don't want to verify.
-            Assert.StartsWith($"Executed action {displayName} ", sink.Writes[3].State?.ToString());
-        }
-
-        [Fact]
         public async Task Invoke_WritesDiagnostic_ActionSelected()
         {
             // Arrange

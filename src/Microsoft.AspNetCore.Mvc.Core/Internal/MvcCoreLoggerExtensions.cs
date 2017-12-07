@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     internal static class MvcCoreLoggerExtensions
     {
+        public const string ActionFilter = "Action Filter";
+        private static readonly string[] _noFilters = new[] { "None" };
+
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, Exception> _actionExecuting;
@@ -32,6 +35,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecuting;
         private static readonly Action<ILogger, string, string, Exception> _actionMethodExecuted;
+
+        private static readonly Action<ILogger, string, string[], Exception> _logFilterExecutionPlan;
+        private static readonly Action<ILogger, string, string, Type, Exception> _beforeExecutingMethodOnFilter;
+        private static readonly Action<ILogger, string, string, Type, Exception> _afterExecutingMethodOnFilter;
+        private static readonly Action<ILogger, Type, Exception> _beforeExecutingActionResult;
+        private static readonly Action<ILogger, Type, Exception> _afterExecutingActionResult;
 
         private static readonly Action<ILogger, string, Exception> _ambiguousActions;
         private static readonly Action<ILogger, string, string, IActionConstraint, Exception> _constraintMismatch;
@@ -118,6 +127,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 2,
                 "Executed action method {ActionName}, returned result {ActionResult}.");
+
+            _logFilterExecutionPlan = LoggerMessage.Define<string, string[]>(
+                LogLevel.Debug,
+                1,
+                "Execution plan of {FilterType} filters (in the following order): {Filters}");
+
+            _beforeExecutingMethodOnFilter = LoggerMessage.Define<string, string, Type>(
+                LogLevel.Trace,
+                2,
+                "{FilterType}: Before executing {Method} on filter {Filter}.");
+
+            _afterExecutingMethodOnFilter = LoggerMessage.Define<string, string, Type>(
+                LogLevel.Trace,
+                3,
+                "{FilterType}: After executing {Method} on filter {Filter}.");
+
+            _beforeExecutingActionResult = LoggerMessage.Define<Type>(
+                LogLevel.Trace,
+                4,
+                "Before executing action result {ActionResult}.");
+
+            _afterExecutingActionResult = LoggerMessage.Define<Type>(
+                LogLevel.Trace,
+                5,
+                "After executing action result {ActionResult}.");
 
             _ambiguousActions = LoggerMessage.Define<string>(
                 LogLevel.Error,
@@ -315,6 +349,79 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _actionExecuting(logger, action.DisplayName, null);
         }
 
+        public static void AuthorizationFiltersExecutionPlan(this ILogger logger, IEnumerable<IFilterMetadata> filters)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var authorizationFilters = filters.Where(f => f is IAuthorizationFilter || f is IAsyncAuthorizationFilter);
+            LogFilterExecutionPlan(logger, "authorization", authorizationFilters);
+        }
+
+        public static void ResourceFiltersExecutionPlan(this ILogger logger, IEnumerable<IFilterMetadata> filters)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var resourceFilters = filters.Where(f => f is IResourceFilter || f is IAsyncResourceFilter);
+            LogFilterExecutionPlan(logger, "resource", resourceFilters);
+        }
+
+        public static void ActionFiltersExecutionPlan(this ILogger logger, IEnumerable<IFilterMetadata> filters)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var actionFilters = filters.Where(f => f is IActionFilter || f is IAsyncActionFilter);
+            LogFilterExecutionPlan(logger, "action", actionFilters);
+        }
+
+        public static void ExceptionFiltersExecutionPlan(this ILogger logger, IEnumerable<IFilterMetadata> filters)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var exceptionFilters = filters.Where(f => f is IExceptionFilter || f is IAsyncExceptionFilter);
+            LogFilterExecutionPlan(logger, "exception", exceptionFilters);
+        }
+
+        public static void ResultFiltersExecutionPlan(this ILogger logger, IEnumerable<IFilterMetadata> filters)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var resultFilters = filters.Where(f => f is IResultFilter || f is IAsyncResultFilter);
+            LogFilterExecutionPlan(logger, "result", resultFilters);
+        }
+
+        public static void BeforeExecutingMethodOnFilter(
+            this ILogger logger,
+            string filterType,
+            string methodName,
+            IFilterMetadata filter)
+        {
+            _beforeExecutingMethodOnFilter(logger, filterType, methodName, filter.GetType(), null);
+        }
+
+        public static void AfterExecutingMethodOnFilter(
+            this ILogger logger,
+            string filterType,
+            string methodName,
+            IFilterMetadata filter)
+        {
+            _afterExecutingMethodOnFilter(logger, filterType, methodName, filter.GetType(), null);
+        }
+
         public static void ExecutedAction(this ILogger logger, ActionDescriptor action, long startTimestamp)
         {
             // Don't log if logging wasn't enabled at start of request as time will be wildly wrong.
@@ -356,6 +463,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void ContentResultExecuting(this ILogger logger, string contentType)
         {
             _contentResultExecuting(logger, contentType, null);
+        }
+
+        public static void BeforeExecutingActionResult(this ILogger logger, IActionResult actionResult)
+        {
+            _beforeExecutingActionResult(logger, actionResult.GetType(), null);
+        }
+
+        public static void AfterExecutingActionResult(this ILogger logger, IActionResult actionResult)
+        {
+            _afterExecutingActionResult(logger, actionResult.GetType(), null);
         }
 
         public static void ActionMethodExecuting(this ILogger logger, ControllerContext context, object[] arguments)
@@ -634,6 +751,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 _unableToInferParameterSources(logger, actionModel.ActionMethod, null);
             }
+        }
+
+        private static void LogFilterExecutionPlan(
+            ILogger logger,
+            string filterType,
+            IEnumerable<IFilterMetadata> filters)
+        {
+            var filterList = _noFilters;
+            if (filters.Any())
+            {
+                filterList = GetFilterList(filters);
+            }
+
+            _logFilterExecutionPlan(logger, filterType, filterList, null);
+        }
+
+        private static string[] GetFilterList(IEnumerable<IFilterMetadata> filters)
+        {
+            var filterList = new List<string>();
+            foreach (var filter in filters)
+            {
+                if (filter is IOrderedFilter orderedFilter)
+                {
+                    filterList.Add($"{filter.GetType()} (Order: {orderedFilter.Order})");
+                }
+                else
+                {
+                    filterList.Add(filter.GetType().ToString());
+                }
+            }
+            return filterList.ToArray();
         }
 
         private class ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>

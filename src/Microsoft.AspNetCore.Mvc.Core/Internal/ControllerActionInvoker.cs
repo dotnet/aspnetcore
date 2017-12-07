@@ -115,6 +115,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var actionExecutingContext = _actionExecutingContext;
 
                         _diagnosticSource.BeforeOnActionExecution(actionExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IAsyncActionFilter.OnActionExecutionAsync),
+                            filter);
 
                         var task = filter.OnActionExecutionAsync(actionExecutingContext, InvokeNextActionFilterAwaitedAsync);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -149,6 +153,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         }
 
                         _diagnosticSource.AfterOnActionExecution(_actionExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IAsyncActionFilter.OnActionExecutionAsync),
+                            filter);
 
                         goto case State.ActionEnd;
                     }
@@ -162,10 +170,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var actionExecutingContext = _actionExecutingContext;
 
                         _diagnosticSource.BeforeOnActionExecuting(actionExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IActionFilter.OnActionExecuting),
+                            filter);
 
                         filter.OnActionExecuting(actionExecutingContext);
 
                         _diagnosticSource.AfterOnActionExecuting(actionExecutingContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IActionFilter.OnActionExecuting),
+                            filter);
 
                         if (actionExecutingContext.Result != null)
                         {
@@ -204,10 +220,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         var actionExecutedContext = _actionExecutedContext;
 
                         _diagnosticSource.BeforeOnActionExecuted(actionExecutedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IActionFilter.OnActionExecuted),
+                            filter);
 
                         filter.OnActionExecuted(actionExecutedContext);
 
                         _diagnosticSource.AfterOnActionExecuted(actionExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            MvcCoreLoggerExtensions.ActionFilter,
+                            nameof(IActionFilter.OnActionExecuted),
+                            filter);
 
                         goto case State.ActionEnd;
                     }

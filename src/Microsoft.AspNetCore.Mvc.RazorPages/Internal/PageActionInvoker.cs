@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 await Next(ref next, ref scope, ref state, ref isCompleted);
             }
         }
-        
+
         protected override void ReleaseResources()
         {
             if (_pageModel != null && CacheEntry.ReleaseModel != null)
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 return;
             }
-            
+
             var valueProvider = await CompositeValueProvider.CreateAsync(_pageContext, _pageContext.ValueProviderFactories);
 
             for (var i = 0; i < _handler.Parameters.Count; i++)
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         break;
                     }
                 }
-                
+
                 _diagnosticSource.BeforeHandlerMethod(_pageContext, handler, _arguments, _instance);
                 _logger.ExecutingHandlerMethod(_pageContext, handler, arguments);
 
@@ -342,6 +342,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var handlerSelectedContext = _handlerSelectedContext;
 
                         _diagnosticSource.BeforeOnPageHandlerSelection(handlerSelectedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            PageLoggerExtensions.PageFilter,
+                            nameof(IAsyncPageFilter.OnPageHandlerSelectionAsync),
+                            filter);
 
                         var task = filter.OnPageHandlerSelectionAsync(handlerSelectedContext);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -361,6 +365,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var filter = (IAsyncPageFilter)state;
 
                         _diagnosticSource.AfterOnPageHandlerSelection(_handlerSelectedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                            PageLoggerExtensions.PageFilter,
+                            nameof(IAsyncPageFilter.OnPageHandlerSelectionAsync),
+                            filter);
 
                         goto case State.PageSelectHandlerNext;
                     }
@@ -374,6 +382,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var handlerSelectedContext = _handlerSelectedContext;
 
                         _diagnosticSource.BeforeOnPageHandlerSelected(handlerSelectedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            PageLoggerExtensions.PageFilter,
+                            nameof(IPageFilter.OnPageHandlerSelected),
+                            filter);
 
                         filter.OnPageHandlerSelected(handlerSelectedContext);
 
@@ -420,7 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         {
                             if (_handlerExecutingContext == null)
                             {
-                                _handlerExecutingContext = new PageHandlerExecutingContext(_pageContext, _filters,_handler, _arguments, _instance);
+                                _handlerExecutingContext = new PageHandlerExecutingContext(_pageContext, _filters, _handler, _arguments, _instance);
                             }
 
                             state = current.Filter;
@@ -441,6 +453,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var handlerExecutingContext = _handlerExecutingContext;
 
                         _diagnosticSource.BeforeOnPageHandlerExecution(handlerExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                            PageLoggerExtensions.PageFilter,
+                            nameof(IAsyncPageFilter.OnPageHandlerExecutionAsync),
+                            filter);
 
                         var task = filter.OnPageHandlerExecutionAsync(handlerExecutingContext, InvokeNextPageFilterAwaitedAsync);
                         if (task.Status != TaskStatus.RanToCompletion)
@@ -476,6 +492,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         }
 
                         _diagnosticSource.AfterOnPageHandlerExecution(_handlerExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                           PageLoggerExtensions.PageFilter,
+                           nameof(IAsyncPageFilter.OnPageHandlerExecutionAsync),
+                           filter);
 
                         goto case State.PageEnd;
                     }
@@ -489,10 +509,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var handlerExecutingContext = _handlerExecutingContext;
 
                         _diagnosticSource.BeforeOnPageHandlerExecuting(handlerExecutingContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                           PageLoggerExtensions.PageFilter,
+                           nameof(IPageFilter.OnPageHandlerExecuting),
+                           filter);
 
                         filter.OnPageHandlerExecuting(handlerExecutingContext);
 
                         _diagnosticSource.AfterOnPageHandlerExecuting(handlerExecutingContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                           PageLoggerExtensions.PageFilter,
+                           nameof(IPageFilter.OnPageHandlerExecuting),
+                           filter);
 
                         if (handlerExecutingContext.Result != null)
                         {
@@ -532,10 +560,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         var handlerExecutedContext = _handlerExecutedContext;
 
                         _diagnosticSource.BeforeOnPageHandlerExecuted(handlerExecutedContext, filter);
+                        _logger.BeforeExecutingMethodOnFilter(
+                           PageLoggerExtensions.PageFilter,
+                           nameof(IPageFilter.OnPageHandlerExecuted),
+                           filter);
 
                         filter.OnPageHandlerExecuted(handlerExecutedContext);
 
                         _diagnosticSource.AfterOnPageHandlerExecuted(handlerExecutedContext, filter);
+                        _logger.AfterExecutingMethodOnFilter(
+                           PageLoggerExtensions.PageFilter,
+                           nameof(IPageFilter.OnPageHandlerExecuted),
+                           filter);
 
                         goto case State.PageEnd;
                     }
