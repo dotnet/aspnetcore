@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var editorFactoryService = new Mock<RazorEditorFactoryService>(MockBehavior.Strict);
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService.Object, UnsupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService.Object, UnsupportedProjectService);
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
@@ -61,7 +61,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var editorFactoryService = new Mock<RazorEditorFactoryService>(MockBehavior.Strict);
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService.Object, SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService.Object, SupportedProjectService);
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
@@ -83,7 +83,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager) as VisualStudioDocumentTracker;
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(factoryService => factoryService.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService, SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService, SupportedProjectService);
 
             // Act
             documentManager.OnTextViewOpened(textView, buffers);
@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager) as VisualStudioDocumentTracker;
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(f => f.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService, SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService, SupportedProjectService);
 
             // Assert 1
             Assert.False(documentTracker.IsSupportedProject);
@@ -120,7 +120,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewClosed_FoNonRazorCoreProject_DoesNothing()
         {
             // Arrange
-            var documentManager = new DefaultRazorDocumentManager(Mock.Of<RazorEditorFactoryService>(), UnsupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, Mock.Of<RazorEditorFactoryService>(), UnsupportedProjectService);
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
@@ -138,7 +138,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void OnTextViewClosed_TextViewWithoutDocumentTracker_DoesNothing()
         {
             // Arrange
-            var documentManager = new DefaultRazorDocumentManager(Mock.Of<RazorEditorFactoryService>(), SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, Mock.Of<RazorEditorFactoryService>(), SupportedProjectService);
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             buffers[1].Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
 
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>();
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService, SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService, SupportedProjectService);
 
             // Act
             documentManager.OnTextViewClosed(textView2, buffers);
@@ -203,7 +203,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>();
-            var documentManager = new DefaultRazorDocumentManager(editorFactoryService, SupportedProjectService, Dispatcher);
+            var documentManager = new DefaultRazorDocumentManager(Dispatcher, editorFactoryService, SupportedProjectService);
 
             // Populate the text views
             documentTracker.Subscribe();
