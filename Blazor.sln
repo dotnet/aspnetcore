@@ -5,27 +5,6 @@ VisualStudioVersion = 15.0.27019.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}"
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "HelloWorld", "samples\HelloWorld\", "{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A}"
-	ProjectSection(WebsiteProperties) = preProject
-		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.0"
-		Debug.AspNetCompiler.VirtualPath = "/localhost_56836"
-		Debug.AspNetCompiler.PhysicalPath = "samples\HelloWorld\"
-		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_56836\"
-		Debug.AspNetCompiler.Updateable = "true"
-		Debug.AspNetCompiler.ForceOverwrite = "true"
-		Debug.AspNetCompiler.FixedNames = "false"
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.VirtualPath = "/localhost_56836"
-		Release.AspNetCompiler.PhysicalPath = "samples\HelloWorld\"
-		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\localhost_56836\"
-		Release.AspNetCompiler.Updateable = "true"
-		Release.AspNetCompiler.ForceOverwrite = "true"
-		Release.AspNetCompiler.FixedNames = "false"
-		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "56836"
-		SlnRelativePath = "samples\HelloWorld\"
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B867E038-B3CE-43E3-9292-61568C46CDEB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mono", "mono", "{7B5CAAB1-A3EB-44F7-87E3-A13ED89FC17D}"
@@ -49,9 +28,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Browser", "src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj", "{58D2DF2E-4181-4B16-9C69-A3F3EDB89B28}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Blazor.DevHost", "src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj", "{EE690312-2353-4DD0-9250-EE5EDAC6D4F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.DevHost", "src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj", "{EE690312-2353-4DD0-9250-EE5EDAC6D4F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorStandalone", "samples\BlazorStandalone\BlazorStandalone.csproj", "{754BBACA-E05B-4DAE-ACFC-1B3B429AE43F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorStandalone", "samples\BlazorStandalone\BlazorStandalone.csproj", "{754BBACA-E05B-4DAE-ACFC-1B3B429AE43F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +38,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A}.Release|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A}.Release|Any CPU.Build.0 = Debug|Any CPU
 		{39FEC72D-AF52-47A3-B63D-7BF0E4335248}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{39FEC72D-AF52-47A3-B63D-7BF0E4335248}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{39FEC72D-AF52-47A3-B63D-7BF0E4335248}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -104,7 +79,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{4C7EE25B-E9C7-4CA3-8357-77ADF9AAD20A} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
 		{7B5CAAB1-A3EB-44F7-87E3-A13ED89FC17D} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{39FEC72D-AF52-47A3-B63D-7BF0E4335248} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{7C53BB6B-5906-4753-B507-C9FCC2F7E5B7} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
