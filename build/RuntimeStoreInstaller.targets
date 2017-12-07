@@ -22,7 +22,7 @@
     <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
-    <RuntimeStore200LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.</RuntimeStore200LinkPrefix>
+    <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.3-125/Build.RS.</RuntimeStore20LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
     <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
@@ -72,7 +72,7 @@
       so we'll let bash do it instead.
     -->
     <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
   </Target>
 
   <Target Name="_GenerateTargz">
@@ -140,9 +140,9 @@
   </Target>
 
   <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory;_DownloadInstallers">
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
   </Target>
 
   <Target Name="GenerateCumulativeArchives" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadAdditionalRSZips">
@@ -490,7 +490,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=debian.8" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.14.04" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.04" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.10" />
   </Target>
 
   <Target Name="RunDebTool">
