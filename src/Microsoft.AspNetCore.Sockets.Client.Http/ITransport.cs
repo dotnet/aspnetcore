@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface ITransport
     {
-        Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, string connectionId);
+        Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, string connectionId, IConnection connection);
         Task StopAsync();
         TransferMode? Mode { get; }
     }

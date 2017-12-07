@@ -48,9 +48,22 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             _receiveLoop = ReceiveLoopAsync(_receiveShutdownToken.Token);
         }
 
-        public Task DisposeAsync()
+        public Task AbortAsync(Exception ex) => DisposeCoreAsync(ex);
+        public Task DisposeAsync() => DisposeCoreAsync();
+
+        private Task DisposeCoreAsync(Exception ex = null)
         {
-            _disposed.TrySetResult(null);
+            if (ex == null)
+            {
+                _closeTcs.TrySetResult(null);
+                _disposed.TrySetResult(null);
+            }
+            else
+            {
+                _closeTcs.TrySetException(ex);
+                _disposed.TrySetException(ex);
+            }
+
             _receiveShutdownToken.Cancel();
             return _receiveLoop;
         }

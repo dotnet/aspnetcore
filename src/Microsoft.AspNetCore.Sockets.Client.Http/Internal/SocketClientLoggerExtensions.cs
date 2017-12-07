@@ -153,6 +153,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, string, Exception> _exceptionThrownFromCallback =
             LoggerMessage.Define<DateTime, string, string>(LogLevel.Error, new EventId(19, nameof(ExceptionThrownFromCallback)), "{time}: Connection Id {connectionId}: An exception was thrown from the '{callback}' callback");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _abortingClient =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Error, new EventId(20, nameof(AbortingClient)), "{time}: Connection Id {connectionId}: Aborting client.");
+
 
         public static void StartTransport(this ILogger logger, string connectionId, TransferMode transferMode)
         {
@@ -503,6 +506,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 _sendingMessage(logger, DateTime.Now, connectionId, null);
+            }
+        }
+
+        public static void AbortingClient(this ILogger logger, string connectionId, Exception ex)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                _abortingClient(logger, DateTime.Now, connectionId, ex);
             }
         }
 

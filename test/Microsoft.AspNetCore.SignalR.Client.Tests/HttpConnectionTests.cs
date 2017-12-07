@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             releaseDisposeTcs.SetResult(null);
             await disposeTask.OrTimeout();
 
-            transport.Verify(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()), Times.Never);
+            transport.Verify(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()), Times.Never);
         }
 
         [Fact]
@@ -263,8 +263,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var mockTransport = new Mock<ITransport>();
             Channel<byte[], SendMessage> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
-                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string, IConnection>((url, c, transferMode, connectionId, _) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -311,8 +311,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var mockTransport = new Mock<ITransport>();
             Channel<byte[], SendMessage> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
-                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string, IConnection>((url, c, transferMode, connectionId, _) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -368,8 +368,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var mockTransport = new Mock<ITransport>();
             Channel<byte[], SendMessage> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
-                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string, IConnection>((url, c, transferMode, connectionId, _) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -413,8 +413,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var mockTransport = new Mock<ITransport>();
             Channel<byte[], SendMessage> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
-                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string, IConnection>((url, c, transferMode, connectionId, _) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -925,8 +925,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var mockTransport = new Mock<ITransport>();
             Channel<byte[], SendMessage> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
-                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>(), It.IsAny<IConnection>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string, IConnection>((url, c, transferMode, connectionId, _) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -947,7 +947,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             await connection.DisposeAsync().OrTimeout();
 
             mockTransport.Verify(t => t.StartAsync(
-                It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), TransferMode.Text, It.IsAny<string>()), Times.Once);
+                It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), TransferMode.Text, It.IsAny<string>(), It.IsAny<IConnection>()), Times.Once);
             Assert.NotNull(transferModeFeature);
             Assert.Equal(TransferMode.Binary, transferModeFeature.TransferMode);
         }

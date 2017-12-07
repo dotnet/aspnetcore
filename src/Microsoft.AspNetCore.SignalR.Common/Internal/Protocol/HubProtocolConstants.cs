@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    internal static class HubProtocolConstants
+    public static class HubProtocolConstants
     {
         public const int InvocationMessageType = 1;
         public const int StreamItemMessageType = 2;

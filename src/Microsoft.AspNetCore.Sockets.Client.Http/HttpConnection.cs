@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpOptions = httpOptions;
             _httpClient = _httpOptions?.HttpMessageHandler == null ? new HttpClient() : new HttpClient(_httpOptions?.HttpMessageHandler);
-            _httpClient.Timeout =  HttpClientTimeout;
+            _httpClient.Timeout = HttpClientTimeout;
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
         }
 
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // Start the transport, giving it one end of the pipeline
             try
             {
-                await _transport.StartAsync(connectUrl, applicationSide, requestedTransferMode: GetTransferMode(), connectionId: _connectionId);
+                await _transport.StartAsync(connectUrl, applicationSide, GetTransferMode(), _connectionId, this);
 
                 // actual transfer mode can differ from the one that was requested so set it on the feature
                 Debug.Assert(_transport.Mode.HasValue, "transfer mode not set after transport started");
@@ -435,11 +435,25 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
         }
 
+        public async Task AbortAsync(Exception ex) => await DisposeAsyncCore(ex ?? new InvalidOperationException("Connection aborted")).ForceAsync();
+
         public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
 
-        private async Task DisposeAsyncCore()
+        private async Task DisposeAsyncCore(Exception ex = null)
         {
-            _logger.StoppingClient(_connectionId);
+            if (ex != null)
+            {
+                _logger.AbortingClient(_connectionId, ex);
+
+                // Immediately fault the close task. When the transport shuts down,
+                // it will trigger the close task to be completed, so we want it to be
+                // marked faulted before that happens
+                _closedTcs.TrySetException(ex);
+            }
+            else
+            {
+                _logger.StoppingClient(_connectionId);
+            }
 
             if (Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected) == ConnectionState.Initial)
             {
@@ -472,6 +486,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 await _receiveLoopTask;
             }
 
+            // If we haven't already done so, trigger the Closed task.
             _closedTcs.TrySetResult(null);
             _httpClient?.Dispose();
         }

@@ -85,6 +85,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         private static readonly Action<ILogger, string, string, string, int, Exception> _preparingStreamingInvocation =
             LoggerMessage.Define<string, string, string, int>(LogLevel.Trace, new EventId(24, nameof(PreparingStreamingInvocation)), "Preparing streaming invocation '{invocationId}' of '{target}', with return type '{returnType}' and {argumentCount} argument(s).");
 
+        private static readonly Action<ILogger, Exception> _resettingKeepAliveTimer =
+            LoggerMessage.Define(LogLevel.Trace, new EventId(25, nameof(ResettingKeepAliveTimer)), "Resetting keep-alive timer, received a message from the server.");
+
         // Category: Streaming and NonStreaming
         private static readonly Action<ILogger, string, Exception> _invocationCreated =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(0, nameof(InvocationCreated)), "Invocation {invocationId} created.");
@@ -282,7 +285,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         public static void ErrorInvokingClientSideMethod(this ILogger logger, string methodName, Exception exception)
         {
-             _errorInvokingClientSideMethod(logger, methodName, exception);
+            _errorInvokingClientSideMethod(logger, methodName, exception);
+        }
+
+        public static void ResettingKeepAliveTimer(this ILogger logger)
+        {
+            _resettingKeepAliveTimer(logger, null);
         }
     }
 }

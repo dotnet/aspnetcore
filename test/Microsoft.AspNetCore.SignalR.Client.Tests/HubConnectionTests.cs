@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task DisposeAsyncCallsConnectionStart()
         {
             var connection = new Mock<IConnection>();
+            connection.Setup(m => m.Features).Returns(new FeatureCollection());
             connection.Setup(m => m.StartAsync()).Verifiable();
             var hubConnection = new HubConnection(connection.Object, Mock.Of<IHubProtocol>(), null);
             await hubConnection.DisposeAsync();
@@ -183,6 +185,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             await hubConnection.DisposeAsync();
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
+        }
+
+        [Fact]
+        public async Task ConnectionTerminatedIfServerTimeoutIntervalElapsesWithNoMessages()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+
+            hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(100);
+
+            await hubConnection.StartAsync().OrTimeout();
+            var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await hubConnection.Closed.OrTimeout());
+            Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", ex.Message);
         }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
