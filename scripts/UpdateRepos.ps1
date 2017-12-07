@@ -118,7 +118,11 @@ try {
             }
         }
         catch {
-            Write-Warning "Error in $($submodule.module)"
+            Write-Warning "Error in $($submodule.module): $_"
+            $build_errors += @{
+                Repo    = $submodule.module
+                Message = $_
+            }
         }
         finally {
             Pop-Location
