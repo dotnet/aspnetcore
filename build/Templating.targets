@@ -11,6 +11,7 @@
         DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
         BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);
+        SkipBillOfMaterials=true;
       </TemplateProjCommmonProperties>
       <TemplateProjProperties>
         $(TemplateProjCommmonProperties);
@@ -26,7 +27,7 @@
 
     <!-- Produce regular, timestamped templates for pre-release builds -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Restore;Compile;Package"
+             Targets="CleanArtifacts;Restore;Compile;Package"
              Properties="$(TemplateProjProperties)" />
 
     <ItemGroup>
@@ -55,7 +56,7 @@
 
     <!-- Rebuild the templates without restoring. (The non-timestamped packages don't exist yet.) -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="Prepare;Compile;Package"
+             Targets="CleanArtifacts;Prepare;Compile;Package"
              Properties="$(TemplateProjNoTimestampProperties);NoRestore=true" />
 
     <ItemGroup>

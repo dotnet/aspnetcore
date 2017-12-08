@@ -2,6 +2,8 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
+    <!-- Skip BOM generation -->
+    <SkipBillOfMaterials>true</SkipBillOfMaterials>
   </PropertyGroup>
 
   <Import Project="artifacts.props" />

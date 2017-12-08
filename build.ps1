@@ -23,6 +23,9 @@ The base url where build tools can be downloaded. Overrides the value from the c
 .PARAMETER Update
 Updates KoreBuild to the latest version even if a lock file is present.
 
+.PARAMETER Reinstall
+Re-installs KoreBuild
+
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to version.props.
 
@@ -57,6 +60,7 @@ param(
     [string]$ToolsSource,
     [Alias('u')]
     [switch]$Update,
+    [switch]$Reinstall,
     [string]$ConfigFile = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArgs
@@ -84,6 +88,10 @@ function Get-KoreBuild {
     $version = $version.TrimStart('version:').Trim()
     $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
 
+    if ($Reinstall -and (Test-Path $korebuildPath)) {
+        Remove-Item -Force -Recurse $korebuildPath
+    }
+
     if (!(Test-Path $korebuildPath)) {
         Write-Host -ForegroundColor Magenta "Downloading KoreBuild $version"
         New-Item -ItemType Directory -Path $korebuildPath | Out-Null
@@ -103,11 +111,11 @@ function Get-KoreBuild {
             }
         }
         catch {
-            remove-item -Recurse -Force $korebuildPath -ErrorAction Ignore
+            Remove-Item -Recurse -Force $korebuildPath -ErrorAction Ignore
             throw
         }
         finally {
-            remove-item $tmpfile -ErrorAction Ignore
+            Remove-Item $tmpfile -ErrorAction Ignore
         }
     }
 
