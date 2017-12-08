@@ -4,4 +4,8 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -40,6 +40,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{F8996835-41F7-4663-91DF-3B5652ADC37D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Blazor", "src\Microsoft.Blazor\Microsoft.Blazor.csproj", "{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +96,10 @@ Global
 		{F8996835-41F7-4663-91DF-3B5652ADC37D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8996835-41F7-4663-91DF-3B5652ADC37D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8996835-41F7-4663-91DF-3B5652ADC37D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -113,6 +119,7 @@ Global
 		{4D367450-96E9-4C8C-8B56-EED8ADE3A20D} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
 		{B4335F7C-4E86-4559-821F-F1B1C75F5FAE} = {4D367450-96E9-4C8C-8B56-EED8ADE3A20D}
 		{F8996835-41F7-4663-91DF-3B5652ADC37D} = {4D367450-96E9-4C8C-8B56-EED8ADE3A20D}
+		{7FD8C650-74B3-4153-AEA1-00F4F6AF393D} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}
