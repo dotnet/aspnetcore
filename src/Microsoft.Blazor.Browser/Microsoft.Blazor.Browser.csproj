@@ -15,16 +15,18 @@
     <WebpackInputs Include="**\*.ts" Exclude="node_modules\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Blazor.BuildTools\Microsoft.Blazor.BuildTools.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+  <Import Project="..\Microsoft.Blazor.BuildTools\local.props" />
+
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
-    <Exec Command="node --version" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="ErrorCode" />
-    </Exec>
-    <Error Condition="'$(ErrorCode)' != '0'" Text="Node.js is required to build and run this project. To continue, please install Node.js from https://nodejs.org/, and then restart your command prompt or IDE." />
+    <Exec Command="$(BlazorBuildTools) checknodejs -v 8.3.0" />
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="npm install" />
   </Target>
 
-  <Target Name="RunWebpack" BeforeTargets="PreBuildEvent" Inputs="@(WebpackInputs)" Outputs="dist\blazor.js" DependsOnTargets="EnsureNpmRestored">
+  <Target Name="RunWebpack" AfterTargets="ResolveReferences" Inputs="@(WebpackInputs)" Outputs="dist\blazor.js" DependsOnTargets="EnsureNpmRestored">
     <RemoveDir Directories="dist" />
     <Exec Command="npm run build" />
     <ItemGroup>

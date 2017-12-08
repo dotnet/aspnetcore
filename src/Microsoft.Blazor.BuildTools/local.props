@@ -1,0 +1,7 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- To avoid repeatedly running up-to-date checks, rely on the project already being built. -->
+    <!-- For this to work, consumers will need to have a project reference to this project. -->
+    <BlazorBuildTools>dotnet run --no-build --project $(MSBuildThisFileDirectory)</BlazorBuildTools>
+  </PropertyGroup>
+</Project>
