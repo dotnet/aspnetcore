@@ -31,20 +31,18 @@
 
       <SharedFxBinaries Include="
         $(UnsignedSharedFxPath)**\microsoft.*.dll;
-        $(UnsignedSharedFxPath)**\system.*.dll" />
+        $(UnsignedSharedFxPath)**\system.*.dll;
+        $(UnsignedSharedFxPath)**\libuv.dll;
+        $(UnsignedSharedFxPath)**\sni.dll" />
 
       <SharedFxThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
+        $(UnsignedSharedFxPath)**\e_sqlite3.dll;
         $(UnsignedSharedFxPath)**\stackexchange*.dll" />
 
-      <SharedFxNativeBinaries Include="
-        $(UnsignedSharedFxPath)**\e_sqlite3.dll;
-        $(UnsignedSharedFxPath)**\libuv.dll;
-        $(UnsignedSharedFxPath)**\sni.dll" />
-
-      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries);@(SharedFxNativeBinaries)"/>
+      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
     </ItemGroup>
 
 
