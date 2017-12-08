@@ -16,8 +16,7 @@ namespace Microsoft.Blazor.DevHost.Server
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseDefaultFiles();
-            app.UseStaticFiles();
+            app.UseBlazorDevelopmentServer(".");
             app.UseBlazor();
         }
     }

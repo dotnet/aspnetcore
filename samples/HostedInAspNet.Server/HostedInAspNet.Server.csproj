@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
+  </ItemGroup>
+
+</Project>
