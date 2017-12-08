@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\samples\BlazorStandalone\BlazorStandalone.csproj" />
+    <ProjectReference Include="..\..\samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
     <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj" />
   </ItemGroup>

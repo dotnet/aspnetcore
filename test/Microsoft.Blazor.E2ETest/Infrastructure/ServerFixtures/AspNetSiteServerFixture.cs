@@ -13,6 +13,8 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
 
         public BuildWebHost BuildWebHostMethod { get; set; }
 
+        public AspNetEnvironment Environment { get; set; } = AspNetEnvironment.Production;
+
         protected override IWebHost CreateWebHost()
         {
             if (BuildWebHostMethod == null)
@@ -29,7 +31,8 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
             return BuildWebHostMethod(new[]
             {
                 "--urls", "http://127.0.0.1:0",
-                "--contentroot", sampleSitePath
+                "--contentroot", sampleSitePath,
+                "--environment", Environment.ToString(),
             });
         }
     }
