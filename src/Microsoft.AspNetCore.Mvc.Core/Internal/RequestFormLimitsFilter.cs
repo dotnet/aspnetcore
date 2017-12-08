@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -31,21 +29,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.IsEffectivePolicy<IRequestFormLimitsPolicy>(this))
+            var effectivePolicy = context.FindEffectivePolicy<IRequestFormLimitsPolicy>();
+            if (effectivePolicy != null && effectivePolicy != this)
             {
-                var features = context.HttpContext.Features;
-                var formFeature = features.Get<IFormFeature>();
+                _logger.NotMostEffectiveFilter(GetType(), effectivePolicy.GetType(), typeof(IRequestFormLimitsPolicy));
+                return;
+            }
 
-                if (formFeature == null || formFeature.Form == null)
-                {
-                    // Request form has not been read yet, so set the limits
-                    features.Set<IFormFeature>(new FormFeature(context.HttpContext.Request, FormOptions));
-                    _logger.AppliedRequestFormLimits();
-                }
-                else
-                {
-                    _logger.CannotApplyRequestFormLimits();
-                }
+            var features = context.HttpContext.Features;
+            var formFeature = features.Get<IFormFeature>();
+
+            if (formFeature == null || formFeature.Form == null)
+            {
+                // Request form has not been read yet, so set the limits
+                features.Set<IFormFeature>(new FormFeature(context.HttpContext.Request, FormOptions));
+                _logger.AppliedRequestFormLimits();
+            }
+            else
+            {
+                _logger.CannotApplyRequestFormLimits();
             }
         }
     }

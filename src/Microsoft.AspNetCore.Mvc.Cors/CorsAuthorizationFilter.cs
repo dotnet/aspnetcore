@@ -2,13 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors
@@ -20,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
     {
         private readonly ICorsService _corsService;
         private readonly ICorsPolicyProvider _corsPolicyProvider;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Creates a new instance of <see cref="CorsAuthorizationFilter"/>.
@@ -27,9 +27,39 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         /// <param name="corsService">The <see cref="ICorsService"/>.</param>
         /// <param name="policyProvider">The <see cref="ICorsPolicyProvider"/>.</param>
         public CorsAuthorizationFilter(ICorsService corsService, ICorsPolicyProvider policyProvider)
+            : this(corsService, policyProvider, NullLoggerFactory.Instance)
         {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="CorsAuthorizationFilter"/>.
+        /// </summary>
+        /// <param name="corsService">The <see cref="ICorsService"/>.</param>
+        /// <param name="policyProvider">The <see cref="ICorsPolicyProvider"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public CorsAuthorizationFilter(
+            ICorsService corsService,
+            ICorsPolicyProvider policyProvider,
+            ILoggerFactory loggerFactory)
+        {
+            if (corsService == null)
+            {
+                throw new ArgumentNullException(nameof(corsService));
+            }
+
+            if (policyProvider == null)
+            {
+                throw new ArgumentNullException(nameof(policyProvider));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _corsService = corsService;
             _corsPolicyProvider = policyProvider;
+            _logger = loggerFactory.CreateLogger(GetType());
         }
 
         /// <summary>
@@ -53,6 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
             // If this filter is not closest to the action, it is not applicable.
             if (!context.IsEffectivePolicy<ICorsAuthorizationFilter>(this))
             {
+                _logger.NotMostEffectiveFilter(typeof(ICorsAuthorizationFilter));
                 return;
             }
 

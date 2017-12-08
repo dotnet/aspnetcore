@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var resultExecutingContext = mockObjects.CreateResultExecutingContext();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -92,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 new IFilterMetadata[] { },
                 new List<IValueProviderFactory>());
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -124,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 format,
                 MediaTypeHeaderValue.Parse(contentType));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -164,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects();
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -186,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { produces });
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -207,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -228,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml;version=1"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -254,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 "xml",
                 MediaTypeHeaderValue.Parse("application/xml"));
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -273,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var mockObjects = new MockObjects(format, place);
             var resourceExecutingContext = mockObjects.CreateResourceExecutingContext(new IFilterMetadata[] { });
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -296,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var mockObjects = new MockObjects(input, place);
             var context = mockObjects.CreateResultExecutingContext();
             var filterAttribute = new FormatFilterAttribute();
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             var format = filter.GetFormat(context);
@@ -328,7 +330,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 new IFilterMetadata[] { },
                 new List<IValueProviderFactory>());
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);
@@ -363,7 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 new IFilterMetadata[] { },
                 new List<IValueProviderFactory>());
 
-            var filter = new FormatFilter(mockObjects.OptionsManager);
+            var filter = new FormatFilter(mockObjects.OptionsManager, NullLoggerFactory.Instance);
 
             // Act
             filter.OnResourceExecuting(resourceExecutingContext);

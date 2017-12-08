@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Moq;
@@ -339,6 +340,9 @@ namespace Microsoft.AspNetCore.Mvc
             serviceProvider
                 .Setup(s => s.GetService(typeof(IOptions<MvcOptions>)))
                 .Returns(optionsAccessor);
+            serviceProvider
+                .Setup(s => s.GetService(typeof(ILoggerFactory)))
+                .Returns(Mock.Of<ILoggerFactory>());
 
             return serviceProvider.Object;
         }

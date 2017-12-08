@@ -96,6 +96,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, MethodInfo, string, string, Exception> _inferredParameterSource;
         private static readonly Action<ILogger, MethodInfo, Exception> _unableToInferParameterSources;
 
+        private static readonly Action<ILogger, string, Exception> _unsupportedFormatFilterContentType;
+        private static readonly Action<ILogger, string, MediaTypeCollection, Exception> _actionDoesNotSupportFormatFilterContentType;
+        private static readonly Action<ILogger, string, Exception> _cannotApplyFormatFilterContentType;
+        private static readonly Action<ILogger, Exception> _actionDoesNotExplicitlySpecifyContentTypes;
+        private static readonly Action<ILogger, Type, Type, Type, Exception> _notMostEffectiveFilter;
+
         static MvcCoreLoggerExtensions()
         {
             _actionExecuting = LoggerMessage.Define<string>(
@@ -337,6 +343,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Warning,
                 2,
                 "Unable to unambiguously infer binding sources for parameters on '{ActionName}'. More than one parameter may be inferred to bound from body.");
+
+            _unsupportedFormatFilterContentType = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                1,
+                "Could not find a media type for the format '{FormatFilterContentType}'.");
+
+            _actionDoesNotSupportFormatFilterContentType = LoggerMessage.Define<string, MediaTypeCollection>(
+                LogLevel.Debug,
+                2,
+                "Current action does not support the content type '{FormatFilterContentType}'. The supported content types are '{SupportedMediaTypes}'.");
+
+            _cannotApplyFormatFilterContentType = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                3,
+                "Cannot apply content type '{FormatFilterContentType}' to the response as current action had explicitly set a preferred content type.");
+
+            _notMostEffectiveFilter = LoggerMessage.Define<Type, Type, Type>(
+                LogLevel.Debug,
+                4,
+                "Execution of filter {OverriddenFilter} is preempted by filter {OverridingFilter} which is the most effective filter implementing policy {FilterPolicy}.");
+
+            _actionDoesNotExplicitlySpecifyContentTypes = LoggerMessage.Define(
+                LogLevel.Debug,
+                5,
+                "Current action does not explicitly specify any content types for the response.");
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -728,6 +759,34 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void AppliedRequestFormLimits(this ILogger logger)
         {
             _appliedRequestFormLimits(logger, null);
+        }
+
+        public static void NotMostEffectiveFilter(this ILogger logger, Type overridenFilter, Type overridingFilter, Type policyType)
+        {
+            _notMostEffectiveFilter(logger, overridenFilter, overridingFilter, policyType, null);
+        }
+
+        public static void UnsupportedFormatFilterContentType(this ILogger logger, string format)
+        {
+            _unsupportedFormatFilterContentType(logger, format, null);
+        }
+
+        public static void ActionDoesNotSupportFormatFilterContentType(
+            this ILogger logger,
+            string format,
+            MediaTypeCollection supportedMediaTypes)
+        {
+            _actionDoesNotSupportFormatFilterContentType(logger, format, supportedMediaTypes, null);
+        }
+
+        public static void CannotApplyFormatFilterContentType(this ILogger logger, string format)
+        {
+            _cannotApplyFormatFilterContentType(logger, format, null);
+        }
+
+        public static void ActionDoesNotExplicitlySpecifyContentTypes(this ILogger logger)
+        {
+            _actionDoesNotExplicitlySpecifyContentTypes(logger, null);
         }
 
         public static void ModelStateInvalidFilterExecuting(this ILogger logger) => _modelStateInvalidFilterExecuting(logger, null);

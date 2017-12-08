@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 .Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
                 .Returns(Task.FromResult(new CorsPolicy()));
 
-            return new CorsAuthorizationFilter(corsService, policyProvider.Object)
+            return new CorsAuthorizationFilter(corsService, policyProvider.Object, Mock.Of<ILoggerFactory>())
             {
                 PolicyName = string.Empty
             };

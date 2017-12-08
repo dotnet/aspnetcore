@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -123,12 +124,13 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
             var cacheProfile = GetCacheProfile(optionsAccessor.Value);
 
             // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
             // the properties convert them to their defaults and are passed on.
-            return new ResponseCacheFilter(cacheProfile);
+            return new ResponseCacheFilter(cacheProfile, loggerFactory);
         }
     }
 }

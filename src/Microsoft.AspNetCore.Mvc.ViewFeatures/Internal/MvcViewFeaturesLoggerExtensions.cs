@@ -34,6 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private static readonly Action<ILogger, string, Exception> _tempDataCookieLoadSuccess;
         private static readonly Action<ILogger, string, Exception> _tempDataCookieLoadFailure;
 
+        private static readonly Action<ILogger, Type, Exception> _notMostEffectiveFilter;
+
         static MvcViewFeaturesLoggerExtensions()
         {
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
@@ -101,6 +103,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 LogLevel.Warning,
                 3,
                 "The temp data cookie {CookieName} could not be loaded.");
+
+            _notMostEffectiveFilter = LoggerMessage.Define<Type>(
+                LogLevel.Trace,
+                1,
+                "Skipping the execution of current filter as its not the most effective filter implementing the policy {FilterPolicy}.");
         }
 
         public static IDisposable ViewComponentScope(this ILogger logger, ViewComponentContext context)
@@ -224,6 +231,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         public static void TempDataCookieLoadFailure(this ILogger logger, string cookieName, Exception exception)
         {
             _tempDataCookieLoadFailure(logger, cookieName, exception);
+        }
+
+        public static void NotMostEffectiveFilter(this ILogger logger, Type policyType)
+        {
+            _notMostEffectiveFilter(logger, policyType, null);
         }
 
         private class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>

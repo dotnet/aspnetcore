@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Logging;
@@ -41,23 +39,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.IsEffectivePolicy<IRequestSizePolicy>(this))
+            var effectivePolicy = context.FindEffectivePolicy<IRequestSizePolicy>();
+            if (effectivePolicy != null && effectivePolicy != this)
             {
-                var maxRequestBodySizeFeature = context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+                _logger.NotMostEffectiveFilter(GetType(), effectivePolicy.GetType(), typeof(IRequestSizePolicy));
+                return;
+            }
 
-                if (maxRequestBodySizeFeature == null)
-                {
-                    _logger.FeatureNotFound();
-                }
-                else if (maxRequestBodySizeFeature.IsReadOnly)
-                {
-                    _logger.FeatureIsReadOnly();
-                }
-                else
-                {
-                    maxRequestBodySizeFeature.MaxRequestBodySize = Bytes;
-                    _logger.MaxRequestBodySizeSet(Bytes.ToString());
-                }
+            var maxRequestBodySizeFeature = context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+
+            if (maxRequestBodySizeFeature == null)
+            {
+                _logger.FeatureNotFound();
+            }
+            else if (maxRequestBodySizeFeature.IsReadOnly)
+            {
+                _logger.FeatureIsReadOnly();
+            }
+            else
+            {
+                maxRequestBodySizeFeature.MaxRequestBodySize = Bytes;
+                _logger.MaxRequestBodySizeSet(Bytes.ToString());
             }
         }
     }

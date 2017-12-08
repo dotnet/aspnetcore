@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -157,7 +156,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var defaultProvider = new DefaultApplicationModelProvider(Options.Create(new MvcOptions()));
 
             var context = new ApplicationModelProviderContext(new[] { typeof(RegularController).GetTypeInfo() });
-            context.Result.Filters.Add(new CorsAuthorizationFilter(Mock.Of<ICorsService>(), Mock.Of<ICorsPolicyProvider>()));
+            context.Result.Filters.Add(
+                new CorsAuthorizationFilter(Mock.Of<ICorsService>(), Mock.Of<ICorsPolicyProvider>(), Mock.Of<ILoggerFactory>()));
             defaultProvider.OnProvidersExecuting(context);
 
             // Act

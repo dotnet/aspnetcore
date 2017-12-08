@@ -6,7 +6,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var options = Options.Create(new MvcOptions());
-            var provider = new ResponseCacheFilterApplicationModelProvider(options);
+            var provider = new ResponseCacheFilterApplicationModelProvider(options, Mock.Of<ILoggerFactory>());
             var typeInfo = typeof(PageWithoutResponseCache).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
 
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var options = Options.Create(new MvcOptions());
-            var provider = new ResponseCacheFilterApplicationModelProvider(options);
+            var provider = new ResponseCacheFilterApplicationModelProvider(options, Mock.Of<ILoggerFactory>());
             var typeInfo = typeof(PageWithResponseCache).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
 
@@ -97,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 Duration = 14,
                 VaryByQueryKeys = new[] { "A" },
             });
-            var provider = new ResponseCacheFilterApplicationModelProvider(options);
+            var provider = new ResponseCacheFilterApplicationModelProvider(options, Mock.Of<ILoggerFactory>());
             var typeInfo = typeof(PageWithResponseCacheProfile).GetTypeInfo();
             var context = GetApplicationProviderContext(typeInfo);
 

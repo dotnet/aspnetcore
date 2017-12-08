@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -11,8 +12,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     public class ResponseCacheFilterApplicationModelProvider : IPageApplicationModelProvider
     {
         private readonly MvcOptions _mvcOptions;
+        private readonly ILoggerFactory _loggerFactory;
 
-        public ResponseCacheFilterApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor)
+        public ResponseCacheFilterApplicationModelProvider(IOptions<MvcOptions> mvcOptionsAccessor, ILoggerFactory loggerFactory)
         {
             if (mvcOptionsAccessor == null)
             {
@@ -20,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             _mvcOptions = mvcOptionsAccessor.Value;
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         // The order is set to execute after the DefaultPageApplicationModelProvider.
@@ -37,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             foreach (var attribute in responseCacheAttributes)
             {
                 var cacheProfile = attribute.GetCacheProfile(_mvcOptions);
-                context.PageApplicationModel.Filters.Add(new ResponseCacheFilter(cacheProfile));
+                context.PageApplicationModel.Filters.Add(new ResponseCacheFilter(cacheProfile, _loggerFactory));
             }
         }
 
