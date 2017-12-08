@@ -137,7 +137,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 called = true;
             };
 
-            var importChangedArgs = new ImportChangedEventArgs("path/to/import", ImportChangeKind.Changed, new[] { FilePath });
+            var importChangedArgs = new ImportChangedEventArgs("path/to/import", FileChangeKind.Changed, new[] { FilePath });
 
             // Act
             documentTracker.Import_Changed(null, importChangedArgs);
@@ -157,7 +157,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new InvalidOperationException();
             };
 
-            var importChangedArgs = new ImportChangedEventArgs("path/to/import", ImportChangeKind.Changed, new[] { "path/to/differentfile" });
+            var importChangedArgs = new ImportChangedEventArgs("path/to/import", FileChangeKind.Changed, new[] { "path/to/differentfile" });
 
             // Act & Assert (Does not throw)
             documentTracker.Import_Changed(null, importChangedArgs);

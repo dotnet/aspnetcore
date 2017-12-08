@@ -2,23 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal class ImportChangedEventArgs : EventArgs
+    internal sealed class FileChangeEventArgs : EventArgs
     {
-        public ImportChangedEventArgs(string filePath, FileChangeKind kind, IEnumerable<string> associatedDocuments)
+        public FileChangeEventArgs(string filePath, FileChangeKind kind)
         {
             FilePath = filePath;
             Kind = kind;
-            AssociatedDocuments = associatedDocuments;
         }
 
         public string FilePath { get; }
 
         public FileChangeKind Kind { get; }
-
-        public IEnumerable<string> AssociatedDocuments { get; }
     }
 }

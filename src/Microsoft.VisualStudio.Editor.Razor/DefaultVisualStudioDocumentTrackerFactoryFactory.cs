@@ -18,13 +18,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly TextBufferProjectService _projectService;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
-        private readonly ImportDocumentManager _importDocumentManager;
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactoryFactory(
             TextBufferProjectService projectService,
-            ITextDocumentFactoryService textDocumentFactory,
-            ImportDocumentManager importDocumentManager)
+            ITextDocumentFactoryService textDocumentFactory)
         {
             if (projectService == null)
             {
@@ -36,14 +34,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(textDocumentFactory));
             }
 
-            if (importDocumentManager == null)
-            {
-                throw new ArgumentNullException(nameof(importDocumentManager));
-            }
-
             _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
-            _importDocumentManager = importDocumentManager;
         }
 
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
@@ -56,6 +48,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var projectManager = languageServices.GetRequiredService<ProjectSnapshotManager>();
             var editorSettingsManager = languageServices.GetRequiredService<EditorSettingsManagerInternal>();
+            var importDocumentManager = languageServices.GetRequiredService<ImportDocumentManager>();
 
             return new DefaultVisualStudioDocumentTrackerFactory(
                 dispatcher,
@@ -63,7 +56,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 editorSettingsManager,
                 _projectService,
                 _textDocumentFactory,
-                _importDocumentManager,
+                importDocumentManager,
                 languageServices.WorkspaceServices.Workspace);
         }
     }
