@@ -7,10 +7,10 @@ using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
 {
-    public class BlazorStandaloneTest
-        : ServerTestBase<DevHostServerFixture<BlazorStandalone.Program>>
+    public class StandaloneAppTest
+        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>
     {
-        public BlazorStandaloneTest(BrowserFixture browserFixture, DevHostServerFixture<BlazorStandalone.Program> serverFixture)
+        public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
         }

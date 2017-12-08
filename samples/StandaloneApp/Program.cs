@@ -3,7 +3,7 @@
 
 using System;
 
-namespace BlazorStandalone
+namespace StandaloneApp
 {
     public class Program
     {

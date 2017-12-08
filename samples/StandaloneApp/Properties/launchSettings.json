@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "BlazorStandalone": {
+    "StandaloneApp": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
