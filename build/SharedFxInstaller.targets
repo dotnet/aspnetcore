@@ -15,8 +15,8 @@
 
   <Target Name="_DownloadInstallers">
     <!-- Download dotnet installers -->
-    <MakeDir Directories="$(_InstallerSource)" />
-    <KoreBuild.Tasks.DownloadFile Uri="$(RuntimeTargzLink)$(DotNetAssetRootAccessTokenSuffix)" DestinationPath="$(_InstallerSource)$(DotnetRuntimeInstallerArchiveName)" />
+    <MakeDir Directories="$(_InstallerSourceDir)" />
+    <KoreBuild.Tasks.DownloadFile Uri="$(RuntimeTargzLink)$(DotNetAssetRootAccessTokenSuffix)" DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeInstallerArchiveName)" />
   </Target>
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
@@ -30,7 +30,7 @@
 
     <!-- Create layout: Aspnet Hosting Bundle -->
     <Exec Command="tar -xzf $(SharedFxLinuxArchiveFilePath) -C $(_WorkRoot)" />
-    <Exec Command="tar -xzf $(_InstallerSource)$(DotnetRuntimeInstallerArchiveName) -C $(_WorkRoot)" />
+    <Exec Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeInstallerArchiveName) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
     <Exec Command="tar -czf $(_InstallersOutputDir)$(HostingArchiveName) -C $(_WorkRoot) ."/>
