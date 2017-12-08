@@ -7,7 +7,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)]
-    [string[]]$Repos,
+    [string[]]$Repos
 )
 
 $ErrorActionPreference = 'Stop'

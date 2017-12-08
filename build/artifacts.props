@@ -10,7 +10,6 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.ApiExplorer" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Mvc.Core" Category="ship" Metapackage="true" RuntimeStore="true"/>
