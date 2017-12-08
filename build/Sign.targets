@@ -30,19 +30,23 @@
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
       <SharedFxBinaries Include="
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\microsoft.*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\system.*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
+        $(UnsignedSharedFxPath)**\microsoft.*.dll;
+        $(UnsignedSharedFxPath)**\system.*.dll" />
 
       <SharedFxThirdPartyBinaries Include="
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\remotion*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\serilog*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
-        $(UnsignedSharedFxPath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
+        $(UnsignedSharedFxPath)**\newtonsoft*.dll;
+        $(UnsignedSharedFxPath)**\remotion*.dll;
+        $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
+        $(UnsignedSharedFxPath)**\stackexchange*.dll" />
 
-      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
+      <SharedFxNativeBinaries Include="
+        $(UnsignedSharedFxPath)**\e_sqlite3.dll;
+        $(UnsignedSharedFxPath)**\libuv.dll;
+        $(UnsignedSharedFxPath)**\sni.dll" />
+
+      <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries);@(SharedFxNativeBinaries)"/>
     </ItemGroup>
+
 
     <Error Text="Additional binaries found in the aspnetcore shared framework which are not marked for signing: @(UnaccountedSharedFxBinaries)" Condition="'@(UnaccountedSharedFxBinaries)'!=''"/>
   </Target>
