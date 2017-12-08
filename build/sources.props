@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 ﻿<Project>
+=======
+<Project>
+>>>>>>> ANCM/dev
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup Label="RestoreSources">

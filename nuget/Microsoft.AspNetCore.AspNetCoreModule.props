@@ -1,0 +1,8 @@
+<Project>
+
+  <PropertyGroup>
+    <AspNetCoreModuleX64Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x64\aspnetcore.dll</AspNetCoreModuleX64Location>
+    <AspNetCoreModuleX86Location>$(MSBuildThisFileDirectory)..\contentFiles\any\any\x86\aspnetcore.dll</AspNetCoreModuleX86Location>
+  </PropertyGroup>
+
+</Project>

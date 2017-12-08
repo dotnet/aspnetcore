@@ -1,6 +1,7 @@
 <Project>
   <Import Project="..\Directory.Build.props" />
 
+<<<<<<< HEAD
   <PropertyGroup>
     <DeveloperBuildTestTfms>netcoreapp2.1</DeveloperBuildTestTfms>
     <StandardTestTfms>$(DeveloperBuildTestTfms)</StandardTestTfms>
@@ -12,3 +13,9 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 </Project>
+=======
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
+</Project>
+>>>>>>> ANCM/dev

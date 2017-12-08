@@ -29,9 +29,12 @@ Updates KoreBuild to the latest version even if a lock file is present.
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
 
+<<<<<<< HEAD
 .PARAMETER ToolsSourceSuffix
 The Suffix to append to the end of the ToolsSource. Useful for query strings in blob stores.
 
+=======
+>>>>>>> ANCM/dev
 .PARAMETER Arguments
 Arguments to be passed to the command
 
@@ -54,7 +57,11 @@ Example config file:
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
+<<<<<<< HEAD
     [Parameter(Mandatory = $true, Position = 0)]
+=======
+    [Parameter(Mandatory=$true, Position = 0)]
+>>>>>>> ANCM/dev
     [string]$Command,
     [string]$Path = $PSScriptRoot,
     [Alias('c')]
@@ -66,7 +73,10 @@ param(
     [Alias('u')]
     [switch]$Update,
     [string]$ConfigFile,
+<<<<<<< HEAD
     [string]$ToolsSourceSuffix,
+=======
+>>>>>>> ANCM/dev
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$Arguments
 )
@@ -83,7 +93,11 @@ function Get-KoreBuild {
     $lockFile = Join-Path $Path 'korebuild-lock.txt'
 
     if (!(Test-Path $lockFile) -or $Update) {
+<<<<<<< HEAD
         Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile $ToolsSourceSuffix
+=======
+        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile
+>>>>>>> ANCM/dev
     }
 
     $version = Get-Content $lockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
@@ -100,7 +114,11 @@ function Get-KoreBuild {
 
         try {
             $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
+<<<<<<< HEAD
             Get-RemoteFile $remotePath $tmpfile $ToolsSourceSuffix
+=======
+            Get-RemoteFile $remotePath $tmpfile
+>>>>>>> ANCM/dev
             if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
                 # Use built-in commands where possible as they are cross-plat compatible
                 Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
@@ -128,7 +146,11 @@ function Join-Paths([string]$path, [string[]]$childPaths) {
     return $path
 }
 
+<<<<<<< HEAD
 function Get-RemoteFile([string]$RemotePath, [string]$LocalPath, [string]$RemoteSuffix) {
+=======
+function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
+>>>>>>> ANCM/dev
     if ($RemotePath -notlike 'http*') {
         Copy-Item $RemotePath $LocalPath
         return
@@ -138,7 +160,11 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath, [string]$Remote
     while ($retries -gt 0) {
         $retries -= 1
         try {
+<<<<<<< HEAD
             Invoke-WebRequest -UseBasicParsing -Uri $($RemotePath + $RemoteSuffix) -OutFile $LocalPath
+=======
+            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
+>>>>>>> ANCM/dev
             return
         }
         catch {
@@ -165,8 +191,12 @@ if (Test-Path $ConfigFile) {
             if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
             if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
         }
+<<<<<<< HEAD
     }
     catch {
+=======
+    } catch {
+>>>>>>> ANCM/dev
         Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
         Write-Warning $Error[0]
     }
@@ -193,4 +223,8 @@ try {
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> ANCM/dev

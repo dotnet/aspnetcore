@@ -4,6 +4,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15576</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAllPackageVersion>2.0.0</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10202</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
@@ -15,6 +16,7 @@
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-27644</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsConfigurationJsonPackageVersion>
@@ -24,6 +26,7 @@
     <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25907-02</MicrosoftNETCoreApp21PackageVersion>
@@ -31,6 +34,7 @@
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <SystemBuffersPackageVersion>4.4.0</SystemBuffersPackageVersion>
     <SystemIOPipelinesPackageVersion>0.1.0-alpha-002</SystemIOPipelinesPackageVersion>
+    <SystemManagementAutomationDllPackageVersion>10.0.10586</SystemManagementAutomationDllPackageVersion>
     <SystemMemoryPackageVersion>4.5.0-preview1-25902-08</SystemMemoryPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0-preview1-25902-08</SystemNumericsVectorsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-25902-08</SystemRuntimeCompilerServicesUnsafePackageVersion>
@@ -38,6 +42,10 @@
     <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-alpha-002</SystemTextEncodingsWebUtf8PackageVersion>
     <XunitPackageVersion>2.3.0</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.0</XunitRunnerVisualStudioPackageVersion>
+
+    <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
+    <MicrosoftNetHttpHeadersPackageVersion>2.0.0</MicrosoftNetHttpHeadersPackageVersion>    
+  
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
