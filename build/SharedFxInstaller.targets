@@ -249,14 +249,14 @@
 
     <Copy
       SourceFiles="%(Installers.FullPath)"
-      DestinationFiles="$([System.String]::Copy('%(Installers.FullPath)').Replace('$(Source)','$(Target)'))"
+      DestinationFiles="$([System.String]::Copy('%(Installers.FullPath)').Replace('$(Source)','$(Replacement)'))"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
   </Target>
 
   <Target Name="GenerateRelabeledInstallers">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=debian.8;Target=debian.9" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=ubuntu.16.04;Target=ubuntu.17.04" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=debian.8;Replacement=debian.9" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=ubuntu.16.04;Replacement=ubuntu.17.04" />
   </Target>
 </Project>
