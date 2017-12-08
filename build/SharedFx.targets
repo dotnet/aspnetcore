@@ -128,15 +128,9 @@
 
     <!-- Create archive -->
     <ZipArchive
-      File="$(ArtifactsDir)aspnetcore-shared-$(PackageVersion)-$(SharedFxRID).zip"
+      File="$(ArtifactsDir)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxRID).zip"
       SourceFiles="@(OutputZipFiles)"
       WorkingDirectory="$(SharedFxOutputDirectory)"
-      Overwrite="true"
-      Condition="$([MSBuild]::IsOSPlatform('Windows'))"/>
-    <Exec
-      Command="tar -czf $(ArtifactsDir)aspnetcore-shared-$(PackageVersion)-$(SharedFxRID).tar.gz -C $(SharedFxOutputDirectory) ."
-      WorkingDirectory="$(SharedFxOutputDirectory)"
-      Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))"/>
-
+      Overwrite="true"/>
   </Target>
 </Project>
