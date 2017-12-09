@@ -13,6 +13,12 @@ namespace Microsoft.Blazor.Mono
             typeof(MonoStaticFileProvider).Assembly,
             "mono");
 
+        public static MonoStaticFileProvider Instance = new MonoStaticFileProvider();
+
+        private MonoStaticFileProvider()
+        {
+        }
+
         public IFileInfo GetFileInfo(string subpath)
         {
             // EmbeddedFileProvider can't find resources whose names include '/' (or '\'),
@@ -22,7 +28,7 @@ namespace Microsoft.Blazor.Mono
         }
 
         public IDirectoryContents GetDirectoryContents(string subpath)
-            => throw new NotImplementedException(); // Don't need to support this
+            => _embeddedFiles.GetDirectoryContents(subpath);
 
         public IChangeToken Watch(string filter)
             => throw new NotImplementedException(); // Don't need to support this

@@ -5,7 +5,7 @@ using System;
 
 namespace HostedInAspNet.Client
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {

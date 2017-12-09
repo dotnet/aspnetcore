@@ -10,8 +10,6 @@ namespace Microsoft.Blazor.Mono.Test
         [Fact]
         public void SuppliesMonoFiles()
         {
-            var provider = new MonoStaticFileProvider();
-
             // This is not an exhaustive list. The set of BCL facade types is long and
             // will probably change. This test is just to verify the resource embedding
             // and filename mapping is working correctly.
@@ -26,7 +24,7 @@ namespace Microsoft.Blazor.Mono.Test
 
             foreach (var name in expectedFiles)
             {
-                var fileInfo = provider.GetFileInfo(name);
+                var fileInfo = MonoStaticFileProvider.Instance.GetFileInfo(name);
                 Assert.True(fileInfo.Exists);
                 Assert.False(fileInfo.IsDirectory);
                 Assert.True(fileInfo.Length > 0);
@@ -36,8 +34,6 @@ namespace Microsoft.Blazor.Mono.Test
         [Fact]
         public void DoesNotSupplyUnexpectedFiles()
         {
-            var provider = new MonoStaticFileProvider();
-            
             var notExpectedFiles = new[]
             {
                 "",
@@ -51,7 +47,7 @@ namespace Microsoft.Blazor.Mono.Test
 
             foreach (var name in notExpectedFiles)
             {
-                var fileInfo = provider.GetFileInfo(name);
+                var fileInfo = MonoStaticFileProvider.Instance.GetFileInfo(name);
                 Assert.False(fileInfo.Exists);
             }
         }

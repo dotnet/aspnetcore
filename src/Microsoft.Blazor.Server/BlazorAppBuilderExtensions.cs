@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Builder
             {
                 RequestPath = "/_framework",
                 FileProvider = new CompositeFileProvider(
-                    new MonoStaticFileProvider(),
-                    new BlazorBrowserFileProvider()),
+                    MonoStaticFileProvider.Instance,
+                    BlazorBrowserFileProvider.Instance),
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
         }

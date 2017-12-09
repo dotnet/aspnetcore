@@ -13,8 +13,14 @@ namespace Microsoft.Blazor.Browser
             typeof(BlazorBrowserFileProvider).Assembly,
             "blazor");
 
+        public static BlazorBrowserFileProvider Instance = new BlazorBrowserFileProvider();
+
+        private BlazorBrowserFileProvider()
+        {
+        }
+
         public IFileInfo GetFileInfo(string subpath)
-            =>_embeddedFiles.GetFileInfo(subpath.Replace('/', '$'));
+            => _embeddedFiles.GetFileInfo(subpath.Replace('/', '$'));
 
         public IDirectoryContents GetDirectoryContents(string subpath)
             => throw new NotImplementedException(); // Don't need to support this
