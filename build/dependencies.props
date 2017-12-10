@@ -3,21 +3,21 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15576</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreMvcPackageVersion>
-    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreMvcTestingPackageVersion>
-    <MicrosoftAspNetCorePackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-27644</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27644</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15618</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreMvcTestingPackageVersion>
+    <MicrosoftAspNetCorePackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCorePackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-27773</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25907-02</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <XunitPackageVersion>2.3.0</XunitPackageVersion>
-    <XunitRunnerVisualStudioPackageVersion>2.3.0</XunitRunnerVisualStudioPackageVersion>
+    <XunitPackageVersion>2.3.1</XunitPackageVersion>
+    <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
