@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
+    <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
   </ItemGroup>
 
 </Project>

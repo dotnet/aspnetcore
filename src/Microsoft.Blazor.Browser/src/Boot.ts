@@ -18,9 +18,8 @@ async function boot() {
 
   // Determine the URLs of the assemblies we want to load
   const loadAssemblyUrls = [entryPoint]
-    .concat(referenceAssemblies)      // Developer-specified references
-    .concat(['Microsoft.Blazor.dll']) // Standard references
-    .map(filename => `/_bin/${filename}`);
+    .concat(referenceAssemblies)
+    .map(filename => `/_framework/_bin/${filename}`);
 
   try {
     await platform.start(loadAssemblyUrls);

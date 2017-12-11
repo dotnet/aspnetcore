@@ -6,7 +6,7 @@ using System.Text;
 
 namespace MonoSanityClient
 {
-    public static class Examples
+    public class Examples
     {
         public static string AddNumbers(int a, int b)
             => (a + b).ToString();

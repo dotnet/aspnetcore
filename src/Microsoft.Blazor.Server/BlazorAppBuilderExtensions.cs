@@ -10,12 +10,14 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class BlazorAppBuilderExtensions
     {
-        public static void UseBlazor(this IApplicationBuilder applicationBuilder)
+        public static void UseBlazor<TProgram>(this IApplicationBuilder applicationBuilder)
         {
+            var clientAppAssembly = typeof(TProgram).Assembly;
+
             applicationBuilder.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = "/_framework",
-                FileProvider = ClientFileProvider.Instantiate(),
+                FileProvider = ClientFileProvider.Instantiate(clientAppAssembly),
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
         }

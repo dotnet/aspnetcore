@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
   <title>Mono sanity check</title>
@@ -40,7 +40,7 @@
 
   <script src="loader.js"></script>
   <script>
-    initMono(['/clientBin/MonoSanityClient.dll'], function () {
+    initMono(['/_framework/_bin/MonoSanityClient.dll'], function () {
       var buttons = document.getElementsByTagName('button');
       for (var i = 0; i < buttons.length; i++) {
         buttons[i].disabled = false;

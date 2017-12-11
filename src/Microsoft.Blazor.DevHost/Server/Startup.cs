@@ -17,7 +17,7 @@ namespace Microsoft.Blazor.DevHost.Server
         {
             app.UseDeveloperExceptionPage();
             app.UseBlazorDevelopmentServer(".");
-            app.UseBlazor();
+            app.UseBlazor<object>(); // TODO
         }
     }
 }
