@@ -800,8 +800,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.True(tagHelperOutput4.IsContentModified);
             Assert.Equal(childContent, tagHelperOutput4.Content.GetContent());
         }
-
-        [Fact]
+        
+        // See https://github.com/aspnet/Mvc/issues/7122
+        [Fact(Skip = "This test is flaky, and would require product changes to fix it. Issue #7122")]
         public async Task ProcessAsync_WorksForNestedCacheTagHelpers()
         {
             // Arrange
