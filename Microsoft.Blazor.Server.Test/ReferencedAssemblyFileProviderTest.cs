@@ -16,11 +16,9 @@ namespace Microsoft.Blazor.Server.Test
         [Fact]
         public void RootDirContainsOnlyBinDir()
         {
-            var (entrypoint, entrypointData) = GetBclAssemblyForTest("mscorlib");
             var provider = new ReferencedAssemblyFileProvider(
-                entrypoint,
-                entrypointData,
-                MonoStaticFileProvider.BclFiles);
+                "mscorlib",
+                new ReferencedAssemblyResolver(MonoStaticFileProvider.BclFiles, string.Empty));
             Assert.Collection(provider.GetDirectoryContents("/"), item =>
             {
                 Assert.Equal("/_bin", item.PhysicalPath);
@@ -31,11 +29,9 @@ namespace Microsoft.Blazor.Server.Test
         [Fact]
         public void FindsReferencedAssemblyGraphSimple()
         {
-            var (entrypoint, entrypointData) = GetBclAssemblyForTest("System.Linq.Expressions");
             var provider = new ReferencedAssemblyFileProvider(
-                entrypoint,
-                entrypointData,
-                MonoStaticFileProvider.BclFiles);
+                "System.Linq.Expressions",
+                new ReferencedAssemblyResolver(MonoStaticFileProvider.BclFiles, string.Empty));
             var contents = provider.GetDirectoryContents("/_bin").OrderBy(i => i.Name).ToList();
             Assert.Collection(contents,
                 item => { Assert.Equal("/_bin/mscorlib.dll", item.PhysicalPath); },
@@ -48,11 +44,12 @@ namespace Microsoft.Blazor.Server.Test
         public void FindsReferencedAssemblyGraphRealistic()
         {
             // Arrange
-            var standaloneAppAssemblyLocation = typeof(StandaloneApp.Program).Assembly.Location;
+            var standaloneAppAssembly = typeof(StandaloneApp.Program).Assembly;
             var provider = new ReferencedAssemblyFileProvider(
-                AssemblyDefinition.ReadAssembly(standaloneAppAssemblyLocation),
-                File.ReadAllBytes(standaloneAppAssemblyLocation),
-                MonoStaticFileProvider.BclFiles);
+                standaloneAppAssembly.GetName().Name,
+                new ReferencedAssemblyResolver(
+                    MonoStaticFileProvider.BclFiles,
+                    Path.GetDirectoryName(standaloneAppAssembly.Location)));
             var expectedContents = new[]
             {
                 /*

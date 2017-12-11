@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static void UseBlazor(
             this IApplicationBuilder applicationBuilder,
-            Assembly clientAssembly)
+            string clientAssemblyPath)
         {
             applicationBuilder.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = "/_framework",
-                FileProvider = ClientFileProvider.Instantiate(clientAssembly),
+                FileProvider = ClientFileProvider.Instantiate(clientAssemblyPath),
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
         }

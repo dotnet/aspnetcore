@@ -21,7 +21,7 @@ namespace Microsoft.Blazor.DevHost.Server
         {
             app.UseDeveloperExceptionPage();
             app.UseBlazorDevelopmentServer(".");
-            app.UseBlazor(clientAssembly: FindClientAssembly(app));
+            app.UseBlazor(clientAssemblyPath: FindClientAssembly(app).Location);
         }
 
         private static Assembly FindClientAssembly(IApplicationBuilder app)

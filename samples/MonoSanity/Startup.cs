@@ -3,9 +3,6 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using MonoSanityClient;
-using System.IO;
-using System.Net.Mime;
 
 namespace MonoSanity
 {
@@ -15,7 +12,7 @@ namespace MonoSanity
         {
             app.UseDeveloperExceptionPage();
             app.UseFileServer();
-            app.UseBlazor(clientAssembly: typeof(MonoSanityClient.Examples).Assembly);
+            app.UseBlazor(clientAssemblyPath: typeof(MonoSanityClient.Examples).Assembly.Location);
         }
     }
 }

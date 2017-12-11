@@ -4,16 +4,21 @@
 using Microsoft.Blazor.Browser;
 using Microsoft.Blazor.Mono;
 using Microsoft.Extensions.FileProviders;
+using System.IO;
 using System.Reflection;
 
 namespace Microsoft.Blazor.Server.ClientFilesystem
 {
     internal static class ClientFileProvider
     {
-        public static IFileProvider Instantiate(Assembly clientApp)
+        public static IFileProvider Instantiate(string clientAssemblyPath)
             => new CompositeFileProvider(
                 MonoStaticFileProvider.JsFiles,
                 BlazorBrowserFileProvider.Instance,
-                new ReferencedAssemblyFileProvider(clientApp, MonoStaticFileProvider.BclFiles));
+                new ReferencedAssemblyFileProvider(
+                    Path.GetFileNameWithoutExtension(clientAssemblyPath),
+                    new ReferencedAssemblyResolver(
+                        MonoStaticFileProvider.BclFiles,
+                        Path.GetDirectoryName(clientAssemblyPath))));
     }
 }
