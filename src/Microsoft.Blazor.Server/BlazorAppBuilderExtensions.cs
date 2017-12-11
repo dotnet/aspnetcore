@@ -5,19 +5,20 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Blazor.Server.ClientFilesystem;
 using System.Collections.Generic;
 using System.Net.Mime;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class BlazorAppBuilderExtensions
     {
-        public static void UseBlazor<TProgram>(this IApplicationBuilder applicationBuilder)
+        public static void UseBlazor(
+            this IApplicationBuilder applicationBuilder,
+            Assembly clientAssembly)
         {
-            var clientAppAssembly = typeof(TProgram).Assembly;
-
             applicationBuilder.UseStaticFiles(new StaticFileOptions
             {
                 RequestPath = "/_framework",
-                FileProvider = ClientFileProvider.Instantiate(clientAppAssembly),
+                FileProvider = ClientFileProvider.Instantiate(clientAssembly),
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
         }

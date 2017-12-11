@@ -15,7 +15,7 @@ namespace MonoSanity
         {
             app.UseDeveloperExceptionPage();
             app.UseFileServer();
-            app.UseBlazor<MonoSanityClient.Examples>();         
+            app.UseBlazor(clientAssembly: typeof(MonoSanityClient.Examples).Assembly);
         }
     }
 }

@@ -25,7 +25,7 @@ namespace HostedInAspNet.Server
                 app.UseBlazorDevelopmentServer("../HostedInAspNet.Client");
             }
 
-            app.UseBlazor<Client.Program>();
+            app.UseBlazor(clientAssembly: typeof(Client.Program).Assembly);
         }
     }
 }
