@@ -11,6 +11,7 @@
   -->
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <RunArguments>run --project ..\..\src\Microsoft.Blazor.DevHost --no-build serve</RunArguments>

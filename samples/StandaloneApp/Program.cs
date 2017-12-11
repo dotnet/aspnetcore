@@ -9,7 +9,7 @@ namespace StandaloneApp
     {
         public static void Main(string[] args)
         {
-            Console.WriteLine("Hello, world!");
+            Console.WriteLine(Microsoft.Blazor.Test.Message);
         }
     }
 }

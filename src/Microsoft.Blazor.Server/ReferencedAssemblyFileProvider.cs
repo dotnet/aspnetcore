@@ -14,20 +14,21 @@ namespace Microsoft.Blazor.Server
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {
-        public ReferencedAssemblyFileProvider(Assembly entrypointAssembly, IFileProvider clientBcl)
-            : base(ComputeContents(entrypointAssembly, clientBcl))
+        public ReferencedAssemblyFileProvider(
+            AssemblyDefinition entrypoint,
+            byte[] entrypointData,
+            IFileProvider clientBcl)
+            : base(ComputeContents(entrypoint, entrypointData, clientBcl))
         {
         }
 
         private static IEnumerable<(string, Stream)> ComputeContents(
-            Assembly entrypointAssembly,
+            AssemblyDefinition entrypoint,
+            byte[] entrypointData,
             IFileProvider clientBcl)
         {
             var foundAssemblies = new Dictionary<string, ReferencedAssembly>();
-            AddWithReferencesRecursive(
-                new ReferencedAssembly(AssemblyDefinition.ReadAssembly(entrypointAssembly.Location)),
-                clientBcl,
-                foundAssemblies);
+            AddWithReferencesRecursive(new ReferencedAssembly(entrypoint, entrypointData), clientBcl, foundAssemblies);
 
             return foundAssemblies.Values.Select(assembly => (
                 $"/bin/{assembly.Name}.dll",
@@ -72,7 +73,9 @@ namespace Microsoft.Blazor.Server
                     // (e.g., if it's in the app's bin directory, or a NuGet package)
                     var nativelyResolved = module.AssemblyResolver.Resolve(referenceName);
                     return AllowServingAssembly(nativelyResolved)
-                        ? new ReferencedAssembly(nativelyResolved)
+                        ? new ReferencedAssembly(
+                            nativelyResolved,
+                            File.ReadAllBytes(nativelyResolved.MainModule.FileName))
                         : null;
                 }
                 catch (AssemblyResolutionException)
@@ -128,10 +131,10 @@ namespace Microsoft.Blazor.Server
             public byte[] Data { get; }
             public AssemblyDefinition Definition { get; }
 
-            public ReferencedAssembly(AssemblyDefinition definition)
+            public ReferencedAssembly(AssemblyDefinition definition, byte[] rawData)
             {
                 Name = definition.Name.Name;
-                Data = File.ReadAllBytes(definition.MainModule.FileName);
+                Data = rawData;
                 Definition = definition;
             }
 
