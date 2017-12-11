@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Protocols
 
         public override IFeatureCollection Features => _features.Collection;
 
-        public override BufferPool BufferPool => ConnectionTransportFeature.BufferPool;
+        public override MemoryPool MemoryPool => ConnectionTransportFeature.MemoryPool;
 
         public override IPipeConnection Transport
         {

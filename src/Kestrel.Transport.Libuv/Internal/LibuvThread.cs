@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            BufferPool = new MemoryPool();
+            MemoryPool = new MemoryPool();
             WriteReqPool = new WriteReqPool(this, _log);
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public UvLoopHandle Loop { get { return _loop; } }
 
-        public BufferPool BufferPool { get; }
+        public MemoryPool MemoryPool { get; }
 
         public WriteReqPool WriteReqPool { get; }
 
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             finally
             {
-                BufferPool.Dispose();
+                MemoryPool.Dispose();
                 WriteReqPool.Dispose();
                 _threadTcs.SetResult(null);
 

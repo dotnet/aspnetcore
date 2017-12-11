@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
             // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, connectionContext.BufferPool, transportFeature.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, connectionContext.BufferPool, transportFeature.OutputReaderScheduler);
+            var inputOptions = GetInputPipeOptions(_serviceContext, connectionContext.MemoryPool, transportFeature.InputWriterScheduler);
+            var outputOptions = GetOutputPipeOptions(_serviceContext, connectionContext.MemoryPool, transportFeature.OutputReaderScheduler);
 
             var pair = PipeFactory.CreateConnectionPair(inputOptions, outputOptions);
 
@@ -83,18 +83,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // Internal for testing
-        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, BufferPool bufferPool, IScheduler writerScheduler) => new PipeOptions
+        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool memoryPool, IScheduler writerScheduler) => new PipeOptions
         (
-            bufferPool: bufferPool,
+            pool: memoryPool,
             readerScheduler: serviceContext.ThreadPool,
             writerScheduler: writerScheduler,
             maximumSizeHigh: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             maximumSizeLow: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
         );
 
-        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, BufferPool bufferPool, IScheduler readerScheduler) => new PipeOptions
+        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool memoryPool, IScheduler readerScheduler) => new PipeOptions
         (
-            bufferPool: bufferPool,
+            pool: memoryPool,
             readerScheduler: readerScheduler,
             writerScheduler: serviceContext.ThreadPool,
             maximumSizeHigh: GetOutputResponseBufferSize(serviceContext),

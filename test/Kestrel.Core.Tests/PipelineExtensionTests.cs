@@ -16,16 +16,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private const int _ulongMaxValueLength = 20;
 
         private readonly IPipe _pipe;
-        private readonly BufferPool _bufferPool = new MemoryPool();
+        private readonly MemoryPool _memoryPool = new MemoryPool();
 
         public PipelineExtensionTests()
         {
-            _pipe = new Pipe(new PipeOptions(_bufferPool));
+            _pipe = new Pipe(new PipeOptions(_memoryPool));
         }
 
         public void Dispose()
         {
-            _bufferPool.Dispose();
+            _memoryPool.Dispose();
         }
 
         [Theory]

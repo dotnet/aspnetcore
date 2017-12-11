@@ -4,7 +4,7 @@ namespace System.IO.Pipelines
 {
     public static class PipeFactory
     {
-        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(BufferPool memoryPool)
+        public static (IPipeConnection Transport, IPipeConnection Application) CreateConnectionPair(MemoryPool memoryPool)
         {
             return CreateConnectionPair(new PipeOptions(memoryPool), new PipeOptions(memoryPool));
         }

@@ -18,21 +18,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class HttpConnectionTests : IDisposable
     {
-        private readonly BufferPool _bufferPool;
+        private readonly MemoryPool _memoryPool;
         private readonly HttpConnectionContext _httpConnectionContext;
         private readonly HttpConnection _httpConnection;
 
         public HttpConnectionTests()
         {
-            _bufferPool = new MemoryPool();
-            var pair = PipeFactory.CreateConnectionPair(_bufferPool);
+            _memoryPool = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(_memoryPool);
 
             _httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = "0123456789",
                 ConnectionAdapters = new List<IConnectionAdapter>(),
                 ConnectionFeatures = new FeatureCollection(),
-                BufferPool = _bufferPool,
+                MemoryPool = _memoryPool,
                 HttpConnectionId = long.MinValue,
                 Application = pair.Application,
                 Transport = pair.Transport,
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public void Dispose()
         {
-            _bufferPool.Dispose();
+            _memoryPool.Dispose();
         }
 
         [Fact]

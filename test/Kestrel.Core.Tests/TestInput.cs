@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ConnectionFeatures = new FeatureCollection(),
                 Application = Application,
                 Transport = Transport,
-                BufferPool = _memoryPool,
+                MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 

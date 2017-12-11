@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Protocols.Features
 {
     public interface IConnectionTransportFeature
     {
-        BufferPool BufferPool { get; }
+        MemoryPool MemoryPool { get; }
 
         IPipeConnection Transport { get; set; }
 

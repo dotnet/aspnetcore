@@ -31,7 +31,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 return SendAsync(buffers.First);
             }
 
+#if NETCOREAPP2_1
+            if (!_eventArgs.MemoryBuffer.Equals(Memory<byte>.Empty))
+#else
             if (_eventArgs.Buffer != null)
+#endif
             {
                 _eventArgs.SetBuffer(null, 0, 0);
             }

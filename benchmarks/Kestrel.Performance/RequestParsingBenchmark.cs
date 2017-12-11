@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            var bufferPool = new MemoryPool();
-            var pair = PipeFactory.CreateConnectionPair(bufferPool);
+            var memoryPool = new MemoryPool();
+            var pair = PipeFactory.CreateConnectionPair(memoryPool);
 
             var serviceContext = new ServiceContext
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                BufferPool = bufferPool,
+                MemoryPool = memoryPool,
                 Application = pair.Application,
                 Transport = pair.Transport,
                 TimeoutControl = new MockTimeoutControl()
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             http1Connection.Reset();
 
             Http1Connection = http1Connection;
-            Pipe = new Pipe(new PipeOptions(bufferPool));
+            Pipe = new Pipe(new PipeOptions(memoryPool));
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]

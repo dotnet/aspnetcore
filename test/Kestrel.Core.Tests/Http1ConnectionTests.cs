@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly BufferPool _pipelineFactory;
+        private readonly MemoryPool _pipelineFactory;
         private ReadCursor _consumed;
         private ReadCursor _examined;
         private Mock<ITimeoutControl> _timeoutControl;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                BufferPool = _pipelineFactory,
+                MemoryPool = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
                 Application = pair.Application,
                 Transport = pair.Transport

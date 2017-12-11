@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private const int InnerLoopCount = 512;
 
         private IPipe _pipe;
-        private BufferPool _bufferPool;
+        private MemoryPool _memoryPool;
 
         [IterationSetup]
         public void Setup()
         {
-            _bufferPool = new MemoryPool();
-            _pipe = new Pipe(new PipeOptions(_bufferPool));
+            _memoryPool = new MemoryPool();
+            _pipe = new Pipe(new PipeOptions(_memoryPool));
         }
 
         [Benchmark(OperationsPerInvoke = InnerLoopCount)]

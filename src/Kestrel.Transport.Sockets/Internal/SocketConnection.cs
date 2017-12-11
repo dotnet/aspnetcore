@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private volatile bool _aborted;
 
-        internal SocketConnection(Socket socket, BufferPool bufferPool, ISocketsTrace trace)
+        internal SocketConnection(Socket socket, MemoryPool memoryPool, ISocketsTrace trace)
         {
             Debug.Assert(socket != null);
-            Debug.Assert(bufferPool != null);
+            Debug.Assert(memoryPool != null);
             Debug.Assert(trace != null);
 
             _socket = socket;
-            BufferPool = bufferPool;
+            MemoryPool = memoryPool;
             _trace = trace;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _sender = new SocketSender(_socket);
         }
 
-        public override BufferPool BufferPool { get; }
+        public override MemoryPool MemoryPool { get; }
         public override IScheduler InputWriterScheduler => InlineScheduler.Default;
         public override IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
 

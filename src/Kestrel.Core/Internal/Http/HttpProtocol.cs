@@ -1300,7 +1300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Pipe CreateRequestBodyPipe()
             => new Pipe(new PipeOptions
             (
-                bufferPool: _context.BufferPool,
+                pool: _context.MemoryPool,
                 readerScheduler: ServiceContext.ThreadPool,
                 writerScheduler: InlineScheduler.Default,
                 maximumSizeHigh: 1,

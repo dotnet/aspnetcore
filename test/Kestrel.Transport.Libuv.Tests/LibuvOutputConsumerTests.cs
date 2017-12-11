@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class LibuvOutputConsumerTests : IDisposable
     {
-        private readonly BufferPool _bufferPool;
+        private readonly MemoryPool _memoryPool;
         private readonly MockLibuv _mockLibuv;
         private readonly LibuvThread _libuvThread;
 
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public LibuvOutputConsumerTests()
         {
-            _bufferPool = new MemoryPool();
+            _memoryPool = new MemoryPool();
             _mockLibuv = new MockLibuv();
 
             var libuvTransport = new LibuvTransport(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0));
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public void Dispose()
         {
             _libuvThread.StopAsync(TimeSpan.FromSeconds(1)).Wait();
-            _bufferPool.Dispose();
+            _memoryPool.Dispose();
         }
 
         [Theory]
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: maxResponseBufferSize ?? 0,
                 maximumSizeLow: maxResponseBufferSize ?? 0
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: 0,
                 maximumSizeLow: 0
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: 1,
                 maximumSizeLow: 1
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: maxResponseBufferSize,
                 maximumSizeLow: maxResponseBufferSize
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 var pipeOptions = new PipeOptions
                 (
-                    bufferPool: _bufferPool,
+                    pool: _memoryPool,
                     readerScheduler: _libuvThread,
                     maximumSizeHigh: maxResponseBufferSize,
                     maximumSizeLow: maxResponseBufferSize
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 var pipeOptions = new PipeOptions
                 (
-                    bufferPool: _bufferPool,
+                    pool: _memoryPool,
                     readerScheduler: _libuvThread,
                     maximumSizeHigh: maxResponseBufferSize,
                     maximumSizeLow: maxResponseBufferSize
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 var pipeOptions = new PipeOptions
                 (
-                    bufferPool: _bufferPool,
+                    pool: _memoryPool,
                     readerScheduler: _libuvThread,
                     maximumSizeHigh: maxResponseBufferSize,
                     maximumSizeLow: maxResponseBufferSize
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 var pipeOptions = new PipeOptions
                 (
-                    bufferPool: _bufferPool,
+                    pool: _memoryPool,
                     readerScheduler: _libuvThread,
                     maximumSizeHigh: maxResponseBufferSize,
                     maximumSizeLow: maxResponseBufferSize
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: maxResponseBufferSize,
                 maximumSizeLow: maxResponseBufferSize
@@ -658,7 +658,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
-                bufferPool: _bufferPool,
+                pool: _memoryPool,
                 readerScheduler: _libuvThread,
                 maximumSizeHigh: maxResponseBufferSize ?? 0,
                 maximumSizeLow: maxResponseBufferSize ?? 0
@@ -712,7 +712,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                BufferPool = _bufferPool,
+                MemoryPool = _memoryPool,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Application = pair.Application,
                 Transport = pair.Transport

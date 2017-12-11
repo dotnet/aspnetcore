@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Protocols
 
         public abstract IPipeConnection Transport { get; set; }
 
-        public abstract BufferPool BufferPool { get; }
+        public abstract MemoryPool MemoryPool { get; }
     }
 }

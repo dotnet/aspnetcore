@@ -61,12 +61,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var thread = new LibuvThread(transport);
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(
-                    bufferPool: pool,
+                    pool: pool,
                     maximumSizeHigh: 3);
 
             // We don't set the output writer scheduler here since we want to run the callback inline
 
-            mockConnectionHandler.OutputOptions = pool => new PipeOptions(bufferPool: pool, readerScheduler: thread);
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread);
 
 
             Task connectionTask = null;
@@ -125,12 +125,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             });
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(
-                    bufferPool: pool,
+                    pool: pool,
                     maximumSizeHigh: 3,
                     maximumSizeLow: 3,
                     writerScheduler: mockScheduler.Object);
 
-            mockConnectionHandler.OutputOptions = pool => new PipeOptions(bufferPool: pool, readerScheduler:thread );
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler:thread );
 
             Task connectionTask = null;
             try

@@ -15,16 +15,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class OutputProducerTests : IDisposable
     {
-        private readonly BufferPool _bufferPool;
+        private readonly MemoryPool _memoryPool;
 
         public OutputProducerTests()
         {
-            _bufferPool = new MemoryPool();
+            _memoryPool = new MemoryPool();
         }
 
         public void Dispose()
         {
-            _bufferPool.Dispose();
+            _memoryPool.Dispose();
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var pipeOptions = new PipeOptions
             (
-                bufferPool:_bufferPool,
+                pool: _memoryPool,
                 readerScheduler: Mock.Of<IScheduler>()
             );
 

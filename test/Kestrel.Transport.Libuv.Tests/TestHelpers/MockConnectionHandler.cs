@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Protocols.Features;
@@ -14,15 +13,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     public class MockConnectionHandler : IConnectionHandler
     {
-        public Func<BufferPool, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool);
-        public Func<BufferPool, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool);
+        public Func<MemoryPool, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool);
+        public Func<MemoryPool, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool);
 
         public void OnConnection(IFeatureCollection features)
         {
             var connectionContext = new DefaultConnectionContext(features);
 
-            Input = new Pipe(InputOptions(connectionContext.BufferPool));
-            Output = new Pipe(OutputOptions(connectionContext.BufferPool));
+            Input = new Pipe(InputOptions(connectionContext.MemoryPool));
+            Output = new Pipe(OutputOptions(connectionContext.MemoryPool));
 
             var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
 

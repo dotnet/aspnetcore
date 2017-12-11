@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Set<IConnectionTransportFeature>(this);
             }
 
-            public BufferPool BufferPool { get; } = new MemoryPool();
+            public MemoryPool MemoryPool { get; } = new MemoryPool();
 
             public IPipeConnection Transport { get; set; }
             public IPipeConnection Application { get; set; }

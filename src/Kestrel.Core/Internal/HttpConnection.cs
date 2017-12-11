@@ -66,12 +66,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
 
-        private BufferPool BufferPool => _context.BufferPool;
+        private MemoryPool MemoryPool => _context.MemoryPool;
 
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
         (
-            bufferPool: BufferPool,
+            pool: MemoryPool,
             readerScheduler: _context.ServiceContext.ThreadPool,
             writerScheduler: InlineScheduler.Default,
             maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
         (
-            bufferPool: BufferPool,
+            pool: MemoryPool,
             readerScheduler: InlineScheduler.Default,
             writerScheduler: InlineScheduler.Default,
             maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 ConnectionId = _context.ConnectionId,
                 ConnectionFeatures = _context.ConnectionFeatures,
-                BufferPool = BufferPool,
+                MemoryPool = MemoryPool,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionId = _context.ConnectionId,
                 ServiceContext = _context.ServiceContext,
                 ConnectionFeatures = _context.ConnectionFeatures,
-                BufferPool = BufferPool,
+                MemoryPool = MemoryPool,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
                 Application = application,
