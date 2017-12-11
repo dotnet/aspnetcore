@@ -3,10 +3,11 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal abstract class RazorCodeDocumentProvider
+    internal abstract class RazorCodeDocumentProvider : ILanguageService
     {
         public abstract bool TryGetFromDocument(TextDocument document, out RazorCodeDocument codeDocument);
     }

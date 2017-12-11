@@ -37,7 +37,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly Lazy<RazorCodeDocumentProvider> _codeDocumentProvider;
 
         [ImportingConstructor]
-        public RazorDirectiveCompletionProvider([Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider)
+        public RazorDirectiveCompletionProvider(VisualStudioWorkspaceAccessor workspaceAccessor)
+        {
+            if (workspaceAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
+            // Lazy because we don't want Microsoft.AspNetCore.Razor.Language assembly getting loaded for non Razor scenarios.
+            _codeDocumentProvider = new Lazy<RazorCodeDocumentProvider>(() =>
+            {
+                var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
+                return languageServices.GetRequiredService<RazorCodeDocumentProvider>();
+            });
+        }
+
+        // Internal for testing
+        internal RazorDirectiveCompletionProvider(Lazy<RazorCodeDocumentProvider> codeDocumentProvider)
         {
             if (codeDocumentProvider == null)
             {
