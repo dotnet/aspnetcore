@@ -255,7 +255,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 #endif
         }
 
-        [Fact]
+        // See https://github.com/aspnet/Mvc/issues/7122
+        [Fact(Skip = "This test is flaky, and would require product changes to fix it. Issue #7122")]
         public async Task CacheTagHelper_CanCachePortionsOfViewsPartialViewsAndViewComponents()
         {
             // Arrange
@@ -440,7 +441,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(expected2, response4.Trim());
         }
 
-        [Fact]
+        // See https://github.com/aspnet/Mvc/issues/7122
+        [Fact(Skip = "This test is flaky, and would require product changes to fix it. Issue #7122")]
         public async Task CacheTagHelper_BubblesExpirationOfNestedTagHelpers()
         {
             // Arrange & Act - 1
