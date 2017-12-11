@@ -1,31 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Blazor.Internal.Common.FileProviders;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Primitives;
-using System;
 
 namespace Microsoft.Blazor.Browser
 {
-    public class BlazorBrowserFileProvider : IFileProvider
+    public static class BlazorBrowserFileProvider
     {
-        private EmbeddedFileProvider _embeddedFiles = new EmbeddedFileProvider(
+        public static IFileProvider Instance = new EmbeddedResourceFileProvider(
             typeof(BlazorBrowserFileProvider).Assembly,
-            "blazor");
-
-        public static BlazorBrowserFileProvider Instance = new BlazorBrowserFileProvider();
-
-        private BlazorBrowserFileProvider()
-        {
-        }
-
-        public IFileInfo GetFileInfo(string subpath)
-            => _embeddedFiles.GetFileInfo(subpath.Replace('/', '$'));
-
-        public IDirectoryContents GetDirectoryContents(string subpath)
-            => throw new NotImplementedException(); // Don't need to support this
-
-        public IChangeToken Watch(string filter)
-            => throw new NotImplementedException(); // Don't need to support this
+            "blazor.");
     }
 }

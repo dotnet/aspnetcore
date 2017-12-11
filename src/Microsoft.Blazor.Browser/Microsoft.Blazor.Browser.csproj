@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Blazor.BuildTools\Microsoft.Blazor.BuildTools.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\Microsoft.Blazor.Common\Microsoft.Blazor.Common.csproj" />
   </ItemGroup>
   <Import Project="..\Microsoft.Blazor.BuildTools\local.props" />
 
@@ -30,7 +31,7 @@
     <RemoveDir Directories="dist" />
     <Exec Command="npm run build" />
     <ItemGroup>
-      <EmbeddedResource Include="dist\blazor.js" LogicalName="blazor.$blazor.js" />
+      <EmbeddedResource Include="dist\blazor.js" LogicalName="blazor./blazor.js" />
     </ItemGroup>
   </Target>
 </Project>
