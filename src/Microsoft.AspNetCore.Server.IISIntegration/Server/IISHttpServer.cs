@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
-        private readonly BufferPool _bufferPool = new MemoryPool();
+        private readonly MemoryPool _memoryPool = new MemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly IAuthenticationSchemeProvider _authentication;
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             _httpServerHandle = GCHandle.Alloc(this);
 
-            _iisContextFactory = new IISContextFactory<TContext>(_bufferPool, application, _options);
+            _iisContextFactory = new IISContextFactory<TContext>(_memoryPool, application, _options);
 
             // Start the server by registering the callback
             NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _httpServerHandle.Free();
             }
 
-            _bufferPool.Dispose();
+            _memoryPool.Dispose();
         }
 
         private static NativeMethods.REQUEST_NOTIFICATION_STATUS HandleRequest(IntPtr pHttpContext, IntPtr pvRequestContext)
@@ -126,19 +126,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private class IISContextFactory<T> : IISContextFactory
         {
             private readonly IHttpApplication<T> _application;
-            private readonly BufferPool _bufferPool;
+            private readonly MemoryPool _memoryPool;
             private readonly IISOptions _options;
 
-            public IISContextFactory(BufferPool bufferPool, IHttpApplication<T> application, IISOptions options)
+            public IISContextFactory(MemoryPool memoryPool, IHttpApplication<T> application, IISOptions options)
             {
                 _application = application;
-                _bufferPool = bufferPool;
+                _memoryPool = memoryPool;
                 _options = options;
             }
 
             public IISHttpContext CreateHttpContext(IntPtr pHttpContext)
             {
-                return new IISHttpContextOfT<T>(_bufferPool, _application, pHttpContext, _options);
+                return new IISHttpContextOfT<T>(_memoryPool, _application, pHttpContext, _options);
             }
         }
     }

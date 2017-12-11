@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -41,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
-        private readonly BufferPool _bufferPool;
+        private readonly MemoryPool _memoryPool;
 
         private GCHandle _thisHandle;
         private MemoryHandle _inputHandle;
@@ -64,12 +63,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
-        internal unsafe IISHttpContext(BufferPool bufferPool, IntPtr pHttpContext, IISOptions options)
+        internal unsafe IISHttpContext(MemoryPool memoryPool, IntPtr pHttpContext, IISOptions options)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pHttpContext))
         {
             _thisHandle = GCHandle.Alloc(this);
 
-            _bufferPool = bufferPool;
+            _memoryPool = memoryPool;
             _pHttpContext = pHttpContext;
 
             NativeMethods.http_set_managed_context(_pHttpContext, (IntPtr)_thisHandle);
@@ -142,8 +141,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
-            Input = new Pipe(new PipeOptions(_bufferPool, readerScheduler: TaskRunScheduler.Default));
-            var pipe = new Pipe(new PipeOptions(_bufferPool,  readerScheduler: TaskRunScheduler.Default));
+            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: TaskRunScheduler.Default));
+            var pipe = new Pipe(new PipeOptions(_memoryPool,  readerScheduler: TaskRunScheduler.Default));
             Output = new OutputProducer(pipe);
         }
 

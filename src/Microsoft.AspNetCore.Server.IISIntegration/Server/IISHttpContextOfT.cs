@@ -5,7 +5,6 @@ using System;
 using System.Buffers;
 using System.Threading.Tasks;
 using System.Threading;
-using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 
@@ -15,8 +14,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(BufferPool bufferPool, IHttpApplication<TContext> application, IntPtr pHttpContext, IISOptions options)
-            : base(bufferPool, pHttpContext, options)
+        public IISHttpContextOfT(MemoryPool memoryPool, IHttpApplication<TContext> application, IntPtr pHttpContext, IISOptions options)
+            : base(memoryPool, pHttpContext, options)
         {
             _application = application;
         }
