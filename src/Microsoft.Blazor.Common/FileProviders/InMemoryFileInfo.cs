@@ -54,6 +54,7 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
                 {
                     dataStream.CopyTo(ms);
                     _fileData = ms.ToArray();
+                    dataStream.Dispose();
                 }
             }
         }
