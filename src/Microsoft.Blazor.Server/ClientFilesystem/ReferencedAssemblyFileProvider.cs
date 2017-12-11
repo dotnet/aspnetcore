@@ -14,6 +14,8 @@ namespace Microsoft.Blazor.Server.ClientFilesystem
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {
+        private const string ClientBinDir = "_bin";
+
         public ReferencedAssemblyFileProvider(Assembly assembly, IFileProvider clientBcl) : this(
             AssemblyDefinition.ReadAssembly(assembly.Location),
             File.ReadAllBytes(assembly.Location),
@@ -38,7 +40,7 @@ namespace Microsoft.Blazor.Server.ClientFilesystem
             AddWithReferencesRecursive(new ReferencedAssembly(entrypoint, entrypointData), clientBcl, foundAssemblies);
 
             return foundAssemblies.Values.Select(assembly => (
-                $"/bin/{assembly.Name}.dll",
+                $"/{ClientBinDir}/{assembly.Name}.dll",
                 (Stream)new MemoryStream(assembly.Data)));
         }
 
