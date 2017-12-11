@@ -13,7 +13,6 @@ namespace Microsoft.Blazor.Server.ClientFilesystem
         public static IFileProvider Instantiate(Assembly clientApp)
             => new CompositeFileProvider(
                 MonoStaticFileProvider.JsFiles,
-                MonoStaticFileProvider.BclFiles, // TODO: Stop serving these, and serve the ReferencedAssemblyFileProvider instead
                 BlazorBrowserFileProvider.Instance,
                 new ReferencedAssemblyFileProvider(clientApp, MonoStaticFileProvider.BclFiles));
     }

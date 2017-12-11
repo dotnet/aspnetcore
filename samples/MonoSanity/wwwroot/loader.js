@@ -48,23 +48,11 @@
       'mscorlib',
       'System',
       'System.Core',
-      'Facades/netstandard',
-      'Facades/System.Console',
-      'Facades/System.Collections',
-      'Facades/System.Diagnostics.Debug',
-      'Facades/System.IO',
-      'Facades/System.Linq',
-      'Facades/System.Reflection',
-      'Facades/System.Reflection.Extensions',
-      'Facades/System.Runtime',
-      'Facades/System.Runtime.Extensions',
-      'Facades/System.Runtime.InteropServices',
-      'Facades/System.Threading',
-      'Facades/System.Threading.Tasks'
+      'System.Runtime'
     ];
 
     var allAssemblyUrls = loadAssemblyUrls
-      .concat(loadBclAssemblies.map(function (name) { return '_framework/bcl/' + name + '.dll'; }));
+      .concat(loadBclAssemblies.map(function (name) { return '_framework/_bin/' + name + '.dll'; }));
 
     Module.FS_createPath('/', 'appBinDir', true, true);
     allAssemblyUrls.forEach(function (url) {

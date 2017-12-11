@@ -133,27 +133,18 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
+    // TODO: Stop hard-coding this list, and instead automatically load whatever
+    // dependencies were detected in ReferencedAssemblyFileProvider
     const loadBclAssemblies = [
       'mscorlib',
       'System',
       'System.Core',
-      'Facades/netstandard',
-      'Facades/System.Console',
-      'Facades/System.Collections',
-      'Facades/System.Diagnostics.Debug',
-      'Facades/System.IO',
-      'Facades/System.Linq',
-      'Facades/System.Reflection',
-      'Facades/System.Reflection.Extensions',
-      'Facades/System.Runtime',
-      'Facades/System.Runtime.Extensions',
-      'Facades/System.Runtime.InteropServices',
-      'Facades/System.Threading',
-      'Facades/System.Threading.Tasks'
+      'System.Console',
+      'System.Runtime',
     ];
 
     var allAssemblyUrls = loadAssemblyUrls
-      .concat(loadBclAssemblies.map(name => `_framework/bcl/${name}.dll`));
+      .concat(loadBclAssemblies.map(name => `_framework/_bin/${name}.dll`));
 
     Module.FS_createPath('/', 'appBinDir', true, true);
     allAssemblyUrls.forEach(url =>
