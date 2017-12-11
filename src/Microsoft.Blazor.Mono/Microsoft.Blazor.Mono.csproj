@@ -12,9 +12,17 @@
 
   <Target Name="EmbedMonoResources" BeforeTargets="PreBuildEvent" DependsOnTargets="OptimizeMono">
     <ItemGroup>
-      <MonoResourcesToEmbed Include="$(MonoOptimizedDir)**" />
-      <EmbeddedResource Include="@(MonoResourcesToEmbed)">
-        <LogicalName>mono.$([System.String]::Copy('/%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '/'))</LogicalName>
+      <MonoWasmResourcesToEmbed Include="$(MonoOptimizedDir)wasm/**" />
+      <MonoAsmJsResourcesToEmbed Include="$(MonoOptimizedDir)asmjs/**" />
+      <MonoBclResourcesToEmbed Include="$(MonoOptimizedDir)bcl/**" />
+      <EmbeddedResource Include="@(MonoWasmResourcesToEmbed)">
+        <LogicalName>mono.js./wasm$([System.String]::Copy('/%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '/'))</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="@(MonoAsmJsResourcesToEmbed)">
+        <LogicalName>mono.js./asmjs$([System.String]::Copy('/%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '/'))</LogicalName>
+      </EmbeddedResource>
+      <EmbeddedResource Include="@(MonoBclResourcesToEmbed)">
+        <LogicalName>mono.bcl./bcl$([System.String]::Copy('/%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '/'))</LogicalName>
       </EmbeddedResource>
     </ItemGroup>
   </Target>

@@ -10,10 +10,17 @@ using Microsoft.Blazor.Internal.Common.FileProviders;
 using System.Reflection;
 using System;
 
-namespace Microsoft.Blazor.Server
+namespace Microsoft.Blazor.Server.ClientFilesystem
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {
+        public ReferencedAssemblyFileProvider(Assembly assembly, IFileProvider clientBcl) : this(
+            AssemblyDefinition.ReadAssembly(assembly.Location),
+            File.ReadAllBytes(assembly.Location),
+            clientBcl)
+        {
+        }
+
         public ReferencedAssemblyFileProvider(
             AssemblyDefinition entrypoint,
             byte[] entrypointData,

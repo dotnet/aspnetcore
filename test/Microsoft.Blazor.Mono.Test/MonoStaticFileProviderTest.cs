@@ -8,48 +8,40 @@ namespace Microsoft.Blazor.Mono.Test
     public class MonoStaticFileProviderTest
     {
         [Fact]
-        public void SuppliesMonoFiles()
+        public void SuppliesJsFiles()
         {
-            // This is not an exhaustive list. The set of BCL facade types is long and
-            // will probably change. This test is just to verify the resource embedding
-            // and filename mapping is working correctly.
-            var expectedFiles = new[]
-            {
-                "/asmjs/mono.asm.js",
-                "/asmjs/mono.js.mem",
-                "/wasm/mono.wasm",
-                "/bcl/mscorlib.dll",
-                "/bcl/Facades/System.Collections.dll",
-            };
+            // The collection is small enough that we can assert the exact full list
 
-            foreach (var name in expectedFiles)
-            {
-                var fileInfo = MonoStaticFileProvider.Instance.GetFileInfo(name);
-                Assert.True(fileInfo.Exists);
-                Assert.False(fileInfo.IsDirectory);
-                Assert.True(fileInfo.Length > 0);
-            }
+            Assert.Collection(MonoStaticFileProvider.JsFiles.GetDirectoryContents("/"),
+                item => Assert.Equal("/asmjs", item.PhysicalPath),
+                item => Assert.Equal("/wasm", item.PhysicalPath));
+
+            Assert.Collection(MonoStaticFileProvider.JsFiles.GetDirectoryContents("/asmjs"),
+                item => Assert.Equal("/asmjs/mono.asm.js", item.PhysicalPath),
+                item => Assert.Equal("/asmjs/mono.js", item.PhysicalPath),
+                item => Assert.Equal("/asmjs/mono.js.mem", item.PhysicalPath));
+
+            Assert.Collection(MonoStaticFileProvider.JsFiles.GetDirectoryContents("/wasm"),
+                item => Assert.Equal("/wasm/mono.js", item.PhysicalPath),
+                item => Assert.Equal("/wasm/mono.wasm", item.PhysicalPath));
         }
 
         [Fact]
-        public void DoesNotSupplyUnexpectedFiles()
+        public void SuppliesBclFiles()
         {
-            var notExpectedFiles = new[]
-            {
-                "",
-                "mono",
-                "wasm",
-                "/wasm",
-                "/wasm/",
-                "wasm/mono.wasm",
-                "/wasm/../wasm/mono.wasm",
-            };
+            Assert.Collection(MonoStaticFileProvider.BclFiles.GetDirectoryContents("/"),
+                item => Assert.Equal("/bin", item.PhysicalPath));
 
-            foreach (var name in notExpectedFiles)
-            {
-                var fileInfo = MonoStaticFileProvider.Instance.GetFileInfo(name);
-                Assert.False(fileInfo.Exists);
-            }
+            Assert.Collection(MonoStaticFileProvider.BclFiles.GetDirectoryContents("/bin"),
+                item => Assert.Equal("/bin/mscorlib.dll", item.PhysicalPath),
+                item => Assert.Equal("/bin/System.Core.dll", item.PhysicalPath),
+                item => Assert.Equal("/bin/System.dll", item.PhysicalPath),
+                item => Assert.Equal("/bin/Facades", item.PhysicalPath));
+
+            // Not an exhaustive list. The full list is long.
+            var actualFacades = MonoStaticFileProvider.BclFiles.GetDirectoryContents("/bin/Facades");
+            Assert.Contains(actualFacades, item => item.PhysicalPath == "/bin/Facades/netstandard.dll");
+            Assert.Contains(actualFacades, item => item.PhysicalPath == "/bin/Facades/System.Console.dll");
         }
     }
 }

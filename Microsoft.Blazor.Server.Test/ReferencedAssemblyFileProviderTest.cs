@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Mono;
+using Microsoft.Blazor.Server.ClientFilesystem;
 using Mono.Cecil;
 using System;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Microsoft.Blazor.Server.Test
             var provider = new ReferencedAssemblyFileProvider(
                 entrypoint,
                 entrypointData,
-                MonoStaticFileProvider.Instance);
+                MonoStaticFileProvider.BclFiles);
             Assert.Collection(provider.GetDirectoryContents("/"), item =>
             {
                 Assert.Equal("/bin", item.PhysicalPath);
@@ -34,7 +35,7 @@ namespace Microsoft.Blazor.Server.Test
             var provider = new ReferencedAssemblyFileProvider(
                 entrypoint,
                 entrypointData,
-                MonoStaticFileProvider.Instance);
+                MonoStaticFileProvider.BclFiles);
             var contents = provider.GetDirectoryContents("/bin").OrderBy(i => i.Name).ToList();
             Assert.Collection(contents,
                 item => { Assert.Equal("/bin/mscorlib.dll", item.PhysicalPath); },
@@ -51,7 +52,7 @@ namespace Microsoft.Blazor.Server.Test
             var provider = new ReferencedAssemblyFileProvider(
                 AssemblyDefinition.ReadAssembly(standaloneAppAssemblyLocation),
                 File.ReadAllBytes(standaloneAppAssemblyLocation),
-                MonoStaticFileProvider.Instance);
+                MonoStaticFileProvider.BclFiles);
             var expectedContents = new[]
             {
                 /*
@@ -104,7 +105,7 @@ namespace Microsoft.Blazor.Server.Test
         {
             var possibleFilenames = new[] { $"/bcl/{name}.dll", $"/bcl/Facades/{name}.dll" };
             var fileInfo = possibleFilenames
-                .Select(MonoStaticFileProvider.Instance.GetFileInfo)
+                .Select(MonoStaticFileProvider.BclFiles.GetFileInfo)
                 .First(item => item.Exists);
             using (var data = new MemoryStream())
             {

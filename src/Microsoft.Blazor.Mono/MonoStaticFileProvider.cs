@@ -8,7 +8,10 @@ namespace Microsoft.Blazor.Mono
 {
     public static class MonoStaticFileProvider
     {
-        public readonly static IFileProvider Instance = new EmbeddedResourceFileProvider(
-            typeof(MonoStaticFileProvider).Assembly, "mono.");
+        public readonly static IFileProvider JsFiles = new EmbeddedResourceFileProvider(
+            typeof(MonoStaticFileProvider).Assembly, "mono.js.");
+
+        public readonly static IFileProvider BclFiles = new EmbeddedResourceFileProvider(
+            typeof(MonoStaticFileProvider).Assembly, "mono.bcl.");
     }
 }
