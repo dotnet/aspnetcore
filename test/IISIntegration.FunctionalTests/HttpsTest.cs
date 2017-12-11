@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Fact]
         public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable()
         {
-            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44398, sendClientCert: false);
+            return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false);
         }
 
         [Fact]

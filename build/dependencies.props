@@ -29,8 +29,7 @@
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview1-27644</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26008-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview1-25914-04</SystemBuffersPackageVersion>
     <SystemIOPipelinesPackageVersion>0.1.0-alpha-002</SystemIOPipelinesPackageVersion>
