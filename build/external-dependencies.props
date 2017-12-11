@@ -198,6 +198,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
+    <ExternalDependency Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
   </ItemGroup>
   <!-- ASP.NET Core Module -->
