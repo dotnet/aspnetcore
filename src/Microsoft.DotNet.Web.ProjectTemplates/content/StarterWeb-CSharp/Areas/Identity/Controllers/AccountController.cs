@@ -298,7 +298,7 @@ namespace Company.WebApplication1.Identity.Controllers
                 ViewData["ReturnUrl"] = returnUrl;
                 ViewData["LoginProvider"] = info.LoginProvider;
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-                return View("ExternalLogin", new ExternalLoginViewModel { Email = email });
+                return View(nameof(ExternalLogin), new ExternalLoginViewModel { Email = email });
             }
         }
 
