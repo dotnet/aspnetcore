@@ -111,7 +111,7 @@ namespace ChatSample
                         _hubContext = _serviceProvider.GetRequiredService<IHubContext<THub>>();
                     }
 
-                    hub.Clients = _hubContext.Clients;
+                    hub.Clients = new HubCallerClients(_hubContext.Clients, connection.ConnectionId);
                     hub.Context = new HubCallerContext(connection);
                     hub.Groups = _hubContext.Groups;
 

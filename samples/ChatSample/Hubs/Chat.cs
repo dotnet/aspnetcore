@@ -18,7 +18,6 @@ namespace ChatSample.Hubs
         public override async Task OnConnectedAsync()
         {
             await Clients.Client(Context.ConnectionId).InvokeAsync("SetUsersOnline", await GetUsersOnline());
-
             await base.OnConnectedAsync();
         }
 

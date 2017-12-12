@@ -828,6 +828,84 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [Theory]
         [MemberData(nameof(HubTypes))]
+        public async Task SendToOthers(Type hubType)
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
+
+                await firstClient.SendInvocationAsync("SendToOthers", "To others").OrTimeout();
+
+                var secondClientResult = await secondClient.ReadAsync().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(secondClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("To others", invocation.Arguments[0]);
+
+                var firstClientResult = await firstClient.ReadAsync().OrTimeout();
+                var completion = Assert.IsType<CompletionMessage>(firstClientResult);
+
+                await secondClient.SendInvocationAsync("BroadcastMethod", "To everyone").OrTimeout();
+                firstClientResult = await firstClient.ReadAsync().OrTimeout();
+                invocation = Assert.IsType<InvocationMessage>(firstClientResult);
+                Assert.Equal("Broadcast", invocation.Target);
+                Assert.Equal("To everyone", invocation.Arguments[0]);
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask).OrTimeout();
+
+
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubTypes))]
+        public async Task SendToCaller(Type hubType)
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
+
+                await firstClient.SendInvocationAsync("SendToCaller", "To caller").OrTimeout();
+
+                var firstClientResult = await firstClient.ReadAsync().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(firstClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("To caller", invocation.Arguments[0]);
+
+                await firstClient.SendInvocationAsync("BroadcastMethod", "To everyone").OrTimeout();
+                var secondClientResult = await secondClient.ReadAsync().OrTimeout();
+                invocation = Assert.IsType<InvocationMessage>(secondClientResult);
+                Assert.Equal("Broadcast", invocation.Target);
+                Assert.Equal("To everyone", invocation.Arguments[0]);
+
+                // kill the connections
+                firstClient.Dispose();
+
+                await firstEndPointTask.OrTimeout();
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubTypes))]
         public async Task SendToAllExcept(Type hubType)
         {
             var serviceProvider = CreateServiceProvider();
@@ -1557,6 +1635,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 return Clients.AllExcept(excludedIds).Send(message);
             }
+
+            public Task SendToOthers(string message)
+            {
+                return Clients.Others.Send(message);
+            }
+
+            public Task SendToCaller(string message)
+            {
+                return Clients.Caller.Send(message);
+            }
         }
 
         public interface Test
@@ -1734,6 +1822,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
             {
                 return Clients.AllExcept(excludedIds).Send(message);
+            }
+
+            public Task SendToOthers(string message)
+            {
+                return Clients.Others.Send(message);
+            }
+
+            public Task SendToCaller(string message)
+            {
+                return Clients.Caller.Send(message);
             }
         }
 
@@ -1929,6 +2027,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public bool HasHttpContext()
             {
                 return Context.Connection.GetHttpContext() != null;
+            }
+
+            public Task SendToOthers(string message)
+            {
+                return Clients.Others.InvokeAsync("Send", message);
+            }
+
+            public Task SendToCaller(string message)
+            {
+                return Clients.Caller.InvokeAsync("Send", message);
             }
         }
 

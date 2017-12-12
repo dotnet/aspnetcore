@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class Hub<T> : Hub where T : class
     {
-        private IHubClients<T> _clients;
+        private IHubCallerClients<T> _clients;
 
-        public new IHubClients<T> Clients
+        public new IHubCallerClients<T> Clients
         {
             get
             {

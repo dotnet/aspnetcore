@@ -5,32 +5,36 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    internal class TypedHubClients<T> : IHubClients<T>
+    internal class TypedHubClients<T> : IHubCallerClients<T>
     {
-        private IHubClients hubClients;
+        private IHubCallerClients _hubClients;
 
-        public TypedHubClients(IHubClients dynamicContext)
+        public TypedHubClients(IHubCallerClients dynamicContext)
         {
-            hubClients = dynamicContext;
+            _hubClients = dynamicContext;
         }
 
-        public T All => TypedClientBuilder<T>.Build(hubClients.All);
+        public T All => TypedClientBuilder<T>.Build(_hubClients.All);
 
-        public T AllExcept(IReadOnlyList<string> excludedIds) => TypedClientBuilder<T>.Build(hubClients.AllExcept(excludedIds));
+        public T Caller => TypedClientBuilder<T>.Build(_hubClients.Caller);
+
+        public T Others => TypedClientBuilder<T>.Build(_hubClients.Others);
+
+        public T AllExcept(IReadOnlyList<string> excludedIds) => TypedClientBuilder<T>.Build(_hubClients.AllExcept(excludedIds));
 
         public T Client(string connectionId)
         {
-            return TypedClientBuilder<T>.Build(hubClients.Client(connectionId));
+            return TypedClientBuilder<T>.Build(_hubClients.Client(connectionId));
         }
 
         public T Group(string groupName)
         {
-            return TypedClientBuilder<T>.Build(hubClients.Group(groupName));
+            return TypedClientBuilder<T>.Build(_hubClients.Group(groupName));
         }
 
         public T User(string userId)
         {
-            return TypedClientBuilder<T>.Build(hubClients.User(userId));
+            return TypedClientBuilder<T>.Build(_hubClients.User(userId));
         }
     }
 }
