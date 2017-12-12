@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Don't block the main thread
             if (_foregroundDispatcher.IsForegroundThread)
             {
-                return Task.Factory.StartNew(ProjectUpdatesCoreAsync, update, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.BackgroundScheduler);
+                return Task.Factory.StartNew(ProjectUpdatesCoreAsync, update, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.BackgroundScheduler);
             }
 
             return ProjectUpdatesCoreAsync(update);
@@ -63,7 +63,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var configuration = await _configurationFactory.GetConfigurationAsync(update.UnderlyingProject);
             update.Configuration = configuration;
 
-            var result = await _tagHelperResolver.GetTagHelpersAsync(update.UnderlyingProject);
+            var result = await _tagHelperResolver.GetTagHelpersAsync(update.UnderlyingProject, CancellationToken.None);
             update.TagHelpers = result.Descriptors;
         }
     }

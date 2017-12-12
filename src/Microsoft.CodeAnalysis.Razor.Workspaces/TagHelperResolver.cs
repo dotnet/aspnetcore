@@ -11,12 +11,6 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public abstract TagHelperResolutionResult GetTagHelpers(Compilation compilation);
 
-        public virtual async Task<TagHelperResolutionResult> GetTagHelpersAsync(
-            Project project,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            return GetTagHelpers(compilation);
-        }
+        public abstract Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken);
     }
 }

@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using System.IO;
 using Microsoft.CodeAnalysis.Razor;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
@@ -177,7 +178,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                     .Select(reference => reference.Display)
                     .Select(filter => Path.GetFileNameWithoutExtension(filter));
                 var projectFilters = project.AllProjectReferences.Select(filter => solution.GetProject(filter.ProjectId).AssemblyName);
-                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project);
+                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project, CancellationToken.None);
 
                 var files = GetCshtmlDocuments(project);
 

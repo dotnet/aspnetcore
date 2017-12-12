@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
@@ -41,6 +43,12 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             var resolutionResult = new TagHelperResolutionResult(results, diagnostics);
 
             return resolutionResult;
+        }
+
+        public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken)
+        {
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            return GetTagHelpers(compilation);
         }
     }
 }
