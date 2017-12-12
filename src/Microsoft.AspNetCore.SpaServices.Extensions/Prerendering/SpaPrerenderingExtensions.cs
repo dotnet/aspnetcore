@@ -225,7 +225,8 @@ namespace Microsoft.AspNetCore.Builder
 
             if (!string.IsNullOrEmpty(renderResult.RedirectUrl))
             {
-                context.Response.Redirect(renderResult.RedirectUrl);
+                var permanentRedirect = renderResult.StatusCode.GetValueOrDefault() == 301;
+                context.Response.Redirect(renderResult.RedirectUrl, permanentRedirect);
             }
             else
             {
@@ -237,6 +238,11 @@ namespace Microsoft.AspNetCore.Builder
                         $"supported when prerendering via {nameof(UseSpaPrerendering)}(). Instead, " +
                         $"your prerendering logic should return a complete HTML page, in which you " +
                         $"embed any information you wish to return to the client.");
+                }
+
+                if (renderResult.StatusCode.HasValue)
+                {
+                    context.Response.StatusCode = renderResult.StatusCode.Value;
                 }
 
                 context.Response.ContentType = "text/html";
