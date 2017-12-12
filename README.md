@@ -2,7 +2,7 @@
 ===
 
 ## Obsolete
-We are planning to release a new feature from the aspnet/Razor repo, which would cover the scenarios provided by the tools in this repo. As a result, this repo is now obsolete. If you'd like to learn more about the new feature we will be replacing this with, please look [here](https://github.com/aspnet/Razor/issues/1740).
+We are planning to release a new feature from the [aspnet/Razor](https://github.com/aspnet/razor) repo, which would cover the scenarios provided by the tools in this repo. As a result, this repo is now obsolete. If you'd like to learn more about the new feature we will be replacing this with, please look [here](https://github.com/aspnet/Razor/issues/1740).
  
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/jx955ph2045dw1w0/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/mvcprecompilation/branch/dev)
