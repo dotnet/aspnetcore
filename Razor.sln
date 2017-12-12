@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26927.3
+VisualStudioVersion = 15.0.27128.0
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 	ProjectSection(SolutionItems) = preProject
@@ -75,6 +75,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.RazorAddin", "tooling\Microsoft.VisualStudio.Mac.RazorAddin\Microsoft.VisualStudio.Mac.RazorAddin.csproj", "{FAF9986F-E086-4513-9D52-F7BF5FFCF31D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.LanguageServices.Razor", "src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj", "{95B18DEE-8B45-4CF0-B9F8-CCBAF3B5251A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test", "test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test.csproj", "{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -306,6 +308,14 @@ Global
 		{95B18DEE-8B45-4CF0-B9F8-CCBAF3B5251A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{95B18DEE-8B45-4CF0-B9F8-CCBAF3B5251A}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{95B18DEE-8B45-4CF0-B9F8-CCBAF3B5251A}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -339,6 +349,7 @@ Global
 		{FC684D4F-D23C-407C-9C68-E10EF3B38560} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{FAF9986F-E086-4513-9D52-F7BF5FFCF31D} = {C0CC1E1F-1559-44DE-93A8-63259CEA2AAB}
 		{95B18DEE-8B45-4CF0-B9F8-CCBAF3B5251A} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{B8A3E4CA-D54A-441F-A3BF-E00F060CA042} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}

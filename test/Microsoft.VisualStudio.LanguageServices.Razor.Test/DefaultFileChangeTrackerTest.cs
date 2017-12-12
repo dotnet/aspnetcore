@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         }
 
         [ForegroundFact]
-        public void StartListening_NotListening_DoesNothing()
+        public void StopListening_NotListening_DoesNothing()
         {
             // Arrange
             uint cookie = VSConstants.VSCOOKIE_NIL;
@@ -108,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 .Setup(f => f.AdviseFileChange(It.IsAny<string>(), It.IsAny<uint>(), It.IsAny<IVsFileChangeEvents>(), out cookie))
                 .Returns(VSConstants.S_OK);
             var tracker = new DefaultFileChangeTracker(filePath, Dispatcher, ErrorReporter, fileChangeService.Object);
-            
+
             var called = false;
             tracker.Changed += (sender, args) =>
             {

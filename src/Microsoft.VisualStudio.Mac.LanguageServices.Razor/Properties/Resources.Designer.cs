@@ -11,6 +11,20 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             = new ResourceManager("Microsoft.VisualStudio.Mac.LanguageServices.Razor.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get => GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+            => GetString("ArgumentCannotBeNullOrEmpty");
+
+        /// <summary>
         /// Razor Language Service error encountered.
         /// </summary>
         internal static string RazorLanguageServiceGeneralError
