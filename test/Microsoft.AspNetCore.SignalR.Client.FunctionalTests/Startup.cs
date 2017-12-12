@@ -49,10 +49,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<TestHub>("default");
-                routes.MapHub<DynamicTestHub>("dynamic");
-                routes.MapHub<TestHubT>("hubT");
-                routes.MapHub<HubWithAuthorization>("authorizedhub");
+                routes.MapHub<TestHub>("/default");
+                routes.MapHub<DynamicTestHub>("/dynamic");
+                routes.MapHub<TestHubT>("/hubT");
+                routes.MapHub<HubWithAuthorization>("/authorizedhub");
             });
 
             app.Run(async (context) =>

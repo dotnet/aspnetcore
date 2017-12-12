@@ -32,7 +32,7 @@ namespace SocialWeather
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseSockets(o => { o.MapEndPoint<SocialWeatherEndPoint>("weather"); });
+            app.UseSockets(o => { o.MapEndPoint<SocialWeatherEndPoint>("/weather"); });
             app.UseFileServer();
 
             var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();

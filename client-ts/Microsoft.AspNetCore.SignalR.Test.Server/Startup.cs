@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
             }
 
             app.UseFileServer();
-            app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("echo"));
-            app.UseSignalR(options => options.MapHub<TestHub>("testhub"));
-            app.UseSignalR(options => options.MapHub<UncreatableHub>("uncreatable"));
-            app.UseSignalR(options => options.MapHub<HubWithAuthorization>("authorizedhub"));
+            app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("/echo"));
+            app.UseSignalR(options => options.MapHub<TestHub>("/testhub"));
+            app.UseSignalR(options => options.MapHub<UncreatableHub>("/uncreatable"));
+            app.UseSignalR(options => options.MapHub<HubWithAuthorization>("/authorizedhub"));
 
             app.Use(next => async (context) =>
             {

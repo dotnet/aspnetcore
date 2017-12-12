@@ -66,7 +66,7 @@ namespace JwtSample
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseFileServer();
-            app.UseSignalR(options => options.MapHub<Broadcaster>("broadcast"));
+            app.UseSignalR(options => options.MapHub<Broadcaster>("/broadcast"));
 
             var routeBuilder = new RouteBuilder(app);
             routeBuilder.MapGet("generatetoken", c => c.Response.WriteAsync(GenerateToken(c)));

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseSignalR(options => options.MapHub<EchoHub>("echo"));
+            app.UseSignalR(options => options.MapHub<EchoHub>("/echo"));
         }
     }
 }

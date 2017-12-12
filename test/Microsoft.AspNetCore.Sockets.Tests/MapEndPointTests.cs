@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void MapEndPointFindsAuthAttributeOnEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<AuthEndPoint>("auth",
+            using (var builder = BuildWebHost<AuthEndPoint>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void MapEndPointFindsAuthAttributeOnInheritedEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<InheritedAuthEndPoint>("auth",
+            using (var builder = BuildWebHost<InheritedAuthEndPoint>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         public void MapEndPointFindsAuthAttributesOnDoubleAuthEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<DoubleAuthEndPoint>("auth",
+            using (var builder = BuildWebHost<DoubleAuthEndPoint>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
                 builder.Start();
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task MapEndPointWithWebSocketSubProtocolSetsProtocol()
         {
-            var host = BuildWebHost<MyEndPoint>("socket",
+            var host = BuildWebHost<MyEndPoint>("/socket",
                 options => options.WebSockets.SubProtocol = "protocol1");
 
             await host.StartAsync();

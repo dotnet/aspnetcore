@@ -4,6 +4,7 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -19,10 +20,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         public void MapHub<THub>(string path) where THub : Hub
         {
+            MapHub<THub>(new PathString(path), socketOptions: null);
+        }
+
+        public void MapHub<THub>(PathString path) where THub : Hub
+        {
             MapHub<THub>(path, socketOptions: null);
         }
 
-        public void MapHub<THub>(string path, Action<HttpSocketOptions> socketOptions) where THub : Hub
+        public void MapHub<THub>(PathString path, Action<HttpSocketOptions> socketOptions) where THub : Hub
         {
             // find auth attributes
             var authorizeAttributes = typeof(THub).GetCustomAttributes<AuthorizeAttribute>(inherit: true);

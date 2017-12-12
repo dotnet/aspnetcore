@@ -52,15 +52,15 @@ namespace SocketsSample
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<DynamicChat>("dynamic");
-                routes.MapHub<Chat>("default");
-                routes.MapHub<Streaming>("streaming");
-                routes.MapHub<HubTChat>("hubT");
+                routes.MapHub<DynamicChat>("/dynamic");
+                routes.MapHub<Chat>("/default");
+                routes.MapHub<Streaming>("/streaming");
+                routes.MapHub<HubTChat>("/hubT");
             });
 
             app.UseSockets(routes =>
             {
-                routes.MapEndPoint<MessagesEndPoint>("chat");
+                routes.MapEndPoint<MessagesEndPoint>("/chat");
             });
         }
     }
