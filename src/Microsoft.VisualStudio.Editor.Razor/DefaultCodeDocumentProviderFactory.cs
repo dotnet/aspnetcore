@@ -13,19 +13,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(RazorCodeDocumentProvider), RazorLanguage.Name)]
     internal class DefaultCodeDocumentProviderFactory : ILanguageServiceFactory
     {
-        private readonly RazorTextBufferProvider _textBufferProvider;
-
-        [ImportingConstructor]
-        public DefaultCodeDocumentProviderFactory(RazorTextBufferProvider bufferProvider)
-        {
-            if (bufferProvider == null)
-            {
-                throw new ArgumentNullException(nameof(bufferProvider));
-            }
-
-            _textBufferProvider = bufferProvider;
-        }
-
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             if (languageServices == null)
@@ -33,9 +20,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
+            var textBufferProvider = languageServices.GetRequiredService<RazorTextBufferProvider>();
             var textBufferCodeDocumentProvider = languageServices.GetRequiredService<TextBufferCodeDocumentProvider>();
 
-            return new DefaultCodeDocumentProvider(_textBufferProvider, textBufferCodeDocumentProvider);
+            return new DefaultCodeDocumentProvider(textBufferProvider, textBufferCodeDocumentProvider);
         }
     }
 }
