@@ -4,4 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
+  <!-- In real apps, the following items would come from the Microsoft.Blazor package -->
+  <Import Project="..\..\src\Microsoft.Blazor.BuildTools\BlazorBuild.targets" />
+
 </Project>
