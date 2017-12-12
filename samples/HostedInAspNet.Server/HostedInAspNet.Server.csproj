@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
-    <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="..\HostedInAspNet.Client\HostedInAspNet.Client.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
 </Project>

@@ -24,9 +24,7 @@ namespace HostedInAspNet.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseBlazor(
-                assemblyPath: typeof(Client.Program).Assembly.Location,
-                staticFilesRoot: "../HostedInAspNet.Client/wwwroot");
+            app.UseBlazor("HostedInAspNet.Client");
         }
     }
 }

@@ -12,9 +12,7 @@ namespace MonoSanity
         {
             app.UseDeveloperExceptionPage();
             app.UseFileServer(new FileServerOptions { EnableDefaultFiles = true });
-            app.UseBlazor(
-                assemblyPath: typeof(MonoSanityClient.Examples).Assembly.Location,
-                staticFilesRoot: null);
+            app.UseBlazor("MonoSanityClient");
         }
     }
 }

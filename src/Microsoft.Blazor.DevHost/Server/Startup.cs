@@ -20,12 +20,12 @@ namespace Microsoft.Blazor.DevHost.Server
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseBlazor(
-                assemblyPath: FindClientAssembly(app).Location,
-                staticFilesRoot: "wwwroot");
+
+            var clientAssemblyPath = FindClientAssemblyPath(app);
+            app.UseBlazorInternal(clientAssemblyPath);
         }
 
-        private static Assembly FindClientAssembly(IApplicationBuilder app)
+        private static string FindClientAssemblyPath(IApplicationBuilder app)
         {
             var env = app.ApplicationServices.GetRequiredService<IHostingEnvironment>();
             var contentRoot = env.ContentRootPath;
@@ -37,7 +37,7 @@ namespace Microsoft.Blazor.DevHost.Server
                 throw new FileNotFoundException($"Could not locate application assembly at expected location {assemblyPath}");
             }
 
-            return Assembly.LoadFile(assemblyPath);
+            return assemblyPath;
         }
 
         private static string FindClientBinDir(string clientAppSourceRoot)
