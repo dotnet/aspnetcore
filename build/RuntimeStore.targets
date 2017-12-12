@@ -28,10 +28,16 @@
     </PropertyGroup>
     <ItemGroup>
       <AllMetapackageFiles Include="$(_AllMetapackageDirectory)**\*" />
+      <ManifestFiles Include="$(ArtifactsDir)*.xml" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
     <Copy SourceFiles="$(_SrcDirectory)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+
+    <!-- Create a consolidated manifest and place in metapackage -->
+    <RepoTasks.ConsolidateManifests
+      Manifests="@(ManifestFiles)"
+      ManifestDestination="$(MetapackageWorkDirectory)build\aspnetcore-store-$(PackageVersion).xml"/>
 
     <!-- Add references to project -->
     <RepoTasks.AddMetapackageReferences
@@ -223,26 +229,5 @@
       ExistingManifests="@(ExistingStoreManifests)"
       NewManifests="$(ArtifactsDir)$(CommonManifestFileName)"
       ManifestDestination="$(ArtifactsDir)$(CommonManifestFileName)"/>
-  </Target>
-
-  <Target Name="AddManifestsToMetapackage">
-    <ItemGroup>
-      <MetaPackageNupkg Include="$(_DependencyBuildDirectory)Microsoft.AspNetCore.All.*.nupkg" />
-      <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
-    </ItemGroup>
-
-    <RemoveDir Directories="$(_WorkRoot)" />
-    <UnzipArchive File="%(MetaPackageNupkg.FullPath)" Destination="$(_WorkRoot)" />
-
-    <!-- Create a consolidated manifest and place in metapackage -->
-    <RepoTasks.ConsolidateManifests
-      Manifests="@(ManifestFiles)"
-      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(PackageVersion).xml"/>
-
-    <ItemGroup>
-      <ArchiveFiles Include="$(_WorkRoot)**\*" />
-    </ItemGroup>
-
-    <ZipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
   </Target>
 </Project>
