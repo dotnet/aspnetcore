@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>dotnet-developercertificates</AssemblyName>
+    <AssemblyName>dotnet-dev-certs</AssemblyName>
     <OutputType>exe</OutputType>
     <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
     <PackageId>Microsoft.AspNetCore.DeveloperCertificates.Tools</PackageId>
