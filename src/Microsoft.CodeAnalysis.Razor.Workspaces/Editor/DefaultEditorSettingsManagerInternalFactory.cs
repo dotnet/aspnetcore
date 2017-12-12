@@ -19,7 +19,9 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            return new DefaultEditorSettingsManagerInternal();
+            var foregroundDispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
+
+            return new DefaultEditorSettingsManagerInternal(foregroundDispatcher);
         }
     }
 }

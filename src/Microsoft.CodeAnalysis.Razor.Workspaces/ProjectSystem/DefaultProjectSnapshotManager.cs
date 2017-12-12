@@ -210,12 +210,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // virtual so it can be overridden in tests
         protected virtual void NotifyBackgroundWorker(Project project)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             _workerQueue.Enqueue(project);
         }
 
         // virtual so it can be overridden in tests
         protected virtual void NotifyListeners(ProjectChangeEventArgs e)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             var handler = Changed;
             if (handler != null)
             {

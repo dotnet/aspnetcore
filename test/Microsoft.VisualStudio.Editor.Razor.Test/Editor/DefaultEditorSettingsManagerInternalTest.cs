@@ -5,13 +5,13 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.Editor
 {
-    public class DefaultEditorSettingsManagerInternalTest
+    public class DefaultEditorSettingsManagerInternalTest : ForegroundDispatcherTestBase
     {
         [Fact]
         public void InitialSettingsAreDefault()
         {
             // Act
-            var manager = new DefaultEditorSettingsManagerInternal();
+            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
 
             // Assert
             Assert.Equal(EditorSettings.Default, manager.Current);
@@ -21,7 +21,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
         public void Update_TriggersChangedIfEditorSettingsAreDifferent()
         {
             // Arrange
-            var manager = new DefaultEditorSettingsManagerInternal();
+            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
             var called = false;
             manager.Changed += (caller, args) =>
             {
@@ -41,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
         public void Update_DoesNotTriggerChangedIfEditorSettingsAreSame()
         {
             // Arrange
-            var manager = new DefaultEditorSettingsManagerInternal();
+            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
             var called = false;
             manager.Changed += (caller, args) =>
             {

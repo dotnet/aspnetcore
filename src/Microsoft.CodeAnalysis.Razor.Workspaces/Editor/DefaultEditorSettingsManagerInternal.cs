@@ -9,11 +9,18 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
     {
         public override event EventHandler<EditorSettingsChangedEventArgs> Changed;
 
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly object SettingsAccessorLock = new object();
         private EditorSettings _settings;
 
-        public DefaultEditorSettingsManagerInternal()
+        public DefaultEditorSettingsManagerInternal(ForegroundDispatcher dispatcher)
         {
+            if (dispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(dispatcher));
+            }
+
+            _foregroundDispatcher = dispatcher;
             _settings = EditorSettings.Default;
         }
 
@@ -47,6 +54,8 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
 
         private void OnChanged()
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             var args = new EditorSettingsChangedEventArgs(Current);
             Changed?.Invoke(this, args);
         }

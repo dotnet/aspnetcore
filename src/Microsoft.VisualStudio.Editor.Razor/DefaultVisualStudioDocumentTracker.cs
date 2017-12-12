@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Text;
@@ -14,6 +15,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultVisualStudioDocumentTracker : VisualStudioDocumentTracker
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly string _filePath;
         private readonly string _projectPath;
         private readonly ProjectSnapshotManager _projectManager;
@@ -28,6 +30,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public override event EventHandler<ContextChangeEventArgs> ContextChanged;
 
         public DefaultVisualStudioDocumentTracker(
+            ForegroundDispatcher dispatcher,
             string filePath,
             string projectPath,
             ProjectSnapshotManager projectManager,
@@ -36,6 +39,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ITextBuffer textBuffer,
             ImportDocumentManager importDocumentManager)
         {
+            if (dispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(dispatcher));
+            }
+
             if (string.IsNullOrEmpty(filePath))
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
@@ -71,6 +79,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(importDocumentManager));
             }
 
+            _foregroundDispatcher = dispatcher;
             _filePath = filePath;
             _projectPath = projectPath;
             _projectManager = projectManager;
@@ -172,6 +181,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private void OnContextChanged(ProjectSnapshot project, ContextChangeKind kind)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             _project = project;
 
             var handler = ContextChanged;
