@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpsPolicySample", "samples\HttpsPolicySample\HttpsPolicySample.csproj", "{AC424AEE-4883-49C6-945F-2FC916B8CA1C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "test\Microsoft.AspNetCore.HttpsEnforcement.Tests\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "test\Microsoft.AspNetCore.HttpsPolicy.Tests\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

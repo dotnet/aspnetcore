@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.HttpsPolicy
 {
@@ -35,5 +36,15 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// to preload HSTS sites on fresh install. See https://hstspreload.org/.
         /// </remarks>
         public bool Preload { get; set; }
+
+        /// <summary>
+        /// A list of host names that will not add the HSTS header.
+        /// </summary>
+        public IList<string> ExcludedHosts { get; } = new List<string>
+        {
+            "localhost",
+            "127.0.0.1", // ipv4
+            "[::1]" // ipv6
+        };
     }
 }
