@@ -5,10 +5,9 @@ using System;
 using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     [System.Composition.Shared]
     [Export(typeof(RazorEditorFactoryService))]
@@ -74,7 +73,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             EnsureTextBufferInitialized(textBuffer);
-            
+
             if (!textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out documentTracker))
             {
                 Debug.Fail("Document tracker should have been stored on the text buffer during initialization.");
