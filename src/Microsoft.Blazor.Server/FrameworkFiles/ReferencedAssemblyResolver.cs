@@ -5,7 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.Blazor.Server.ClientFilesystem
+namespace Microsoft.Blazor.Server.FrameworkFiles
 {
     internal class ReferencedAssemblyResolver
     {

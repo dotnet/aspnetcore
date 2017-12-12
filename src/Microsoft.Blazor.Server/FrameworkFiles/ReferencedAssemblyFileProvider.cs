@@ -7,7 +7,7 @@ using System.Linq;
 using Mono.Cecil;
 using Microsoft.Blazor.Internal.Common.FileProviders;
 
-namespace Microsoft.Blazor.Server.ClientFilesystem
+namespace Microsoft.Blazor.Server.FrameworkFiles
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {

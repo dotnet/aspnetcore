@@ -22,10 +22,11 @@ namespace HostedInAspNet.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseBlazorDevelopmentServer("../HostedInAspNet.Client");
             }
 
-            app.UseBlazor(clientAssemblyPath: typeof(Client.Program).Assembly.Location);
+            app.UseBlazor(
+                assemblyPath: typeof(Client.Program).Assembly.Location,
+                staticFilesRoot: "../HostedInAspNet.Client/wwwroot");
         }
     }
 }

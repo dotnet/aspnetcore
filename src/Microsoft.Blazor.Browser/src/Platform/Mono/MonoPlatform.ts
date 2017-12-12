@@ -133,21 +133,8 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
     mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
     mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
-    // TODO: Stop hard-coding this list, and instead automatically load whatever
-    // dependencies were detected in ReferencedAssemblyFileProvider
-    const loadBclAssemblies = [
-      'mscorlib',
-      'System',
-      'System.Core',
-      'System.Console',
-      'System.Runtime',
-    ];
-
-    var allAssemblyUrls = loadAssemblyUrls
-      .concat(loadBclAssemblies.map(name => `_framework/_bin/${name}.dll`));
-
     Module.FS_createPath('/', 'appBinDir', true, true);
-    allAssemblyUrls.forEach(url =>
+    loadAssemblyUrls.forEach(url =>
       FS.createPreloadedFile('appBinDir', `${getAssemblyNameFromUrl(url)}.dll`, url, true, false, null, <any>onError));
   });
 

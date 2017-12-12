@@ -5,11 +5,10 @@ using Microsoft.Blazor.Browser;
 using Microsoft.Blazor.Mono;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
-using System.Reflection;
 
-namespace Microsoft.Blazor.Server.ClientFilesystem
+namespace Microsoft.Blazor.Server.FrameworkFiles
 {
-    internal static class ClientFileProvider
+    internal static class FrameworkFileProvider
     {
         public static IFileProvider Instantiate(string clientAssemblyPath)
             => new CompositeFileProvider(

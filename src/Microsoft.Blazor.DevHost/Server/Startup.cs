@@ -20,8 +20,9 @@ namespace Microsoft.Blazor.DevHost.Server
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseBlazorDevelopmentServer(".");
-            app.UseBlazor(clientAssemblyPath: FindClientAssembly(app).Location);
+            app.UseBlazor(
+                assemblyPath: FindClientAssembly(app).Location,
+                staticFilesRoot: "wwwroot");
         }
 
         private static Assembly FindClientAssembly(IApplicationBuilder app)

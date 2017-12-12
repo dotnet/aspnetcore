@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Mono;
-using Microsoft.Blazor.Server.ClientFilesystem;
+using Microsoft.Blazor.Server.FrameworkFiles;
 using Mono.Cecil;
 using System;
 using System.IO;

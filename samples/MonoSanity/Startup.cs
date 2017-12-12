@@ -11,8 +11,10 @@ namespace MonoSanity
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseDeveloperExceptionPage();
-            app.UseFileServer();
-            app.UseBlazor(clientAssemblyPath: typeof(MonoSanityClient.Examples).Assembly.Location);
+            app.UseFileServer(new FileServerOptions { EnableDefaultFiles = true });
+            app.UseBlazor(
+                assemblyPath: typeof(MonoSanityClient.Examples).Assembly.Location,
+                staticFilesRoot: null);
         }
     }
 }
