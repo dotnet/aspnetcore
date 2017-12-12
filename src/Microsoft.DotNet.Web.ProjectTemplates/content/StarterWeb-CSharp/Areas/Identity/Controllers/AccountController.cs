@@ -307,14 +307,15 @@ namespace Company.WebApplication1.Identity.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginViewModel model, string returnUrl = null)
         {
+            // Get the information about the user from the external login provider
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                throw new ApplicationException("Error loading external login information during confirmation.");
+            }
+
             if (ModelState.IsValid)
             {
-                // Get the information about the user from the external login provider
-                var info = await _signInManager.GetExternalLoginInfoAsync();
-                if (info == null)
-                {
-                    throw new ApplicationException("Error loading external login information during confirmation.");
-                }
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email };
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
@@ -327,9 +328,11 @@ namespace Company.WebApplication1.Identity.Controllers
                         return RedirectToLocal(returnUrl);
                     }
                 }
+
                 AddErrors(result);
             }
 
+            ViewData["LoginProvider"] = info.LoginProvider;
             ViewData["ReturnUrl"] = returnUrl;
             return View(nameof(ExternalLogin), model);
         }

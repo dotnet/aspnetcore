@@ -72,7 +72,7 @@ namespace Company.WebApplication1.Pages.Account
             }
 
             // Sign in the user with this external login provider if the user already has a login.
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor : true);
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
             if (result.Succeeded)
             {
                 _logger.LogInformation("{Name} logged in with {LoginProvider} provider.", info.Principal.Identity.Name, info.LoginProvider);
@@ -100,14 +100,15 @@ namespace Company.WebApplication1.Pages.Account
 
         public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
+            // Get the information about the user from the external login provider
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                throw new ApplicationException("Error loading external login information during confirmation.");
+            }
+
             if (ModelState.IsValid)
             {
-                // Get the information about the user from the external login provider
-                var info = await _signInManager.GetExternalLoginInfoAsync();
-                if (info == null)
-                {
-                    throw new ApplicationException("Error loading external login information during confirmation.");
-                }
                 var user = new ApplicationUser { UserName = Input.Email, Email = Input.Email };
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
@@ -126,6 +127,7 @@ namespace Company.WebApplication1.Pages.Account
                 }
             }
 
+            LoginProvider = info.LoginProvider;
             ReturnUrl = returnUrl;
             return Page();
         }
