@@ -207,6 +207,7 @@
     <!-- Trim packages guaranteed to be in the runtime but isn't included in our runtime store -->
     <ItemGroup>
       <PackagesToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
+      <ExistingStoreManifests Include="$(_ExistingManifestsDirectory)*.xml" />
     </ItemGroup>
 
     <MSBuild Projects="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj"
@@ -216,6 +217,12 @@
     </MSBuild>
 
     <RepoTasks.CreateCommonManifest DestinationFilePath="$(ArtifactsDir)$(CommonManifestFileName)" PackageDefinitions="@(_PackageDefinitions)" Packages="@(PackagesToTrim)"/>
+
+    <!-- Trim built manifest with existing manifests -->
+    <RepoTasks.ComposeNewStore
+      ExistingManifests="@(ExistingStoreManifests)"
+      NewManifests="$(ArtifactsDir)$(CommonManifestFileName)"
+      ManifestDestination="$(ArtifactsDir)$(CommonManifestFileName)"/>
   </Target>
 
   <Target Name="AddManifestsToMetapackage">

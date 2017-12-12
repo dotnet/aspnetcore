@@ -17,19 +17,15 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] NewManifests { get; set; }
 
-        [Required]
         public ITaskItem[] RuntimeStoreFiles { get; set; }
 
-        [Required]
         public ITaskItem[] RuntimeStoreSymbolFiles { get; set; }
 
         [Required]
         public string ManifestDestination { get; set; }
 
-        [Required]
         public string StoreDestination { get; set; }
 
-        [Required]
         public string SymbolsDestination { get; set; }
 
         public override bool Execute()
@@ -58,45 +54,51 @@ namespace RepoTasks
                 }
             }
 
-            // Insert new runtime store files
-            foreach (var storeFile in RuntimeStoreFiles)
+            if (RuntimeStoreFiles != null)
             {
-                // format: {bitness}}/{tfm}}/{id}/{version}}/...
-                var recursiveDir = storeFile.GetMetadata("RecursiveDir");
-                var components = recursiveDir.Split(Path.DirectorySeparatorChar);
-                var id = components[2];
-                var version = components[3];
-
-                if (!existingFiles.TryGetValue(id, out var versions) || !versions.Contains(version))
+                // Insert new runtime store files
+                foreach (var storeFile in RuntimeStoreFiles)
                 {
-                    var destinationDir = Path.Combine(StoreDestination, recursiveDir);
-                    if (!Directory.Exists(Path.Combine(StoreDestination, recursiveDir)))
-                    {
-                        Directory.CreateDirectory(destinationDir);
-                    }
+                    // format: {bitness}}/{tfm}}/{id}/{version}}/...
+                    var recursiveDir = storeFile.GetMetadata("RecursiveDir");
+                    var components = recursiveDir.Split(Path.DirectorySeparatorChar);
+                    var id = components[2];
+                    var version = components[3];
 
-                    File.Copy(storeFile.GetMetadata("FullPath"), Path.Combine(destinationDir, $"{storeFile.GetMetadata("Filename")}{storeFile.GetMetadata("Extension")}"), overwrite: true);
+                    if (!existingFiles.TryGetValue(id, out var versions) || !versions.Contains(version))
+                    {
+                        var destinationDir = Path.Combine(StoreDestination, recursiveDir);
+                        if (!Directory.Exists(Path.Combine(StoreDestination, recursiveDir)))
+                        {
+                            Directory.CreateDirectory(destinationDir);
+                        }
+
+                        File.Copy(storeFile.GetMetadata("FullPath"), Path.Combine(destinationDir, $"{storeFile.GetMetadata("Filename")}{storeFile.GetMetadata("Extension")}"), overwrite: true);
+                    }
                 }
             }
 
-            // Insert new runtime store files
-            foreach (var symbolFile in RuntimeStoreSymbolFiles)
+            if (RuntimeStoreSymbolFiles != null)
             {
-                // format: {bitness}}/{tfm}}/{id}/{version}}/...
-                var recursiveDir = symbolFile.GetMetadata("RecursiveDir");
-                var components = recursiveDir.Split(Path.DirectorySeparatorChar);
-                var id = components[2];
-                var version = components[3];
-
-                if (!existingFiles.TryGetValue(id, out var versions) || !versions.Contains(version))
+                // Insert new runtime store symbol files
+                foreach (var symbolFile in RuntimeStoreSymbolFiles)
                 {
-                    var destinationDir = Path.Combine(SymbolsDestination, recursiveDir);
-                    if (!Directory.Exists(Path.Combine(SymbolsDestination, recursiveDir)))
-                    {
-                        Directory.CreateDirectory(destinationDir);
-                    }
+                    // format: {bitness}}/{tfm}}/{id}/{version}}/...
+                    var recursiveDir = symbolFile.GetMetadata("RecursiveDir");
+                    var components = recursiveDir.Split(Path.DirectorySeparatorChar);
+                    var id = components[2];
+                    var version = components[3];
 
-                    File.Copy(symbolFile.GetMetadata("FullPath"), Path.Combine(destinationDir, $"{symbolFile.GetMetadata("Filename")}{symbolFile.GetMetadata("Extension")}"), overwrite: true);
+                    if (!existingFiles.TryGetValue(id, out var versions) || !versions.Contains(version))
+                    {
+                        var destinationDir = Path.Combine(SymbolsDestination, recursiveDir);
+                        if (!Directory.Exists(Path.Combine(SymbolsDestination, recursiveDir)))
+                        {
+                            Directory.CreateDirectory(destinationDir);
+                        }
+
+                        File.Copy(symbolFile.GetMetadata("FullPath"), Path.Combine(destinationDir, $"{symbolFile.GetMetadata("Filename")}{symbolFile.GetMetadata("Extension")}"), overwrite: true);
+                    }
                 }
             }
 
