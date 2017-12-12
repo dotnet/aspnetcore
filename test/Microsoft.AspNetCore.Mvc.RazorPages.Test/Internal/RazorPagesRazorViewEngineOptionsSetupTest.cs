@@ -63,6 +63,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void Configure_AddsAreaPageViewLocationFormats()
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Areas/{2}/Pages/{1}/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/Areas/{2}/Views/Shared/{0}.cshtml",
+                "/Pages/Shared/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml",
+            };
+
+            var razorPagesOptions = new RazorPagesOptions();
+            var viewEngineOptions = GetViewEngineOptions();
+            var setup = new RazorPagesRazorViewEngineOptionsSetup(
+                Options.Create(razorPagesOptions));
+
+            // Act
+            setup.Configure(viewEngineOptions);
+
+            // Assert
+            Assert.Equal(expected, viewEngineOptions.AreaPageViewLocationFormats);
+        }
+
+        [Fact]
+        public void Configure_WithCustomRoots_AddsAreaPageViewLocationFormats()
+        {
+            // Arrange
+            var expected = new[]
+            {
+                "/Features/{2}/RazorFiles/{1}/{0}.cshtml",
+                "/Features/{2}/RazorFiles/Shared/{0}.cshtml",
+                "/Features/{2}/Views/Shared/{0}.cshtml",
+                "/RazorFiles/Shared/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml",
+            };
+
+            var razorPagesOptions = new RazorPagesOptions
+            {
+                AreaRootDirectory = "/Features",
+                RootDirectory = "/RazorFiles/",
+            };
+            var viewEngineOptions = GetViewEngineOptions();
+            var setup = new RazorPagesRazorViewEngineOptionsSetup(
+                Options.Create(razorPagesOptions));
+
+            // Act
+            setup.Configure(viewEngineOptions);
+
+            // Assert
+            Assert.Equal(expected, viewEngineOptions.AreaPageViewLocationFormats);
+        }
+
+        [Fact]
         public void Configure_AddsSharedPagesDirectoryToViewLocationFormats()
         {
             // Arrange

@@ -280,10 +280,92 @@ Hello from page";
         public async Task Pages_ReturnsFromPagesSharedDirectory()
         {
             // Arrange
-            var expected = "Hello from Pages/Shared";
+            var expected = "Hello from /Pages/Shared/";
 
             // Act
             var response = await Client.GetStringAsync("/SearchInPages");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PagesInAreas_Work()
+        {
+            // Arrange
+            var expected = "Hello from a page in Accounts area";
+
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/About");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PagesInAreas_CanHaveRouteTemplates()
+        {
+            // Arrange
+            var expected = "The id is 42";
+
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/PageWithRouteTemplate/42");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PagesInAreas_CanGenerateLinksToControllersAndPages()
+        {
+            // Arrange
+            var expected = 
+@"<a href=""/Accounts/Manage/RenderPartials"">Link inside area</a>
+<a href=""/Products/List/old/20"">Link to external area</a>
+<a href=""/Accounts"">Link to area action</a>
+<a href=""/Admin"">Link to non-area page</a>";
+
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/PageWithLinks");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PagesInAreas_CanGenerateRelativeLinks()
+        {
+            // Arrange
+            var expected = 
+@"<a href=""/Accounts/PageWithRouteTemplate/1"">Parent directory</a>
+<a href=""/Accounts/Manage/RenderPartials"">Sibling directory</a>
+<a href=""/Products/List"">Go back to root of different area</a>";
+
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/RelativeLinks");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task PagesInAreas_CanDiscoverViewsFromAreaAndSharedDirectories()
+        {
+            // Arrange
+            var expected = 
+@"Layout in /Views/Shared
+Partial in /Areas/Accounts/Pages/Manage/
+
+Partial in /Areas/Accounts/Pages/
+
+Partial in /Areas/Accounts/Pages/
+
+Partial in /Areas/Accounts/Views/Shared/
+
+Hello from /Pages/Shared/";
+
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/Manage/RenderPartials");
 
             // Assert
             Assert.Equal(expected, response.Trim());

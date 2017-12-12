@@ -7,9 +7,16 @@ namespace Microsoft.Extensions.Primitives
 {
     public class TestFileChangeToken : IChangeToken
     {
+        public TestFileChangeToken(string filter = "")
+        {
+            Filter = filter;
+        }
+
         public bool ActiveChangeCallbacks => false;
 
         public bool HasChanged { get; set; }
+
+        public string Filter { get; }
 
         public IDisposable RegisterChangeCallback(Action<object> callback, object state)
         {
@@ -22,5 +29,7 @@ namespace Microsoft.Extensions.Primitives
             {
             }
         }
+
+        public override string ToString() => Filter;
     }
 }

@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -37,6 +39,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Assert.Equal("/About", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
                         selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/About", kvp.Value);
+                       });
                 },
                 result =>
                 {
@@ -44,6 +52,126 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Assert.Equal("/Home", result.ViewEnginePath);
                     Assert.Collection(result.Selectors,
                         selector => Assert.Equal("Home/some-prefix", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/Home", kvp.Value);
+                       });
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsModelsForCompiledAreaPages()
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                GetDescriptor("/Features/Products/Files/About.cshtml"),
+                GetDescriptor("/Features/Products/Files/Manage/Index.cshtml"),
+                GetDescriptor("/Features/Products/Files/Manage/Edit.cshtml", "{id}"),
+            };
+            var options = new RazorPagesOptions
+            {
+                EnableAreas = true,
+                AreaRootDirectory = "/Features",
+                RootDirectory = "/Files",
+            };
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, options);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                result =>
+                {
+                    Assert.Equal("/Features/Products/Files/About.cshtml", result.RelativePath);
+                    Assert.Equal("/About", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Products/About", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/About", kvp.Value);
+                      });
+                },
+                result =>
+                {
+                    Assert.Equal("/Features/Products/Files/Manage/Index.cshtml", result.RelativePath);
+                    Assert.Equal("/Manage/Index", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Products/Manage/Index", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("Products/Manage", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Manage/Index", kvp.Value);
+                      });
+                },
+                result =>
+                {
+                    Assert.Equal("/Features/Products/Files/Manage/Edit.cshtml", result.RelativePath);
+                    Assert.Equal("/Manage/Edit", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Products/Manage/Edit/{id}", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Manage/Edit", kvp.Value);
+                      });
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotAddsModelsForAreaPages_IfFeatureIsDisabled()
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                GetDescriptor("/Pages/About.cshtml"),
+                GetDescriptor("/Areas/Accounts/Pages/Home.cshtml"),
+            };
+            var options = new RazorPagesOptions { EnableAreas = false };
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, options);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                result =>
+                {
+                    Assert.Equal("/Pages/About.cshtml", result.RelativePath);
+                    Assert.Equal("/About", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/About", kvp.Value);
+                       });
                 });
         }
 
@@ -149,7 +277,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             private readonly IEnumerable<CompiledViewDescriptor> _descriptors;
 
             public TestCompiledPageRouteModelProvider(IEnumerable<CompiledViewDescriptor> descriptors, RazorPagesOptions options)
-                : base(new ApplicationPartManager(), Options.Create(options))
+                : base(new ApplicationPartManager(), Options.Create(options), NullLoggerFactory.Instance)
             {
                 _descriptors = descriptors;
             }

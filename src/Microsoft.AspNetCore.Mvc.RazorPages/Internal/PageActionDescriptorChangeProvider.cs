@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     public class PageActionDescriptorChangeProvider : IActionDescriptorChangeProvider
     {
         private readonly IFileProvider _fileProvider;
-        private readonly string _searchPattern;
+        private readonly string[] _searchPatterns;
         private readonly string[] _additionalFilesToTrack;
 
         public PageActionDescriptorChangeProvider(
@@ -45,29 +46,61 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Debug.Assert(!string.IsNullOrEmpty(rootDirectory));
             rootDirectory = rootDirectory.TrimEnd('/');
 
-            var importFileAtPagesRoot = rootDirectory + "/" + templateEngine.Options.ImportsFileName;
-            _additionalFilesToTrack = templateEngine.GetImportItems(importFileAtPagesRoot)
-                .Select(item => item.FilePath)
-                .ToArray();
+            // Search pattern that matches all cshtml files under the Pages RootDirectory
+            var pagesRootSearchPattern = rootDirectory + "/**/*.cshtml";
 
-            _searchPattern = rootDirectory + "/**/*.cshtml";
+            // pagesRootSearchPattern will miss _ViewImports outside the RootDirectory despite these influencing
+            // compilation. e.g. when RootDirectory = /Dir1/Dir2, the search pattern will ignore changes to 
+            // [/_ViewImports.cshtml, /Dir1/_ViewImports.cshtml]. We need to additionally account for these.
+            var importFileAtPagesRoot = rootDirectory + "/" + templateEngine.Options.ImportsFileName;
+            var additionalImportFilePaths = templateEngine.GetImportItems(importFileAtPagesRoot)
+                .Select(item => item.FilePath);
+
+            if (razorPagesOptions.Value.EnableAreas)
+            {
+                var areaRootDirectory = razorPagesOptions.Value.AreaRootDirectory;
+                Debug.Assert(!string.IsNullOrEmpty(areaRootDirectory));
+                areaRootDirectory = areaRootDirectory.TrimEnd('/');
+
+                // Search pattern that matches all cshtml files under the Pages AreaRootDirectory
+                var areaRootSearchPattern = areaRootDirectory + "/**/*.cshtml";
+
+                var importFileAtAreaPagesRoot = areaRootDirectory + "/" + templateEngine.Options.ImportsFileName;
+                var importPathsOutsideAreaPagesRoot = templateEngine.GetImportItems(importFileAtAreaPagesRoot)
+                    .Select(item => item.FilePath);
+
+                additionalImportFilePaths = additionalImportFilePaths
+                    .Concat(importPathsOutsideAreaPagesRoot)
+                    .Distinct(StringComparer.OrdinalIgnoreCase);
+
+                _searchPatterns = new[]
+                {
+                    pagesRootSearchPattern,
+                    areaRootSearchPattern
+                };
+            }
+            else
+            {
+                _searchPatterns = new[] { pagesRootSearchPattern, };
+            }
+
+            _additionalFilesToTrack = additionalImportFilePaths.ToArray();
         }
 
         public IChangeToken GetChangeToken()
         {
-            var wildcardChangeToken = _fileProvider.Watch(_searchPattern);
-            if (_additionalFilesToTrack.Length == 0)
-            {
-                return wildcardChangeToken;
-            }
-
-            var changeTokens = new IChangeToken[_additionalFilesToTrack.Length + 1];
+            var changeTokens = new IChangeToken[_additionalFilesToTrack.Length + _searchPatterns.Length];
             for (var i = 0; i < _additionalFilesToTrack.Length; i++)
             {
                 changeTokens[i] = _fileProvider.Watch(_additionalFilesToTrack[i]);
             }
 
-            changeTokens[changeTokens.Length - 1] = wildcardChangeToken;
+            for (var i = 0; i < _searchPatterns.Length; i++)
+            {
+                var wildcardChangeToken = _fileProvider.Watch(_searchPatterns[i]);
+                changeTokens[_additionalFilesToTrack.Length + i] = wildcardChangeToken;
+            }
+
             return new CompositeChangeToken(changeTokens);
         }
     }

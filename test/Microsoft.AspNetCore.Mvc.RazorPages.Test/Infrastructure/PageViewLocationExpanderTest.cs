@@ -142,6 +142,65 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             Assert.Equal(expected, actual.ToArray());
         }
 
+        [Theory]
+        [InlineData("/Index", new [] { "/Areas/{2}/Pages/{0}.cshtml" })]
+        [InlineData("/Manage/User", new [] { "/Areas/{2}/Pages/Manage/{0}.cshtml", "/Areas/{2}/Pages/{0}.cshtml" })]
+        public void ExpandLocations_ExpandsAreaPaths(string pageName, string[] expected)
+        {
+            // Arrange
+            var context = CreateContext(pageName: pageName);
+            var locations = new[]
+            {
+                "/Areas/{2}/Pages/{1}/{0}.cshtml",
+            };
+
+            var expander = new PageViewLocationExpander();
+
+            // Act
+            var actual = expander.ExpandViewLocations(context, locations);
+
+            // Assert
+            Assert.Equal(expected, actual.ToArray());
+        }
+
+        [Fact]
+        public void ExpandLocations_ExpandsAreaPaths_MultipleLocations()
+        {
+            // Arrange
+            var context = CreateContext(pageName: "/Customers/Edit");
+            var locations = new[]
+            {
+                "/Areas/{2}/Pages/{1}/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/Areas/{2}/Views/Shared/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/User/Customized/{1}/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml",
+                "/Pages/Shared/{0}.cshtml",
+            };
+
+            var expected = new[]
+            {
+                "/Areas/{2}/Pages/Customers/{0}.cshtml",
+                "/Areas/{2}/Pages/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/Areas/{2}/Views/Shared/{0}.cshtml",
+                "/Areas/{2}/Pages/Shared/{0}.cshtml",
+                "/User/Customized/Customers/{0}.cshtml",
+                "/User/Customized/{0}.cshtml",
+                "/Views/Shared/{0}.cshtml",
+                "/Pages/Shared/{0}.cshtml",
+            };
+
+            var expander = new PageViewLocationExpander();
+
+            // Act
+            var actual = expander.ExpandViewLocations(context, locations);
+
+            // Assert
+            Assert.Equal(expected, actual.ToArray());
+        }
+
         private ViewLocationExpanderContext CreateContext(string viewName = "_LoginPartial.cshtml", string pageName = null)
         {
             var actionContext = new ActionContext
@@ -158,7 +217,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 isMainPage: true)
             {
                 Values = new Dictionary<string, string>(),
-                
             };
         }
     }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -1554,6 +1555,49 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var ex = Assert.Throws<InvalidOperationException>(() => urlHelper.Object.Page(expected));
             Assert.Equal($"The relative page path '{expected}' can only be used while executing a Razor Page. " +
                 "Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.", ex.Message);
+        }
+
+        [Fact]
+        public void Page_UsesAreaValueFromRouteValueIfSpecified()
+        {
+            // Arrange
+            UrlRouteContext actual = null;
+            var routeData = new RouteData
+            {
+                Values =
+                {
+                    { "page", "ambient-page" },
+                    { "area", "ambient-area" },
+                }
+            };
+            var actionContext = new ActionContext
+            {
+                RouteData = routeData,
+            };
+
+            var urlHelper = CreateMockUrlHelper(actionContext);
+            urlHelper.Setup(h => h.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback((UrlRouteContext context) => actual = context);
+
+            // Act
+            string page = null;
+            urlHelper.Object.Page(page, values: new { area = "specified-area" });
+
+            // Assert
+            urlHelper.Verify();
+            Assert.NotNull(actual);
+            Assert.Null(actual.RouteName);
+            Assert.Collection(Assert.IsType<RouteValueDictionary>(actual.Values).OrderBy(v => v.Key),
+                value =>
+                {
+                    Assert.Equal("area", value.Key);
+                    Assert.Equal("specified-area", value.Value);
+                },
+                value =>
+                {
+                    Assert.Equal("page", value.Key);
+                    Assert.Equal("ambient-page", value.Value);
+                });
         }
 
         private static Mock<IUrlHelper> CreateMockUrlHelper(ActionContext context = null)

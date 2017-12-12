@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.FileProviders;
@@ -42,6 +43,131 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Assert.Equal("/Pages/Home", model.ViewEnginePath);
                     Assert.Collection(model.Selectors,
                         selector => Assert.Equal("Pages/Home", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/Pages/Home", kvp.Value);
+                       });
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsPagesUnderAreas()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var file1 = fileProvider.AddFile("Categories.cshtml", "@page");
+            var file2 = fileProvider.AddFile("Index.cshtml", "@page");
+            var file3 = fileProvider.AddFile("List.cshtml", "@page \"{sortOrder?}\"");
+            var file4 = fileProvider.AddFile("_ViewStart.cshtml", "@page");
+            var manageDir = fileProvider.AddDirectoryContent("/Areas/Products/Pages/Manage", new[] { file1 });
+            var pagesDir = fileProvider.AddDirectoryContent("/Areas/Products/Pages", new IFileInfo[] { manageDir, file2, file3, file4 });
+            var productsDir = fileProvider.AddDirectoryContent("/Areas/Products", new[] { pagesDir });
+            var areasDir = fileProvider.AddDirectoryContent("/Areas", new[] { productsDir });
+            var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir });
+
+            var project = new TestRazorProject(fileProvider);
+
+            var optionsManager = Options.Create(new RazorPagesOptions { EnableAreas = true });
+            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                model =>
+                {
+                    Assert.Equal("/Areas/Products/Pages/Manage/Categories.cshtml", model.RelativePath);
+                    Assert.Equal("/Manage/Categories", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Products/Manage/Categories", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                       kvp =>
+                       {
+                           Assert.Equal("area", kvp.Key);
+                           Assert.Equal("Products", kvp.Value);
+                       },
+                       kvp =>
+                       {
+                           Assert.Equal("page", kvp.Key);
+                           Assert.Equal("/Manage/Categories", kvp.Value);
+                       });
+                },
+                model =>
+                {
+                    Assert.Equal("/Areas/Products/Pages/Index.cshtml", model.RelativePath);
+                    Assert.Equal("/Index", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Products/Index", selector.AttributeRouteModel.Template),
+                        selector => Assert.Equal("Products", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Index", kvp.Value);
+                      });
+                },
+                model =>
+                {
+                    Assert.Equal("/Areas/Products/Pages/List.cshtml", model.RelativePath);
+                    Assert.Equal("/List", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Products/List/{sortOrder?}", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/List", kvp.Value);
+                      });
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotAddPagesUnderAreas_WhenFeatureIsDisabled()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var file1 = fileProvider.AddFile("Categories.cshtml", "@page");
+            var file2 = fileProvider.AddFile("Index.cshtml", "@page");
+            var file3 = fileProvider.AddFile("List.cshtml", "@page \"{sortOrder?}\"");
+            var file4 = fileProvider.AddFile("About.cshtml", "@page");
+            var manageDir = fileProvider.AddDirectoryContent("/Areas/Products/Pages/Manage", new[] { file1 });
+            var areaPagesDir = fileProvider.AddDirectoryContent("/Areas/Products/Pages", new IFileInfo[] { manageDir, file2, file3, });
+            var productsDir = fileProvider.AddDirectoryContent("/Areas/Products", new[] { areaPagesDir });
+            var areasDir = fileProvider.AddDirectoryContent("/Areas", new[] { productsDir });
+            var pagesDir = fileProvider.AddDirectoryContent("/Pages", new[] { file4 });
+            var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir, pagesDir });
+
+            var project = new TestRazorProject(fileProvider);
+
+            var optionsManager = Options.Create(new RazorPagesOptions { EnableAreas = false });
+            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                model =>
+                {
+                    Assert.Equal("/Pages/About.cshtml", model.RelativePath);
+                    Assert.Equal("/About", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
                 });
         }
 

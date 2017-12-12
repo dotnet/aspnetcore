@@ -333,6 +333,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 return _options.ViewLocationFormats;
             }
+            else if (!string.IsNullOrEmpty(context.AreaName) &&
+                !string.IsNullOrEmpty(context.PageName))
+            {
+                return _options.AreaPageViewLocationFormats;
+            }
             else if (!string.IsNullOrEmpty(context.PageName))
             {
                 return _options.PageViewLocationFormats;

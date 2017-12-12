@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    [DebuggerDisplay("{" + nameof(ViewEnginePath) + "}")]
+    [DebuggerDisplay(nameof(DebuggerDisplayString))]
     public class PageActionDescriptor : ActionDescriptor
     {
         /// <summary>
@@ -60,5 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 base.DisplayName = value;
             }
         }
+
+        private string DebuggerDisplayString() => $"{{ViewEnginePath = {nameof(ViewEnginePath)}, RelativePath = {nameof(RelativePath)}}}";
     }
 }

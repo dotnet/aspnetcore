@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public virtual TestFileChangeToken AddChangeToken(string filter)
         {
-            var changeToken = new TestFileChangeToken();
+            var changeToken = new TestFileChangeToken(filter);
             _fileTriggers[filter] = changeToken;
 
             return changeToken;
@@ -84,10 +84,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         public virtual IChangeToken Watch(string filter)
         {
-            TestFileChangeToken changeToken;
-            if (!_fileTriggers.TryGetValue(filter, out changeToken) || changeToken.HasChanged)
+            if (!_fileTriggers.TryGetValue(filter, out var changeToken) || changeToken.HasChanged)
             {
-                changeToken = new TestFileChangeToken();
+                changeToken = new TestFileChangeToken(filter);
                 _fileTriggers[filter] = changeToken;
             }
 

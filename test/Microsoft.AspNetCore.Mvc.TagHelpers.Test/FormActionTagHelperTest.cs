@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -439,6 +438,71 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal("formaction", attribute.Name);
             Assert.Equal("admin/dashboard/index", attribute.Value);
             Assert.Empty(output.Content.GetContent());
+        }
+
+        [Fact]
+        public async Task ProcessAsync_WithPageAndArea_CallsUrlHelperWithExpectedValues()
+        {
+            // Arrange
+            var context = new TagHelperContext(
+                tagName: "form-action",
+                allAttributes: new TagHelperAttributeList(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "submit",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    return Task.FromResult<TagHelperContent>(new DefaultTagHelperContent());
+                });
+
+            var urlHelper = new Mock<IUrlHelper>();
+            urlHelper
+                .Setup(mock => mock.RouteUrl(It.IsAny<UrlRouteContext>()))
+                .Callback<UrlRouteContext>(routeContext =>
+                {
+                    var rvd = Assert.IsType<RouteValueDictionary>(routeContext.Values);
+                    Assert.Collection(
+                        rvd.OrderBy(item => item.Key),
+                        item =>
+                        {
+                            Assert.Equal("area", item.Key);
+                            Assert.Equal("test-area", item.Value);
+                        },
+                        item =>
+                        {
+                            Assert.Equal("page", item.Key);
+                            Assert.Equal("/my-page", item.Value);
+                        });
+                })
+                .Returns("admin/dashboard/index")
+                .Verifiable();
+
+            var viewContext = new ViewContext
+            {
+                RouteData = new RouteData(),
+            };
+
+            urlHelper.SetupGet(h => h.ActionContext)
+                .Returns(viewContext);
+            var urlHelperFactory = new Mock<IUrlHelperFactory>(MockBehavior.Strict);
+            urlHelperFactory
+                .Setup(f => f.GetUrlHelper(viewContext))
+                .Returns(urlHelper.Object);
+
+            var tagHelper = new FormActionTagHelper(urlHelperFactory.Object)
+            {
+                Area = "test-area",
+                Page = "/my-page",
+                ViewContext = viewContext,
+            };
+
+            // Act
+            await tagHelper.ProcessAsync(context, output);
+
+            // Assert
+            urlHelper.Verify();
         }
 
         [Theory]

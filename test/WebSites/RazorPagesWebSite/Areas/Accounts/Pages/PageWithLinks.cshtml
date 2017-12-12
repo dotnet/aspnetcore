@@ -1,0 +1,6 @@
+@page
+<a asp-page="/Manage/RenderPartials">Link inside area</a>
+<a asp-page="/List" asp-area="Products" asp-route-sort="old" asp-route-top="20">Link to external area</a>
+<a asp-controller="Home" asp-action="Index">Link to area action</a>
+<a asp-page="/Admin/Index" asp-area="">Link to non-area page</a>
+ 

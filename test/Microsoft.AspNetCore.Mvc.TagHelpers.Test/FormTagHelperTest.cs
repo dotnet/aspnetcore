@@ -900,6 +900,64 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             generator.Verify();
         }
 
+        [Fact]
+        public async Task ProcessAsync_WithPageAndArea_InvokesGeneratePageForm()
+        {
+            // Arrange
+            var viewContext = CreateViewContext();
+            var context = new TagHelperContext(
+                tagName: "form",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "form",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            var generator = new Mock<IHtmlGenerator>(MockBehavior.Strict);
+            generator
+                .Setup(mock => mock.GeneratePageForm(
+                    viewContext,
+                    "/Home/Admin/Post",
+                    "page-handler",
+                    It.IsAny<object>(),
+                    "hello-world",
+                    null,
+                    null))
+                .Callback((ViewContext _, string pageName, string pageHandler, object routeValues, string fragment, string method, object htmlAttributes) =>
+                {
+                    var rvd = Assert.IsType<RouteValueDictionary>(routeValues);
+                    Assert.Collection(
+                        rvd.OrderBy(item => item.Key),
+                        item =>
+                        {
+                            Assert.Equal("area", item.Key);
+                            Assert.Equal("test-area", item.Value);
+                        });
+                })
+                .Returns(new TagBuilder("form"))
+                .Verifiable();
+            var formTagHelper = new FormTagHelper(generator.Object)
+            {
+                Antiforgery = false,
+                ViewContext = viewContext,
+                Page = "/Home/Admin/Post",
+                PageHandler = "page-handler",
+                Fragment = "hello-world",
+                Area = "test-area",
+            };
+
+            // Act & Assert
+            await formTagHelper.ProcessAsync(context, output);
+            generator.Verify();
+        }
+
         [Theory]
         [InlineData(true, "<input />")]
         [InlineData(false, "")]

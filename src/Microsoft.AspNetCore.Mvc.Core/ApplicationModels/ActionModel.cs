@@ -98,8 +98,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// The value of <see cref="ActionName"/> is considered an implicit route value corresponding
         /// to the key <c>action</c> and the value of <see cref="ControllerModel.ControllerName"/> is
         /// considered an implicit route value corresponding to the key <c>controller</c>. These entries
-        /// will be added to <see cref="ActionDescriptor.RouteValues"/>, but will not be visible in
-        /// <see cref="RouteValues"/>.
+        /// will be implicitly added to <see cref="ActionDescriptor.RouteValues"/> when the action
+        /// descriptor is created, but will not be visible in <see cref="RouteValues"/>.
         /// </para>
         /// <para>
         /// Entries in <see cref="RouteValues"/> can override entries in

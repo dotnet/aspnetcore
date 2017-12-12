@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             foreach (var selector in model.Selectors)
             {
-                actions.Add(new PageActionDescriptor()
+                var descriptor = new PageActionDescriptor()
                 {
                     AttributeRouteInfo = new AttributeRouteInfo()
                     {
@@ -87,12 +87,23 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     FilterDescriptors = Array.Empty<FilterDescriptor>(),
                     Properties = new Dictionary<object, object>(model.Properties),
                     RelativePath = model.RelativePath,
-                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        { "page", model.ViewEnginePath },
-                    },
                     ViewEnginePath = model.ViewEnginePath,
-                });
+                };
+
+                foreach (var kvp in model.RouteValues)
+                {
+                    if (!descriptor.RouteValues.ContainsKey(kvp.Key))
+                    {
+                        descriptor.RouteValues.Add(kvp.Key, kvp.Value);
+                    }
+                }
+
+                if (!descriptor.RouteValues.ContainsKey("page"))
+                {
+                    descriptor.RouteValues.Add("page", model.ViewEnginePath);
+                }
+
+                actions.Add(descriptor);
             }
         }
     }

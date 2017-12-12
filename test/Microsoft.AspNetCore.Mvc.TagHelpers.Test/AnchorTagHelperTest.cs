@@ -417,6 +417,68 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             generator.Verify();
         }
 
+        [Fact]
+        public async Task ProcessAsync_AddsAreaToRouteValuesAndCallsPageLinkWithExpectedParameters()
+        {
+            // Arrange
+            var context = new TagHelperContext(
+                tagName: "a",
+                allAttributes: new TagHelperAttributeList(
+                    Enumerable.Empty<TagHelperAttribute>()),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "a",
+                attributes: new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.SetContent("Something");
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+            output.Content.SetContent(string.Empty);
+
+            var generator = new Mock<IHtmlGenerator>();
+            generator
+                .Setup(mock => mock.GeneratePageLink(
+                    It.IsAny<ViewContext>(),
+                    string.Empty,
+                    "/User/Home/Index",
+                    "page-handler",
+                    "http",
+                    "contoso.com",
+                    "hello=world",
+                    It.IsAny<object>(),
+                    null))
+                .Callback((ViewContext v, string linkText, string pageName, string pageHandler, string protocol, string hostname, string fragment, object routeValues, object htmlAttributes) =>
+                {
+                    var rvd = Assert.IsType<RouteValueDictionary>(routeValues);
+                    Assert.Collection(rvd.OrderBy(item => item.Key),
+                        item =>
+                        {
+                            Assert.Equal("area", item.Key);
+                            Assert.Equal("test-area", item.Value);
+                        });
+                })
+                .Returns(new TagBuilder("a"))
+                .Verifiable();
+            var anchorTagHelper = new AnchorTagHelper(generator.Object)
+            {
+                Page = "/User/Home/Index",
+                Area = "test-area",
+                PageHandler = "page-handler",
+                Fragment = "hello=world",
+                Host = "contoso.com",
+                Protocol = "http",
+            };
+
+            // Act
+            await anchorTagHelper.ProcessAsync(context, output);
+
+            // Assert
+            generator.Verify();
+        }
+
         [Theory]
         [InlineData("Action")]
         [InlineData("Controller")]

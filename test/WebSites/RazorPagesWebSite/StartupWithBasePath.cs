@@ -17,6 +17,7 @@ namespace RazorPagesWebSite
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {
+                    options.EnableAreas = true;
                     options.Conventions.AuthorizePage("/Conventions/Auth");
                     options.Conventions.AuthorizeFolder("/Conventions/AuthFolder");
                 });
@@ -28,7 +29,10 @@ namespace RazorPagesWebSite
 
             app.UseStaticFiles();
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("areaRoute", "{area:exists}/{controller=Home}/{action=Index}");
+            });
         }
     }
 }

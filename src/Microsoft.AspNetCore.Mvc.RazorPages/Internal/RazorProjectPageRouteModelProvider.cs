@@ -37,11 +37,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public void OnProvidersExecuting(PageRouteModelProviderContext context)
         {
+            AddPageModels(context);
+
+            if (_pagesOptions.EnableAreas)
+            {
+                AddAreaPageModels(context);
+            }
+        }
+
+        private void AddPageModels(PageRouteModelProviderContext context)
+        {
             foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
             {
-                if (item.FileName.StartsWith("_"))
+                if (!IsRouteable(item))
                 {
-                    // Pages like _ViewImports should not be routable.
                     continue;
                 }
 
@@ -51,35 +60,83 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                if (IsAlreadyRegistered(context, item))
+                var routeModel = new PageRouteModel(
+                    relativePath: item.CombinedPath,
+                    viewEnginePath: item.FilePathWithoutExtension);
+
+                if (IsAlreadyRegistered(context, routeModel))
                 {
                     // The CompiledPageRouteModelProvider (or another provider) already registered a PageRoute for this path.
                     // Don't register a duplicate entry for this route.
                     continue;
                 }
 
-                var routeModel = new PageRouteModel(
-                    relativePath: item.CombinedPath,
-                    viewEnginePath: item.FilePathWithoutExtension);
-                PageSelectorModel.PopulateDefaults(routeModel, routeTemplate);
-
+                PageSelectorModel.PopulateDefaults(routeModel, routeModel.ViewEnginePath, routeTemplate);
                 context.RouteModels.Add(routeModel);
             }
         }
 
-        private bool IsAlreadyRegistered(PageRouteModelProviderContext context, RazorProjectItem projectItem)
+        private void AddAreaPageModels(PageRouteModelProviderContext context)
+        {
+            foreach (var item in _project.EnumerateItems(_pagesOptions.AreaRootDirectory))
+            {
+                if (!IsRouteable(item))
+                {
+                    continue;
+                }
+
+                if (!PageDirectiveFeature.TryGetPageDirective(_logger, item, out var routeTemplate))
+                {
+                    // .cshtml pages without @page are not RazorPages.
+                    continue;
+                }
+
+                if (!PageSelectorModel.TryParseAreaPath(_pagesOptions, item.FilePath, _logger, out var areaResult))
+                {
+                    continue;
+                }
+
+                var routeModel = new PageRouteModel(
+                    relativePath: item.CombinedPath,
+                    viewEnginePath: areaResult.viewEnginePath)
+                {
+                    RouteValues =
+                    {
+                        ["area"] = areaResult.areaName,
+                    },
+                };
+
+                if (IsAlreadyRegistered(context, routeModel))
+                {
+                    // The CompiledPageRouteModelProvider (or another provider) already registered a PageRoute for this path.
+                    // Don't register a duplicate entry for this route.
+                    continue;
+                }
+
+                PageSelectorModel.PopulateDefaults(routeModel, areaResult.pageRoute, routeTemplate);
+                context.RouteModels.Add(routeModel);
+            }
+        }
+
+        private bool IsAlreadyRegistered(PageRouteModelProviderContext context, PageRouteModel routeModel)
         {
             for (var i = 0; i < context.RouteModels.Count; i++)
             {
-                var routeModel = context.RouteModels[i];
-                if (string.Equals(routeModel.ViewEnginePath, projectItem.FilePathWithoutExtension, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(routeModel.RelativePath, projectItem.CombinedPath, StringComparison.OrdinalIgnoreCase))
+                var existingRouteModel = context.RouteModels[i];
+                if (string.Equals(existingRouteModel.ViewEnginePath, routeModel.ViewEnginePath, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(existingRouteModel.RelativePath, existingRouteModel.RelativePath, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
             }
 
             return false;
+        }
+
+        private static bool IsRouteable(RazorProjectItem item)
+        {
+            // Pages like _ViewImports should not be routable.
+            return !item.FileName.StartsWith("_", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace RazorPagesWebSite
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .UseStartup<Startup>()
+                .UseStartup<StartupWithBasePath>()
                 .Build();
 
             host.Run();
