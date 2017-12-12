@@ -292,16 +292,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                         {
                             changedEv.Set();
                         }
-                        catch(ObjectDisposedException)
+                        catch (ObjectDisposedException)
                         {
                             // There's a known race condition here:
                             // even though we tell the watcher to stop raising events and we unsubscribe the handler
-                            // there might be in-flight events that will still process. Since we dispose the reset 
+                            // there might be in-flight events that will still process. Since we dispose the reset
                             // event, this code will fail if the handler executes after Dispose happens. There's no
                             // better way to guard against it than catch because we cannot check if the object is
                             // disposed nor can we check if there are any in-flight events.
                             // This is actually a known issue in the corefx file watcher. It can trigger multiple
-                            // times for the same item. 
+                            // times for the same item.
                         }
                     };
 
@@ -316,8 +316,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     var testFileFullPath = Path.Combine(dir, "foo1");
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.Equal(testFileFullPath, filesChanged.Single());
+                    var fileChanged = Assert.Single(filesChanged);
+                    Assert.Equal(testFileFullPath, fileChanged);
                     filesChanged.Clear();
+                    changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
                     // if we don't wait, there's a chance that the polling
@@ -327,8 +329,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     testFileFullPath = Path.Combine(dir, "foo2");
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.Equal(testFileFullPath, filesChanged.Single());
+                    fileChanged = Assert.Single(filesChanged);
+                    Assert.Equal(testFileFullPath, fileChanged);
                     filesChanged.Clear();
+                    changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
                     // if we don't wait, there's a chance that the polling
@@ -340,6 +344,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
                     Assert.Equal(testFileFullPath, filesChanged.Single());
                     filesChanged.Clear();
+                    changedEv.Reset();
 
                     // On Unix the file write time is in 1s increments;
                     // if we don't wait, there's a chance that the polling
@@ -348,7 +353,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
                     File.WriteAllText(testFileFullPath, string.Empty);
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.Equal(testFileFullPath, filesChanged.Single());
+                    fileChanged = Assert.Single(filesChanged);
+                    Assert.Equal(testFileFullPath, fileChanged);
 
                     watcher.EnableRaisingEvents = false;
                     watcher.OnFileChange -= handler;

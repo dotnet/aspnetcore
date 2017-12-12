@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
 using Xunit;
@@ -274,12 +275,9 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         private async Task<IFileSet> GetFileSet(MsBuildFileSetFactory filesetFactory)
         {
             _tempDir.Create();
-            var createTask = filesetFactory.CreateAsync(CancellationToken.None);
-            var finished = await Task.WhenAny(createTask, Task.Delay(TimeSpan.FromSeconds(10)));
-
-            Assert.Same(createTask, finished);
-            Assert.NotNull(createTask.Result);
-            return createTask.Result;
+            return await filesetFactory
+                .CreateAsync(CancellationToken.None)
+                .TimeoutAfter(TimeSpan.FromSeconds(30));
         }
 
         public void Dispose()
