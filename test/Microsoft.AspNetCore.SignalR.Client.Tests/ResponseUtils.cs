@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -26,6 +27,12 @@ namespace Microsoft.AspNetCore.Client.Tests
             {
                 Content = payload
             };
+        }
+
+        public static bool IsNegotiateRequest(HttpRequestMessage request)
+        {
+            return request.Method == HttpMethod.Post &&
+                new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
         }
 
         public static string CreateNegotiationResponse(string connectionId = "00000000-0000-0000-0000-000000000000",

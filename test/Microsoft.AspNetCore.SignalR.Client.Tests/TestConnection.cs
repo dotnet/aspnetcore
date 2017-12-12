@@ -30,13 +30,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private Task _receiveLoop;
 
         private TransferMode? _transferMode;
-        private readonly TaskCompletionSource<object> _closeTcs = new TaskCompletionSource<object>();
 
-        public Task Closed => _closeTcs.Task;
+        public event Action<Exception> Closed;
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;
         public ChannelReader<byte[]> SentMessages => _sentMessages.Reader;
         public ChannelWriter<byte[]> ReceivedMessages => _receivedMessages.Writer;
+
+        private bool _closed;
+        private object _closedLock = new object();
 
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
 
@@ -51,19 +53,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public Task AbortAsync(Exception ex) => DisposeCoreAsync(ex);
         public Task DisposeAsync() => DisposeCoreAsync();
 
+        // TestConnection isn't restartable
+        public Task StopAsync() => DisposeAsync();
+
         private Task DisposeCoreAsync(Exception ex = null)
         {
-            if (ex == null)
-            {
-                _closeTcs.TrySetResult(null);
-                _disposed.TrySetResult(null);
-            }
-            else
-            {
-                _closeTcs.TrySetException(ex);
-                _disposed.TrySetException(ex);
-            }
-
+            TriggerClosed(ex);
             _receiveShutdownToken.Cancel();
             return _receiveLoop;
         }
@@ -147,16 +142,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         }
                     }
                 }
-                _closeTcs.TrySetResult(null);
+                TriggerClosed();
             }
             catch (OperationCanceledException)
             {
                 // Do nothing, we were just asked to shut down.
-                _closeTcs.TrySetResult(null);
+                TriggerClosed();
             }
             catch (Exception ex)
             {
-                _closeTcs.TrySetException(ex);
+                TriggerClosed(ex);
+            }
+        }
+
+        private void TriggerClosed(Exception ex = null)
+        {
+            lock (_closedLock)
+            {
+                if (!_closed)
+                {
+                    _closed = true;
+                    Closed?.Invoke(ex);
+                }
             }
         }
 

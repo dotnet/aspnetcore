@@ -75,25 +75,23 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                .Returns<HttpRequestMessage, CancellationToken>((request, cancellationToken) =>
                 {
-                    await Task.Yield();
-
                     var mockStream = new Mock<Stream>();
                     mockStream
                         .Setup(s => s.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
                         .Returns<Stream, int, CancellationToken>(async (stream, bufferSize, t) =>
+                        {
+                            await Task.Yield();
+                            var buffer = Encoding.ASCII.GetBytes("data: 3:abc\r\n\r\n");
+                            while (!eventStreamCts.IsCancellationRequested)
                             {
-                                await Task.Yield();
-                                var buffer = Encoding.ASCII.GetBytes("data: 3:abc\r\n\r\n");
-                                while (!eventStreamCts.IsCancellationRequested)
-                                {
-                                    await stream.WriteAsync(buffer, 0, buffer.Length);
-                                }
-                            });
+                                await stream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                            }
+                        });
                     mockStream.Setup(s => s.CanRead).Returns(true);
 
-                    return new HttpResponseMessage { Content = new StreamContent(mockStream.Object) };
+                    return Task.FromResult(new HttpResponseMessage { Content = new StreamContent(mockStream.Object) });
                 });
 
             Task transportActiveTask;

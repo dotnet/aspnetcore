@@ -88,6 +88,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         private static readonly Action<ILogger, Exception> _resettingKeepAliveTimer =
             LoggerMessage.Define(LogLevel.Trace, new EventId(25, nameof(ResettingKeepAliveTimer)), "Resetting keep-alive timer, received a message from the server.");
 
+        private static readonly Action<ILogger, Exception> _errorDuringClosedEvent =
+            LoggerMessage.Define(LogLevel.Error, new EventId(26, nameof(ErrorDuringClosedEvent)), "An exception was thrown in the handler for the Closed event.");
+
         // Category: Streaming and NonStreaming
         private static readonly Action<ILogger, string, Exception> _invocationCreated =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(0, nameof(InvocationCreated)), "Invocation {invocationId} created.");
@@ -291,6 +294,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         public static void ResettingKeepAliveTimer(this ILogger logger)
         {
             _resettingKeepAliveTimer(logger, null);
+        }
+
+        public static void ErrorDuringClosedEvent(this ILogger logger, Exception exception)
+        {
+            _errorDuringClosedEvent(logger, exception);
         }
     }
 }

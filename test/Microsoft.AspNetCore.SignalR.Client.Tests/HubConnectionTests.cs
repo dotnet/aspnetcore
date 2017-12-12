@@ -73,10 +73,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var hubConnection = new HubConnection(new TestConnection(), Mock.Of<IHubProtocol>(), null);
             var closedEventTcs = new TaskCompletionSource<Exception>();
+            hubConnection.Closed += e => closedEventTcs.SetResult(e);
 
             await hubConnection.StartAsync().OrTimeout();
             await hubConnection.DisposeAsync().OrTimeout();
-            await hubConnection.Closed.OrTimeout();
+            Assert.Null(await closedEventTcs.Task);
         }
 
         [Fact]
@@ -182,9 +183,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             await hubConnection.StartAsync();
             var invokeTask = hubConnection.InvokeAsync<int>("testMethod");
-            await hubConnection.DisposeAsync();
 
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
+            var exception = new InvalidOperationException();
+            mockConnection.Raise(m => m.Closed += null, exception);
+
+            var actualException = await Assert.ThrowsAsync<InvalidOperationException>(async () => await invokeTask);
+            Assert.Equal(exception, actualException);
         }
 
         [Fact]
@@ -196,8 +200,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(100);
 
             await hubConnection.StartAsync().OrTimeout();
-            var ex = await Assert.ThrowsAsync<TimeoutException>(async () => await hubConnection.Closed.OrTimeout());
-            Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", ex.Message);
+
+            var closeTcs = new TaskCompletionSource<Exception>();
+            hubConnection.Closed += ex => closeTcs.TrySetResult(ex);
+            var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
+            Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", exception.Message);
         }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
