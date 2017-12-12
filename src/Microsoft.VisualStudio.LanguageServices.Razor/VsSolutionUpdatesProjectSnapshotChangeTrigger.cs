@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Editor.Razor;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -22,6 +23,27 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         [ImportingConstructor]
         public VsSolutionUpdatesProjectSnapshotChangeTrigger(
             [Import(typeof(SVsServiceProvider))] IServiceProvider services,
+            VisualStudioWorkspaceAccessor workspaceAccessor)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            if (workspaceAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(workspaceAccessor));
+            }
+
+            _services = services;
+
+            var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _projectService = languageServices.GetRequiredService<TextBufferProjectService>();
+        }
+
+        // Internal for testing
+        internal VsSolutionUpdatesProjectSnapshotChangeTrigger(
+            IServiceProvider services,
             TextBufferProjectService projectService)
         {
             _services = services;
@@ -72,6 +94,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return VSConstants.S_OK;
         }
 
+        // This gets called when the project has finished building.
         public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
         {
             var projectName = _projectService.GetProjectName(pHierProj);

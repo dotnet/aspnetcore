@@ -16,25 +16,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(VisualStudioDocumentTrackerFactory), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultVisualStudioDocumentTrackerFactoryFactory : ILanguageServiceFactory
     {
-        private readonly TextBufferProjectService _projectService;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
 
         [ImportingConstructor]
-        public DefaultVisualStudioDocumentTrackerFactoryFactory(
-            TextBufferProjectService projectService,
-            ITextDocumentFactoryService textDocumentFactory)
+        public DefaultVisualStudioDocumentTrackerFactoryFactory(ITextDocumentFactoryService textDocumentFactory)
         {
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
-            }
-
             if (textDocumentFactory == null)
             {
                 throw new ArgumentNullException(nameof(textDocumentFactory));
             }
 
-            _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
         }
 
@@ -48,13 +39,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var projectManager = languageServices.GetRequiredService<ProjectSnapshotManager>();
             var editorSettingsManager = languageServices.GetRequiredService<EditorSettingsManagerInternal>();
+            var projectService = languageServices.GetRequiredService<TextBufferProjectService>();
             var importDocumentManager = languageServices.GetRequiredService<ImportDocumentManager>();
 
             return new DefaultVisualStudioDocumentTrackerFactory(
                 dispatcher,
                 projectManager,
                 editorSettingsManager,
-                _projectService,
+                projectService,
                 _textDocumentFactory,
                 importDocumentManager,
                 languageServices.WorkspaceServices.Workspace);

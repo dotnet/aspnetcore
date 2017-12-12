@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.Diagnostics;
-using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -15,7 +13,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     /// <summary>
     /// Infrastructure methods to find project information from an <see cref="ITextBuffer"/>.
     /// </summary>
-    [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
         private const string DotNetCoreCapability = "(CSharp|VB)&CPS";
@@ -23,15 +20,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly RunningDocumentTable _documentTable;
         private readonly ITextDocumentFactoryService _documentFactory;
 
-        [ImportingConstructor]
         public DefaultTextBufferProjectService(
-            [Import(typeof(SVsServiceProvider))] IServiceProvider services,
-            ITextDocumentFactoryService documentFactory,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            RunningDocumentTable documentTable,
+            ITextDocumentFactoryService documentFactory)
         {
-            if (services == null)
+            if (documentTable == null)
             {
-                throw new ArgumentNullException(nameof(services));
+                throw new ArgumentNullException(nameof(documentTable));
             }
 
             if (documentFactory == null)
@@ -40,7 +35,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _documentFactory = documentFactory;
-            _documentTable = new RunningDocumentTable(services);
+            _documentTable = documentTable;
         }
 
         public override object GetHostProject(ITextBuffer textBuffer)
