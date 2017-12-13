@@ -102,8 +102,7 @@
 
     <GeneratePackageVersionPropsFile
       Packages="@(_LineupPackages)"
-      OutputPath="$(GeneratedPackageVersionPropsPath)"
-      AdditionalImports="$(DotNetPackageVersionPropsPath)" />
+      OutputPath="$(GeneratedPackageVersionPropsPath)" />
 
     <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
 
