@@ -18,6 +18,18 @@
   },
   "sourceName": "Company.WebApplication1",
   "preferNameDirectory": true,
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(TargetFrameworkOverride == '')",
+          "exclude": [
+            "app.config"
+          ]
+        }
+      ]
+    }
+  ],
   "symbols": {
     "RuntimeFrameworkVersion": {
       "type": "parameter",

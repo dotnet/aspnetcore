@@ -27,6 +27,12 @@
     {
       "modifiers": [
         {
+          "condition": "(TargetFrameworkOverride == '')",
+          "exclude": [
+            "app.config"
+          ]
+        },
+        {
           "condition": "(!IndividualAuth && !OrganizationalAuth)",
           "exclude": [
             "Controllers/AccountController.cs",

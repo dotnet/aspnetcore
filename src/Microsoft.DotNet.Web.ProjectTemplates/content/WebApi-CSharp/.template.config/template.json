@@ -27,6 +27,12 @@
     {
       "modifiers": [
         {
+          "condition": "(TargetFrameworkOverride == '')",
+          "exclude": [
+            "app.config"
+          ]
+        },
+        {
           "condition": "(windir == 'C:\\Windows')",
           "exclude": [
             "Properties/launchSettings.json"
