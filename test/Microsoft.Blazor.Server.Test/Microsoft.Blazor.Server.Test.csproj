@@ -13,8 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\samples\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
+    <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj" />
   </ItemGroup>
 
 </Project>
