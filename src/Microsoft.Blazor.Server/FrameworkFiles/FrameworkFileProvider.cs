@@ -12,12 +12,15 @@ namespace Microsoft.Blazor.Server.FrameworkFiles
     {
         public static IFileProvider Instantiate(string clientAssemblyPath)
             => new CompositeFileProvider(
-                MonoStaticFileProvider.JsFiles,
-                BlazorBrowserFileProvider.Instance,
-                new ReferencedAssemblyFileProvider(
+                MonoStaticFileProvider.JsFiles,          // /_framework/wasm/*, /framework/asmjs/*
+                BlazorBrowserFileProvider.Instance,      // /_framework/blazor.js
+                BinDirFileProvider(clientAssemblyPath)); // /_framework/_bin/*
+
+        private static IFileProvider BinDirFileProvider(string clientAssemblyPath)
+            => new ReferencedAssemblyFileProvider(
                     Path.GetFileNameWithoutExtension(clientAssemblyPath),
                     new ReferencedAssemblyResolver(
                         MonoStaticFileProvider.BclFiles,
-                        Path.GetDirectoryName(clientAssemblyPath))));
+                        Path.GetDirectoryName(clientAssemblyPath)));
     }
 }

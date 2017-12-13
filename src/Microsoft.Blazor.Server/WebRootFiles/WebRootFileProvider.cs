@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.Blazor.Server.WebRootFiles
 {
@@ -11,7 +12,14 @@ namespace Microsoft.Blazor.Server.WebRootFiles
         public static IFileProvider Instantiate(
             string clientWebRoot, string assemblyName, IEnumerable<IFileInfo> binFiles)
             => new CompositeFileProvider(
-                new IndexHtmlFileProvider(clientWebRoot, assemblyName, binFiles),
+                new IndexHtmlFileProvider(
+                    ReadIndexHtmlFile(clientWebRoot), assemblyName, binFiles),
                 new PhysicalFileProvider(clientWebRoot));
+
+        private static string ReadIndexHtmlFile(string clientWebRoot)
+        {
+            var path = Path.Combine(clientWebRoot, "index.html");
+            return File.Exists(path) ? File.ReadAllText(path) : null;
+        }
     }
 }

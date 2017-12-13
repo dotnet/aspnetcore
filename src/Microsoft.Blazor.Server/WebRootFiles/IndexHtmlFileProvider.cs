@@ -12,33 +12,27 @@ namespace Microsoft.Blazor.Server.WebRootFiles
 {
     internal class IndexHtmlFileProvider : InMemoryFileProvider
     {
-        public IndexHtmlFileProvider(string clientWebRoot, string assemblyName, IEnumerable<IFileInfo> binFiles)
-            : base(ComputeContents(clientWebRoot, assemblyName, binFiles))
+        public IndexHtmlFileProvider(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
+            : base(ComputeContents(htmlTemplate, assemblyName, binFiles))
         {
         }
 
-        private static IEnumerable<(string, Stream)> ComputeContents(string clientWebRoot, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static IEnumerable<(string, Stream)> ComputeContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
         {
-            var html = GetIndexHtmlContents(clientWebRoot, assemblyName, binFiles);
-            if (html != null)
+            if (htmlTemplate != null)
             {
+                var html = GetIndexHtmlContents(htmlTemplate, assemblyName, binFiles);
                 var htmlBytes = Encoding.UTF8.GetBytes(html);
                 var htmlStream = new MemoryStream(htmlBytes);
                 yield return ("/index.html", htmlStream);
             }
         }
 
-        private static string GetIndexHtmlContents(string clientWebRoot, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static string GetIndexHtmlContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
         {
-            var indexHtmlPath = Path.Combine(clientWebRoot, "index.html");
-            if (!File.Exists(indexHtmlPath))
-            {
-                return null;
-            }
-
             // TODO: Consider parsing the HTML properly so for example we don't insert into
             // the wrong place if there was also '</body>' in a JavaScript string literal
-            return File.ReadAllText(indexHtmlPath)
+            return htmlTemplate
                 .Replace("</body>", CreateBootMarkup(assemblyName, binFiles) + "\n</body>");
         }
 
