@@ -353,11 +353,11 @@ namespace Company.WebApplication1.Identity.Controllers
             var result = await _userManager.ConfirmEmailAsync(user, code);
             if (result.Succeeded)
             {
-                return View("ConfirmEmail");
+                return View(nameof(ConfirmEmail));
             }
             else
             {
-                return View("Error", new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+                return View(nameof(HomeController.Error), new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
             }
         }
 
