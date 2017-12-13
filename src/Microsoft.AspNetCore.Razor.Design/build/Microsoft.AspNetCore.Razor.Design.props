@@ -1,0 +1,10 @@
+﻿<Project>
+  <!-- 
+    Properties supporting Razor MSBuild integration
+  -->
+
+  <PropertyGroup>
+    <RazorGenerateDependsOn></RazorGenerateDependsOn>
+    <RazorCompileDependsOn></RazorCompileDependsOn>
+  </PropertyGroup>
+</Project>
