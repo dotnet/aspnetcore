@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.Blazor.BuildTools</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <description>Build tools for Blazor applications.</description>
+  </metadata>
+  <files>
+    <file src="_._" target="lib/netstandard1.0/" />
+    <file src="build\**" target="build" />
+    <file src="targets\**" target="targets" />
+    <file src="tools\**" target="tools" />
+  </files>
+</package>

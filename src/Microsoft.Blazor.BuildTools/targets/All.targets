@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <BlazorBuildToolsExe>dotnet $(MSBuildThisFileDirectory)..\tools\Microsoft.Blazor.BuildTools.dll</BlazorBuildToolsExe>
+  </PropertyGroup>
+
+  <Target Name="GenerateBlazorMetadataFile" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <PropertyGroup>
+      <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>
+      <BlazorMetadataFilePath>$(TargetDir)$(BlazorMetadataFileName)</BlazorMetadataFilePath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Lines="$(MSBuildProjectFullPath)" Overwrite="true" Encoding="Unicode"/>
+    <WriteLinesToFile File="$(BlazorMetadataFilePath)" Lines="$(OutDir)$(AssemblyName).dll" Overwrite="false" Encoding="Unicode"/>
+    <ItemGroup>
+      <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+</Project>

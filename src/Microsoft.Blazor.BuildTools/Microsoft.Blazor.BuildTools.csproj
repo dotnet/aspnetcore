@@ -3,7 +3,16 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <OutDir>tools</OutDir>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.Blazor.BuildTools.nuspec</NuspecFile>
+    <PackageVersion>0.0.1</PackageVersion>
+    <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="tools\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
