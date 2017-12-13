@@ -3,30 +3,30 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <BenchmarkDotNetPackageVersion>0.10.9</BenchmarkDotNetPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15618</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27773</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview1-27773</MicrosoftExtensionsWebEncodersPackageVersion>
+    <BenchmarkDotNetPackageVersion>0.10.11</BenchmarkDotNetPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15626</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-25915-01</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26008-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
