@@ -1,5 +1,8 @@
+
 ASP.NET Core MVC Precompilation
 ===
+
+## NOTE: This repo is solely for maintenance of the existing MVC precompilation feature. Future work on Razor compilation is now being handled in the [Razor](https://github.com/aspnet/razor) repo. See [aspnet/Razor#1740](https://github.com/aspnet/Razor/issues/1740) for additional details. 
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/jx955ph2045dw1w0/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/mvcprecompilation/branch/dev)
 Travis:   [![Travis](https://travis-ci.org/aspnet/MvcPrecompilation.svg?branch=dev)](https://travis-ci.org/aspnet/mvcprecompilation)
