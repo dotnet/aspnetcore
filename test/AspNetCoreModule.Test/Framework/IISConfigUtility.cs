@@ -685,6 +685,11 @@ namespace AspNetCoreModule.Test.Framework
                 TestUtility.LogTrace(String.Format("#################### Adding App Pool {0} with startMode = {1} ####################", poolName, alwaysRunning ? "AlwaysRunning" : "OnDemand"));
                 using (ServerManager serverManager = GetServerManager())
                 {
+                    if (serverManager.ApplicationPools[poolName] != null)
+                    {
+                        TestUtility.LogInformation("Removing existing apppool");
+                        serverManager.ApplicationPools.Remove(serverManager.ApplicationPools[poolName]);
+                    }
                     serverManager.ApplicationPools.Add(poolName);
                     ApplicationPool apppool = serverManager.ApplicationPools[poolName];
                     apppool.ManagedPipelineMode = ManagedPipelineMode.Integrated;

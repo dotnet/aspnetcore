@@ -12,6 +12,7 @@ namespace AspNetCoreModule.Test
     public class FunctionalTest : FunctionalTestHelper, IClassFixture<InitializeTestMachine>
     {
         private const string ANCMTestCondition = TestFlags.SkipTest;
+        //private const string ANCMTestCondition = TestFlags.RunAsAdministrator;
 
         [ConditionalTheory]
         [ANCMTestFlags(ANCMTestCondition)]

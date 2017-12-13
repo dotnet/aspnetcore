@@ -292,7 +292,7 @@ namespace AspNetCoreModule.Test.Framework
             string appPoolName = null;
             if (IisServerType == ServerType.IIS)
             {
-                appPoolName = siteName;
+                appPoolName = "AspNetCoreModuleTestAppPool";
             }
             else if (IisServerType == ServerType.IISExpress)
             {
@@ -461,7 +461,14 @@ namespace AspNetCoreModule.Test.Framework
             }
             else
             {
-                debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
+                if (Directory.Exists(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%")))
+                {
+                    debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
+                }
+                else
+                {
+                    debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x86)", "windbg.exe");
+                }
                 if (!File.Exists(debuggerCmdline))
                 {
                     throw new ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
