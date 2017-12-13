@@ -1,32 +1,44 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 
-namespace Microsoft.CodeAnalysis.Remote.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultTagHelperResolver : TagHelperResolver
     {
-        public DefaultTagHelperResolver(bool designTime)
+        // Hack for testability. The view component visitor will normally just no op if we're not referencing
+        // an appropriate version of MVC.
+        internal bool ForceEnableViewComponentDiscovery { get; set; }
+
+        public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken)
         {
-            DesignTime = designTime;
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
+            var result = GetTagHelpers(compilation);
+            return result;
         }
 
-        public bool DesignTime { get; }
-
-        private TagHelperResolutionResult GetTagHelpers(Compilation compilation)
+        // Internal for testing
+        internal TagHelperResolutionResult GetTagHelpers(Compilation compilation)
         {
             var descriptors = new List<TagHelperDescriptor>();
 
             var providers = new ITagHelperDescriptorProvider[]
             {
-                new DefaultTagHelperDescriptorProvider() { DesignTime = DesignTime, },
-                new ViewComponentTagHelperDescriptorProvider(),
+                new DefaultTagHelperDescriptorProvider() { DesignTime = true, },
+                new ViewComponentTagHelperDescriptorProvider() { ForceEnabled = ForceEnableViewComponentDiscovery },
             };
 
             var results = new List<TagHelperDescriptor>();
@@ -43,12 +55,6 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             var resolutionResult = new TagHelperResolutionResult(results, diagnostics);
 
             return resolutionResult;
-        }
-
-        public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken)
-        {
-            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            return GetTagHelpers(compilation);
         }
     }
 }

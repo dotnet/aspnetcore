@@ -2,13 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  
   <ItemGroup>
     <Reference Include="WindowsBase" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj" />
   </ItemGroup>
 

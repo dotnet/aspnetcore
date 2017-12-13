@@ -2,27 +2,30 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.VisualStudio.Editor.Razor;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
-    internal class DefaultTagHelperResolver : TagHelperResolver
+    internal class OOPTagHelperResolver : TagHelperResolver
     {
-        private readonly ErrorReporter _errorReporter;
+        private readonly DefaultTagHelperResolver _defaultResolver;
         private readonly Workspace _workspace;
 
-        public DefaultTagHelperResolver(ErrorReporter errorReporter, Workspace workspace)
+        public OOPTagHelperResolver(Workspace workspace)
         {
-            _errorReporter = errorReporter;
+            if (workspace == null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
+            }
+
             _workspace = workspace;
+            _defaultResolver = new DefaultTagHelperResolver();
         }
 
         public override async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken)
@@ -34,7 +37,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             try
             {
-                TagHelperResolutionResult result;
+                TagHelperResolutionResult result = null;
 
                 // We're being defensive here because the OOP host can return null for the client/session/operation
                 // when it's disconnected (user stops the process).
@@ -51,56 +54,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                                 cancellationToken).ConfigureAwait(false);
 
                             result = GetTagHelperResolutionResult(jsonObject);
-
-                            if (result != null)
-                            {
-                                return result;
-                            }
                         }
                     }
                 }
 
-                // The OOP host is turned off, so let's do this in process.
-                var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-                result = GetTagHelpers(compilation);
+                if (result == null)
+                {
+                    // Was unable to get tag helpers OOP, fallback to default behavior.
+                    result = await _defaultResolver.GetTagHelpersAsync(project, cancellationToken);
+                }
+
                 return result;
             }
             catch (Exception exception)
             {
-                _errorReporter.ReportError(exception, project);
-
                 throw new InvalidOperationException(
                     Resources.FormatUnexpectedException(
                         typeof(DefaultTagHelperResolver).FullName,
                         nameof(GetTagHelpersAsync)),
                     exception);
             }
-        }
-
-        public override TagHelperResolutionResult GetTagHelpers(Compilation compilation)
-        {
-            var descriptors = new List<TagHelperDescriptor>();
-
-            var providers = new ITagHelperDescriptorProvider[]
-            {
-                new DefaultTagHelperDescriptorProvider() { DesignTime = true, },
-                new ViewComponentTagHelperDescriptorProvider(),
-            };
-
-            var results = new List<TagHelperDescriptor>();
-            var context = TagHelperDescriptorProviderContext.Create(results);
-            context.SetCompilation(compilation);
-
-            for (var i = 0; i < providers.Length; i++)
-            {
-                var provider = providers[i];
-                provider.Execute(context);
-            }
-
-            var diagnostics = new List<RazorDiagnostic>();
-            var resolutionResult = new TagHelperResolutionResult(results, diagnostics);
-
-            return resolutionResult;
         }
 
         private TagHelperResolutionResult GetTagHelperResolutionResult(JObject jsonObject)

@@ -9,8 +9,6 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal abstract class TagHelperResolver : ILanguageService
     {
-        public abstract TagHelperResolutionResult GetTagHelpers(Compilation compilation);
-
         public abstract Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project, CancellationToken cancellationToken);
     }
 }
