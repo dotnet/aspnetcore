@@ -40,4 +40,11 @@
     <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
   </PropertyGroup>
 
+  <!-- Properties for publishing -->
+  <PropertyGroup Condition=" '$(LocalBuild)' != 'true' ">
+    <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
+    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
+    <PublishToAzureBlob Condition=" $(PublishType.Contains('blob')) ">true</PublishToAzureBlob>
+  </PropertyGroup>
+
 </Project>

@@ -1,7 +1,10 @@
 <Project>
 
   <!-- Inserts the Razor VSIX to the VS drop share -->
-  <Target Name="RunVSDrop" DependsOnTargets="GetToolsets">
+  <Target Name="RunVSDrop" DependsOnTargets="GetToolsets" Condition="'$(PublishToVSDrop)' == 'true'">
+    <Error Text="Cannot publish unsigned files to VS drops. Set SignType to 'real' to ensuring files are signed first."
+      Condition=" '$(SignType)' != 'real'" />
+
     <Error Text="MSBuild could not be located."
       Condition="'$(VisualStudioMSBuildx86Path)'==''" />
 
@@ -21,7 +24,7 @@
     <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" Condition="Exists($(RazorVSIXFullPath))" />
   </Target>
 
-  <Target Name="GetFilesToPublish">
+  <Target Name="GetAzureFilesToPublish" BeforeTargets="PublishToAzure" Condition="'$(PublishToAzureBlob)' == 'true'">
     <ItemGroup>
       <!--
       PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
@@ -35,7 +38,10 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="PushNuGetPackages" DependsOnTargets="GetArtifactInfo">
+  <Target Name="PushNuGetPackages" DependsOnTargets="GetArtifactInfo" Condition="'$(PublishToMyget)' == 'true'">
+    <Error Text="Cannot publish unsigned files to MyGet. Set SignType to 'real' to ensuring files are signed first."
+      Condition=" '$(SignType)' != 'real'" />
+
     <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
     <ItemGroup>
       <_PackagesToPublish Include="@(PackagesToPublish)" />
@@ -56,7 +62,7 @@
     <NpmModuleArtifact Include="$(DepsDirectory)build\*.tgz" />
   </ItemGroup>
 
-  <Target Name="PushNPMPackages" Condition="@(NpmModuleArtifact->Count()) != 0">
+  <Target Name="PushNPMPackages" Condition="@(NpmModuleArtifact->Count()) != 0 AND '$(PublishToMyget)' == 'true'">
     <Error Text="Missing required property: NpmRegistry"  Condition=" '$(NpmRegistry)' == '' "/>
 
     <PropertyGroup>
