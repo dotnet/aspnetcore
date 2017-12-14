@@ -14,16 +14,16 @@ namespace Microsoft.Blazor.Server.Test
     public class ReferencedAssemblyFileProviderTest
     {
         [Fact]
-        public void RootDirContainsOnlyBinDir()
+        public void RootDirContainsOnlyDlls()
         {
             var provider = new ReferencedAssemblyFileProvider(
                 "mscorlib",
                 new ReferencedAssemblyResolver(MonoStaticFileProvider.BclFiles, string.Empty));
-            Assert.Collection(provider.GetDirectoryContents("/"), item =>
+            foreach (var item in provider.GetDirectoryContents("/"))
             {
-                Assert.Equal("/_bin", item.PhysicalPath);
-                Assert.True(item.IsDirectory);
-            });
+                Assert.False(item.IsDirectory);
+                Assert.EndsWith(".dll", item.Name);
+            }
         }
 
         [Fact]
@@ -32,12 +32,12 @@ namespace Microsoft.Blazor.Server.Test
             var provider = new ReferencedAssemblyFileProvider(
                 "System.Linq.Expressions",
                 new ReferencedAssemblyResolver(MonoStaticFileProvider.BclFiles, string.Empty));
-            var contents = provider.GetDirectoryContents("/_bin").OrderBy(i => i.Name).ToList();
+            var contents = provider.GetDirectoryContents("").OrderBy(i => i.Name).ToList();
             Assert.Collection(contents,
-                item => { Assert.Equal("/_bin/mscorlib.dll", item.PhysicalPath); },
-                item => { Assert.Equal("/_bin/System.Core.dll", item.PhysicalPath); },
-                item => { Assert.Equal("/_bin/System.dll", item.PhysicalPath); },
-                item => { Assert.Equal("/_bin/System.Linq.Expressions.dll", item.PhysicalPath); });
+                item => { Assert.Equal("/mscorlib.dll", item.PhysicalPath); },
+                item => { Assert.Equal("/System.Core.dll", item.PhysicalPath); },
+                item => { Assert.Equal("/System.dll", item.PhysicalPath); },
+                item => { Assert.Equal("/System.Linq.Expressions.dll", item.PhysicalPath); });
         }
 
         [Fact]
@@ -68,26 +68,26 @@ namespace Microsoft.Blazor.Server.Test
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
-                "/_bin/Microsoft.Blazor.dll",
-                "/_bin/mscorlib.dll",
-                "/_bin/netstandard.dll",
-                "/_bin/StandaloneApp.dll",
-                "/_bin/System.Console.dll",
-                "/_bin/System.Core.dll",
-                "/_bin/System.Diagnostics.StackTrace.dll",
-                "/_bin/System.dll",
-                "/_bin/System.Globalization.Extensions.dll",
-                "/_bin/System.Runtime.dll",
-                "/_bin/System.Runtime.InteropServices.RuntimeInformation.dll",
-                "/_bin/System.Runtime.Serialization.Primitives.dll",
-                "/_bin/System.Runtime.Serialization.Xml.dll",
-                "/_bin/System.Security.Cryptography.Algorithms.dll",
-                "/_bin/System.Security.SecureString.dll",
-                "/_bin/System.Xml.XPath.XDocument.dll",
+                "/Microsoft.Blazor.dll",
+                "/mscorlib.dll",
+                "/netstandard.dll",
+                "/StandaloneApp.dll",
+                "/System.Console.dll",
+                "/System.Core.dll",
+                "/System.Diagnostics.StackTrace.dll",
+                "/System.dll",
+                "/System.Globalization.Extensions.dll",
+                "/System.Runtime.dll",
+                "/System.Runtime.InteropServices.RuntimeInformation.dll",
+                "/System.Runtime.Serialization.Primitives.dll",
+                "/System.Runtime.Serialization.Xml.dll",
+                "/System.Security.Cryptography.Algorithms.dll",
+                "/System.Security.SecureString.dll",
+                "/System.Xml.XPath.XDocument.dll",
             };
 
             // Act
-            var contents = provider.GetDirectoryContents("/_bin")
+            var contents = provider.GetDirectoryContents("")
                 .OrderBy(i => i.Name, StringComparer.InvariantCulture).ToList();
 
             // Assert

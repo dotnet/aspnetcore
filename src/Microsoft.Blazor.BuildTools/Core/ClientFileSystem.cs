@@ -3,6 +3,7 @@
 
 using Microsoft.Blazor.BuildTools.Core.FrameworkFiles;
 using Microsoft.Blazor.BuildTools.Core.WebRootFiles;
+using Microsoft.Blazor.Internal.Common.FileProviders;
 using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,7 @@ namespace Microsoft.Blazor.BuildTools.Core
     {
         public static IFileProvider Instantiate(string clientAssemblyPath, string webRootPath)
         {
-            var fileProviders = new List<IFileProvider>();
+            var fileProviders = new List<(string, IFileProvider)>();
 
             if (!File.Exists(clientAssemblyPath))
             {
@@ -22,7 +23,7 @@ namespace Microsoft.Blazor.BuildTools.Core
 
             var frameworkFileProvider = FrameworkFileProvider.Instantiate(
                 clientAssemblyPath);
-            fileProviders.Add(frameworkFileProvider);
+            fileProviders.Add(("/_framework", frameworkFileProvider));
 
             if (!string.IsNullOrEmpty(webRootPath))
             {
@@ -35,10 +36,10 @@ namespace Microsoft.Blazor.BuildTools.Core
                     webRootPath,
                     Path.GetFileNameWithoutExtension(clientAssemblyPath),
                     frameworkFileProvider.GetDirectoryContents("/_bin"));
-                fileProviders.Add(webRootFileProvider);
+                fileProviders.Add(("/", webRootFileProvider));
             }
 
-            return new CompositeFileProvider(fileProviders);
+            return new CompositeMountedFileProvider(fileProviders.ToArray());
         }
     }
 }

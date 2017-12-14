@@ -11,8 +11,6 @@ namespace Microsoft.Blazor.BuildTools.Core.FrameworkFiles
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {
-        private const string ClientBinDir = "_bin";
-
         public ReferencedAssemblyFileProvider(string rootAssemblyName, ReferencedAssemblyResolver resolver)
             : base(ComputeContents(rootAssemblyName, resolver))
         {
@@ -26,7 +24,7 @@ namespace Microsoft.Blazor.BuildTools.Core.FrameworkFiles
             AddWithReferencesRecursive(rootAssemblyName, resolver, foundAssemblies);
 
             return foundAssemblies.Values.Select(assembly => (
-                $"/{ClientBinDir}/{assembly.Definition.Name.Name}.dll",
+                $"/{assembly.Definition.Name.Name}.dll",
                 (Stream)new MemoryStream(assembly.Data)));
         }
 

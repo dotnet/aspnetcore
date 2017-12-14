@@ -23,10 +23,8 @@ namespace Microsoft.Blazor.Common.Test
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                new CompositeMountedFileProvider(new[]
-                {
-                    ("test", TestFileProvider("/something.txt"))
-                });
+                new CompositeMountedFileProvider(
+                    ("test", TestFileProvider("/something.txt")));
             });
         }
 
@@ -35,10 +33,8 @@ namespace Microsoft.Blazor.Common.Test
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                new CompositeMountedFileProvider(new[]
-                {
-                    ("/test/", TestFileProvider("/something.txt"))
-                });
+                new CompositeMountedFileProvider(
+                    ("/test/", TestFileProvider("/something.txt")));
             });
         }
 
@@ -47,10 +43,8 @@ namespace Microsoft.Blazor.Common.Test
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                new CompositeMountedFileProvider(new[]
-                {
-                    ("/test", TestFileProvider("something.txt"))
-                });
+                new CompositeMountedFileProvider(
+                    ("/test", TestFileProvider("something.txt")));
             });
         }
 
@@ -63,10 +57,7 @@ namespace Microsoft.Blazor.Common.Test
                 TestItem("/rootitem.txt", "Root item contents"),
                 TestItem("/subdir/another", "Another test item"),
             });
-            var instance = new CompositeMountedFileProvider(new[]
-            {
-                ("/", childProvider)
-            });
+            var instance = new CompositeMountedFileProvider(("/", childProvider));
 
             // Act
             var rootContents = instance.GetDirectoryContents(string.Empty);
@@ -99,12 +90,10 @@ namespace Microsoft.Blazor.Common.Test
         public void CanMountFileProvidersAtSubPaths()
         {
             // Arrange
-            var instance = new CompositeMountedFileProvider(new[]
-            {
+            var instance = new CompositeMountedFileProvider(
                 ("/dir", TestFileProvider("/first", "/A/second", "/A/third")),
                 ("/dir/sub", TestFileProvider("/X", "/B/Y", "/B/Z")),
-                ("/other", TestFileProvider("/final")),
-            });
+                ("/other", TestFileProvider("/final")));
 
             // Act
             var rootContents = instance.GetDirectoryContents("/");
@@ -139,11 +128,9 @@ namespace Microsoft.Blazor.Common.Test
         public void CanMountMultipleFileProvidersAtSameLocation()
         {
             // Arrange
-            var instance = new CompositeMountedFileProvider(new[]
-            {
+            var instance = new CompositeMountedFileProvider(
                 ("/dir", TestFileProvider("/first")),
-                ("/dir", TestFileProvider("/second"))
-            });
+                ("/dir", TestFileProvider("/second")));
 
             // Act
             var contents = instance.GetDirectoryContents("/dir");
@@ -159,11 +146,9 @@ namespace Microsoft.Blazor.Common.Test
         {
             Assert.Throws<ArgumentException>(() =>
             {
-                new CompositeMountedFileProvider(new[]
-                {
+                new CompositeMountedFileProvider(
                     ("/dir", TestFileProvider("/file")),
-                    ("/", TestFileProvider("/dir/file"))
-                });
+                    ("/", TestFileProvider("/dir/file")));
             });
         }
     }

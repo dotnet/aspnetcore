@@ -15,7 +15,7 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
     //     so that all subsequent reads are "O(dictionary lookup)" time
     public class CompositeMountedFileProvider : InMemoryFileProvider
     {
-        public CompositeMountedFileProvider(IEnumerable<(string, IFileProvider)> providers)
+        public CompositeMountedFileProvider(params (string, IFileProvider)[] providers)
             : base(GetCompositeContents(providers))
         {
         }
