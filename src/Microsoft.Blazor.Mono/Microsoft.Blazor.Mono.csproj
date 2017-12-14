@@ -10,7 +10,7 @@
     <ProjectReference Include="..\Microsoft.Blazor.Common\Microsoft.Blazor.Common.csproj" />
   </ItemGroup>
 
-  <Target Name="EmbedMonoResources" BeforeTargets="PreBuildEvent" DependsOnTargets="OptimizeMono">
+  <Target Name="EmbedMonoResources" BeforeTargets="PreBuildEvent" DependsOnTargets="OptimizeMono" Inputs="$(MonoUnoptimizedDir)\**" Outputs="$(MonoOptimizedDir)\**">
     <ItemGroup>
       <MonoWasmResourcesToEmbed Include="$(MonoOptimizedDir)wasm/**" />
       <MonoAsmJsResourcesToEmbed Include="$(MonoOptimizedDir)asmjs/**" />
