@@ -10,7 +10,6 @@ import { ILogger, LogLevel } from "./ILogger"
 import { LoggerFactory } from "./Loggers"
 
 const enum ConnectionState {
-    Initial,
     Connecting,
     Connected,
     Disconnected
@@ -23,6 +22,7 @@ interface INegotiateResponse {
 
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
+    private baseUrl: string;
     private url: string;
     private readonly httpClient: IHttpClient;
     private readonly logger: ILogger;
@@ -35,16 +35,16 @@ export class HttpConnection implements IConnection {
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         this.logger = LoggerFactory.createLogger(options.logging);
-        this.url = this.resolveUrl(url);
+        this.baseUrl = this.resolveUrl(url);
         options = options || {};
         this.httpClient = options.httpClient || new HttpClient();
-        this.connectionState = ConnectionState.Initial;
+        this.connectionState = ConnectionState.Disconnected;
         this.options = options;
     }
 
     async start(): Promise<void> {
-        if (this.connectionState != ConnectionState.Initial) {
-            return Promise.reject(new Error("Cannot start a connection that is not in the 'Initial' state."));
+        if (this.connectionState !== ConnectionState.Disconnected) {
+            return Promise.reject(new Error("Cannot start a connection that is not in the 'Disconnected' state."));
         }
 
         this.connectionState = ConnectionState.Connecting;
@@ -56,6 +56,8 @@ export class HttpConnection implements IConnection {
     private async startInternal(): Promise<void> {
         try {
             if (this.options.transport === TransportType.WebSockets) {
+                // No need to add a connection ID in this case
+                this.url = this.baseUrl;
                 this.transport = this.createTransport(this.options.transport, [TransportType[TransportType.WebSockets]]);
             }
             else {
@@ -65,7 +67,7 @@ export class HttpConnection implements IConnection {
                     headers.set("Authorization", `Bearer ${this.options.jwtBearer()}`);
                 }
 
-                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.url), "", headers);
+                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.baseUrl), "", headers);
 
                 let negotiateResponse: INegotiateResponse = JSON.parse(negotiatePayload);
                 this.connectionId = negotiateResponse.connectionId;
@@ -76,7 +78,7 @@ export class HttpConnection implements IConnection {
                 }
 
                 if (this.connectionId) {
-                    this.url += (this.url.indexOf("?") === -1 ? "?" : "&") + `id=${this.connectionId}`;
+                    this.url = this.baseUrl + (this.baseUrl.indexOf("?") === -1 ? "?" : "&") + `id=${this.connectionId}`;
                     this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports);
                 }
             }
@@ -125,7 +127,7 @@ export class HttpConnection implements IConnection {
     }
 
     private isITransport(transport: any): transport is ITransport {
-        return typeof(transport) === "object" && "connect" in transport;
+        return typeof (transport) === "object" && "connect" in transport;
     }
 
     private changeState(from: ConnectionState, to: ConnectionState): Boolean {
@@ -144,7 +146,7 @@ export class HttpConnection implements IConnection {
         return this.transport.send(data);
     }
 
-    async stop(error? : Error): Promise<void> {
+    async stop(error?: Error): Promise<void> {
         let previousState = this.connectionState;
         this.connectionState = ConnectionState.Disconnected;
 
@@ -170,7 +172,7 @@ export class HttpConnection implements IConnection {
         }
     }
 
-    private resolveUrl(url: string) : string {
+    private resolveUrl(url: string): string {
         // startsWith is not supported in IE
         if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
             return url;
@@ -198,7 +200,7 @@ export class HttpConnection implements IConnection {
 
     private resolveNegotiateUrl(url: string): string {
         let index = url.indexOf("?");
-        let negotiateUrl = this.url.substring(0, index === -1 ? url.length : index);
+        let negotiateUrl = url.substring(0, index === -1 ? url.length : index);
         if (negotiateUrl[negotiateUrl.length - 1] !== "/") {
             negotiateUrl += "/";
         }

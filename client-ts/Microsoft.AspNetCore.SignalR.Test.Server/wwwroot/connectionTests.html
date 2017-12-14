@@ -1,6 +1,6 @@
-﻿
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
@@ -22,15 +22,13 @@
             return decodeURIComponent(results[2].replace(/\+/g, " "));
         }
 
-        var minified = getParameterByName('debug') !== 'true' ? '.min' : '';
-        if (typeof Promise === 'undefined')
-        {
+        var minified = getParameterByName('release') === 'true' ? '.min' : '';
+        if (typeof Promise === 'undefined') {
             document.write(
                 '<script type="text/javascript" src="lib/signalr/signalr-clientES5' + minified + '.js"><\/script>' +
                 '<script type="text/javascript" src="lib/signalr/signalr-msgpackprotocolES5' + minified + '.js"><\/script>');
         }
-        else
-        {
+        else {
             document.write(
                 '<script type="text/javascript" src="lib/signalr/signalr-client' + minified + '.js"><\/script>' +
                 '<script type="text/javascript" src="lib/signalr/signalr-msgpackprotocol' + minified + '.js"><\/script>');
@@ -42,6 +40,8 @@
     <script src="js/connectionTests.js"></script>
     <script src="js/hubConnectionTests.js"></script>
 </head>
+
 <body>
 </body>
+
 </html>

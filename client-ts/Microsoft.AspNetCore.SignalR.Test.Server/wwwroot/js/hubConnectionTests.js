@@ -255,16 +255,75 @@ describe('hubConnection', function () {
                     done();
                 });
 
-                hubConnection.start().then(function () {
-                    return hubConnection.invoke('InvokeWithString', message);
+                hubConnection.start()
+                    .then(function () {
+                        return hubConnection.invoke('InvokeWithString', message);
+                    })
+                    .then(function () {
+                        return hubConnection.stop();
+                    })
+                    .catch(function (e) {
+                        fail(e);
+                        done();
+                    });
+            });
+
+            it('can receive server calls without rebinding handler when restarted', function (done) {
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                var message = '你好 SignalR！';
+
+                // client side method names are case insensitive
+                var methodName = 'message';
+                var idx = Math.floor(Math.random() * (methodName.length - 1));
+                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+
+                let closeCount = 0;
+                let invocationCount = 0;
+
+                hubConnection.onclose(function (e) {
+                    expect(e).toBeUndefined();
+                    closeCount += 1;
+                    if (closeCount === 1) {
+                        // Reconnect
+                        hubConnection.start()
+                            .then(function () {
+                                return hubConnection.invoke('InvokeWithString', message);
+                            })
+                            .then(function () {
+                                return hubConnection.stop();
+                            })
+                            .catch(function (e) {
+                                fail(e);
+                                done();
+                            });
+                    } else {
+                        expect(invocationCount).toBe(2);
+                        done();
+                    }
                 })
-                .then(function () {
-                    return hubConnection.stop();
-                })
-                .catch(function (e) {
-                    fail(e);
-                    done();
+
+                hubConnection.on(methodName, function (msg) {
+                    expect(msg).toBe(message);
+                    invocationCount += 1;
                 });
+
+                hubConnection.start()
+                    .then(function () {
+                        return hubConnection.invoke('InvokeWithString', message);
+                    })
+                    .then(function () {
+                        return hubConnection.stop();
+                    })
+                    .catch(function (e) {
+                        fail(e);
+                        done();
+                    });
             });
 
             it('closed with error if hub cannot be created', function (done) {
@@ -312,31 +371,80 @@ describe('hubConnection', function () {
                         : new Uint8Array([0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01, 0x00])
                 };
 
-                hubConnection.start().then(function () {
-                    return hubConnection.invoke('EchoComplexObject', complexObject);
-                })
-                .then(function (value) {
-                    if (protocol.name === "messagepack") {
-                        // msgpack creates a Buffer for byte arrays and jasmine fails to compare a Buffer
-                        // and a Uint8Array even though Buffer instances are also Uint8Array instances
-                        value.ByteArray = new Uint8Array(value.ByteArray);
+                hubConnection.start()
+                    .then(function () {
+                        return hubConnection.invoke('EchoComplexObject', complexObject);
+                    })
+                    .then(function (value) {
+                        if (protocol.name === "messagepack") {
+                            // msgpack creates a Buffer for byte arrays and jasmine fails to compare a Buffer
+                            // and a Uint8Array even though Buffer instances are also Uint8Array instances
+                            value.ByteArray = new Uint8Array(value.ByteArray);
 
-                        // GUIDs are serialized as raw type which is a string containing bytes which need to
-                        // be extracted. Note that with msgpack5 the original bytes will be encoded with utf8
-                        // and needs to be decoded. To not go into utf8 encoding intricacies the test uses values
-                        // less than 0x80.
-                        let guidBytes = [];
-                        for (let i = 0; i < value.GUID.length; i++) {
-                            guidBytes.push(value.GUID.charCodeAt(i));
+                            // GUIDs are serialized as raw type which is a string containing bytes which need to
+                            // be extracted. Note that with msgpack5 the original bytes will be encoded with utf8
+                            // and needs to be decoded. To not go into utf8 encoding intricacies the test uses values
+                            // less than 0x80.
+                            let guidBytes = [];
+                            for (let i = 0; i < value.GUID.length; i++) {
+                                guidBytes.push(value.GUID.charCodeAt(i));
+                            }
+                            value.GUID = new Uint8Array(guidBytes);
                         }
-                        value.GUID = new Uint8Array(guidBytes);
+                        expect(value).toEqual(complexObject);
+                    })
+                    .then(function () {
+                        hubConnection.stop();
+                    })
+                    .catch(function (e) {
+                        fail(e);
+                        done();
+                    });
+            });
+
+            it('can be restarted', function (done) {
+                var message = '你好，世界！';
+
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                let closeCount = 0;
+                hubConnection.onclose(function (error) {
+                    expect(error).toBe(undefined);
+
+                    // Start and invoke again
+                    if (closeCount === 0) {
+                        closeCount += 1;
+                        hubConnection.start().then(function () {
+                            hubConnection.invoke('Echo', message).then(function (result) {
+                                expect(result).toBe(message);
+                            }).catch(function (e) {
+                                fail(e);
+                            }).then(function () {
+                                hubConnection.stop()
+                            });
+                        }).catch(function (e) {
+                            fail(e);
+                            done();
+                        });
+                    } else {
+                        done();
                     }
-                    expect(value).toEqual(complexObject);
-                })
-                .then(function () {
-                    hubConnection.stop();
-                })
-                .catch(function (e) {
+                });
+
+                hubConnection.start().then(function () {
+                    hubConnection.invoke('Echo', message).then(function (result) {
+                        expect(result).toBe(message);
+                    }).catch(function (e) {
+                        fail(e);
+                    }).then(function () {
+                        hubConnection.stop()
+                    });
+                }).catch(function (e) {
                     fail(e);
                     done();
                 });

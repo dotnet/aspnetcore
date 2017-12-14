@@ -57,7 +57,7 @@ describe("Connection", () => {
                             done();
                         })
                         .catch((error: Error) => {
-                            expect(error.message).toBe("Cannot start a connection that is not in the 'Initial' state.");
+                            expect(error.message).toBe("Cannot start a connection that is not in the 'Disconnected' state.");
                             done();
                         });
 
@@ -81,11 +81,13 @@ describe("Connection", () => {
         }
     });
 
-    it("cannot start a stopped connection", async (done) => {
+    it("can start a stopped connection", async (done) => {
+        let negotiateCalls = 0;
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 post(url: string): Promise<string> {
-                    return Promise.reject("error");
+                    negotiateCalls += 1;
+                    return Promise.reject("reached negotiate");
                 },
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
@@ -97,22 +99,18 @@ describe("Connection", () => {
         let connection = new HttpConnection("http://tempuri.org", options);
 
         try {
-            // start will fail and transition the connection to the Disconnected state
             await connection.start();
-        }
-        catch (e) {
-            // The connection is not setup to be running so just ignore the error.
+        } catch (e) {
+            expect(e).toBe("reached negotiate");
         }
 
         try {
             await connection.start();
-            fail();
-            done();
+        } catch (e) {
+            expect(e).toBe("reached negotiate");
         }
-        catch (e) {
-            expect(e.message).toBe("Cannot start a connection that is not in the 'Initial' state.");
-            done();
-        }
+
+        done();
     });
 
     it("can stop a starting connection", async (done) => {

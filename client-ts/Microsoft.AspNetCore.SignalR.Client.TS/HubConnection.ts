@@ -154,6 +154,9 @@ export class HubConnection {
     }
 
     stop(): void {
+        if (this.timeoutHandle) {
+            clearTimeout(this.timeoutHandle);
+        }
         return this.connection.stop();
     }
 
