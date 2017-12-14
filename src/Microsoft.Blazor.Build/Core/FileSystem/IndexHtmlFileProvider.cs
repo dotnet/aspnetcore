@@ -17,14 +17,13 @@ namespace Microsoft.Blazor.Build.Core.FileSystem
         {
         }
 
-        private static IEnumerable<(string, Stream)> ComputeContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static IEnumerable<(string, byte[])> ComputeContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
         {
             if (htmlTemplate != null)
             {
                 var html = GetIndexHtmlContents(htmlTemplate, assemblyName, binFiles);
                 var htmlBytes = Encoding.UTF8.GetBytes(html);
-                var htmlStream = new MemoryStream(htmlBytes);
-                yield return ("/index.html", htmlStream);
+                yield return ("/index.html", htmlBytes);
             }
         }
 

@@ -13,9 +13,8 @@ namespace Microsoft.Blazor.Common.Test
 {
     public class CompositeMountedFileProviderTest
     {
-        private (string, Stream) TestItem(string name) => TestItem(name, Array.Empty<byte>());
-        private (string, Stream) TestItem(string name, string data) => TestItem(name, Encoding.UTF8.GetBytes(data));
-        private (string, Stream) TestItem(string name, byte[] data) => (name, new MemoryStream(data));
+        private (string, byte[]) TestItem(string name) => (name, Array.Empty<byte>());
+        private (string, byte[]) TestItem(string name, string data) => (name, Encoding.UTF8.GetBytes(data));
         private IFileProvider TestFileProvider(params string[] paths) => new InMemoryFileProvider(paths.Select(TestItem));
 
         [Fact]

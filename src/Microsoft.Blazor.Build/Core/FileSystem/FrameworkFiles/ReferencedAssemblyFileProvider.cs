@@ -16,7 +16,7 @@ namespace Microsoft.Blazor.Build.Core.FileSystem
         {
         }
 
-        private static IEnumerable<(string, Stream)> ComputeContents(
+        private static IEnumerable<(string, byte[])> ComputeContents(
             string rootAssemblyName,
             ReferencedAssemblyResolver resolver)
         {
@@ -25,7 +25,7 @@ namespace Microsoft.Blazor.Build.Core.FileSystem
 
             return foundAssemblies.Values.Select(assembly => (
                 $"/{assembly.Definition.Name.Name}.dll",
-                (Stream)new MemoryStream(assembly.Data)));
+                assembly.Data));
         }
 
         private static void AddWithReferencesRecursive(

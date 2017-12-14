@@ -16,14 +16,24 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
         {
         }
 
-        private static IEnumerable<(string, Stream)> ReadEmbeddedResources(
+        private static IEnumerable<(string, byte[])> ReadEmbeddedResources(
             Assembly assembly, string resourceNamePrefix)
         {
             return assembly.GetManifestResourceNames()
                 .Where(name => name.StartsWith(resourceNamePrefix, StringComparison.Ordinal))
                 .Select(name => (
                     name.Substring(resourceNamePrefix.Length),
-                    assembly.GetManifestResourceStream(name)));
+                    ReadManifestResource(assembly, name)));
+        }
+
+        private static byte[] ReadManifestResource(Assembly assembly, string name)
+        {
+            using (var ms = new MemoryStream())
+            using (var resourceStream = assembly.GetManifestResourceStream(name))
+            {
+                resourceStream.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
     }
 }

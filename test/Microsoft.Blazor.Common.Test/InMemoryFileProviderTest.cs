@@ -11,8 +11,7 @@ namespace Microsoft.Blazor.Common.Test
 {
     public class InMemoryFileProviderTest
     {
-        private (string, Stream) TestItem(string name) => TestItem(name, Array.Empty<byte>());
-        private (string, Stream) TestItem(string name, byte[] data) => (name, new MemoryStream(data));
+        private (string, byte[]) TestItem(string name) => (name, Array.Empty<byte>());
 
         [Fact]
         public void RequiresPathsToStartWithSlash()
@@ -38,8 +37,8 @@ namespace Microsoft.Blazor.Common.Test
             // Arrange
             var instance = new InMemoryFileProvider(new[]
             {
-                TestItem("/dirA/item", Encoding.UTF8.GetBytes("Contents of /dirA/item")),
-                TestItem("/dirB/item", Encoding.UTF8.GetBytes("Contents of /dirB/item"))
+                ("/dirA/item", Encoding.UTF8.GetBytes("Contents of /dirA/item")),
+                ("/dirB/item", Encoding.UTF8.GetBytes("Contents of /dirB/item"))
             });
 
             // Act

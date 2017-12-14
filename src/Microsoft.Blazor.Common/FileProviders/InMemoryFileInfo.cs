@@ -19,13 +19,13 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
         public static IFileInfo ForExistingDirectory(string path)
             => new InMemoryFileInfo(path, isDir: true, exists: true);
 
-        public static IFileInfo ForExistingFile(string path, Stream dataStream, DateTimeOffset lastModified)
-            => new InMemoryFileInfo(path, isDir: false, exists: true, dataStream: dataStream, lastModified: lastModified);
+        public static IFileInfo ForExistingFile(string path, byte[] data, DateTimeOffset lastModified)
+            => new InMemoryFileInfo(path, isDir: false, exists: true, data: data, lastModified: lastModified);
 
         public static IFileInfo ForNonExistingFile(string path)
             => new InMemoryFileInfo(path, isDir: false, exists: false);
 
-        private InMemoryFileInfo(string physicalPath, bool isDir, bool exists, Stream dataStream = null, DateTimeOffset lastModified = default(DateTimeOffset))
+        private InMemoryFileInfo(string physicalPath, bool isDir, bool exists, byte[] data = null, DateTimeOffset lastModified = default(DateTimeOffset))
         {
             _exists = exists;
             _isDirectory = isDir;
@@ -48,15 +48,7 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
                 }
             }
 
-            if (dataStream != null)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    dataStream.CopyTo(ms);
-                    _fileData = ms.ToArray();
-                    dataStream.Dispose();
-                }
-            }
+            _fileData = data;
         }
 
         public bool Exists => _exists;
