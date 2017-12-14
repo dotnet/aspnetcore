@@ -7,17 +7,26 @@ using Microsoft.Blazor.Mono;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 
-namespace Microsoft.Blazor.BuildTools.Core.FrameworkFiles
+namespace Microsoft.Blazor.BuildTools.Core.FileSystem
 {
-    internal static class FrameworkFileProvider
+    internal class FrameworkFileProvider : CompositeMountedFileProvider
     {
-        public static IFileProvider Instantiate(string clientAssemblyPath)
-            => new CompositeMountedFileProvider(
+        public FrameworkFileProvider(string clientAssemblyPath)
+            : base(GetContents(clientAssemblyPath))
+        {
+        }
+
+        private static (string, IFileProvider)[] GetContents(string clientAssemblyPath)
+        {
+            return new[]
+            {
                 ("/", MonoStaticFileProvider.JsFiles),
                 ("/", BlazorBrowserFileProvider.Instance),
-                ("/_bin", BinDirFileProvider(clientAssemblyPath)));
+                ("/_bin", CreateBinDirFileProvider(clientAssemblyPath))
+            };
+        }
 
-        private static IFileProvider BinDirFileProvider(string clientAssemblyPath)
+        private static IFileProvider CreateBinDirFileProvider(string clientAssemblyPath)
             => new ReferencedAssemblyFileProvider(
                     Path.GetFileNameWithoutExtension(clientAssemblyPath),
                     new ReferencedAssemblyResolver(

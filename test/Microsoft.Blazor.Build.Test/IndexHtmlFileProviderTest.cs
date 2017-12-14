@@ -7,7 +7,7 @@ using System.Linq;
 using Xunit;
 using System;
 using AngleSharp.Parser.Html;
-using Microsoft.Blazor.BuildTools.Core.WebRootFiles;
+using Microsoft.Blazor.BuildTools.Core.FileSystem;
 
 namespace Microsoft.Blazor.Server.Test
 {
