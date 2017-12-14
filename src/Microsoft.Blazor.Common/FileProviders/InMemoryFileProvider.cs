@@ -20,10 +20,15 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
         // It's convenient to use forward slash, because it matches URL conventions
         public const char DirectorySeparatorChar = '/';
 
-        public InMemoryFileProvider(IEnumerable<(string, Stream)> contents)
+        public InMemoryFileProvider(IEnumerable<(string, Stream)> contents) : this(
+            contents.Select(pair => InMemoryFileInfo
+                .ForExistingFile(pair.Item1, pair.Item2, DateTime.Now)))
+        {
+        }
+
+        public InMemoryFileProvider(IEnumerable<IFileInfo> contents)
         {
             _filesByFullPath = contents
-               .Select(path => InMemoryFileInfo.ForExistingFile(path.Item1, path.Item2, DateTime.Now))
                .ToDictionary(
                    fileInfo => fileInfo.PhysicalPath,
                    fileInfo => (IFileInfo)fileInfo);
