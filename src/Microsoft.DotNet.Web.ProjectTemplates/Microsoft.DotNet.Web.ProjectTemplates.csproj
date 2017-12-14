@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageId>Microsoft.DotNet.Web.ProjectTemplates.2.1</PackageId>
     <NuspecFile>Microsoft.DotNet.Web.ProjectTemplates.nuspec</NuspecFile>
   </PropertyGroup>
@@ -33,7 +33,7 @@
       MicrosoftVisualStudioWebBrowserLinkPackageVersion=$(MicrosoftVisualStudioWebBrowserLinkPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
-      MicrosoftNETCoreApp20PackageVersion=$(MicrosoftNETCoreApp20PackageVersion);
+      MicrosoftNETCoreApp21PackageVersion=$(MicrosoftNETCoreApp21PackageVersion);
       NETStandardLibraryPackageVersion=$(NETStandardLibraryPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
