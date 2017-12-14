@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BlazorBuildToolsExe>dotnet $(MSBuildThisFileDirectory)..\tools\Microsoft.Blazor.BuildTools.dll</BlazorBuildToolsExe>
+    <BlazorBuildExe>dotnet $(MSBuildThisFileDirectory)..\tools\Microsoft.Blazor.Build.dll</BlazorBuildExe>
   </PropertyGroup>
 
   <Target Name="GenerateBlazorMetadataFile" BeforeTargets="GetCopyToOutputDirectoryItems">
@@ -22,6 +22,6 @@
       <WebRootParam Condition="Exists('$(WebRootPath)')">--webroot $(WebRootPath)</WebRootParam>
     </PropertyGroup>
     <!-- TODO: Find the correct time to run this (right after assemblies were written) -->
-    <Exec Command="$(BlazorBuildToolsExe) build $(ProjectDir)$(OutDir)$(AssemblyName).dll $(WebRootParam)" />
+    <Exec Command="$(BlazorBuildExe) build $(ProjectDir)$(OutDir)$(AssemblyName).dll $(WebRootParam)" />
   </Target>
 </Project>

@@ -1,11 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.BuildTools.Core;
+using Microsoft.Blazor.Build.Core;
 using Microsoft.Extensions.CommandLineUtils;
 using System;
 
-namespace Microsoft.Blazor.BuildTools.Cli.Commands
+namespace Microsoft.Blazor.Build.Cli.Commands
 {
     internal class BuildCommand
     {
@@ -28,7 +28,7 @@ namespace Microsoft.Blazor.BuildTools.Cli.Commands
                 try
                 {
                     Console.WriteLine($"Building Blazor app from {clientAssemblyPath.Value}...");
-                    Build.Execute(clientAssemblyPath.Value, webRootPath.HasValue() ? webRootPath.Value() : null);
+                    AppBuilder.Execute(clientAssemblyPath.Value, webRootPath.HasValue() ? webRootPath.Value() : null);
                     return 0;
                 }
                 catch (Exception ex)

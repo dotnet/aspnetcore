@@ -6,7 +6,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Blazor.BuildTools.Core.FileSystem
+namespace Microsoft.Blazor.Build.Core.FileSystem
 {
     internal class ClientFileProvider : CompositeMountedFileProvider
     {

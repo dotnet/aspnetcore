@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.BuildTools" /> -->
-  <Import Project="..\..\src\Microsoft.Blazor.BuildTools\ReferenceFromSource.props" />
+  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
+  <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
 
 </Project>

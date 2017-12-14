@@ -19,7 +19,10 @@
     <ProjectReference Include="..\Microsoft.Blazor.Common\Microsoft.Blazor.Common.csproj" />
   </ItemGroup>
 
+  <Import Project="..\Microsoft.Blazor.BuildTools\ReferenceFromSource.props" />
+
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">
+    <Exec Command="$(BlazorBuildToolsExe) checknodejs -v 8.3.0" />
     <Message Importance="high" Text="Restoring dependencies using 'npm'. This may take several minutes..." />
     <Exec Command="npm install" />
   </Target>

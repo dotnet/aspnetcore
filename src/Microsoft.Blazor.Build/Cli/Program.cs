@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.BuildTools.Cli.Commands;
+using Microsoft.Blazor.Build.Cli.Commands;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.Blazor.BuildTools
+namespace Microsoft.Blazor.Build
 {
     static class Program
     {
@@ -12,11 +12,11 @@ namespace Microsoft.Blazor.BuildTools
         {
             var app = new CommandLineApplication
             {
-                Name = "blazor-buildtools"
+                Name = "dotnet-blazorbuild"
             };
             app.HelpOption("-?|-h|--help");
-
-            app.Command("checknodejs", CheckNodeJsInstalledCommand.Command);
+            
+            app.Command("build", BuildCommand.Command);
 
             if (args.Length > 0)
             {

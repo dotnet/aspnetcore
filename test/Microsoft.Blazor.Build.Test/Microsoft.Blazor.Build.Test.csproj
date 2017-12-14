@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Blazor.BuildTools\Microsoft.Blazor.BuildTools.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Build\Microsoft.Blazor.Build.csproj" />
   </ItemGroup>
 
 </Project>

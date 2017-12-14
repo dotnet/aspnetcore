@@ -11,7 +11,7 @@
     <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
   </ItemGroup>
 
-  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.BuildTools" /> -->
-  <Import Project="..\..\src\Microsoft.Blazor.BuildTools\ReferenceFromSource.props" />
+  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
+  <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
 
 </Project>

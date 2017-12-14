@@ -1,19 +1,11 @@
 ﻿<Project>
-  <!--
-  Importing this file is equivalent to having:
-    <PackageDependency Include="Microsoft.Blazor.BuildTools" />
-  ... except it's much more convenient when working in this repo, because it consumes the
-  BuildTools targets/exe directly without needing BuildTools to be packed into a .nupkg.
-  
-  This is only intended for use by other projects in this repo.
-  -->
-  
-  <Import Project="$(MSBuildThisFileDirectory)targets\All.targets" />
+  <PropertyGroup>
+    <BlazorBuildToolsExe>dotnet $(MSBuildThisFileDirectory)tools\Microsoft.Blazor.BuildTools.dll</BlazorBuildToolsExe>
+  </PropertyGroup>
 
   <ItemGroup>
     <!-- Ensures BuildTools itself is built before the consuming project, but without
-         adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
-         given that the packed version of BuildTools wouldn't add a .dll reference) -->
+         adding a runtime dependency on the .dll -->
     <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.Blazor.BuildTools.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
   </ItemGroup>
 </Project>

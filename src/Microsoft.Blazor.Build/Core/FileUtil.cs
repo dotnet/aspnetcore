@@ -4,7 +4,7 @@
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 
-namespace Microsoft.Blazor.BuildTools.Core
+namespace Microsoft.Blazor.Build.Core
 {
     internal static class FileUtil
     {
