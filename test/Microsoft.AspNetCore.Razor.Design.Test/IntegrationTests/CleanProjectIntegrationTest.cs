@@ -12,9 +12,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task CleanProject_RunBuild()
         {
-            var result = await DotnetMSBuild("Restore;Build"); // Equivalent to dotnet build
+            var result = await DotnetMSBuild("Restore;Build", "/p:RazorCompileOnBuild=true");
 
             Assert.BuildPassed(result);
+            Assert.FileExists(result, @"bin/Debug/netcoreapp2.0/SimpleMvc.dll");
+            Assert.FileExists(result, @"bin/Debug/netcoreapp2.0/SimpleMvc.PrecompiledViews.dll");
         }
     }
 }

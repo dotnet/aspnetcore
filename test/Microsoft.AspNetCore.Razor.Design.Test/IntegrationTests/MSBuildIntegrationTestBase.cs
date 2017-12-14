@@ -47,9 +47,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 #endif
         }
 
-        internal Task<MSBuildResult> DotnetMSBuild(string target)
+        internal Task<MSBuildResult> DotnetMSBuild(string target, string args = null, bool debug = false)
         {
-            return MSBuildProcessManager.RunProcessAsync($"/t:{target}", Project.DirectoryPath);
+            var timeout = debug ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
+            return MSBuildProcessManager.RunProcessAsync(Project, $"/t:{target} {args}", timeout);
         }
     }
 }

@@ -1,9 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <!-- 
+      There's not much value in multi-targeting here, this doesn't run much .NET code, it tests MSBuild.
+      
+      This is also a partial workaround for https://github.com/Microsoft/msbuild/issues/2661 - this project
+      has netcoreapp2.0 dependencies that need to be built first.
+    --> 
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-    <DefaultItemExcludes>$(DefaultItemExcludes);TestFiles\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,4 +23,11 @@
     <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- We don't need anything in this assembly, we just want to make sure it's built -->
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  
 </Project>

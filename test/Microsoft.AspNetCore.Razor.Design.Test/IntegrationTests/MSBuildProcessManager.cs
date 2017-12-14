@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class MSBuildProcessManager
     {
-        public static Task<MSBuildResult> RunProcessAsync(string arguments, string workingDirectory, TimeSpan? timeout = null)
+        public static Task<MSBuildResult> RunProcessAsync(ProjectDirectory project, string arguments, TimeSpan? timeout = null)
         {
             timeout = timeout ?? TimeSpan.FromSeconds(30);
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 {
                     FileName = "dotnet",
                     Arguments = "msbuild " + arguments,
-                    WorkingDirectory = workingDirectory,
+                    WorkingDirectory = project.DirectoryPath,
                     UseShellExecute = false,
                     RedirectStandardError = true,
                     RedirectStandardOutput = true,
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             void Process_Exited(object sender, EventArgs e)
             {
-                var result = new MSBuildResult(process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, output.ToString());
+                var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, output.ToString());
                 completionSource.SetResult(result);
             }
 

@@ -1,0 +1,37 @@
+﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
+  <!-- 
+    Properties and tasks supporting Razor MSBuild integration
+  -->
+
+  <!--
+    Razor defines two primary targets:
+      'RazorGenerate' - which updates generated code
+      'RazorCompile' - compiles an assembly from generated code
+
+    Use these properties to attach behavior to the corresponding target.
+  -->
+  <PropertyGroup>
+    <RazorGenerateDependsOn>_RazorResolveTagHelpers;RazorCoreGenerate</RazorGenerateDependsOn>
+    <RazorCompileDependsOn>_RazorResolveTagHelpers;RazorCoreGenerate;RazorCoreCompile</RazorCompileDependsOn>
+  </PropertyGroup>
+
+  <!--
+    Razor also attaches itself by default to some of the standard .NET targets. Uses these properties to
+    configure this behaviour.
+  -->
+  <PropertyGroup>
+    <RazorCompileOnBuild Condition="'$(RazorCompileOnBuild)'==''">false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Override this to hijack the tasks and targets. Used by tests. -->
+    <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
+    
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
+    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</TaskFolder>
+    <TaskAssembly>$(_RazorMSBuildRoot)\tasks\$(TaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</TaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(TaskAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(TaskAssembly)" />
+</Project>

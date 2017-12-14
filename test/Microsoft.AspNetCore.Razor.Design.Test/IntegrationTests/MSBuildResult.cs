@@ -5,20 +5,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal class MSBuildResult
     {
-        public MSBuildResult(string fileName, string arguments, int exitCode, string output)
+        public MSBuildResult(ProjectDirectory project, string fileName, string arguments, int exitCode, string output)
         {
+            Project = project;
             FileName = fileName;
             Arguments = arguments;
             ExitCode = exitCode;
             Output = output;
         }
 
+        public ProjectDirectory Project { get; }
+
         public string Arguments { get; }
 
         public string FileName { get; }
 
         public int ExitCode { get; }
-
+        
         public string Output { get; }
     }
 }

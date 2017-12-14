@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.GenerateTool
             Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, i =>
             {
                 var source = sources[i];
-                    
+    
                 var csharpDocument = templateEngine.GenerateCode(source.ViewEnginePath);
                 outputs[i] = new OutputItem(source, csharpDocument);
             });

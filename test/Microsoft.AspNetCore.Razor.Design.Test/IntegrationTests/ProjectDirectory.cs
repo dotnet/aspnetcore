@@ -37,10 +37,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 CopyDirectory(new DirectoryInfo(projectRoot), new DirectoryInfo(destinationPath));
 
-                foreach (var project in Directory.EnumerateFiles(destinationPath, "*.csproj"))
-                {
-                    RewriteCsproj(projectRoot, project);
-                }
+                CreateDirectoryProps(projectRoot, destinationPath);
+                CreateDirectoryTargets(destinationPath);
 
                 return new ProjectDirectory(destinationPath);
             }
@@ -71,13 +69,35 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            void RewriteCsproj(string originalProjectRoot, string filePath)
+            void CreateDirectoryProps(string originalProjectRoot, string projectRoot)
             {
-                // We need to replace $(OriginalProjectRoot) with the path to the original directory
-                // that way relative references will resolve.
-                var text = File.ReadAllText(filePath);
-                text = text.Replace("$(OriginalProjectRoot)", originalProjectRoot);
-                File.WriteAllText(filePath, text);
+#if DEBUG
+                var configuration = "Debug";
+#elif RELEASE
+                var configuration = "Release";
+#else
+#error Unknown Configuration
+#endif
+                var text = $@"
+<Project>
+  <PropertyGroup>
+    <OriginalProjectRoot>{originalProjectRoot}</OriginalProjectRoot>
+    <_RazorMSBuildRoot>$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\bin\{configuration}\netstandard2.0\</_RazorMSBuildRoot>
+  </PropertyGroup>
+  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props""/>
+</Project>
+";
+                File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.props"), text);
+            }
+
+            void CreateDirectoryTargets(string projectRoot)
+            {
+                var text = $@"
+<Project>
+  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.targets""/>
+</Project>
+";
+                File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.targets"), text);
             }
         }
 
