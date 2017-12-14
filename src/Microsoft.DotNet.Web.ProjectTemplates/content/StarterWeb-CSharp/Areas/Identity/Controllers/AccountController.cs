@@ -273,12 +273,13 @@ namespace Company.WebApplication1.Identity.Controllers
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
-                return RedirectToAction(nameof(Login));
+                return RedirectToAction(nameof(Login), new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                return RedirectToAction(nameof(Login));
+                ErrorMessage = "Error loading external login information.";
+                return RedirectToAction(nameof(Login), new { ReturnUrl = returnUrl });
             }
 
             // Sign in the user with this external login provider if the user already has a login.
@@ -311,7 +312,8 @@ namespace Company.WebApplication1.Identity.Controllers
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                throw new ApplicationException("Error loading external login information during confirmation.");
+                    ErrorMessage = "Error loading external login information during confirmation.";
+                    return RedirectToAction(nameof(Login), new { ReturnUrl = returnUrl });
             }
 
             if (ModelState.IsValid)

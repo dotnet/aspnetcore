@@ -63,12 +63,13 @@ namespace Company.WebApplication1.Pages.Account
             if (remoteError != null)
             {
                 ErrorMessage = $"Error from external provider: {remoteError}";
-                return RedirectToPage("./Login");
+                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                return RedirectToPage("./Login");
+                ErrorMessage = "Error loading external login information.";
+                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
             // Sign in the user with this external login provider if the user already has a login.
@@ -104,7 +105,8 @@ namespace Company.WebApplication1.Pages.Account
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                throw new ApplicationException("Error loading external login information during confirmation.");
+                    ErrorMessage = "Error loading external login information during confirmation.";
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
             if (ModelState.IsValid)
