@@ -16,7 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\samples\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
     <ProjectReference Include="..\..\samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\samples\MonoSanityClient\MonoSanityClient.csproj" />
     <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj" />

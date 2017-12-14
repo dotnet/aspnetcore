@@ -7,7 +7,7 @@ using System.Linq;
 using Mono.Cecil;
 using Microsoft.Blazor.Internal.Common.FileProviders;
 
-namespace Microsoft.Blazor.Server.FrameworkFiles
+namespace Microsoft.Blazor.BuildTools.Core.FrameworkFiles
 {
     internal class ReferencedAssemblyFileProvider : InMemoryFileProvider
     {

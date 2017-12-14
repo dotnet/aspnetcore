@@ -3,8 +3,7 @@
 
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Blazor.Server;
-using Microsoft.Blazor.Server.FrameworkFiles;
-using Microsoft.Blazor.Server.WebRootFiles;
+using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Builder
             var clientAssemblyPath = Path.Combine(binDir, $"{clientAssemblyName}.dll");
             applicationBuilder.UseBlazorInternal(clientAssemblyPath);
         }
-
+        
         // TODO: Change this combination of APIs to make it possible to supply either
         // an assembly name (resolved to current bin dir) or full assembly path
         internal static void UseBlazorInternal(
@@ -29,44 +28,29 @@ namespace Microsoft.AspNetCore.Builder
             string clientAssemblyPath)
         {
             var config = BlazorConfig.Read(clientAssemblyPath);
-            var frameworkFileProvider = FrameworkFileProvider.Instantiate(
-                config.SourceOutputAssemblyPath);
+            var clientAppBinDir = Path.GetDirectoryName(config.SourceOutputAssemblyPath);
+            var clientAppDistDir = Path.Combine(clientAppBinDir, "dist");
+            var distFileProvider = new PhysicalFileProvider(clientAppDistDir);
 
-            if (config.WebRootPath != null)
+            applicationBuilder.UseDefaultFiles(new DefaultFilesOptions
             {
-                var webRootFileProvider = WebRootFileProvider.Instantiate(
-                    config.WebRootPath,
-                    Path.GetFileNameWithoutExtension(config.SourceOutputAssemblyPath),
-                    frameworkFileProvider.GetDirectoryContents("/_bin"));
+                FileProvider = distFileProvider
+            });
 
-                applicationBuilder.UseDefaultFiles(new DefaultFilesOptions
-                {
-                    FileProvider = webRootFileProvider
-                });
-
-                applicationBuilder.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = webRootFileProvider
-                });
-            }
-            
             applicationBuilder.UseStaticFiles(new StaticFileOptions
             {
-                RequestPath = "/_framework",
-                FileProvider = frameworkFileProvider,
+                FileProvider = distFileProvider,
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
         }
 
         private static IContentTypeProvider CreateContentTypeProvider()
         {
-            return new FileExtensionContentTypeProvider(new Dictionary<string, string>
-            {
-                { ".dll", MediaTypeNames.Application.Octet },
-                { ".js", "application/javascript" },
-                { ".mem", MediaTypeNames.Application.Octet },
-                { ".wasm", MediaTypeNames.Application.Octet },
-            });
+            var result = new FileExtensionContentTypeProvider();
+            result.Mappings.Add(".dll", MediaTypeNames.Application.Octet);
+            result.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
+            result.Mappings.Add(".wasm", MediaTypeNames.Application.Octet);
+            return result;
         }
     }
 }

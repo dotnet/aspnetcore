@@ -14,4 +14,14 @@
       <ContentWithTargetPath Include="$(BlazorMetadataFilePath)" TargetPath="$(BlazorMetadataFileName)" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
+
+  <Target Name="BuildBlazorApp" AfterTargets="Build">
+    <PropertyGroup>
+      <WebRootName>wwwroot</WebRootName>
+      <WebRootPath>$(ProjectDir)$(WebRootName)</WebRootPath>
+      <WebRootParam Condition="Exists('$(WebRootPath)')">--webroot $(WebRootPath)</WebRootParam>
+    </PropertyGroup>
+    <!-- TODO: Find the correct time to run this (right after assemblies were written) -->
+    <Exec Command="$(BlazorBuildToolsExe) build $(ProjectDir)$(OutDir)$(AssemblyName).dll $(WebRootParam)" />
+  </Target>
 </Project>

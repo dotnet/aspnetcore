@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Common", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Common.Test", "test\Microsoft.Blazor.Common.Test\Microsoft.Blazor.Common.Test.csproj", "{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Server.Test", "test\Microsoft.Blazor.Server.Test\Microsoft.Blazor.Server.Test.csproj", "{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Build.Test", "test\Microsoft.Blazor.Build.Test\Microsoft.Blazor.Build.Test.csproj", "{709C7EBE-EB93-4F6D-9491-D714B0D2E898}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -116,10 +116,10 @@ Global
 		{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,7 +143,7 @@ Global
 		{2A076721-6081-4517-8329-B9E5110D6DAC} = {F5FDD4E5-6A52-4A86-BE5E-5E42CB1DC8DA}
 		{21EF76A4-63CC-455D-907C-F86C9E442CEC} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{7F0BF3EA-6985-49F6-8070-0BBA41448BB0} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
-		{0F94DDDD-DAD3-43C6-AFB1-4FA21BABCD3B} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
+		{709C7EBE-EB93-4F6D-9491-D714B0D2E898} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

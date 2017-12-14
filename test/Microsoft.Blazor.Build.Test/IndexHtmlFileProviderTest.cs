@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.Server.WebRootFiles;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Linq;
 using Xunit;
 using System;
 using AngleSharp.Parser.Html;
+using Microsoft.Blazor.BuildTools.Core.WebRootFiles;
 
 namespace Microsoft.Blazor.Server.Test
 {

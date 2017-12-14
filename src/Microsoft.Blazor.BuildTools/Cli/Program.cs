@@ -16,7 +16,8 @@ namespace Microsoft.Blazor.BuildTools
             };
             app.HelpOption("-?|-h|--help");
 
-            app.Command("checknodejs", CheckNodeJsInstalled.Command);
+            app.Command("checknodejs", CheckNodeJsInstalledCommand.Command);
+            app.Command("build", BuildCommand.Command);
 
             if (args.Length > 0)
             {

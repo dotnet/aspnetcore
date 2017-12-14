@@ -8,7 +8,7 @@ using System.Text;
 using Microsoft.Extensions.FileProviders;
 using System.Linq;
 
-namespace Microsoft.Blazor.Server.WebRootFiles
+namespace Microsoft.Blazor.BuildTools.Core.WebRootFiles
 {
     internal class IndexHtmlFileProvider : InMemoryFileProvider
     {

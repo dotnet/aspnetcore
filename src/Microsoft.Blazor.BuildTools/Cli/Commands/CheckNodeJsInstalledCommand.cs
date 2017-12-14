@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.Blazor.BuildTools.Cli.Commands
 {
-    class CheckNodeJsInstalled
+    class CheckNodeJsInstalledCommand
     {
         private static Regex NodeVersionRegex = new Regex(@"^v(\d+\.\d+\.\d+)");
 

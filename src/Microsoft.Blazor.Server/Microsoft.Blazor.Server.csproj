@@ -6,14 +6,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
-    <ProjectReference Include="..\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj" />
   </ItemGroup>
 
 </Project>

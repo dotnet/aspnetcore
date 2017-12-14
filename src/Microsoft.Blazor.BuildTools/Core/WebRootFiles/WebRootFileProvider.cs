@@ -5,7 +5,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.Blazor.Server.WebRootFiles
+namespace Microsoft.Blazor.BuildTools.Core.WebRootFiles
 {
     internal static class WebRootFileProvider
     {

@@ -6,7 +6,7 @@ using Microsoft.Blazor.Mono;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 
-namespace Microsoft.Blazor.Server.FrameworkFiles
+namespace Microsoft.Blazor.BuildTools.Core.FrameworkFiles
 {
     internal static class FrameworkFileProvider
     {
