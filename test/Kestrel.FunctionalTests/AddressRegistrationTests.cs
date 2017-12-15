@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -396,6 +395,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
             {
                 socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+                socket.Listen(0);
                 var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -419,6 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
             {
                 socket.Bind(new IPEndPoint(IPAddress.IPv6Loopback, 0));
+                socket.Listen(0);
                 var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -673,6 +674,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))
             {
                 socket.Bind(new IPEndPoint(address, 0));
+                socket.Listen(0);
                 var port = ((IPEndPoint)socket.LocalEndPoint).Port;
 
                 var hostBuilder = TransportSelector.GetWebHostBuilder()
@@ -899,7 +901,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var serverSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp))
                 {
                     serverSocket.Bind(endPoint);
-                    serverSocket.Listen(1);
+                    serverSocket.Listen(0);
 
                     var socketArgs = new SocketAsyncEventArgs
                     {
@@ -954,6 +956,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
                     {
                         socket.Bind(new IPEndPoint(IPAddress.Loopback, _port));
+                        socket.Listen(0);
                         return true;
                     }
                 }
