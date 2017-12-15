@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
     {
         private const string DiagnosticPrefix = "RZ";
 
-        public static readonly RazorDiagnosticDescriptor ViewComponent_CannotFindMethod =
+        internal static readonly RazorDiagnosticDescriptor ViewComponent_CannotFindMethod =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3900",
                 () => ViewComponentResources.ViewComponent_CannotFindMethod,
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor ViewComponent_AmbiguousMethods =
+        internal static readonly RazorDiagnosticDescriptor ViewComponent_AmbiguousMethods =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3901",
                 () => ViewComponentResources.ViewComponent_AmbiguousMethods,
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor ViewComponent_AsyncMethod_ShouldReturnTask =
+        internal static readonly RazorDiagnosticDescriptor ViewComponent_AsyncMethod_ShouldReturnTask =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3902",
                 () => ViewComponentResources.ViewComponent_AsyncMethod_ShouldReturnTask,
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_ShouldReturnValue =
+        internal static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_ShouldReturnValue =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3903",
                 () => ViewComponentResources.ViewComponent_SyncMethod_ShouldReturnValue,
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             return diagnostic;
         }
 
-        public static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_CannotReturnTask =
+        internal static readonly RazorDiagnosticDescriptor ViewComponent_SyncMethod_CannotReturnTask =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3904",
                 () => ViewComponentResources.ViewComponent_SyncMethod_CannotReturnTask,

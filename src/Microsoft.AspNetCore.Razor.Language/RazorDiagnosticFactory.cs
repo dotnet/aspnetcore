@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         // General Errors ID Offset = 0
 
-        public static readonly RazorDiagnosticDescriptor Directive_BlockDirectiveCannotBeImported =
+        internal static readonly RazorDiagnosticDescriptor Directive_BlockDirectiveCannotBeImported =
         new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}0000",
             () => Resources.BlockDirectiveCannotBeImported,
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         // Semantic Errors ID Offset = 2000
 
-        public static readonly RazorDiagnosticDescriptor CodeTarget_UnsupportedExtension =
+        internal static readonly RazorDiagnosticDescriptor CodeTarget_UnsupportedExtension =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}2000",
                 () => Resources.Diagnostic_CodeTarget_UnsupportedExtension,
@@ -53,6 +53,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static RazorDiagnostic CreateParsing_DuplicateDirective(string directive, SourceSpan location)
         {
             return RazorDiagnostic.Create(Parsing_DuplicateDirective, location, directive);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_SectionsCannotBeNested =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2002",
+                () => LegacyResources.ParseError_Sections_Cannot_Be_Nested,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_SectionsCannotBeNested(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_SectionsCannotBeNested, location, LegacyResources.SectionExample_CS);
         }
 
         #endregion
@@ -116,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 () => Resources.TagHelper_InvalidBoundAttributeName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeName(
-            string tagHelperDisplayName, 
+            string tagHelperDisplayName,
             string propertyDisplayName,
             string invalidName,
             char invalidCharacter)

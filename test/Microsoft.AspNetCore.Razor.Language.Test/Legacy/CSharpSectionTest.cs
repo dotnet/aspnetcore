@@ -182,11 +182,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new SourceLocation(16, 0, 16),
                         7)));
             erroredChunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),
-                        new SourceLocation(15, 0, 15),
-                        8)));
+                RazorDiagnosticFactory.CreateParsing_SectionsCannotBeNested(
+                    new SourceSpan(new SourceLocation(15, 0, 15), 8)));
 
             // Act & Assert
             ParseDocumentTest(
