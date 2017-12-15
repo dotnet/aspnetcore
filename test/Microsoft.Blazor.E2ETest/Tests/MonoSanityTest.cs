@@ -81,6 +81,26 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Assert.Contains("at triggerJsException", result);
         }
 
+        [Fact]
+        public void CanEvaluateJsExpressionThatResultsInNull()
+        {
+            Navigate("/", noReload: true);
+            SetValue(Browser, "callJsEvalExpression", "null");
+            Browser.FindElement(By.CssSelector("#callJs button")).Click();
+            var result = GetValue(Browser, "callJsResult");
+            Assert.Equal(".NET received: (NULL)", result);
+        }
+
+        [Fact]
+        public void CanEvaluateJsExpressionThatResultsInUndefined()
+        {
+            Navigate("/", noReload: true);
+            SetValue(Browser, "callJsEvalExpression", "console.log('Not returning anything')");
+            Browser.FindElement(By.CssSelector("#callJs button")).Click();
+            var result = GetValue(Browser, "callJsResult");
+            Assert.Equal(".NET received: (NULL)", result);
+        }
+
         private static string GetValue(IWebDriver webDriver, string elementId)
         {
             var element = webDriver.FindElement(By.Id(elementId));

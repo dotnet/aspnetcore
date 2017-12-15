@@ -37,7 +37,7 @@ namespace MonoSanityClient
                 return $".NET got exception: {result}";
             }
 
-            return $".NET received: {result}";
+            return $".NET received: {(result ?? "(NULL)")}";
         }
     }
 }
