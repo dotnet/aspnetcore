@@ -111,10 +111,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code("    " + Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ), true,
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
                                new SourceLocation(5 + Environment.NewLine.Length, 1, 4),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]

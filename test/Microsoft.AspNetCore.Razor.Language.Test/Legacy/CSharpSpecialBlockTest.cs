@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
@@ -88,10 +87,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
                                new SourceLocation(2, 0, 2),
-                               length: 5));
+                               length: 5)));
         }
 
         [Fact]
@@ -105,10 +104,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
                                new SourceLocation(2, 0, 2),
-                               length: 5));
+                               length: 5)));
         }
 
         [Fact]
@@ -228,10 +227,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
                                new SourceLocation(1, 0, 1),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]

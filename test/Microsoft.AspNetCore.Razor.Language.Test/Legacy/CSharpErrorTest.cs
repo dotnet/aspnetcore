@@ -19,10 +19,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS('"'),
                                new SourceLocation(1, 0, 1),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -34,10 +34,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Code("helper")
                         .AsImplicitExpression(KeywordSet)
                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_HelperDirectiveNotAvailable(SyntaxConstants.CSharp.HelperKeyword),
                     new SourceLocation(1, 0, 1),
-                    length: 6));
+                    length: 6)));
         }
 
         [Fact]
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AsStatement()
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -88,10 +88,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
                                new SourceLocation(1, 0, 1),
-                               Environment.NewLine.Length));
+                               Environment.NewLine.Length)));
         }
 
         [Fact]
@@ -113,10 +113,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code("   {}" + Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
                                new SourceLocation(6 + Environment.NewLine.Length, 1, 5),
-                               length: 3));
+                               length: 3)));
         }
 
         [Fact]
@@ -136,13 +136,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                               6 + Environment.NewLine.Length, 1, 5, length: 1),
-                           new RazorError(
+                               6 + Environment.NewLine.Length, 1, 5, length: 1)),
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -154,10 +154,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
                                new SourceLocation(1, 0, 1),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -169,10 +169,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code($"foo bar{Environment.NewLine}baz").AsExpression()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_ExplicitExpression, ')', '('),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -186,10 +186,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.Code($"foo bar{Environment.NewLine}").AsExpression()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_ExplicitExpression, ')', '('),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -201,10 +201,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code("Href(" + Environment.NewLine)
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(4, 0, 4),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -218,10 +218,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}Boz")
                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 ),
-                            new RazorError(
+                            RazorDiagnostic.Create(new RazorError(
                                 LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                 new SourceLocation(3, 0, 3),
-                                length: 1));
+                                length: 1)));
         }
 
         [Fact]
@@ -237,10 +237,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}")
                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 ),
-                            new RazorError(
+                            RazorDiagnostic.Create(new RazorError(
                                 LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                 new SourceLocation(3, 0, 3),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -254,10 +254,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}Boz")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
                                new SourceLocation(3, 0, 3),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -273,10 +273,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
                                new SourceLocation(3, 0, 3),
-                               length: 1));
+                               length: 1)));
         }
 
         // Simple EOF handling errors:
@@ -289,11 +289,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code(" var foo = bar; if(foo != null) { bar(); } ")
                                    .AsStatement()
                                    .AutoCompleteWith("}")),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
                                    LegacyResources.BlockName_Code, '}', '{'),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -302,8 +302,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(FunctionsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                         LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", '}', '{'),
                         new SourceLocation(10, 0, 10),
                         length: 1)));
@@ -332,10 +331,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo) { baz(); } else { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("else", '}', '{'),
                                new SourceLocation(19, 0, 19),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -345,10 +344,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo) { baz(); } else if { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("else if", '}', '{'),
                                new SourceLocation(19, 0, 19),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -358,10 +357,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("do { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", '}', '{'),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -371,10 +370,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("try { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("try", '}', '{'),
                                SourceLocation.Zero,
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -384,10 +383,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("try { baz(); } catch(Foo) { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("catch", '}', '{'),
                                new SourceLocation(15, 0, 15),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -397,10 +396,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("try { baz(); } finally { var foo = bar; if(foo != null) { bar(); } ").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("finally", '}', '{'),
                                new SourceLocation(15, 0, 15),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -464,9 +463,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     BlockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None)),
                                Factory.EmptyCSharp().AsStatement()
                                ),
-                           new RazorError(expectedMessage, 8, 0, 8, 1),
-                           new RazorError(expectedMessage, 32, 0, 32, 1),
-                           new RazorError(expectedMessage, 48, 0, 48, 1));
+                           RazorDiagnostic.Create(new RazorError(expectedMessage, 8, 0, 8, 1)),
+                           RazorDiagnostic.Create(new RazorError(expectedMessage, 32, 0, 32, 1)),
+                           RazorDiagnostic.Create(new RazorError(expectedMessage, 48, 0, 48, 1)));
         }
 
         [Fact]
@@ -476,10 +475,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo)) { var bar = foo; }").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", ")"),
                                new SourceLocation(7, 0, 7),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -497,10 +496,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
                                new SourceLocation(10, 0, 10),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -511,10 +510,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(2, 0, 2),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -525,10 +524,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("foreach(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(7, 0, 7),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -539,10 +538,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("do { } while(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(12, 0, 12),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -553,10 +552,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("using(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(5, 0, 5),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -574,10 +573,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                                new SourceLocation(2, 0, 2),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -588,24 +587,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + ";" + Environment.NewLine
                               + "}",
                                 BlockKindInternal.Statement, SpanKindInternal.Code,
-                                new RazorError(
+                                RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(21 + Environment.NewLine.Length, 1, 12),
-                                    length: 1));
+                                    length: 1)));
         }
 
         [Fact]
         public void ParseBlockTerminatesNormalStringAtEndOfFile()
         {
             SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKindInternal.Statement, SpanKindInternal.Code,
-                                new RazorError(
+                                RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
-                                    length: 1),
-                                new RazorError(
+                                    length: 1)),
+                                RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'),
                                     SourceLocation.Zero,
-                                    length: 1));
+                                    length: 1)));
         }
 
         [Fact]
@@ -617,14 +616,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + "blah " + Environment.NewLine
                               + "blah",
                                 BlockKindInternal.Statement, SpanKindInternal.Code,
-                                new RazorError(
+                                RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.ParseError_Unterminated_String_Literal,
                                     new SourceLocation(20, 0, 20),
-                                    length: 1),
-                                new RazorError(
+                                    length: 1)),
+                                RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'),
                                     SourceLocation.Zero,
-                                    length: 1));
+                                    length: 1)));
         }
 
         [Fact]
@@ -648,10 +647,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement()
                                ),
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_Unterminated_String_Literal,
                                new SourceLocation(23 + Environment.NewLine.Length, 1, 14),
-                               length: 1));
+                               length: 1)));
         }
 
         [Fact]
@@ -681,12 +680,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                 expectedErrors: new[]
                 {
-                    new RazorError(
+                    RazorDiagnostic.Create(new RazorError(
                         LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                         new SourceLocation(14, 0, 14),
-                        length: 1)
+                        length: 1)),
                 });
-
         }
 
         private void RunUnterminatedSimpleKeywordBlock(string keyword)
@@ -695,10 +693,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 keyword + " (foo) { var foo = bar; if(foo != null) { bar(); } ",
                 BlockKindInternal.Statement,
                 SpanKindInternal.Code,
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(keyword, '}', '{'),
                     SourceLocation.Zero,
-                    length: 1));
+                    length: 1)));
         }
     }
 }

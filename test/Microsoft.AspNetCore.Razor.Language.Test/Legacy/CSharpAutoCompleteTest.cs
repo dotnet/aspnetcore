@@ -71,11 +71,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsStatement()
                         .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                     ),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
                         LegacyResources.BlockName_Code, "}", "{"),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -152,11 +152,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Code, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
                         .With(new StatementChunkGenerator())
                     ),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
                         LegacyResources.BlockName_Code, "}", "{"),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.EmptyCSharp().AsStatement(),
                         Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                     Factory.EmptyHtml()),
-                new RazorError[0]);
+                new RazorDiagnostic[0]);
         }
 
         [Fact]
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
                         LegacyResources.BlockName_Code, "}", "{"),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -82,14 +82,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 designTime: true,
                 expectedErrors: new[]
                 {
-                    new RazorError(
+                    RazorDiagnostic.Create(new RazorError(
                         LegacyResources.FormatParseError_UnexpectedEndTag("html"),
                         new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2),
-                        length: 4),
-                    new RazorError(
+                        length: 4)),
+                    RazorDiagnostic.Create(new RazorError(
                         LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"),
                         new SourceLocation(1, 0, 1),
-                        length: 1)
+                        length: 1))
                 });
         }
 
@@ -102,10 +102,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagBlock(
                         Factory.Markup($"<                      {Environment.NewLine}   "))),
                 designTime: true,
-                expectedErrors: new RazorError(
+                expectedErrors: RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_UnfinishedTag(string.Empty),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -335,10 +335,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_MissingEndTag("foo"),
                     new SourceLocation(1, 0, 1),
-                    length: 3));
+                    length: 3)));
         }
 
         [Fact]
@@ -458,10 +458,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
                     new MarkupTagBlock(
                         Factory.Markup("</!-- bar -->").Accepts(AcceptedCharactersInternal.None))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_MissingEndTag("foo"),
                     new SourceLocation(1, 0, 1),
-                    length: 3));
+                    length: 3)));
         }
 
 
@@ -620,10 +620,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<br/"))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_UnfinishedTag("br"),
                     new SourceLocation(1, 0, 1),
-                    length: 2));
+                    length: 2)));
         }
 
         [Fact]

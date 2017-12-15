@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            designTime: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(
+                               RazorDiagnostic.Create(new RazorError(
                                    LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("}"),
                                    new SourceLocation(2, 0, 2),
-                                   length: 1)
+                                   length: 1))
                            });
         }
 
@@ -69,10 +69,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            designTime: true,
                            expectedErrors: new[]
                            {
-                               new RazorError(
+                               RazorDiagnostic.Create(new RazorError(
                                    LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("."),
                                    new SourceLocation(2, 0, 2),
-                                   length: 1)
+                                   length: 1))
                            });
         }
 
@@ -94,10 +94,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code(Environment.NewLine).AsStatement(),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                 /* designTimeParser */ true,
-                           new RazorError(
+                           RazorDiagnostic.Create(new RazorError(
                                LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
                                new SourceLocation(6 + Environment.NewLine.Length, 1, 5),
-                               Environment.NewLine.Length));
+                               Environment.NewLine.Length)));
         }
 
         [Fact]

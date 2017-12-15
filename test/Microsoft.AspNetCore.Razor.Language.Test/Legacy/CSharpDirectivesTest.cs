@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 "*, Foo",
                                 "*",
                                 "Foo",
-                                new RazorError(Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"), new SourceLocation(4, 0, 4), 12))),
+                                RazorDiagnostic.Create(new RazorError(Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"), new SourceLocation(4, 0, 4), 12)))),
                     Factory.Code(Environment.NewLine).AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
@@ -1068,9 +1068,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void TagHelperPrefixDirective_RequiresValue()
         {
             // Arrange 
-            var expectedError = new RazorError(
+            var expectedError = RazorDiagnostic.Create(new RazorError(
                 LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15);
+                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15));
 
             // Act & Assert
             ParseBlockTest("@tagHelperPrefix ",
@@ -1093,15 +1093,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, '"', "\"Foo"),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4))
             };
 
             // Act & Assert
@@ -1124,15 +1124,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1),
-                new RazorError(
+                    absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, ' ', "Foo   \""),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7)
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7))
             };
 
             // Act & Assert
@@ -1154,10 +1154,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText(string.Empty),
                     new SourceLocation(18, 0, 18),
-                    length: 1)
+                    length: 1))
             };
 
             ParseBlockTest("@removeTagHelper \"\"",
@@ -1173,7 +1173,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsRemoveTagHelper(
                             "\"\"",
                             string.Empty,
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1181,10 +1181,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo"),
                     new SourceLocation(17, 0, 17),
-                    length: 3)
+                    length: 3))
             };
 
             ParseBlockTest("@removeTagHelper Foo",
@@ -1200,7 +1200,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsRemoveTagHelper(
                             "Foo",
                             "Foo",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1208,10 +1208,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("'*, Foo'"),
                     new SourceLocation(17, 0, 17),
-                    length: 8)
+                    length: 8))
             };
 
             ParseBlockTest("@removeTagHelper '*, Foo'",
@@ -1225,7 +1225,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsRemoveTagHelper(
                             "'*, Foo'",
                             "'*, Foo'",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1233,10 +1233,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo"),
                     new SourceLocation(18, 0, 18),
-                    length: 3)
+                    length: 3))
             };
 
             ParseBlockTest("@removeTagHelper \"Foo\"",
@@ -1252,7 +1252,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsRemoveTagHelper(
                             "\"Foo\"",
                             "Foo",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1280,13 +1280,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15),
-                new RazorError(
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText(string.Empty),
                     new SourceLocation(17, 0, 17),
-                    length: 1),
+                    length: 1)),
             };
 
             // Act & Assert
@@ -1298,7 +1298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false)
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsRemoveTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
+                        .AsRemoveTagHelper(string.Empty, string.Empty, errors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1308,16 +1308,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("\"Foo"),
                     new SourceLocation(17, 0, 17),
-                    length: 4),
+                    length: 4)),
             };
 
             // Act & Assert
@@ -1331,7 +1331,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
+                        .AsRemoveTagHelper("\"Foo", "\"Foo", errors: expectedErrors)));
         }
 
         [Fact]
@@ -1340,16 +1340,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
-                new RazorError(
+                    absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo\""),
                     new SourceLocation(17, 0, 17),
-                    length: 4),
+                    length: 4)),
             };
 
             // Act & Assert
@@ -1363,7 +1363,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsRemoveTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
+                        .AsRemoveTagHelper("Foo\"", "Foo\"", errors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1372,10 +1372,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText(string.Empty),
                     new SourceLocation(15, 0, 15),
-                    length: 1)
+                    length: 1))
             };
 
             ParseBlockTest("@addTagHelper \"\"",
@@ -1391,7 +1391,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsAddTagHelper(
                             "\"\"",
                             string.Empty,
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1399,10 +1399,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo"),
                     new SourceLocation(14, 0, 14),
-                    length: 3)
+                    length: 3))
             };
 
             ParseBlockTest("@addTagHelper Foo",
@@ -1416,7 +1416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsAddTagHelper(
                             "Foo",
                             "Foo",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1424,10 +1424,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo"),
                     new SourceLocation(15, 0, 15),
-                    length: 3)
+                    length: 3))
             };
 
             ParseBlockTest("@addTagHelper \"Foo\"",
@@ -1443,7 +1443,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsAddTagHelper(
                             "\"Foo\"",
                             "Foo",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1451,10 +1451,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("'*, Foo'"),
                     new SourceLocation(14, 0, 14),
-                    length: 8)
+                    length: 8))
             };
 
             ParseBlockTest("@addTagHelper '*, Foo'",
@@ -1468,7 +1468,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsAddTagHelper(
                             "'*, Foo'",
                             "'*, Foo'",
-                            legacyErrors: expectedErrors)));
+                            errors: expectedErrors)));
         }
 
         [Fact]
@@ -1498,13 +1498,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12),
-                new RazorError(
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText(string.Empty),
                     new SourceLocation(14, 0, 14),
-                    length: 1),
+                    length: 1)),
             };
 
             // Act & Assert
@@ -1518,7 +1518,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsAddTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
+                        .AsAddTagHelper(string.Empty, string.Empty, errors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1528,16 +1528,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
-                new RazorError(
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4),
-                new RazorError(
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("\"Foo"),
                     new SourceLocation(14, 0, 14),
-                    length: 4),
+                    length: 4)),
             };
 
             // Act & Assert
@@ -1551,7 +1551,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsAddTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
+                        .AsAddTagHelper("\"Foo", "\"Foo", errors: expectedErrors)));
         }
 
         [Fact]
@@ -1560,16 +1560,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
-                new RazorError(
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4),
-                new RazorError(
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     Resources.FormatInvalidTagHelperLookupText("Foo\""),
                     new SourceLocation(14, 0, 14),
-                    length: 4),
+                    length: 4)),
             };
 
             // Act & Assert
@@ -1583,7 +1583,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsAddTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
+                        .AsAddTagHelper("Foo\"", "Foo\"", errors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 

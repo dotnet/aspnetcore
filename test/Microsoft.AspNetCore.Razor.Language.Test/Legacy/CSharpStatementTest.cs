@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     "and that none of the \"}\" characters are being interpreted as markup.";
 
                 // document, expectedStatement, expectedErrors
-                return new TheoryData<string, StatementBlock, RazorError[]>
+                return new TheoryData<string, StatementBlock, RazorDiagnostic[]>
                 {
                     {
                         "@try { someMethod(); } catch(Exception) when (",
@@ -263,7 +263,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
+                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedParenErrorString, 45, 0, 45, 1)) }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (someMethod(",
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (someMethod(")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
+                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedParenErrorString, 45, 0, 45, 1)) }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (true) {",
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (true) {")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23, 1) }
+                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23, 1)) }
                     },
                 };
             }
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             FixupSpans = true;
 
             // Act & Assert
-            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorError[])expectedErrors);
+            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorDiagnostic[])expectedErrors);
         }
 
         [Fact]

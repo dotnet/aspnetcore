@@ -339,9 +339,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string directiveText,
             string typePattern = null,
             string assemblyName = null,
-            params RazorError[] legacyErrors)
+            params RazorDiagnostic[] errors)
         {
-            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
+            var diagnostics = errors.ToList();
             return _self
                 .With(new AddTagHelperChunkGenerator(lookupText, directiveText, typePattern, assemblyName, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
@@ -352,17 +352,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string directiveText,
             string typePattern = null,
             string assemblyName = null,
-            params RazorError[] legacyErrors)
+            params RazorDiagnostic[] errors)
         {
-            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
+            var diagnostics = errors.ToList();
             return _self
                 .With(new RemoveTagHelperChunkGenerator(lookupText, directiveText, typePattern, assemblyName, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        public SpanConstructor AsTagHelperPrefixDirective(string prefix, string directiveText, params RazorError[] legacyErrors)
+        public SpanConstructor AsTagHelperPrefixDirective(string prefix, string directiveText, params RazorDiagnostic[] errors)
         {
-            var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
+            var diagnostics = errors.ToList();
             return _self
                 .With(new TagHelperPrefixDirectiveChunkGenerator(prefix, directiveText, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);

@@ -14,17 +14,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return ParseCodeBlock(document, directives, designTime);
         }
 
-        internal void ImplicitExpressionTest(string input, params RazorError[] errors)
+        internal void ImplicitExpressionTest(string input, params RazorDiagnostic[] errors)
         {
             ImplicitExpressionTest(input, AcceptedCharactersInternal.NonWhiteSpace, errors);
         }
 
-        internal void ImplicitExpressionTest(string input, AcceptedCharactersInternal acceptedCharacters, params RazorError[] errors)
+        internal void ImplicitExpressionTest(string input, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] errors)
         {
             ImplicitExpressionTest(input, input, acceptedCharacters, errors);
         }
 
-        internal void ImplicitExpressionTest(string input, string expected, params RazorError[] errors)
+        internal void ImplicitExpressionTest(string input, string expected, params RazorDiagnostic[] errors)
         {
             ImplicitExpressionTest(input, expected, AcceptedCharactersInternal.NonWhiteSpace, errors);
         }
@@ -39,28 +39,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest(document, spanContent, blockKind, spanType, acceptedCharacters, expectedErrors: null);
         }
 
-        internal override void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedError)
+        internal override void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, expectedError);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedErrors)
+        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedErrors)
         {
-            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorError[0]);
+            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorDiagnostic[0]);
         }
 
-        internal override void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedError)
+        internal override void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
         }
 
-        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedErrors)
+        internal override void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedErrors)
         {
             var b = CreateSimpleBlockAndSpan(spanContent, blockKind, spanType, acceptedCharacters);
-            ParseBlockTest(document, b, expectedErrors ?? new RazorError[0]);
+            ParseBlockTest(document, b, expectedErrors ?? new RazorDiagnostic[0]);
         }
 
-        internal void ImplicitExpressionTest(string input, string expected, AcceptedCharactersInternal acceptedCharacters, params RazorError[] errors)
+        internal void ImplicitExpressionTest(string input, string expected, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] errors)
         {
             var factory = CreateSpanFactory();
             ParseBlockTest(SyntaxConstants.TransitionString + input,

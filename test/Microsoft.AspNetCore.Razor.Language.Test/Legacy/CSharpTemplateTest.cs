@@ -312,12 +312,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("{ var foo = bar; Html.ExecuteTemplate(foo," + testTemplateWithDoubleTransitionCode + "); }", expected);
         }
 
-        private static RazorError GetNestedTemplateError(int characterIndex)
+        private static RazorDiagnostic GetNestedTemplateError(int characterIndex)
         {
-            return new RazorError(
+            return RazorDiagnostic.Create(new RazorError(
                 LegacyResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
                 new SourceLocation(characterIndex, 0, characterIndex),
-                length: 1);
+                length: 1));
         }
     }
 }

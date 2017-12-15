@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Empty,
                                 HtmlSymbolType.Unknown))
                                .Accepts(AcceptedCharactersInternal.Any))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     SourceLocation.Zero,
-                    length: 2));
+                    length: 2)));
         }
 
         [Fact]
@@ -79,10 +79,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .Accepts(AcceptedCharactersInternal.None)),
                         Factory.Code(Environment.NewLine)
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                     new SourceLocation(4, 0, 4),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -104,14 +104,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Empty,
                                 CSharpSymbolType.Unknown))
                                     .Accepts(AcceptedCharactersInternal.Any)))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     new SourceLocation(5, 0, 5),
-                    length: 2),
-                new RazorError(
+                    length: 2)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
                     new SourceLocation(4, 0, 4),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -149,18 +149,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                        .Accepts(AcceptedCharactersInternal.None)),
                             Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                             Factory.Markup("}")))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_TextTagCannotContainAttributes,
                     new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
-                    length: 4),
-                new RazorError(
+                    length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_MissingEndTag("text"),
                     new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
-                    length: 4),
-                new RazorError(
+                    length: 4)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
@@ -182,15 +182,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .Accepts(AcceptedCharactersInternal.None),
                             Factory.Span(SpanKindInternal.Comment, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharactersInternal.Any)))),
-                new RazorError(
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     new SourceLocation(2, 0, 2),
-                    length: 2),
-                new RazorError(
+                    length: 2)),
+                RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
                         LegacyResources.BlockName_Code, "}", "{"),
                     new SourceLocation(1, 0, 1),
-                    length: 1));
+                    length: 1)));
         }
 
         [Fact]
