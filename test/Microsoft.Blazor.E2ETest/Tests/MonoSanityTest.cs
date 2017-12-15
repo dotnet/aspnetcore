@@ -4,6 +4,7 @@
 using Microsoft.Blazor.E2ETest.Infrastructure;
 using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
+using System;
 using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
@@ -48,7 +49,7 @@ namespace Microsoft.Blazor.E2ETest.Tests
         }
 
         [Fact]
-        public void CanTriggerException()
+        public void CanReceiveDotNetExceptionInJavaScript()
         {
             Navigate("/", noReload: true);
 
@@ -56,6 +57,26 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Browser.FindElement(By.CssSelector("#triggerException button")).Click();
 
             Assert.Contains("Hello from test", GetValue(Browser, "triggerExceptionMessageStackTrace"));
+        }
+
+        [Fact]
+        public void CanCallJavaScriptFromDotNet()
+        {
+            Navigate("/", noReload: true);
+            SetValue(Browser, "callJsEvalExpression", "getUserAgentString()");
+            Browser.FindElement(By.CssSelector("#callJs button")).Click();
+            var result = GetValue(Browser, "callJsResult");
+            Assert.StartsWith(".NET received: Mozilla", result);
+        }
+
+        [Fact]
+        public void CanReceiveJavaScriptExceptionInDotNet()
+        {
+            Navigate("/", noReload: true);
+            SetValue(Browser, "callJsEvalExpression", "triggerJsException()");
+            Browser.FindElement(By.CssSelector("#callJs button")).Click();
+            var result = GetValue(Browser, "callJsResult");
+            Assert.StartsWith(".NET got exception: Error: This is a JavaScript exception.", result);
         }
 
         private static string GetValue(IWebDriver webDriver, string elementId)

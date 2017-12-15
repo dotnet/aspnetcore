@@ -3,6 +3,7 @@
 
 using System;
 using System.Text;
+using WebAssembly;
 
 namespace MonoSanityClient
 {
@@ -26,6 +27,17 @@ namespace MonoSanityClient
         public static void TriggerException(string message)
         {
             throw new InvalidOperationException(message);
+        }
+
+        public static string EvaluateJavaScript(string expression)
+        {
+            var result = Runtime.InvokeJS(expression, out var resultIsException);
+            if (resultIsException != 0)
+            {
+                return $".NET got exception: {result}";
+            }
+
+            return $".NET received: {result}";
         }
     }
 }
