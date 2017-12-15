@@ -15,7 +15,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="BuildBlazorApp" AfterTargets="Build">
+  <Target Name="BuildBlazorApp" AfterTargets="Build" Inputs="$(ProjectDir)**" Outputs="$(ProjectDir)$(OutDir)dist\**">
     <PropertyGroup>
       <WebRootName>wwwroot</WebRootName>
       <WebRootPath>$(ProjectDir)$(WebRootName)</WebRootPath>
