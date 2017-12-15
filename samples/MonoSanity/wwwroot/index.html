@@ -45,6 +45,16 @@
     </form>
   </fieldset>
 
+  <fieldset>
+    <legend>Call JS from .NET (no boxing)</legend>
+    <form id="callJsNoBoxing">
+      <input id="callJsNoBoxingNumberA" value="28" /> /
+      <input id="callJsNoBoxingNumberB" value="4" /> =
+      <input id="callJsNoBoxingResult" readonly />
+      <button type="submit" disabled>Go</button>
+    </form>
+  </fieldset>
+
   <p id="loadingIndicator">Loading...</p>
 
   <script src="loader.js"></script>
@@ -91,6 +101,14 @@
       el('callJsResult').value = result;
     };
 
+    el('callJsNoBoxing').onsubmit = function (evt) {
+      evt.preventDefault();
+      var a = parseInt(el('callJsNoBoxingNumberA').value);
+      var b = parseInt(el('callJsNoBoxingNumberB').value);
+      var result = invokeMonoMethod('MonoSanityClient', 'MonoSanityClient', 'Examples', 'CallJsNoBoxing', [a, b]);
+      el('callJsNoBoxingResult').value = result;
+    };
+
     function el(id) {
       return document.getElementById(id);
     }
@@ -115,6 +133,15 @@
         return result === null || result === undefined
           ? result // Pass through null/undefined so we can verify this is handled upstream
           : javaScriptStringToDotNetString(result.toString());
+      },
+
+      divideNumbersUnmarshalled: function (a, b) {
+        // In this example, neither the arguments nor return value are boxed
+        // -- we expect to receive and return numbers directly
+        if (b === 0) {
+          throw new Error('Division by zero');
+        }
+        return a / b;
       }
     };
   </script>

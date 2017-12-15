@@ -31,13 +31,27 @@ namespace MonoSanityClient
 
         public static string EvaluateJavaScript(string expression)
         {
-            var result = Runtime.InvokeJS<string, object, object, string>(out var exceptionMessage, "evaluateJsExpression", expression, null, null);
+            // For tests that call this method, we'll exercise the 'InvokeJSArray' code path
+            var result = Runtime.InvokeJSArray<string>(out var exceptionMessage, "evaluateJsExpression", expression, null, null);
             if (exceptionMessage != null)
             {
                 return $".NET got exception: {exceptionMessage}";
             }
 
             return $".NET received: {(result ?? "(NULL)")}";
+        }
+
+        public static string CallJsNoBoxing(int numberA, int numberB)
+        {
+            // For tests that call this method, we'll exercise the 'InvokeJS' code path
+            // since that doesn't box the params
+            var result = Runtime.InvokeJS<int, int, object, int>(out var exceptionMessage, "divideNumbersUnmarshalled", numberA, numberB, null);
+            if (exceptionMessage != null)
+            {
+                return $".NET got exception: {exceptionMessage}";
+            }
+
+            return $".NET received: {result}";
         }
     }
 }

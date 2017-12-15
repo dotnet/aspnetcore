@@ -14,6 +14,6 @@ namespace WebAssembly
         public static extern TRes InvokeJS<T0, T1, T2, TRes>(out string exception, string funcName, T0 arg0, T1 arg1, T2 arg2);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        public static extern TRes InvokeJSArray<TRes>(out string exception, string funcName, object[] args);
+        public static extern TRes InvokeJSArray<TRes>(out string exception, string funcName, params object[] args);
     }
 }

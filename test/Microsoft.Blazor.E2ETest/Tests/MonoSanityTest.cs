@@ -101,6 +101,30 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Assert.Equal(".NET received: (NULL)", result);
         }
 
+        [Fact]
+        public void CanCallJsFunctionsWithoutBoxing()
+        {
+            Navigate("/", noReload: true);
+
+            SetValue(Browser, "callJsNoBoxingNumberA", "108");
+            SetValue(Browser, "callJsNoBoxingNumberB", "4");
+            Browser.FindElement(By.CssSelector("#callJsNoBoxing button")).Click();
+
+            Assert.Equal(".NET received: 27", GetValue(Browser, "callJsNoBoxingResult"));
+        }
+
+        [Fact]
+        public void CanCallJsFunctionsWithoutBoxingAndReceiveException()
+        {
+            Navigate("/", noReload: true);
+
+            SetValue(Browser, "callJsNoBoxingNumberA", "1");
+            SetValue(Browser, "callJsNoBoxingNumberB", "0");
+            Browser.FindElement(By.CssSelector("#callJsNoBoxing button")).Click();
+
+            Assert.StartsWith(".NET got exception: Division by zero", GetValue(Browser, "callJsNoBoxingResult"));
+        }
+
         private static string GetValue(IWebDriver webDriver, string elementId)
         {
             var element = webDriver.FindElement(By.Id(elementId));
