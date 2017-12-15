@@ -1,5 +1,6 @@
 <Project>
   <PropertyGroup>
+    <RuntimeStoreInstallerDependencyVersion>2.0.3</RuntimeStoreInstallerDependencyVersion>
     <VersionPrefix>2.0.5</VersionPrefix>
     <VersionSuffix>rtm</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>

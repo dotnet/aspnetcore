@@ -304,8 +304,8 @@
       <RHStoreDirectories Include="$(RHInstallerInstallRoot)store" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)additionalDeps" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)store" />
-      <RSDependencies Include="$(RSInstallerName)-2.0.0">
-        <Version>2.0.0</Version>
+      <RSDependencies Include="$(RSInstallerName)-$(RuntimeStoreInstallerDependencyVersion)">
+        <Version>$(RuntimeStoreInstallerDependencyVersion)</Version>
       </RSDependencies>
       <HostingDependencies Include="$(RSInstallerName)-$(PackageVersion)">
         <Version>$(PackageVersion)</Version>
@@ -409,6 +409,7 @@
     <ItemGroup>
       <DebConfigItems Include="DOTNET_VERSION" Replacement="$(DotnetVersion)" />
       <DebConfigItems Include="DEB_VERSION" Replacement="$(DebVersion)" />
+      <DebConfigItems Include="RS_DEP_VERSION" Replacement="$(RsDepVersion)" />
     </ItemGroup>
 
     <!-- Update versions -->
@@ -464,11 +465,11 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version)" />
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp)" />
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"

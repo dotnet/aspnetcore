@@ -148,7 +148,40 @@
              Properties="$(_ComposeStoreProps)" />
   </Target>
 
+  <Target Name="_BuildHostingDeps" >
+    <PropertyGroup>
+      <HostingStartupWorkDir>$(_WorkRoot)HostingStartup\</HostingStartupWorkDir>
+      <_HostingStartupProps>DepsOutputPath=$(_DepsOutputDirectory)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageName=$(HostingStartupPackageName)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageVersion=$(HostingStartupPackageVersion)</_HostingStartupProps>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <HostingStartupFiles Include="$(_TemplatesDirectory)HostingStartup\**\*" />
+    </ItemGroup>
+
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(HostingStartupWorkDir)bin" />
+    <RemoveDir Directories="$(HostingStartupWorkDir)obj" />
+
+    <!-- Copy build assets -->
+    <Copy SourceFiles="@(HostingStartupFiles)" DestinationFolder="$(HostingStartupWorkDir)\%(RecursiveDir)" />
+
+    <!--- Workaround for https://github.com/dotnet/sdk/issues/1779 -->
+    <MSBuild Projects="$(HostingStartupWorkDir)HostingStartup.csproj"
+             Targets="Restore"
+             Properties="$(_HostingStartupProps);_SolutionTarget=Restore" />
+
+    <!--- MSBuild caches things if you run inproc so have to use Exec -->
+    <MSBuild Projects="$(HostingStartupWorkDir)HostingStartup.csproj"
+             Targets="Build;CollectDeps"
+             Properties="$(_HostingStartupProps)" />
+  </Target>
+
   <Target Name="BuildHostingDeps" DependsOnTargets="ResolveRepoInfo">
+
     <!-- Generate RS.Reference project -->
     <RepoTasks.ResolveHostingStartupPackages
       BuildArtifacts="@(ArtifactInfo)"
@@ -156,10 +189,10 @@
       <Output TaskParameter="HostingStartupArtifacts" ItemName="HostingStartupArtifacts" />
     </RepoTasks.ResolveHostingStartupPackages>
 
-    <!--- MSBuild caches things if you run inproc so have to use Exec -->
-    <MSBuild Projects="$(_TemplatesDirectory)HostingStartup/HostingStartup.csproj"
-             Targets="Restore;Rebuild;CollectDeps"
-             Properties="DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildHostingDeps"
+      Properties="HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version)" />
 
     <ItemGroup>
       <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />

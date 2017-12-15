@@ -29,6 +29,6 @@
     },
 
     "debian_dependencies": {
-        "aspnetcore-store-2.0.0": {}
+        "aspnetcore-store-RS_DEP_VERSION": {}
     }
 }
