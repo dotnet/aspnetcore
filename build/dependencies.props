@@ -28,6 +28,7 @@
   <PropertyGroup>
     <MicrosoftNETCoreApp10PackageVersion>1.0.8</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.5</MicrosoftNETCoreApp11PackageVersion>
+    <LZMAMicrosoftNETCoreApp20PackageVersion>2.0.0</LZMAMicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.5</MicrosoftNETCoreApp20PackageVersion>
   </PropertyGroup>
 
