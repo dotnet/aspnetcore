@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
         {
             return new HtmlSymbol(content, type, errors);
         }

@@ -1840,8 +1840,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (directiveErrorSink.Errors.Count > 0)
                 {
-                    var directiveDiagnostics = directiveErrorSink.Errors.Select(error => RazorDiagnostic.Create(error));
-                    directiveChunkGenerator.Diagnostics.AddRange(directiveDiagnostics);
+                    directiveChunkGenerator.Diagnostics.AddRange(directiveErrorSink.Errors);
                 }
 
                 Context.ErrorSink = savedErrorSink;
@@ -2223,17 +2222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             finally
             {
-                List<RazorDiagnostic> directiveErrors;
-                if (directiveErrorSink.Errors.Count > 0)
-                {
-                    directiveErrors = directiveErrorSink.Errors.Select(RazorDiagnostic.Create).ToList();
-                }
-                else
-                {
-                    directiveErrors = new List<RazorDiagnostic>();
-                }
-
-                Span.ChunkGenerator = chunkGeneratorFactory(directiveValue, directiveErrors);
+                Span.ChunkGenerator = chunkGeneratorFactory(directiveValue, directiveErrorSink.Errors.ToList());
                 Context.ErrorSink = savedErrorSink;
             }
 

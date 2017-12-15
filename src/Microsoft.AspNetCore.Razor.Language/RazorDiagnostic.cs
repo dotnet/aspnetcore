@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorDiagnostic : IEquatable<RazorDiagnostic>, IFormattable
     {
+        internal static readonly RazorDiagnostic[] EmptyArray = new RazorDiagnostic[0];
         internal static readonly object[] EmptyArgs = new object[0];
 
         public abstract string Id { get; }

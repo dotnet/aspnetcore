@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             protected override CSharpSymbol CreateSymbol(
                 string content,
                 CSharpSymbolType type,
-                IReadOnlyList<RazorError> errors)
+                IReadOnlyList<RazorDiagnostic> errors)
             {
                 throw new NotImplementedException();
             }

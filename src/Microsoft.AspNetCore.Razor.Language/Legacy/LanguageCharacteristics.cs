@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public virtual Tuple<TSymbol, TSymbol> SplitSymbol(TSymbol symbol, int splitAt, TSymbolType leftType)
         {
-            var left = CreateSymbol(symbol.Content.Substring(0, splitAt), leftType, RazorError.EmptyArray);
+            var left = CreateSymbol(symbol.Content.Substring(0, splitAt), leftType, RazorDiagnostic.EmptyArray);
 
             TSymbol right = null;
             if (splitAt < symbol.Content.Length)
@@ -104,6 +104,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return type == KnownSymbolType.Unknown || !Equals(GetKnownSymbolType(type), GetKnownSymbolType(KnownSymbolType.Unknown));
         }
 
-        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorDiagnostic> errors);
     }
 }

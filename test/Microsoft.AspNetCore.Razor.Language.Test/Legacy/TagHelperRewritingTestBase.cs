@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
-            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
+            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors);
             var actualErrors = allErrors
                 .OrderBy(error => error.Span.AbsoluteIndex)
                 .ToList();

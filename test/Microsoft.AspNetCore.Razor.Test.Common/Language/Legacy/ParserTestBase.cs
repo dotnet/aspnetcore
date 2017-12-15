@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             markupParser.ParseDocument();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             var codeDocument = RazorCodeDocument.Create(source);
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             parser.ParseBlock();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             parser.ParseBlock();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }

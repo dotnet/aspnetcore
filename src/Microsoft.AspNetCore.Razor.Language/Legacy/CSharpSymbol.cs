@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public CSharpSymbol(
             string content,
             CSharpSymbolType type)
-            : base(content, type, RazorError.EmptyArray)
+            : base(content, type, RazorDiagnostic.EmptyArray)
         {
             if (content == null)
             {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public CSharpSymbol(
             string content,
             CSharpSymbolType type,
-            IReadOnlyList<RazorError> errors)
+            IReadOnlyList<RazorDiagnostic> errors)
             : base(content, type, errors)
         {
             if (content == null)
