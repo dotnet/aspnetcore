@@ -7,4 +7,9 @@
   <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
   <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
 
+  <ItemGroup>
+    <!-- Share the WebAssembly.Runtime.cs source here so we get access to the same interop externs -->
+    <Compile Include="..\..\src\Microsoft.Blazor.Browser\Interop\WebAssembly.Runtime.cs" />
+  </ItemGroup>
+
 </Project>

@@ -75,7 +75,7 @@ namespace Microsoft.Blazor.E2ETest.Tests
             SetValue(Browser, "callJsEvalExpression", "triggerJsException()");
             Browser.FindElement(By.CssSelector("#callJs button")).Click();
             var result = GetValue(Browser, "callJsResult");
-            Assert.StartsWith(".NET got exception: Error: This is a JavaScript exception.", result);
+            Assert.StartsWith(".NET got exception: This is a JavaScript exception.", result);
 
             // Also verify we got a stack trace
             Assert.Contains("at triggerJsException", result);

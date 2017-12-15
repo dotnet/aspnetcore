@@ -43,6 +43,21 @@
     }
   };
 
+  window.dotnetStringToJavaScriptString = function dotnetStringToJavaScriptString(mono_obj) {
+    if (mono_obj === 0)
+      return null;
+    var mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
+    var raw = mono_string_get_utf8(mono_obj);
+    var res = Module.UTF8ToString(raw);
+    Module._free(raw);
+    return res;
+  };
+
+  window.javaScriptStringToDotNetString = function dotnetStringToJavaScriptString(javaScriptString) {
+    var mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
+    return mono_string(javaScriptString);
+  };
+
   function preloadAssemblies(loadAssemblyUrls) {
     var loadBclAssemblies = [
       'mscorlib',
@@ -77,21 +92,10 @@
     xhr.onerror = onerror;
     xhr.send(null);
   }
-  
-  function dotnetStringToJavaScriptString(mono_obj) {
-    if (mono_obj === 0)
-      return null;
-    var mono_string_get_utf8 = Module.cwrap('mono_wasm_string_get_utf8', 'number', ['number']);
-    var raw = mono_string_get_utf8(mono_obj);
-    var res = Module.UTF8ToString(raw);
-    Module._free(raw);
-    return res;
-  }
 
   function callMethod(method, target, args) {
     var stack = Module.Runtime.stackSave();
     var invoke_method = Module.cwrap('mono_wasm_invoke_method', 'number', ['number', 'number', 'number']);
-    var mono_string = Module.cwrap('mono_wasm_string_from_js', 'number', ['string']);
 
     try {
       var argsBuffer = Module.Runtime.stackAlloc(args.length);
@@ -103,7 +107,7 @@
           Module.setValue(managedInt, argVal, 'i32');
           Module.setValue(argsBuffer + i * 4, managedInt, 'i32');
         } else if (typeof argVal === 'string') {
-          var managedString = mono_string(argVal);
+          var managedString = javaScriptStringToDotNetString(argVal);
           Module.setValue(argsBuffer + i * 4, managedString, 'i32');
         } else {
           throw new Error('Unsupported arg type: ' + typeof argVal);

@@ -7,7 +7,6 @@ namespace Microsoft.Blazor.Browser
     {
         public Renderer()
         {
-            WebAssembly.Runtime.EvaluateJavaScript("console.log('Renderer')");
         }
     }
 }

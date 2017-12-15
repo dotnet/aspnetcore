@@ -31,10 +31,10 @@ namespace MonoSanityClient
 
         public static string EvaluateJavaScript(string expression)
         {
-            var result = Runtime.InvokeJS(expression, out var resultIsException);
-            if (resultIsException != 0)
+            var result = Runtime.InvokeJS<string, object, object, string>(out var exceptionMessage, "evaluateJsExpression", expression, null, null);
+            if (exceptionMessage != null)
             {
-                return $".NET got exception: {result}";
+                return $".NET got exception: {exceptionMessage}";
             }
 
             return $".NET received: {(result ?? "(NULL)")}";
