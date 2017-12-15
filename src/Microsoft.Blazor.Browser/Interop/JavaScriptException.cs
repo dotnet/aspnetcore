@@ -1,15 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.Browser;
+using System;
 
-namespace HostedInAspNet.Client
+namespace Microsoft.Blazor.Browser.Interop
 {
-    public class Program
+    public class JavaScriptException : Exception
     {
-        static void Main(string[] args)
+        internal JavaScriptException(string message) : base(message)
         {
-            new Renderer();
         }
     }
 }

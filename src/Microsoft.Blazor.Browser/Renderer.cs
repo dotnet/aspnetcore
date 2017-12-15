@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.Browser;
-
-namespace HostedInAspNet.Client
+namespace Microsoft.Blazor.Browser
 {
-    public class Program
+    public class Renderer
     {
-        static void Main(string[] args)
+        public Renderer()
         {
-            new Renderer();
+            WebAssembly.Runtime.EvaluateJavaScript("console.log('Renderer'), 'done'");
         }
     }
 }

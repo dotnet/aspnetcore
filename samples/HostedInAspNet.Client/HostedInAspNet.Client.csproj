@@ -4,11 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
-  </ItemGroup>
-
   <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
   <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
+  </ItemGroup>
 
 </Project>
