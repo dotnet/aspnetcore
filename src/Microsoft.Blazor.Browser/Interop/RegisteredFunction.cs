@@ -36,13 +36,8 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <typeparam name="TRes">The .NET type corresponding to the function's return value type.</typeparam>
         /// <param name="identifier">The identifier used when registering the target function.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<T0, TRes>(string identifier)
-        {
-            var result = Runtime.InvokeJS<object, object, object, TRes>(out var exception, identifier, null, null, null);
-            return exception != null
-                ? throw new JavaScriptException(exception)
-                : result;
-        }
+        public static TRes Invoke<TRes>(string identifier)
+            => Invoke<object, object, object, TRes>(identifier, null, null, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
@@ -53,12 +48,7 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="arg0">The first argument.</param>
         /// <returns>The result of the function invocation.</returns>
         public static TRes Invoke<T0, TRes>(string identifier, T0 arg0)
-        {
-            var result = Runtime.InvokeJS<T0, object, object, TRes>(out var exception, identifier, arg0, null, null);
-            return exception != null
-                ? throw new JavaScriptException(exception)
-                : result;
-        }
+            => Invoke<T0, object, object, TRes>(identifier, arg0, null, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
@@ -71,12 +61,7 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="arg1">The second argument.</param>
         /// <returns>The result of the function invocation.</returns>
         public static TRes Invoke<T0, T1, TRes>(string identifier, T0 arg0, T1 arg1)
-        {
-            var result = Runtime.InvokeJS<T0, T1, object, TRes>(out var exception, identifier, arg0, arg1, null);
-            return exception != null
-                ? throw new JavaScriptException(exception)
-                : result;
-        }
+            => Invoke<T0, T1, object, TRes>(identifier, arg0, arg1, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
