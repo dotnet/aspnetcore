@@ -4,7 +4,6 @@
 using Microsoft.Blazor.E2ETest.Infrastructure;
 using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
-using System;
 using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
@@ -77,6 +76,9 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Browser.FindElement(By.CssSelector("#callJs button")).Click();
             var result = GetValue(Browser, "callJsResult");
             Assert.StartsWith(".NET got exception: Error: This is a JavaScript exception.", result);
+
+            // Also verify we got a stack trace
+            Assert.Contains("at triggerJsException", result);
         }
 
         private static string GetValue(IWebDriver webDriver, string elementId)
