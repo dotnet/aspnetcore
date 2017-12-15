@@ -151,5 +151,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             visitor.VisitSpan(this);
         }
+
+        public override SyntaxTreeNode Clone()
+        {
+            var spanBuilder = new SpanBuilder(this);
+            return spanBuilder.Build();
+        }
     }
 }

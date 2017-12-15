@@ -25,6 +25,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal Timer _idleTimer;
         internal BackgroundParser _parser;
         internal ChangeReference _latestChangeReference;
+        internal RazorSyntaxTreePartialParser _partialParser;
 
         private readonly object IdleLock = new object();
         private readonly VisualStudioCompletionBroker _completionBroker;
@@ -32,7 +33,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ForegroundDispatcher _dispatcher;
         private readonly RazorTemplateEngineFactoryService _templateEngineFactory;
         private readonly ErrorReporter _errorReporter;
-        private RazorSyntaxTreePartialParser _partialParser;
         private RazorTemplateEngine _templateEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;

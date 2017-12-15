@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
@@ -9,14 +10,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class RazorSyntaxTreePartialParser
     {
-        private readonly RazorSyntaxTree _syntaxTree;
         private Span _lastChangeOwner;
         private bool _lastResultProvisional;
 
         public RazorSyntaxTreePartialParser(RazorSyntaxTree syntaxTree)
         {
-            _syntaxTree = syntaxTree;
+            if (syntaxTree == null)
+            {
+                throw new ArgumentNullException(nameof(syntaxTree));
+            }
+
+            // We mutate the existing syntax tree so we need to clone the one passed in so our mutations don't
+            // impact external state.
+            SyntaxTreeRoot = (Block)syntaxTree.Root.Clone();
         }
+
+        // Internal for testing
+        internal Block SyntaxTreeRoot { get; }
 
         public PartialParseResultInternal Parse(SourceChange change)
         {
@@ -46,7 +56,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             // Locate the span responsible for this change
-            _lastChangeOwner = _syntaxTree.Root.LocateOwner(change);
+            _lastChangeOwner = SyntaxTreeRoot.LocateOwner(change);
 
             if (_lastResultProvisional)
             {

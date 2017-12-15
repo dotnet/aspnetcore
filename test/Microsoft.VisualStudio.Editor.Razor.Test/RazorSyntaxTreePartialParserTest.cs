@@ -3,12 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Xunit;
+using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -566,7 +568,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var result = parser.Parse(edit.Change);
             Assert.Equal(PartialParseResultInternal.Accepted | additionalFlags, result);
-            ParserTestBase.EvaluateParseTree(expectedTree, syntaxTree.Root);
+            ParserTestBase.EvaluateParseTree(parser.SyntaxTreeRoot, expectedTree);
         }
 
         private static TestEdit CreateInsertionChange(string initialText, int insertionLocation, string insertionText)

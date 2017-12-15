@@ -97,7 +97,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 {
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
-                    ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
+                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
                         factory.EmptyHtml(),
                         new StatementBlock(
                             factory.CodeTransition(),
@@ -156,7 +156,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 {
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
-                    ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
+                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
                         factory.EmptyHtml(),
                         new StatementBlock(
                             factory.CodeTransition(),
@@ -203,7 +203,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
+                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
@@ -249,7 +249,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     manager.ApplyEdit(testEdit);
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
+                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
@@ -301,7 +301,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     applyEdit();
                     Assert.Equal(1, manager.ParseCount);
 
-                    ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
+                    ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot, new MarkupBlock(
                         factory.Markup("foo "),
                         new ExpressionBlock(
                             factory.CodeTransition(),
@@ -369,7 +369,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(2, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root,
+                ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot,
                     new MarkupBlock(
                         factory.Markup("foo "),
                         new ExpressionBlock(
@@ -406,7 +406,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
                 // Assert
                 Assert.Equal(1, manager.ParseCount);
-                ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root,
+                ParserTestBase.EvaluateParseTree(manager.PartialParsingSyntaxTreeRoot,
                     new MarkupBlock(
                         factory.Markup("foo "),
                         new ExpressionBlock(
@@ -641,6 +641,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             public RazorSyntaxTree CurrentSyntaxTree { get; private set; }
+
+            public Block PartialParsingSyntaxTreeRoot => _parser._partialParser.SyntaxTreeRoot;
 
             public async Task InitializeWithDocumentAsync(ITextSnapshot snapshot)
             {

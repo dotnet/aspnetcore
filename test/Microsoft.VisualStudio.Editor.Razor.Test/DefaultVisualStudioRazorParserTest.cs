@@ -117,10 +117,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 var latestChange = new SourceChange(0, 0, string.Empty);
                 var latestSnapshot = documentTracker.TextBuffer.CurrentSnapshot;
                 parser._latestChangeReference = new DefaultVisualStudioRazorParser.ChangeReference(latestChange, latestSnapshot);
+                var codeDocument = TestRazorCodeDocument.CreateEmpty();
+                codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(TestRazorSourceDocument.Create()));
                 var args = new DocumentStructureChangedEventArgs(
                     latestChange,
                     latestSnapshot,
-                    TestRazorCodeDocument.CreateEmpty());
+                    codeDocument);
 
                 // Act
                 parser.OnDocumentStructureChanged(args);

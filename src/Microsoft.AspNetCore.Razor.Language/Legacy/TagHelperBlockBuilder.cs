@@ -18,9 +18,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public TagHelperBlockBuilder(TagHelperBlock original)
             : base(original)
         {
-            TagName = original.TagName;
+            SourceStartTag = original.SourceStartTag;
+            SourceEndTag = original.SourceEndTag;
+            TagMode = original.TagMode;
             BindingResult = original.Binding;
             Attributes = new List<TagHelperAttributeNode>(original.Attributes);
+            TagName = original.TagName;
         }
 
         /// <summary>

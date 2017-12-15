@@ -214,6 +214,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             visitor.VisitBlock(this);
         }
 
+        public override SyntaxTreeNode Clone()
+        {
+            var blockBuilder = new BlockBuilder(this);
+
+            blockBuilder.Children.Clear();
+            for (var i = 0; i < Children.Count; i++)
+            {
+                var clonedChild = Children[i].Clone();
+                blockBuilder.Children.Add(clonedChild);
+            }
+
+            return blockBuilder.Build();
+        }
+
         private class EquivalenceComparer : IEqualityComparer<SyntaxTreeNode>
         {
             public static readonly EquivalenceComparer Default = new EquivalenceComparer();

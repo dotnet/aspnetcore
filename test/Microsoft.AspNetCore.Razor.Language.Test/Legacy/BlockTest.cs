@@ -9,6 +9,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class BlockTest
     {
         [Fact]
+        public void Clone_ClonesBlock()
+        {
+            // Arrange
+            var blockBuilder = new BlockBuilder()
+            {
+                ChunkGenerator = new DynamicAttributeBlockChunkGenerator(new LocationTagged<string>("class=\"", SourceLocation.Zero), 0, 0, 0),
+                Type = BlockKindInternal.Expression,
+            };
+            blockBuilder.Children.Add(new SpanBuilder(new SourceLocation(1, 2, 3)).Build());
+            var block = blockBuilder.Build();
+
+            // Act
+            var copy = (Block)block.Clone();
+
+            // Assert
+            ParserTestBase.EvaluateParseTree(copy, block);
+            Assert.NotSame(block, copy);
+        }
+
+        [Fact]
         public void ConstructorWithBlockBuilderSetsParent()
         {
             // Arrange
