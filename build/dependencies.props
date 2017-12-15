@@ -45,9 +45,9 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26015-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
-    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26007-02</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
@@ -87,31 +87,31 @@
     <NuGetFrameworksPackageVersion>4.3.0</NuGetFrameworksPackageVersion>
     <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
     <RemotionLinqPackageVersion>2.2.0-alpha-002</RemotionLinqPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-04</RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-04</RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX64MicrosoftNETCoreAppPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX86MicrosoftNETCoreAppPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
-    <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-04</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxArmMicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</RuntimeLinuxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-01</RuntimeOsxX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</RuntimeOsxX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</RuntimeOsxX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX64MicrosoftNETCoreDotNetHostResolverPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX86MicrosoftNETCoreAppPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX86MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26015-01</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
     <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
