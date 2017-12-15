@@ -4,7 +4,7 @@
 using Microsoft.Blazor.Internal.Common.FileProviders;
 using Microsoft.Extensions.FileProviders;
 
-namespace Microsoft.Blazor.Browser
+namespace Microsoft.Blazor.Browser.JS
 {
     public static class BlazorBrowserFileProvider
     {
