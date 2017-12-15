@@ -24,5 +24,10 @@ namespace WebAssembly
         // driver.c in the Mono distribution
         [MethodImpl(MethodImplOptions.InternalCall)]
         static extern string InvokeJS(string str, out int resultIsException);
+
+        // The exact namespace, type, and method name must match the corresponding entry in
+        // driver.c in the Mono distribution
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        public static extern object InvokeJSUnmarshalled(string funcExpression, object[] args, out int resultIsException);
     }
 }
