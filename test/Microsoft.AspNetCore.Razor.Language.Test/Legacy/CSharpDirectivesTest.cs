@@ -1093,9 +1093,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
@@ -1124,9 +1123,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1)),
+               RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                   new SourceSpan(filePath: null, absoluteIndex: 23, lineIndex: 0, characterIndex: 23, length: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7)),
@@ -1308,9 +1306,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
@@ -1340,9 +1337,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(absoluteIndex: 20, lineIndex: 0, characterIndex: 20), contentLength: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)),
@@ -1528,9 +1524,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(filePath: null, absoluteIndex: 14, lineIndex: 0, characterIndex: 14, length: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)),
@@ -1560,9 +1555,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var expectedErrors = new[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unterminated_String_Literal,
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)),

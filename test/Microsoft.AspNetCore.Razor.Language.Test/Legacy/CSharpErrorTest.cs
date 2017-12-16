@@ -587,20 +587,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + ";" + Environment.NewLine
                               + "}",
                                 BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnostic.Create(new RazorError(
-                                    LegacyResources.ParseError_Unterminated_String_Literal,
-                                    new SourceLocation(21 + Environment.NewLine.Length, 1, 12),
-                                    length: 1)));
+                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                                    new SourceSpan(new SourceLocation(21 + Environment.NewLine.Length, 1, 12), contentLength: 1)));
         }
 
         [Fact]
         public void ParseBlockTerminatesNormalStringAtEndOfFile()
         {
             SingleSpanBlockTest("if(foo) { var foo = \"blah blah blah blah blah", BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnostic.Create(new RazorError(
-                                    LegacyResources.ParseError_Unterminated_String_Literal,
-                                    new SourceLocation(20, 0, 20),
-                                    length: 1)),
+                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                                    new SourceSpan(new SourceLocation(20, 0, 20), contentLength: 1)),
                                 RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'),
                                     SourceLocation.Zero,
@@ -616,10 +612,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                               + "blah " + Environment.NewLine
                               + "blah",
                                 BlockKindInternal.Statement, SpanKindInternal.Code,
-                                RazorDiagnostic.Create(new RazorError(
-                                    LegacyResources.ParseError_Unterminated_String_Literal,
-                                    new SourceLocation(20, 0, 20),
-                                    length: 1)),
+                                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                                    new SourceSpan(new SourceLocation(20, 0, 20), contentLength: 1)),
                                 RazorDiagnostic.Create(new RazorError(
                                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("if", '}', '{'),
                                     SourceLocation.Zero,
@@ -647,10 +641,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    Factory.Markup(Environment.NewLine).Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.ParseError_Unterminated_String_Literal,
-                               new SourceLocation(23 + Environment.NewLine.Length, 1, 14),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                               new SourceSpan(new SourceLocation(23 + Environment.NewLine.Length, 1, 14), contentLength: 1)));
         }
 
         [Fact]

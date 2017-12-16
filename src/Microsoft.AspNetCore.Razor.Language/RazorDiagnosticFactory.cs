@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         // General Errors ID Offset = 0
 
         internal static readonly RazorDiagnosticDescriptor Directive_BlockDirectiveCannotBeImported =
-        new RazorDiagnosticDescriptor(
-            $"{DiagnosticPrefix}0000",
-            () => Resources.BlockDirectiveCannotBeImported,
-            RazorDiagnosticSeverity.Error);
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}0000",
+                () => Resources.BlockDirectiveCannotBeImported,
+                RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateDirective_BlockDirectiveCannotBeImported(string directive)
         {
             return RazorDiagnostic.Create(Directive_BlockDirectiveCannotBeImported, SourceSpan.Undefined, directive);
@@ -28,6 +28,26 @@ namespace Microsoft.AspNetCore.Razor.Language
         #region Language Errors
 
         // Language Errors ID Offset = 1000
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnterminatedStringLiteral =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1000",
+                () => LegacyResources.ParseError_Unterminated_String_Literal,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnterminatedStringLiteral(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_UnterminatedStringLiteral, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_BlockCommentNotTerminated =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1001",
+                () => LegacyResources.ParseError_BlockComment_Not_Terminated,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_BlockCommentNotTerminated(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_BlockCommentNotTerminated, location);
+        }
 
         #endregion
 

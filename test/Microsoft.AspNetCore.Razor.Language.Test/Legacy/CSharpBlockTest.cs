@@ -514,10 +514,8 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
                 document,
                 BlockKindInternal.Statement,
                 SpanKindInternal.Code,
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_BlockComment_Not_Terminated,
-                    new SourceLocation(24, 0, 24),
-                    length: 1)),
+                RazorDiagnosticFactory.CreateParsing_BlockCommentNotTerminated(
+                    new SourceSpan(new SourceLocation(24, 0, 24), contentLength: 1)),
                 RazorDiagnostic.Create(new RazorError(
                     LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
                     SourceLocation.Zero,

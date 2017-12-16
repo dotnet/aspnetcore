@@ -27,11 +27,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
-                        length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperLookupText("\""),
@@ -72,11 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperLookupText("\""),
@@ -117,11 +111,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
                 RazorDiagnostic.Create(
                     new RazorError(
                         Resources.FormatInvalidTagHelperPrefixValue("tagHelperPrefix", "\"", "\""),

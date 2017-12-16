@@ -721,9 +721,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             RazorDiagnostic.Create(new RazorError(
                                 LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
                                 absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1)),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.ParseError_Unterminated_String_Literal,
-                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15, length: 1))
+                            RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                                new SourceSpan(filePath: null, absoluteIndex: 15, lineIndex: 0, characterIndex: 15, length: 1))
                         }
                     },
                     {
