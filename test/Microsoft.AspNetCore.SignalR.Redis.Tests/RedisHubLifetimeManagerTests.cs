@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -93,6 +94,37 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.AddGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
 
                 await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
+
+                await AssertMessageAsync(client1);
+                Assert.Null(client2.TryRead());
+
+                await connection1.DisposeAsync().OrTimeout();
+                await connection2.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task InvokeGroupExceptAsyncWritesToAllValidConnectionsInGroupOutput()
+        {
+            using (var client1 = new TestClient())
+            using (var client2 = new TestClient())
+            {
+                var manager = new RedisHubLifetimeManager<MyHub>(new LoggerFactory().CreateLogger<RedisHubLifetimeManager<MyHub>>(),
+                Options.Create(new RedisOptions()
+                {
+                    Factory = t => new TestConnectionMultiplexer()
+                }));
+                var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+                var connection2 = HubConnectionContextUtils.Create(client2.Connection);
+
+                await manager.OnConnectedAsync(connection1).OrTimeout();
+                await manager.OnConnectedAsync(connection2).OrTimeout();
+
+                await manager.AddGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
+                await manager.AddGroupAsync(connection2.ConnectionId, "gunit").OrTimeout();
+
+                var excludedIds = new List<string>{ client2.Connection.ConnectionId };
+                await manager.InvokeGroupExceptAsync("gunit", "Hello", new object[] { "World" }, excludedIds).OrTimeout();
 
                 await AssertMessageAsync(client1);
 

@@ -32,6 +32,11 @@ namespace Microsoft.AspNetCore.SignalR
             return TypedClientBuilder<T>.Build(_hubClients.Group(groupName));
         }
 
+        public T GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        {
+            return TypedClientBuilder<T>.Build(_hubClients.GroupExcept(groupName, excludeIds));
+        }
+
         public T User(string userId)
         {
             return TypedClientBuilder<T>.Build(_hubClients.User(userId));

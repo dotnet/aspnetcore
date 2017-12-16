@@ -20,6 +20,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         public abstract Task InvokeGroupAsync(string groupName, string methodName, object[] args);
 
+        public abstract Task InvokeGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds);
+
         public abstract Task InvokeUserAsync(string userId, string methodName, object[] args);
 
         public abstract Task AddGroupAsync(string connectionId, string groupName);

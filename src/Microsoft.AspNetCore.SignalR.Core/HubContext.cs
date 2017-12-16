@@ -37,6 +37,11 @@ namespace Microsoft.AspNetCore.SignalR
             return new GroupProxy<THub>(_lifetimeManager, groupName);
         }
 
+        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        {
+            return new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludeIds);
+        }
+
         public virtual IClientProxy User(string userId)
         {
             return new UserProxy<THub>(_lifetimeManager, userId);

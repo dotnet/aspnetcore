@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         T Group(string groupName);
 
+        T GroupExcept(string groupName, IReadOnlyList<string> excludeIds);
+
         T User(string userId);
     }
 }

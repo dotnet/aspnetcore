@@ -190,7 +190,19 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 throw new ArgumentNullException(nameof(groupName));
             }
 
-            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
+            var message = new RedisExcludeClientsMessage(GetInvocationId(), nonBlocking: true, target: methodName, excludedIds: null, arguments: args);
+
+            return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
+        }
+
+        public override Task InvokeGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        {
+            if (groupName == null)
+            {
+                throw new ArgumentNullException(nameof(groupName));
+            }
+
+            var message = new RedisExcludeClientsMessage(GetInvocationId(), nonBlocking: true, target: methodName, excludedIds: excludedIds, arguments: args);
 
             return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
         }
@@ -547,11 +559,16 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var message = DeserializeMessage<HubInvocationMessage>(data);
+                    var message = DeserializeMessage<RedisExcludeClientsMessage>(data);
 
-                    var tasks = new List<Task>(group.Connections.Count);
+                    var tasks = new List<Task>();
                     foreach (var groupConnection in group.Connections)
                     {
+                        if (message.ExcludedIds?.Contains(groupConnection.ConnectionId) == true)
+                        {
+                            continue;
+                        }
+
                         tasks.Add(groupConnection.WriteAsync(message));
                     }
 

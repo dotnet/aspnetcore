@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.SignalR
             return _hubClients.Group(groupName);
         }
 
+        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
+        {
+            return _hubClients.GroupExcept(groupName, excludeIds);
+        }
+
         public IClientProxy User(string userId)
         {
            return _hubClients.User(userId);
