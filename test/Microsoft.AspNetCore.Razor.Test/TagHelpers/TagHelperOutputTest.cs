@@ -7,7 +7,6 @@ using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
-using Microsoft.AspNetCore.Razor.Runtime.TagHelpers;
 using Microsoft.AspNetCore.Razor.TagHelpers.Testing;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
@@ -1037,15 +1036,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
         {
             // Arrange
             var writer = new StringWriter();
-            var tagHelperExecutionContext = new TagHelperExecutionContext(
-                tagName: output.TagName,
-                tagMode: output.TagMode,
-                items: new Dictionary<object, object>(),
-                uniqueId: string.Empty,
-                executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: _ => { },
-                endTagHelperWritingScope: () => new DefaultTagHelperContent());
-            tagHelperExecutionContext.Output = output;
             var testEncoder = new HtmlTestEncoder();
 
             // Act
@@ -1067,16 +1057,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
 
             var buffer = new HtmlContentBuilder();
 
-            var tagHelperExecutionContext = new TagHelperExecutionContext(
-                tagName: output.TagName,
-                tagMode: output.TagMode,
-                items: new Dictionary<object, object>(),
-                uniqueId: string.Empty,
-                executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: _ => { },
-                endTagHelperWritingScope: () => new DefaultTagHelperContent());
-            tagHelperExecutionContext.Output = output;
-
             // Act
             ((IHtmlContentContainer)output).CopyTo(buffer);
 
@@ -1096,16 +1076,6 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             var testEncoder = new HtmlTestEncoder();
 
             var buffer = new HtmlContentBuilder();
-
-            var tagHelperExecutionContext = new TagHelperExecutionContext(
-                tagName: output.TagName,
-                tagMode: output.TagMode,
-                items: new Dictionary<object, object>(),
-                uniqueId: string.Empty,
-                executeChildContentAsync: () => Task.FromResult(result: true),
-                startTagHelperWritingScope: _ => { },
-                endTagHelperWritingScope: () => new DefaultTagHelperContent());
-            tagHelperExecutionContext.Output = output;
 
             // Act
             ((IHtmlContentContainer)output).MoveTo(buffer);

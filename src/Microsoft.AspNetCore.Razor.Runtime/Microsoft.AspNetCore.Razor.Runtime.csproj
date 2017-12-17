@@ -1,15 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Summary>Runtime components for rendering Razor pages and implementing tag helpers.</Summary>
-    <Description>$(Summary)
-
-Commonly used types:
-Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
-Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
-Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
+    <Description>Runtime infrastructure for rendering Razor pages and tag helpers.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
   </PropertyGroup>
 
@@ -20,7 +13,6 @@ Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Html.Abstractions" Version="$(MicrosoftAspNetCoreHtmlAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCopyOnWriteDictionarySourcesPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27128.0
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 	ProjectSection(SolutionItems) = preProject
@@ -82,11 +82,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Design.Test", "test\Microsoft.AspNetCore.Razor.Design.Test\Microsoft.AspNetCore.Razor.Design.Test.csproj", "{1D90F276-E1CA-4FDF-A173-EB889E7D3150}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.GenerateTool", "src\Microsoft.AspNetCore.Razor.GenerateTool\Microsoft.AspNetCore.Razor.GenerateTool.csproj", "{8052F088-1204-427B-BB0D-BE3D3BA6811B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.GenerateTool", "src\Microsoft.AspNetCore.Razor.GenerateTool\Microsoft.AspNetCore.Razor.GenerateTool.csproj", "{8052F088-1204-427B-BB0D-BE3D3BA6811B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Tasks", "src\Microsoft.AspNetCore.Razor.Tasks\Microsoft.AspNetCore.Razor.Tasks.csproj", "{043B9497-C0BA-4770-9210-4456D2F81CE0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tasks", "src\Microsoft.AspNetCore.Razor.Tasks\Microsoft.AspNetCore.Razor.Tasks.csproj", "{043B9497-C0BA-4770-9210-4456D2F81CE0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.TagHelperTool", "src\Microsoft.AspNetCore.Razor.TagHelperTool\Microsoft.AspNetCore.Razor.TagHelperTool.csproj", "{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.TagHelperTool", "src\Microsoft.AspNetCore.Razor.TagHelperTool\Microsoft.AspNetCore.Razor.TagHelperTool.csproj", "{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test", "test\Microsoft.AspNetCore.Razor.Test\Microsoft.AspNetCore.Razor.Test.csproj", "{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -366,6 +368,14 @@ Global
 		{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -405,6 +415,7 @@ Global
 		{8052F088-1204-427B-BB0D-BE3D3BA6811B} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{043B9497-C0BA-4770-9210-4456D2F81CE0} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{AFD77E2F-1A4A-4C2C-9EA9-7E48C8926780} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{323553F0-14AB-4FBD-9CF0-1CC0BE8056F8} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}
