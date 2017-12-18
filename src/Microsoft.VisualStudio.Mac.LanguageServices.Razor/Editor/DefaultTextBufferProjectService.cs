@@ -81,7 +81,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
         }
 
         // VisualStudio for Mac only supports ASP.NET Core Razor.
-        public override bool IsSupportedProject(object project) => true;
+        public override bool IsSupportedProject(object project) => project is DotNetProject;
 
         public override string GetProjectName(object project)
         {
