@@ -22,14 +22,14 @@ npm install @aspnet/signalr-client
 The CI build publishes the latest dev version of the JavaScript client to our dev npm registry as @aspnet/signalr-client. You can install the module as follows:
 
 - Create an .npmrc file with the following line:
-  `@aspnet:registry=https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/`
+  `@aspnet:registry=https://dotnet.myget.org/f/aspnetcore-dev/npm/`
 - Run:
   `npm install @aspnet/signalr-client`
 
 Alternatively, if you don't want to create the .npmrc file run the following commands:
 ```
 npm install msgpack5
-npm install @aspnet/signalr-client --registry https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/
+npm install @aspnet/signalr-client --registry https://dotnet.myget.org/f/aspnetcore-dev/npm/
 ```
 
 ## Building from source
