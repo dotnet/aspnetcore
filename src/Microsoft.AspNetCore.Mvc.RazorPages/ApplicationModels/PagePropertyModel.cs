@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     /// Represents a property in a <see cref="PageApplicationModel"/>.
     /// </summary>
     [DebuggerDisplay("PagePropertyModel: Name={PropertyName}")]
-    public class PagePropertyModel : ICommonModel, IBindingModel
+    public class PagePropertyModel : ParameterModelBase, ICommonModel
     {
         /// <summary>
         /// Creates a new instance of <see cref="PagePropertyModel"/>.
@@ -23,10 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public PagePropertyModel(
             PropertyInfo propertyInfo,
             IReadOnlyList<object> attributes)
+            : base(propertyInfo?.PropertyType, attributes)
         {
             PropertyInfo = propertyInfo ?? throw new ArgumentNullException(nameof(propertyInfo));
-            Properties = new Dictionary<object, object>();
-            Attributes = new List<object>(attributes) ?? throw new ArgumentNullException(nameof(attributes));
         }
 
         /// <summary>
@@ -34,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         /// <param name="other">The <see cref="PagePropertyModel"/> which needs to be copied.</param>
         public PagePropertyModel(PagePropertyModel other)
+            : base(other)
         {
             if (other == null)
             {
@@ -41,11 +41,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             Page = other.Page;
-            Attributes = new List<object>(other.Attributes);
             BindingInfo = BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             PropertyInfo = other.PropertyInfo;
-            PropertyName = other.PropertyName;
-            Properties = new Dictionary<object, object>(other.Properties);
         }
 
         /// <summary>
@@ -53,31 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public PageApplicationModel Page { get; set; }
 
-        /// <summary>
-        /// Gets any attributes which are annotated on the property.
-        /// </summary>
-        public IReadOnlyList<object> Attributes { get; }
-
-        /// <inheritdoc />
-        public IDictionary<object, object> Properties { get; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="BindingInfo"/> associated with this model.
-        /// </summary>
-        public BindingInfo BindingInfo { get; set; }
-
-        /// <summary>
-        /// Gets the underlying <see cref="PropertyInfo"/>.
-        /// </summary>
-        public PropertyInfo PropertyInfo { get; }
-
-        /// <summary>
-        /// Gets or sets the name of the property represented by this model.
-        /// </summary>
-        public string PropertyName { get; set; }
-
         MemberInfo ICommonModel.MemberInfo => PropertyInfo;
 
-        string ICommonModel.Name => PropertyName;
+        public PropertyInfo PropertyInfo { get; }
+
+        public string PropertyName
+        {
+            get => Name;
+            set => Name = value;
+        }
     }
 }

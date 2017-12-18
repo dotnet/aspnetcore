@@ -4,17 +4,18 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Allows customization of the <see cref="ParameterModel"/>.
+    /// Allows customization of the properties and parameters on controllers and Razor Pages.
     /// </summary>
     /// <remarks>
     /// To use this interface, create an <see cref="System.Attribute"/> class which implements the interface and
     /// place it on an action method parameter.
-    ///
-    /// <see cref="IParameterModelConvention"/> customizations run after
-    /// <see cref="IActionModelConvention"/> customizations.
     /// </remarks>
-    public interface IParameterModelConvention
+    public interface IParameterModelBaseConvention
     {
-        void Apply(ParameterModel parameter);
+        /// <summary>
+        /// Called to apply the convention to the <see cref="ParameterModelBase"/>.
+        /// </summary>
+        /// <param name="parameter">The <see cref="ParameterModelBase"/>.</param>
+        void Apply(ParameterModelBase parameter);
     }
 }

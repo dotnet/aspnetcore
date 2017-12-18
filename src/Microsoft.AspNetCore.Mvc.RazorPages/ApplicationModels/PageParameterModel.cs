@@ -5,29 +5,32 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     [DebuggerDisplay("PageParameterModel: Name={ParameterName}")]
-    public class PageParameterModel : ICommonModel, IBindingModel
+    public class PageParameterModel : ParameterModelBase, ICommonModel, IBindingModel
     {
         public PageParameterModel(
             ParameterInfo parameterInfo,
             IReadOnlyList<object> attributes)
+            : base(parameterInfo?.ParameterType, attributes)
         {
-            ParameterInfo = parameterInfo ?? throw new ArgumentNullException(nameof(parameterInfo));
+            if (parameterInfo == null)
+            {
+                throw new ArgumentNullException(nameof(parameterInfo));
+            }
 
             if (attributes == null)
             {
                 throw new ArgumentNullException(nameof(attributes));
             }
 
-            Properties = new Dictionary<object, object>();
-            Attributes = new List<object>(attributes);
+            ParameterInfo = parameterInfo;
         }
 
         public PageParameterModel(PageParameterModel other)
+            : base(other)
         {
             if (other == null)
             {
@@ -35,27 +38,19 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
 
             Handler = other.Handler;
-            Attributes = new List<object>(other.Attributes);
-            BindingInfo = other.BindingInfo == null ? null : new BindingInfo(other.BindingInfo);
             ParameterInfo = other.ParameterInfo;
-            ParameterName = other.ParameterName;
-            Properties = new Dictionary<object, object>(other.Properties);
         }
 
         public PageHandlerModel Handler { get; set; }
 
-        public IReadOnlyList<object> Attributes { get; }
-
-        public IDictionary<object, object> Properties { get; }
-
         MemberInfo ICommonModel.MemberInfo => ParameterInfo.Member;
-
-        string ICommonModel.Name => ParameterName;
 
         public ParameterInfo ParameterInfo { get; }
 
-        public string ParameterName { get; set; }
-
-        public BindingInfo BindingInfo { get; set; }
+        public string ParameterName
+        {
+            get => Name;
+            set => Name = value;
+        }
     }
 }

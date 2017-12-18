@@ -144,6 +144,30 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds the specified <paramref name="convention"/> to <paramref name="conventions"/>.
+        /// The added convention will apply to all handler properties and parameters on handler methods.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="convention">The <see cref="IParameterModelBaseConvention"/> to apply.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection Add(this PageConventionCollection conventions, IParameterModelBaseConvention convention)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (convention == null)
+            {
+                throw new ArgumentNullException(nameof(convention));
+            }
+
+            var adapter = new ParameterModelBaseConventionAdapter(convention);
+            conventions.Add(adapter);
+            return conventions;
+        }
+
+        /// <summary>
         /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified area folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
@@ -460,6 +484,21 @@ namespace Microsoft.Extensions.DependencyInjection
                     }
                 });
             };
+        }
+
+        private class ParameterModelBaseConventionAdapter : IPageConvention, IParameterModelBaseConvention
+        {
+            private readonly IParameterModelBaseConvention _convention;
+
+            public ParameterModelBaseConventionAdapter(IParameterModelBaseConvention convention)
+            {
+                _convention = convention;
+            }
+
+            public void Apply(ParameterModelBase parameter)
+            {
+                _convention.Apply(parameter);
+            }
         }
     }
 }
