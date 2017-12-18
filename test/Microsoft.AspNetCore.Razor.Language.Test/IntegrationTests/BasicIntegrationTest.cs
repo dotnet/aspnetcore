@@ -80,10 +80,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@!!!", fileName: "test.cshtml"));
 
-            var expected = RazorDiagnostic.Create(new RazorError(
-                LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("!"),
-                new SourceLocation("test.cshtml", 1, 0, 1),
-                length: 1));
+            var expected = RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1),
+                                "!");
 
             // Act
             engine.Process(document);
@@ -102,10 +101,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
             var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@{", fileName: "test.cshtml"));
 
-            var expected = RazorDiagnostic.Create(new RazorError(
-                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
-                new SourceLocation("test.cshtml", 1, 0, 1),
-                length: 1));
+            var expected = RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{");
 
             // Act
             engine.Process(document);

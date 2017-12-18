@@ -314,10 +314,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private static RazorDiagnostic GetNestedTemplateError(int characterIndex)
         {
-            return RazorDiagnostic.Create(new RazorError(
-                LegacyResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
-                new SourceLocation(characterIndex, 0, characterIndex),
-                length: 1));
+            return RazorDiagnosticFactory.CreateParsing_InlineMarkupBlocksCannotBeNested(
+                new SourceSpan(new SourceLocation(characterIndex, 0, characterIndex), contentLength: 1));
         }
     }
 }

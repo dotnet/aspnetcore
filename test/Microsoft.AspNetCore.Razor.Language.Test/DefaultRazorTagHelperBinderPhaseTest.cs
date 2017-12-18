@@ -29,11 +29,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
                     new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
+                    new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1), "\"")
             };
 
             var content =
@@ -71,11 +68,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
                     new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "\"")
             };
 
             var content =
@@ -113,11 +107,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
                     new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperPrefixValue("tagHelperPrefix", "\"", "\""),
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "tagHelperPrefix", '\"', "\""),
             };
 
             var content =

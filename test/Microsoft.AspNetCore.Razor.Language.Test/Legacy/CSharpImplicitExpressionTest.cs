@@ -135,10 +135,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
-                               new SourceLocation(1, 0, 1),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
+                                "/"));
         }
 
         [Fact]
@@ -150,10 +149,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                               new SourceLocation(1, 0, 1),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1)));
         }
 
         [Fact]

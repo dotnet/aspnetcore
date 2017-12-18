@@ -16,11 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(FunctionsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(FunctionsDirective.Directive.Directive, "}", "{"),
-                        new SourceLocation(10, 0, 10),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 1), FunctionsDirective.Directive.Directive, "}", "{"));
 
             // Act & Assert
             ParseBlockTest(
@@ -38,11 +35,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
-                        new SourceLocation(16, 0, 16),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 1), "section", "}", "{"));
 
             // Act & Assert
             ParseBlockTest(
@@ -71,11 +65,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsStatement()
                         .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                     ),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                        LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -84,11 +75,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(FunctionsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                        new SourceLocation(10, 0, 10),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 1), "functions", "}", "{"));
 
             // Act & Assert
             ParseBlockTest(
@@ -107,11 +95,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
-                        new SourceLocation(16, 0, 16),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 1), "section", "}", "{"));
 
             // Act & Assert
             ParseBlockTest(
@@ -152,11 +137,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Code, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
                         .With(new StatementChunkGenerator())
                     ),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                        LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }
     }
 }

@@ -157,10 +157,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     LegacyResources.FormatParseError_MissingEndTag("text"),
                     new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
                     length: 4)),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -186,11 +184,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     LegacyResources.ParseError_RazorComment_Not_Terminated,
                     new SourceLocation(2, 0, 2),
                     length: 2)),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                        LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }
 
         [Fact]

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
@@ -16,11 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatDirectiveExpectsIdentifier(SectionDirective.Directive.Directive),
-                        new SourceLocation(8, 0, 8),
-                        length: Environment.NewLine.Length)));
+                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsIdentifier(
+                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: Environment.NewLine.Length), SectionDirective.Directive.Directive));
 
             // Act & Assert
             ParseDocumentTest(
@@ -42,11 +38,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatUnexpectedEOFAfterDirective(SectionDirective.Directive.Directive, "{"),
-                        new SourceLocation(25 + Environment.NewLine.Length, 0, 25 + Environment.NewLine.Length),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
+                    new SourceSpan(new SourceLocation(25 + Environment.NewLine.Length, 1, 4), contentLength: 1),
+                    SectionDirective.Directive.Directive,
+                    "{"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -69,11 +64,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatDirectiveExpectsIdentifier(SectionDirective.Directive.Directive),
-                        new SourceLocation(17, 0, 17),
-                        length: Environment.NewLine.Length)));
+                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsIdentifier(
+                    new SourceSpan(new SourceLocation(17, 0, 17), contentLength: Environment.NewLine.Length), SectionDirective.Directive.Directive));
 
             // Act & Assert
             ParseDocumentTest(
@@ -113,11 +105,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatDirectiveExpectsIdentifier(SectionDirective.Directive.Directive),
-                        new SourceLocation(9, 0, 9),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsIdentifier(
+                    new SourceSpan(new SourceLocation(9, 0, 9), contentLength: 1), SectionDirective.Directive.Directive));
 
             // Act & Assert
             ParseDocumentTest(
@@ -144,11 +133,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatUnexpectedDirectiveLiteral(SectionDirective.Directive.Directive, "{"),
-                        new SourceLocation(12, 0, 12),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
+                    new SourceSpan(new SourceLocation(12, 0, 12), contentLength: 1),
+                    SectionDirective.Directive.Directive,
+                    "{"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -176,11 +164,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var erroredChunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             erroredChunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatDirectiveMustAppearAtStartOfLine("section"),
-                        new SourceLocation(16, 0, 16),
-                        7)));
+                RazorDiagnosticFactory.CreateParsing_DirectiveMustAppearAtStartOfLine(
+                    new SourceSpan(new SourceLocation(16, 0, 16), contentLength: 7), "section"));
             erroredChunkGenerator.Diagnostics.Add(
                 RazorDiagnosticFactory.CreateParsing_SectionsCannotBeNested(
                     new SourceSpan(new SourceLocation(15, 0, 15), 8)));
@@ -227,11 +212,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(SectionDirective.Directive.Directive, "}", "{"),
-                    new SourceLocation(13, 0, 13),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(13, 0, 13), contentLength: 1), SectionDirective.Directive.Directive, "}", "{"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -260,11 +242,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
-                        new SourceLocation(13, 0, 13),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(13, 0, 13), contentLength: 1), "section", "}", "{"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -289,11 +268,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
-                        new SourceLocation(13, 0, 13),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(13, 0, 13), contentLength: 1), "section", "}", "{"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -325,11 +301,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var newLine = Environment.NewLine;
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("section", "}", "{"),
-                        new SourceLocation(13 + newLine.Length, 1, 0),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(13 + newLine.Length, 1, 0), contentLength: 1), "section", "}", "{"));
             var spaces = "    ";
 
             // Act & Assert
@@ -369,11 +342,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(SectionDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatUnexpectedEOFAfterDirective(SectionDirective.Directive.Directive, "{"),
-                        new SourceLocation(18 + Environment.NewLine.Length, 0, 18 + Environment.NewLine.Length),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
+                    new SourceSpan(new SourceLocation(18 + Environment.NewLine.Length, 1, 0), contentLength: 1),
+                    SectionDirective.Directive.Directive,
+                    "{"));
 
             // Act & Assert
             ParseDocumentTest(

@@ -29,11 +29,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.MetaCode("(").Accepts(AcceptedCharactersInternal.None),
                                Factory.EmptyCSharp().AsExpression()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                                        LegacyResources.BlockName_ExplicitExpression, ")", "("),
-                                    new SourceLocation(1, 0, 1),
-                                    length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                               new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
+                               LegacyResources.BlockName_ExplicitExpression,
+                               ")",
+                               "("));
         }
 
         [Fact]

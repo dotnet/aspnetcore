@@ -64,10 +64,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.EmptyHtml()),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1)));
         }
 
         [Fact]
@@ -159,10 +157,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     Factory.EmptyHtml()),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                    new SourceLocation(5, 0, 5),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(5, 0, 5), contentLength: 1)));
         }
 
         [Fact]
@@ -788,14 +784,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup(" />")));
             var expectedErrors = new RazorDiagnostic[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    @"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
-                    new SourceLocation(12, 0, 12),
-                    length: 1)),
-                RazorDiagnostic.Create(new RazorError(
-                    @"""' />"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.",
-                    new SourceLocation(14, 0, 14),
-                    length: 4)),
+                RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(12, 0, 12), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 4),
+                    "' />"),
             };
 
             // Act & Assert

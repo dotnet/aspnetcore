@@ -1,27 +1,27 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,2): Error RZ9999: Directive 'addTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,14): Error RZ9999: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,2): Error RZ9999: Directive 'addTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,15): Error RZ9999: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,2): Error RZ1018: Directive 'addTagHelper' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(3,14): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,2): Error RZ1018: Directive 'addTagHelper' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(4,15): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ9999: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,2): Error RZ9999: Directive 'removeTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,17): Error RZ9999: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,2): Error RZ9999: Directive 'removeTagHelper' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,18): Error RZ9999: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(5,15): Error RZ1020: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,2): Error RZ1018: Directive 'removeTagHelper' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,17): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,2): Error RZ1018: Directive 'removeTagHelper' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,18): Error RZ1020: Invalid tag helper directive look up text ''. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ9999: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,2): Error RZ9999: Directive 'tagHelperPrefix' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ9999: Directive 'tagHelperPrefix' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1020: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ9999: Invalid tag helper directive 'tagHelperPrefix' value. '"' is not allowed in prefix '"'.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,10): Error RZ9999: The 'inherits' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,1): Error RZ9999: The 'inherits' directive may only occur once per document.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,11): Error RZ9999: The 'inherits' directive expects a type name.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(19,1): Error RZ9999: Unexpected literal following the 'functions' directive. Expected '{'.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(21,1): Error RZ9999: Unexpected literal following the 'functions' directive. Expected '{'.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(21,9): Error RZ9999: The 'section' directive expects an identifier.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(22,10): Error RZ9999: The 'section' directive expects an identifier.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(24,10): Error RZ9999: The 'section' directive expects an identifier.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(25,12): Error RZ9999: The functions block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ1020: Invalid tag helper directive 'tagHelperPrefix' value. '"' is not allowed in prefix '"'.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,10): Error RZ1013: The 'inherits' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,1): Error RZ2001: The 'inherits' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,11): Error RZ1013: The 'inherits' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(19,1): Error RZ1017: Unexpected literal following the 'functions' directive. Expected '{'.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(21,1): Error RZ1017: Unexpected literal following the 'functions' directive. Expected '{'.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(21,9): Error RZ1015: The 'section' directive expects an identifier.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(22,10): Error RZ1015: The 'section' directive expects an identifier.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(24,10): Error RZ1015: The 'section' directive expects an identifier.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(25,12): Error RZ1006: The functions block is missing a closing "}" character.  Make sure you have a matching "}" character for all the "{" characters within this block, and that none of the "}" characters are being interpreted as markup.

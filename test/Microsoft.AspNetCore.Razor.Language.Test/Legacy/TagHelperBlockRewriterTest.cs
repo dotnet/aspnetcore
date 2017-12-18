@@ -695,9 +695,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
                                 new SourceLocation(1, 0, 1),
                                 length: 1)),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1))
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 1), "do", "}", "{"),
                         }
                     },
                     {
@@ -718,9 +717,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
                                 new SourceLocation(1, 0, 1),
                                 length: 1)),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 1), "do", "}", "{"),
                             RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
                                 new SourceSpan(filePath: null, absoluteIndex: 15, lineIndex: 0, characterIndex: 15, length: 1))
                         }
@@ -742,9 +740,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
                                 absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 30)),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "do", "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 LegacyResources.FormatParseError_UnexpectedEndTag("p"),
                                 absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 1))

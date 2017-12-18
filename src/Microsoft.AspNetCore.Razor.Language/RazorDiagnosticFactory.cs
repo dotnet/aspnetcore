@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -49,6 +50,206 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_BlockCommentNotTerminated, location);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_HelperDirectiveNotAvailable =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1002",
+                () => LegacyResources.ParseError_HelperDirectiveNotAvailable,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_HelperDirectiveNotAvailable(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_HelperDirectiveNotAvailable, location, SyntaxConstants.CSharp.HelperKeyword);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedWhiteSpaceAtStartOfCodeBlock =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1003",
+                () => LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedWhiteSpaceAtStartOfCodeBlock, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedEndOfFileAtStartOfCodeBlock =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1004",
+                () => LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedEndOfFileAtStartOfCodeBlock, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedCharacterAtStartOfCodeBlock =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1005",
+                () => LegacyResources.ParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(SourceSpan location, string content)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedCharacterAtStartOfCodeBlock, location, content);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_ExpectedEndOfBlockBeforeEOF =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1006",
+                () => LegacyResources.ParseError_Expected_EndOfBlock_Before_EOF,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_ExpectedEndOfBlockBeforeEOF(SourceSpan location, string blockName, string closeBlock, string openBlock)
+        {
+            return RazorDiagnostic.Create(Parsing_ExpectedEndOfBlockBeforeEOF, location, blockName, closeBlock, openBlock);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_ReservedWord =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1007",
+                () => LegacyResources.ParseError_ReservedWord,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_ReservedWord(SourceSpan location, string content)
+        {
+            return RazorDiagnostic.Create(Parsing_ReservedWord, location, content);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_SingleLineControlFlowStatementsNotAllowed =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1008",
+                () => LegacyResources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_SingleLineControlFlowStatementsNotAllowed(SourceSpan location, string expected, string actual)
+        {
+            return RazorDiagnostic.Create(Parsing_SingleLineControlFlowStatementsNotAllowed, location, expected, actual);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1009",
+                () => LegacyResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedNestedCodeBlock =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1010",
+                () => LegacyResources.ParseError_Unexpected_Nested_CodeBlock,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedNestedCodeBlock(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedNestedCodeBlock, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveTokensMustBeSeparatedByWhitespace =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1011",
+                () => Resources.DirectiveTokensMustBeSeparatedByWhitespace,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveTokensMustBeSeparatedByWhitespace(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveTokensMustBeSeparatedByWhitespace, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedEOFAfterDirective =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1012",
+                () => LegacyResources.UnexpectedEOFAfterDirective,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedEOFAfterDirective(SourceSpan location, string directiveName, string expectedToken)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedEOFAfterDirective, location, directiveName, expectedToken);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsTypeName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1013",
+                () => LegacyResources.DirectiveExpectsTypeName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsTypeName(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsTypeName, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsNamespace =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1014",
+                () => LegacyResources.DirectiveExpectsNamespace,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsNamespace(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsNamespace, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsIdentifier =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1015",
+                () => LegacyResources.DirectiveExpectsIdentifier,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsIdentifier(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsIdentifier, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsQuotedStringLiteral =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1016",
+                () => LegacyResources.DirectiveExpectsQuotedStringLiteral,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsQuotedStringLiteral(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsQuotedStringLiteral, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedDirectiveLiteral =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1017",
+                () => LegacyResources.UnexpectedDirectiveLiteral,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedDirectiveLiteral(SourceSpan location, string directiveName, string expected)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedDirectiveLiteral, location, directiveName, expected);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveMustHaveValue =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1018",
+                () => LegacyResources.ParseError_DirectiveMustHaveValue,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveMustHaveValue(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveMustHaveValue, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_IncompleteQuotesAroundDirective =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1019",
+                () => LegacyResources.ParseError_IncompleteQuotesAroundDirective,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_IncompleteQuotesAroundDirective(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_IncompleteQuotesAroundDirective, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_InvalidTagHelperPrefixValue =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1020",
+                () => Resources.InvalidTagHelperPrefixValue,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_InvalidTagHelperPrefixValue(SourceSpan location, string directiveName, char character, string prefix)
+        {
+            return RazorDiagnostic.Create(Parsing_InvalidTagHelperPrefixValue, location, directiveName, character, prefix);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_InvalidTagHelperLookupText =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1020",
+                () => Resources.InvalidTagHelperLookupText,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_InvalidTagHelperLookupText(SourceSpan location, string lookupText)
+        {
+            return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
+        }
+
         #endregion
 
         #region Semantic Errors
@@ -70,7 +271,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 $"{DiagnosticPrefix}2001",
                 () => Resources.DuplicateDirective,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateParsing_DuplicateDirective(string directive, SourceSpan location)
+        public static RazorDiagnostic CreateParsing_DuplicateDirective(SourceSpan location, string directive)
         {
             return RazorDiagnostic.Create(Parsing_DuplicateDirective, location, directive);
         }
@@ -85,9 +286,39 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_SectionsCannotBeNested, location, LegacyResources.SectionExample_CS);
         }
 
-        internal static readonly RazorDiagnosticDescriptor TagHelper_CodeBlocksNotSupportedInAttributes =
+        internal static readonly RazorDiagnosticDescriptor Parsing_InlineMarkupBlocksCannotBeNested =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}2003",
+                () => LegacyResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_InlineMarkupBlocksCannotBeNested(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_InlineMarkupBlocksCannotBeNested, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2004",
+                () => LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveMustAppearAtStartOfLine =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2005",
+                () => Resources.DirectiveMustAppearAtStartOfLine,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveMustAppearAtStartOfLine(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveMustAppearAtStartOfLine, location, directiveName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_CodeBlocksNotSupportedInAttributes =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2006",
                 () => LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_CodeBlocksNotSupportedInAttributes(SourceSpan location)
@@ -98,7 +329,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static readonly RazorDiagnosticDescriptor TagHelper_InlineMarkupBlocksNotSupportedInAttributes =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}2004",
+                $"{DiagnosticPrefix}2007",
                 () => LegacyResources.TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(string expectedTypeName, SourceSpan location)

@@ -47,11 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(
-                        LegacyResources.BlockName_Code, "}", "{"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -86,10 +83,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         LegacyResources.FormatParseError_UnexpectedEndTag("html"),
                         new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2),
                         length: 4)),
-                    RazorDiagnostic.Create(new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("code", "}", "{"),
-                        new SourceLocation(1, 0, 1),
-                        length: 1))
+                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                 });
         }
 

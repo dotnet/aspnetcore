@@ -249,9 +249,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var unbalancedParenErrorString = "An opening \"(\" is missing the corresponding closing \")\".";
-                var unbalancedBracketCatchErrorString = "The catch block is missing a closing \"}\" character.  " +
-                    "Make sure you have a matching \"}\" character for all the \"{\" characters within this block, " +
-                    "and that none of the \"}\" characters are being interpreted as markup.";
 
                 // document, expectedStatement, expectedErrors
                 return new TheoryData<string, StatementBlock, RazorDiagnostic[]>
@@ -281,7 +278,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (true) {")
                                 .AsStatement()),
-                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23, 1)) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(23, 0, 23), contentLength: 1), "catch", "}", "{")
+                        }
                     },
                 };
             }

@@ -489,9 +489,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
         /// 
-        /// @if(isLoggedIn) {
+        /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
-        /// }
+        /// }}
         /// </summary>
         internal static string ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start
         {
@@ -501,9 +501,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The "@" character must be followed by a ":", "(", or a C# identifier.  If you intended to switch to markup, use an HTML start tag, for example:
         /// 
-        /// @if(isLoggedIn) {
+        /// @if(isLoggedIn) {{
         ///     &lt;p&gt;Hello, @user!&lt;/p&gt;
-        /// }
+        /// }}
         /// </summary>
         internal static string FormatParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start()
             => GetString("ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start");
@@ -688,9 +688,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
         /// 
         /// @using System.Drawing;
-        /// @{
+        /// @{{
         ///     // OK here to use types from System.Drawing in the page.
-        /// }
+        /// }}
         /// </summary>
         internal static string ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock
         {
@@ -701,9 +701,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
         /// 
         /// @using System.Drawing;
-        /// @{
+        /// @{{
         ///     // OK here to use types from System.Drawing in the page.
-        /// }
+        /// }}
         /// </summary>
         internal static string FormatParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock()
             => GetString("ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock");
@@ -881,7 +881,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             => GetString("ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock1");
 
         /// <summary>
-        /// Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.
+        /// Unexpected "{{" after "@" character. Once inside the body of a code block (@if {{}}, @{{}}, etc.) you do not need to use "@{{" to switch to code.
         /// </summary>
         internal static string ParseError_Unexpected_Nested_CodeBlock
         {
@@ -889,13 +889,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
-        /// Unexpected "{" after "@" character. Once inside the body of a code block (@if {}, @{}, etc.) you do not need to use "@{" to switch to code.
+        /// Unexpected "{{" after "@" character. Once inside the body of a code block (@if {{}}, @{{}}, etc.) you do not need to use "@{{" to switch to code.
         /// </summary>
         internal static string FormatParseError_Unexpected_Nested_CodeBlock()
             => GetString("ParseError_Unexpected_Nested_CodeBlock");
 
         /// <summary>
-        /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
+        /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
         /// </summary>
         internal static string ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS
         {
@@ -903,7 +903,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
-        /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
+        /// A space or line break was encountered after the "@" character.  Only valid identifiers, keywords, comments, "(" and "{{" are valid at the start of a code block and they must occur immediately following "@" with no space in between.
         /// </summary>
         internal static string FormatParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS()
             => GetString("ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS");

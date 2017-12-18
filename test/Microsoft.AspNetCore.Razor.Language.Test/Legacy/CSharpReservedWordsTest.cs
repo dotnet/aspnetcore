@@ -16,10 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new DirectiveBlock(
                                Factory.MetaCode(word).Accepts(AcceptedCharactersInternal.None)
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_ReservedWord(word),
-                               SourceLocation.Zero,
-                               word.Length)));
+                           RazorDiagnosticFactory.CreateParsing_ReservedWord(
+                               new SourceSpan(SourceLocation.Zero, word.Length), word));
         }
 
         [Theory]

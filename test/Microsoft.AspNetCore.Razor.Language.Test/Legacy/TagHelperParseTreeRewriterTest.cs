@@ -2346,10 +2346,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var errorFormatNormalUnclosed =
                     "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
                     "matching end tag.";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -2394,9 +2390,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "!text"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2541,10 +2536,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var errorFormatNormalNotStarted =
                     "Encountered end tag \"{0}\" with no matching start tag.  Are your start/end tags properly " +
                     "balanced?";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -2574,9 +2565,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "!text", CultureInfo.InvariantCulture),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)),
@@ -2669,9 +2659,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "text", CultureInfo.InvariantCulture),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 4))
@@ -2723,10 +2712,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
                 var errorEOFMatchingBrace =
                     "End of file or an unexpected character was reached before the \"{0}\" tag could be parsed.  " +
                     "Elements inside markup blocks must be complete. They must either be self-closing " +
@@ -2752,9 +2737,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "text}"))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!text}"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 6))
@@ -2770,9 +2754,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new MarkupBlock(factory.Markup("}"))))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!text"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2798,9 +2781,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 15, 0, 15))))))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!text"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2826,9 +2808,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("btn}", 16, 0, 16))))))),
                             new []
                             {
-                                RazorDiagnostic.Create(new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                 RazorDiagnostic.Create(new RazorError(
                                     string.Format(errorEOFMatchingBrace, "!text"),
                                     absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2857,9 +2838,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    RazorDiagnostic.Create(new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                     RazorDiagnostic.Create(new RazorError(
                                         string.Format(errorEOFMatchingBrace, "!text"),
                                         absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2889,9 +2869,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    RazorDiagnostic.Create(new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                     RazorDiagnostic.Create(new RazorError(
                                         string.Format(errorEOFMatchingBrace, "!text"),
                                         absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5))
@@ -2917,10 +2896,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
                 var errorEOFMatchingBrace =
                     "End of file or an unexpected character was reached before the \"{0}\" tag could be parsed.  " +
                     "Elements inside markup blocks must be complete. They must either be self-closing " +
@@ -2946,9 +2921,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "}"))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!}"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -2960,9 +2934,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "p}"))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!p}"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 3))
@@ -2975,9 +2948,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("<", "p /", new MarkupBlock(factory.Markup("}"))))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!p"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3003,9 +2975,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 12, 0, 12))))))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorEOFMatchingBrace, "!p"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3031,9 +3002,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("btn}", 13, 0, 13))))))),
                             new []
                             {
-                                RazorDiagnostic.Create(new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                 RazorDiagnostic.Create(new RazorError(
                                     string.Format(errorEOFMatchingBrace, "!p"),
                                     absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3066,9 +3036,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 18, 0, 18))))))),
                             new []
                             {
-                                RazorDiagnostic.Create(new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                 RazorDiagnostic.Create(new RazorError(
                                     string.Format(errorEOFMatchingBrace, "!p"),
                                     absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3097,9 +3066,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    RazorDiagnostic.Create(new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                     RazorDiagnostic.Create(new RazorError(
                                         string.Format(errorEOFMatchingBrace, "!p"),
                                         absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3130,9 +3098,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.Markup("}"))))),
                                 new []
                                 {
-                                    RazorDiagnostic.Create(new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                       new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                                     RazorDiagnostic.Create(new RazorError(
                                         string.Format(errorEOFMatchingBrace, "!p"),
                                         absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
@@ -3274,10 +3241,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var errorFormatNormalNotStarted =
                     "Encountered end tag \"{0}\" with no matching start tag.  Are your start/end tags properly " +
                     "balanced?";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -3307,9 +3270,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "!p", CultureInfo.InvariantCulture),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)),
@@ -3399,9 +3361,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("}"))))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "p", CultureInfo.InvariantCulture),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1)),
@@ -3537,10 +3498,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var errorFormatNormalUnclosed =
                     "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
                     "matching end tag.";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -3585,9 +3542,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            RazorDiagnostic.Create(new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1)),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                             RazorDiagnostic.Create(new RazorError(
                                 string.Format(errorFormatNormalUnclosed, "!p"),
                                 absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2))
