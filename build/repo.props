@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿<Project>
+<Project>
   <Import Project="dependencies.props" />
 
   <ItemGroup>

@@ -25,15 +25,9 @@ project.lock.json
 *.ncrunchsolution
 *.*sdf
 *.ipch
-<<<<<<< HEAD
-*.vs/
 .vscode/
-.testPublish/
-.build/
 *.nuget.props
 *.nuget.targets
-global.json
-=======
 *.bin
 *.vs/
 .testPublish/
@@ -41,12 +35,15 @@ global.json
 *.obj
 *.tlog
 *.CppClean.log
+*msbuild.log
 
 src/*/Debug/
 src/*/x64/Debug/
 src/*/Release/
 src/*/x64/Release/
+x64/
 
+*vcxproj.filters
 *.aps
 *.pdb
 *.lib
@@ -59,5 +56,3 @@ src/AspNetCore/version.h
 
 *.VC.*db
 global.json
-
->>>>>>> ANCM/dev

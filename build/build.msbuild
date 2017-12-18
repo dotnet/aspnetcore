@@ -3,6 +3,7 @@
    <Import Project="$(MSBuildThisFileDirectory)\Build.Settings" /> 
    <ItemGroup> 
      <Projects Include="$(SolutionDir)\src\AspNetCore\AspNetCore.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\src\RequestHandler\RequestHandler.vcxproj" /> 
    </ItemGroup> 
  
    <Target Name="Build"> 

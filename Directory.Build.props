@@ -1,17 +1,12 @@
-<<<<<<< HEAD
-﻿<Project>
+<Project>
   <Import
     Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
     Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
 
-=======
-<Project>
->>>>>>> ANCM/dev
   <Import Project="version.props" />
   <Import Project="build\dependencies.props" />
   <Import Project="build\sources.props" />
 
-<<<<<<< HEAD
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <RepositoryUrl>https://github.com/aspnet/IISIntegration</RepositoryUrl>
@@ -28,14 +23,4 @@
     <PackageReference Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
-=======
- <PropertyGroup>
-    <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/AspNetCoreModule</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-  </PropertyGroup>
->>>>>>> ANCM/dev
 </Project>

@@ -6,109 +6,47 @@
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
-BOOL                g_fAsyncDisconnectAvailable = FALSE;
-BOOL                g_fWinHttpNonBlockingCallbackAvailable = FALSE;
 BOOL                g_fRecycleProcessCalled = FALSE;
 PCWSTR              g_pszModuleName = NULL;
 HINSTANCE           g_hModule;
-HINSTANCE           g_hWinHttpModule;
-BOOL                g_fWebSocketSupported = FALSE;
-
-DWORD               g_dwTlsIndex = TLS_OUT_OF_INDEXES;
-BOOL                g_fEnableReferenceCountTracing = FALSE;
+HMODULE             g_hAspnetCoreRH = NULL;
+BOOL                g_fAspnetcoreRHAssemblyLoaded = FALSE;
+BOOL                g_fAspnetcoreRHLoadedError = FALSE;
 DWORD               g_dwAspNetCoreDebugFlags = 0;
-BOOL                g_fNsiApiNotSupported = FALSE;
 DWORD               g_dwActiveServerProcesses = 0;
-DWORD               g_OptionalWinHttpFlags = 0; //specify additional WinHTTP options when using WinHttpOpenRequest API.
-
+SRWLOCK             g_srwLock;
 DWORD               g_dwDebugFlags = 0;
 PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE";
+PCWSTR              g_pwzAspnetcoreRequestHandlerName = L"\\aspnetcorerh.dll";
+PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
+PFN_ASPNETCORE_CREATE_REQUEST_HANDLER  g_pfnAspNetCoreCreateRequestHandler;
+
+VOID
+StaticCleanup()
+{
+    APPLICATION_MANAGER::Cleanup();
+}
 
 BOOL WINAPI DllMain(HMODULE hModule,
     DWORD  ul_reason_for_call,
     LPVOID lpReserved
     )
 {
+    UNREFERENCED_PARAMETER(lpReserved);
+
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
         g_hModule = hModule;
         DisableThreadLibraryCalls(hModule);
         break;
+    case DLL_PROCESS_DETACH:
+        StaticCleanup();
     default:
         break;
     }
 
     return TRUE;
-}
-
-VOID
-LoadGlobalConfiguration(
-VOID
-)
-{
-    HKEY hKey;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
-        0,
-        KEY_READ,
-        &hKey) == NO_ERROR)
-    {
-        DWORD dwType;
-        DWORD dwData;
-        DWORD cbData;
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"OptionalWinHttpFlags",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            g_OptionalWinHttpFlags = dwData;
-        }
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"EnableReferenceCountTracing",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD) && (dwData == 1 || dwData == 0))
-        {
-            g_fEnableReferenceCountTracing = !!dwData;
-        }
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"DebugFlags",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            g_dwAspNetCoreDebugFlags = dwData;
-        }
-
-        RegCloseKey(hKey);
-    }
-
-    DWORD dwSize = 0;
-    DWORD dwResult = GetExtendedTcpTable(NULL,
-        &dwSize,
-        FALSE,
-        AF_INET,
-        TCP_TABLE_OWNER_PID_LISTENER,
-        0);
-    if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
-    {
-        g_fNsiApiNotSupported = TRUE;
-    }
 }
 
 HRESULT
@@ -138,8 +76,14 @@ HRESULT
 
 --*/
 {
-    HRESULT                 hr = S_OK;
-    CProxyModuleFactory *   pFactory = NULL;
+    HRESULT                             hr = S_OK;
+    HKEY                                hKey;
+    BOOL                                fDisableANCM = FALSE;
+    ASPNET_CORE_PROXY_MODULE_FACTORY *  pFactory = NULL;
+    ASPNET_CORE_GLOBAL_MODULE *         pGlobalModule = NULL;
+    APPLICATION_MANAGER *               pApplicationManager = NULL;
+
+    UNREFERENCED_PARAMETER(dwServerVersion);
 
 #ifdef DEBUG
     CREATE_DEBUG_PRINT_OBJECT("Asp.Net Core Module");
@@ -148,63 +92,50 @@ HRESULT
 
     CREATE_DEBUG_PRINT_OBJECT;
 
-    LoadGlobalConfiguration();
+    //LoadGlobalConfiguration();
 
-    //
-    // 7.0 is 0,7
-    //
-    if (dwServerVersion > MAKELONG(0, 7))
-    {
-        g_fAsyncDisconnectAvailable = TRUE;
-    }
-
-    //
-    // 8.0 is 0,8
-    //
-    if (dwServerVersion >= MAKELONG(0, 8))
-    {
-        // IISOOB:36641 Enable back WINHTTP_OPTION_ASSURED_NON_BLOCKING_CALLBACKS for Win8.
-        // g_fWinHttpNonBlockingCallbackAvailable = TRUE;
-        g_fWebSocketSupported = TRUE;
-    }
-
-    hr = WINHTTP_HELPER::StaticInitialize();
-    if (FAILED(hr))
-    {
-        if (hr == HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND))
-        {
-            g_fWebSocketSupported = FALSE;
-        }
-        else
-        {
-            goto Finished;
-        }
-    }
+    InitializeSRWLock(&g_srwLock);
 
     g_pModuleId = pModuleInfo->GetId();
     g_pszModuleName = pModuleInfo->GetName();
     g_pHttpServer = pHttpServer;
-    g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
 
-    //
-    // WinHTTP does not create enough threads, ask it to create more.
-    // Starting in Windows 7, this setting is ignored because WinHTTP
-    // uses a thread pool.
-    //
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    DWORD dwThreadCount = (si.dwNumberOfProcessors * 3 + 1) / 2;
-    WinHttpSetOption(NULL,
-        WINHTTP_OPTION_WORKER_THREAD_COUNT,
-        &dwThreadCount,
-        sizeof(dwThreadCount));
+    // check whether the feature is disabled due to security reason
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
+        0,
+        KEY_READ,
+        &hKey) == NO_ERROR)
+    {
+        DWORD dwType;
+        DWORD dwData;
+        DWORD cbData;
+
+        cbData = sizeof(dwData);
+        if ((RegQueryValueEx(hKey,
+            L"DisableANCM",
+            NULL,
+            &dwType,
+            (LPBYTE)&dwData,
+            &cbData) == NO_ERROR) &&
+            (dwType == REG_DWORD))
+        {
+            fDisableANCM = (dwData != 0);
+        }
+    }
+
+    if (fDisableANCM)
+    {
+        // Logging
+        goto Finished;
+    }
 
     //
     // Create the factory before any static initialization.
-    // The CProxyModuleFactory::Terminate method will clean any
+    // The ASPNET_CORE_PROXY_MODULE_FACTORY::Terminate method will clean any
     // static object initialized.
     //
-    pFactory = new CProxyModuleFactory;
+    pFactory = new ASPNET_CORE_PROXY_MODULE_FACTORY;
 
     if (pFactory == NULL)
     {
@@ -213,28 +144,45 @@ HRESULT
     }
 
     hr = pModuleInfo->SetRequestNotifications(
-        pFactory,
-        RQ_EXECUTE_REQUEST_HANDLER,
-        0);
+                                  pFactory,
+                                  RQ_EXECUTE_REQUEST_HANDLER,
+                                  0);
     if (FAILED(hr))
     {
         goto Finished;
     }
 
     pFactory = NULL;
+    pApplicationManager = APPLICATION_MANAGER::GetInstance();
+    if(pApplicationManager == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+    
+    hr = pApplicationManager->Initialize();
+    if(FAILED(hr))
+     {
+        goto Finished;
+    }
+    pGlobalModule = NULL;
 
-    g_pResponseHeaderHash = new RESPONSE_HEADER_HASH;
-    if (g_pResponseHeaderHash == NULL)
+    pGlobalModule = new ASPNET_CORE_GLOBAL_MODULE(pApplicationManager);
+    if (pGlobalModule == NULL)
     {
         hr = E_OUTOFMEMORY;
         goto Finished;
     }
 
-    hr = g_pResponseHeaderHash->Initialize();
+    hr = pModuleInfo->SetGlobalNotifications(
+                                   pGlobalModule,
+                                   GL_CONFIGURATION_CHANGE | GL_STOP_LISTENING);
+
     if (FAILED(hr))
     {
         goto Finished;
     }
+    pGlobalModule = NULL;
 
     hr = ALLOC_CACHE_HANDLER::StaticInitialize();
     if (FAILED(hr))
@@ -242,19 +190,12 @@ HRESULT
         goto Finished;
     }
 
-    hr = FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    hr = WEBSOCKET_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
 Finished:
+    if (pGlobalModule != NULL)
+    {
+        delete pGlobalModule;
+        pGlobalModule = NULL;
+    }
 
     if (pFactory != NULL)
     {

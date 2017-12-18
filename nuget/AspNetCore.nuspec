@@ -20,6 +20,8 @@
   <files>
     <file src="..\artifacts\build\AspNetCore\bin\Release\Win32\aspnetcore.dll" target="contentFiles\any\any\x86\aspnetcore.dll" />
     <file src="..\artifacts\build\AspNetCore\bin\Release\x64\aspnetcore.dll" target="contentFiles\any\any\x64\aspnetcore.dll" />
+    <file src="..\artifacts\build\AspNetCore\bin\Release\Win32\aspnetcorerh.dll" target="contentFiles\any\any\x86\aspnetcorerh.dll" />
+    <file src="..\artifacts\build\AspNetCore\bin\Release\x64\aspnetcorerh.dll" target="contentFiles\any\any\x64\aspnetcorerh.dll" />
     <file src="..\artifacts\build\AspNetCore\bin\Release\x64\*.xml"/>
     <file src="..\tools\installancm.ps1"/>
     <file src="..\LICENSE.txt"/>

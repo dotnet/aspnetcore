@@ -19,7 +19,7 @@
 #define FILE_WATCHER_ENTRY_SIGNATURE       ((DWORD) 'FWES')
 #define FILE_WATCHER_ENTRY_SIGNATURE_FREE  ((DWORD) 'sewf')
 
-class APPLICATION;
+class APPLICATION_INFO;
 
 class FILE_WATCHER{
 public:
@@ -67,7 +67,7 @@ public:
     Create(
         _In_ PCWSTR                  pszDirectoryToMonitor,
         _In_ PCWSTR                  pszFileNameToMonitor,
-        _In_ APPLICATION*            pApplication,
+        _In_ APPLICATION_INFO*       pApplicationInfo,
         _In_ HANDLE                  hImpersonationToken
         );
 
@@ -116,7 +116,7 @@ private:
     HANDLE                  _hImpersonationToken;
     HANDLE                  _hDirectory;
     FILE_WATCHER*           _pFileMonitor;
-    APPLICATION*            _pApplication;
+    APPLICATION_INFO*       _pApplicationInfo;
     STRU                    _strFileName;
     STRU                    _strDirectoryName;
     LONG                    _lStopMonitorCalled;

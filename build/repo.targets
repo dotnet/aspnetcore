@@ -16,6 +16,8 @@
       
     <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\RequestHandler\RequestHandler.vcxproj&quot; %(BuildConfigurations.Identity)"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
   <Target Name="PackageProjects">

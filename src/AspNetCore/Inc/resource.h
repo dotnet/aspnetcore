@@ -6,6 +6,7 @@
 #define IDS_INVALID_PROPERTY        1000
 #define IDS_SERVER_ERROR            1001
 
+// TODO remove this file?
 #define ASPNETCORE_EVENT_MSG_BUFFER_SIZE 256
 #define ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG           L"Application '%s' started process '%d' successfully and is listening on port '%d'."
 #define ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG       L"Maximum rapid fail count per minute of '%d' exceeded."

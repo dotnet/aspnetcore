@@ -13,8 +13,16 @@ FILE_WATCHER::~FILE_WATCHER()
 {
     if (m_hChangeNotificationThread != NULL)
     {
+        PostQueuedCompletionStatus(m_hCompletionPort, 0, FILE_WATCHER_SHUTDOWN_KEY, NULL);
+        WaitForSingleObject(m_hChangeNotificationThread, INFINITE);
         CloseHandle(m_hChangeNotificationThread);
         m_hChangeNotificationThread = NULL;
+    }
+
+    if (NULL != m_hCompletionPort)
+    {
+        CloseHandle(m_hCompletionPort);
+        m_hCompletionPort = NULL;
     }
 }
 
@@ -97,13 +105,13 @@ Win32 error
             &pOverlapped,
             INFINITE);
 
-        DBG_ASSERT(fSuccess);		
+        DBG_ASSERT(fSuccess);
         DebugPrint(1, "FILE_WATCHER::ChangeNotificationThread");
         dwErrorStatus = fSuccess ? ERROR_SUCCESS : GetLastError();
 
         if (completionKey == FILE_WATCHER_SHUTDOWN_KEY)
         {
-            continue;
+            break;
         }
 
         DBG_ASSERT(pOverlapped != NULL);
@@ -117,6 +125,8 @@ Win32 error
         pOverlapped = NULL;
         cbCompletion = 0;
     }
+
+    return 0;
 }
 
 VOID
@@ -173,7 +183,7 @@ FILE_WATCHER_ENTRY::FILE_WATCHER_ENTRY(FILE_WATCHER *   pFileMonitor) :
     _pFileMonitor(pFileMonitor),
     _hDirectory(INVALID_HANDLE_VALUE),
     _hImpersonationToken(NULL),
-    _pApplication(NULL),
+    _pApplicationInfo(NULL),
     _lStopMonitorCalled(0),
     _cRefs(1),
     _fIsValid(TRUE)
@@ -253,7 +263,7 @@ HRESULT
     // Othersie we have to cache the file info 
     //
     if (cbCompletion == 0)
-    { 
+    {
         fFileChanged = TRUE;
     }
     else
@@ -266,9 +276,9 @@ HRESULT
             //
             // check whether the monitored file got changed
             //
-            if (_wcsnicmp(pNotificationInfo->FileName, 
-                _strFileName.QueryStr(), 
-                pNotificationInfo->FileNameLength/sizeof(WCHAR)) == 0)
+            if (_wcsnicmp(pNotificationInfo->FileName,
+                _strFileName.QueryStr(),
+                pNotificationInfo->FileNameLength / sizeof(WCHAR)) == 0)
             {
                 fFileChanged = TRUE;
                 break;
@@ -284,7 +294,7 @@ HRESULT
             {
                 pNotificationInfo = (FILE_NOTIFY_INFORMATION*)
                     ((PBYTE)pNotificationInfo +
-                    pNotificationInfo->NextEntryOffset);
+                        pNotificationInfo->NextEntryOffset);
             }
         }
     }
@@ -294,7 +304,7 @@ HRESULT
         //
         // so far we only monitoring app_offline
         //
-        _pApplication->UpdateAppOfflineFileHandle();
+        _pApplicationInfo->UpdateAppOfflineFileHandle();
     }
 
 Finished:
@@ -314,7 +324,7 @@ FILE_WATCHER_ENTRY::Monitor(VOID)
     ReferenceFileWatcherEntry();
     ZeroMemory(&_overlapped, sizeof(_overlapped));
 
-    if(!ReadDirectoryChangesW(_hDirectory,
+    if (!ReadDirectoryChangesW(_hDirectory,
         _buffDirectoryChanges.QueryPtr(),
         _buffDirectoryChanges.QuerySize(),
         FALSE,        // Watching sub dirs. Set to False now as only monitoring app_offline
@@ -355,7 +365,7 @@ HRESULT
 FILE_WATCHER_ENTRY::Create(
     _In_ PCWSTR                  pszDirectoryToMonitor,
     _In_ PCWSTR                  pszFileNameToMonitor,
-    _In_ APPLICATION*            pApplication,
+    _In_ APPLICATION_INFO*       pApplicationInfo,
     _In_ HANDLE                  hImpersonationToken
 )
 {
@@ -364,7 +374,7 @@ FILE_WATCHER_ENTRY::Create(
 
     if (pszDirectoryToMonitor == NULL ||
         pszFileNameToMonitor == NULL ||
-        pApplication == NULL)
+        pApplicationInfo == NULL)
     {
         DBG_ASSERT(FALSE);
         hr = HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER);
@@ -374,7 +384,7 @@ FILE_WATCHER_ENTRY::Create(
     //
     //remember the application
     //
-    _pApplication = pApplication;
+    _pApplicationInfo = pApplicationInfo;
 
     if (FAILED(hr = _strFileName.Copy(pszFileNameToMonitor)))
     {
