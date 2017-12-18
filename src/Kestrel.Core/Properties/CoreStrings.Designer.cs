@@ -1634,6 +1634,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatUnableToConfigureHttpsBindings()
             => GetString("UnableToConfigureHttpsBindings");
 
+        /// <summary>
+        /// Failed to authenticate HTTPS connection.
+        /// </summary>
+        internal static string AuthenticationFailed
+        {
+            get => GetString("AuthenticationFailed");
+        }
+
+        /// <summary>
+        /// Failed to authenticate HTTPS connection.
+        /// </summary>
+        internal static string FormatAuthenticationFailed()
+            => GetString("AuthenticationFailed");
+
+        /// <summary>
+        /// Authentication of the HTTPS connection timed out.
+        /// </summary>
+        internal static string AuthenticationTimedOut
+        {
+            get => GetString("AuthenticationTimedOut");
+        }
+
+        /// <summary>
+        /// Authentication of the HTTPS connection timed out.
+        /// </summary>
+        internal static string FormatAuthenticationTimedOut()
+            => GetString("AuthenticationTimedOut");
+
+        /// <summary>
+        /// Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
+        /// </summary>
+        internal static string InvalidServerCertificateEku
+        {
+            get => GetString("InvalidServerCertificateEku");
+        }
+
+        /// <summary>
+        /// Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
+        /// </summary>
+        internal static string FormatInvalidServerCertificateEku(object thumbprint)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidServerCertificateEku", "thumbprint"), thumbprint);
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string PositiveTimeSpanRequired1
+        {
+            get => GetString("PositiveTimeSpanRequired1");
+        }
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string FormatPositiveTimeSpanRequired1()
+            => GetString("PositiveTimeSpanRequired1");
+
+        /// <summary>
+        /// The server certificate parameter is required.
+        /// </summary>
+        internal static string ServiceCertificateRequired
+        {
+            get => GetString("ServiceCertificateRequired");
+        }
+
+        /// <summary>
+        /// The server certificate parameter is required.
+        /// </summary>
+        internal static string FormatServiceCertificateRequired()
+            => GetString("ServiceCertificateRequired");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

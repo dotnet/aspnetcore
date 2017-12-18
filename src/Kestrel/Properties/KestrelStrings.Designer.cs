@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             = new ResourceManager("Microsoft.AspNetCore.Server.Kestrel.KestrelStrings", typeof(KestrelStrings).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// An 'https' URL was provided, but a development certificate could not be found.
+        /// Unable to configure HTTPS endpoint. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
         /// </summary>
         internal static string HttpsUrlProvidedButNoDevelopmentCertificateFound
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
         }
 
         /// <summary>
-        /// An 'https' URL was provided, but a development certificate could not be found.
+        /// Unable to configure HTTPS endpoint. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
         /// </summary>
         internal static string FormatHttpsUrlProvidedButNoDevelopmentCertificateFound()
             => GetString("HttpsUrlProvidedButNoDevelopmentCertificateFound");

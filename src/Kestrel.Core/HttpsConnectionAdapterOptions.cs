@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             {
                 if (value <= TimeSpan.Zero && value != Timeout.InfiniteTimeSpan)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), HttpsStrings.PositiveTimeSpanRequired);
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.PositiveTimeSpanRequired);
                 }
                 _handshakeTimeout = value != Timeout.InfiniteTimeSpan ? value : TimeSpan.MaxValue;
             }

@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     ServerCertificate = cert,
                 }));
 
-            Assert.Equal(HttpsStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
+            Assert.Equal(CoreStrings.FormatInvalidServerCertificateEku(cert.Thumbprint), ex.Message);
         }
 
         private static async Task App(HttpContext httpContext)

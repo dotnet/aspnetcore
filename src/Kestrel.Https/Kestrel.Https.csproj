@@ -18,10 +18,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="HttpsStrings.resx">
-      <Generator></Generator>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>

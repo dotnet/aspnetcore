@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             if (options.ServerCertificate == null)
             {
-                throw new ArgumentException(HttpsStrings.ServiceCertificateRequired, nameof(options));
+                throw new ArgumentException(CoreStrings.ServiceCertificateRequired, nameof(options));
             }
 
             // capture the certificate now so it can be switched after validation
@@ -148,13 +148,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
             catch (OperationCanceledException)
             {
-                _logger?.LogInformation(2, HttpsStrings.AuthenticationTimedOut);
+                _logger?.LogInformation(2, CoreStrings.AuthenticationTimedOut);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
             catch (IOException ex)
             {
-                _logger?.LogInformation(1, ex, HttpsStrings.AuthenticationFailed);
+                _logger?.LogInformation(1, ex, CoreStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
             }
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 
             if (hasEkuExtension)
             {
-                throw new InvalidOperationException(HttpsStrings.FormatInvalidServerCertificateEku(certificate.Thumbprint));
+                throw new InvalidOperationException(CoreStrings.FormatInvalidServerCertificateEku(certificate.Thumbprint));
             }
         }
 

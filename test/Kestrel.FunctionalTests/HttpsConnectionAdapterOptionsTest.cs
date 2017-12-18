@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Xunit;
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new HttpsConnectionAdapterOptions { HandshakeTimeout = value });
 
             Assert.Equal("value", exception.ParamName);
-            Assert.StartsWith(HttpsStrings.PositiveTimeSpanRequired, exception.Message);
+            Assert.StartsWith(CoreStrings.PositiveTimeSpanRequired, exception.Message);
         }
 
         public static TheoryData<TimeSpan> TimeoutValidData => new TheoryData<TimeSpan>
