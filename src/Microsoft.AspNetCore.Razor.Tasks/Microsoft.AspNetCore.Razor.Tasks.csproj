@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- This needs to support desktop and CoreCLR to run in msbuild -->
+    <TargetFrameworks>net46;netstandard2.0</TargetFrameworks>
+    
+    <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
+    <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+  </ItemGroup>
+</Project>
