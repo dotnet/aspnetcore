@@ -1044,6 +1044,56 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(HubTypes))]
+        public async Task SendToOthersInGroup(Type hubType)
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
+
+                var result = (await firstClient.InvokeAsync("GroupSendMethod", "testGroup", "test").OrTimeout()).Result;
+
+                // check that 'firstConnection' hasn't received the group send
+                Assert.Null(firstClient.TryRead());
+
+                // check that 'secondConnection' hasn't received the group send
+                Assert.Null(secondClient.TryRead());
+
+                await firstClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "testGroup").OrTimeout();
+                await secondClient.InvokeAsync(nameof(MethodHub.GroupAddMethod), "testGroup").OrTimeout();
+
+                await firstClient.SendInvocationAsync("SendToOthersInGroup", "testGroup", "test").OrTimeout();
+
+                // check that 'secondConnection' has received the group send
+                var hubMessage = await secondClient.ReadAsync().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(hubMessage);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Single(invocation.Arguments);
+                Assert.Equal("test", invocation.Arguments[0]);
+
+                // Check that first client only got the completion message
+                hubMessage = await firstClient.ReadAsync().OrTimeout();
+                Assert.IsType<CompletionMessage>(hubMessage);
+
+                Assert.Null(firstClient.TryRead());
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask).OrTimeout();
+            }
+        }
+
         [Fact]
         public async Task RemoveFromGroupWhenNotInGroupDoesNotFail()
         {
@@ -1683,6 +1733,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return Clients.GroupExcept(groupName, excludedIds).Send(message);
             }
 
+            public Task SendToOthersInGroup(string groupName, string message)
+            {
+                return Clients.OthersInGroup(groupName).Send(message);
+            }
+
             public Task BroadcastMethod(string message)
             {
                 return Clients.All.Broadcast(message);
@@ -1876,6 +1931,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return Clients.GroupExcept(groupName, excludedIds).Send(message);
             }
 
+            public Task SendToOthersInGroup(string groupName, string message)
+            {
+                return Clients.OthersInGroup(groupName).Send(message);
+            }
+
             public Task BroadcastMethod(string message)
             {
                 return Clients.All.Broadcast(message);
@@ -2010,6 +2070,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
             {
                 return Clients.GroupExcept(groupName, excludedIds).InvokeAsync("Send", message);
+            }
+
+            public Task SendToOthersInGroup(string groupName, string message)
+            {
+                return Clients.OthersInGroup(groupName).InvokeAsync("Send", message);
             }
 
             public Task BroadcastMethod(string message)

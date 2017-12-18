@@ -127,10 +127,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.InvokeGroupExceptAsync("gunit", "Hello", new object[] { "World" }, excludedIds).OrTimeout();
 
                 await AssertMessageAsync(client1);
+                Assert.Null(client2.TryRead());
 
                 await connection1.DisposeAsync().OrTimeout();
                 await connection2.DisposeAsync().OrTimeout();
-                Assert.Null(client2.TryRead());
             }
         }
 

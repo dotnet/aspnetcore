@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.SignalR
         T Caller { get; }
 
         T Others { get; }
+
+        T OthersInGroup(string groupName);
     }
 }
