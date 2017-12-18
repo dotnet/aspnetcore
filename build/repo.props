@@ -41,6 +41,12 @@
   </PropertyGroup>
 
   <!-- Properties for publishing -->
+  <PropertyGroup>
+    <PublishToVSDrop>false</PublishToVSDrop>
+    <PublishToMyGet>false</PublishToMyGet>
+    <PublishToAzureBlob>false</PublishToAzureBlob>
+  </PropertyGroup>
+
   <PropertyGroup Condition=" '$(LocalBuild)' != 'true' ">
     <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
     <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>

@@ -24,21 +24,25 @@
     <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" Condition="Exists($(RazorVSIXFullPath))" />
   </Target>
 
-  <Target Name="GetAzureFilesToPublish" BeforeTargets="PublishToAzure" Condition="'$(PublishToAzureBlob)' == 'true'">
+  <Target Name="GetPackagesToPublish">
+    <ItemGroup>
+      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
+      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetAzureFilesToPublish" BeforeTargets="PublishToAzure" DependsOnTargets="GetPackagesToPublish" Condition="'$(PublishToAzureBlob)' == 'true'">
     <ItemGroup>
       <!--
       PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
       Ensure that this only contains artifacts we produce (and not mirrored dependencies) since that would result in conflicts.
        -->
-      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
-      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
-
       <FilesToPublish Include="$(CoherenceSignedDestinationDir)SharedFx\*.zip" />
       <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(FileRelativePathBase)/%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="PushNuGetPackages" DependsOnTargets="GetArtifactInfo" Condition="'$(PublishToMyget)' == 'true'">
+  <Target Name="PushNuGetPackages" DependsOnTargets="GetPackagesToPublish" Condition="'$(PublishToMyget)' == 'true'">
     <Error Text="Cannot publish unsigned files to MyGet. Set SignType to 'real' to ensuring files are signed first."
       Condition=" '$(SignType)' != 'real'" />
 
