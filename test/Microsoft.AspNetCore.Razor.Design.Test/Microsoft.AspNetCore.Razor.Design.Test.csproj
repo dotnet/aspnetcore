@@ -9,7 +9,7 @@
     --> 
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
-
+    <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>

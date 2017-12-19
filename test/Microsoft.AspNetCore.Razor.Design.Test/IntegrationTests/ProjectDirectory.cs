@@ -2,18 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore.Testing;
+using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal class ProjectDirectory : IDisposable
     {
+#if PRESERVE_WORKING_DIRECTORY
+        public bool PreserveWorkingDirectory { get; set; } = true;
+#else
+        public bool PreserveWorkingDirectory { get; set; }
+#endif
+
         public static ProjectDirectory Create(string projectName)
         {
-            var destinationPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+            var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
 
             try
@@ -80,6 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 #else
 #error Unknown Configuration
 #endif
+
                 var text = $@"
 <Project>
   <PropertyGroup>
@@ -113,7 +123,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         public void Dispose()
         {
-            CleanupDirectory(DirectoryPath);
+            if (PreserveWorkingDirectory)
+            {
+                Console.WriteLine($"Skipping deletion of working directory {DirectoryPath}");
+            }
+            else
+            {
+                CleanupDirectory(DirectoryPath);
+            }
         }
 
         private static void CleanupDirectory(string filePath)

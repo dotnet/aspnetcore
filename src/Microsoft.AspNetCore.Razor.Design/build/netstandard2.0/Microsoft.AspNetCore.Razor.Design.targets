@@ -91,10 +91,34 @@
     </ItemGroup>
   </Target>
 
+   <Target Name="_RazorCreateSourceHashFiles" DependsOnTargets="_RazorResolveSourceFiles">
+    <PropertyGroup>
+      <_RazorSourcesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorSourceHash.cache</_RazorSourcesHashFile>
+    </PropertyGroup>
+
+    <Hash ItemsToHash="@(RazorCompile)">
+      <Output TaskParameter="HashResult" PropertyName="_RazorSourcesHash" />
+    </Hash>
+
+    <MakeDir
+      Directories="$(IntermediateOutputPath)"
+      Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <WriteLinesToFile
+      Lines="$(_RazorSourcesHash)"
+      File="$(_RazorSourcesHashFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_RazorSourcesHashFile)" />
+    </ItemGroup>
+  </Target>
+
   <Target
     Name="RazorCoreGenerate"
-    DependsOnTargets="_RazorResolveSourceFiles;_RazorResolveTagHelpers"
-    Inputs="$(MSBuildAllProjects);@(RazorCompile);$(_RazorTagHelperOutputCache)"
+    DependsOnTargets="_RazorResolveSourceFiles;_RazorCreateSourceHashFiles;_RazorResolveTagHelpers"
+    Inputs="$(MSBuildAllProjects);$(_RazorSourcesHashFile);@(RazorCompile);$(_RazorTagHelperOutputCache)"
     Outputs="@(_RazorGenerated)">
 
     <RemoveDir

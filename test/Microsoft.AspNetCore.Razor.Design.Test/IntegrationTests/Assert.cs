@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             if (result == null)
             {
                 throw new ArgumentNullException(nameof(result));
-            };
+            }
 
             if (result.ExitCode != 0)
             {
