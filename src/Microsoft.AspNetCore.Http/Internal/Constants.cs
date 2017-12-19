@@ -7,6 +7,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         internal const string Http = "http";
         internal const string Https = "https";
+        internal const string UnixPipeHostPrefix = "unix:/";
 
         internal static class BuilderProperties
         {
