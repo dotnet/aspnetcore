@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 
@@ -38,6 +39,22 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (modelExplorer.Model == null)
             {
                 return modelExplorer.Metadata.NullDisplayText;
+            }
+
+            if (modelExplorer.Metadata.IsEnum && modelExplorer.Model is Enum modelEnum)
+            {
+                var enumStringValue = modelEnum.ToString("d");
+                var enumGroupedDisplayNamesAndValues = modelExplorer.Metadata.EnumGroupedDisplayNamesAndValues;
+
+                Debug.Assert(enumGroupedDisplayNamesAndValues != null);
+
+                foreach (var kvp in enumGroupedDisplayNamesAndValues)
+                {
+                    if (string.Equals(kvp.Value, enumStringValue, StringComparison.Ordinal))
+                    {
+                        return kvp.Key.Name;
+                    }
+                }
             }
 
             var stringResult = Convert.ToString(modelExplorer.Model, CultureInfo.CurrentCulture);

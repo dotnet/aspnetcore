@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Xunit;
 
@@ -296,6 +297,34 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             Assert.Equal("Property value", result);
         }
 
+        [Fact]
+        public void DisplayTextFor_EnumDisplayAttribute_WhenPresent()
+        {
+            // Arrange
+            var model = EnumWithDisplayAttribute.Value1;
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+            // Act
+            var result = helper.DisplayTextFor(m => m);
+
+            // Assert
+            Assert.Equal("Value One", result);
+        }
+
+        [Fact]
+        public void DisplayTextFor_EnumDisplayAttribute_WhenNotPresent()
+        {
+            // Arrange
+            var model = EnumWithoutDisplayAttribute.Value1;
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+            // Act
+            var result = helper.DisplayTextFor(m => m);
+
+            // Assert
+            Assert.Equal("Value1", result);
+        }
+
         // ModelMetadata.SimpleDisplayText returns ToString() result if that method has been overridden.
         private sealed class OverriddenToStringModel
         {
@@ -314,6 +343,17 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             {
                 return _simpleDisplayText;
             }
+        }
+
+        public enum EnumWithDisplayAttribute
+        {
+            [Display(Name = "Value One")]
+            Value1
+        }
+
+        public enum EnumWithoutDisplayAttribute
+        {
+            Value1
         }
     }
 }
