@@ -550,7 +550,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        private void RenderTagHelperAttributeInline(
+        // Internal for testing
+        internal void RenderTagHelperAttributeInline(
             CodeRenderingContext context,
             DefaultTagHelperPropertyIntermediateNode property,
             IntermediateNode node,
@@ -574,20 +575,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
             else if (node is CSharpCodeIntermediateNode)
             {
-                var error = new RazorError(
-                    LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
-                    SourceLocation.FromSpan(span),
-                    span == null ? -1 : span.Value.Length);
-                context.Diagnostics.Add(RazorDiagnostic.Create(error));
+                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_CodeBlocksNotSupportedInAttributes(span ?? SourceSpan.Undefined);
+                context.Diagnostics.Add(diagnostic);
             }
             else if (node is TemplateIntermediateNode)
             {
                 var expectedTypeName = property.IsIndexerNameMatch ? property.BoundAttribute.IndexerTypeName : property.BoundAttribute.TypeName;
-                var error = new RazorError(
-                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(expectedTypeName),
-                    SourceLocation.FromSpan(span),
-                    span == null ? -1 : span.Value.Length);
-                context.Diagnostics.Add(RazorDiagnostic.Create(error));
+                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(expectedTypeName, span ?? SourceSpan.Undefined);
+                context.Diagnostics.Add(diagnostic);
             }
         }
 

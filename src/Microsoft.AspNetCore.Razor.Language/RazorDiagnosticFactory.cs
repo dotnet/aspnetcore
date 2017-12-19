@@ -85,6 +85,32 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_SectionsCannotBeNested, location, LegacyResources.SectionExample_CS);
         }
 
+        internal static readonly RazorDiagnosticDescriptor TagHelper_CodeBlocksNotSupportedInAttributes =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2003",
+                () => LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_CodeBlocksNotSupportedInAttributes(SourceSpan location)
+        {
+            var diagnostic = RazorDiagnostic.Create(TagHelper_CodeBlocksNotSupportedInAttributes, location);
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InlineMarkupBlocksNotSupportedInAttributes =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2004",
+                () => LegacyResources.TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(string expectedTypeName, SourceSpan location)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InlineMarkupBlocksNotSupportedInAttributes,
+                location,
+                expectedTypeName);
+
+            return diagnostic;
+        }
+
         #endregion
 
         #region TagHelper Errors
