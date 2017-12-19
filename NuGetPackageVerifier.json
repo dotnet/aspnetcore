@@ -2,6 +2,15 @@
     "Default": {
         "rules": [
             "DefaultCompositeRule"
-        ]
+        ],
+        "packages": {
+            "Microsoft.AspNetCore.Identity.UI": {
+                "Exclusions": {
+                    "DOC_MISSING": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.dll": "This is a library with packages UI"
+                    }
+                }
+            }
+        }
     }
 }
