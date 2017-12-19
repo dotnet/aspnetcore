@@ -3,6 +3,6 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftNETCoreApp20PackageVersion)" />
   </ItemGroup>
 </Project>

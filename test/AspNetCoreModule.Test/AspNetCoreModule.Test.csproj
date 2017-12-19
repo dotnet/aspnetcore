@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.PlatformAbstractions" Version="$(MicrosoftExtensionsPlatformAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(MicrosoftNetHttpHeadersPackageVersion)" />
-    <PackageReference Include="System.Management.Automation.dll" Version="$(SystemManagementAutomationDllPackageVersion)" />
+    <PackageReference Include="System.Management.Automation" Version="$(SystemManagementAutomationPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

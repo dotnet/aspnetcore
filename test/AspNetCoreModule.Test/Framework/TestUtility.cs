@@ -13,12 +13,12 @@ using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
 using System.Security.Principal;
 using System.Security.AccessControl;
+using System.Management.Automation.Runspaces;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Net;
 using System.Collections.ObjectModel;
 using System.Management.Automation;
-using System.Management.Automation.Runspaces;
 
 namespace AspNetCoreModule.Test.Framework
 {

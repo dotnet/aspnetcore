@@ -42,6 +42,7 @@
 *.fs text=auto
 *.fsx text=auto
 *.hs text=auto
+*.rc text=auto
 
 *.csproj text=auto
 *.vbproj text=auto
