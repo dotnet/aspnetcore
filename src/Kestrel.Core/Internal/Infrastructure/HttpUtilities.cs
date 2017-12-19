@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             var asciiString = new string('\0', span.Length);
 
             fixed (char* output = asciiString)
-            fixed (byte* buffer = &span.DangerousGetPinnableReference())
+            fixed (byte* buffer = &MemoryMarshal.GetReference(span))
             {
                 // This version if AsciiUtilities returns null if there are any null (0 byte) characters
                 // in the string
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownMethod(this Span<byte> span, out HttpMethod method, out int length)
         {
-            fixed (byte* data = &span.DangerousGetPinnableReference())
+            fixed (byte* data = &MemoryMarshal.GetReference(span))
             {
                 method = GetKnownMethod(data, span.Length, out length);
                 return method != HttpMethod.Custom;
@@ -190,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownVersion(this Span<byte> span, out HttpVersion knownVersion, out byte length)
         {
-            fixed (byte* data = &span.DangerousGetPinnableReference())
+            fixed (byte* data = &MemoryMarshal.GetReference(span))
             {
                 knownVersion = GetKnownVersion(data, span.Length);
                 if (knownVersion != HttpVersion.Unknown)
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static unsafe bool GetKnownHttpScheme(this Span<byte> span, out HttpScheme knownScheme)
         {
-            fixed (byte* data = &span.DangerousGetPinnableReference())
+            fixed (byte* data = &MemoryMarshal.GetReference(span))
             {
                 return GetKnownHttpScheme(data, span.Length, out knownScheme);
             }

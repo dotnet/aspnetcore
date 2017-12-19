@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (sourceLength <= destLength)
             {
                 fixed (char* input = data)
-                fixed (byte* output = &dest.DangerousGetPinnableReference())
+                fixed (byte* output = &MemoryMarshal.GetReference(dest))
                 {
                     EncodeAsciiCharsToBytes(input, output, sourceLength);
                 }
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             // Fast path, try copying to the available memory directly
             var simpleWrite = true;
-            fixed (byte* output = &span.DangerousGetPinnableReference())
+            fixed (byte* output = &MemoryMarshal.GetReference(span))
             {
                 var start = output;
                 if (number < 10 && bytesLeftInBlock >= 1)
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         continue;
                     }
 
-                    fixed (byte* output = &buffer.Span.DangerousGetPinnableReference())
+                    fixed (byte* output = &MemoryMarshal.GetReference(buffer.Span))
                     {
                         EncodeAsciiCharsToBytes(inputSlice, output, writable);
                     }

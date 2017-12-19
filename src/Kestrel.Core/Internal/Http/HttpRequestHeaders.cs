@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public unsafe void Append(Span<byte> name, string value)
         {
-            fixed (byte* namePtr = &name.DangerousGetPinnableReference())
+            fixed (byte* namePtr = &MemoryMarshal.GetReference(name))
             {
                 Append(namePtr, name.Length, value);
             }

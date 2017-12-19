@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
         public static unsafe int RemoveDotSegments(Span<byte> input)
         {
-            fixed (byte* start = &input.DangerousGetPinnableReference())
+            fixed (byte* start = &MemoryMarshal.GetReference(input))
             {
                 var end = start + input.Length;
                 return RemoveDotSegments(start, end);

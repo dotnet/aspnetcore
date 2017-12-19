@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web.Utf8;
 using Microsoft.AspNetCore.Http.Features;
@@ -341,7 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
             // copy to an array
-            fixed (byte* pointer = &path.DangerousGetPinnableReference())
+            fixed (byte* pointer = &MemoryMarshal.GetReference(path))
             {
                 return Encoding.UTF8.GetString(pointer, path.Length);
             }
