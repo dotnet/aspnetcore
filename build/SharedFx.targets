@@ -36,7 +36,7 @@
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj" Targets="Pack" Properties="$(_SharedFxProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
-  <Target Name="BuildSharedFx" DependsOnTargets="ResolveCommitHash">
+  <Target Name="PrepareForSharedFx">
     <ItemGroup>
       <_AcceptableSharedFxRIDs Include="win-x64;win-x86;osx-x64;linux-x64"/>
     </ItemGroup>
@@ -53,6 +53,10 @@
     <PropertyGroup>
       <SharedFxWorkDirectory>$(_WorkRoot)SharedFx\</SharedFxWorkDirectory>
       <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
+      <SharedFxCrossGenDirectory>$(_WorkRoot)CrossGen\</SharedFxCrossGenDirectory>
+      <SharedFxCrossGenSymbolsDirectory>$(_WorkRoot)CrossGenSymbols\</SharedFxCrossGenSymbolsDirectory>
+      <SharedFxCrossGenToolDirectory>$(_WorkRoot)CrossGenTool\</SharedFxCrossGenToolDirectory>
+      <SharedFxCrossGenRspDirectory>$(_WorkRoot)CrossGenRsp\</SharedFxCrossGenRspDirectory>
       <SharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
       <SharedFxRestoreRid>$(SharedFxRID)</SharedFxRestoreRid>
 
@@ -78,7 +82,9 @@
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Restore"
       Properties="$(_SharedFxProps);MicrosoftAspNetCoreAllVersion=$(PackageVersion);_Target=Restore" />
+  </Target>
 
+  <Target Name="ResolveSharedFxFiles" DependsOnTargets="PrepareForSharedFx;ResolveCommitHash">
     <!-- Publish -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Publish"
@@ -98,11 +104,11 @@
 
     <!-- Rename deps file -->
     <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.deps.json"
-          DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json" />
+      DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json" />
 
     <!-- Rename runtimeconfig.json file -->
     <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.runtimeconfig.json"
-          DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.runtimeconfig.json" />
+      DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.runtimeconfig.json" />
 
     <!-- Generate Runtime Graph -->
     <PropertyGroup>
@@ -148,6 +154,137 @@
       OutputPath="$(SharedFxOutputPath)$(SharedFxInstallerName)-$(SharedFxRID)-version-badge.svg"
       Label="version"
       Value="$(PackageVersion)" />
+  </Target>
+
+  <Target Name="PrepareForCrossGen" DependsOnTargets="PrepareForSharedFx;ResolveSharedFxFiles">
+    <PropertyGroup>
+      <RuntimePackageName>Microsoft.NETCore.App</RuntimePackageName>
+      <CrossGenTool>crossgen</CrossGenTool>
+      <CrossGenTool Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(CrossGenTool).exe</CrossGenTool>
+
+      <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
+      <LibExtension>.so</LibExtension>
+      <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
+      <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
+    </PropertyGroup>
+
+    <!-- Determine runtime location -->
+    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj" Targets="GetPackageDefinitions" >
+      <Output TaskParameter="TargetOutputs" ItemName="PackageDefinitions" />
+    </MSBuild>
+
+    <ItemGroup>
+      <RuntimePackage Include="@(PackageDefinitions)" Condition="$([System.String]::new('%(PackageDefinitions.Name)').Contains('runtime')) AND $([System.String]::new('%(PackageDefinitions.Name)').Contains('$(RuntimePackageName)'))" />
+      <RuntimePackageFiles Include="%(RuntimePackage.ResolvedPath)\runtimes\**\*" />
+      <CrossGenToolFile Include="%(RuntimePackage.ResolvedPath)\**\$(CrossGenTool)" />
+    </ItemGroup>
+
+    <!-- Create tool directory with crossgen executable and runtime assemblies -->
+    <Copy SourceFiles="@(RuntimePackageFiles);@(CrossGenToolFile)" DestinationFolder="$(SharedFxCrossGenToolDirectory)"/>
+
+    <ItemGroup>
+      <ClrJitAssembly Include="$(SharedFxCrossGenToolDirectory)\**\$(LibPrefix)clrjit$(LibExtension)" />
+    </ItemGroup>
+
+    <Error Text="Expected to resolve a single runtime package but instead resolved @(RuntimePackage->Count()) with identities %(RuntimePackage.Identity)" Condition="'@(RuntimePackage->Count())' != 1" />
+    <Error Text="Expected to resolve a single clr jit assembly but instead resolved @(ClrJitAssembly->Count()) with identities %(ClrJitAssembly.Identity)" Condition="'@(ClrJitAssembly->Count())' != 1" />
+
+    <!-- Gather details on published assemblies -->
+    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
+      Targets="GetPublishAssemblies"
+      Properties="RuntimeIdentifier=$(SharedFxRestoreRid);SelfContained=false" >
+      <Output TaskParameter="TargetOutputs" ItemName="PublishAssemblies" />
+    </MSBuild>
+
+    <ItemGroup>
+      <IgnoredAssemblies Include="@(PublishAssemblies)" Condition="'%(AssetType)' == 'native' OR '%(AssetType)' == 'resources'" />
+      <_AssembliesToCrossgen Include="$(SharedFxPublishDirectory)**\*.dll" />
+    </ItemGroup>
+
+    <!-- Compute the intersection of crossgen candidates and native/resources assemblies as the set of assemblies to skip crossgen -->
+    <CreateItem Include="@(_AssembliesToCrossgen)" Condition="'%(Filename)' != ''and '@(IgnoredAssemblies)' != ''">
+      <Output TaskParameter="Include" ItemName="AssembliesToRemove"/>
+    </CreateItem>
+
+    <!-- Resolve list of assemblies to crossgen -->
+    <ItemGroup>
+      <AssembliesToCrossgen Include="@(_AssembliesToCrossgen)">
+        <Source>%(FullPath)</Source>
+        <Rsp>$(SharedFxCrossGenRspDirectory)%(RecursiveDir)%(Filename).rsp</Rsp>
+        <SymbolsRsp>$(SharedFxCrossGenRspDirectory)%(RecursiveDir)%(Filename).symbols.rsp</SymbolsRsp>
+        <Destination>$(SharedFxCrossGenDirectory)%(RecursiveDir)%(Filename)%(Extension)</Destination>
+        <Symbols>$(SharedFxCrossGenDirectory)%(RecursiveDir)</Symbols>
+      </AssembliesToCrossgen>
+      <AssembliesToCrossgen Remove="@(AssembliesToRemove)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CrossGenAssemblies"
+    DependsOnTargets="PrepareForCrossGen"
+    Inputs="@(AssembliesToCrossgen)"
+    Outputs="%(AssembliesToCrossgen.Destination)">
+    <ItemGroup>
+      <CrossGenArgs Include="-nologo" />
+      <CrossGenArgs Include="-readytorun" />
+      <CrossGenArgs Include="-in %(AssembliesToCrossgen.Source)" />
+      <CrossGenArgs Include="-out %(AssembliesToCrossgen.Destination)" />
+      <CrossGenArgs Include="-app_paths $(SharedFxPublishDirectory)" />
+      <CrossGenArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)" />
+      <CrossGenArgs Include="-JITPath %(ClrJitAssembly.FullPath)" />
+    </ItemGroup>
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(AssembliesToCrossgen.Rsp)'))" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(AssembliesToCrossgen.Destination)'))" />
+    <WriteLinesToFile File="%(AssembliesToCrossgen.Rsp)" Lines="@(CrossGenArgs)" Overwrite="true" />
+
+    <Exec Command="$(SharedFxCrossGenToolDirectory)$(CrossGenTool) @%(AssembliesToCrossgen.Rsp)" EnvironmentVariables="COMPlus_PartialNGen=0" />
+  </Target>
+
+  <Target Name="CrossGenSymbols"
+    Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('Windows'))"
+    DependsOnTargets="CrossGenAssemblies"
+    Inputs="@(AssembliesToCrossgen)"
+    Outputs="%(AssembliesToCrossgen.SymbolsRsp)">
+    <PropertyGroup>
+      <CrossGenSymbolsType>CreatePerfMap</CrossGenSymbolsType>
+      <CrossGenSymbolsType Condition="'$(OS)' == 'Windows_NT'">CreatePDB</CrossGenSymbolsType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <CrossGenSymbolsArgs Include="-nologo" />
+      <CrossGenSymbolsArgs Include="-readytorun" />
+      <CrossGenSymbolsArgs Include="-app_paths $(SharedFxPublishDirectory)" />
+      <CrossGenSymbolsArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)" />
+      <CrossGenSymbolsArgs Include="-$(CrossGenSymbolsType)" />
+      <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Symbols)" />
+      <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Destination)" />
+    </ItemGroup>
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('%(AssembliesToCrossgen.Symbols)'))" />
+    <WriteLinesToFile File="%(AssembliesToCrossgen.SymbolsRsp)" Lines="@(CrossGenSymbolsArgs)" Overwrite="true" />
+
+    <Exec Command="$(SharedFxCrossGenToolDirectory)$(CrossGenTool) @%(AssembliesToCrossgen.SymbolsRsp)" EnvironmentVariables="COMPlus_PartialNGen=0" />
+  </Target>
+
+  <Target Name="PackSharedFx">
+    <ItemGroup>
+      <CrossGenOutput Include="$(SharedFxCrossGenDirectory)**\*.dll" />
+      <CrossGenSymbols Include="$(SharedFxCrossGenDirectory)**\*" Exclude="@(CrossGenOutput)" />
+    </ItemGroup>
+
+    <!-- Create symbols archive -->
+    <ZipArchive
+      File="$(SharedFxOutputPath)$(SharedFxInstallerName)-symbols-$(PackageVersion)-$(SharedFxRID).zip"
+      SourceFiles="@(CrossGenSymbols)"
+      WorkingDirectory="$(SharedFxCrossGenDirectory)"
+      Overwrite="true"
+      Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('Windows'))"/>
+
+    <!-- Replace assemblies with crossgen output -->
+    <Copy
+      SourceFiles="$(SharedFxCrossGenDirectory)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
+      DestinationFiles="$(SharedFxPublishDirectory)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
+      OverwriteReadOnlyFiles="True" />
 
     <ItemGroup>
       <OutputZipFiles Include="$(SharedFxIntermediateOutputPath)**\*" />
@@ -160,4 +297,6 @@
       WorkingDirectory="$(SharedFxIntermediateOutputPath)"
       Overwrite="true"/>
   </Target>
+
+  <Target Name="BuildSharedFx" DependsOnTargets="ResolveSharedFxFiles;CrossGenAssemblies;CrossGenSymbols;PackSharedFx"/>
 </Project>

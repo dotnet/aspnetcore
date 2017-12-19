@@ -21,11 +21,7 @@
   </ItemGroup>
 
   <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
-    <ItemGroup>
-      <ProjectAssetsJson Include="$(MSBuildThisFileDirectory)**\project.assets.json" />
-    </ItemGroup>
-
-    <ResolvePackageDependencies ProjectPath="$(MSBuildThisFileFullPath)" ProjectAssetsFile="@(ProjectAssetsJson)">
+    <ResolvePackageDependencies ProjectPath="$(MSBuildThisFileFullPath)" ProjectAssetsFile="$(ProjectAssetsFile)">
       <Output TaskParameter="PackageDefinitions" ItemName="_PackageDefinitions" />
     </ResolvePackageDependencies>
   </Target>
