@@ -26,6 +26,6 @@
       <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(DepsRuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
     </PropertyGroup>
 
-    <Copy SourceFiles="$(ProjectDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
+    <Copy SourceFiles="$(PublishDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
   </Target>
 </Project>

@@ -176,7 +176,7 @@
 
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
     <MSBuild Projects="$(HostingStartupWorkDir)HostingStartup.csproj"
-             Targets="Build;CollectDeps"
+             Targets="Publish;CollectDeps"
              Properties="$(_HostingStartupProps)" />
   </Target>
 
@@ -185,7 +185,8 @@
     <!-- Generate RS.Reference project -->
     <RepoTasks.ResolveHostingStartupPackages
       BuildArtifacts="@(ArtifactInfo)"
-      PackageArtifacts="@(PackageArtifact)">
+      PackageArtifacts="@(PackageArtifact)"
+      ExternalDependencies="@(ExternalDependency)">
       <Output TaskParameter="HostingStartupArtifacts" ItemName="HostingStartupArtifacts" />
     </RepoTasks.ResolveHostingStartupPackages>
 
