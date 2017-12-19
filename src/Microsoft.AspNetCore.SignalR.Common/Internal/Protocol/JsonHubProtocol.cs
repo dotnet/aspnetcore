@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const string TypePropertyName = "type";
         private const string ErrorPropertyName = "error";
         private const string TargetPropertyName = "target";
-        private const string NonBlockingPropertyName = "nonBlocking";
         private const string ArgumentsPropertyName = "arguments";
         private const string PayloadPropertyName = "payload";
 
@@ -196,12 +195,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             writer.WritePropertyName(TargetPropertyName);
             writer.WriteValue(message.Target);
 
-            if (message.NonBlocking)
-            {
-                writer.WritePropertyName(NonBlockingPropertyName);
-                writer.WriteValue(message.NonBlocking);
-            }
-
             WriteArguments(message.Arguments, writer);
 
             writer.WriteEndObject();
@@ -239,8 +232,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private static void WriteHubInvocationMessageCommon(HubInvocationMessage message, JsonTextWriter writer, int type)
         {
-            writer.WritePropertyName(InvocationIdPropertyName);
-            writer.WriteValue(message.InvocationId);
+            if (!string.IsNullOrEmpty(message.InvocationId))
+            {
+                writer.WritePropertyName(InvocationIdPropertyName);
+                writer.WriteValue(message.InvocationId);
+            }
             WriteMessageType(writer, type);
         }
 
@@ -252,9 +248,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private InvocationMessage BindInvocationMessage(JObject json, IInvocationBinder binder)
         {
-            var invocationId = JsonUtils.GetRequiredProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
+            var invocationId = JsonUtils.GetOptionalProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
             var target = JsonUtils.GetRequiredProperty<string>(json, TargetPropertyName, JTokenType.String);
-            var nonBlocking = JsonUtils.GetOptionalProperty<bool>(json, NonBlockingPropertyName, JTokenType.Boolean);
 
             var args = JsonUtils.GetRequiredProperty<JArray>(json, ArgumentsPropertyName, JTokenType.Array);
 
@@ -263,11 +258,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             try
             {
                 var arguments = BindArguments(args, paramTypes);
-                return new InvocationMessage(invocationId, nonBlocking, target, argumentBindingException: null, arguments: arguments);
+                return new InvocationMessage(invocationId, target, argumentBindingException: null, arguments: arguments);
             }
             catch (Exception ex)
             {
-                return new InvocationMessage(invocationId, nonBlocking, target, ExceptionDispatchInfo.Capture(ex));
+                return new InvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
         }
 

@@ -310,7 +310,8 @@ namespace Microsoft.AspNetCore.SignalR
                         _logger.StreamingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator);
                     }
-                    else if (!hubMethodInvocationMessage.NonBlocking)
+                    // Non-empty/null InvocationId ==> Blocking invocation that needs a response
+                    else if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                     {
                         _logger.SendingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await SendMessageAsync(connection, CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
@@ -358,7 +359,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task SendInvocationError(HubMethodInvocationMessage hubMethodInvocationMessage,
             HubConnectionContext connection, string errorMessage)
         {
-            if (hubMethodInvocationMessage.NonBlocking)
+            if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
             {
                 return;
             }
@@ -426,7 +427,8 @@ namespace Microsoft.AspNetCore.SignalR
             var isStreamedResult = IsStreamed(resultType);
             if (isStreamedResult && !isStreamedInvocation)
             {
-                if (!hubMethodInvocationMessage.NonBlocking)
+                // Non-null/empty InvocationId? Blocking
+                if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                 {
                     _logger.StreamingMethodCalledWithInvoke(hubMethodInvocationMessage);
                     await SendMessageAsync(connection, CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,

@@ -4,6 +4,7 @@
 using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
+using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -35,16 +36,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public bool NonBlocking { get; protected set; }
-
-        public HubMethodInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
+        protected HubMethodInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
             : base(invocationId)
         {
-            if (string.IsNullOrEmpty(invocationId))
-            {
-                throw new ArgumentNullException(nameof(invocationId));
-            }
-
             if (string.IsNullOrEmpty(target))
             {
                 throw new ArgumentNullException(nameof(target));
@@ -63,15 +57,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
     public class InvocationMessage : HubMethodInvocationMessage
     {
-        public InvocationMessage(string invocationId, bool nonBlocking, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+        public InvocationMessage(string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+            : this(invocationId: null, target, argumentBindingException, arguments)
+        {
+        }
+
+        public InvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
             : base(invocationId, target, argumentBindingException, arguments)
         {
-            NonBlocking = nonBlocking;
         }
 
         public override string ToString()
         {
-            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(NonBlocking)}: {NonBlocking}, {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty } ] }}";
+            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty } ] }}";
         }
     }
 
@@ -79,7 +77,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     {
         public StreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
             : base(invocationId, target, argumentBindingException, arguments)
-        { }
+        {
+            if (string.IsNullOrEmpty(invocationId))
+            {
+                throw new ArgumentNullException(nameof(invocationId));
+            }
+        }
 
         public override string ToString()
         {

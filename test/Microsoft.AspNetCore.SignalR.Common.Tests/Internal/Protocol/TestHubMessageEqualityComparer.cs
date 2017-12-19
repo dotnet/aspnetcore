@@ -60,16 +60,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments) &&
-                x.NonBlocking == y.NonBlocking;
+                ArgumentListsEqual(x.Arguments, y.Arguments);
         }
 
         private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
         {
             return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
-                ArgumentListsEqual(x.Arguments, y.Arguments) &&
-                x.NonBlocking == y.NonBlocking;
+                ArgumentListsEqual(x.Arguments, y.Arguments);
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)

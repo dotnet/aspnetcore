@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private async Task AssertMessageAsync(TestClient client)
         {
-            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync());
+            var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
             Assert.Equal("Hello", message.Target);
             Assert.Single(message.Arguments);
             Assert.Equal("World", (string)message.Arguments[0]);

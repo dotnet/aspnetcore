@@ -11,7 +11,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
@@ -460,7 +459,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task HubMethodCanReturnValue()
+        public async Task HubMethodDoesNotSendResultWhenInvocationIsNonBlocking()
         {
             var serviceProvider = CreateServiceProvider();
 
@@ -470,13 +469,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
-                var result = (await client.InvokeAsync(nameof(MethodHub.ValueMethod)).OrTimeout()).Result;
-
-                // json serializer makes this a long
-                Assert.Equal(43L, result);
+                await client.SendInvocationAsync(nameof(MethodHub.ValueMethod), nonBlocking: true).OrTimeout();
 
                 // kill the connection
                 client.Dispose();
+
+                // Ensure the client channel is empty
+                Assert.Null(client.TryRead());
 
                 await endPointTask.OrTimeout();
             }
@@ -553,6 +552,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Theory]
         [InlineData(nameof(MethodHub.VoidMethod))]
         [InlineData(nameof(MethodHub.MethodThatThrows))]
+        [InlineData(nameof(MethodHub.ValueMethod))]
         public async Task NonBlockingInvocationDoesNotSendCompletion(string methodName)
         {
             var serviceProvider = CreateServiceProvider();
@@ -566,11 +566,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // This invocation should be completely synchronous
                 await client.SendInvocationAsync(methodName, nonBlocking: true).OrTimeout();
 
-                // Nothing should have been written
-                Assert.False(client.Application.Reader.TryRead(out var buffer));
-
                 // kill the connection
                 client.Dispose();
+
+                // Nothing should have been written
+                Assert.False(client.Application.Reader.TryRead(out var buffer));
 
                 await endPointTask.OrTimeout();
             }
@@ -1655,7 +1655,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     break;
                 case InvocationMessage expectedInvocation:
                     var actualInvocation = Assert.IsType<InvocationMessage>(actual);
-                    Assert.Equal(expectedInvocation.NonBlocking, actualInvocation.NonBlocking);
+
+                    // Either both must have non-null invocationIds or both must have null invocation IDs. Checking the exact value is NOT desired here though as it could be randomly generated
+                    Assert.True((expectedInvocation.InvocationId == null && actualInvocation.InvocationId == null) ||
+                        (expectedInvocation.InvocationId != null && actualInvocation.InvocationId != null));
                     Assert.Equal(expectedInvocation.Target, actualInvocation.Target);
                     Assert.Equal(expectedInvocation.Arguments, actualInvocation.Arguments);
                     break;

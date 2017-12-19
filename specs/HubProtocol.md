@@ -69,7 +69,7 @@ The `Target` of an `Invocation` message must refer to a specific method, overloa
 
 ## Non-Blocking Invocations
 
-Invocations can be marked as "Non-Blocking" in the `Invocation` message, which indicates to the Callee that the Caller expects no results. When a Callee receives a "Non-Blocking" Invocation, it should dispatch the message, but send no results or errors back to the Caller. In a Caller application, the invocation will immediately return with no results. There is no tracking of completion for Non-Blocking Invocations.
+Invocations can be sent without an `Invocation ID` value. This indicates that the invocation is "non-blocking", and thus the caller does not expect a response. When a Callee receives an invocation without an `Invocation ID` value, it **must not** send any response to that invocation.
 
 ## Streaming
 
@@ -244,7 +244,7 @@ S->C: Completion { Id = 42 } // This can be ignored
 ### Non-Blocking Call (`NonBlocking` example above)
 
 ```
-C->S: Invocation { Id = 42, Target = "NonBlocking", Arguments = [ "foo" ], NonBlocking = true }
+C->S: Invocation { Target = "NonBlocking", Arguments = [ "foo" ] }
 ```
 
 ### Ping
@@ -262,8 +262,7 @@ In the JSON Encoding of the SignalR Protocol, each Message is represented as a s
 An `Invocation` message is a JSON object with the following properties:
 
 * `type` - A `Number` with the literal value 1, indicating that this message is an Invocation.
-* `invocationId` - A `String` encoding the `Invocation ID` for a message.
-* `nonblocking` - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above). Optional and defaults to `false` if not present.
+* `invocationId` - An optional `String` encoding the `Invocation ID` for a message.
 * `target` - A `String` encoding the `Target` name, as expected by the Callee's Binder
 * `arguments` - An `Array` containing arguments to apply to the method referred to in Target. This is a sequence of JSON `Token`s, encoded as indicated below in the "JSON Payload Encoding" section
 
@@ -285,8 +284,6 @@ Example (Non-Blocking):
 ```json
 {
     "type": 1,
-    "invocationId": "123",
-    "nonblocking": true,
     "target": "Send",
     "arguments": [
         42,
@@ -434,28 +431,50 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.
-* InvocationId - A `String` encoding the Invocation ID for the message.
-* NonBlocking - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above).
+* InvocationId - One of:
+  * A `Nil`, indicating that there is no Invocation ID, OR
+  * A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
 
-Example:
+#### Example:
 
 The following payload
 
 ```
-0x95 0x01 0xa3 0x78 0x79 0x7a 0xc3 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x94 0x01 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
 ```
 
 is decoded as follows:
 
-* `0x95` - 5-element array
+* `0x94` - 4-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
-* `0xc3` - `true` (NonBlocking)
+* `0xa6` - string of length 6 (Target)
+* `0x6d` - `m`
+* `0x65` - `e`
+* `0x74` - `t`
+* `0x68` - `h`
+* `0x6f` - `o`
+* `0x64` - `d`
+* `0x91` - 1-element array (Arguments)
+* `0x2a` - `42` (Argument value)
+
+#### Non-Blocking Example:
+
+The following payload
+```
+0x94 0x01 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
+
+is decoded as follows:
+
+* `0x94` - 4-element array
+* `0x01` - `1` (Message Type - `Invocation` message)
+* `0xc0` - `nil` (Invocation ID)
 * `0xa6` - string of length 6 (Target)
 * `0x6d` - `m`
 * `0x65` - `e`
@@ -661,101 +680,24 @@ is decoded as follows:
 * `0x91` - 1-element array
 * `0x06` - `6` (Message Type - `Ping` message)
 
-## Protocol Buffers (ProtoBuf) Encoding
-
-**Protobuf encoding is currently not implemented**
-
-In order to support ProtoBuf, an application must provide a [ProtoBuf service definition](https://developers.google.com/protocol-buffers/docs/proto3) for the Hub. However, implementations may automatically generate these definitions from reflection information, if the underlying platform supports this. For example, the .NET implementation will attempt to generate service definitions for methods that use only simple primitive and enumerated types. The service definition provides a description of how to encode the arguments and return value for the call. For example, consider the following C# method:
-
-```csharp
-public bool SendMessageToUser(string userName, string message) {}
-```
-
-In order to invoke this method, the application must provide a ProtoBuf schema representing the input and output values and defining the message:
-
-```protobuf
-syntax = "proto3";
-
-message SendMessageToUserRequest {
-    string userName = 1;
-    string message = 2;
-}
-
-message SendMessageToUserResponse {
-    bool result = 1;
-}
-
-service ChatService {
-    rpc SendMessageToUser (SendMessageToUserRequest) returns (SendMessageToUserResponse);
-}
-```
-
-**NOTE**: the .NET implementation will provide a way to automatically generate these definitions at runtime, to avoid needing to generate them in advance, but applications still have the option of doing so. A general guideline for mapping .NET types to ProtoBuf types is listed in the "Type Mapping" section at the end of this document. In the current plan, custom .NET classes/structs not already listed in the table below will require a complete ProtoBuf mapping to be provided by the application.
-
-## SignalR.proto
-
-SignalR provides an outer ProtoBuf schema for encoding the RPC invocation process as a whole, which is defined by the .proto file below. A SignalR frame is encoded as a single message of type `SignalRFrame`, then transmitted using the underlying transport. Since the underlying transport provides the necessary framing, we can reliably decode a message without having to know the length or format of the arguments.
-
-```protobuf
-syntax = "proto3";
-
-message Invocation {
-    string target = 1;
-    bool nonblocking = 2;
-    bytes arguments = 3;
-}
-
-message StreamItem {
-    bytes item = 1;
-}
-
-message Completion {
-    oneof payload {
-        bytes result = 1;
-        string error = 2;
-    }
-}
-
-message SignalRFrame {
-    string invocationId = 1;
-    oneof message {
-        Invocation invocation = 2;
-        StreamItem streamItem = 3;
-        Completion completion = 4;
-    }
-}
-```
-
-## Invocation Message
-
-When an invocation is issued by the Caller, we generate the necessary Request message according to the service definition, encode it into the ProtoBuf wire format, and then transmit an `Invocation` ProtoBuf message with that encoded argument data as the `arguments` field. The resulting `Invocation` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
-
-## StreamItem Message
-
-When a result is emitted by the Callee, it is encoded using the ProtoBuf schema associated with the service and encoded into the `item` field of a `StreamItem` ProtoBuf message. If an error is emitted, the message is encoded into the error field of a StreamItem ProtoBuf message. The resulting `StreamItem` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
-
-## Completion Message
-
-When a request completes, a `Completion` ProtoBuf message is constructed. If there is a final payload, it is encoded the same way as in the `StreamItem` message and stored in the `result` field of the message. If there is an error, it is encoded in the `error` field of the message. The resulting `Completion` message is wrapped in a `SignalRFrame` message and the `invocationId` is set. The final message is then encoded in the ProtoBuf format and transmitted to the Callee.
-
 ## Type Mappings
 
 Below are some sample type mappings between JSON types and the .NET client. This is not an exhaustive or authoritative list, just informative guidance. Official clients will provide ways for users to override the default mapping behavior for a particular method, parameter, or parameter type
 
-|                  .NET Type                      |          JSON Type           |   MsgPack format family   |    ProtoBuf Type       |
-| ----------------------------------------------- | ---------------------------- |---------------------------|------------------------|
-| `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `positive fixint`, `uint` | `uint32`               |
-| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixit`, `int`            | `int32`                |
-| `System.UInt64`                                 | `Number`                     | `positive fixint`, `uint` | `uint64`               |
-| `System.Int64`                                  | `Number`                     | `fixint`, `int`           | `int64`                |
-| `System.Single`                                 | `Number`                     | `float`                   | `float`                |
-| `System.Double`                                 | `Number`                     | `float`                   | `double`               |
-| `System.Boolean`                                | `true` or `false`            | `true`, `false`           | `bool`                 |
-| `System.String`                                 | `String`                     | `fixstr`, `str`           | `string`               |
-| `System.Byte`[]                                 | `String` (Base64-encoded)    | `bin`                     | `bytes`                |
-| `IEnumerable<T>`                                | `Array`                      | `bin`                     | `repeated`             |
-| custom `enum`                                   | `Number`                     | `fixint`, `int`           | `uint64`               |
-| custom `struct` or `class`                      | `Object`                     | `fixmap`, `map`           | Requires an explicit .proto file definition  |
+|                  .NET Type                      |          JSON Type           |   MsgPack format family   |
+| ----------------------------------------------- | ---------------------------- |---------------------------|
+| `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `positive fixint`, `uint` |
+| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixit`, `int`            |
+| `System.UInt64`                                 | `Number`                     | `positive fixint`, `uint` |
+| `System.Int64`                                  | `Number`                     | `fixint`, `int`           |
+| `System.Single`                                 | `Number`                     | `float`                   |
+| `System.Double`                                 | `Number`                     | `float`                   |
+| `System.Boolean`                                | `true` or `false`            | `true`, `false`           |
+| `System.String`                                 | `String`                     | `fixstr`, `str`           |
+| `System.Byte`[]                                 | `String` (Base64-encoded)    | `bin`                     |
+| `IEnumerable<T>`                                | `Array`                      | `bin`                     |
+| custom `enum`                                   | `Number`                     | `fixint`, `int`           |
+| custom `struct` or `class`                      | `Object`                     | `fixmap`, `map`           |
 
 MessagePack payloads are wrapped in an outer message framing described below.
 

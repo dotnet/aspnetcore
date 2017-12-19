@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger.PreparingBlockingInvocation(irq.InvocationId, methodName, irq.ResultType.FullName, args.Length);
 
             // Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking: false, target: methodName,
+            var invocationMessage = new InvocationMessage(irq.InvocationId, target: methodName,
                 argumentBindingException: null, arguments: args);
 
             _logger.RegisterInvocation(invocationMessage.InvocationId);
@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new InvalidOperationException($"The '{nameof(SendAsync)}' method cannot be called before the connection has been started.");
             }
 
-            var invocationMessage = new InvocationMessage(GetNextId(), nonBlocking: true, target: methodName,
+            var invocationMessage = new InvocationMessage(null, target: methodName,
                 argumentBindingException: null, arguments: args);
 
             ThrowIfConnectionTerminated(invocationMessage.InvocationId);

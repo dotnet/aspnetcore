@@ -6,7 +6,7 @@ import { IConnection } from "./IConnection"
 import { HttpConnection } from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage, HubInvocationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -75,10 +75,10 @@ export class HubConnection {
                     break;
                 case MessageType.StreamItem:
                 case MessageType.Completion:
-                    let callback = this.callbacks.get((<HubInvocationMessage>message).invocationId);
+                    let callback = this.callbacks.get((<any>message).invocationId);
                     if (callback != null) {
                         if (message.type === MessageType.Completion) {
-                            this.callbacks.delete((<HubInvocationMessage>message).invocationId);
+                            this.callbacks.delete((<any>message).invocationId);
                         }
                         callback(message);
                     }
@@ -112,8 +112,11 @@ export class HubConnection {
         let methods = this.methods.get(invocationMessage.target.toLowerCase());
         if (methods) {
             methods.forEach(m => m.apply(this, invocationMessage.arguments));
-            if (!invocationMessage.nonblocking) {
-                // TODO: send result back to the server?
+            if (invocationMessage.invocationId) {
+                // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
+                let message = "Server requested a response, which is not supported in this version of the client."
+                this.logger.log(LogLevel.Error, message);
+                this.connection.stop(new Error(message))
             }
         }
         else {
@@ -275,16 +278,24 @@ export class HubConnection {
     }
 
     private createInvocation(methodName: string, args: any[], nonblocking: boolean): InvocationMessage {
-        let id = this.id;
-        this.id++;
+        if (nonblocking) {
+            return <InvocationMessage>{
+                type: MessageType.Invocation,
+                target: methodName,
+                arguments: args,
+            };
+        }
+        else {
+            let id = this.id;
+            this.id++;
 
-        return <InvocationMessage>{
-            type: MessageType.Invocation,
-            invocationId: id.toString(),
-            target: methodName,
-            arguments: args,
-            nonblocking: nonblocking
-        };
+            return <InvocationMessage>{
+                type: MessageType.Invocation,
+                invocationId: id.toString(),
+                target: methodName,
+                arguments: args,
+            };
+        }
     }
 
     private createStreamInvocation(methodName: string, args: any[]): StreamInvocationMessage {

@@ -14,26 +14,25 @@ export interface HubMessage {
     readonly type: MessageType;
 }
 
-export interface HubInvocationMessage extends HubMessage {
-    readonly invocationId: string;
-}
-
-export interface InvocationMessage extends HubInvocationMessage {
+export interface InvocationMessage extends HubMessage {
+    readonly invocationId?: string;
     readonly target: string;
     readonly arguments: Array<any>;
-    readonly nonblocking?: boolean;
 }
 
-export interface StreamInvocationMessage extends HubInvocationMessage {
+export interface StreamInvocationMessage extends HubMessage {
+    readonly invocationId: string;
     readonly target: string;
     readonly arguments: Array<any>
 }
 
-export interface ResultMessage extends HubInvocationMessage {
+export interface ResultMessage extends HubMessage {
+    readonly invocationId: string;
     readonly item?: any;
 }
 
-export interface CompletionMessage extends HubInvocationMessage {
+export interface CompletionMessage extends HubMessage {
+    readonly invocationId: string;
     readonly error?: string;
     readonly result?: any;
 }

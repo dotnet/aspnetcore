@@ -36,6 +36,32 @@ describe('hubConnection', function () {
                 });
             });
 
+            it('can invoke server method non-blocking and not receive result', function (done) {
+                var message = '你好，世界！';
+
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+                hubConnection.onclose(function (error) {
+                    expect(error).toBe(undefined);
+                    done();
+                });
+
+                hubConnection.start().then(function () {
+                    hubConnection.send('Echo', message).catch(function (e) {
+                        fail(e);
+                    }).then(function () {
+                        hubConnection.stop();
+                    });
+                }).catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
+
             it('can invoke server method structural object and receive structural result', function (done) {
                 var options = {
                     transport: transportType,
@@ -64,7 +90,6 @@ describe('hubConnection', function () {
             });
 
             it('can stream server method and receive result', function (done) {
-
                 var options = {
                     transport: transportType,
                     protocol: protocol,

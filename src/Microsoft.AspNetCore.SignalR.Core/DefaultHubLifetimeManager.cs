@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
@@ -12,7 +11,6 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
     {
-        private long _nextInvocationId = 0;
         private readonly HubConnectionList _connections = new HubConnectionList();
         private readonly HubGroupList _groups = new HubGroupList();
 
@@ -150,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private InvocationMessage CreateInvocationMessage(string methodName, object[] args)
         {
-            return new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
+            return new InvocationMessage(target: methodName, argumentBindingException: null, arguments: args);
         }
 
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
@@ -170,12 +168,6 @@ namespace Microsoft.AspNetCore.SignalR
             _connections.Remove(connection);
             _groups.RemoveDisconnectedConnection(connection.ConnectionId);
             return Task.CompletedTask;
-        }
-
-        private string GetInvocationId()
-        {
-            var invocationId = Interlocked.Increment(ref _nextInvocationId);
-            return invocationId.ToString();
         }
 
         public override Task InvokeAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)

@@ -17,40 +17,40 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> TestMessages => new[]
         {
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ false, "method", null) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, new object[] { null }) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string") } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string", new CustomObject()) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, new[] { new CustomObject(), new CustomObject() }) } },
+            new object[] { new[] { new InvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null) } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null) } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null, new object[] { null }) } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null, 42) } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null, 42, "string") } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null, 42, "string", new CustomObject()) } },
+            new object[] { new[] { new InvocationMessage(target: "method", argumentBindingException: null, new[] { new CustomObject(), new CustomObject() }) } },
 
-            new object[] { new[] { new CompletionMessage("xyz", error: "Error not found!", result: null, hasResult: false) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: null, hasResult: false) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: null, hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: 42, hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: 42.0f, hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: "string", hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: true, hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: new CustomObject(), hasResult: true) } },
-            new object[] { new[] { new CompletionMessage("xyz", error: null, result: new[] { new CustomObject(), new CustomObject() }, hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: "Error not found!", result: null, hasResult: false) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: null, hasResult: false) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: null, hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: 42, hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: 42.0f, hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: "string", hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: true, hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: new CustomObject(), hasResult: true) } },
+            new object[] { new[] { new CompletionMessage(invocationId: "xyz", error: null, result: new[] { new CustomObject(), new CustomObject() }, hasResult: true) } },
 
-            new object[] { new[] { new StreamItemMessage("xyz", null) } },
-            new object[] { new[] { new StreamItemMessage("xyz", 42) } },
-            new object[] { new[] { new StreamItemMessage("xyz", 42.0f) } },
-            new object[] { new[] { new StreamItemMessage("xyz", "string") } },
-            new object[] { new[] { new StreamItemMessage("xyz", true) } },
-            new object[] { new[] { new StreamItemMessage("xyz", new CustomObject()) } },
-            new object[] { new[] { new StreamItemMessage("xyz", new[] { new CustomObject(), new CustomObject() }) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: null) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: 42) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: 42.0f) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: "string") } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: true) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: new CustomObject()) } },
+            new object[] { new[] { new StreamItemMessage(invocationId: "xyz", item: new[] { new CustomObject(), new CustomObject() }) } },
 
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null) } },
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, new object[] { null }) } },
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, 42) } },
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, 42, "string") } },
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, 42, "string", new CustomObject()) } },
-            new object[] { new[] { new StreamInvocationMessage("xyz", "method", null, new[] { new CustomObject(), new CustomObject() }) } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null) } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null, new object[] { null }) } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null, 42) } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null, 42, "string") } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null, 42, "string", new CustomObject()) } },
+            new object[] { new[] { new StreamInvocationMessage(invocationId: "xyz", target: "method", argumentBindingException: null, new[] { new CustomObject(), new CustomObject() }) } },
 
-            new object[] { new[] { new CancelInvocationMessage("xyz") } },
+            new object[] { new[] { new CancelInvocationMessage(invocationId: "xyz") } },
 
             new object[] { new[] { PingMessage.Instance } },
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             {
                 new HubMessage[]
                 {
-                    new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string", new CustomObject()),
+                    new InvocationMessage(null, "method", null, 42, "string", new CustomObject()),
                     new CompletionMessage("xyz", error: null, result: 42, hasResult: true),
                     new StreamItemMessage("xyz", null),
                     PingMessage.Instance,
@@ -93,13 +93,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { new byte[] { 0x91, 0x0a } , "Invalid message type: 10." },
 
             // InvocationMessage
-            new object[] { new byte[] { 0x95, 0x01 }, "Reading 'invocationId' as String failed." }, // invocationId missing
-            new object[] { new byte[] { 0x95, 0x01, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking missing
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0x00 }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking is not bool
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'target' as String failed." }, // target missing
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0x00 }, "Reading 'target' as String failed." }, // 0x00 is Int
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1 }, "Reading 'target' as String failed." }, // string is cut
+            new object[] { new byte[] { 0x94, 0x01 }, "Reading 'invocationId' as String failed." }, // invocationId missing
+            new object[] { new byte[] { 0x94, 0x01, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x94, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'target' as String failed." }, // target missing
+            new object[] { new byte[] { 0x94, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0x00 }, "Reading 'target' as String failed." }, // 0x00 is Int
+            new object[] { new byte[] { 0x94, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1 }, "Reading 'target' as String failed." }, // string is cut
 
             // StreamItemMessage
             new object[] { new byte[] { 0x93, 0x02 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
@@ -147,12 +145,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public static IEnumerable<object[]> ArgumentBindingErrors => new[]
         {
             // InvocationMessage
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array is missing elements
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array element is cut
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Invocation provides 2 argument(s) but target expects 1." }, // argument count does not match binder argument count
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0x00 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // argument type mismatch
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78, 0x91 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array is missing elements
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array element is cut
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Invocation provides 2 argument(s) but target expects 1." }, // argument count does not match binder argument count
+            new object[] { new byte[] { 0x94, 0x01, 0xc0, 0xa1, 0x78, 0x91, 0x00 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // argument type mismatch
 
             // StreamInvocationMessage
             new object[] { new byte[] { 0x95, 0x04, 0xa3, 0x78, 0x79, 0x7a, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
@@ -203,10 +201,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             new object[]
             {
-                new InvocationMessage("0", false, "A", null, 1, new CustomObject()),
+                new InvocationMessage(null, "A", null, 1, new CustomObject()),
                 new byte[]
                 {
-                    0x6c, 0x95, 0x01, 0xa1, 0x30, 0xc2, 0xa1, 0x41,
+                    0x6a, 0x94, 0x01, 0xc0, 0xa1, 0x41,
                     0x92, // argument array
                     0x01, // 1 - first argument
                     // 0x86 - a map of 6 items (properties)

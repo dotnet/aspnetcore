@@ -40,9 +40,7 @@ describe("HubConnection", () => {
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
                 type: MessageType.Invocation,
-                invocationId: connection.lastInvocationId,
                 target: "testMethod",
-                nonblocking: true,
                 arguments: [
                     "arg",
                     42
@@ -68,7 +66,6 @@ describe("HubConnection", () => {
                 type: MessageType.Invocation,
                 invocationId: connection.lastInvocationId,
                 target: "testMethod",
-                nonblocking: false,
                 arguments: [
                     "arg",
                     42

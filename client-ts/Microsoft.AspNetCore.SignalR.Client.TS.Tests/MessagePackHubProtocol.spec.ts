@@ -5,12 +5,23 @@ import { MessagePackHubProtocol } from "../Microsoft.AspNetCore.SignalR.Client.T
 import { MessageType, InvocationMessage, CompletionMessage, ResultMessage } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHubProtocol"
 
 describe("MessageHubProtocol", () => {
+    it("can write/read non-blocking Invocation message", () => {
+        let invocation = <InvocationMessage>{
+            type: MessageType.Invocation,
+            target: "myMethod",
+            arguments: [42, true, "test", ["x1", "y2"], null]
+        };
+
+        let protocol = new MessagePackHubProtocol();
+        var parsedMessages = protocol.parseMessages(protocol.writeMessage(invocation));
+        expect(parsedMessages).toEqual([invocation]);
+    });
+
     it("can write/read Invocation message", () => {
         let invocation = <InvocationMessage>{
             type: MessageType.Invocation,
             invocationId: "123",
             target: "myMethod",
-            nonblocking: true,
             arguments: [42, true, "test", ["x1", "y2"], null]
         };
 
