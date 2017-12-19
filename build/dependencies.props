@@ -12,6 +12,7 @@
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion>
+    <MicrosoftAspNetCoreIdentityUIPackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreIdentityUIPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCorePackageVersion>2.1.0-preview1-27928</MicrosoftAspNetCorePackageVersion>

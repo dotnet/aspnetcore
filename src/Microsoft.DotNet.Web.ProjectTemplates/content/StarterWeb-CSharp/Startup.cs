@@ -10,10 +10,13 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+#if (IndividualLocalAuth)
+using Microsoft.EntityFrameworkCore;
+#endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 #if (OrganizationalAuth && OrgReadAccess)
@@ -21,11 +24,6 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 #endif
 #if (MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
-#endif
-#if (IndividualLocalAuth)
-using Company.WebApplication1.Identity.Data;
-using Company.WebApplication1.Identity.Models;
-using Company.WebApplication1.Identity.Services;
 #endif
 
 namespace Company.WebApplication1
@@ -43,25 +41,22 @@ namespace Company.WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
 #if (IndividualLocalAuth)
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<IdentityDbContext>(options =>
   #if (UseLocalDB)
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
+                ));
   #else
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlite(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")));
   #endif
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<IdentityDbContext>()
+                .AddDefaultUI()
                 .AddDefaultTokenProviders();
-
-            services.ConfigureApplicationCookie(options => {
-                options.LoginPath = "/tfp/Identity/Account/Login";
-                options.LogoutPath = "/tfp/Identity/Account/Logout";
-                options.AccessDeniedPath = "/tfp/Identity/Account/AccessDenied";
-            });
-
-            // Add application services.
-            services.AddTransient<IEmailSender, EmailSender>();
 
 #elseif (OrganizationalAuth || IndividualB2CAuth)
             services.AddAuthentication(sharedOptions =>

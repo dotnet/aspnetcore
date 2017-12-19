@@ -34,11 +34,17 @@
           ]
         },
         {
-          "condition": "(!IndividualAuth && !OrganizationalAuth)",
+          "condition": "(!OrganizationalAuth)",
           "exclude": [
             "Controllers/**",
             "Pages/Account/**",
             "Pages/_LoginPartial.cshtml"
+          ]
+        },
+        {
+          "condition": "(!IndividualLocalAuth)",
+          "exclude": [
+            "Pages/Shared/_LoginPartial.cshtml"
           ]
         },
         {
@@ -50,32 +56,6 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "Pages/Account/ConfirmEmail.cshtml",
-            "Pages/Account/ConfirmEmail.cshtml.cs",
-            "Pages/Account/ExternalLogin.cshtml",
-            "Pages/Account/ExternalLogin.cshtml.cs",
-            "Pages/Account/ForgotPassword.cshtml",
-            "Pages/Account/ForgotPassword.cshtml.cs",
-            "Pages/Account/ForgotPasswordConfirmation.cshtml",
-            "Pages/Account/ForgotPasswordConfirmation.cshtml.cs",
-            "Pages/Account/Lockout.cshtml",
-            "Pages/Account/Lockout.cshtml.cs",
-            "Pages/Account/Login.cshtml",
-            "Pages/Account/Login.cshtml.cs",
-            "Pages/Account/LoginWith2fa.cshtml",
-            "Pages/Account/LoginWith2fa.cshtml.cs",
-            "Pages/Account/LoginWithRecoveryCode.cshtml",
-            "Pages/Account/LoginWithRecoveryCode.cshtml.cs",
-            "Pages/Account/Register.cshtml",
-            "Pages/Account/Register.cshtml.cs",
-            "Pages/Account/ResetPassword.cshtml",
-            "Pages/Account/ResetPassword.cshtml.cs",
-            "Pages/Account/ResetPasswordConfirmation.cshtml",
-            "Pages/Account/ResetPasswordConfirmation.cshtml.cs",
-            "Pages/Account/Manage/**",
-            "Extensions/EmailSenderExtensions.cs",
-            "Extensions/UrlHelperExtensions.cs",
-            "Services/**",
             "Data/**"
           ]
         },
@@ -96,6 +76,12 @@
           "condition": "(!IndividualB2CAuth)",
           "exclude": [
             "Extensions/AzureAdB2C*.cs"
+          ]
+        },
+        {
+          "condition": "(!OrganizationalAuth || !IndividualB2CAuth)",
+          "exclude": [
+            "Controllers/AccountController.cs"
           ]
         }
       ]

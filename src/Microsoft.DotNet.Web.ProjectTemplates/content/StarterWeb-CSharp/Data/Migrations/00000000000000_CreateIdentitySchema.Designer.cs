@@ -4,98 +4,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 #endif
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Company.WebApplication1.Identity.Data.Migrations
+namespace Company.WebApplication1.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(IdentityDbContext))]
     [Migration("00000000000000_CreateIdentitySchema")]
     partial class CreateIdentitySchema
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
-#pragma warning disable 612, 618
             modelBuilder
 #if (UseLocalDB)
-                .HasAnnotation("ProductVersion", "2.0.0-rtm-26452")
+                .HasAnnotation("ProductVersion", "1.0.0-rc3")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 #else
-                .HasAnnotation("ProductVersion", "2.0.0-rtm-26452");
+                .HasAnnotation("ProductVersion", "1.0.2");
 #endif
-
-            modelBuilder.Entity("Company.WebApplication1.Models.ApplicationUser", b =>
-                {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
-
-                    b.Property<int>("AccessFailedCount");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken();
-
-                    b.Property<string>("Email")
-#if (UseLocalDB)
-                        .HasAnnotation("MaxLength", 256);
-#else
-                        .HasMaxLength(256);
-#endif
-
-                    b.Property<bool>("EmailConfirmed");
-
-                    b.Property<bool>("LockoutEnabled");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd");
-
-                    b.Property<string>("NormalizedEmail")
-#if (UseLocalDB)
-                        .HasAnnotation("MaxLength", 256);
-#else
-                        .HasMaxLength(256);
-#endif
-
-                    b.Property<string>("NormalizedUserName")
-#if (UseLocalDB)
-                        .HasAnnotation("MaxLength", 256);
-#else
-                        .HasMaxLength(256);
-#endif
-
-                    b.Property<string>("PasswordHash");
-
-                    b.Property<string>("PhoneNumber");
-
-                    b.Property<bool>("PhoneNumberConfirmed");
-
-                    b.Property<string>("SecurityStamp");
-
-                    b.Property<bool>("TwoFactorEnabled");
-
-                    b.Property<string>("UserName")
-#if (UseLocalDB)
-                        .HasAnnotation("MaxLength", 256);
-#else
-                        .HasMaxLength(256);
-#endif
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedEmail")
-                        .HasName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasName("UserNameIndex");
-
-                    b.ToTable("AspNetUsers");
-                });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
-                    b.Property<string>("Id")
-                        .ValueGeneratedOnAdd();
+                    b.Property<string>("Id");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
@@ -117,7 +50,6 @@ namespace Company.WebApplication1.Identity.Data.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedName")
-                        .IsUnique()
                         .HasName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles");
@@ -189,6 +121,8 @@ namespace Company.WebApplication1.Identity.Data.Migrations
 
                     b.HasIndex("RoleId");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("AspNetUserRoles");
                 });
 
@@ -207,26 +141,91 @@ namespace Company.WebApplication1.Identity.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
+                {
+                    b.Property<string>("Id");
+
+                    b.Property<int>("AccessFailedCount");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken();
+
+                    b.Property<string>("Email")
+#if (UseLocalDB)
+                        .HasAnnotation("MaxLength", 256);
+#else
+                        .HasMaxLength(256);
+#endif
+
+                    b.Property<bool>("EmailConfirmed");
+
+                    b.Property<bool>("LockoutEnabled");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd");
+
+                    b.Property<string>("NormalizedEmail")
+#if (UseLocalDB)
+                        .HasAnnotation("MaxLength", 256);
+#else
+                        .HasMaxLength(256);
+#endif
+
+                    b.Property<string>("NormalizedUserName")
+#if (UseLocalDB)
+                        .HasAnnotation("MaxLength", 256);
+#else
+                        .HasMaxLength(256);
+#endif
+
+                    b.Property<string>("PasswordHash");
+
+                    b.Property<string>("PhoneNumber");
+
+                    b.Property<bool>("PhoneNumberConfirmed");
+
+                    b.Property<string>("SecurityStamp");
+
+                    b.Property<bool>("TwoFactorEnabled");
+
+                    b.Property<string>("UserName")
+#if (UseLocalDB)
+                        .HasAnnotation("MaxLength", 256);
+#else
+                        .HasMaxLength(256);
+#endif
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasName("UserNameIndex");
+
+                    b.ToTable("AspNetUsers");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
-                        .WithMany()
+                        .WithMany("Claims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
-                        .WithMany()
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
+                        .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
-                        .WithMany()
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
+                        .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -234,24 +233,15 @@ namespace Company.WebApplication1.Identity.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
-                        .WithMany()
+                        .WithMany("Users")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
-                        .WithMany()
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
+                        .WithMany("Roles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-                });
-#pragma warning restore 612, 618
         }
     }
 }

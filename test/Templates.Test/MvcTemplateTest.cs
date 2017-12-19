@@ -69,7 +69,7 @@ namespace Templates.Test
 
             AssertDirectoryExists("Extensions", false);
             AssertFileExists("urlRewrite.config", false);
-            AssertFileExists("Controllers/AccountController.cs", true);
+            AssertFileExists("Controllers/AccountController.cs", false);
 
             var projectFileContents = ReadFile($"{ProjectName}.csproj");
             Assert.Contains(".db", projectFileContents);

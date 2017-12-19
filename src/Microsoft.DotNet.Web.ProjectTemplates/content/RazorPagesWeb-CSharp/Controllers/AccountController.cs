@@ -7,14 +7,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 #endif
-#if (IndividualLocalAuth)
-using Microsoft.AspNetCore.Identity;
-#endif
 using Microsoft.AspNetCore.Mvc;
-#if (IndividualLocalAuth)
-using Microsoft.Extensions.Logging;
-using Company.WebApplication1.Data;
-#endif
 #if (IndividualB2CAuth)
 using Microsoft.Extensions.Options;
 #endif
@@ -24,25 +17,7 @@ namespace Company.WebApplication1.Controllers
     [Route("[controller]/[action]")]
     public class AccountController : Controller
     {
-#if (IndividualLocalAuth)
-        private readonly SignInManager<ApplicationUser> _signInManager;
-        private readonly ILogger _logger;
-
-        public AccountController(SignInManager<ApplicationUser> signInManager, ILogger<AccountController> logger)
-        {
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout()
-        {
-            await _signInManager.SignOutAsync();
-            _logger.LogInformation("User logged out.");
-            return RedirectToPage("/Index");
-        }
-#elseif (OrganizationalAuth)
+#if (OrganizationalAuth)
         [HttpGet]
         public IActionResult SignIn()
         {

@@ -47,15 +47,22 @@
           ]
         },
         {
-          "condition": "(!IndividualLocalAuth)",
+          "condition": "(!IndividualAuth)",
           "exclude": [
-            "Areas/Identity/**"
+            "Data/**"
           ]
         },
         {
           "condition": "(ExcludeLaunchSettings)",
           "exclude": [
             "Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(IndividualLocalAuth)",
+          "exclude": [
+            "Controllers/AccountController.cs",
+            "Views/Account/**"
           ]
         },
         {

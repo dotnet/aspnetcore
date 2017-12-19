@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 #endif
 #if (OrganizationalAuth || IndividualAuth)
 using Microsoft.AspNetCore.Http;
@@ -33,10 +34,6 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 #if (MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
-#if (IndividualLocalAuth)
-using Company.WebApplication1.Data;
-using Company.WebApplication1.Services;
-#endif
 
 namespace Company.WebApplication1
 {
@@ -53,15 +50,21 @@ namespace Company.WebApplication1
         public void ConfigureServices(IServiceCollection services)
         {
 #if (IndividualLocalAuth)
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<IdentityDbContext>(options =>
     #if (UseLocalDB)
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
+                ));
     #else
-                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+                options.UseSqlite(
+                    Configuration.GetConnectionString("DefaultConnection"),
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")));
     #endif
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>()
+            services.AddIdentity<IdentityUser, IdentityRole>()
+                .AddEntityFrameworkStores<IdentityDbContext>()
+                .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
 #elseif (OrganizationalAuth || IndividualB2CAuth)
@@ -86,9 +89,6 @@ namespace Company.WebApplication1
                     options.Conventions.AuthorizePage("/Account/Logout");
                 });
 
-            // Register no-op EmailSender used by account confirmation and password reset during development
-            // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=532713
-            services.AddSingleton<IEmailSender, EmailSender>();
 #elseif (OrganizationalAuth)
             services.AddMvc(options =>
             {

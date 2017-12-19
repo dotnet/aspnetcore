@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 #endif
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -11,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Company.WebApplication1.Data.Migrations
 {
-    [DbContext(typeof(ApplicationDbContext))]
+    [DbContext(typeof(IdentityDbContext))]
     [Migration("00000000000000_CreateIdentitySchema")]
     partial class CreateIdentitySchema
     {
@@ -140,7 +141,7 @@ namespace Company.WebApplication1.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("Company.WebApplication1.Models.ApplicationUser", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUser", b =>
                 {
                     b.Property<string>("Id");
 
@@ -215,7 +216,7 @@ namespace Company.WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
                 {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
                         .WithMany("Claims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -223,7 +224,7 @@ namespace Company.WebApplication1.Data.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
                         .WithMany("Logins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
@@ -236,7 +237,7 @@ namespace Company.WebApplication1.Data.Migrations
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Company.WebApplication1.Models.ApplicationUser")
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser")
                         .WithMany("Roles")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);

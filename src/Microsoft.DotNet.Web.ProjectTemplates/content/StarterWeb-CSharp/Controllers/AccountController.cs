@@ -21,15 +21,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 #endif
-#if (IndividualLocalAuth)
-using Company.WebApplication1.Models;
-#endif
 
 namespace Company.WebApplication1.Controllers
 {
-#if (IndividualLocalAuth)
-    [Authorize]
-#endif
     [Route("[controller]/[action]")]
     public class AccountController : Controller
     {

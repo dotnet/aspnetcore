@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="${MicrosoftAspNetCoreHttpsPolicyPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="${MicrosoftAspNetCoreMvcPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="${MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion}" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="${MicrosoftAspNetCoreStaticFilesPackageVersion}" />

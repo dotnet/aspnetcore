@@ -26,8 +26,7 @@ namespace Templates.Test
         {
             RunDotNetNew("razor", targetFrameworkOverride);
 
-            AssertDirectoryExists("Extensions", false);
-            AssertFileExists("Controllers/AccountController.cs", false);
+            AssertFileExists("Pages/Shared/_LoginPartial.cshtml", false);
 
             var projectFileContents = ReadFile($"{ProjectName}.csproj");
             Assert.DoesNotContain(".db", projectFileContents);
@@ -60,8 +59,7 @@ namespace Templates.Test
         {
             RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual");
 
-            AssertDirectoryExists("Extensions", true);
-            AssertFileExists("Controllers/AccountController.cs", true);
+            AssertFileExists("Pages/Shared/_LoginPartial.cshtml", true);
 
             var projectFileContents = ReadFile($"{ProjectName}.csproj");
             Assert.Contains(".db", projectFileContents);
