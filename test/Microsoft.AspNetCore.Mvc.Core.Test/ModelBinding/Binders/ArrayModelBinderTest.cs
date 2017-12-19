@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -27,7 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 typeof(ModelWithIntArrayProperty),
                 nameof(ModelWithIntArrayProperty.ArrayProperty));
 
-            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
+            var binder = new ArrayModelBinder<int>(
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -43,7 +46,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task ArrayModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
-            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
+            var binder = new ArrayModelBinder<string>(
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -70,7 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task ArrayModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
-            var binder = new ArrayModelBinder<string>(new SimpleTypeModelBinder(typeof(string)));
+            var binder = new ArrayModelBinder<string>(
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ArrayProperty");
@@ -126,7 +133,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 typeof(ModelWithIntArrayProperty),
                 nameof(ModelWithIntArrayProperty.ArrayProperty));
 
-            var binder = new ArrayModelBinder<int>(new SimpleTypeModelBinder(typeof(int)));
+            var binder = new ArrayModelBinder<int>(
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);

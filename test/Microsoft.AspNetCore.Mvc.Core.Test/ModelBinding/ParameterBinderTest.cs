@@ -5,12 +5,16 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -94,9 +98,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var parameterBinder = new ParameterBinder(
                 metadataProvider,
                 factory.Object,
-                CreateMockValidatorProvider());
+                CreateMockValidatorProvider(),
+                NullLoggerFactory.Instance);
 
-            var controllerContext = new ControllerContext();
+            var controllerContext = GetControllerContext();
 
             // Act & Assert
             await parameterBinder.BindModelAsync(controllerContext, new SimpleValueProvider(), parameterDescriptor);
@@ -144,7 +149,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var argumentBinder = new ParameterBinder(
                 metadataProvider,
                 factory.Object,
-                CreateMockValidatorProvider());
+                CreateMockValidatorProvider(),
+                NullLoggerFactory.Instance);
 
             var valueProvider = new SimpleValueProvider
             {
@@ -152,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
             var valueProviderFactory = new SimpleValueProviderFactory(valueProvider);
 
-            var controllerContext = new ControllerContext();
+            var controllerContext = GetControllerContext();
 
             // Act & Assert
             await argumentBinder.BindModelAsync(controllerContext, valueProvider, parameterDescriptor);
@@ -163,7 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task BindModelAsync_EnforcesTopLevelBindRequired()
         {
             // Arrange
-            var actionContext = new ControllerContext();
+            var actionContext = GetControllerContext();
 
             var mockModelMetadata = CreateMockModelMetadata();
             mockModelMetadata.Setup(o => o.IsBindingRequired).Returns(true);
@@ -193,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task BindModelAsync_EnforcesTopLevelRequired()
         {
             // Arrange
-            var actionContext = new ControllerContext();
+            var actionContext = GetControllerContext();
             var mockModelMetadata = CreateMockModelMetadata();
             mockModelMetadata.Setup(o => o.IsRequired).Returns(true);
             mockModelMetadata.Setup(o => o.DisplayName).Returns("My Display Name");
@@ -233,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task BindModelAsync_EnforcesTopLevelDataAnnotationsAttribute()
         {
             // Arrange
-            var actionContext = new ControllerContext();
+            var actionContext = GetControllerContext();
             var mockModelMetadata = CreateMockModelMetadata();
             var validationAttribute = new RangeAttribute(1, 100);
             mockModelMetadata.Setup(o => o.DisplayName).Returns("My Display Name");
@@ -272,7 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public async Task BindModelAsync_SupportsIObjectModelValidatorForBackCompat()
         {
             // Arrange
-            var actionContext = new ControllerContext();
+            var actionContext = GetControllerContext();
 
             var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
             mockValidator
@@ -307,6 +313,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(
                 "Test validation message",
                 actionContext.ModelState.Single().Value.Errors.Single().ErrorMessage);
+        }
+
+        private static ControllerContext GetControllerContext()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services.BuildServiceProvider()
+                }
+            };
         }
 
         private static Mock<FakeModelMetadata> CreateMockModelMetadata()
@@ -344,7 +364,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new ParameterBinder(
                 mockModelMetadataProvider.Object,
                 mockModelBinderFactory.Object,
-                CreateMockValidatorProvider(validator));
+                CreateMockValidatorProvider(validator),
+                NullLoggerFactory.Instance);
         }
 
         private static ParameterBinder CreateBackCompatParameterBinder(

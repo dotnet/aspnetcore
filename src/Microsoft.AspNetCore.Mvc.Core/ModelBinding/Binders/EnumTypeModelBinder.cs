@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -13,15 +14,31 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly bool _suppressBindingUndefinedValueToEnumType;
 
-        public EnumTypeModelBinder(bool supressBindingUndefinedValueToEnumType, Type modelType)
-            : base(modelType)
+        /// <summary>
+        /// Initializes a new instance of <see cref="EnumTypeModelBinder"/>.
+        /// </summary>
+        /// <param name="suppressBindingUndefinedValueToEnumType">
+        /// Flag to determine if binding to undefined should be suppressed or not.
+        /// </param>
+        /// <param name="modelType">The mdoel type.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>,</param>
+        public EnumTypeModelBinder(
+            bool suppressBindingUndefinedValueToEnumType,
+            Type modelType,
+            ILoggerFactory loggerFactory)
+            : base(modelType, loggerFactory)
         {
             if (modelType == null)
             {
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            _suppressBindingUndefinedValueToEnumType = supressBindingUndefinedValueToEnumType;
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _suppressBindingUndefinedValueToEnumType = suppressBindingUndefinedValueToEnumType;
         }
 
         protected override void CheckModel(

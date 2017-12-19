@@ -7,6 +7,9 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -16,7 +19,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class ComplexTypeModelBinder : IModelBinder
     {
         private readonly IDictionary<ModelMetadata, IModelBinder> _propertyBinders;
+        private readonly ILogger _logger;
         private Func<object> _modelCreator;
+
+        /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Creates a new <see cref="ComplexTypeModelBinder"/>.</para>
+        /// </summary>
+        /// <param name="propertyBinders">
+        /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
+        /// </param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+        public ComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
+            : this(propertyBinders, NullLoggerFactory.Instance)
+        {
+        }
 
         /// <summary>
         /// Creates a new <see cref="ComplexTypeModelBinder"/>.
@@ -24,14 +43,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="propertyBinders">
         /// The <see cref="IDictionary{TKey, TValue}"/> of binders to use for binding properties.
         /// </param>
-        public ComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public ComplexTypeModelBinder(
+            IDictionary<ModelMetadata, IModelBinder> propertyBinders,
+            ILoggerFactory loggerFactory)
         {
             if (propertyBinders == null)
             {
                 throw new ArgumentNullException(nameof(propertyBinders));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _propertyBinders = propertyBinders;
+            _logger = loggerFactory.CreateLogger<ComplexTypeModelBinder>();
         }
 
         /// <inheritdoc />
@@ -41,6 +69,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
+
+            _logger.AttemptingToBindModel(bindingContext);
 
             if (!CanCreateModel(bindingContext))
             {
@@ -106,6 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             bindingContext.Result = ModelBindingResult.Success(bindingContext.Model);
+            _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
         /// <summary>
@@ -199,6 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // level object. So we return false.
             if (bindingContext.ModelMetadata.Properties.Count == 0)
             {
+                _logger.NoPublicSettableProperties(bindingContext);
                 return false;
             }
 
@@ -272,6 +304,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 return true;
             }
 
+            _logger.CannotBindToComplexType(bindingContext);
+
             return false;
         }
 
@@ -306,7 +340,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             return true;
         }
-
 
         /// <summary>
         /// Creates suitable <see cref="object"/> for given <paramref name="bindingContext"/>.

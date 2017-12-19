@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -1352,7 +1353,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             public TestableComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
-                : base(propertyBinders)
+                : base(propertyBinders, NullLoggerFactory.Instance)
             {
                 Results = new Dictionary<ModelMetadata, ModelBindingResult>();
             }

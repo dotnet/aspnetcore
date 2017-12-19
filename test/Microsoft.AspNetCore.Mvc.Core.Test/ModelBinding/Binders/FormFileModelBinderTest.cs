@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             formFiles.Add(GetMockFormFile("file", "file1.txt"));
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IEnumerable<IFormFile>), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_BindsFiles_ForCollectionsItCanCreate(Type destinationType)
         {
             // Arrange
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
             var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(destinationType, httpContext);
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var formFiles = new FormFileCollection();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -130,7 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             formFiles.Add(GetMockFormFile("different name", "file1.txt"));
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -156,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.FieldName = "FieldName";
             bindingContext.ModelName = "ModelName";
 
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -176,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             formFiles.Add(new Mock<IFormFile>().Object);
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -194,7 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             formFiles.Add(GetMockFormFile("file", ""));
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(IFormFile), httpContext);
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_ReturnsResult_ForReadOnlyDestination()
         {
             // Arrange
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
             var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContextForReadOnlyArray(httpContext);
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task FormFileModelBinder_ReturnsFailedResult_ForCollectionsItCannotCreate()
         {
             // Arrange
-            var binder = new FormFileModelBinder();
+            var binder = new FormFileModelBinder(NullLoggerFactory.Instance);
             var formFiles = GetTwoFiles();
             var httpContext = GetMockHttpContext(GetMockFormCollection(formFiles));
             var bindingContext = GetBindingContext(typeof(ISet<IFormFile>), httpContext);

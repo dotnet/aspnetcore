@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -22,12 +24,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         private readonly IModelBinder _valueBinder;
 
         /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.</para>
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
+            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
+        {
+        }
+
+        /// <summary>
         /// Creates a new <see cref="DictionaryModelBinder{TKey, TValue}"/>.
         /// </summary>
         /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
         /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
-            : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder))
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public DictionaryModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
+            : base(new KeyValuePairModelBinder<TKey, TValue>(keyBinder, valueBinder, loggerFactory), loggerFactory)
         {
             if (valueBinder == null)
             {
@@ -61,6 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 // ICollection<KeyValuePair<TKey, TValue>> approach was successful.
                 return;
             }
+
+            Logger.NoKeyValueFormatForDictionaryModelBinder(bindingContext);
 
             var enumerableValueProvider = bindingContext.ValueProvider as IEnumerableValueProvider;
             if (enumerableValueProvider == null)

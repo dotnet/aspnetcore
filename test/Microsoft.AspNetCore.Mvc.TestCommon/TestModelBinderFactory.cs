@@ -1,8 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -36,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         public static TestModelBinderFactory CreateDefault(
-            IModelMetadataProvider metadataProvider, 
+            IModelMetadataProvider metadataProvider,
             params IModelBinderProvider[] providers)
         {
             if (metadataProvider == null)
@@ -53,9 +57,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new TestModelBinderFactory(metadataProvider, options);
         }
 
-        protected TestModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options) 
-            : base(metadataProvider, options)
+        protected TestModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options)
+            : base(metadataProvider, options, GetServices())
         {
+        }
+
+        private static IServiceProvider GetServices()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            return services.BuildServiceProvider();
         }
     }
 }

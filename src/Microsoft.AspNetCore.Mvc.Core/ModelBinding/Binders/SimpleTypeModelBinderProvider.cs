@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -20,7 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (!context.Metadata.IsComplexType)
             {
-                return new SimpleTypeModelBinder(context.Metadata.ModelType);
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+                return new SimpleTypeModelBinder(context.Metadata.ModelType, loggerFactory);
             }
 
             return null;

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             });
             var httpContext = GetMockHttpContext(formCollection);
             var bindingContext = GetBindingContext(typeof(IFormCollection), httpContext);
-            var binder = new FormCollectionModelBinder();
+            var binder = new FormCollectionModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var httpContext = GetMockHttpContext(null, hasForm: false);
             var bindingContext = GetBindingContext(typeof(IFormCollection), httpContext);
-            var binder = new FormCollectionModelBinder();
+            var binder = new FormCollectionModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);

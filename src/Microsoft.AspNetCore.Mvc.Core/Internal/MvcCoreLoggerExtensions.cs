@@ -11,10 +11,12 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -98,7 +100,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static readonly Action<ILogger, MethodInfo, string, string, Exception> _inferredParameterSource;
         private static readonly Action<ILogger, MethodInfo, Exception> _unableToInferParameterSources;
-
+        private static readonly Action<ILogger, IModelBinderProvider[], Exception> _registeredModelBinderProviders;
+        private static readonly Action<ILogger, string, Type, string, Type, Exception> _foundNoValueForPropertyInRequest;
+        private static readonly Action<ILogger, string, string, Type, Exception> _foundNoValueInRequest;
+        private static readonly Action<ILogger, string, Type, Exception> _noPublicSettableProperties;
+        private static readonly Action<ILogger, Type, Exception> _cannotBindToComplexType;
+        private static readonly Action<ILogger, string, Type, Exception> _cannotBindToFilesCollectionDueToUnsupportedContentType;
+        private static readonly Action<ILogger, Type, Exception> _cannotCreateHeaderModelBinder;
+        private static readonly Action<ILogger, Exception> _noFilesFoundInRequest;
+        private static readonly Action<ILogger, string, string, Exception> _noNonIndexBasedFormatFoundForCollection;
+        private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionUsingIndices;
+        private static readonly Action<ILogger, string, string, string, string, string, string, Exception> _attemptingToBindCollectionOfKeyValuePair;
+        private static readonly Action<ILogger, string, string, string, Exception> _noKeyValueFormatForDictionaryModelBinder;
+        private static readonly Action<ILogger, Type, string, Type, string, Exception> _attemptingToBindPropertyModel;
+        private static readonly Action<ILogger, Type, string, Type, Exception> _doneAttemptingToBindPropertyModel;
+        private static readonly Action<ILogger, Type, string, Exception> _attemptingToBindModel;
+        private static readonly Action<ILogger, Type, string, Exception> _doneAttemptingToBindModel;
+        private static readonly Action<ILogger, string, Type, Exception> _attemptingToBindParameter;
+        private static readonly Action<ILogger, string, Type, Exception> _doneAttemptingToBindParameter;
+        private static readonly Action<ILogger, Type, string, Type, Exception> _attemptingToBindProperty;
+        private static readonly Action<ILogger, Type, string, Type, Exception> _doneAttemptingToBindProperty;
+        private static readonly Action<ILogger, Type, string, Type, Exception> _attemptingToValidateProperty;
+        private static readonly Action<ILogger, Type, string, Type, Exception> _doneAttemptingToValidateProperty;
+        private static readonly Action<ILogger, string, Type, Exception> _attemptingToValidateParameter;
+        private static readonly Action<ILogger, string, Type, Exception> _doneAttemptingToValidateParameter;
         private static readonly Action<ILogger, string, Exception> _unsupportedFormatFilterContentType;
         private static readonly Action<ILogger, string, MediaTypeCollection, Exception> _actionDoesNotSupportFormatFilterContentType;
         private static readonly Action<ILogger, string, Exception> _cannotApplyFormatFilterContentType;
@@ -417,35 +442,161 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 11,
                 "List of registered output formatters, in the following order: {OutputFormatters}");
 
-            _ifMatchPreconditionFailed = LoggerMessage.Define<EntityTagHeaderValue>(
-                LogLevel.Debug,
-                12,
-                "Current request's If-Match header check failed as the file's current etag '{CurrentETag}' does not match with any of the supplied etags.");
-
-            _ifUnmodifiedSincePreconditionFailed = LoggerMessage.Define<DateTimeOffset?, DateTimeOffset?>(
-                LogLevel.Debug,
-                13,
-                "Current request's If-Unmodified-Since header check failed as the file was modified (at '{lastModified}') after the If-Unmodified-Since date '{IfUnmodifiedSinceDate}'.");
-
-            _ifRangeLastModifiedPreconditionFailed = LoggerMessage.Define<DateTimeOffset?, DateTimeOffset?>(
-                LogLevel.Debug,
-                14,
-                "Could not serve range as the file was modified (at {LastModified}) after the if-Range's last modified date '{IfRangeLastModified}'.");
-
-            _ifRangeETagPreconditionFailed = LoggerMessage.Define<EntityTagHeaderValue, EntityTagHeaderValue>(
-                LogLevel.Debug,
-                15,
-                "Could not serve range as the file's current etag '{CurrentETag}' does not match the If-Range etag '{IfRangeETag}'.");
-
-            _notEnabledForRangeProcessing = LoggerMessage.Define(
-                LogLevel.Debug,
-                16,
-                $"The file result has not been enabled for processing range requests. To enable it, set the property '{nameof(FileResult.EnableRangeProcessing)}' on the result to 'true'.");
-
             _writingRangeToBody = LoggerMessage.Define(
                 LogLevel.Debug,
                 17,
                 "Writing the requested range of bytes to the body...");
+
+            _registeredModelBinderProviders = LoggerMessage.Define<IModelBinderProvider[]>(
+                LogLevel.Debug,
+                12,
+                "Registered model binder providers, in the following order: {ModelBinderProviders}");
+
+            _attemptingToBindPropertyModel = LoggerMessage.Define<Type, string, Type, string>(
+               LogLevel.Debug,
+               13,
+               "Attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' using the name '{ModelName}' in request data ...");
+
+            _doneAttemptingToBindPropertyModel = LoggerMessage.Define<Type, string, Type>(
+               LogLevel.Debug,
+               14,
+               "Done attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.");
+
+            _foundNoValueForPropertyInRequest = LoggerMessage.Define<string, Type, string, Type>(
+               LogLevel.Debug,
+               15,
+               "Could not find a value in the request with name '{ModelName}' for binding property '{PropertyContainerType}.{ModelFieldName}' of type '{ModelType}'.");
+
+            _foundNoValueInRequest = LoggerMessage.Define<string, string, Type>(
+               LogLevel.Debug,
+               16,
+               "Could not find a value in the request with name '{ModelName}' for binding parameter '{ModelFieldName}' of type '{ModelType}'.");
+
+            _noPublicSettableProperties = LoggerMessage.Define<string, Type>(
+               LogLevel.Debug,
+               17,
+               "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the type has no public settable properties.");
+
+            _cannotBindToComplexType = LoggerMessage.Define<Type>(
+               LogLevel.Debug,
+               18,
+               "Could not bind to model of type '{ModelType}' as there were no values in the request for any of the properties.");
+
+            _cannotBindToFilesCollectionDueToUnsupportedContentType = LoggerMessage.Define<string, Type>(
+               LogLevel.Debug,
+               19,
+               "Could not bind to model with name '{ModelName}' and type '{ModelType}' as the request did not have a content type of either 'application/x-www-form-urlencoded' or 'multipart/form-data'.");
+
+            _cannotCreateHeaderModelBinder = LoggerMessage.Define<Type>(
+               LogLevel.Debug,
+               20,
+               "Could not create a binder for type '{ModelType}' as this binder only supports 'System.String' type or a collection of 'System.String'.");
+
+            _noFilesFoundInRequest = LoggerMessage.Define(
+                LogLevel.Debug,
+                21,
+                "No files found in the request to bind the model to.");
+
+            _attemptingToBindParameter = LoggerMessage.Define<string, Type>(
+                LogLevel.Debug,
+                22,
+                "Attempting to bind parameter '{ParameterName}' of type '{ModelType}' ...");
+
+            _doneAttemptingToBindParameter = LoggerMessage.Define<string, Type>(
+                LogLevel.Debug,
+                23,
+                "Done attempting to bind parameter '{ParameterName}' of type '{ModelType}'.");
+
+            _attemptingToBindModel = LoggerMessage.Define<Type, string>(
+                LogLevel.Debug,
+                24,
+                "Attempting to bind model of type '{ModelType}' using the name '{ModelName}' in request data ...");
+
+            _doneAttemptingToBindModel = LoggerMessage.Define<Type, string>(
+                LogLevel.Debug,
+                25,
+                "Done attempting to bind model of type '{ModelType}' using the name '{ModelName}'.");
+
+            _attemptingToValidateParameter = LoggerMessage.Define<string, Type>(
+                LogLevel.Debug,
+                26,
+                "Attempting to validate the bound parameter '{ParameterName}' of type '{ModelType}' ...");
+
+            _doneAttemptingToValidateParameter = LoggerMessage.Define<string, Type>(
+                LogLevel.Debug,
+                27,
+                "Done attempting to validate the bound parameter '{ParameterName}' of type '{ModelType}'.");
+
+            _noNonIndexBasedFormatFoundForCollection = LoggerMessage.Define<string, string>(
+                LogLevel.Debug,
+                28,
+                "Could not bind to collection using a format like {ModelName}=value1&{ModelName}=value2");
+
+            _attemptingToBindCollectionUsingIndices = LoggerMessage.Define<string, string, string, string, string, string>(
+                LogLevel.Debug,
+                29,
+                "Attempting to bind model using indices. Example formats include: " +
+                "[0]=value1&[1]=value2, " +
+                "{ModelName}[0]=value1&{ModelName}[1]=value2, " +
+                "{ModelName}.index=zero&{ModelName}.index=one&{ModelName}[zero]=value1&{ModelName}[one]=value2");
+
+            _attemptingToBindCollectionOfKeyValuePair = LoggerMessage.Define<string, string, string, string, string, string>(
+                LogLevel.Debug,
+                30,
+                "Attempting to bind collection of KeyValuePair. Example formats include: " +
+                "[0].Key=key1&[0].Value=value1&[1].Key=key2&[1].Value=value2, " +
+                "{ModelName}[0].Key=key1&{ModelName}[0].Value=value1&{ModelName}[1].Key=key2&{ModelName}[1].Value=value2, " +
+                "{ModelName}[key1]=value1&{ModelName}[key2]=value2");
+
+            _noKeyValueFormatForDictionaryModelBinder = LoggerMessage.Define<string, string, string>(
+                LogLevel.Debug,
+                33,
+                "Attempting to bind model with name '{ModelName}' using the format {ModelName}[key1]=value1&{ModelName}[key2]=value2");
+
+            _ifMatchPreconditionFailed = LoggerMessage.Define<EntityTagHeaderValue>(
+                LogLevel.Debug,
+                34,
+                "Current request's If-Match header check failed as the file's current etag '{CurrentETag}' does not match with any of the supplied etags.");
+
+            _ifUnmodifiedSincePreconditionFailed = LoggerMessage.Define<DateTimeOffset?, DateTimeOffset?>(
+                LogLevel.Debug,
+                35,
+                "Current request's If-Unmodified-Since header check failed as the file was modified (at '{lastModified}') after the If-Unmodified-Since date '{IfUnmodifiedSinceDate}'.");
+
+            _ifRangeLastModifiedPreconditionFailed = LoggerMessage.Define<DateTimeOffset?, DateTimeOffset?>(
+                LogLevel.Debug,
+                36,
+                "Could not serve range as the file was modified (at {LastModified}) after the if-Range's last modified date '{IfRangeLastModified}'.");
+
+            _ifRangeETagPreconditionFailed = LoggerMessage.Define<EntityTagHeaderValue, EntityTagHeaderValue>(
+                LogLevel.Debug,
+                37,
+                "Could not serve range as the file's current etag '{CurrentETag}' does not match the If-Range etag '{IfRangeETag}'.");
+
+            _notEnabledForRangeProcessing = LoggerMessage.Define(
+                LogLevel.Debug,
+                38,
+                $"The file result has not been enabled for processing range requests. To enable it, set the property '{nameof(FileResult.EnableRangeProcessing)}' on the result to 'true'.");
+
+            _attemptingToBindProperty = LoggerMessage.Define<Type, string, Type>(
+                LogLevel.Debug,
+                39,
+                "Attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' ...");
+
+            _doneAttemptingToBindProperty = LoggerMessage.Define<Type, string, Type>(
+                LogLevel.Debug,
+                40,
+                "Done attempting to bind property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.");
+
+            _attemptingToValidateProperty = LoggerMessage.Define<Type, string, Type>(
+                LogLevel.Debug,
+                41,
+                "Attempting to validate the bound property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}' ...");
+
+            _doneAttemptingToValidateProperty = LoggerMessage.Define<Type, string, Type>(
+                LogLevel.Debug,
+                42,
+                "Done attempting to validate the bound property '{PropertyContainerType}.{PropertyName}' of type '{ModelType}'.");
         }
 
         public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
@@ -965,6 +1116,200 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             EntityTagHeaderValue ifRangeTag)
         {
             _ifRangeETagPreconditionFailed(logger, currentETag, ifRangeTag, null);
+        }
+
+        public static void RegisteredModelBinderProviders(this ILogger logger, IModelBinderProvider[] providers)
+        {
+            _registeredModelBinderProviders(logger, providers, null);
+        }
+
+        public static void FoundNoValueInRequest(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            var isProperty = modelMetadata.ContainerType != null;
+
+            if (isProperty)
+            {
+                _foundNoValueForPropertyInRequest(
+                    logger,
+                    bindingContext.ModelName,
+                    modelMetadata.ContainerType,
+                    modelMetadata.PropertyName,
+                    bindingContext.ModelType,
+                    null);
+            }
+            else
+            {
+                _foundNoValueInRequest(
+                    logger,
+                    bindingContext.ModelName,
+                    modelMetadata.PropertyName,
+                    bindingContext.ModelType,
+                    null);
+            }
+        }
+
+        public static void NoPublicSettableProperties(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            _noPublicSettableProperties(logger, bindingContext.ModelName, bindingContext.ModelType, null);
+        }
+
+        public static void CannotBindToComplexType(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            _cannotBindToComplexType(logger, bindingContext.ModelType, null);
+        }
+
+        public static void CannotBindToFilesCollectionDueToUnsupportedContentType(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            _cannotBindToFilesCollectionDueToUnsupportedContentType(logger, bindingContext.ModelName, bindingContext.ModelType, null);
+        }
+
+        public static void CannotCreateHeaderModelBinder(this ILogger logger, Type modelType)
+        {
+            _cannotCreateHeaderModelBinder(logger, modelType, null);
+        }
+
+        public static void NoFilesFoundInRequest(this ILogger logger)
+        {
+            _noFilesFoundInRequest(logger, null);
+        }
+
+        public static void AttemptingToBindModel(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var modelMetadata = bindingContext.ModelMetadata;
+            var isProperty = modelMetadata.ContainerType != null;
+
+            if (isProperty)
+            {
+                _attemptingToBindPropertyModel(
+                    logger,
+                    modelMetadata.ContainerType,
+                    modelMetadata.PropertyName,
+                    modelMetadata.ModelType,
+                    bindingContext.ModelName,
+                    null);
+            }
+            else
+            {
+                _attemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
+            }
+        }
+
+        public static void DoneAttemptingToBindModel(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            var modelMetadata = bindingContext.ModelMetadata;
+            var isProperty = modelMetadata.ContainerType != null;
+
+            if (isProperty)
+            {
+                _doneAttemptingToBindPropertyModel(
+                    logger,
+                    modelMetadata.ContainerType,
+                    modelMetadata.PropertyName,
+                    modelMetadata.ModelType,
+                    null);
+            }
+            else
+            {
+                _doneAttemptingToBindModel(logger, bindingContext.ModelType, bindingContext.ModelName, null);
+            }
+        }
+
+        public static void AttemptingToBindParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        {
+            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            {
+                _attemptingToBindProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+            }
+            else
+            {
+                _attemptingToBindParameter(logger, parameter.Name, bindingContext.ModelType, null);
+            }
+        }
+
+        public static void DoneAttemptingToBindParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        {
+            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            {
+                _doneAttemptingToBindProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+            }
+            else
+            {
+                _doneAttemptingToBindParameter(logger, parameter.Name, bindingContext.ModelType, null);
+            }
+        }
+
+        public static void AttemptingToValidateParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        {
+            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            {
+                _attemptingToValidateProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+            }
+            else
+            {
+                _attemptingToValidateParameter(logger, parameter.Name, bindingContext.ModelType, null);
+            }
+        }
+
+        public static void DoneAttemptingToValidateParameterOrProperty(this ILogger logger, ParameterDescriptor parameter, ModelBindingContext bindingContext)
+        {
+            if (parameter is ControllerBoundPropertyDescriptor propertyDescriptor)
+            {
+                _doneAttemptingToValidateProperty(logger, propertyDescriptor.PropertyInfo.DeclaringType, parameter.Name, bindingContext.ModelType, null);
+            }
+            else
+            {
+                _doneAttemptingToValidateParameter(logger, parameter.Name, bindingContext.ModelType, null);
+            }
+        }
+
+        public static void NoNonIndexBasedFormatFoundForCollection(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            var modelName = bindingContext.ModelName;
+            _noNonIndexBasedFormatFoundForCollection(logger, modelName, modelName, null);
+        }
+
+        public static void AttemptingToBindCollectionUsingIndices(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            if (!logger.IsEnabled(LogLevel.Debug))
+            {
+                return;
+            }
+
+            var modelName = bindingContext.ModelName;
+
+            var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(bindingContext.ModelType, typeof(IEnumerable<>));
+            if (enumerableType != null)
+            {
+                var elementType = enumerableType.GenericTypeArguments[0];
+                if (elementType.IsGenericType && elementType.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
+                {
+                    _attemptingToBindCollectionOfKeyValuePair(logger, modelName, modelName, modelName, modelName, modelName, modelName, null);
+                    return;
+                }
+            }
+
+            _attemptingToBindCollectionUsingIndices(logger, modelName, modelName, modelName, modelName, modelName, modelName, null);
+        }
+
+        public static void NoKeyValueFormatForDictionaryModelBinder(this ILogger logger, ModelBindingContext bindingContext)
+        {
+            _noKeyValueFormatForDictionaryModelBinder(
+                logger,
+                bindingContext.ModelName,
+                bindingContext.ModelName,
+                bindingContext.ModelName,
+                null);
         }
 
         private static void LogFilterExecutionPlan(

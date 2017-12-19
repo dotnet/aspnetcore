@@ -448,7 +448,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 : base(
                     new EmptyModelMetadataProvider(),
                     TestModelBinderFactory.CreateDefault(),
-                    Mock.Of<IModelValidatorProvider>())
+                    Mock.Of<IModelValidatorProvider>(),
+                    NullLoggerFactory.Instance)
             {
                 _actionParameters = actionParameters;
             }

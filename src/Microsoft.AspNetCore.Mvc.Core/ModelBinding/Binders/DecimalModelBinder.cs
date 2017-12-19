@@ -5,6 +5,9 @@ using System;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -15,10 +18,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class DecimalModelBinder : IModelBinder
     {
         private readonly NumberStyles _supportedStyles;
+        private readonly ILogger _logger;
 
+        /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Initializes a new instance of <see cref="DecimalModelBinder"/>.</para>
+        /// </summary>
+        /// <param name="supportedStyles">The <see cref="NumberStyles"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
         public DecimalModelBinder(NumberStyles supportedStyles)
+            : this(supportedStyles, NullLoggerFactory.Instance)
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="DecimalModelBinder"/>.
+        /// </summary>
+        /// <param name="supportedStyles">The <see cref="NumberStyles"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public DecimalModelBinder(NumberStyles supportedStyles, ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _supportedStyles = supportedStyles;
+            _logger = loggerFactory.CreateLogger<DecimalModelBinder>();
         }
 
         /// <inheritdoc />
@@ -29,11 +57,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger.AttemptingToBindModel(bindingContext);
+
             var modelName = bindingContext.ModelName;
             var valueProviderResult = bindingContext.ValueProvider.GetValue(modelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
+                _logger.FoundNoValueInRequest(bindingContext);
+
                 // no entry
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return Task.CompletedTask;
             }
 
@@ -72,13 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         modelName,
                         metadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
                             valueProviderResult.ToString()));
-
-                    return Task.CompletedTask;
                 }
                 else
                 {
                     bindingContext.Result = ModelBindingResult.Success(model);
-                    return Task.CompletedTask;
                 }
             }
             catch (Exception exception)
@@ -94,8 +124,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 modelState.TryAddModelError(modelName, exception, metadata);
 
                 // Conversion failed.
-                return Task.CompletedTask;
             }
+
+            _logger.DoneAttemptingToBindModel(bindingContext);
+            return Task.CompletedTask;
         }
     }
 }

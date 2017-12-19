@@ -3,6 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -25,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 BindingSource = Metadata.BindingSource,
                 PropertyFilterProvider = Metadata.PropertyFilterProvider,
             };
-
+            Services = GetServices();
         }
 
         public TestModelBinderProviderContext(ModelMetadata metadata, BindingInfo bindingInfo)
@@ -40,6 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             MetadataProvider = CachedMetadataProvider;
+            Services = GetServices();
         }
 
         public override BindingInfo BindingInfo { get; }
@@ -47,6 +51,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public override ModelMetadata Metadata { get; }
 
         public override IModelMetadataProvider MetadataProvider { get; }
+
+        public override IServiceProvider Services { get; }
 
         public override IModelBinder CreateBinder(ModelMetadata metadata)
         {
@@ -70,6 +76,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void OnCreatingBinder(ModelMetadata metadata, Func<IModelBinder> binderCreator)
         {
             _binderCreators.Add((m) => m.Equals(metadata) ? binderCreator() : null);
+        }
+
+        private static IServiceProvider GetServices()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            return services.BuildServiceProvider();
         }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -23,8 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private readonly IHttpRequestStreamReaderFactory _readerFactory;
         private readonly ILoggerFactory _loggerFactory;
 
+        // Used in tests
         public MvcCoreMvcOptionsSetup(IHttpRequestStreamReaderFactory readerFactory)
-            : this(readerFactory, loggerFactory: null)
+            : this(readerFactory, NullLoggerFactory.Instance)
         {
         }
 

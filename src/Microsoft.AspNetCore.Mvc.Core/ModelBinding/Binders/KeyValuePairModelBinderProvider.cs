@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -21,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             var modelTypeInfo = context.Metadata.ModelType.GetTypeInfo();
-            if (modelTypeInfo.IsGenericType && 
+            if (modelTypeInfo.IsGenericType &&
                 modelTypeInfo.GetGenericTypeDefinition().GetTypeInfo() == typeof(KeyValuePair<,>).GetTypeInfo())
             {
                 var typeArguments = modelTypeInfo.GenericTypeArguments;
@@ -33,7 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var valueBinder = context.CreateBinder(valueMetadata);
 
                 var binderType = typeof(KeyValuePairModelBinder<,>).MakeGenericType(typeArguments);
-                return (IModelBinder)Activator.CreateInstance(binderType, keyBinder, valueBinder);
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+                return (IModelBinder)Activator.CreateInstance(binderType, keyBinder, valueBinder, loggerFactory);
             }
 
             return null;

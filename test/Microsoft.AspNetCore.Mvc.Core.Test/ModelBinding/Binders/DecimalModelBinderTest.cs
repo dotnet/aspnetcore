@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         protected override IModelBinder GetBinder(NumberStyles numberStyles)
         {
-            return new DecimalModelBinder(numberStyles);
+            return new DecimalModelBinder(numberStyles, NullLoggerFactory.Instance);
         }
     }
 }

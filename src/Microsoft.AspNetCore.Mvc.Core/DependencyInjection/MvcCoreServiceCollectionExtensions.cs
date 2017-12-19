@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -236,10 +237,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ParameterBinder>(s =>
             {
                 var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
+                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
                 var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
                 var modelBinderFactory = s.GetRequiredService<IModelBinderFactory>();
                 var modelValidatorProvider = new CompositeModelValidatorProvider(options.ModelValidatorProviders);
-                return new ParameterBinder(metadataProvider, modelBinderFactory, modelValidatorProvider);
+                return new ParameterBinder(metadataProvider, modelBinderFactory, modelValidatorProvider, loggerFactory);
             });
 
             //

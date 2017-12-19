@@ -16,6 +16,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -36,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var valueProvider = new TestValueProvider(values);
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
 
-            var actionContext = new ActionContext() { HttpContext = new DefaultHttpContext() };
+            var actionContext = GetActionContext();
             var modelState = actionContext.ModelState;
 
             // Act
@@ -117,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -141,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
@@ -195,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -221,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 string.Empty,
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binder),
                 Mock.Of<IValueProvider>(),
@@ -271,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -322,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var result = await ModelBindingHelper.TryUpdateModelAsync(
                 model,
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -469,7 +472,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model,
                 model.GetType(),
                 prefix: "",
-                actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
+                actionContext: GetActionContext(),
                 metadataProvider: metadataProvider,
                 modelBinderFactory: GetModelBinderFactory(binder),
                 valueProvider: Mock.Of<IValueProvider>(),
@@ -524,7 +527,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model,
                 model.GetType(),
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -552,7 +555,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model,
                 modelType: model.GetType(),
                 prefix: "",
-                actionContext: new ActionContext() { HttpContext = new DefaultHttpContext() },
+                actionContext: GetActionContext(),
                 metadataProvider: metadataProvider,
                 modelBinderFactory: GetModelBinderFactory(binder.Object),
                 valueProvider: Mock.Of<IValueProvider>(),
@@ -592,7 +595,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 model,
                 model.GetType(),
                 "",
-                new ActionContext() { HttpContext = new DefaultHttpContext() },
+                GetActionContext(),
                 metadataProvider,
                 GetModelBinderFactory(binderProviders),
                 valueProvider,
@@ -623,7 +626,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     model,
                     typeof(User),
                     "",
-                    new ActionContext() { HttpContext = new DefaultHttpContext() },
+                    GetActionContext(),
                     metadataProvider,
                     GetModelBinderFactory(binder.Object),
                     Mock.Of<IValueProvider>(),
@@ -1490,6 +1493,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.False(result);
+        }
+
+        private static ActionContext GetActionContext()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services.BuildServiceProvider()
+                }
+            };
         }
 
         private static DefaultModelBindingContext GetBindingContextForProperty(string propertyName)

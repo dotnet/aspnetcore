@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -21,16 +23,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private readonly ValidatorCache _validatorCache;
 
         /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Initializes a new instance of <see cref="ParameterBinder"/>.</para>
+        /// </summary>
+        /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
+        /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
+        /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+        public ParameterBinder(
+            IModelMetadataProvider modelMetadataProvider,
+            IModelBinderFactory modelBinderFactory,
+            IModelValidatorProvider validatorProvider)
+            : this(
+                  modelMetadataProvider,
+                  modelBinderFactory,
+                  validatorProvider,
+                  validatorForBackCompatOnly: null,
+                  loggerFactory: NullLoggerFactory.Instance)
+        {
+        }
+
+        /// <summary>
         /// Initializes a new instance of <see cref="ParameterBinder"/>.
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
         /// <param name="validatorProvider">The <see cref="IModelValidatorProvider"/>.</param>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
-            IModelValidatorProvider validatorProvider)
-            : this(modelMetadataProvider, modelBinderFactory, validatorProvider, null)
+            IModelValidatorProvider validatorProvider,
+            ILoggerFactory loggerFactory)
+            : this(
+                  modelMetadataProvider,
+                  modelBinderFactory,
+                  validatorProvider,
+                  validatorForBackCompatOnly: null,
+                  loggerFactory: loggerFactory)
         {
             if (validatorProvider == null)
             {
@@ -39,17 +71,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ParameterBinder"/>.
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="IModelValidatorProvider"/> and <see cref="ILoggerFactory"/>
+        /// instead of an <see cref="IObjectModelValidator"/>.</para>
+        /// <para>Initializes a new instance of <see cref="ParameterBinder"/>.</para>
         /// </summary>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
         /// <param name="modelBinderFactory">The <see cref="IModelBinderFactory"/>.</param>
         /// <param name="validator">The <see cref="IObjectModelValidator"/>.</param>
-        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative is the overload that takes a " + nameof(IModelValidatorProvider) + " instead of a " + nameof(IObjectModelValidator) + ".")]
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that takes an " + nameof(IModelValidatorProvider) + " and " + nameof(ILoggerFactory)
+            + " instead of an " + nameof(IObjectModelValidator) + ".")]
         public ParameterBinder(
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             IObjectModelValidator validator)
-            : this(modelMetadataProvider, modelBinderFactory, null, validator)
+            : this(
+                  modelMetadataProvider,
+                  modelBinderFactory,
+                  validatorProvider: null,
+                  validatorForBackCompatOnly: validator,
+                  loggerFactory: NullLoggerFactory.Instance)
         {
             // Note: When this obsolete constructor overload is removed, also remember
             // to remove the validatorForBackCompatOnly field.
@@ -64,7 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             IModelMetadataProvider modelMetadataProvider,
             IModelBinderFactory modelBinderFactory,
             IModelValidatorProvider validatorProvider,
-            IObjectModelValidator validatorForBackCompatOnly)
+            IObjectModelValidator validatorForBackCompatOnly,
+            ILoggerFactory loggerFactory)
         {
             if (modelMetadataProvider == null)
             {
@@ -76,12 +119,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(modelBinderFactory));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _modelMetadataProvider = modelMetadataProvider;
             _modelBinderFactory = modelBinderFactory;
             _validatorProvider = validatorProvider;
             _validatorForBackCompatOnly = validatorForBackCompatOnly;
             _validatorCache = new ValidatorCache();
+            Logger = loggerFactory.CreateLogger(GetType());
         }
+
+        /// <summary>
+        /// The <see cref="ILogger"/> used for logging in this binder.
+        /// </summary>
+        protected ILogger Logger { get; }
 
         /// <summary>
         /// Initializes and binds a model specified by <paramref name="parameter"/>.
@@ -200,6 +254,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 parameter.Name);
             modelBindingContext.Model = value;
 
+            Logger.AttemptingToBindParameterOrProperty(parameter, modelBindingContext);
+
             var parameterModelName = parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName;
             if (parameterModelName != null)
             {
@@ -219,6 +275,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             await modelBinder.BindModelAsync(modelBindingContext);
 
+            Logger.DoneAttemptingToBindParameterOrProperty(parameter, modelBindingContext);
+
             var modelBindingResult = modelBindingContext.Result;
 
             if (_validatorForBackCompatOnly != null)
@@ -237,11 +295,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             }
             else
             {
+                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+
                 EnforceBindRequiredAndValidate(
                     actionContext,
                     metadata,
                     modelBindingContext,
                     modelBindingResult);
+
+                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
             }
 
             return modelBindingResult;

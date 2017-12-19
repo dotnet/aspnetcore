@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Act
             var context = DefaultModelBindingContext.CreateBindingContext(
-                new ActionContext(),
+                GetActionContext(),
                 original,
                 metadataProvider.GetMetadataForType(typeof(object)),
                 new BindingInfo() { BindingSource = BindingSource.Query },
@@ -96,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var original = CreateDefaultValueProvider();
             var context = DefaultModelBindingContext.CreateBindingContext(
-                new ActionContext(),
+                GetActionContext(),
                 original,
                 metadataProvider.GetMetadataForType(typeof(string)),
                 new BindingInfo(),
@@ -125,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var original = CreateDefaultValueProvider();
 
             var context = DefaultModelBindingContext.CreateBindingContext(
-                new ActionContext(),
+                GetActionContext(),
                 original,
                 metadataProvider.GetMetadataForType(typeof(string)),
                 new BindingInfo() { BindingSource = BindingSource.Query },
@@ -153,6 +156,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(typeof(int), bindingContext.ModelType);
+        }
+
+        private static ActionContext GetActionContext()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            return new ActionContext()
+            {
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services.BuildServiceProvider()
+                }
+            };
         }
 
         private static CompositeValueProvider CreateDefaultValueProvider()

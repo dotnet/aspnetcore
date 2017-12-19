@@ -5,6 +5,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", value }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(string));
+            var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 .DisplayDetails(d => d.ConvertEmptyStringToNull = false);
             bindingContext.ModelMetadata = metadataProvider.GetMetadataForType(typeof(string));
 
-            var binder = new SimpleTypeModelBinder(typeof(string));
+            var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "some-value" }
             };
 
-            var binder = new SimpleTypeModelBinder(destinationType);
+            var binder = new SimpleTypeModelBinder(destinationType, NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -118,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 { "theModelName", string.Empty }
             };
-            var binder = new SimpleTypeModelBinder(destinationType);
+            var binder = new SimpleTypeModelBinder(destinationType, NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "not an integer" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(int));
+            var binder = new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var bindingContext = GetBindingContext(typeof(int));
-            var binder = new SimpleTypeModelBinder(typeof(int));
+            var binder = new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", value }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(string));
+            var binder = new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -203,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "12" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(int?));
+            var binder = new SimpleTypeModelBinder(typeof(int?), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -224,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "12.5" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(double?));
+            var binder = new SimpleTypeModelBinder(typeof(double?), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -245,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "42" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(int));
+            var binder = new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -287,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "32,000" }
             };
 
-            var binder = new SimpleTypeModelBinder(type);
+            var binder = new SimpleTypeModelBinder(type, NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -315,7 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "12,5" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(decimal));
+            var binder = new SimpleTypeModelBinder(typeof(decimal), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -336,7 +337,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", "12,5" }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(decimal));
+            var binder = new SimpleTypeModelBinder(typeof(decimal), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", new object[] { "Value1" } }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(IntEnum));
+            var binder = new SimpleTypeModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -381,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", new object[] { "1" } }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(IntEnum));
+            var binder = new SimpleTypeModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -422,7 +423,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", flagsEnumValue }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(IntEnum));
+            var binder = new SimpleTypeModelBinder(typeof(IntEnum), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -445,7 +446,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "theModelName", flagsEnumValue }
             };
 
-            var binder = new SimpleTypeModelBinder(typeof(FlagsEnum));
+            var binder = new SimpleTypeModelBinder(typeof(FlagsEnum), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);

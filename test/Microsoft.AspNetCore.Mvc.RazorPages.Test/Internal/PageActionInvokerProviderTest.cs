@@ -479,7 +479,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 TestModelBinderFactory.CreateDefault(),
-                Mock.Of<IModelValidatorProvider>());
+                Mock.Of<IModelValidatorProvider>(),
+                NullLoggerFactory.Instance);
 
             return new PageActionInvokerProvider(
                 loader,

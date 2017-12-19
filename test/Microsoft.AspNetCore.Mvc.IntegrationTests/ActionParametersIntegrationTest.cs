@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -757,7 +758,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         private class CustomComplexTypeModelBinder : ComplexTypeModelBinder
         {
             public CustomComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)
-                : base(propertyBinders)
+                : base(propertyBinders, NullLoggerFactory.Instance)
             {
             }
 

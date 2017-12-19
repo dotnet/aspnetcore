@@ -5,6 +5,8 @@ using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -34,7 +36,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (modelType == typeof(IFormCollection))
             {
-                return new FormCollectionModelBinder();
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+                return new FormCollectionModelBinder(loggerFactory);
             }
 
             return null;

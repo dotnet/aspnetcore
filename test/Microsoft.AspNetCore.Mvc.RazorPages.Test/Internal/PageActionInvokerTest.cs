@@ -1238,7 +1238,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return new ParameterBinder(
                 TestModelMetadataProvider.CreateDefaultProvider(),
                 factory,
-                validator);
+                validator,
+                NullLoggerFactory.Instance);
         }
 
         private static IModelValidatorProvider CreateMockValidatorProvider()

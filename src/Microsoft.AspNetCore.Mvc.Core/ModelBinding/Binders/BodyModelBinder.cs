@@ -100,6 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger?.AttemptingToBindModel(bindingContext);
+
             // Special logic for body, treat the model name as string.Empty for the top level
             // object, but allow an override via BinderModelName. The purpose of this is to try
             // and be similar to the behavior for POCOs bound via traditional model binding.
@@ -147,6 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var message = Resources.FormatUnsupportedContentType(httpContext.Request.ContentType);
                 var exception = new UnsupportedContentTypeException(message);
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
+                _logger?.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
@@ -157,6 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 if (result.HasError)
                 {
                     // Formatter encountered an error. Do not use the model it returned.
+                    _logger?.DoneAttemptingToBindModel(bindingContext);
                     return;
                 }
 
@@ -183,6 +187,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
             }
+
+            _logger?.DoneAttemptingToBindModel(bindingContext);
         }
 
         private bool ShouldHandleException(IInputFormatter formatter)

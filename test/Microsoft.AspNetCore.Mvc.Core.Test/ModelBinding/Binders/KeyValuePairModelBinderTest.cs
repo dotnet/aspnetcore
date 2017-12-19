@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -19,7 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Create string binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider, typeof(KeyValuePair<int, string>));
-            var binder = new KeyValuePairModelBinder<int, string>(CreateIntBinder(false), CreateStringBinder());
+            var binder = new KeyValuePairModelBinder<int, string>(
+                CreateIntBinder(false),
+                CreateStringBinder(),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -41,8 +45,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Create int binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider, typeof(KeyValuePair<int, string>));
-            var binder = new KeyValuePairModelBinder<int, string>(CreateIntBinder(), CreateStringBinder(false));
-            
+            var binder = new KeyValuePairModelBinder<int, string>(
+                CreateIntBinder(),
+                CreateStringBinder(false),
+                NullLoggerFactory.Instance);
+
             // Act
             await binder.BindModelAsync(bindingContext);
 
@@ -64,7 +71,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Create int binder to create the value but not the key.
             var bindingContext = GetBindingContext(valueProvider, typeof(KeyValuePair<int, string>));
-            var binder = new KeyValuePairModelBinder<int, string>(CreateIntBinder(false), CreateStringBinder(false));
+            var binder = new KeyValuePairModelBinder<int, string>(
+                CreateIntBinder(false),
+                CreateStringBinder(false),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -82,7 +92,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueProvider = new SimpleValueProvider();
 
             var bindingContext = GetBindingContext(valueProvider, typeof(KeyValuePair<int, string>));
-            var binder = new KeyValuePairModelBinder<int, string>(CreateIntBinder(), CreateStringBinder());
+            var binder = new KeyValuePairModelBinder<int, string>(
+                CreateIntBinder(),
+                CreateStringBinder(),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -120,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueProvider = new SimpleValueProvider();
 
             var bindingContext = GetBindingContext(valueProvider, typeof(KeyValuePair<int, string>));
-            var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder);
+            var binder = new KeyValuePairModelBinder<int, string>(innerBinder, innerBinder, NullLoggerFactory.Instance);
 
             // Act
             var result = await binder.TryBindStrongModel<int>(bindingContext, innerBinder, "Key", "someName.Key");
@@ -135,8 +148,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new KeyValuePairModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -165,8 +179,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new KeyValuePairModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "KeyValuePairProperty");

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -12,6 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly MvcOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="EnumTypeModelBinderProvider"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="MvcOptions"/>.</param>
         public EnumTypeModelBinderProvider(MvcOptions options)
         {
             _options = options;
@@ -27,9 +33,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (context.Metadata.IsEnum)
             {
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
                 return new EnumTypeModelBinder(
                     _options.SuppressBindingUndefinedValueToEnumType,
-                    context.Metadata.UnderlyingOrModelType);
+                    context.Metadata.UnderlyingOrModelType,
+                    loggerFactory);
             }
 
             return null;

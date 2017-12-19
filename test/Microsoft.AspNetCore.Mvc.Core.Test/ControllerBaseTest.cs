@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -2832,7 +2835,13 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         private static ControllerBase GetController(IModelBinder binder, IValueProvider valueProvider)
         {
             var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
-            var httpContext = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
+            var httpContext = new DefaultHttpContext()
+            {
+                RequestServices = services.BuildServiceProvider()
+            };
 
             var validatorProviders = new[]
             {

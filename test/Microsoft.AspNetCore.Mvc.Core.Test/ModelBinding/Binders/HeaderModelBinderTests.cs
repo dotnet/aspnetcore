@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModelAsync_ReturnsNonEmptyResult_ForAllTypes_WithHeaderBindingSource(Type type)
         {
             // Arrange
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContext(type);
 
             // Act
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = typeof(string[]);
             var header = "Accept";
             var headerValue = "application/json,text/json";
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContext(type);
 
             bindingContext.FieldName = header;
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var type = typeof(string);
             var header = "User-Agent";
             var headerValue = "UnitTest";
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContext(type);
 
             bindingContext.FieldName = header;
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var header = "Accept";
             var headerValue = "application/json,text/json";
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContext(destinationType);
 
             bindingContext.FieldName = header;
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var header = "Accept";
             var headerValue = "application/json,text/json";
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContextForReadOnlyArray();
 
             bindingContext.FieldName = header;
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var header = "Accept";
             var headerValue = "application/json,text/json";
-            var binder = new HeaderModelBinder();
+            var binder = new HeaderModelBinder(NullLoggerFactory.Instance);
             var bindingContext = GetBindingContext(typeof(ISet<string>));
 
             bindingContext.FieldName = header;

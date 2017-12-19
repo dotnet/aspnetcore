@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "someName[baz]", "200" }
             };
             var bindingContext = GetModelBindingContext(valueProvider);
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             var collectionResult = await binder.BindComplexCollectionFromIndexes(
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 { "someName[3]", "400" }
             };
             var bindingContext = GetModelBindingContext(valueProvider);
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             var boundCollection = await binder.BindComplexCollectionFromIndexes(bindingContext, indexNames: null);
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
             var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
             var modelState = bindingContext.ModelState;
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelState = bindingContext.ModelState;
             var list = new List<int>();
             bindingContext.Model = list;
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -136,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
             var bindingContext = GetModelBindingContext(valueProvider, isReadOnly);
             var modelState = bindingContext.ModelState;
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -162,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var modelState = bindingContext.ModelState;
             var list = new List<int>();
             bindingContext.Model = list;
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModelAsync_SimpleCollectionWithNullValue_Succeeds()
         {
             // Arrange
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
             var valueProvider = new SimpleValueProvider
             {
                 { "someName", null },
@@ -199,7 +200,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindSimpleCollection_RawValueIsEmptyCollection_ReturnsEmptyList()
         {
             // Arrange
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
             var context = GetModelBindingContext(new SimpleValueProvider());
 
             // Act
@@ -214,7 +215,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_CreatesEmptyCollection_IfIsTopLevelObject()
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
+            var binder = new CollectionModelBinder<string>(
+                new StubModelBinder(result: ModelBindingResult.Failed()),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -241,7 +244,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_DoesNotCreateEmptyCollection_IfModelNonNull()
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
+            var binder = new CollectionModelBinder<string>(
+                new StubModelBinder(result: ModelBindingResult.Failed()),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -272,7 +277,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task CollectionModelBinder_DoesNotCreateCollection_IfNotIsTopLevelObject(string prefix)
         {
             // Arrange
-            var binder = new CollectionModelBinder<string>(new StubModelBinder(result: ModelBindingResult.Failed()));
+            var binder = new CollectionModelBinder<string>(
+                new StubModelBinder(result: ModelBindingResult.Failed()),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
@@ -313,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public void CanCreateInstance_ReturnsExpectedValue(Type modelType, bool expectedResult)
         {
             // Arrange
-            var binder = new CollectionModelBinder<int>(CreateIntBinder());
+            var binder = new CollectionModelBinder<int>(CreateIntBinder(), NullLoggerFactory.Instance);
 
             // Act
             var result = binder.CanCreateInstance(modelType);
@@ -335,7 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 mbc.Result = ModelBindingResult.Success(42);
             });
 
-            var modelBinder = new CollectionModelBinder<int>(elementBinder);
+            var modelBinder = new CollectionModelBinder<int>(elementBinder, NullLoggerFactory.Instance);
 
             // Act
             var boundCollection = await modelBinder.BindSimpleCollection(

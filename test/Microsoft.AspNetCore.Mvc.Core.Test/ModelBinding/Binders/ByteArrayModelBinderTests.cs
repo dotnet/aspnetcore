@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = GetBindingContext(valueProvider, typeof(byte[]));
-            var binder = new ByteArrayModelBinder();
+            var binder = new ByteArrayModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = GetBindingContext(valueProvider, typeof(byte[]));
-            var binder = new ByteArrayModelBinder();
+            var binder = new ByteArrayModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = GetBindingContext(valueProvider, typeof(byte[]));
-            var binder = new ByteArrayModelBinder();
+            var binder = new ByteArrayModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var bindingContext = GetBindingContext(valueProvider, typeof(byte[]));
-            var binder = new ByteArrayModelBinder();
+            var binder = new ByteArrayModelBinder(NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);

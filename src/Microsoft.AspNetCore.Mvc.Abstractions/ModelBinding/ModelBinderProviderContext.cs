@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
@@ -29,5 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Gets the <see cref="IModelMetadataProvider"/>.
         /// </summary>
         public abstract IModelMetadataProvider MetadataProvider { get; }
+
+        /// <summary>
+        /// Gets the <see cref="IServiceProvider"/>.
+        /// </summary>
+        public virtual IServiceProvider Services { get; }
     }
 }

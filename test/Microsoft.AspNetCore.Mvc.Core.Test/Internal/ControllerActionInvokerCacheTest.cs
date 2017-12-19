@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -108,7 +109,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new ParameterBinder(
                     modelMetadataProvider,
                     modelBinderFactory,
-                    Mock.Of<IModelValidatorProvider>()),
+                    Mock.Of<IModelValidatorProvider>(),
+                    NullLoggerFactory.Instance),
                 modelBinderFactory,
                 modelMetadataProvider,
                 filterProviders,

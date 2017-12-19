@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -16,6 +19,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class FormCollectionModelBinder : IModelBinder
     {
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Initializes a new instance of <see cref="FormCollectionModelBinder"/>.</para>
+        /// </summary>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that takes an " + nameof(ILoggerFactory) + ".")]
+        public FormCollectionModelBinder()
+            : this(NullLoggerFactory.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormCollectionModelBinder"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public FormCollectionModelBinder(ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _logger = loggerFactory.CreateLogger<FormCollectionModelBinder>();
+        }
+
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -23,6 +54,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
+
+            _logger.AttemptingToBindModel(bindingContext);
 
             object model;
             var request = bindingContext.HttpContext.Request;
@@ -33,10 +66,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
             else
             {
+                _logger.CannotBindToFilesCollectionDueToUnsupportedContentType(bindingContext);
                 model = new EmptyFormCollection();
             }
 
             bindingContext.Result = ModelBindingResult.Success(model);
+            _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
         private class EmptyFormCollection : IFormCollection

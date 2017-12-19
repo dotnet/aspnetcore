@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -36,8 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.ValueProvider = CreateEnumerableValueProvider("{0}", values);
 
             var binder = new DictionaryModelBinder<int, string>(
-                new SimpleTypeModelBinder(typeof(int)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -76,8 +78,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             bindingContext.Model = dictionary;
 
             var binder = new DictionaryModelBinder<int, string>(
-                new SimpleTypeModelBinder(typeof(int)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -132,8 +135,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new DictionaryModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = modelName;
@@ -168,8 +172,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             };
 
             var binder = new DictionaryModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = "prefix";
@@ -218,8 +223,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var stringDictionary = dictionary.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.ToString());
 
             var binder = new DictionaryModelBinder<long, int>(
-                new SimpleTypeModelBinder(typeof(long)), 
-                new SimpleTypeModelBinder(typeof(int)));
+                new SimpleTypeModelBinder(typeof(long), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = "prefix";
@@ -271,12 +277,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var valueMetadata = metadataProvider.GetMetadataForType(typeof(ModelWithProperties));
 
             var binder = new DictionaryModelBinder<int, ModelWithProperties>(
-                new SimpleTypeModelBinder(typeof(int)),
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
                 new ComplexTypeModelBinder(new Dictionary<ModelMetadata, IModelBinder>()
                 {
-                    { valueMetadata.Properties["Id"], new SimpleTypeModelBinder(typeof(int)) },
-                    { valueMetadata.Properties["Name"], new SimpleTypeModelBinder(typeof(string)) },
-                }));
+                    { valueMetadata.Properties["Id"], new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance) },
+                    { valueMetadata.Properties["Name"], new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance) },
+                },
+                NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             await binder.BindModelAsync(bindingContext);
@@ -310,8 +318,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             // Arrange
             var expectedDictionary = new SortedDictionary<string, string>(dictionary);
             var binder = new DictionaryModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = modelName;
@@ -339,8 +348,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new DictionaryModelBinder<string, string>(
-                new SimpleTypeModelBinder(typeof(string)), 
-                new SimpleTypeModelBinder(typeof(string)));
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(string), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.IsTopLevelObject = true;
@@ -368,8 +378,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new DictionaryModelBinder<int, int>(
-                new SimpleTypeModelBinder(typeof(int)), 
-                new SimpleTypeModelBinder(typeof(int)));
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             var bindingContext = CreateContext();
             bindingContext.ModelName = ModelNames.CreatePropertyModelName(prefix, "ListProperty");
@@ -412,8 +423,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var binder = new DictionaryModelBinder<int, int>(
-                new SimpleTypeModelBinder(typeof(int)), 
-                new SimpleTypeModelBinder(typeof(int)));
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                new SimpleTypeModelBinder(typeof(int), NullLoggerFactory.Instance),
+                NullLoggerFactory.Instance);
 
             // Act
             var result = binder.CanCreateInstance(modelType);

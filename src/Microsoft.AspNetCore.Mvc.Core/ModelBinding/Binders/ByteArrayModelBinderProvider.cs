@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -20,7 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             if (context.Metadata.ModelType == typeof(byte[]))
             {
-                return new ByteArrayModelBinder();
+                var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
+                return new ByteArrayModelBinder(loggerFactory);
             }
 
             return null;

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -15,13 +17,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     public class ArrayModelBinder<TElement> : CollectionModelBinder<TElement>
     {
         /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Creates a new <see cref="ArrayModelBinder{TElement}"/>.</para>
+        /// </summary>
+        /// <param name="elementBinder">
+        /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
+        /// </param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+        public ArrayModelBinder(IModelBinder elementBinder)
+            : this(elementBinder, NullLoggerFactory.Instance)
+        {
+        }
+
+        /// <summary>
         /// Creates a new <see cref="ArrayModelBinder{TElement}"/>.
         /// </summary>
         /// <param name="elementBinder">
         /// The <see cref="IModelBinder"/> for binding <typeparamref name="TElement"/>.
         /// </param>
-        public ArrayModelBinder(IModelBinder elementBinder)
-            : base(elementBinder)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public ArrayModelBinder(IModelBinder elementBinder, ILoggerFactory loggerFactory)
+            : base(elementBinder, loggerFactory)
         {
         }
 

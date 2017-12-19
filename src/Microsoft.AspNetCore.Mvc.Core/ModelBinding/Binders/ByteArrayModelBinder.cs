@@ -3,6 +3,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -11,6 +14,34 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class ByteArrayModelBinder : IModelBinder
     {
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Initializes a new instance of <see cref="ByteArrayModelBinder"/>.</para>
+        /// </summary>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that takes an " + nameof(ILoggerFactory) + ".")]
+        public ByteArrayModelBinder()
+            : this(NullLoggerFactory.Instance)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ByteArrayModelBinder"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public ByteArrayModelBinder(ILoggerFactory loggerFactory)
+        {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
+            _logger = loggerFactory.CreateLogger<ByteArrayModelBinder>();
+        }
+
         /// <inheritdoc />
         public Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -19,10 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
+            _logger.AttemptingToBindModel(bindingContext);
+
             // Check for missing data case 1: There was no <input ... /> element containing this data.
             var valueProviderResult = bindingContext.ValueProvider.GetValue(bindingContext.ModelName);
             if (valueProviderResult == ValueProviderResult.None)
             {
+                _logger.FoundNoValueInRequest(bindingContext);
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return Task.CompletedTask;
             }
 
@@ -32,6 +67,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var value = valueProviderResult.FirstValue;
             if (string.IsNullOrEmpty(value))
             {
+                _logger.FoundNoValueInRequest(bindingContext);
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return Task.CompletedTask;
             }
 
@@ -39,7 +76,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 var model = Convert.FromBase64String(value);
                 bindingContext.Result = ModelBindingResult.Success(model);
-                return Task.CompletedTask;
             }
             catch (Exception exception)
             {
@@ -47,8 +83,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ModelName,
                     exception,
                     bindingContext.ModelMetadata);
-                return Task.CompletedTask;
             }
+
+            _logger.DoneAttemptingToBindModel(bindingContext);
+            return Task.CompletedTask;
         }
     }
 }

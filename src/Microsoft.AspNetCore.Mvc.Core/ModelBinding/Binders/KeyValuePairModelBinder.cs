@@ -4,7 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -17,13 +20,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     {
         private readonly IModelBinder _keyBinder;
         private readonly IModelBinder _valueBinder;
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
+        /// is the overload that also takes an <see cref="ILoggerFactory"/>.</para>
+        /// <para>Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.</para>
+        /// </summary>
+        /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
+        /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
+        [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
+            + " is the overload that also takes an " + nameof(ILoggerFactory) + ".")]
+        public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
+            : this(keyBinder, valueBinder, NullLoggerFactory.Instance)
+        {
+        }
 
         /// <summary>
         /// Creates a new <see cref="KeyValuePair{TKey, TValue}"/>.
         /// </summary>
         /// <param name="keyBinder">The <see cref="IModelBinder"/> for <typeparamref name="TKey"/>.</param>
         /// <param name="valueBinder">The <see cref="IModelBinder"/> for <typeparamref name="TValue"/>.</param>
-        public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder)
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        public KeyValuePairModelBinder(IModelBinder keyBinder, IModelBinder valueBinder, ILoggerFactory loggerFactory)
         {
             if (keyBinder == null)
             {
@@ -35,8 +54,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(valueBinder));
             }
 
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _keyBinder = keyBinder;
             _valueBinder = valueBinder;
+            _logger = loggerFactory.CreateLogger<KeyValuePairModelBinder<TKey, TValue>>();
         }
 
         /// <inheritdoc />
@@ -46,6 +71,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
+
+            _logger.AttemptingToBindModel(bindingContext);
 
             var keyModelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, "Key");
             var keyResult = await TryBindStrongModel<TKey>(bindingContext, _keyBinder, "Key", keyModelName);
@@ -60,6 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     ModelBindingHelper.CastOrDefault<TValue>(valueResult.Model));
 
                 bindingContext.Result = ModelBindingResult.Success(model);
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
@@ -68,6 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelState.TryAddModelError(
                     keyModelName,
                     bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
@@ -76,6 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 bindingContext.ModelState.TryAddModelError(
                     valueModelName,
                     bindingContext.ModelMetadata.ModelBindingMessageProvider.MissingKeyOrValueAccessor());
+                _logger.DoneAttemptingToBindModel(bindingContext);
                 return;
             }
 
@@ -86,6 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var model = new KeyValuePair<TKey, TValue>();
                 bindingContext.Result = ModelBindingResult.Success(model);
             }
+            _logger.DoneAttemptingToBindModel(bindingContext);
         }
 
         internal async Task<ModelBindingResult> TryBindStrongModel<TModel>(

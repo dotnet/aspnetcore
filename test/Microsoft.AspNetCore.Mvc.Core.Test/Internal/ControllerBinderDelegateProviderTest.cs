@@ -17,6 +17,9 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -1032,10 +1035,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     return Task.FromResult(result);
                 });
 
-            var controllerContext = new ControllerContext
-            {
-                ActionDescriptor = actionDescriptor,
-            };
+            var controllerContext = GetControllerContext(actionDescriptor);
 
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
             var modelState = controllerContext.ModelState;
@@ -1063,10 +1063,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static ControllerContext GetControllerContext(ControllerActionDescriptor descriptor = null)
         {
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+
             var context = new ControllerContext()
             {
                 ActionDescriptor = descriptor ?? GetActionDescriptor(),
-                HttpContext = new DefaultHttpContext(),
+                HttpContext = new DefaultHttpContext()
+                {
+                    RequestServices = services.BuildServiceProvider()
+                },
                 RouteData = new RouteData(),
             };
 
@@ -1140,7 +1146,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return new ParameterBinder(
                 modelMetadataProvider ?? TestModelMetadataProvider.CreateDefaultProvider(),
                 factory,
-                validatorProvider.Object);
+                validatorProvider.Object,
+                NullLoggerFactory.Instance);
         }
 
         private static Mock<IModelValidator> CreateMockValidator()
