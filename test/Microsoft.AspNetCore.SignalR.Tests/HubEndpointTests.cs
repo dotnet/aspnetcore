@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Security.Claims;
-using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task HubsAreDisposed()
         {
             var trackDispose = new TrackDispose();
-            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(trackDispose));
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(s => s.AddSingleton(trackDispose));
             var endPoint = serviceProvider.GetService<HubEndPoint<DisposeTrackingHub>>();
 
             using (var client = new TestClient())
@@ -52,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task ConnectionAbortedTokenTriggers()
         {
             var state = new ConnectionLifetimeState();
-            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(state));
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(s => s.AddSingleton(state));
             var endPoint = serviceProvider.GetService<HubEndPoint<ConnectionLifetimeHub>>();
 
             using (var client = new TestClient())
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task AbortFromHubMethodForcesClientDisconnect()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var endPoint = serviceProvider.GetService<HubEndPoint<AbortHub>>();
 
             using (var client = new TestClient())
@@ -90,7 +88,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task ObservableHubRemovesSubscriptionsWithInfiniteStreams()
         {
             var observable = new Observable<int>();
-            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(s => s.AddSingleton(observable));
             var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
 
             var waitForSubscribe = new TaskCompletionSource<object>();
@@ -153,7 +151,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task ObservableHubRemovesSubscriptions()
         {
             var observable = new Observable<int>();
-            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(s => s.AddSingleton(observable));
             var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
 
             var waitForSubscribe = new TaskCompletionSource<object>();
@@ -212,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task ObservableHubRemovesSubscriptionWhenCanceledFromClient()
         {
             var observable = new Observable<int>();
-            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(s => s.AddSingleton(observable));
             var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
 
             var waitForSubscribe = new TaskCompletionSource<object>();
@@ -252,7 +250,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task MissingNegotiateAndMessageSentFromHubConnectionCanBeDisposedCleanly()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var endPoint = serviceProvider.GetService<HubEndPoint<SimpleHub>>();
 
             using (var client = new TestClient())
@@ -272,7 +270,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task NegotiateTimesOut()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.Configure<HubOptions>(hubOptions =>
                 {
@@ -293,7 +291,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanLoadHubContext()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var context = serviceProvider.GetRequiredService<IHubContext<SimpleHub>>();
             await context.Clients.All.InvokeAsync("Send", "test");
         }
@@ -301,7 +299,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanLoadTypedHubContext()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var context = serviceProvider.GetRequiredService<IHubContext<SimpleTypedHub, ITypedHubClient>>();
             await context.Clients.All.Send("test");
         }
@@ -315,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
             var mockHubActivator = new Mock<IHubActivator<Hub>>();
 
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSingleton(mockLifetimeManager.Object);
                 services.AddSingleton(mockHubActivator.Object);
@@ -344,7 +342,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task HubOnDisconnectedAsyncCalledIfHubOnConnectedAsyncThrows()
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<OnConnectedThrowsHub>>();
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSingleton(mockLifetimeManager.Object);
             });
@@ -368,7 +366,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task LifetimeManagerOnDisconnectedAsyncCalledIfHubOnDisconnectedAsyncThrows()
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<OnDisconnectedThrowsHub>>();
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSingleton(mockLifetimeManager.Object);
             });
@@ -391,7 +389,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodCanReturnValueFromTask()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -415,9 +413,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubMethodsAreCaseInsensitive(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var client = new TestClient())
             {
@@ -439,7 +435,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(nameof(MethodHub.MethodThatYieldsFailedTask))]
         public async Task HubMethodCanThrowOrYieldFailedTask(string methodName)
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -461,7 +457,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodDoesNotSendResultWhenInvocationIsNonBlocking()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -484,7 +480,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodCanBeVoid()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -506,7 +502,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodCanBeRenamedWithAttribute()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -529,7 +525,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodNameAttributeIsInherited()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
 
@@ -555,7 +551,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(nameof(MethodHub.ValueMethod))]
         public async Task NonBlockingInvocationDoesNotSendCompletion(string methodName)
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -579,7 +575,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubMethodWithMultiParam()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -601,7 +597,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanCallInheritedHubMethodFromInheritingHub()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
 
@@ -623,7 +619,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanCallOverridenVirtualHubMethod()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<InheritedHub>>();
 
@@ -645,7 +641,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CannotCallOverriddenBaseHubMethod()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -667,7 +663,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void HubsCannotHaveOverloadedMethods()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             try
             {
@@ -683,7 +679,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CannotCallStaticHubMethods()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -705,7 +701,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CannotCallObjectMethodsOnHub()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -735,7 +731,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CannotCallDisposeMethodOnHub()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -758,9 +754,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task BroadcastHubMethodSendsToAllClients(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -793,7 +787,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task SendArraySendsArrayToAllClients()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -830,9 +824,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToOthers(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -872,9 +864,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToCaller(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -908,9 +898,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToAllExcept(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -953,9 +941,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanAddAndSendToGroup(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -996,9 +982,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToGroupExcept(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1048,9 +1032,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task SendToOthersInGroup(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1097,7 +1079,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task RemoveFromGroupWhenNotInGroupDoesNotFail()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -1118,9 +1100,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanSendToUser(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient(addClaimId: true))
             using (var secondClient = new TestClient(addClaimId: true))
@@ -1151,9 +1131,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(HubTypes))]
         public async Task HubsCanSendToConnection(Type hubType)
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1183,9 +1161,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task DelayedSendTest()
         {
-            var serviceProvider = CreateServiceProvider();
-
-            dynamic endPoint = serviceProvider.GetService(GetEndPointType(typeof(HubT)));
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(typeof(HubT));
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -1216,7 +1192,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [MemberData(nameof(StreamingMethodAndHubProtocols))]
         public async Task HubsCanStreamResponses(string method, IHubProtocol protocol)
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
 
@@ -1237,11 +1213,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var messages = await client.StreamAsync(method, 4).OrTimeout();
 
                 Assert.Equal(5, messages.Count);
-                AssertHubMessage(new StreamItemMessage(string.Empty, "0"), messages[0]);
-                AssertHubMessage(new StreamItemMessage(string.Empty, "1"), messages[1]);
-                AssertHubMessage(new StreamItemMessage(string.Empty, "2"), messages[2]);
-                AssertHubMessage(new StreamItemMessage(string.Empty, "3"), messages[3]);
-                AssertHubMessage(CompletionMessage.Empty(string.Empty), messages[4]);
+                HubEndPointTestUtils.AssertHubMessage(new StreamItemMessage(string.Empty, "0"), messages[0]);
+                HubEndPointTestUtils.AssertHubMessage(new StreamItemMessage(string.Empty, "1"), messages[1]);
+                HubEndPointTestUtils.AssertHubMessage(new StreamItemMessage(string.Empty, "2"), messages[2]);
+                HubEndPointTestUtils.AssertHubMessage(new StreamItemMessage(string.Empty, "3"), messages[3]);
+                HubEndPointTestUtils.AssertHubMessage(CompletionMessage.Empty(string.Empty), messages[4]);
 
                 client.Dispose();
 
@@ -1252,7 +1228,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task NonErrorCompletionSentWhenStreamCanceledFromClient()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
 
             using (var client = new TestClient())
@@ -1295,7 +1271,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task UnauthorizedConnectionCannotInvokeHubMethodWithAuthorization()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddAuthorization(options =>
                 {
@@ -1328,7 +1304,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task AuthorizedConnectionCanInvokeHubMethodWithAuthorization()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddAuthorization(options =>
                 {
@@ -1362,7 +1338,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubOptionsCanUseCustomJsonSerializerSettings()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSignalR(o =>
                 {
@@ -1399,7 +1375,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task JsonHubProtocolUsesCamelCasingByDefault()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
             using (var client = new TestClient())
@@ -1429,7 +1405,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var serializationContext = MessagePackHubProtocol.CreateDefaultSerializationContext();
             serializationContext.SerializationMethod = SerializationMethod.Array;
 
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
                 services.AddSignalR(options =>
                 {
@@ -1466,7 +1442,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task CanGetHttpContextFromHubConnectionContext()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -1490,7 +1466,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task GetHttpContextFromHubConnectionContextHandlesNull()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -1515,7 +1491,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // MessagePack does not support serializing objects or private types (including anonymous types)
             // and throws. In this test we make sure that this exception closes the connection and bubbles up.
 
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
@@ -1538,7 +1514,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task AcceptsPingMessages()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
             using (var client = new TestClient(false, new JsonHubProtocol()))
@@ -1562,7 +1538,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task DoesNotWritePingMessagesIfSufficientOtherMessagesAreSent()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)));
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
@@ -1601,7 +1577,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task WritesPingMessageIfNothingWrittenWhenKeepAliveIntervalElapses()
         {
-            var serviceProvider = CreateServiceProvider(services =>
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
                 services.Configure<HubOptions>(options =>
                     options.KeepAliveInterval = TimeSpan.FromMilliseconds(100)));
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
@@ -1638,640 +1614,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        private static void AssertHubMessage(HubMessage expected, HubMessage actual)
-        {
-            // We aren't testing InvocationIds here
-            switch (expected)
-            {
-                case CompletionMessage expectedCompletion:
-                    var actualCompletion = Assert.IsType<CompletionMessage>(actual);
-                    Assert.Equal(expectedCompletion.Error, actualCompletion.Error);
-                    Assert.Equal(expectedCompletion.HasResult, actualCompletion.HasResult);
-                    Assert.Equal(expectedCompletion.Result, actualCompletion.Result);
-                    break;
-                case StreamItemMessage expectedStreamItem:
-                    var actualStreamItem = Assert.IsType<StreamItemMessage>(actual);
-                    Assert.Equal(expectedStreamItem.Item, actualStreamItem.Item);
-                    break;
-                case InvocationMessage expectedInvocation:
-                    var actualInvocation = Assert.IsType<InvocationMessage>(actual);
-
-                    // Either both must have non-null invocationIds or both must have null invocation IDs. Checking the exact value is NOT desired here though as it could be randomly generated
-                    Assert.True((expectedInvocation.InvocationId == null && actualInvocation.InvocationId == null) ||
-                        (expectedInvocation.InvocationId != null && actualInvocation.InvocationId != null));
-                    Assert.Equal(expectedInvocation.Target, actualInvocation.Target);
-                    Assert.Equal(expectedInvocation.Arguments, actualInvocation.Arguments);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported Hub Message type {expected.GetType()}");
-            }
-        }
-
         public static IEnumerable<object[]> HubTypes()
         {
             yield return new[] { typeof(DynamicTestHub) };
             yield return new[] { typeof(MethodHub) };
             yield return new[] { typeof(HubT) };
-        }
-
-        private static Type GetEndPointType(Type hubType)
-        {
-            var endPointType = typeof(HubEndPoint<>);
-            return endPointType.MakeGenericType(hubType);
-        }
-
-        private static Type GetGenericType(Type genericType, Type hubType)
-        {
-            return genericType.MakeGenericType(hubType);
-        }
-
-        private IServiceProvider CreateServiceProvider(Action<ServiceCollection> addServices = null)
-        {
-            var services = new ServiceCollection();
-            services.AddOptions()
-                .AddLogging()
-                .AddSignalR();
-
-            addServices?.Invoke(services);
-
-            return services.BuildServiceProvider();
-        }
-
-        private class DynamicTestHub : DynamicHub
-        {
-            public override Task OnConnectedAsync()
-            {
-                var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
-                tcs?.TrySetResult(true);
-                return base.OnConnectedAsync();
-            }
-
-            public string Echo(string data)
-            {
-                return data;
-            }
-
-            public Task ClientSendMethod(string userId, string message)
-            {
-                return Clients.User(userId).Send(message);
-            }
-
-            public Task ConnectionSendMethod(string connectionId, string message)
-            {
-                return Clients.Client(connectionId).Send(message);
-            }
-
-            public Task GroupAddMethod(string groupName)
-            {
-                return Groups.AddAsync(Context.ConnectionId, groupName);
-            }
-
-            public Task GroupSendMethod(string groupName, string message)
-            {
-                return Clients.Group(groupName).Send(message);
-            }
-
-            public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.GroupExcept(groupName, excludedIds).Send(message);
-            }
-
-            public Task SendToOthersInGroup(string groupName, string message)
-            {
-                return Clients.OthersInGroup(groupName).Send(message);
-            }
-
-            public Task BroadcastMethod(string message)
-            {
-                return Clients.All.Broadcast(message);
-            }
-
-            public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.AllExcept(excludedIds).Send(message);
-            }
-
-            public Task SendToOthers(string message)
-            {
-                return Clients.Others.Send(message);
-            }
-
-            public Task SendToCaller(string message)
-            {
-                return Clients.Caller.Send(message);
-            }
-        }
-
-        public interface Test
-        {
-            Task Send(string message);
-            Task Broadcast(string message);
-        }
-
-        public class Observable<T> : IObservable<T>
-        {
-            public List<IObserver<T>> Observers = new List<IObserver<T>>();
-
-            public Action<IObserver<T>> OnSubscribe;
-
-            public Action<IObserver<T>> OnDispose;
-
-            public IDisposable Subscribe(IObserver<T> observer)
-            {
-                lock (Observers)
-                {
-                    Observers.Add(observer);
-                }
-
-                OnSubscribe?.Invoke(observer);
-
-                return new DisposableAction(() =>
-                {
-                    lock (Observers)
-                    {
-                        Observers.Remove(observer);
-                    }
-
-                    OnDispose?.Invoke(observer);
-                });
-            }
-
-            public void OnNext(T value)
-            {
-                lock (Observers)
-                {
-                    foreach (var observer in Observers)
-                    {
-                        observer.OnNext(value);
-                    }
-                }
-            }
-
-            public void Complete()
-            {
-                lock (Observers)
-                {
-                    foreach (var observer in Observers)
-                    {
-                        observer.OnCompleted();
-                    }
-                }
-            }
-
-            private class DisposableAction : IDisposable
-            {
-                private readonly Action _action;
-                public DisposableAction(Action action)
-                {
-                    _action = action;
-                }
-
-                public void Dispose()
-                {
-                    _action();
-                }
-            }
-        }
-
-        public class ObservableHub : Hub
-        {
-            private readonly Observable<int> _numbers;
-
-            public ObservableHub(Observable<int> numbers)
-            {
-                _numbers = numbers;
-            }
-
-            public IObservable<int> Subscribe() => _numbers;
-        }
-
-        public class AbortHub : Hub
-        {
-            public void Kill()
-            {
-                Context.Connection.Abort();
-            }
-        }
-
-        public class ConnectionLifetimeState
-        {
-            public bool TokenCallbackTriggered { get; set; }
-
-            public bool TokenStateInConnected { get; set; }
-
-            public bool TokenStateInDisconnected { get; set; }
-        }
-
-        public class ConnectionLifetimeHub : Hub
-        {
-            private ConnectionLifetimeState _state;
-
-            public ConnectionLifetimeHub(ConnectionLifetimeState state)
-            {
-                _state = state;
-            }
-
-            public override Task OnConnectedAsync()
-            {
-                _state.TokenStateInConnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
-
-                Context.Connection.ConnectionAbortedToken.Register(() =>
-                {
-                    _state.TokenCallbackTriggered = true;
-                });
-
-                return base.OnConnectedAsync();
-            }
-
-            public override Task OnDisconnectedAsync(Exception exception)
-            {
-                _state.TokenStateInDisconnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
-
-                return base.OnDisconnectedAsync(exception);
-            }
-        }
-
-        public class HubT : Hub<Test>
-        {
-            public override Task OnConnectedAsync()
-            {
-                var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
-                tcs?.TrySetResult(true);
-                return base.OnConnectedAsync();
-            }
-
-            public string Echo(string data)
-            {
-                return data;
-            }
-
-            public Task ClientSendMethod(string userId, string message)
-            {
-                return Clients.User(userId).Send(message);
-            }
-
-            public Task ConnectionSendMethod(string connectionId, string message)
-            {
-                return Clients.Client(connectionId).Send(message);
-            }
-            public async Task DelayedSend(string connectionId, string message)
-            {
-                await Task.Delay(100);
-                await Clients.Client(connectionId).Send(message);
-            }
-            public Task GroupAddMethod(string groupName)
-            {
-                return Groups.AddAsync(Context.ConnectionId, groupName);
-            }
-
-            public Task GroupSendMethod(string groupName, string message)
-            {
-                return Clients.Group(groupName).Send(message);
-            }
-
-            public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.GroupExcept(groupName, excludedIds).Send(message);
-            }
-
-            public Task SendToOthersInGroup(string groupName, string message)
-            {
-                return Clients.OthersInGroup(groupName).Send(message);
-            }
-
-            public Task BroadcastMethod(string message)
-            {
-                return Clients.All.Broadcast(message);
-            }
-
-            public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.AllExcept(excludedIds).Send(message);
-            }
-
-            public Task SendToOthers(string message)
-            {
-                return Clients.Others.Send(message);
-            }
-
-            public Task SendToCaller(string message)
-            {
-                return Clients.Caller.Send(message);
-            }
-        }
-
-        public class StreamingHub : TestHub
-        {
-            public IObservable<string> CounterObservable(int count)
-            {
-                return new CountingObservable(count);
-            }
-
-            public ChannelReader<string> CounterChannel(int count)
-            {
-                var channel = Channel.CreateUnbounded<string>();
-
-                var task = Task.Run(async () =>
-                {
-                    for (int i = 0; i < count; i++)
-                    {
-                        await channel.Writer.WriteAsync(i.ToString());
-                    }
-                    channel.Writer.Complete();
-                });
-
-                return channel.Reader;
-            }
-
-            public ChannelReader<string> BlockingStream()
-            {
-                return Channel.CreateUnbounded<string>().Reader;
-            }
-
-            private class CountingObservable : IObservable<string>
-            {
-                private int _count;
-
-                public CountingObservable(int count)
-                {
-                    _count = count;
-                }
-
-                public IDisposable Subscribe(IObserver<string> observer)
-                {
-                    var cts = new CancellationTokenSource();
-                    Task.Run(() =>
-                    {
-                        for (int i = 0; !cts.Token.IsCancellationRequested && i < _count; i++)
-                        {
-                            observer.OnNext(i.ToString());
-                        }
-                        observer.OnCompleted();
-                    });
-
-                    return new CancellationDisposable(cts);
-                }
-            }
-        }
-
-        public class OnConnectedThrowsHub : Hub
-        {
-            public override Task OnConnectedAsync()
-            {
-                var tcs = new TaskCompletionSource<object>();
-                tcs.SetException(new InvalidOperationException("Hub OnConnected failed."));
-                return tcs.Task;
-            }
-        }
-
-        public class OnDisconnectedThrowsHub : TestHub
-        {
-            public override Task OnDisconnectedAsync(Exception exception)
-            {
-                var tcs = new TaskCompletionSource<object>();
-                tcs.SetException(new InvalidOperationException("Hub OnDisconnected failed."));
-                return tcs.Task;
-            }
-        }
-
-        public class Result
-        {
-            public string Message { get; set; }
-#pragma warning disable IDE1006 // Naming Styles
-            // testing casing
-            public string paramName { get; set; }
-#pragma warning restore IDE1006 // Naming Styles
-        }
-
-        private class MethodHub : TestHub
-        {
-            public Task GroupRemoveMethod(string groupName)
-            {
-                return Groups.RemoveAsync(Context.ConnectionId, groupName);
-            }
-
-            public Task ClientSendMethod(string userId, string message)
-            {
-                return Clients.User(userId).InvokeAsync("Send", message);
-            }
-
-            public Task ConnectionSendMethod(string connectionId, string message)
-            {
-                return Clients.Client(connectionId).InvokeAsync("Send", message);
-            }
-
-            public Task GroupAddMethod(string groupName)
-            {
-                return Groups.AddAsync(Context.ConnectionId, groupName);
-            }
-
-            public Task GroupSendMethod(string groupName, string message)
-            {
-                return Clients.Group(groupName).InvokeAsync("Send", message);
-            }
-
-            public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.GroupExcept(groupName, excludedIds).InvokeAsync("Send", message);
-            }
-
-            public Task SendToOthersInGroup(string groupName, string message)
-            {
-                return Clients.OthersInGroup(groupName).InvokeAsync("Send", message);
-            }
-
-            public Task BroadcastMethod(string message)
-            {
-                return Clients.All.InvokeAsync("Broadcast", message);
-            }
-
-            public Task BroadcastItem()
-            {
-                return Clients.All.InvokeAsync("Broadcast", new Result { Message = "test", paramName = "param" });
-            }
-
-            public Task SendArray()
-            {
-                return Clients.All.InvokeAsync("Array", new int[] { 1, 2, 3 });
-            }
-
-            public Task<int> TaskValueMethod()
-            {
-                return Task.FromResult(42);
-            }
-
-            public int ValueMethod()
-            {
-                return 43;
-            }
-
-            [HubMethodName("RenamedMethod")]
-            public int ATestMethodThatIsRenamedByTheAttribute()
-            {
-                return 43;
-            }
-
-            public string Echo(string data)
-            {
-                return data;
-            }
-
-            public void VoidMethod()
-            {
-            }
-
-            public string ConcatString(byte b, int i, char c, string s)
-            {
-                return $"{b}, {i}, {c}, {s}";
-            }
-
-            public Task SendAnonymousObject()
-            {
-                return Clients.Client(Context.ConnectionId).InvokeAsync("Send", new { });
-            }
-
-            public override Task OnDisconnectedAsync(Exception e)
-            {
-                return Task.CompletedTask;
-            }
-
-            public void MethodThatThrows()
-            {
-                throw new InvalidOperationException("BOOM!");
-            }
-
-            public Task MethodThatYieldsFailedTask()
-            {
-                return Task.FromException(new InvalidOperationException("BOOM!"));
-            }
-
-            public static void StaticMethod()
-            {
-            }
-
-            [Authorize("test")]
-            public void AuthMethod()
-            {
-            }
-
-            public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
-            {
-                return Clients.AllExcept(excludedIds).InvokeAsync("Send", message);
-            }
-
-            public bool HasHttpContext()
-            {
-                return Context.Connection.GetHttpContext() != null;
-            }
-
-            public Task SendToOthers(string message)
-            {
-                return Clients.Others.InvokeAsync("Send", message);
-            }
-
-            public Task SendToCaller(string message)
-            {
-                return Clients.Caller.InvokeAsync("Send", message);
-            }
-        }
-
-        private class InheritedHub : BaseHub
-        {
-            public override int VirtualMethod(int num)
-            {
-                return num - 10;
-            }
-
-            public override int VirtualMethodRenamed()
-            {
-                return 34;
-            }
-        }
-
-        private class BaseHub : TestHub
-        {
-            public string BaseMethod(string message)
-            {
-                return message;
-            }
-
-            public virtual int VirtualMethod(int num)
-            {
-                return num;
-            }
-
-            [HubMethodName("RenamedVirtualMethod")]
-            public virtual int VirtualMethodRenamed()
-            {
-                return 43;
-            }
-        }
-
-        private class InvalidHub : TestHub
-        {
-            public void OverloadedMethod(int num)
-            {
-            }
-
-            public void OverloadedMethod(string message)
-            {
-            }
-        }
-
-        private class DisposeTrackingHub : TestHub
-        {
-            private TrackDispose _trackDispose;
-
-            public DisposeTrackingHub(TrackDispose trackDispose)
-            {
-                _trackDispose = trackDispose;
-            }
-
-            protected override void Dispose(bool dispose)
-            {
-                if (dispose)
-                {
-                    _trackDispose.DisposeCount++;
-                }
-            }
-        }
-
-        private class TrackDispose
-        {
-            public int DisposeCount = 0;
-        }
-
-        public abstract class TestHub : Hub
-        {
-            public override Task OnConnectedAsync()
-            {
-                var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
-                tcs?.TrySetResult(true);
-                return base.OnConnectedAsync();
-            }
-        }
-
-        public class SimpleHub : Hub
-        {
-            public override async Task OnConnectedAsync()
-            {
-                await Clients.All.InvokeAsync("Send", $"{Context.ConnectionId} joined");
-                await base.OnConnectedAsync();
-            }
-        }
-
-        public interface ITypedHubClient
-        {
-            Task Send(string message);
-        }
-
-        public class SimpleTypedHub : Hub<ITypedHubClient>
-        {
-            public override async Task OnConnectedAsync()
-            {
-                await Clients.All.Send($"{Context.ConnectionId} joined");
-                await base.OnConnectedAsync();
-            }
         }
     }
 }
