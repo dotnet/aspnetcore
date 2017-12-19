@@ -5,10 +5,12 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -21,6 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private IWebHost _host;
         private IApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
+        private AsyncForwardingLoggerProvider _asyncLoggerProvider;
 
         public string WebSocketsUrl => Url.Replace("http", "ws");
 
@@ -28,12 +31,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ServerFixture()
         {
+            _asyncLoggerProvider = new AsyncForwardingLoggerProvider();
+
             var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
             _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "ServerFixture");
+            _loggerFactory.AddProvider(_asyncLoggerProvider);
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
             Url = "http://localhost:" + GetNextPort();
 
             StartServer(Url);
+        }
+
+        public void SetTestLoggerFactory(ILoggerFactory loggerFactory)
+        {
+            _asyncLoggerProvider.SetLoggerFactory(loggerFactory);
         }
 
         private void StartServer(string url)
@@ -72,6 +83,62 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logger.LogInformation("Shutting down test server");
             _host.Dispose();
             _loggerFactory.Dispose();
+        }
+
+        private class AsyncForwardingLoggerProvider : ILoggerProvider
+        {
+            private AsyncLocal<ILoggerFactory> _localLogger = new AsyncLocal<ILoggerFactory>();
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return new AsyncLocalForwardingLogger(categoryName, _localLogger);
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public void SetLoggerFactory(ILoggerFactory loggerFactory)
+            {
+                _localLogger.Value = loggerFactory;
+            }
+
+            private class AsyncLocalForwardingLogger : ILogger
+            {
+                private string _categoryName;
+                private AsyncLocal<ILoggerFactory> _localLoggerFactory;
+
+                public AsyncLocalForwardingLogger(string categoryName, AsyncLocal<ILoggerFactory> localLoggerFactory)
+                {
+                    _categoryName = categoryName;
+                    _localLoggerFactory = localLoggerFactory;
+                }
+
+                public IDisposable BeginScope<TState>(TState state)
+                {
+                    return GetLocalLogger().BeginScope(state);
+                }
+
+                public bool IsEnabled(LogLevel logLevel)
+                {
+                    return GetLocalLogger().IsEnabled(logLevel);
+                }
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    GetLocalLogger().Log(logLevel, eventId, state, exception, formatter);
+                }
+
+                private ILogger GetLocalLogger()
+                {
+                    var factory = _localLoggerFactory.Value;
+                    if (factory == null)
+                    {
+                        return NullLogger.Instance;
+                    }
+                    return factory.CreateLogger(_categoryName);
+                }
+            }
         }
 
         private class ForwardingLoggerProvider : ILoggerProvider

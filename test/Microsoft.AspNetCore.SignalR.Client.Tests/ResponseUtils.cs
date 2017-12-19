@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                 new UriBuilder(request.RequestUri).Path.EndsWith("/negotiate");
         }
 
-        public static string CreateNegotiationResponse(string connectionId = "00000000-0000-0000-0000-000000000000",
+        public static string CreateNegotiationContent(string connectionId = "00000000-0000-0000-0000-000000000000",
             SocketsTransportType? transportTypes = SocketsTransportType.All)
         {
             var sb = new StringBuilder("{ ");
