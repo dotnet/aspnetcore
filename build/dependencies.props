@@ -5,23 +5,23 @@
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15626</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10223</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-27807</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27807</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27807</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreServerHttpSysPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-27849</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27849</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview1-27849</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27849</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27849</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27849</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26008-01</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26016-05</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26006-06</SystemNumericsVectorsPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26016-05</SystemNumericsVectorsPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
