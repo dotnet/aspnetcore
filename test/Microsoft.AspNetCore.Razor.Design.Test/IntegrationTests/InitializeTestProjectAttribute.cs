@@ -36,7 +36,5 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             MSBuildIntegrationTestBase.Project.Dispose();
             MSBuildIntegrationTestBase.Project = null;
         }
-
-
     }
 }

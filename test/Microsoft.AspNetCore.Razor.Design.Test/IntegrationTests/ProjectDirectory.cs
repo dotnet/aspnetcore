@@ -35,9 +35,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new InvalidOperationException($"Could not find project at '{projectRoot}'");
                 }
 
+                var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
+
                 CopyDirectory(new DirectoryInfo(projectRoot), new DirectoryInfo(destinationPath));
 
-                CreateDirectoryProps(projectRoot, destinationPath);
+                CreateDirectoryProps(projectRoot, binariesRoot, destinationPath);
                 CreateDirectoryTargets(destinationPath);
 
                 return new ProjectDirectory(destinationPath);
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            void CreateDirectoryProps(string originalProjectRoot, string projectRoot)
+            void CreateDirectoryProps(string originalProjectRoot, string binariesRoot, string projectRoot)
             {
 #if DEBUG
                 var configuration = "Debug";
@@ -82,6 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 <Project>
   <PropertyGroup>
     <OriginalProjectRoot>{originalProjectRoot}</OriginalProjectRoot>
+    <BinariesRoot>{binariesRoot}</BinariesRoot>
     <_RazorMSBuildRoot>$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\bin\{configuration}\netstandard2.0\</_RazorMSBuildRoot>
   </PropertyGroup>
   <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props""/>

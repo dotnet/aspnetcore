@@ -52,7 +52,7 @@
 
   <Target
     Name="_RazorResolveTagHelpers"
-    DependsOnTargets="CoreCompile;RazorResolveAssemblyReferences"
+    DependsOnTargets="Compile;RazorResolveAssemblyReferences"
     Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
     Outputs="$(_RazorTagHelperInputCache)">
 

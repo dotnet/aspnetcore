@@ -2,55 +2,49 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-#if NET461
-using System.Runtime.Remoting;
-using System.Runtime.Remoting.Messaging;
-#else
+using System.IO;
 using System.Threading;
-#endif
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public abstract class MSBuildIntegrationTestBase
     {
-#if NET461
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
-#else
-#error TFM not supported
-#endif
 
         protected MSBuildIntegrationTestBase()
         {
         }
 
+#if DEBUG
+        protected string Configuration => "Debug";
+#elif RELEASE
+        protected string Configuration => "Release";
+#else
+#error Configuration not supported
+#endif
+
+        protected string IntermediateOutputPath => Path.Combine("obj", Configuration, TargetFramework);
+
+        protected string OutputPath => Path.Combine("bin", Configuration, TargetFramework);
+
         // Used by the test framework to set the project that we're working with
         internal static ProjectDirectory Project
         {
-#if NET461
-            get
-            {
-                var handle = (ObjectHandle)CallContext.LogicalGetData("MSBuildIntegrationTestBase_Project");
-                return (ProjectDirectory)handle.Unwrap();
-            }
-            set
-            {
-                CallContext.LogicalSetData("MSBuildIntegrationTestBase_Project", new ObjectHandle(value));
-            }
-#elif NETCOREAPP2_0 || NETCOREAPP2_1
             get { return _project.Value; }
             set { _project.Value = value; }
-#else
-#error TFM not supported
-#endif
         }
 
-        internal Task<MSBuildResult> DotnetMSBuild(string target, string args = null, bool debug = false)
+        protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
+
+        protected string TargetFramework { get; set; } = "netcoreapp2.0";
+
+        internal Task<MSBuildResult> DotnetMSBuild(string target, string args = null, bool suppressRestore = false, bool suppressTimeout = false)
         {
-            var timeout = debug ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
-            return MSBuildProcessManager.RunProcessAsync(Project, $"/t:{target} {args}", timeout);
+            var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
+            var restoreArgument = suppressRestore ? "" : "/restore";
+
+            return MSBuildProcessManager.RunProcessAsync(Project, $"{restoreArgument} /t:{target} /p:Configuration={Configuration} {args}", timeout);
         }
     }
 }
