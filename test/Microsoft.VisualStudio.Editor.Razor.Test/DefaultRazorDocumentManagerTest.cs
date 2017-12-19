@@ -17,9 +17,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultRazorDocumentManagerTest : ForegroundDispatcherTestBase
     {
-        private IContentType RazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true);
+        private IContentType RazorCoreContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.CoreContentType) == true);
 
-        private IContentType NonRazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(It.IsAny<string>()) == false);
+        private IContentType NonRazorCoreContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(It.IsAny<string>()) == false);
 
         private string FilePath => "C:/Some/Path/TestDocumentTracker.cshtml";
 
@@ -49,7 +49,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
             };
 
             // Act & Assert
@@ -65,7 +65,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorCoreContentType && b.Properties == new PropertyCollection()),
             };
 
             // Act & Assert
@@ -79,7 +79,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager) as VisualStudioDocumentTracker;
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(factoryService => factoryService.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
@@ -99,8 +99,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
-                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorCoreContentType && b.Properties == new PropertyCollection()),
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager) as VisualStudioDocumentTracker;
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(f => f.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
@@ -124,7 +124,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
             };
 
             // Act
@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
             };
 
             // Act
@@ -160,8 +160,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView2 = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
-                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorCoreContentType && b.Properties == new PropertyCollection()),
             };
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
@@ -197,8 +197,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textView2 = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>()
             {
-                Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
-                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType && b.Properties == new PropertyCollection()),
+                Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorCoreContentType && b.Properties == new PropertyCollection()),
             };
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, buffers[0], ImportDocumentManager);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);

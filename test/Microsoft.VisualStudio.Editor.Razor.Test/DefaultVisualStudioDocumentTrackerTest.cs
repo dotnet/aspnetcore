@@ -17,9 +17,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultVisualStudioDocumentTrackerTest : ForegroundDispatcherTestBase
     {
-        private IContentType RazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true);
+        private IContentType RazorCoreContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.CoreContentType) == true);
 
-        private ITextBuffer TextBuffer => Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType);
+        private ITextBuffer TextBuffer => Mock.Of<ITextBuffer>(b => b.ContentType == RazorCoreContentType);
 
         private string FilePath => "C:/Some/Path/TestDocumentTracker.cshtml";
 

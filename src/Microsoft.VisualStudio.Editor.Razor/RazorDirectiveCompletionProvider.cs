@@ -205,7 +205,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
 
                 var mappedPoints = projectionSnapshot.MapToSourceSnapshots(context.CompletionListSpan.Start);
-                var htmlSnapshotPoints = mappedPoints.Where(p => p.Snapshot.TextBuffer.ContentType.IsOfType(RazorLanguage.ContentType));
+                var htmlSnapshotPoints = mappedPoints.Where(p => p.Snapshot.TextBuffer.IsRazorBuffer());
 
                 if (!htmlSnapshotPoints.Any())
                 {

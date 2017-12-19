@@ -134,7 +134,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var contentType = new Mock<IContentType>();
             contentType.Setup(type => type.IsOfType(It.IsAny<string>()))
-                .Returns<string>(val => val == RazorLanguage.ContentType);
+                .Returns<string>(val => val == RazorLanguage.CoreContentType);
             textBuffer.Setup(buffer => buffer.ContentType)
                 .Returns(contentType.Object);
 

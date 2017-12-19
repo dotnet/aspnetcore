@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.Text
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            return textBuffer.ContentType.IsOfType(RazorLanguage.ContentType);
+            return textBuffer.ContentType.IsOfType(RazorLanguage.CoreContentType);
         }
     }
 }
