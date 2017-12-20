@@ -25,10 +25,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Empty,
                                 HtmlSymbolType.Unknown))
                                .Accepts(AcceptedCharactersInternal.Any))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_RazorComment_Not_Terminated,
-                    SourceLocation.Zero,
-                    length: 2)));
+                RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 2)));
         }
 
         [Fact]
@@ -79,10 +77,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .Accepts(AcceptedCharactersInternal.None)),
                         Factory.Code(Environment.NewLine)
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(4, 0, 4),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -104,14 +100,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 string.Empty,
                                 CSharpSymbolType.Unknown))
                                     .Accepts(AcceptedCharactersInternal.Any)))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_RazorComment_Not_Terminated,
-                    new SourceLocation(5, 0, 5),
-                    length: 2)),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(4, 0, 4),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                    new SourceSpan(new SourceLocation(5, 0, 5), contentLength: 2)),
+                RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -176,10 +168,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .Accepts(AcceptedCharactersInternal.None),
                             Factory.Span(SpanKindInternal.Comment, new CSharpSymbol(string.Empty, CSharpSymbolType.Unknown))
                                    .Accepts(AcceptedCharactersInternal.Any)))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_RazorComment_Not_Terminated,
-                    new SourceLocation(2, 0, 2),
-                    length: 2)),
+                RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 2)),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                     new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }

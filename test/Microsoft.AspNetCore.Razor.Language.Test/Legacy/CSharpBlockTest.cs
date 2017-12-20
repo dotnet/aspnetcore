@@ -148,10 +148,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ImplicitExpressionTest(
                 "Html.En(code()", "Html.En(code()",
                 AcceptedCharactersInternal.Any,
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(8, 0, 8),
-                    length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "(", ")"));
         }
 
         [Fact]

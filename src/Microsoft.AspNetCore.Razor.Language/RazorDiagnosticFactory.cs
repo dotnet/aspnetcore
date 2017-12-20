@@ -310,6 +310,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_UnexpectedEndTag, location, tagName);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_ExpectedCloseBracketBeforeEOF =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1027",
+                () => LegacyResources.ParseError_Expected_CloseBracket_Before_EOF,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_ExpectedCloseBracketBeforeEOF(SourceSpan location, string openBrace, string closeBrace)
+        {
+            return RazorDiagnostic.Create(Parsing_ExpectedCloseBracketBeforeEOF, location, openBrace, closeBrace);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_RazorCommentNotTerminated =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1028",
+                () => LegacyResources.ParseError_RazorComment_Not_Terminated,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_RazorCommentNotTerminated(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_RazorCommentNotTerminated, location);
+        }
+
         #endregion
 
         #region Semantic Errors

@@ -15,21 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var noErrors = new RazorDiagnostic[0];
-                Func<int, RazorDiagnostic[]> missingEndParenError = (index) =>
-                    new RazorDiagnostic[1]
-                    {
-                        RazorDiagnostic.Create(new RazorError(
-                            "An opening \"(\" is missing the corresponding closing \")\".",
-                            new SourceLocation(index, 0, index),
-                            length: 1))
-                    };
                 Func<int, RazorDiagnostic[]> missingEndBracketError = (index) =>
                     new RazorDiagnostic[1]
                     {
-                        RazorDiagnostic.Create(new RazorError(
-                            "An opening \"[\" is missing the corresponding closing \"]\".",
-                            new SourceLocation(index, 0, index),
-                            length: 1))
+                        RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                            new SourceSpan(new SourceLocation(index, 0, index), contentLength: 1), "[", "]"),
                     };
 
                 // implicitExpression, expectedImplicitExpression, acceptedCharacters, expectedErrors
@@ -250,10 +240,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ImplicitExpressionTest(
                 "foo(()", "foo(()",
                 acceptedCharacters: AcceptedCharactersInternal.Any,
-                errors: RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(4, 0, 4),
-                    length: 1)));
+                errors: RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
         }
 
         [Fact]

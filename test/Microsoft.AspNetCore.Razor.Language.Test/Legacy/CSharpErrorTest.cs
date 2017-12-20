@@ -207,10 +207,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code("Href(" + Environment.NewLine)
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(4, 0, 4),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -224,10 +222,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}Boz")
                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 ),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                                new SourceLocation(3, 0, 3),
-                                length: 1)));
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -243,10 +239,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 Factory.Code($"Foo(Bar(Baz){Environment.NewLine}Biz{Environment.NewLine}")
                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                 ),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                                new SourceLocation(3, 0, 3),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -260,10 +254,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}Boz")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
-                               new SourceLocation(3, 0, 3),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "[", "]"));
         }
 
         [Fact]
@@ -279,10 +271,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"Foo[Bar[Baz]{Environment.NewLine}Biz{Environment.NewLine}")
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("[", "]"),
-                               new SourceLocation(3, 0, 3),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 1), "[", "]"));
         }
 
         // Simple EOF handling errors:
@@ -498,10 +488,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("if(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(2, 0, 2),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -512,10 +500,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("foreach(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(7, 0, 7),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(7, 0, 7), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -526,10 +512,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("do { } while(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(12, 0, 12),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(12, 0, 12), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -540,10 +524,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            new StatementBlock(
                                Factory.Code("using(foo bar" + Environment.NewLine).AsStatement()
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(5, 0, 5),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(5, 0, 5), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -561,10 +543,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
                                Factory.Code("}").AsStatement().Accepts(AcceptedCharactersInternal.None)
                                ),
-                           RazorDiagnostic.Create(new RazorError(
-                               LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                               new SourceLocation(2, 0, 2),
-                               length: 1)));
+                           RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                               new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -656,10 +636,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                 expectedErrors: new[]
                 {
-                    RazorDiagnostic.Create(new RazorError(
-                        LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                        new SourceLocation(14, 0, 14),
-                        length: 1)),
+                    RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                        new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 1), "(", ")"),
                 });
         }
 

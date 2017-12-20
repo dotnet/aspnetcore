@@ -248,7 +248,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-                var unbalancedParenErrorString = "An opening \"(\" is missing the corresponding closing \")\".";
 
                 // document, expectedStatement, expectedErrors
                 return new TheoryData<string, StatementBlock, RazorDiagnostic[]>
@@ -260,7 +259,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (")
                                 .AsStatement()),
-                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedParenErrorString, 45, 0, 45, 1)) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
+                        }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (someMethod(",
@@ -269,7 +272,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (someMethod(")
                                 .AsStatement()),
-                        new[] { RazorDiagnostic.Create(new RazorError(unbalancedParenErrorString, 45, 0, 45, 1)) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
+                        }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (true) {",
@@ -281,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new[]
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(23, 0, 23), contentLength: 1), "catch", "}", "{")
+                                new SourceSpan(new SourceLocation(23, 0, 23), contentLength: 1), "catch", "}", "{"),
                         }
                     },
                 };
