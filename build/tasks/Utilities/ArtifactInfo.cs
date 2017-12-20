@@ -26,11 +26,8 @@ namespace RepoTasks.Utilities
                 case "nugetsymbolspackage":
                     info = new Package { PackageInfo = GetPackageInfo(item), IsSymbolsArtifact = true };
                     break;
-                case "vsixpackage":
-                    info = new Vsix { Name = Path.GetFileNameWithoutExtension(item.ItemSpec) };
-                    break;
                 default:
-                    throw new InvalidDataException($"Unrecognized artifact type: {item.GetMetadata("ArtifactType")} for artifact {item.ItemSpec}");
+                    return UnknownType.Singleton;
             }
 
             info.RepositoryRoot = item.GetMetadata("RepositoryRoot")?.TrimEnd(new [] { '\\', '/' });
@@ -46,9 +43,10 @@ namespace RepoTasks.Utilities
         public string RepositoryRoot { get; private set; }
         public string RepoName { get; private set; }
 
-        public class Vsix : ArtifactInfo
+        public class UnknownType : ArtifactInfo
         {
-            public string Name { get; set; }
+           private UnknownType() { }
+           public static UnknownType Singleton { get; } = new UnknownType();
         }
 
         public class Package : ArtifactInfo

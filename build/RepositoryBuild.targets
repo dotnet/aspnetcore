@@ -48,7 +48,7 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 
-      <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
+      <BuildArguments>/t:CleanArtifacts $(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
       <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
       <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>
