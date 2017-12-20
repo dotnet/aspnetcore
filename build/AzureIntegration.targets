@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <AzureIntegrationProjectRoot>$(MSBuildThisFileDirectory)..\modules\AzureIntegration\</AzureIntegrationProjectRoot>
+  </PropertyGroup>
+
+  <Target Name="BuildAzureIntegration" DependsOnTargets="GeneratePropsFiles">
+    <PropertyGroup>
+      <AzureIntegrationProjProperties>
+        RepositoryRoot=$(AzureIntegrationProjectRoot);
+        DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        BuildNumber=$(BuildNumber);
+        Configuration=$(Configuration);
+        IsFinalBuild=$(IsFinalBuild);
+      </AzureIntegrationProjProperties>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="$(AzureIntegrationProjectTargets)"
+             Properties="$(AzureIntegrationProjProperties)" />
+
+    <ItemGroup>
+      <AzureIntegrationArtifacts Include="$(AzureIntegrationProjectRoot)artifacts\build\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(AzureIntegrationArtifacts)" DestinationFolder="$(BuildDir)" />
+  </Target>
+
+</Project>
