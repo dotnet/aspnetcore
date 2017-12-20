@@ -22,7 +22,7 @@ package_version_props_url=''
 asset_root_url=''
 access_token_suffix=''
 restore_sources=''
-msbuild_args=''
+msbuild_args=()
 
 #
 # Functions
@@ -208,7 +208,7 @@ while [[ $# -gt 0 ]]; do
             verbose=true
             ;;
         *)
-            msbuild_args+="\"$1\" "
+            msbuild_args[${#msbuild_args[*]}]="$1"
             ;;
     esac
     shift
@@ -253,19 +253,19 @@ if [ ! -z "$package_version_props_url" ]; then
     props_file_path="$intermediate_dir/external-dependencies.props"
     mkdir -p "$intermediate_dir"
     __get_remote_file "$package_version_props_url" "$props_file_path"
-    msbuild_args+="-p:DotNetPackageVersionPropsPath=\"$props_file_path\" "
+    msbuild_args[${#msbuild_args[*]}]="-p:DotNetPackageVersionPropsPath=$props_file_path"
 fi
 
 if [ ! -z "$restore_sources" ]; then
-    msbuild_args+="-p:DotNetAdditionalRestoreSources=\"$restore_sources\" "
+    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAdditionalRestoreSources=$restore_sources"
 fi
 
 if [ ! -z "$asset_root_url" ]; then
-    msbuild_args+="-p:DotNetAssetRootUrl=\"$asset_root_url\" "
+    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootUrl=$asset_root_url"
 fi
 
-if [ ! -z "$asset_root_url" ]; then
-    msbuild_args+="-p:DotNetAssetRootAccessTokenSuffix=\"$access_token_suffix\" "
+if [ ! -z "$access_token_suffix" ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootAccessTokenSuffix=$access_token_suffix"
 fi
 
 [ -z "$channel" ] && channel='dev'
@@ -273,4 +273,4 @@ fi
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
-invoke_korebuild_command "$command" $msbuild_args
+invoke_korebuild_command "$command" "${msbuild_args[@]}"
