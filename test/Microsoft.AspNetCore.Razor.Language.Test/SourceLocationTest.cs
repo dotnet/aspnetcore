@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Equals_ReturnsTrue_FilePathsNullAndAbsoluteIndicesMatch()
+        public void Equals_ReturnsFalse_FilePathsNullAndAbsoluteIndicesMatch()
         {
             // Arrange
             var sourceLocationA = new SourceLocation(10, 3, 4);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var result = sourceLocationA.Equals(sourceLocationB);
 
             // Assert
-            Assert.True(result);
+            Assert.False(result);
         }
 
         [Fact]

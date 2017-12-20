@@ -116,9 +116,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <inheritdoc />
         public bool Equals(SourceLocation other)
         {
-            // LineIndex and CharacterIndex can be calculated from AbsoluteIndex and the document content.
             return string.Equals(FilePath, other.FilePath, StringComparison.Ordinal) &&
-                AbsoluteIndex == other.AbsoluteIndex;
+                AbsoluteIndex == other.AbsoluteIndex &&
+                LineIndex == other.LineIndex &&
+                CharacterIndex == other.CharacterIndex;
         }
 
         public static bool operator==(SourceLocation left, SourceLocation right)
