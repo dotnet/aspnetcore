@@ -8,6 +8,6 @@ import { ILogger, LogLevel } from "./ILogger";
 export interface IHttpConnectionOptions {
     httpClient?: IHttpClient;
     transport?: TransportType | ITransport;
-    logging?: ILogger | LogLevel;
-    jwtBearer?: () => string;
+    logger?: ILogger | LogLevel;
+    accessToken?: () => string;
 }

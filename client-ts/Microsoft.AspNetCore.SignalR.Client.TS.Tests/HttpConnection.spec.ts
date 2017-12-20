@@ -31,7 +31,7 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -67,7 +67,7 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -93,7 +93,7 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -125,7 +125,7 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -156,7 +156,9 @@ describe("Connection", () => {
             send(data: any): Promise<void> {
                 return Promise.reject("");
             },
-            stop(): void { },
+            stop(): Promise<void> {
+                return Promise.resolve();
+            },
             onreceive: undefined,
             onclose: undefined,
         }
@@ -171,7 +173,7 @@ describe("Connection", () => {
                 }
             },
             transport: fakeTransport,
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
 
@@ -205,7 +207,7 @@ describe("Connection", () => {
                         return Promise.resolve("");
                     }
                 },
-                logging: null
+                logger: null
             } as IHttpConnectionOptions;
 
             connection = new HttpConnection(givenUrl, options);
@@ -238,7 +240,7 @@ describe("Connection", () => {
                     }
                 },
                 transport: requestedTransport,
-                logging: null
+                logger: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("http://tempuri.org", options);
@@ -264,7 +266,7 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -290,7 +292,7 @@ describe("Connection", () => {
                 }
             },
             transport: TransportType.WebSockets,
-            logging: null
+            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -318,7 +320,7 @@ describe("Connection", () => {
                 // mode: TransferMode : TransferMode.Text
                 connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> { return Promise.resolve(transportTransferMode); },
                 send(data: any): Promise<void> { return Promise.resolve(); },
-                stop(): void { },
+                stop(): Promise<void> { return Promise.resolve(); },
                 onreceive: null,
                 onclose: null,
                 mode: transportTransferMode
@@ -334,7 +336,7 @@ describe("Connection", () => {
                     }
                 },
                 transport: fakeTransport,
-                logging: null
+                logger: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("https://tempuri.org", options);

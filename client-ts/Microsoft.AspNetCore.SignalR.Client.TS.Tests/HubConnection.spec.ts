@@ -18,7 +18,7 @@ describe("HubConnection", () => {
     describe("start", () => {
         it("sends negotiation message", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { logging: null });
+            let hubConnection = new HubConnection(connection, { logger: null });
             await hubConnection.start();
             expect(connection.sentData.length).toBe(1)
             expect(JSON.parse(connection.sentData[0])).toEqual({
@@ -32,7 +32,7 @@ describe("HubConnection", () => {
         it("sends a non blocking invocation", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.send("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -56,7 +56,7 @@ describe("HubConnection", () => {
         it("sends an invocation", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
@@ -79,7 +79,7 @@ describe("HubConnection", () => {
         it("rejects the promise when an error is received", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, error: "foo" });
@@ -91,7 +91,7 @@ describe("HubConnection", () => {
         it("resolves the promise when a result is received", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
@@ -102,7 +102,7 @@ describe("HubConnection", () => {
         it("completes pending invocations when stopped", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod");
             hubConnection.stop();
 
@@ -113,7 +113,7 @@ describe("HubConnection", () => {
         it("completes pending invocations when connection is lost", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod");
             // Typically this would be called by the transport
             connection.onclose(new Error("Connection lost"));
@@ -134,7 +134,7 @@ describe("HubConnection", () => {
                 }
             };
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { logging: logger });
+            let hubConnection = new HubConnection(connection, { logger: logger });
 
             connection.receive({
                 type: MessageType.Invocation,
@@ -149,7 +149,7 @@ describe("HubConnection", () => {
 
         it("callback invoked when servers invokes a method on the client", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let value = 0;
             hubConnection.on("message", v => value = v);
 
@@ -166,7 +166,7 @@ describe("HubConnection", () => {
 
         it("can have multiple callbacks", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let numInvocations1 = 0;
             let numInvocations2 = 0;
             hubConnection.on("message", () => numInvocations1++);
@@ -186,7 +186,7 @@ describe("HubConnection", () => {
 
         it("can unsubscribe from on", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
 
             var numInvocations = 0;
             var callback = () => numInvocations++;
@@ -215,7 +215,7 @@ describe("HubConnection", () => {
 
         it("unsubscribing from non-existing callbacks no-ops", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
 
             hubConnection.off("_", () => { });
             hubConnection.on("message", t => { });
@@ -234,7 +234,7 @@ describe("HubConnection", () => {
             };
 
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { logging: logger });
+            let hubConnection = new HubConnection(connection, { logger: logger });
 
             hubConnection.on(null, undefined);
             hubConnection.on(undefined, null);
@@ -267,7 +267,7 @@ describe("HubConnection", () => {
         it("sends an invocation", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.stream("testStream", "arg", 42);
 
             // Verify the message is sent
@@ -289,7 +289,7 @@ describe("HubConnection", () => {
         it("completes with an error when an error is yielded", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
@@ -303,7 +303,7 @@ describe("HubConnection", () => {
         it("completes the observer when a completion is received", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
@@ -316,7 +316,7 @@ describe("HubConnection", () => {
         it("completes pending streams when stopped", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -329,7 +329,7 @@ describe("HubConnection", () => {
         it("completes pending streams when connection is lost", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -344,7 +344,7 @@ describe("HubConnection", () => {
         it("yields items as they arrive", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
@@ -365,7 +365,7 @@ describe("HubConnection", () => {
         it("does not require error function registered", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = hubConnection.stream("testMethod").subscribe({
                 next: val => { }
             });
@@ -378,7 +378,7 @@ describe("HubConnection", () => {
         it("does not require complete function registered", async () => {
             let connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let observer = hubConnection.stream("testMethod").subscribe({
                 next: val => { }
             });
@@ -392,7 +392,7 @@ describe("HubConnection", () => {
     describe("onClose", () => {
         it("can have multiple callbacks", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invocations = 0;
             hubConnection.onclose(e => invocations++);
             hubConnection.onclose(e => invocations++);
@@ -403,7 +403,7 @@ describe("HubConnection", () => {
 
         it("callbacks receive error", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let error: Error;
             hubConnection.onclose(e => error = e);
 
@@ -414,7 +414,7 @@ describe("HubConnection", () => {
 
         it("ignores null callbacks", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             hubConnection.onclose(null);
             hubConnection.onclose(undefined);
             // Typically this would be called by the transport
@@ -428,7 +428,7 @@ describe("HubConnection", () => {
             // Receive the ping mid-invocation so we can see that the rest of the flow works fine
 
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection);
+            let hubConnection = new HubConnection(connection, { logger: null });
             let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Ping });
@@ -439,7 +439,7 @@ describe("HubConnection", () => {
 
         it("does not terminate if messages are received", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { serverTimeoutInMilliseconds: 100 });
+            let hubConnection = new HubConnection(connection, { timeoutInMilliseconds: 100, logger: null });
 
             let p = new PromiseSource<Error>();
             hubConnection.onclose(error => p.resolve(error));
@@ -464,7 +464,7 @@ describe("HubConnection", () => {
 
         it("terminates if no messages received within timeout interval", async () => {
             let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { serverTimeoutInMilliseconds: 100 });
+            let hubConnection = new HubConnection(connection, { timeoutInMilliseconds: 100, logger: null });
 
             let p = new PromiseSource<Error>();
             hubConnection.onclose(error => p.resolve(error));
@@ -500,10 +500,11 @@ class TestConnection implements IConnection {
         return Promise.resolve();
     };
 
-    stop(error?: Error): void {
+    stop(error?: Error): Promise<void> {
         if (this.onclose) {
             this.onclose(error);
         }
+        return Promise.resolve();
     };
 
     receive(data: any): void {

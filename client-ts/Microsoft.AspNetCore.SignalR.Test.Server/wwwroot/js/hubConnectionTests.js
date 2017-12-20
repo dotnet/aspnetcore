@@ -489,7 +489,7 @@ describe('hubConnection', function () {
                         var options = {
                             transport: transportType,
                             logging: signalR.LogLevel.Trace,
-                            jwtBearer: function () {
+                            accessToken: function () {
                                 return jwtToken;
                             }
                         };
@@ -518,7 +518,7 @@ describe('hubConnection', function () {
                     var options = {
                         transport: transportType,
                         logging: signalR.LogLevel.Trace,
-                        serverTimeoutInMilliseconds: 100
+                        timeoutInMilliseconds: 100
                     };
 
                     var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);

@@ -21,27 +21,27 @@ export const enum TransferMode {
 export interface ITransport {
     connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode>;
     send(data: any): Promise<void>;
-    stop(): void;
+    stop(): Promise<void>;
     onreceive: DataReceived;
     onclose: TransportClosed;
 }
 
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
-    private readonly jwtBearer: () => string;
+    private readonly accessToken: () => string;
     private webSocket: WebSocket;
 
-    constructor(jwtBearer: () => string, logger: ILogger) {
+    constructor(accessToken: () => string, logger: ILogger) {
         this.logger = logger;
-        this.jwtBearer = jwtBearer;
+        this.accessToken = accessToken;
     }
 
     connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
 
         return new Promise<TransferMode>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
-            if (this.jwtBearer) {
-                let token = this.jwtBearer();
+            if (this.accessToken) {
+                let token = this.accessToken();
                 url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
             }
 
@@ -90,11 +90,12 @@ export class WebSocketTransport implements ITransport {
         return Promise.reject("WebSocket is not in the OPEN state");
     }
 
-    stop(): void {
+    stop(): Promise<void> {
         if (this.webSocket) {
             this.webSocket.close();
             this.webSocket = null;
         }
+        return Promise.resolve();
     }
 
     onreceive: DataReceived;
@@ -103,14 +104,14 @@ export class WebSocketTransport implements ITransport {
 
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: IHttpClient;
-    private readonly jwtBearer: () => string;
+    private readonly accessToken: () => string;
     private readonly logger: ILogger;
     private eventSource: EventSource;
     private url: string;
 
-    constructor(httpClient: IHttpClient, jwtBearer: () => string, logger: ILogger) {
+    constructor(httpClient: IHttpClient, accessToken: () => string, logger: ILogger) {
         this.httpClient = httpClient;
-        this.jwtBearer = jwtBearer;
+        this.accessToken = accessToken;
         this.logger = logger;
     }
 
@@ -121,8 +122,8 @@ export class ServerSentEventsTransport implements ITransport {
 
         this.url = url;
         return new Promise<TransferMode>((resolve, reject) => {
-            if (this.jwtBearer) {
-                let token = this.jwtBearer();
+            if (this.accessToken) {
+                let token = this.accessToken();
                 url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
             }
 
@@ -166,14 +167,15 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.jwtBearer, data);
+        return send(this.httpClient, this.url, this.accessToken, data);
     }
 
-    stop(): void {
+    stop(): Promise<void> {
         if (this.eventSource) {
             this.eventSource.close();
             this.eventSource = null;
         }
+        return Promise.resolve();
     }
 
     onreceive: DataReceived;
@@ -182,16 +184,16 @@ export class ServerSentEventsTransport implements ITransport {
 
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: IHttpClient;
-    private readonly jwtBearer: () => string;
+    private readonly accessToken: () => string;
     private readonly logger: ILogger;
 
     private url: string;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
 
-    constructor(httpClient: IHttpClient, jwtBearer: () => string, logger: ILogger) {
+    constructor(httpClient: IHttpClient, accessToken: () => string, logger: ILogger) {
         this.httpClient = httpClient;
-        this.jwtBearer = jwtBearer;
+        this.accessToken = accessToken;
         this.logger = logger;
     }
 
@@ -268,8 +270,8 @@ export class LongPollingTransport implements ITransport {
         this.pollXhr = pollXhr;
 
         this.pollXhr.open("GET", `${url}&_=${Date.now()}`, true);
-        if (this.jwtBearer) {
-            this.pollXhr.setRequestHeader("Authorization", `Bearer ${this.jwtBearer()}`);
+        if (this.accessToken) {
+            this.pollXhr.setRequestHeader("Authorization", `Bearer ${this.accessToken()}`);
         }
         if (transferMode === TransferMode.Binary) {
             this.pollXhr.responseType = "arraybuffer";
@@ -281,26 +283,27 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.jwtBearer, data);
+        return send(this.httpClient, this.url, this.accessToken, data);
     }
 
-    stop(): void {
+    stop(): Promise<void> {
         this.shouldPoll = false;
         if (this.pollXhr) {
             this.pollXhr.abort();
             this.pollXhr = null;
         }
+        return Promise.resolve();
     }
 
     onreceive: DataReceived;
     onclose: TransportClosed;
 }
 
-async function send(httpClient: IHttpClient, url: string, jwtBearer: () => string, data: any): Promise<void> {
+async function send(httpClient: IHttpClient, url: string, accessToken: () => string, data: any): Promise<void> {
     let headers;
-    if (jwtBearer) {
+    if (accessToken) {
         headers = new Map<string, string>();
-        headers.set("Authorization", `Bearer ${jwtBearer()}`)
+        headers.set("Authorization", `Bearer ${accessToken()}`)
     }
 
     await httpClient.post(url, data, headers);
