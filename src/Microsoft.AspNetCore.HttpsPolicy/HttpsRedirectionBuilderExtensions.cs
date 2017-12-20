@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -32,27 +32,7 @@ namespace Microsoft.AspNetCore.Builder
 
             var options = app.ApplicationServices.GetRequiredService<IOptions<HttpsRedirectionOptions>>().Value;
 
-            // The tls port set in options will have priority over the one in configuration.
-            var httpsPort = options.HttpsPort;
-            if (httpsPort == null)
-            {
-                // Only read configuration if there is no httpsPort
-                var config = app.ApplicationServices.GetRequiredService<IConfiguration>();
-                var configHttpsPort = config["HTTPS_PORT"];
-                // If the string isn't empty, try to parse it.
-                if (!string.IsNullOrEmpty(configHttpsPort)
-                    && int.TryParse(configHttpsPort, out var intHttpsPort))
-                {
-                    httpsPort = intHttpsPort;
-                }
-            }
-
-            var rewriteOptions = new RewriteOptions();
-            rewriteOptions.AddRedirectToHttps(
-                options.RedirectStatusCode,
-                httpsPort);
-
-            app.UseRewriter(rewriteOptions);
+            app.UseMiddleware<HttpsRedirectionMiddleware>(app.ServerFeatures.Get<IServerAddressesFeature>());
 
             return app;
         }
