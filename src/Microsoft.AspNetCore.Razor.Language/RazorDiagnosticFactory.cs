@@ -370,6 +370,53 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_TagHelperAttributesMustHaveAName, location, tagName);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperMustNotHaveAnEndTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1033",
+                () => LegacyResources.TagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperMustNotHaveAnEndTag(SourceSpan location, string tagName, string displayName, TagStructure tagStructure)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                Parsing_TagHelperMustNotHaveAnEndTag,
+                location,
+                tagName,
+                displayName,
+                tagStructure);
+
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperFoundMalformedTagHelper =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1034",
+                () => LegacyResources.TagHelpersParseTreeRewriter_FoundMalformedTagHelper,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperFoundMalformedTagHelper(SourceSpan location, string tagName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                Parsing_TagHelperFoundMalformedTagHelper,
+                location,
+                tagName);
+
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperMissingCloseAngle =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1035",
+                () => LegacyResources.TagHelpersParseTreeRewriter_MissingCloseAngle,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperMissingCloseAngle(SourceSpan location, string tagName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                Parsing_TagHelperMissingCloseAngle,
+                location,
+                tagName);
+
+            return diagnostic;
+        }
+
         #endregion
 
         #region Semantic Errors
@@ -470,6 +517,36 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static RazorDiagnostic CreateTagHelper_EmptyBoundAttribute(SourceSpan location, string attributeName, string tagName, string propertyTypeName)
         {
             return RazorDiagnostic.Create(TagHelper_EmptyBoundAttribute, location, attributeName, tagName, propertyTypeName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_CannotHaveNonTagContent =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2009",
+                () => LegacyResources.TagHelperParseTreeRewriter_CannotHaveNonTagContent,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_CannotHaveNonTagContent(SourceSpan location, string tagName, string allowedChildren)
+        {
+            return RazorDiagnostic.Create(TagHelper_CannotHaveNonTagContent, location, tagName, allowedChildren);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidNestedTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2010",
+                () => LegacyResources.TagHelperParseTreeRewriter_InvalidNestedTag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidNestedTag(SourceSpan location, string tagName, string parent, string allowedChildren)
+        {
+            return RazorDiagnostic.Create(TagHelper_InvalidNestedTag, location, tagName, parent, allowedChildren);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InconsistentTagStructure =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2011",
+                () => LegacyResources.TagHelperParseTreeRewriter_InconsistentTagStructure,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InconsistentTagStructure(SourceSpan location, string firstDescriptor, string secondDescriptor, string tagName)
+        {
+            return RazorDiagnostic.Create(TagHelper_InconsistentTagStructure, location, firstDescriptor, secondDescriptor, tagName, nameof(TagMatchingRuleDescriptor.TagStructure));
         }
 
         #endregion

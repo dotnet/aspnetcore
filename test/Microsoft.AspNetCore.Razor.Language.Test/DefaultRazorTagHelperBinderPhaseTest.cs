@@ -419,11 +419,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
             var initialError = RazorDiagnostic.Create(new RazorError("Initial test error", SourceLocation.Zero, length: 1));
-            var expectedRewritingError = RazorDiagnostic.Create(
-                new RazorError(
-                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
-                    new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
-                    length: 4));
+            var expectedRewritingError = RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                new SourceSpan(new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1), contentLength: 4), "form");
 
             var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, originalTree.Source, new[] { initialError }, originalTree.Options);
             codeDocument.SetSyntaxTree(erroredOriginalTree);

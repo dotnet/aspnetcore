@@ -291,12 +291,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             // End tag TagHelper that states it shouldn't have an end tag.
                             errorSink.OnError(
-                                SourceLocationTracker.Advance(tagBlock.Start, "</"),
-                                LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
+                                RazorDiagnosticFactory.CreateParsing_TagHelperMustNotHaveAnEndTag(
+                                    new SourceSpan(SourceLocationTracker.Advance(tagBlock.Start, "</"), tagName.Length),
                                     tagName,
                                     descriptor.DisplayName,
-                                    invalidRule.TagStructure),
-                                tagName.Length);
+                                    invalidRule.TagStructure));
 
                             return false;
                         }
@@ -317,9 +316,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // Could not recover, the end tag helper has no corresponding start tag, create
                         // an error based on the current childBlock.
                         errorSink.OnError(
-                            SourceLocationTracker.Advance(tagBlock.Start, "</"),
-                            LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(tagName),
-                            tagName.Length);
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(SourceLocationTracker.Advance(tagBlock.Start, "</"), tagName.Length), tagName));
 
                         return false;
                     }
@@ -502,11 +500,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var allowedChildren = _currentTagHelperTracker.AllowedChildren;
                     var allowedChildrenString = string.Join(", ", allowedChildren);
                     errorSink.OnError(
-                        errorStart,
-                        LegacyResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(
+                        RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                            new SourceSpan(errorStart, length),
                             _currentTagHelperTracker.TagName,
-                            allowedChildrenString),
-                        length);
+                            allowedChildrenString));
                 }
             }
         }
@@ -559,13 +556,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ErrorSink errorSink)
         {
             var allowedChildrenString = string.Join(", ", tracker.AllowedChildren);
-            var errorMessage = LegacyResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
-                tagName,
-                tracker.TagName,
-                allowedChildrenString);
             var errorStart = GetTagDeclarationErrorStart(tagBlock);
 
-            errorSink.OnError(errorStart, errorMessage, tagName.Length);
+            errorSink.OnError(
+                RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                    new SourceSpan(errorStart, tagName.Length),
+                    tagName,
+                    tracker.TagName,
+                    allowedChildrenString));
         }
 
         private static void ValidateBinding(
@@ -589,13 +587,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         if (baseStructure.HasValue && baseStructure != rule.TagStructure)
                         {
                             errorSink.OnError(
-                                tagBlock.Start,
-                                LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
+                                RazorDiagnosticFactory.CreateTagHelper_InconsistentTagStructure(
+                                    new SourceSpan(tagBlock.Start, tagBlock.Length),
                                     baseDescriptor.DisplayName,
                                     descriptor.DisplayName,
-                                    tagName,
-                                    nameof(TagMatchingRuleDescriptor.TagStructure)),
-                                tagBlock.Length);
+                                    tagName));
                         }
 
                         baseDescriptor = descriptor;
@@ -613,9 +609,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var errorStart = GetTagDeclarationErrorStart(tag);
 
                 errorSink.OnError(
-                    errorStart,
-                    LegacyResources.FormatTagHelpersParseTreeRewriter_MissingCloseAngle(tagName),
-                    tagName.Length);
+                    RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                        new SourceSpan(errorStart, tagName.Length), tagName));
 
                 return false;
             }
@@ -771,10 +766,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var malformedTagHelper = ((TagHelperBlockTracker)tracker).Builder;
 
                 errorSink.OnError(
-                    SourceLocationTracker.Advance(malformedTagHelper.Start, "<"),
-                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper(
-                        malformedTagHelper.TagName),
-                    malformedTagHelper.TagName.Length);
+                    RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                        new SourceSpan(SourceLocationTracker.Advance(malformedTagHelper.Start, "<"), malformedTagHelper.TagName.Length),
+                        malformedTagHelper.TagName));
 
                 BuildCurrentlyTrackedTagHelperBlock(endTag: null);
             }
