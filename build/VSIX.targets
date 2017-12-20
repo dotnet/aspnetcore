@@ -7,6 +7,8 @@
     <VSIXName>Microsoft.VisualStudio.SecretManager</VSIXName>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
     <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
+    <VSIXManifestOutputPath>$(BuildDir)$(VSIXName).json</VSIXManifestOutputPath>
+    <VSIXArtifactCategory>shipoob</VSIXArtifactCategory>
   </PropertyGroup>
 
   <Target
@@ -19,6 +21,15 @@
       <ArtifactInfo Include="$(VSIXOutputPath)">
         <ArtifactType>VsixPackage</ArtifactType>
         <Version>$(PackageVersion)</Version>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <PackageId>$(VSIXName)</PackageId>
+      </ArtifactInfo>
+
+      <ArtifactInfo Include="$(VSIXManifestOutputPath)">
+        <ArtifactType>JsonFile</ArtifactType>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <Dependencies>$(VSIXName).json</Dependencies>
+        <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
     </ItemGroup>
   </Target>

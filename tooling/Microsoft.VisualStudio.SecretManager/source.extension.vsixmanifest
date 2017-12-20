@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="Microsoft.VisualStudio.SecretManager.11eea7f6-8d34-4759-b618-b40f454266d4" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
-        <DisplayName>Microsoft.VisualStudio.SecretManager</DisplayName>
+        <Identity Id="Microsoft.VisualStudio.SecretManager" Version="|%CurrentProject%;GetBuildVersion|" Language="en-US" Publisher="Microsoft" />
+        <DisplayName>ASP.NET Core User Secrets Extension</DisplayName>
+        <PackageId>Microsoft.VisualStudio.SecretManager</PackageId>
         <Description xml:space="preserve">Enables IVsProjectSecrets for ASP.NET Core projects that use Microsoft.Extensions.Configuration.UserSecrets.</Description>
     </Metadata>
-    <Installation>
+    <Installation AllUsers="true">
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0.26228.04,)" />
     </Installation>
     <Dependencies>
