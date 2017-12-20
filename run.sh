@@ -180,23 +180,27 @@ while [[ $# -gt 0 ]]; do
             ;;
         --package-version-props-url|-PackageVersionPropsUrl)
             shift
-            package_version_props_url="${1:-}"
-            [ -z "$package_version_props_url" ] && __error "Missing value for parameter --package-version-props-url" && __usage
+            # This parameter can be an empty string, but it should be set
+            [ -z "${1+x}" ] && __error "Missing value for parameter --package-version-props-url" && __usage
+            package_version_props_url="$1"
             ;;
         --access-token-suffix|-AccessTokenSuffix)
             shift
-            access_token_suffix="${1:-}"
-            # This suffix can be empty
+            # This parameter can be an empty string, but it should be set
+            [ -z "${1+x}" ] && __error "Missing value for parameter --access-token-suffix" && __usage
+            access_token_suffix="$1"
             ;;
         --restore-sources|-RestoreSources)
             shift
-            restore_sources="${1:-}"
-            [ -z "$restore_sources" ] && __error "Missing value for parameter --restore-sources" && __usage
+            # This parameter can be an empty string, but it should be set
+            [ -z "${1+x}" ] && __error "Missing value for parameter --restore-sources" && __usage
+            restore_sources="$1"
             ;;
         --asset-root-url|-AssetRootUrl)
             shift
-            asset_root_url="${1:-}"
-            [ -z "$asset_root_url" ] && __error "Missing value for parameter --asset-root-url" && __usage
+            # This parameter can be an empty string, but it should be set
+            [ -z "${1+x}" ] && __error "Missing value for parameter --asset-root-url" && __usage
+            asset_root_url="$1"
             ;;
         -u|--update|-Update)
             update=true
@@ -273,4 +277,7 @@ fi
 
 get_korebuild
 set_korebuildsettings "$tools_source" "$DOTNET_HOME" "$repo_path" "$config_file"
-invoke_korebuild_command "$command" "${msbuild_args[@]}"
+
+# This incantation avoids unbound variable issues if msbuild_args is empty
+# https://stackoverflow.com/questions/7577052/bash-empty-array-expansion-with-set-u
+invoke_korebuild_command "$command" ${msbuild_args[@]+"${msbuild_args[@]}"}
