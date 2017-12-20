@@ -6,7 +6,6 @@
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    
     <!-- Properties for VS for Mac addin -->
     <VSForMacVersion>7.0</VSForMacVersion>
     <AddinVersion Condition="'$(BuildNumber)'!=''">$(VSForMacVersion).$(BuildNumber)</AddinVersion>

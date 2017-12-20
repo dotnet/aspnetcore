@@ -1,11 +1,36 @@
 ﻿<Project>
   <PropertyGroup>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateMPack</PackageDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT'">$(GetArtifactInfoDependsOn);GetMPackArtifactInfo</GetArtifactInfoDependsOn>
     <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
     <AddinDirectory>$(RepositoryRoot)tooling\$(AddinName)\</AddinDirectory>
+    <MPackArtifactCategory>shipoob</MPackArtifactCategory>
+
+    <MPackIntermediateOutputPath>$(IntermediateDir)mpack\</MPackIntermediateOutputPath>
+    <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net461\</AddinOutputPath>
+    <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
+    <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net461\</LanguageServiceOutputPath>
+    <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
+    <MPackFileName>$(MPackName).mpack</MPackFileName>
+    <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
+    <MPackZipFile>$(BuildDir)$(MPackName).zip</MPackZipFile>
+    <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>
+    <AddinInfoFilePath>$(MPackIntermediateOutputPath)addin.info</AddinInfoFilePath>
   </PropertyGroup>
 
   <Import Project="$(AddinDirectory)AddinMetadata.props" />
+
+  <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the .mpack files. -->
+  <Target Name="GetMPackArtifactInfo">
+    <ItemGroup>
+      <ArtifactInfo Include="$(MPackOutputPath)">
+        <ArtifactType>MPackFile</ArtifactType>
+        <PackageId>$(AddinName)</PackageId>
+        <Version>$(AddinVersion)</Version>
+        <Category>$(MPackArtifactCategory)</Category>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
 
   <Target
     Name="GenerateMPack"
@@ -19,21 +44,8 @@
       3. All language service binaries
     -->
 
-    <PropertyGroup>
-      <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
-      <MPackSourcesDir>$(MSBuildArtifactsDir)sources\</MPackSourcesDir>
-      <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net461\</AddinOutputPath>
-      <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
-      <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net46\</LanguageServiceOutputPath>
-      <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
-      <MPackFileName>$(MPackName).mpack</MPackFileName>
-      <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
-      <MPackZipFile>$(BuildDir)$(MPackName).zip</MPackZipFile>
-      <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>
-      <AddinInfoFilePath>$(MPackSourcesDir)addin.info</AddinInfoFilePath>
-    </PropertyGroup>
-    
-    <MakeDir Directories="$(MPackSourcesDir)" Condition="!Exists('$(MPackSourcesDir)')" />
+  
+    <MakeDir Directories="$(MPackIntermediateOutputPath)" Condition="!Exists('$(MPackIntermediateOutputPath)')" />
 
     <!-- We need to resolve the language service assemblies to generate an addin.info for the mpack -->
     <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Runtime/Import/@assembly">
@@ -53,11 +65,11 @@
 
     <!-- Generate the addin.info and gather sources for mpack zipping-->
     <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLines)" Overwrite="true" />
-    <Copy SourceFiles="$(LanguageServiceOutputPath)\%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackSourcesDir)" />
-    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackSourcesDir)" />
+    <Copy SourceFiles="$(LanguageServiceOutputPath)\%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackIntermediateOutputPath)" />
 
     <!-- We cannot use the ZipArchive task due to how it functions in CoreCLR. The archive it generates is unreadable by Visual Studio for Mac. -->
-    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$(MPackSourcesDir)', '$(MPackOutputPath)') } &quot;" />
+    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$(MPackIntermediateOutputPath)', '$(MPackOutputPath)') } &quot;" />
   </Target>
 
 </Project>
