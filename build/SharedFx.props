@@ -20,13 +20,13 @@
     <HostingInstallerName>dotnet-hosting</HostingInstallerName>
     <DebConfigInFile>$(_PackagingDir)debian_config.json.in</DebConfigInFile>
 
-    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet</PublicCoreFeedPrefix>
+    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
 
     <DotnetRuntimePackageName>dotnet-runtime</DotnetRuntimePackageName>
     <DotnetRuntimeInstallerName>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerName>
     <DotnetRuntimeInstallerArchiveName>$(DotnetRuntimeInstallerName)-linux-x64.tar.gz</DotnetRuntimeInstallerArchiveName>
-    <RuntimeTargzLink>$(DotNetAssetRootUrl)/Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerArchiveName)</RuntimeTargzLink>
+    <RuntimeTargzLink>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerArchiveName)</RuntimeTargzLink>
     <SharedFxLinuxArchiveFilePath>$(_SharedFxSourceDir)$(SharedFxInstallerName)-$(PackageVersion)-linux-x64.tar.gz</SharedFxLinuxArchiveFilePath>
 
     <!-- installer metadata -->
