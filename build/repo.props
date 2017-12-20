@@ -38,6 +38,8 @@
     <CodeSignUrl>https://www.asp.net/</CodeSignUrl>
     <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
     <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
+    <SkipArtifactVerification>true</SkipArtifactVerification>
+    <SkipBillOfMaterials>true</SkipBillOfMaterials>
   </PropertyGroup>
 
   <!-- Properties for publishing -->
