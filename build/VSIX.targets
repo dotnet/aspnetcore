@@ -3,10 +3,12 @@
     <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(GetArtifactInfoDependsOn);GetVSIXArtifactInfo</GetArtifactInfoDependsOn>
     <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
     <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
+    <VSIXManifestOutputPath>$(BuildDir)$(VSIXName).json</VSIXManifestOutputPath>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
-    <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
+    <VSIXArtifactCategory>shipoob</VSIXArtifactCategory>
   </PropertyGroup>
 
   <Target
@@ -14,13 +16,34 @@
     DependsOnTargets="RestoreVSIX;PackageVSIX"
     Condition="'$(OS)'=='Windows_NT'" />
 
+  <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the VSIX. -->
+  <Target Name="GetVSIXArtifactInfo">
+    <ItemGroup>
+
+      <ArtifactInfo Include="$(VSIXOutputPath)">
+        <ArtifactType>VsixPackage</ArtifactType>
+        <Version>$(PackageVersion)</Version>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <PackageId>$(VSIXName)</PackageId>
+      </ArtifactInfo>
+
+      <ArtifactInfo Include="$(VSIXManifestOutputPath)">
+        <ArtifactType>VsixPackageManifestFile</ArtifactType>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <Dependencies>$(VSIXName).vsix</Dependencies>
+        <PackageId>$(VSIXName)</PackageId>
+      </ArtifactInfo>
+
+    </ItemGroup>
+  </Target>
+
   <!--
     VisualStudioMSBuildx86Path is set by the GetToolsets target in KoreBuild if a version of VS matching the requirements in korebuild.json is found.
    -->
   <Target Name="RestoreVSIX" DependsOnTargets="GetToolsets">
 
     <PropertyGroup>
-      <VSIXResponseFilePath>$(MSBuildArtifactsDir)vsix-restore.rsp</VSIXResponseFilePath>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-restore.rsp</VSIXResponseFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -36,7 +59,7 @@
       <MSBuildArguments Include="/p:DotNetRestoreSourcePropsPath=$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
     </ItemGroup>
 
-    <MakeDir Directories="$(MSBuildArtifactsDir)" />
+    <MakeDir Directories="$(LogOutputDir)" />
 
     <WriteLinesToFile
       File="$(VSIXResponseFilePath)"
@@ -53,8 +76,8 @@
       Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
 
     <PropertyGroup>
-      <VSIXLogFilePath>$(MSBuildArtifactsDir)vsix.log</VSIXLogFilePath>
-      <VSIXResponseFilePath>$(MSBuildArtifactsDir)vsix-build.rsp</VSIXResponseFilePath>
+      <VSIXLogFilePath>$(LogOutputDir)vsix.log</VSIXLogFilePath>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-build.rsp</VSIXResponseFilePath>
     </PropertyGroup>
 
     <ItemGroup>
@@ -70,7 +93,7 @@
         /p:Configuration=$(Configuration);" />
     </ItemGroup>
 
-    <MakeDir Directories="$(MSBuildArtifactsDir)" />
+    <MakeDir Directories="$(LogOutputDir)" />
 
     <WriteLinesToFile
       File="$(VSIXResponseFilePath)"
