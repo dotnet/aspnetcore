@@ -26,9 +26,9 @@
       </ArtifactInfo>
 
       <ArtifactInfo Include="$(VSIXManifestOutputPath)">
-        <ArtifactType>JsonFile</ArtifactType>
+        <ArtifactType>VsixPackageManifestFile</ArtifactType>
         <Category>$(VSIXArtifactCategory)</Category>
-        <Dependencies>$(VSIXName).json</Dependencies>
+        <Dependencies>$(VSIXName).vsix</Dependencies>
         <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
     </ItemGroup>
