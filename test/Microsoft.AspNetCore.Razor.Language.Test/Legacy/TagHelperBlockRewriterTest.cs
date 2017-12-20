@@ -742,9 +742,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 30)),
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                                 new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "do", "}", "{"),
-                            RazorDiagnostic.Create(new RazorError(
-                                LegacyResources.FormatParseError_UnexpectedEndTag("p"),
-                                absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 1))
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                        new SourceSpan(filePath: null, absoluteIndex: 31, lineIndex: 0, characterIndex: 31, length: 1), "p")
                         }
                     },
                     {

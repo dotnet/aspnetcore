@@ -250,6 +250,66 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_MarkupBlockMustStartWithTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1021",
+                () => LegacyResources.ParseError_MarkupBlock_Must_Start_With_Tag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_MarkupBlockMustStartWithTag(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_MarkupBlockMustStartWithTag, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_OuterTagMissingName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1022",
+                () => LegacyResources.ParseError_OuterTagMissingName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_OuterTagMissingName(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_OuterTagMissingName, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TextTagCannotContainAttributes =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1023",
+                () => LegacyResources.ParseError_TextTagCannotContainAttributes,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TextTagCannotContainAttributes(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_TextTagCannotContainAttributes, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnfinishedTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1024",
+                () => LegacyResources.ParseError_UnfinishedTag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnfinishedTag(SourceSpan location, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_UnfinishedTag, location, tagName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_MissingEndTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1025",
+                () => LegacyResources.ParseError_MissingEndTag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_MissingEndTag(SourceSpan location, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_MissingEndTag, location, tagName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_UnexpectedEndTag =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1026",
+                () => LegacyResources.ParseError_UnexpectedEndTag,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_UnexpectedEndTag(SourceSpan location, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_UnexpectedEndTag, location, tagName);
+        }
+
         #endregion
 
         #region Semantic Errors

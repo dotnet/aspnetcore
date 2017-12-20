@@ -79,10 +79,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 designTime: true,
                 expectedErrors: new[]
                 {
-                    RazorDiagnostic.Create(new RazorError(
-                        LegacyResources.FormatParseError_UnexpectedEndTag("html"),
-                        new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2),
-                        length: 4)),
+                    RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                        new SourceSpan(new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2), contentLength: 4), "html"),
                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                         new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
                 });
@@ -97,10 +95,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagBlock(
                         Factory.Markup($"<                      {Environment.NewLine}   "))),
                 designTime: true,
-                expectedErrors: RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_UnfinishedTag(string.Empty),
-                    new SourceLocation(1, 0, 1),
-                    length: 1)));
+                expectedErrors: RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), string.Empty));
         }
 
         [Fact]
@@ -330,10 +326,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("foo"),
-                    new SourceLocation(1, 0, 1),
-                    length: 3)));
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
         }
 
         [Fact]
@@ -453,10 +447,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
                     new MarkupTagBlock(
                         Factory.Markup("</!-- bar -->").Accepts(AcceptedCharactersInternal.None))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("foo"),
-                    new SourceLocation(1, 0, 1),
-                    length: 3)));
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
         }
 
 
@@ -615,10 +607,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<br/"))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_UnfinishedTag("br"),
-                    new SourceLocation(1, 0, 1),
-                    length: 2)));
+                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 2), "br"));
         }
 
         [Fact]

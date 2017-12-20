@@ -149,14 +149,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                        .Accepts(AcceptedCharactersInternal.None)),
                             Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
                             Factory.Markup("}")))),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.ParseError_TextTagCannotContainAttributes,
-                    new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
-                    length: 4)),
-                RazorDiagnostic.Create(new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("text"),
-                    new SourceLocation(7 + Environment.NewLine.Length, 1, 5),
-                    length: 4)),
+                RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                    new SourceSpan(new SourceLocation(7 + Environment.NewLine.Length, 1, 5), contentLength: 4)),
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(7 + Environment.NewLine.Length, 1, 5), contentLength: 4), "text"),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                     new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
         }

@@ -1145,10 +1145,8 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                 Factory.EmptyHtml()));
             var expectedErrors = new RazorDiagnostic[]
             {
-                RazorDiagnostic.Create(new RazorError(
-                    @"End of file or an unexpected character was reached before the ""span"" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing (""<br />"") or have matching end tags (""<p>Hello</p>"").  If you intended to display a ""<"" character, use the ""&lt;"" HTML entity.",
-                    new SourceLocation(2, 0, 2),
-                    length: 4)),
+                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 4), "span"),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                     new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
             };
