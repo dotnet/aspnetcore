@@ -1,0 +1,26 @@
+<Project>
+
+  <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" BeforeTargets="Compile" >
+    <ItemGroup>
+      <BuildConfigurations Include="/p:Configuration=Release /p:platform=Win32" />
+      <BuildConfigurations Include="/p:Configuration=Release /p:platform=x64" />
+    </ItemGroup>
+
+    <Error
+      Text="Could not find an installation of Visual Studio with the C++ development tools."
+      Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
+      
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\RequestHandler\RequestHandler.vcxproj&quot; %(BuildConfigurations.Identity)"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <Target Name="PackageProjects">
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
+      Targets="Restore;Pack"
+      Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(BuildDir)" />
+  </Target>
+  
+</Project>

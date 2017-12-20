@@ -1,4 +1,10 @@
 {
+    "adx-nonshipping": {
+        "rules": [],
+        "packages": {
+            "Microsoft.AspNetCore.AspNetCoreModule": {}
+        }
+    },
     "Default": {
         "rules": [
             "DefaultCompositeRule"
