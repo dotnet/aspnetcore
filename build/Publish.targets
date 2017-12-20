@@ -36,9 +36,11 @@
       <!--
       PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
       Ensure that this only contains artifacts we produce (and not mirrored dependencies) since that would result in conflicts.
+
+      BlobFileRelativePathBase is set by default in KoreBuild to 'assets/'.
        -->
       <FilesToPublish Include="$(CoherenceSignedDestinationDir)SharedFx\*.zip" />
-      <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(FileRelativePathBase)/%(FileName)%(Extension)" />
+      <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(BlobFileRelativePathBase)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>
 
