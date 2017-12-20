@@ -14,6 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 [ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 verbose=false
 update=false
+reinstall=false
 repo_path="$DIR"
 channel=''
 tools_source=''
@@ -44,6 +45,7 @@ __usage() {
     echo "    --access-token <Token>                    The query string to append to any blob store access for PackageVersionPropsUrl, if any."
     echo "    --restore-sources <Sources>               Semi-colon delimited list of additional NuGet feeds to use as part of restore."
     echo "    -u|--update                               Update to the latest KoreBuild even if the lock file is present."
+    echo "    --reinstall                               Reinstall KoreBuild."
     echo ""
     echo "Description:"
     echo "    This function will create a file \$DIR/korebuild-lock.txt. This lock file can be committed to source, but does not have to be."
@@ -67,6 +69,10 @@ get_korebuild() {
     fi
     version="$(echo "${version#version:}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     local korebuild_path="$DOTNET_HOME/buildtools/korebuild/$version"
+
+    if [ "$reinstall" = true ] && [ -d "$korebuild_path" ]; then
+        rm -rf "$korebuild_path"
+    fi
 
     {
         if [ ! -d "$korebuild_path" ]; then
@@ -146,12 +152,12 @@ while [[ $# -gt 0 ]]; do
         -c|--channel|-Channel)
             shift
             channel="${1:-}"
-            [ -z "$channel" ] && __usage
+            [ -z "$channel" ] && __error "Missing value for parameter --channel" && __usage
             ;;
         --config-file|-ConfigFile)
             shift
             config_file="${1:-}"
-            [ -z "$config_file" ] && __usage
+            [ -z "$config_file" ] && __error "Missing value for parameter --config-file" && __usage
             if [ ! -f "$config_file" ]; then
                 __error "Invalid value for --config-file. $config_file does not exist."
                 exit 1
@@ -160,40 +166,43 @@ while [[ $# -gt 0 ]]; do
         -d|--dotnet-home|-DotNetHome)
             shift
             DOTNET_HOME="${1:-}"
-            [ -z "$DOTNET_HOME" ] && __usage
+            [ -z "$DOTNET_HOME" ] && __error "Missing value for parameter --dotnet-home" && __usage
             ;;
         --path|-Path)
             shift
             repo_path="${1:-}"
-            [ -z "$repo_path" ] && __usage
+            [ -z "$repo_path" ] && __error "Missing value for parameter --path" && __usage
             ;;
         -s|--tools-source|-ToolsSource)
             shift
             tools_source="${1:-}"
-            [ -z "$tools_source" ] && __usage
+            [ -z "$tools_source" ] && __error "Missing value for parameter --tools-source" && __usage
             ;;
         --package-version-props-url|-PackageVersionPropsUrl)
             shift
             package_version_props_url="${1:-}"
-            [ -z "$package_version_props_url" ] && __usage
+            [ -z "$package_version_props_url" ] && __error "Missing value for parameter --package-version-props-url" && __usage
             ;;
         --access-token-suffix|-AccessTokenSuffix)
             shift
             access_token_suffix="${1:-}"
-            [ -z "$access_token_suffix" ] && __usage
+            # This suffix can be empty
             ;;
         --restore-sources|-RestoreSources)
             shift
             restore_sources="${1:-}"
-            [ -z "$restore_sources" ] && __usage
+            [ -z "$restore_sources" ] && __error "Missing value for parameter --restore-sources" && __usage
             ;;
         --asset-root-url|-AssetRootUrl)
             shift
             asset_root_url="${1:-}"
-            [ -z "$asset_root_url" ] && __usage
+            [ -z "$asset_root_url" ] && __error "Missing value for parameter --asset-root-url" && __usage
             ;;
         -u|--update|-Update)
             update=true
+            ;;
+        --reinstall|-Reinstall)
+            reinstall=true
             ;;
         --verbose|-Verbose)
             verbose=true
