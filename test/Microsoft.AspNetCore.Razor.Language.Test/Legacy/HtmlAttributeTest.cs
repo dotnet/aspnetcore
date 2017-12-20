@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var suffixLocation1 = new SourceLocation(
                 absoluteIndex: 8 + newlineLength + attributeNameLength,
                 lineIndex: 1,
-                characterIndex: 5);
+                characterIndex: 5 + attributeNameLength);
             var valueLocation1 = new SourceLocation(
                 absoluteIndex: 5 + attributeNameLength + newlineLength,
                 lineIndex: 1,
-                characterIndex: 2);
+                characterIndex: 2 + attributeNameLength);
             var prefixLocation2 = SourceLocationTracker.Advance(suffixLocation1, "'");
             var suffixLocation2 = new SourceLocation(
                 absoluteIndex: 15 + attributeNameLength * 2 + newlineLength * 2,
