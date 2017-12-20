@@ -18,6 +18,7 @@ repo_path="$DIR"
 channel=''
 tools_source=''
 package_version_props_url=''
+asset_root_url=''
 access_token_suffix=''
 restore_sources=''
 msbuild_args=''
@@ -186,6 +187,11 @@ while [[ $# -gt 0 ]]; do
             restore_sources="${1:-}"
             [ -z "$restore_sources" ] && __usage
             ;;
+        --asset-root-url|-AssetRootUrl)
+            shift
+            asset_root_url="${1:-}"
+            [ -z "$asset_root_url" ] && __usage
+            ;;
         -u|--update|-Update)
             update=true
             ;;
@@ -233,7 +239,7 @@ if [ -f "$config_file" ]; then
     [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
-if [ "$package_version_props_url" ]; then
+if [ ! -z "$package_version_props_url" ]; then
     intermediate_dir="$repo_path/obj"
     props_file_path="$intermediate_dir/external-dependencies.props"
     mkdir -p "$intermediate_dir"
@@ -241,8 +247,16 @@ if [ "$package_version_props_url" ]; then
     msbuild_args+="-p:DotNetPackageVersionPropsPath=\"$props_file_path\" "
 fi
 
-if [ "$restore_sources" ]; then
+if [ ! -z "$restore_sources" ]; then
     msbuild_args+="-p:DotNetAdditionalRestoreSources=\"$restore_sources\" "
+fi
+
+if [ ! -z "$asset_root_url" ]; then
+    msbuild_args+="-p:DotNetAssetRootUrl=\"$asset_root_url\" "
+fi
+
+if [ ! -z "$asset_root_url" ]; then
+    msbuild_args+="-p:DotNetAssetRootAccessTokenSuffix=\"$access_token_suffix\" "
 fi
 
 [ -z "$channel" ] && channel='dev'
