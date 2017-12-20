@@ -44,7 +44,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApplicationInsights.Hosting
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.FunctionalTests", "test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\Microsoft.AspNetCore.AzureAppServices.FunctionalTests.csproj", "{2B2C37FF-9249-4EA4-9A7F-038B55A15C2C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.TestBundle", "src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj", "{1EC31DA1-131D-4257-B001-BE8391E6077E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServices.TestBundle", "extensions\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj", "{1EC31DA1-131D-4257-B001-BE8391E6077E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Web.Xdt.Extensions.Tests", "test\Microsoft.Web.Xdt.Extensions.Tests\Microsoft.Web.Xdt.Extensions.Tests.csproj", "{809AEE05-1B28-4E31-8959-776B249BD725}"
 EndProject
@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Applic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.ApplicationModelDetection.Tests", "test\Microsoft.Extensions.ApplicationModelDetection.Tests\Microsoft.Extensions.ApplicationModelDetection.Tests.csproj", "{15664836-2B94-4D2D-AC18-6DED01FCCCBD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Runtime.SiteExtension", "src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj", "{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Runtime.SiteExtension", "extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj", "{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureKeyVault.HostingStartup", "src\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\Microsoft.AspNetCore.AzureKeyVault.HostingStartup.csproj", "{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}"
 EndProject

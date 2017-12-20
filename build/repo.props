@@ -8,11 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SiteExtensions Include="$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" PackageName="AspNetCoreTestBundle" />
-    <SiteExtensions Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" PackageName="AspNetCoreTestBundle" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime" />
+  </ItemGroup>
 
-    <ExcludeFromPack Include="%(SiteExtensions.Identity)" />
-
+  <ItemGroup>
     <ExcludeFromTest
       Condition="'$(AntaresTests)' != ''"
       Include="$(RepositoryRoot)test\*\*.csproj"
