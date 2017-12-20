@@ -1,48 +1,74 @@
 <Project>
+  <Import Project="$(RepositoryRoot)\build\dependencies.props" />
 
   <PropertyGroup>
+      <_SdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildExtensionsPath)'))))</_SdkVersion>
       <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
       <AppsArtifactDirectory>$(RepositoryRoot)artifacts\apps</AppsArtifactDirectory>
       <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
-      <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\extensions</SiteExtensionOutputDirectory>
+      <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
       <DotnetChannel>master</DotnetChannel>
       <DotnetVersion>coherent</DotnetVersion>
   </PropertyGroup>
 
-  <ItemGroup>
-    <SiteExtensions Include="AspNetCoreTestBundle">
-      <Project>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj</Project>
-    </SiteExtensions>
-    <SiteExtensions Include="AspNetCoreRuntime">
-      <Project>$(RepositoryRoot)src\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj</Project>
-    </SiteExtensions>
-  </ItemGroup>
-
   <Target Name="_AddTestRuntimes">
     <ItemGroup>
       <DotNetCoreSdk Include="2.0.0" InstallDir="$(TestDotNetPath)2.0\" FallbackPackageCache="True" />
-      <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(TestDotNetPath)latest\" FallbackPackageCache="True" />
+      <DotNetCoreSdk Include="$(_SdkVersion)" InstallDir="$(TestDotNetPath)latest\" FallbackPackageCache="True" />
     </ItemGroup>
   </Target>
 
-  <Target Name="_AddSiteExtensionRuntimes">
+  <Target Name="_CleanSiteExtension">
+    <RemoveDir Directories="$(SiteExtensionWorkingDirectory)" Condition="Exists($(SiteExtensionWorkingDirectory))" />
+  </Target>
+
+  <Target Name="_AddSiteExtensionRuntime">
+
     <ItemGroup>
-      <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+      <DotNetCoreSdk Include="$(_SdkVersion)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+      <DotNetCoreRuntime
+        Include="$(MicrosoftNETCoreApp21PackageVersion)"
+        InstallDir="$(SiteExtensionWorkingDirectory)"
+        Arch="x86"
+        Feed="$(DotNetAssetRootUrl)"
+        FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
     </ItemGroup>
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="_AddSiteExtensionRuntimes;InstallDotNet">
+  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;_AddSiteExtensionRuntime;InstallDotNet">
     <ItemGroup>
       <RuntimeArchiveItems Include="$(RuntimeArchives)" />
       <DotNetCacheArchiveItems Include="$(DotNetCacheArchives)" />
+
+      <_CleanupFiles
+        Include="$(SiteExtensionWorkingDirectory)additionalDeps;$(SiteExtensionWorkingDirectory)store" />
+
+      <_CleanupFiles
+        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\'))"
+        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(MicrosoftNETCoreApp21PackageVersion)" />
+
+      <_CleanupFiles
+        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)host\fxr'))"
+        Exclude="$(SiteExtensionWorkingDirectory)host\fxr\$(MicrosoftNETCoreApp21PackageVersion)" />
+
+      <BundledTemplate Include="Microsoft.DotNet.Web.ItemTemplates" Version="$(PackageVersion)" />
+      <BundledTemplate Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Version="$(PackageVersion)" />
+      <BundledTemplate Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Version="$(PackageVersion)" />
     </ItemGroup>
 
+    <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
+    <RemoveDir Directories="@(_CleanupFiles)" />
+
+    <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFolder="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates" />
+    <Copy SourceFiles="$(ArtifactDependencyLocation)\nuGetPackagesArchive-$(PackageVersion).lzma" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
+
+    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-shared-$(PackageVersion)-win7-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
-    <MSBuild Projects="%(SiteExtensions.Project)"
+    <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore;Pack"
       Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
 
@@ -50,7 +76,7 @@
 
   <Target Name="PushSiteExtension">
     <ItemGroup>
-      <RepositoryNupkgs Include="$(SiteExtensionOutputDirectory)\%(SiteExtensions.Identity).*.nupkg" />
+      <RepositoryNupkgs Include="$(SiteExtensionOutputDirectory)\%(SiteExtensions.PackageName).*.nupkg" />
     </ItemGroup>
 
     <PushNuGetPackages

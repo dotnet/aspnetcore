@@ -30,10 +30,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
   </ItemGroup>
-
-  <Target Name="ReportPackageVersion" BeforeTargets="Pack">
-    <Message Text="##teamcity[setParameter name='SiteExtensionPackageName' value='$(PackageId)']" Importance="high" />
-    <Message Text="##teamcity[setParameter name='SiteExtensionPackageVersion' value='$(PackageVersion)']" Importance="high" />
-  </Target>
 </Project>
 
