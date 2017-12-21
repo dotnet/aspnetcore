@@ -40,14 +40,11 @@
   <!-- Runs NuGetPackageVerifier on signed packages -->
   <Target Name="VerifySignedPackages">
     <PropertyGroup>
-      <SignedDir>$(ArtifactsDir)Signed</SignedDir>
-      <SignedPackagesDir>$(SignedDir)Packages\</SignedPackagesDir>
-      <OOBPackagesDir>$(SignedDir)OobPackages</OOBPackagesDir>
       <ExcludedRules Condition="'$(SignType)' != 'real'">AuthenticodeSigningRule</ExcludedRules>
     </PropertyGroup>
 
     <ItemGroup>
-      <DirectoriesToScan Include="$(SignedPackagesDir);$(OOBPackagesDir);" />
+      <DirectoriesToScan Include="$(PackagesOutputPath);$(PackagesOobOutputPath);" />
     </ItemGroup>
 
     <VerifyPackages

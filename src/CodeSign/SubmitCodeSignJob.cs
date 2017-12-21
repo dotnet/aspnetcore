@@ -116,7 +116,7 @@ namespace CodeSign
             for (var i = 0; i < Files.Count; i++)
             {
                 var file = Files[i];
-                var mappedFileName = $"{i}{Path.GetExtension(file)}";
+                var mappedFileName = $"{i}_{Path.GetFileName(file)}";
                 var mappedFilePath = Path.Combine(_stagingDirectory, mappedFileName);
 
                 fileMapping.Add(mappedFilePath, file);
@@ -170,8 +170,6 @@ namespace CodeSign
             });
 
             // Add files
-            var fileMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-
             foreach (var file in files)
             {
                 job.AddFile(file, DisplayName, DisplayUrl, CODESIGN.JavaPermissionsTypeEnum.None);

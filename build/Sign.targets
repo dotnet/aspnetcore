@@ -27,6 +27,20 @@
         $(UnsignedOobPackagesPath)**\*.psm1;
         $(UnsignedOobPackagesPath)**\*.ps1;" />
 
+      <SymbolsPackageBinaries Include="
+        $(UnsignedSymbolPackagesPath)**\*.dll;
+        $(UnsignedSymbolPackagesPath)**\*.exe;
+        $(UnsignedSymbolPackagesPath)**\*.psd1;
+        $(UnsignedSymbolPackagesPath)**\*.psm1;
+        $(UnsignedSymbolPackagesPath)**\*.ps1;" />
+
+      <SymbolsOobPackageBinaries Include="
+        $(UnsignedSymbolOobPackagesPath)**\*.dll;
+        $(UnsignedSymbolOobPackagesPath)**\*.exe;
+        $(UnsignedSymbolOobPackagesPath)**\*.psd1;
+        $(UnsignedSymbolOobPackagesPath)**\*.psm1;
+        $(UnsignedSymbolOobPackagesPath)**\*.ps1;" />
+
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
       <SharedFxBinaries Include="
@@ -56,6 +70,10 @@
         @(OobPackageBinaries);
         @(VSIXBinaries)" />
 
+      <AspNetCoreSymbolsBinaries Include="
+        @(SymbolsPackageBinaries);
+        @(SymbolsOobPackageBinaries);" />
+
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
           LocalBuild=$(LocalBuild);
@@ -63,6 +81,16 @@
           JobName=AspNetCoreBinaries;
           Description=Signing AspNetCore binaries;
           Files=@(AspNetCoreBinaries)
+        </AdditionalProperties>
+      </_SignProject>
+
+      <_SignProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          LocalBuild=$(LocalBuild);
+          Certificate=$(BinaryCodeSignCertificate);
+          JobName=AspNetCoreSymbolsBinaries;
+          Description=Signing AspNetCore symbols binaries;
+          Files=@(AspNetCoreSymbolsBinaries)
         </AdditionalProperties>
       </_SignProject>
 
@@ -97,6 +125,7 @@
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
+      <SymbolsOobNuSpec Include="$(UnsignedSymbolOobPackagesPath)**\*.nuspec" />
     </ItemGroup>
 
     <MSBuild
@@ -114,6 +143,11 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath);Extension=.nupkg"
       Condition="'@(SymbolsNuSpec)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(SymbolsOobNuSpec.RootDir)%(SymbolsOobNuSpec.Directory);OutputDir=$(SymbolsOobOutputPath);Extension=.nupkg"
+      Condition="'@(SymbolsOobNuSpec)'!=''" />
   </Target>
 
   <!-- Repacks and signs VSIXes -->

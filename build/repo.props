@@ -12,12 +12,13 @@
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
     <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
+    <SymbolsOobOutputPath>$(ArtifactsDir)Signed\OobSymbols\</SymbolsOobOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
 
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
     <UnsignedOobPackagesPath>$(IntermediateDir)UnsignedOobPackages\</UnsignedOobPackagesPath>
-    <UnsignedSymbolPackagesPath>$(IntermediateDir)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
-    <UnsignedSymbolPackagesPath>$(IntermediateDir)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedSymbolPackagesPath>$(IntermediateDir)UnsignedSymbolsPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedSymbolOobPackagesPath>$(IntermediateDir)UnsignedSymbolsOobPackages\</UnsignedSymbolOobPackagesPath>
     <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
     <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
     <SignedAllMetapackagePath>$(IntermediateDir)SignedAllMetapackage\</SignedAllMetapackagePath>
