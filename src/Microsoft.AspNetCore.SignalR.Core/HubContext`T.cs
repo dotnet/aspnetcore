@@ -34,6 +34,11 @@ namespace Microsoft.AspNetCore.SignalR
             return TypedClientBuilder<T>.Build(new SingleClientProxy<THub>(_lifetimeManager, connectionId));
         }
 
+        public T MultipleClients(IReadOnlyList<string> connectionIds)
+        {
+            return TypedClientBuilder<T>.Build(new MultipleClientProxy<THub>(_lifetimeManager, connectionIds));
+        }
+
         public virtual T Group(string groupName)
         {
             return TypedClientBuilder<T>.Build(new GroupProxy<THub>(_lifetimeManager, groupName));

@@ -574,6 +574,33 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
+        public override Task InvokeConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        {
+            if (connectionIds == null)
+            {
+                throw new ArgumentNullException(nameof(connectionIds));
+            }
+            var publishTasks = new List<Task>(connectionIds.Count);
+            var message = new RedisInvocationMessage(target: methodName, arguments: args);
+            
+            foreach(string connectionId in connectionIds)
+            {
+                var connection = _connections[connectionId];
+                // If the connection is local we can skip sending the message through the bus since we require sticky connections.
+                // This also saves serializing and deserializing the message!
+                if (connection != null)
+                {
+                     publishTasks.Add(connection.WriteAsync(message.CreateInvocation()));
+                }
+                else
+                {
+                    publishTasks.Add(PublishAsync(_channelNamePrefix + "." + connectionId, message));
+                }
+            }
+
+            return Task.WhenAll(publishTasks);
+        }
+
         private class LoggerTextWriter : TextWriter
         {
             private readonly ILogger _logger;
@@ -645,7 +672,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             public RedisInvocationMessage(string target, object[] arguments)
-                : this(target, excludedIds: null, arguments)
+                : this(target, excludedIds: null, arguments: arguments)
             {
             }
 
@@ -658,7 +685,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             public InvocationMessage CreateInvocation()
             {
-                return new InvocationMessage(Target, argumentBindingException: null, Arguments);
+                return new InvocationMessage(Target, argumentBindingException: null, arguments: Arguments);
             }
         }
     }

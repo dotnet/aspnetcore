@@ -939,6 +939,53 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         [Theory]
         [MemberData(nameof(HubTypes))]
+        public async Task SendToMultipleClients(Type hubType)
+        {
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            using (var thirdClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+                Task thirdEndPointTask = endPoint.OnConnectedAsync(thirdClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
+
+                var secondAndThirdClients = new HashSet<string> {secondClient.Connection.ConnectionId,
+                    thirdClient.Connection.ConnectionId };
+
+                secondAndThirdClients.Add(secondClient.Connection.ConnectionId);
+
+                await firstClient.SendInvocationAsync("SendToMultipleClients", "Second and Third", secondAndThirdClients).OrTimeout();
+
+                var secondClientResult = await secondClient.ReadAsync().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(secondClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("Second and Third", invocation.Arguments[0]);
+
+                var thirdClientResult = await thirdClient.ReadAsync().OrTimeout();
+                invocation = Assert.IsType<InvocationMessage>(thirdClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("Second and Third", invocation.Arguments[0]);
+
+                // Check that first client only got the completion message
+                var hubMessage= await firstClient.ReadAsync().OrTimeout();
+                Assert.IsType<CompletionMessage>(hubMessage);
+                Assert.Null(firstClient.TryRead());
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+                thirdClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask, thirdEndPointTask).OrTimeout();
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubTypes))]
         public async Task HubsCanAddAndSendToGroup(Type hubType)
         {
             dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);

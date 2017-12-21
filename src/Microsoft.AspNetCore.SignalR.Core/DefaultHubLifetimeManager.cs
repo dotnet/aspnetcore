@@ -177,5 +177,13 @@ namespace Microsoft.AspNetCore.SignalR
                 return !excludedIds.Contains(connection.ConnectionId);
             });
         }
+
+        public override Task InvokeConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        {
+            return InvokeAllWhere(methodName, args, connection =>
+            {
+                return connectionIds.Contains(connection.ConnectionId);
+            });
+        }
     }
 }

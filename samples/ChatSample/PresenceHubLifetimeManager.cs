@@ -152,6 +152,11 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.InvokeConnectionAsync(connectionId, methodName, args);
         }
 
+        public override Task InvokeConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeConnectionsAsync(connectionIds, methodName, args);
+        }
+
         public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
             return _wrappedHubLifetimeManager.InvokeGroupAsync(groupName, methodName, args);

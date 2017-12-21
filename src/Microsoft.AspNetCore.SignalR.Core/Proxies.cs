@@ -108,6 +108,23 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
+    public class MultipleClientProxy<THub> : IClientProxy
+    {
+        private readonly HubLifetimeManager<THub> _lifetimeManager;
+        private IReadOnlyList<string> _connectionIds;
+
+        public MultipleClientProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> connectionIds)
+        {
+            _lifetimeManager = lifetimeManager;
+            _connectionIds = connectionIds;
+        }
+
+        public Task InvokeAsync(string method, params object[] args)
+        {
+            return _lifetimeManager.InvokeConnectionsAsync(_connectionIds, method, args);
+        }
+    }
+
     public class GroupManager<THub> : IGroupManager
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
