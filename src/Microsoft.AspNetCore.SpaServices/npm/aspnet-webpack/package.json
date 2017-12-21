@@ -33,6 +33,6 @@
     "webpack": "^1.13.2"
   },
   "peerDependencies": {
-    "webpack": "^1.13.2 || ^2.1.0-beta"
+    "webpack": "^1.13.2 || ^2.2.0 || ^3.0.0"
   }
 }
