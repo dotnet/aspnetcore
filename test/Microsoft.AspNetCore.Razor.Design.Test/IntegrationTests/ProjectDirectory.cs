@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 CreateDirectoryProps(projectRoot, binariesRoot, destinationPath);
                 CreateDirectoryTargets(destinationPath);
+                CopyGlobalJson(solutionRoot, destinationPath);
 
                 return new ProjectDirectory(destinationPath);
             }
@@ -111,6 +112,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 </Project>
 ";
                 File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.targets"), text);
+            }
+
+            void CopyGlobalJson(string solutionRoot, string projectRoot)
+            {
+                var srcGlobalJson = Path.Combine(solutionRoot, "global.json");
+                if (!File.Exists(srcGlobalJson))
+                {
+                    throw new InvalidOperationException("global.json at the root of the repository could not be found. Run './build /t:Noop' at the repository root and re-run these tests.");
+                }
+
+                var destinationGlobalJson = Path.Combine(projectRoot, "global.json");
+                File.Copy(srcGlobalJson, destinationGlobalJson);
             }
         }
 
