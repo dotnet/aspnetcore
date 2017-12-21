@@ -52,7 +52,9 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
+                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
@@ -78,7 +80,9 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderOfTApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
+                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
@@ -106,7 +110,9 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "DependencyInjectionApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
+                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
+                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
                 {
