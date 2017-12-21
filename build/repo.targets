@@ -69,7 +69,11 @@
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
     <MSBuild Projects="%(SiteExtensions.Identity)"
-      Targets="Restore;Pack"
+      Targets="Restore"
+      Properties="BuildNumber=$(BuildNumber)" />
+
+    <MSBuild Projects="%(SiteExtensions.Identity)"
+      Targets="Pack"
       Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber);PackageOutputPath=$(SiteExtensionOutputDirectory)" />
 
   </Target>
