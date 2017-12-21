@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" PackageName="AspNetCoreTestBundle" />
-    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="AspNetCoreRuntime" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.Runtime.SiteExtension" />
+    <SiteExtensions Include="$(RepositoryRoot)extensions\Microsoft.AspNetCore.AzureAppServices.SiteExtension\Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" PackageName="Microsoft.AspNetCore.AzureAppServices.SiteExtension" />
   </ItemGroup>
 
   <ItemGroup>
