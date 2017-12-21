@@ -32,10 +32,18 @@ namespace Microsoft.AspNetCore.Http
 
         public HeaderDictionary(int capacity)
         {
-            Store = new Dictionary<string, StringValues>(capacity, StringComparer.OrdinalIgnoreCase);
+            EnsureStore(capacity);
         }
 
         private Dictionary<string, StringValues> Store { get; set; }
+
+        private void EnsureStore(int capacity)
+        {
+            if (Store == null)
+            {
+                Store = new Dictionary<string, StringValues>(capacity, StringComparer.OrdinalIgnoreCase);
+            }
+        }
 
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.
@@ -72,11 +80,7 @@ namespace Microsoft.AspNetCore.Http
                 }
                 else
                 {
-                    if (Store == null)
-                    {
-                        Store = new Dictionary<string, StringValues>(1, StringComparer.OrdinalIgnoreCase);
-                    }
-
+                    EnsureStore(1);
                     Store[key] = value;
                 }
             }
@@ -173,10 +177,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException("The key is null");
             }
             ThrowIfReadOnly();
-            if (Store == null)
-            {
-                Store = new Dictionary<string, StringValues>(1, StringComparer.OrdinalIgnoreCase);
-            }
+            EnsureStore(1);
             Store.Add(item.Key, item.Value);
         }
 
@@ -192,11 +193,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(key));
             }
             ThrowIfReadOnly();
-
-            if (Store == null)
-            {
-                Store = new Dictionary<string, StringValues>(1);
-            }
+            EnsureStore(1);
             Store.Add(key, value);
         }
 
