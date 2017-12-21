@@ -26,7 +26,7 @@ $credential = Get-Credential -UserName $account -Message 'Enter password used to
 
 foreach ($agent in $agents) {
     
-    $session = New-PSSession -ComputerName $agents -Credential $credential
+    $session = New-PSSession -ComputerName $agent -Credential $credential
 
     Write-Host "Installing or updating VS on $agent"
     
