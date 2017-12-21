@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.GenerateTool
                     success = false;
                     foreach (var error in result.CSharpDocument.Diagnostics)
                     {
-                        Console.Error.WriteLine(error.GetMessage());
+                        Console.Error.WriteLine(error.ToString());
                     }
                 }
 

@@ -3,14 +3,17 @@
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal class Assert : Xunit.Assert
     {
+        // Matches `{filename}: error {code}: {message} [{project}]
+        // See https://stackoverflow.com/questions/3441452/msbuild-and-ignorestandarderrorwarningformat/5180353#5180353
+        private static readonly Regex ErrorRegex = new Regex(@"^(?'location'.+): error (?'errorcode'[A-Z0-9]+): (?'message'.+) \[(?'project'.+)\]$");
+
         public static void BuildPassed(MSBuildResult result)
         {
             if (result == null)
@@ -21,6 +24,52 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             if (result.ExitCode != 0)
             {
                 throw new BuildFailedException(result);
+            }
+        }
+
+        public static void BuildError(MSBuildResult result, string errorCode, string location = null)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            // We don't really need to search line by line, I'm doing this so that it's possible/easy to debug.
+            var lines = result.Output.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i];
+                var match = ErrorRegex.Match(line);
+                if (match.Success)
+                {
+                    if (match.Groups["errorcode"].Value != errorCode)
+                    {
+                        continue;
+                    }
+
+                    if (location != null && match.Groups["location"].Value != location)
+                    {
+                        continue;
+                    }
+
+                    // This is a match
+                    return;
+                }
+            }
+
+            throw new BuildErrorMissingException(result, errorCode);
+        }
+
+        public static void BuildFailed(MSBuildResult result)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            };
+
+            if (result.ExitCode == 0)
+            {
+                throw new BuildPassedException(result);
             }
         }
 
@@ -106,6 +155,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        private class BuildErrorMissingException : MSBuildXunitException
+        {
+            public BuildErrorMissingException(MSBuildResult result, string errorCode)
+                : base(result)
+            {
+                ErrorCode = errorCode;
+            }
+
+            public string ErrorCode { get; }
+
+            protected override string Heading => $"Error code '{ErrorCode}' was not found.";
+        }
+
+
         private class BuildFailedException : MSBuildXunitException
         {
             public BuildFailedException(MSBuildResult result)
@@ -113,7 +176,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
             }
 
-            protected override string Heading => "Build failed:";
+            protected override string Heading => "Build failed.";
+        }
+
+        private class BuildPassedException : MSBuildXunitException
+        {
+            public BuildPassedException(MSBuildResult result)
+                : base(result)
+            {
+            }
+
+            protected override string Heading => "Build should have failed, but it passed.";
         }
 
         private class FileMissingException : MSBuildXunitException

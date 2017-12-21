@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,6 +46,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var restoreArgument = suppressRestore ? "" : "/restore";
 
             return MSBuildProcessManager.RunProcessAsync(Project, $"{restoreArgument} /t:{target} /p:Configuration={Configuration} {args}", timeout);
+        }
+
+        internal void ReplaceContent(string content, params string[] paths)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            if (paths == null)
+            {
+                throw new ArgumentNullException(nameof(paths));
+            }
+
+            var filePath = Path.Combine(Project.DirectoryPath, Path.Combine(paths));
+            if (!File.Exists(filePath))
+            {
+                throw new InvalidOperationException($"File {filePath} could not be found.");
+            }
+
+            File.WriteAllText(filePath, content, Encoding.UTF8);
         }
     }
 }
