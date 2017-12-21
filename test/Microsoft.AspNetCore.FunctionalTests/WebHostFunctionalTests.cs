@@ -61,7 +61,8 @@ namespace Microsoft.AspNetCore.Tests
                 {
                     // Assert server is Kestrel
                     Assert.Equal("Kestrel", response.Headers.Server.ToString());
-
+                    // Set from default config
+                    Assert.Equal("http://localhost:5002/", deploymentResult.ApplicationBaseUri);
                     // The application name will be sent in response when all asserts succeed in the test app.
                     Assert.Equal(applicationName, responseText);
                 }

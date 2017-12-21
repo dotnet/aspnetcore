@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
-        ///     use Kestrel as the web server,
+        ///     use Kestrel as the web server and configure it using the application's configuration providers,
         ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
-        ///     use Kestrel as the web server,
+        ///     use Kestrel as the web server and configure it using the application's configuration providers,
         ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
@@ -148,7 +148,10 @@ namespace Microsoft.AspNetCore
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
             var builder = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel((builderContext, options) =>
+                {
+                    options.Configure(builderContext.Configuration.GetSection("Kestrel"));
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
@@ -198,7 +201,7 @@ namespace Microsoft.AspNetCore
         /// </summary>
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
-        ///     use Kestrel as the web server,
+        ///     use Kestrel as the web server and configure it using the application's configuration providers,
         ///     set the <see cref="IHostingEnvironment.ContentRootPath"/> to the result of <see cref="Directory.GetCurrentDirectory()"/>,
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
