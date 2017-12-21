@@ -8,26 +8,29 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorDiagnostic : RazorDiagnostic
     {
-        private readonly RazorDiagnosticDescriptor _descriptor;
-        private readonly object[] _args;
-
         internal DefaultRazorDiagnostic(RazorDiagnosticDescriptor descriptor, SourceSpan span, object[] args)
         {
-            _descriptor = descriptor;
+            Descriptor = descriptor;
             Span = span;
-            _args = args;
+            Args = args;
         }
 
-        public override string Id => _descriptor.Id;
+        public override string Id => Descriptor.Id;
 
-        public override RazorDiagnosticSeverity Severity => _descriptor.Severity;
+        public override RazorDiagnosticSeverity Severity => Descriptor.Severity;
 
         public override SourceSpan Span { get; }
 
+        // Internal for testing
+        internal RazorDiagnosticDescriptor Descriptor { get; }
+
+        // Internal for testing
+        internal object[] Args { get; }
+
         public override string GetMessage(IFormatProvider formatProvider)
         {
-            var format = _descriptor.GetMessageFormat();
-            return string.Format(formatProvider, format, _args);
+            var format = Descriptor.GetMessageFormat();
+            return string.Format(formatProvider, format, Args);
         }
 
         public override bool Equals(RazorDiagnostic obj)
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            if (!_descriptor.Equals(other._descriptor))
+            if (!Descriptor.Equals(other.Descriptor))
             {
                 return false;
             }
@@ -48,14 +51,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            if (_args.Length != other._args.Length)
+            if (Args.Length != other.Args.Length)
             {
                 return false;
             }
 
-            for (var i = 0; i < _args.Length; i++)
+            for (var i = 0; i < Args.Length; i++)
             {
-                if (!_args[i].Equals(other._args[i]))
+                if (!Args[i].Equals(other.Args[i]))
                 {
                     return false;
                 }
@@ -67,12 +70,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int GetHashCode()
         {
             var hash = new HashCodeCombiner();
-            hash.Add(_descriptor.GetHashCode());
+            hash.Add(Descriptor.GetHashCode());
             hash.Add(Span.GetHashCode());
 
-            for (var i = 0; i < _args.Length; i++)
+            for (var i = 0; i < Args.Length; i++)
             {
-                hash.Add(_args[i]);
+                hash.Add(Args[i]);
             }
 
             return hash;

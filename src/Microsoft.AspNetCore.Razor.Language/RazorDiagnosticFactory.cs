@@ -330,6 +330,46 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(Parsing_RazorCommentNotTerminated, location);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperIndexerAttributeNameMustIncludeKey =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1029",
+                () => LegacyResources.TagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(SourceSpan location, string attributeName, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_TagHelperIndexerAttributeNameMustIncludeKey, location, attributeName, tagName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperAttributeListMustBeWellFormed =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1030",
+                () => LegacyResources.TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperAttributeListMustBeWellFormed(SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_TagHelperAttributeListMustBeWellFormed, location);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelpersCannotHaveCSharpInTagDeclaration =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1031",
+                () => LegacyResources.TagHelpers_CannotHaveCSharpInTagDeclaration,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(SourceSpan location, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_TagHelpersCannotHaveCSharpInTagDeclaration, location, tagName);
+        }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_TagHelperAttributesMustHaveAName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1032",
+                () => LegacyResources.TagHelpers_AttributesMustHaveAName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_TagHelperAttributesMustHaveAName(SourceSpan location, string tagName)
+        {
+            return RazorDiagnostic.Create(Parsing_TagHelperAttributesMustHaveAName, location, tagName);
+        }
+
         #endregion
 
         #region Semantic Errors
@@ -412,7 +452,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 $"{DiagnosticPrefix}2007",
                 () => LegacyResources.TagHelpers_InlineMarkupBlocks_NotSupported_InAttributes,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(string expectedTypeName, SourceSpan location)
+        public static RazorDiagnostic CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(SourceSpan location, string expectedTypeName)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InlineMarkupBlocksNotSupportedInAttributes,
@@ -420,6 +460,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 expectedTypeName);
 
             return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_EmptyBoundAttribute =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2008",
+                () => LegacyResources.RewriterError_EmptyTagHelperBoundAttribute,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_EmptyBoundAttribute(SourceSpan location, string attributeName, string tagName, string propertyTypeName)
+        {
+            return RazorDiagnostic.Create(TagHelper_EmptyBoundAttribute, location, attributeName, tagName, propertyTypeName);
         }
 
         #endregion
@@ -625,7 +675,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeNameNullOrWhitespace =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}3009",
+                $"{DiagnosticPrefix}3011",
                 () => Resources.TagHelper_InvalidTargetedAttributeNameNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace()
@@ -639,7 +689,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeName =
             new RazorDiagnosticDescriptor(
-                $"{DiagnosticPrefix}3010",
+                $"{DiagnosticPrefix}3012",
                 () => Resources.TagHelper_InvalidTargetedAttributeName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedAttributeName(string invalidAttributeName, char invalidCharacter)

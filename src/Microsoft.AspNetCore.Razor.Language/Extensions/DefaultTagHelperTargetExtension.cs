@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             else if (node is TemplateIntermediateNode)
             {
                 var expectedTypeName = property.IsIndexerNameMatch ? property.BoundAttribute.IndexerTypeName : property.BoundAttribute.TypeName;
-                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(expectedTypeName, span ?? SourceSpan.Undefined);
+                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(span ?? SourceSpan.Undefined, expectedTypeName);
                 context.Diagnostics.Add(diagnostic);
             }
         }

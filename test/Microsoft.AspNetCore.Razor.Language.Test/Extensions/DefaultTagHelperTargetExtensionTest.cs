@@ -393,7 +393,7 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                 IsIndexerNameMatch = true,
             };
             var expectedLocation = new SourceSpan(100, 10);
-            var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes("System.Int32", expectedLocation);
+            var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(expectedLocation, "System.Int32");
 
             // Act
             extension.RenderTagHelperAttributeInline(context, node, new TemplateIntermediateNode(), expectedLocation);
@@ -416,8 +416,8 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             };
             var expectedLocation = new SourceSpan(100, 10);
             var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(
-                "System.Collections.Generic.Dictionary<System.String, System.Int32>",
-                expectedLocation);
+                expectedLocation,
+                "System.Collections.Generic.Dictionary<System.String, System.Int32>");
 
             // Act
             extension.RenderTagHelperAttributeInline(context, node, new TemplateIntermediateNode(), expectedLocation);

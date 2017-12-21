@@ -61,8 +61,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // Only want to track the attribute if we succeeded in parsing its corresponding Block/Span.
                 if (result != null)
                 {
-                    SourceLocation? errorLocation = null;
-
                     // Check if it's a non-boolean bound attribute that is minimized or if it's a bound
                     // non-string attribute that has null or whitespace content.
                     var isMinimized = result.AttributeValueNode == null;
@@ -74,32 +72,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         result.IsBoundNonStringAttribute &&
                          IsNullOrWhitespaceAttributeValue(result.AttributeValueNode)))
                     {
-                        errorLocation = GetAttributeNameStartLocation(child);
-
-                        errorSink.OnError(
-                            errorLocation.Value,
-                            LegacyResources.FormatRewriterError_EmptyTagHelperBoundAttribute(
-                                result.AttributeName,
-                                tagName,
-                                GetPropertyType(result.AttributeName, bindingResult.Descriptors)),
-                            result.AttributeName.Length);
+                        var errorLocation = GetAttributeNameLocation(child, result.AttributeName);
+                        var propertyTypeName = GetPropertyType(result.AttributeName, bindingResult.Descriptors);
+                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(errorLocation, result.AttributeName, tagName, propertyTypeName);
+                        errorSink.OnError(diagnostic);
                     }
 
                     // Check if the attribute was a prefix match for a tag helper dictionary property but the
                     // dictionary key would be the empty string.
                     if (result.IsMissingDictionaryKey)
                     {
-                        if (!errorLocation.HasValue)
-                        {
-                            errorLocation = GetAttributeNameStartLocation(child);
-                        }
-
-                        errorSink.OnError(
-                            errorLocation.Value,
-                            LegacyResources.FormatTagHelperBlockRewriter_IndexerAttributeNameMustIncludeKey(
-                                result.AttributeName,
-                                tagName),
-                            result.AttributeName.Length);
+                        var errorLocation = GetAttributeNameLocation(child, result.AttributeName);
+                        var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(errorLocation, result.AttributeName, tagName);
+                        errorSink.OnError(diagnostic);
                     }
 
                     var attributeNode = new TagHelperAttributeNode(
@@ -299,10 +284,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // ex: <myTH class="btn"| |
                 if (!string.IsNullOrWhiteSpace(span.Content))
                 {
-                    errorSink.OnError(
-                        span.Start,
-                        LegacyResources.TagHelperBlockRewriter_TagHelperAttributeListMustBeWellFormed,
-                        span.Content.Length);
+                    var location = new SourceSpan(span.Start, span.Content.Length);
+                    var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelperAttributeListMustBeWellFormed(location);
+                    errorSink.OnError(diagnostic);
                 }
 
                 return null;
@@ -341,10 +325,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (childSpan == null || childSpan.Kind != SpanKindInternal.Markup)
             {
-                errorSink.OnError(
-                    block.Start,
-                    LegacyResources.FormatTagHelpers_CannotHaveCSharpInTagDeclaration(tagName),
-                    block.Length);
+                var location = new SourceSpan(block.Start, block.Length);
+                var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(location, tagName);
+                errorSink.OnError(diagnostic);
 
                 return null;
             }
@@ -368,10 +351,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var name = string.Concat(nameSymbols);
             if (string.IsNullOrEmpty(name))
             {
-                errorSink.OnError(
-                    childSpan.Start,
-                    LegacyResources.FormatTagHelpers_AttributesMustHaveAName(tagName),
-                    childSpan.Length);
+                var location = new SourceSpan(childSpan.Start, childSpan.Length);
+                var diagnostic = RazorDiagnosticFactory.CreateParsing_TagHelperAttributesMustHaveAName(location, tagName);
+                errorSink.OnError(diagnostic);
 
                 return null;
             }
@@ -609,7 +591,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return builder.Build();
         }
 
-        private static SourceLocation GetAttributeNameStartLocation(SyntaxTreeNode node)
+        private static SourceSpan GetAttributeNameLocation(SyntaxTreeNode node, string attributeName)
         {
             Span span;
             var nodeStart = SourceLocation.Undefined;
@@ -635,7 +617,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .OfType<HtmlSymbol>()
                 .First(sym => sym.Type != HtmlSymbolType.WhiteSpace && sym.Type != HtmlSymbolType.NewLine);
 
-            return firstNonWhitespaceSymbol.Start;
+            var location = new SourceSpan(firstNonWhitespaceSymbol.Start, attributeName.Length);
+            return location;
         }
 
         private static Span CreateMarkupAttribute(SpanBuilder builder, TryParseResult result)
