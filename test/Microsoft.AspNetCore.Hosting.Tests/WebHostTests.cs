@@ -822,7 +822,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        [Fact(Skip = "Missing content publish property")]
+        [Fact]
         public void WebRootCanBeResolvedFromTheConfig()
         {
             var vals = new Dictionary<string, string>

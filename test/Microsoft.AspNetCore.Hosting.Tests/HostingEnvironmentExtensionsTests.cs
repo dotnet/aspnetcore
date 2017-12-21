@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize(Path.GetFullPath("."), new WebHostOptions(){ WebRoot = "testroot" });
+            env.Initialize(Path.GetFullPath("."), new WebHostOptions() { WebRoot = "testroot" });
 
             Assert.Equal(Path.GetFullPath("."), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.WebRootFileProvider);
         }
 
-        [Fact(Skip = "Missing content publish property")]
+        [Fact]
         public void DefaultsToWwwrootSubdir()
         {
             var env = new HostingEnvironment();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
-            env.Initialize(Path.GetFullPath("."), new WebHostOptions(){ Environment = "NewName" });
+            env.Initialize(Path.GetFullPath("."), new WebHostOptions() { Environment = "NewName" });
 
             Assert.Equal("NewName", env.EnvironmentName);
         }
