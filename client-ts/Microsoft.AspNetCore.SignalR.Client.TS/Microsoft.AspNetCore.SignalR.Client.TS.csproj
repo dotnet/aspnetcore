@@ -5,8 +5,11 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
     <SignalRClientDistFolder>$(MSBuildThisFileDirectory)..\dist\</SignalRClientDistFolder>
+    <OutputFileName>aspnet-signalr-client-$(PackageVersion).tgz</OutputFileName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,26 +33,30 @@
     <RemoveDir Directories="$(SignalRClientDistFolder)" />
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="Pack">
     <Message Text="Creating TypeScript client Node module" Importance="High" />
-    <Exec Command="node -pe &quot;require('./package.json').version&quot;" ConsoleToMSBuild="true" WorkingDirectory="$(MSBuildThisFileDirectory)..">
-      <Output TaskParameter="ConsoleOutput" ItemName="ExecOutput" />
-    </Exec>
+
     <PropertyGroup>
-      <ModuleVersion>@(ExecOutput)</ModuleVersion>
-      <ModuleVersion Condition="'$(VersionSuffix)' != ''">$(ModuleVersion)-$(VersionSuffix)</ModuleVersion>
       <IsGitRepository Condition="EXISTS('$(MSBuildThisFileDirectory)..\..\.git\HEAD')">true</IsGitRepository>
       <IsGitRepository Condition="'$(IsGitRepository)'==''">false</IsGitRepository>
     </PropertyGroup>
-    <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
-    <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
-    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package.json&quot;" Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
-    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package-lock.json&quot;" Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
+
+    <Exec Command="npm version $(PackageVersion) --allow-same-version" WorkingDirectory="$(MSBuildThisFileDirectory)..\" />
+    <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory)..\" />
+    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package.json&quot;" Condition="$(IsGitRepository)" />
+    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package-lock.json&quot;" Condition="$(IsGitRepository)" />
+    <Move SourceFiles="$(MSBuildThisFileDirectory)..\$(OutputFileName)" DestinationFolder="$(PackageOutputPath)" />
+  </Target>
+
+  <!-- Provides information to the bill of materials about expected outputs. -->
+  <Target Name="GetNpmArtifactInfo" BeforeTargets="GetArtifactInfo" Returns="@(ArtifactInfo)">
     <ItemGroup>
-      <TSClient Include="$(MSBuildThisFileDirectory)../aspnet-signalr-client*.tgz" />
+      <ArtifactInfo Include="$(PackageOutputPath)$(OutputFileName)">
+        <ArtifactType>NpmPackage</ArtifactType>
+        <PackageId>@aspnet/signalr-client</PackageId>
+        <Version>$(PackageVersion)</Version>
+      </ArtifactInfo>
     </ItemGroup>
-    <Move SourceFiles="@(TSClient)" DestinationFolder="$(PackageOutputPath)" />
   </Target>
 </Project>

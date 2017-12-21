@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectsToPack Include="$(RepositoryRoot)client-ts\Microsoft.AspNetCore.SignalR.Client.TS\*.csproj" />
   </ItemGroup>
+
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>

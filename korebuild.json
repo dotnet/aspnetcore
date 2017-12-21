@@ -4,7 +4,7 @@
   "toolsets": {
     "nodejs": {
       "required": true,
-      "minVersion": "6.9"
+      "minVersion": "8.0"
     }
   }
 }
