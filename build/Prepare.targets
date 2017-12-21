@@ -1,16 +1,16 @@
 <Project>
   <Target Name="Clean">
-    <RemoveDir Directories="$(ArtifactsDir);$(IntermediateOutputPath)" />
+    <RemoveDir Directories="$(ArtifactsDir);$(IntermediateDir)" />
   </Target>
 
   <Target Name="ExtractInputs">
     <ItemGroup>
-      <UnsignedPackages Include="$(DepsDirectory)ship\*.nupkg" />
+      <UnsignedPackages Include="$(UnsignedShipPackagesDir)*.nupkg" />
       <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
-      <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\Microsoft.Data.Sqlite*.nupkg" />
+      <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)SharedFx\*.zip" />
-      <PoliCheckPackages Include="$(DepsDirectory)symbols\*.nupkg" />
+      <PoliCheckPackages Include="@(UnsignedSymbolPackages)" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
@@ -42,14 +42,9 @@
   due to a repository mis-configuration
   -->
   <Target Name="VerifyUnsignedPackages">
-    <PropertyGroup>
-      <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
-    </PropertyGroup>
-
     <VerifyPackages
-      ArtifactDirectory="$(CoherencePackagesDir)"
-      RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
-      Condition="Exists('$(CoherencePackagesDir)')" />
+      ArtifactDirectory="$(UnsignedShipPackagesDir)"
+      RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json" />
   </Target>
 
 </Project>

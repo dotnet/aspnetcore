@@ -1,31 +1,28 @@
 <Project>
   <PropertyGroup>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
+    <UnsignedShipPackagesDir>$(DepsDirectory)ship\</UnsignedShipPackagesDir>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
 
-    <!-- Directories to copy files to -->
-    <CoherenceSignedDestinationDir>$(ArtifactsDir)Signed\</CoherenceSignedDestinationDir>
-
     <!-- Working directories -->
-    <IntermediateOutputPath>$(RepositoryRoot)obj\</IntermediateOutputPath>
-    <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
+    <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
     <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
 
-    <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
-    <UnsignedOobPackagesPath>$(IntermediateOutputPath)UnsignedOobPackages\</UnsignedOobPackagesPath>
-    <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
-    <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
-    <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
-    <UnsignedSharedFxPath>$(IntermediateOutputPath)SharedFx\</UnsignedSharedFxPath>
-    <SignedAllMetapackagePath>$(IntermediateOutputPath)SignedAllMetapackage\</SignedAllMetapackagePath>
-    <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
-    <UnsignedBinariesPath>$(IntermediateOutputPath)FilesToSign\</UnsignedBinariesPath>
+    <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedOobPackagesPath>$(IntermediateDir)UnsignedOobPackages\</UnsignedOobPackagesPath>
+    <UnsignedSymbolPackagesPath>$(IntermediateDir)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedSymbolPackagesPath>$(IntermediateDir)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>
+    <UnsignedSharedFxPath>$(IntermediateDir)SharedFx\</UnsignedSharedFxPath>
+    <SignedAllMetapackagePath>$(IntermediateDir)SignedAllMetapackage\</SignedAllMetapackagePath>
+    <UnsignedVSIXWithSignedBinariesPath>$(IntermediateDir)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
+    <UnsignedBinariesPath>$(IntermediateDir)FilesToSign\</UnsignedBinariesPath>
   </PropertyGroup>
 
   <!-- Properties for code sign -->

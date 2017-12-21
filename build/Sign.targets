@@ -177,7 +177,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
+      <ResponseFilePath>$(IntermediateDir)$(JobName).rsp</ResponseFilePath>
       <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net462\CodeSign.exe</CodeSignExeOutputPath>
     </PropertyGroup>
 

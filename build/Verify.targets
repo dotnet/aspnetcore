@@ -7,7 +7,7 @@
 
       <BinScopeOutDir Condition="'$(BinScopeOutDir)' == ''">$(ArtifactsDir)BinScope\</BinScopeOutDir>
       <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
-      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateOutputPath)BinScope\</BinScopeTargetDir>
+      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateDir)BinScope\</BinScopeTargetDir>
     </PropertyGroup>
 
     <ItemGroup>
@@ -20,7 +20,7 @@
     <Copy SourceFiles="@(BinScopeTargetFiles)" DestinationFiles="@(BinScopeTargetFiles->'$(BinScopeTargetDir)%(RecursiveDir)\%(Filename)%(Extension)')" />
 
     <WriteLinesToFile
-      File="$(IntermediateOutputPath)BinScope.rsp"
+      File="$(IntermediateDir)BinScope.rsp"
       Overwrite="true"
       Lines="@(BinScopeTargetFiles->'/target $(BinScopeTargetDir)%(RecursiveDir)%(Filename)%(Extension) $(BinScopeSymbolOption)')" />
 
@@ -33,7 +33,7 @@
       Condition="!Exists('$(BinScopeEXE)') AND '$(LocalBuild)'=='true'" />
 
     <Exec
-      Command="&quot;$(BinScopeEXE)&quot; @$(IntermediateOutputPath)BinScope.rsp /logfile $(BinScopeLogFile) /Xslt"
+      Command="&quot;$(BinScopeEXE)&quot; @$(IntermediateDir)BinScope.rsp /logfile $(BinScopeLogFile) /Xslt"
       Condition="Exists('$(BinScopeEXE)')" />
   </Target>
 

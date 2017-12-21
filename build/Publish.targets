@@ -26,8 +26,9 @@
 
   <Target Name="GetPackagesToPublish">
     <ItemGroup>
-      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
-      <PackagesToPublish Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
+      <PackagesToPublish Include="$(PackagesOutputPath)*.nupkg" />
+      <PackagesToPublish Include="$(SymbolsOutputPath)*.nupkg" />
+      <PackagesToPublish Include="$(PackagesOobOutputPath)*.nupkg" />
     </ItemGroup>
   </Target>
 
@@ -39,7 +40,7 @@
 
       BlobFileRelativePathBase is set by default in KoreBuild to 'assets/'.
        -->
-      <FilesToPublish Include="$(CoherenceSignedDestinationDir)SharedFx\*.zip" />
+      <FilesToPublish Include="$(SharedFxOutputPath)*" />
       <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(BlobFileRelativePathBase)%(FileName)%(Extension)" />
     </ItemGroup>
   </Target>

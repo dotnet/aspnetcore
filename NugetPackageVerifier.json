@@ -4,6 +4,13 @@
             "DefaultCompositeRule"
         ],
         "packages": {
+            "Microsoft.AspNetCore.All": {
+                "Exclusions": {
+                    "PACKAGE_DEPENDENCY_VERSION_UPPER_BOUND": {
+                        "Microsoft.AspNetCore.All": "The metapackage should require exact versions"
+                    }
+                }
+            },
             "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
                 "exclusions": {
                     "BUILD_ITEMS_FRAMEWORK": {
