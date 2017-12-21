@@ -38,13 +38,13 @@
   </Target>
 
   <!-- Runs NuGetPackageVerifier on signed packages -->
-  <Target Name="VerifySignedPackages">
+  <Target Name="VerifySignedPackages" DependsOnTargets="GetPackagesToPublish">
     <PropertyGroup>
       <ExcludedRules Condition="'$(SignType)' != 'real'">AuthenticodeSigningRule</ExcludedRules>
     </PropertyGroup>
 
     <ItemGroup>
-      <DirectoriesToScan Include="$(PackagesOutputPath);$(PackagesOobOutputPath);" />
+      <DirectoriesToScan Include="%(PackagesToPublish.RootDir)%(PackagesToPublish.Directory)" />
     </ItemGroup>
 
     <VerifyPackages

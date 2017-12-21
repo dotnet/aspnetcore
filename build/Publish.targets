@@ -29,7 +29,6 @@
       <PackagesToPublish Include="$(PackagesOutputPath)*.nupkg" />
       <PackagesToPublish Include="$(PackagesOobOutputPath)*.nupkg" />
       <PackagesToPublish Include="$(SymbolsOutputPath)*.nupkg" />
-      <PackagesToPublish Include="$(SymbolsOobOutputPath)*.nupkg" />
     </ItemGroup>
   </Target>
 
