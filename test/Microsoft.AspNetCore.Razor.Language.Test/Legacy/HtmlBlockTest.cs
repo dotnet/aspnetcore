@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagBlock(
                                 Factory.Markup("<"))))),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
                         new SourceSpan(new SourceLocation(5 + Environment.NewLine.Length * 2, 2, 2), contentLength: 4), "html"),
                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                 });
         }
 

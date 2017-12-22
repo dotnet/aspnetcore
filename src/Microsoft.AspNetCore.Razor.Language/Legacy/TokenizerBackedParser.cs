@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected virtual void OutputSpanBeforeRazorComment()
         {
-            throw new InvalidOperationException(LegacyResources.Language_Does_Not_Support_RazorComment);
+            throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
         }
 
         private void CommentSpanConfig(SpanBuilder span)
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 !Language.KnowsSymbolType(KnownSymbolType.CommentStar) ||
                 !Language.KnowsSymbolType(KnownSymbolType.CommentBody))
             {
-                throw new InvalidOperationException(LegacyResources.Language_Does_Not_Support_RazorComment);
+                throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
             }
             OutputSpanBeforeRazorComment();
             using (PushSpanConfig(CommentSpanConfig))

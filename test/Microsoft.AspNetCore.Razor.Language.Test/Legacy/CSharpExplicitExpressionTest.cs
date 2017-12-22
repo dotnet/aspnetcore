@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                ),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
-                               LegacyResources.BlockName_ExplicitExpression,
+                               Resources.BlockName_ExplicitExpression,
                                ")",
                                "("));
         }

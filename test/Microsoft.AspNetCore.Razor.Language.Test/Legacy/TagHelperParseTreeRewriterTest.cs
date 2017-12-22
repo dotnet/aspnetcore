@@ -2313,7 +2313,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             RazorDiagnosticFactory.CreateParsing_MissingEndTag(
                                 new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 5), "!text"),
                         }
@@ -2484,7 +2484,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             MissingEndTagError("!text"),
                         }
                     },
@@ -2570,7 +2570,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             MissingEndTagError("text"),
                         }
                     },
@@ -2646,7 +2646,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!text}", 6),
                         }
                     },
@@ -2661,7 +2661,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!text", 5),
                         }
                     },
@@ -2686,7 +2686,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!text", 5),
                         }
                     },
@@ -2711,7 +2711,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new []
                             {
                                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                 UnfinishedTagError("!text", 5),
                             }
                     },
@@ -2739,7 +2739,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new []
                                 {
                                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                     UnfinishedTagError("!text", 5),
                                 }
                     },
@@ -2768,7 +2768,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new []
                                 {
                                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                     UnfinishedTagError("!text", 5),
                                 }
                     }
@@ -2820,7 +2820,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!}"),
                         }
                     },
@@ -2831,7 +2831,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!p}"),
                         }
                     },
@@ -2843,7 +2843,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!p"),
                         }
                     },
@@ -2868,7 +2868,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             UnfinishedTagError("!p"),
                         }
                     },
@@ -2893,7 +2893,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new []
                             {
                                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                 UnfinishedTagError("!p"),
                             }
                     },
@@ -2925,7 +2925,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new []
                             {
                                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                 UnfinishedTagError("!p"),
                             }
                     },
@@ -2953,7 +2953,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new []
                                 {
                                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                     UnfinishedTagError("!p"),
                                 }
                     },
@@ -2983,7 +2983,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new []
                                 {
                                     RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                       new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                       new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                                     UnfinishedTagError("!p"),
                                 }
                     }
@@ -3150,7 +3150,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             MissingEndTagError("!p"),
                         }
                     },
@@ -3232,7 +3232,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             MissingEndTagError("p"),
                             RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
                                 new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 1), "p")
@@ -3392,7 +3392,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new []
                         {
                             RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
                             RazorDiagnosticFactory.CreateParsing_MissingEndTag(
                                 new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 2), "!p"),
                         }

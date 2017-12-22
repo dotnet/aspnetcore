@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .With(new AutoCompleteEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString) { AutoCompleteString = "}" })
                                ),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                                new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                                new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
                                new SourceSpan(new SourceLocation(6 + Environment.NewLine.Length, 1, 5), contentLength: 1)),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                               new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"foo bar{Environment.NewLine}baz").AsExpression()
                                ),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                            new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_ExplicitExpression, ")", "("));
+                            new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_ExplicitExpression, ")", "("));
         }
 
         [Fact]
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.Code($"foo bar{Environment.NewLine}").AsExpression()
                                ),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                            new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_ExplicitExpression, ")", "("));
+                            new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_ExplicitExpression, ")", "("));
         }
 
         [Fact]
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AsStatement()
                                    .AutoCompleteWith("}")),
                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                               new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                               new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockRequiresControlFlowStatementsToHaveBraces()
         {
-            var expectedMessage = LegacyResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
+            var expectedMessage = Resources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed("{", "<");
             ParseBlockTest("if(foo) <p>Bar</p> else if(bar) <p>Baz</p> else <p>Boz</p>",
                            new StatementBlock(
                                Factory.Code("if(foo) ").AsStatement(),

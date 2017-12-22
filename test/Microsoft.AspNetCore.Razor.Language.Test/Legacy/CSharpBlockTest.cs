@@ -1146,7 +1146,7 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                 RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
                     new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 4), "span"),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(SourceLocation.Zero, contentLength: 1), LegacyResources.BlockName_Code, "}", "{"),
+                    new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"),
             };
 
             // Act & Assert

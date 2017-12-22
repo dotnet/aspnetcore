@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (_blockStack.Count == 0)
             {
-                throw new InvalidOperationException(LegacyResources.ParserContext_NoCurrentBlock);
+                throw new InvalidOperationException(Resources.ParserContext_NoCurrentBlock);
             }
             CurrentBlock.Children.Add(span);
             LastSpan = span;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (_blockStack.Count == 0)
             {
-                throw new InvalidOperationException(LegacyResources.EndBlock_Called_Without_Matching_StartBlock);
+                throw new InvalidOperationException(Resources.EndBlock_Called_Without_Matching_StartBlock);
             }
 
             if (_blockStack.Count > 1)
@@ -78,11 +78,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (_blockStack.Count == 0)
             {
-                throw new InvalidOperationException(LegacyResources.ParserContext_CannotCompleteTree_NoRootBlock);
+                throw new InvalidOperationException(Resources.ParserContext_CannotCompleteTree_NoRootBlock);
             }
             if (_blockStack.Count != 1)
             {
-                throw new InvalidOperationException(LegacyResources.ParserContext_CannotCompleteTree_OutstandingBlocks);
+                throw new InvalidOperationException(Resources.ParserContext_CannotCompleteTree_OutstandingBlocks);
             }
 
             var rootBuilder = _blockStack.Pop();

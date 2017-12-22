@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (type == null)
             {
-                throw new InvalidOperationException(LegacyResources.Block_Type_Not_Specified);
+                throw new InvalidOperationException(Resources.Block_Type_Not_Specified);
             }
 
             Type = type.Value;

@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (Context == null)
                 {
-                    throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                    throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
                 }
 
                 Span.Start = CurrentLocation;
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void VerbatimBlock()
         {
             Assert(CSharpSymbolType.LeftBrace);
-            var block = new Block(LegacyResources.BlockName_Code, CurrentStart);
+            var block = new Block(Resources.BlockName_Code, CurrentStart);
             AcceptAndMoveNext();
 
             // Set up the "{" span and output
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ExplicitExpression()
         {
-            var block = new Block(LegacyResources.BlockName_ExplicitExpression, CurrentStart);
+            var block = new Block(Resources.BlockName_ExplicitExpression, CurrentStart);
             Assert(CSharpSymbolType.LeftParenthesis);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
@@ -1355,7 +1355,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     break;
                 case CSharpSymbolType.LeftBrace:
                     // Verbatim Block
-                    block = block ?? new Block(LegacyResources.BlockName_Code, CurrentStart);
+                    block = block ?? new Block(Resources.BlockName_Code, CurrentStart);
                     AcceptAndMoveNext();
                     CodeBlock(block);
                     break;
@@ -1775,7 +1775,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
                                     new SourceSpan(CurrentStart, CurrentSymbol.Content.Length),
                                     descriptor.Directive,
-                                    LegacyResources.ErrorComponent_Newline));
+                                    Resources.ErrorComponent_Newline));
                         }
 
                         Span.ChunkGenerator = SpanChunkGenerator.Null;

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 RazorDiagnosticFactory.CreateParsing_MissingEndTag(
                     new SourceSpan(new SourceLocation(7 + Environment.NewLine.Length, 1, 5), contentLength: 4), "text"),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
                     new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 2)),
                 RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{"));
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"));
         }
 
         [Fact]

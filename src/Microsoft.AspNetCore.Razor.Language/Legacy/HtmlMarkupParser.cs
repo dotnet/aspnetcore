@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))
@@ -1440,7 +1440,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))
@@ -1592,7 +1592,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))

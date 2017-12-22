@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var document = RazorCodeDocument.Create(TestRazorSourceDocument.Create("@{", fileName: "test.cshtml"));
 
             var expected = RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
-                new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1), LegacyResources.BlockName_Code, "}", "{");
+                new SourceSpan(new SourceLocation("test.cshtml", 1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{");
 
             // Act
             engine.Process(document);
