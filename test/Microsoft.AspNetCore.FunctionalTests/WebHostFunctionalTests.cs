@@ -52,9 +52,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
-                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
-                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
@@ -81,16 +79,15 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "CreateDefaultBuilderOfTApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
-                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
-                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
 
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
                 {
                     // Assert server is Kestrel
                     Assert.Equal("Kestrel", response.Headers.Server.ToString());
-
+                    // Set from default config
+                    Assert.Equal("http://localhost:5002/", deploymentResult.ApplicationBaseUri);
                     // The application name will be sent in response when all asserts succeed in the test app.
                     Assert.Equal(applicationName, responseText);
                 }
@@ -111,9 +108,7 @@ namespace Microsoft.AspNetCore.Tests
             var applicationName = "DependencyInjectionApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
-                var handler = new HttpClientHandler() { ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator };
-                var client = new HttpClient(handler) { BaseAddress = new Uri(deploymentResult.ApplicationBaseUri) };
-                var response = await RetryHelper.RetryRequest(() => client.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
                 var responseText = await response.Content.ReadAsStringAsync();
                 try
                 {

@@ -22,6 +22,7 @@ namespace CreateDefaultBuilderApp
         static void Main(string[] args)
         {
             WebHost.CreateDefaultBuilder()
+                .UseUrls("http://localhost:5002")
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton(typeof(IService<>), typeof(Service<>));
