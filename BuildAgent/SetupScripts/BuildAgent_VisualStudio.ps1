@@ -89,4 +89,6 @@ foreach ($agent in $Agents) {
            Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
+
+    Remove-PSSession $session
 }
