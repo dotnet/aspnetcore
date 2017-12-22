@@ -6,9 +6,10 @@ using System.Diagnostics;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
-{ 
+{
     public abstract class DotNetToolTask : ToolTask
     {
         public bool Debug { get; set; }
@@ -25,8 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
 
-        // use PATH to find dotnet
-        protected override string GenerateFullPathToTool() => ToolExe;
+        protected override string GenerateFullPathToTool()
+        {
+#if NETSTANDARD2_0
+            if (!string.IsNullOrEmpty(DotNetMuxer.MuxerPath))
+            {
+                return DotNetMuxer.MuxerPath;
+            }
+#endif
+
+            // use PATH to find dotnet
+            return ToolExe;
+        }
 
         protected override string GenerateCommandLineCommands()
         {
