@@ -7,18 +7,17 @@
         "en-US"
     ],
     "add": [
-        "Microsoft.VisualStudio.Workload.NativeDesktop",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
         "Microsoft.VisualStudio.Component.Windows81SDK",
-        "Microsoft.Net.Component.4.7.TargetingPack",
         "Microsoft.Net.Component.4.6.2.TargetingPack",
+        "Microsoft.Net.Component.4.6.2.SDK",
         "Microsoft.Net.Component.4.6.1.TargetingPack",
         "Microsoft.Net.Component.4.6.TargetingPack",
         "Microsoft.Net.Component.4.5.2.TargetingPack",
+        "Microsoft.VisualStudio.Workload.ManagedDesktop",
         "Microsoft.VisualStudio.Workload.NetWeb",
         "Microsoft.VisualStudio.Workload.NetCoreTools",
         "Microsoft.VisualStudio.Workload.NativeDesktop",
-        "Microsoft.VisualStudio.Workload.ManagedDesktop",
-        "Microsoft.VisualStudio.Component.VSSDK"
+        "Microsoft.VisualStudio.Workload.VisualStudioExtension"
     ]
 }

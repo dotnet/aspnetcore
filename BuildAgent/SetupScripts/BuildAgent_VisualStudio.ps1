@@ -2,69 +2,91 @@
 .SYNOPSIS
 Installs or updates Visual Studio on build agents
 #>
-[CmdletBinding()]
+[CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
-    [string]$account = "REDMOND\asplab"
+    [Parameter(ParameterSetName = 'Default')]
+    [string]$Account = "REDMOND\asplab",
+    [Parameter(ParameterSetName = 'Credential')]
+    [pscredential]$Credential,
+    [string[]]$Agents = $null,
+    [switch]$Update
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 Import-Module -Scope Local -Force $PSScriptRoot/agentlist.psm1
 
-$intermedateDir = "$PSScriptRoot/obj/"
+$intermedateDir = "$PSScriptRoot\obj\"
 mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
-$bootstrapper = "$intermedateDir/vs_enterprise.exe"
+$bootstrapper = "$intermedateDir\vs_enterprise.exe"
+Invoke-WebRequest -Uri 'https://aka.ms/vs/15/pre/vs_enterprise.exe' -OutFile $bootstrapper
 
-if (-not (Test-Path $bootstrapper)) {
-    Invoke-WebRequest -Uri 'https://aka.ms/vs/15/release/vs_enterprise.exe' -OutFile $bootstrapper
+if (-not $Agents) {
+    $Agents = Get-Agents | ? { ($_.OS -eq 'windows') -and ($_.Category -ne 'Codesign') } | % { $_.Name }
 }
 
-$agents = Get-Agents | ? { ($_.OS -eq 'windows') -and ($_.Category -ne 'Codesign') } | % { $_.Name }
+if (-not $Credential) {
+    $Credential = Get-Credential -UserName $Account -Message 'Enter password used to login to agents'
+}
 
-$credential = Get-Credential -UserName $account -Message 'Enter password used to login to agents'
-
-foreach ($agent in $agents) {
+foreach ($agent in $Agents) {
     
-    $session = New-PSSession -ComputerName $agent -Credential $credential
+    $session = New-PSSession -ComputerName $agent -Credential $Credential
 
     Write-Host "Installing or updating VS on $agent"
+
+    $tempItemDir = 'C:\temp\vs_install'
+    $rspFile = Join-Path $tempItemDir 'vs.agents.json'
+    $installerPath = Join-Path $tempItemDir 'vs_enterprise.exe'
     
+    # $using: is a special PowerShell 5 syntax for passing variables to a remote command
+
     Invoke-Command -Session $session -ScriptBlock {
-        Remove-Item "C:/temp/vs_install" -Recurse -Force -ErrorAction Ignore | Out-Null
-        mkdir "C:/temp/vs_install" -ErrorAction Ignore | Out-Null
+        Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction Ignore | Out-Null
+        mkdir $using:tempItemDir -ErrorAction Ignore | Out-Null
     }
     
-    Copy-Item -ToSession $session $bootstrapper 'C:/temp/vs_install/vs_enterprise.exe'
-    Copy-Item -ToSession $session $PSScriptRoot/vs.agents.json 'C:/temp/vs_install/vs.agents.json' 
+    Copy-Item -ToSession $session $bootstrapper $installerPath
+    Copy-Item -ToSession $session $PSScriptRoot\vs.agents.json $rspFile
     
     Invoke-Command -Session $session -ScriptBlock {
         $ErrorActionPreference = 'Stop'
         Set-StrictMode -Version 1
-        $vsInstallPath = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/2017/Enterprise/"
+        # no backslashes - this breaks the installer
+        $vsInstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\aspnetci\Enterprise"
         $verb = if (Test-Path $vsInstallPath) {
-            'update'
-        }
-        else {
-            'install'
+            if ($using:Update) {
+                'update'
+            }
+            else {
+                'modify'
+            }
         }
         
         try {
             Write-Host "Running 'vs_enterprise.exe $verb' on $(hostname)"
-            Start-Process -FilePath 'C:/temp/vs_install/vs_enterprise.exe' `
+            $process = Start-Process -FilePath $using:installerPath `
                 -ArgumentList @(
                 $verb,
                 '--installPath', "`"$vsInstallPath`"",
-                '--in', 'C:/temp/vs_install/vs.agents.json',
+                '--in', $using:rspFile,
                 '--quiet',
+                '--nickname', 'aspnetci',
                 '--wait',
                 '--norestart') `
-                -Wait `
                 -Verb runas `
+                -PassThru `
                 -ErrorAction Stop
+            Write-Host "pid = $($process.Id)"
+            Wait-Process -InputObject $process
+            Write-Host "exit code = $($process.ExitCode)"
+            if ($process.ExitCode -ne 0) {
+                Write-Error "Installation failed on $(hostname)"
+            }
         }
         finally {
-            Remove-Item "C:/temp/vs_install" -Recurse -Force -ErrorAction SilentlyContinue
+           Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 }
