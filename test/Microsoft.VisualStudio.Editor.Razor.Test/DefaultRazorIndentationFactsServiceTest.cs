@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
@@ -11,6 +12,160 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class DefaultRazorIndentationFactsServiceTest
     {
+        [Fact]
+        public void GetPreviousLineEndIndex_ReturnsPreviousLine()
+        {
+            // Arrange
+            var textSnapshot = new StringTextSnapshot(@"@{
+    <p>Hello World</p>
+}");
+            var line = textSnapshot.GetLineFromLineNumber(2);
+
+            // Act
+            var previousLineEndIndex = DefaultRazorIndentationFactsService.GetPreviousLineEndIndex(textSnapshot, line);
+
+            // Assert
+            Assert.Equal(26, previousLineEndIndex);
+        }
+
+        [Fact]
+        public void IsCSharpOpenCurlyBrace_SpanWithLeftBrace_ReturnTrue()
+        {
+            // Arrange
+            var childBuilder = new SpanBuilder(SourceLocation.Zero);
+            childBuilder.Accept(new CSharpSymbol("{", CSharpSymbolType.LeftBrace));
+            var child = childBuilder.Build();
+
+            // Act
+            var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("if", CSharpSymbolType.Keyword)]
+        [InlineData("}", CSharpSymbolType.RightBrace)]
+        [InlineData("++", CSharpSymbolType.Increment)]
+        [InlineData("text", CSharpSymbolType.Identifier)]
+        public void IsCSharpOpenCurlyBrace_SpanWithUnsupportedSymbolType_ReturnFalse(string content, object symbolTypeObject)
+        {
+            // Arrange
+            var symbolType = (CSharpSymbolType)symbolTypeObject;
+            var childBuilder = new SpanBuilder(SourceLocation.Zero);
+            childBuilder.Accept(new CSharpSymbol(content, symbolType));
+            var child = childBuilder.Build();
+
+            // Act
+            var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsCSharpOpenCurlyBrace_MultipleSymbols_ReturnFalse()
+        {
+            // Arrange
+            var childBuilder = new SpanBuilder(SourceLocation.Zero);
+            childBuilder.Accept(new CSharpSymbol("hello", CSharpSymbolType.Identifier));
+            childBuilder.Accept(new CSharpSymbol(",", CSharpSymbolType.Comma));
+            var child = childBuilder.Build();
+
+            // Act
+            var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsCSharpOpenCurlyBrace_SpanWithHtmlSymbol_ReturnFalse()
+        {
+            // Arrange
+            var childBuilder = new SpanBuilder(SourceLocation.Zero);
+            childBuilder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            var child = childBuilder.Build();
+
+            // Act
+            var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void IsCSharpOpenCurlyBrace_Blocks_ReturnFalse()
+        {
+            // Arrange
+            var child = new BlockBuilder()
+            {
+                Type = BlockKindInternal.Markup,
+            }.Build();
+
+            // Act
+            var result = DefaultRazorIndentationFactsService.IsCSharpOpenCurlyBrace(child);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void GetIndentLevelOfLine_AddsTabsOnlyAtBeginningOfLine()
+        {
+            // Arrange
+            var text = "\t\tHello\tWorld.\t";
+            var service = new DefaultRazorIndentationFactsService();
+
+            // Act
+            var indentLevel = service.GetIndentLevelOfLine(text, 4);
+
+            // Assert
+            Assert.Equal(8, indentLevel);
+        }
+
+        [Fact]
+        public void GetIndentLevelOfLine_AddsSpacesOnlyAtBeginningOfLine()
+        {
+            // Arrange
+            var text = "   Hello World. ";
+            var service = new DefaultRazorIndentationFactsService();
+
+            // Act
+            var indentLevel = service.GetIndentLevelOfLine(text, 4);
+
+            // Assert
+            Assert.Equal(3, indentLevel);
+        }
+
+        [Fact]
+        public void GetIndentLevelOfLine_AddsTabsAndSpacesOnlyAtBeginningOfLine()
+        {
+            // Arrange
+            var text = "  \t \tHello\t World.\t ";
+            var service = new DefaultRazorIndentationFactsService();
+
+            // Act
+            var indentLevel = service.GetIndentLevelOfLine(text, 4);
+
+            // Assert
+            Assert.Equal(11, indentLevel);
+        }
+
+        [Fact]
+        public void GetIndentLevelOfLine_NoIndent()
+        {
+            // Arrange
+            var text = "Hello World.";
+            var service = new DefaultRazorIndentationFactsService();
+
+            // Act
+            var indentLevel = service.GetIndentLevelOfLine(text, 4);
+
+            // Assert
+            Assert.Equal(0, indentLevel);
+        }
+
         [Fact]
         public void GetDesiredIndentation_ReturnsNull_IfOwningSpanIsCode()
         {
