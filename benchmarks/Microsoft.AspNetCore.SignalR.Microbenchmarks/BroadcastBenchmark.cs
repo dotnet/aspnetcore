@@ -10,7 +10,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
-    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class BroadcastBenchmark
     {
         private DefaultHubLifetimeManager<Hub> _hubLifetimeManager;
