@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <PropertyGroup>
+    <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Areas/**/*.cshtml" />
+    <EmbeddedResource Include="wwwroot/**/*" />
+    <EmbeddedResource Remove="wwwroot/**/.bower.json" />
+    <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
+    <None Remove="wwwroot/**/.bower.json" />
+    <None Remove="wwwroot/**/LICENSE*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.csproj" />
+    <ProjectReference Include="..\Microsoft.Extensions.Identity.Stores\Microsoft.Extensions.Identity.Stores.csproj" />
+  </ItemGroup>
+    
+</Project>
