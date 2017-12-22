@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets or sets an indication that the <see cref="Exception"/> has been handled.
         /// </summary>
-        public virtual bool ExceptionHandled { get; set; } = false;
+        public virtual bool ExceptionHandled { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IActionResult"/>.

@@ -557,6 +557,24 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public async Task InvokeAction_WithExceptionFilterInTheStack_InvokesResultFilter()
+        {
+            // Arrange
+            var exceptionFilter = new Mock<IExceptionFilter>();
+            var resultFilter = new Mock<IResultFilter>();
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { exceptionFilter.Object, resultFilter.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            exceptionFilter.Verify(f => f.OnException(It.IsAny<ExceptionContext>()), Times.Never());
+            resultFilter.Verify(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()), Times.Once());
+        }
+
+        [Fact]
         public async Task InvokeAction_InvokesAuthorizationFilter()
         {
             // Arrange
@@ -1711,6 +1729,348 @@ namespace Microsoft.AspNetCore.Mvc
             resourceFilter.Verify(
                 f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()),
                 Times.Never());
+        }
+
+        [Fact]
+        public async Task InvokeAction_AuthorizationFilterShortCircuit_InvokesAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+            resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
+                .Callback<ResultExecutedContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+
+            var authorizationFilter = new Mock<IAsyncAuthorizationFilter>(MockBehavior.Strict);
+            authorizationFilter
+                .Setup(f => f.OnAuthorizationAsync(It.IsAny<AuthorizationFilterContext>()))
+                .Returns<AuthorizationFilterContext>((c) =>
+                {
+                    c.Result = Result;
+                    return Task.CompletedTask;
+                });
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resultFilter.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_AuthorizationFilterShortCircuit_InvokesAsyncAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
+                {
+                    Assert.Same(Result, c.Result);
+                    return next();
+                })
+                .Verifiable();
+
+            var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
+            authorizationFilter
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>((c) =>
+                {
+                    c.Result = Result;
+                });
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resultFilter.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_AuthorizationFilterShortCircuit_DoesNotRunResultFilters()
+        {
+            // Arrange
+            var resultFilter1 = new Mock<IResultFilter>(MockBehavior.Strict);
+            resultFilter1.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()));
+            resultFilter1.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()));
+
+            var resultFilter2 = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+            resultFilter2.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()));
+
+            var resultFilter3 = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter3.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns(Task.CompletedTask);
+
+            var authorizationFilter = new Mock<IAuthorizationFilter>(MockBehavior.Strict);
+            authorizationFilter
+                .Setup(f => f.OnAuthorization(It.IsAny<AuthorizationFilterContext>()))
+                .Callback<AuthorizationFilterContext>((c) =>
+                {
+                    c.Result = Result;
+                });
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { authorizationFilter.Object, resultFilter1.Object, resultFilter2.Object, resultFilter3.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter1.Verify(
+                f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()),
+                Times.Never());
+            resultFilter1.Verify(
+                f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()),
+                Times.Never());
+            resultFilter2.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Never());
+            resultFilter3.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_ResourceFilterShortCircuit_InvokesAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+            resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
+                .Callback<ResultExecutedContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+
+            var resourceFilter = new Mock<IAsyncResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecutionAsync(It.IsAny<ResourceExecutingContext>(), It.IsAny<ResourceExecutionDelegate>()))
+                .Returns<ResourceExecutingContext, ResourceExecutionDelegate>((c, next) =>
+                {
+                    c.Result = Result;
+                    return Task.CompletedTask;
+                });
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, resultFilter.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_ResourceFilterShortCircuit_InvokesAsyncAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
+                {
+                    Assert.Same(Result, c.Result);
+                    return next();
+                })
+                .Verifiable();
+
+            var resourceFilter = new Mock<IResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Callback<ResourceExecutingContext>(c => c.Result = Result);
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, resultFilter.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_ResourceFilterShortCircuit_DoesNotRunResultFilters()
+        {
+            // Arrange
+            var resultFilter1 = new Mock<IResultFilter>(MockBehavior.Strict);
+            resultFilter1.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()));
+            resultFilter1.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()));
+
+            var resultFilter2 = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+            resultFilter2.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()));
+
+            var resultFilter3 = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter3.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns(Task.CompletedTask);
+
+            var resourceFilter = new Mock<IResourceFilter>(MockBehavior.Strict);
+            resourceFilter
+                .Setup(f => f.OnResourceExecuting(It.IsAny<ResourceExecutingContext>()))
+                .Callback<ResourceExecutingContext>(c => c.Result = Result);
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { resourceFilter.Object, resultFilter1.Object, resultFilter2.Object, resultFilter3.Object, });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter1.Verify(
+                f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()),
+                Times.Never());
+            resultFilter1.Verify(
+                f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()),
+                Times.Never());
+            resultFilter2.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Never());
+            resultFilter3.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_ExceptionFilterShortCircuit_InvokesAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Callback<ResultExecutingContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+            resultFilter.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
+                .Callback<ResultExecutedContext>(c => Assert.Same(Result, c.Result))
+                .Verifiable();
+
+            var exceptionFilter = new Mock<IAsyncExceptionFilter>(MockBehavior.Strict);
+            exceptionFilter
+                .Setup(f => f.OnExceptionAsync(It.IsAny<ExceptionContext>()))
+                .Returns<ExceptionContext>(c =>
+                {
+                    c.Result = Result;
+                    return Task.CompletedTask;
+                });
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { exceptionFilter.Object, resultFilter.Object, }, Exception);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_ExceptionFilterShortCircuit_InvokesAsyncAlwaysRunResultFilter()
+        {
+            // Arrange
+            var resultFilter = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) =>
+                {
+                    Assert.Same(Result, c.Result);
+                    return next();
+                })
+                .Verifiable();
+
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            exceptionFilter
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(c => c.Result = Result);
+
+            var invoker = CreateInvoker(new IFilterMetadata[] { exceptionFilter.Object, resultFilter.Object, }, Exception);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter.Verify();
+        }
+
+        [Fact]
+        public async Task InvokeAction_ExceptionFilterShortCircuit_DoesNotRunResultFilters()
+        {
+            // Arrange
+            var resultFilter1 = new Mock<IResultFilter>(MockBehavior.Strict);
+            resultFilter1.Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()));
+            resultFilter1.Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()));
+
+            var resultFilter2 = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+            resultFilter2.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()));
+
+            var resultFilter3 = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter3.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns(Task.CompletedTask);
+
+            var exceptionFilter = new Mock<IExceptionFilter>(MockBehavior.Strict);
+            exceptionFilter
+                .Setup(f => f.OnException(It.IsAny<ExceptionContext>()))
+                .Callback<ExceptionContext>(c => c.Result = Result);
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { exceptionFilter.Object, resultFilter1.Object, resultFilter2.Object, resultFilter3.Object, },
+                Exception);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter1.Verify(
+                f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()),
+                Times.Never());
+            resultFilter1.Verify(
+                f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()),
+                Times.Never());
+            resultFilter2.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Never());
+            resultFilter3.Verify(
+                f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task InvokeAction_AlwaysRunResultFiltersAndRunWithResultFilters()
+        {
+            // Arrange
+            var resultFilter1 = new Mock<IResultFilter>(MockBehavior.Strict);
+            resultFilter1
+                .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Verifiable();
+            resultFilter1
+                .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
+                .Verifiable();
+
+            var resultFilter2 = new Mock<IAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter2
+                .Setup(f => f.OnResultExecuting(It.IsAny<ResultExecutingContext>()))
+                .Verifiable();
+            resultFilter2
+                .Setup(f => f.OnResultExecuted(It.IsAny<ResultExecutedContext>()))
+                .Verifiable();
+
+            var resultFilter3 = new Mock<IAsyncResultFilter>(MockBehavior.Strict);
+            resultFilter3.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) => next())
+                .Verifiable();
+
+            var resultFilter4 = new Mock<IAsyncAlwaysRunResultFilter>(MockBehavior.Strict);
+            resultFilter4.Setup(f => f.OnResultExecutionAsync(It.IsAny<ResultExecutingContext>(), It.IsAny<ResultExecutionDelegate>()))
+                .Returns<ResultExecutingContext, ResultExecutionDelegate>((c, next) => next())
+                .Verifiable();
+
+            var invoker = CreateInvoker(
+                new IFilterMetadata[] { resultFilter1.Object, resultFilter2.Object, resultFilter3.Object, resultFilter4.Object });
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            resultFilter1.Verify();
+            resultFilter2.Verify();
+            resultFilter3.Verify();
+            resultFilter4.Verify();
         }
 
         public class TestResult : ActionResult
