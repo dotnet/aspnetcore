@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
@@ -25,7 +26,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var previousLineEndIndex = DefaultRazorIndentationFactsService.GetPreviousLineEndIndex(textSnapshot, line);
 
             // Assert
-            Assert.Equal(26, previousLineEndIndex);
+            Assert.Equal(24 + Environment.NewLine.Length, previousLineEndIndex);
         }
 
         [Fact]
