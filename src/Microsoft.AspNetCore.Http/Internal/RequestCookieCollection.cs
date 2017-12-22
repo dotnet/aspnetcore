@@ -71,7 +71,8 @@ namespace Microsoft.AspNetCore.Http.Internal
                     return Empty;
                 }
 
-                var store = new Dictionary<string, string>(cookies.Count);
+                var collection = new RequestCookieCollection(cookies.Count);
+                var store = collection.Store;
                 for (var i = 0; i < cookies.Count; i++)
                 {
                     var cookie = cookies[i];
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                     store[name] = value;
                 }
 
-                return new RequestCookieCollection(store);
+                return collection;
             }
             return Empty;
         }
