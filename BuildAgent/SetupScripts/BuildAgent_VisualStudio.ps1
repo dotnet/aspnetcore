@@ -55,26 +55,27 @@ foreach ($agent in $Agents) {
         Set-StrictMode -Version 1
         # no backslashes - this breaks the installer
         $vsInstallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\aspnetci\Enterprise"
-        $verb = if (Test-Path $vsInstallPath) {
+        $arguments = @(
+            '--installPath', "`"$vsInstallPath`"",
+            '--in', $using:rspFile,
+            '--quiet',
+            '--nickname', 'aspnetci',
+            '--wait',
+            '--norestart')
+
+        if (Test-Path $vsInstallPath) {
             if ($using:Update) {
-                'update'
+                $arguments += 'update'
             }
             else {
-                'modify'
+                $arguments += 'modify'
             }
         }
-        
+
         try {
-            Write-Host "Running 'vs_enterprise.exe $verb' on $(hostname)"
+            Write-Host "Running 'vs_enterprise.exe $arguments' on $(hostname)"
             $process = Start-Process -FilePath $using:installerPath `
-                -ArgumentList @(
-                $verb,
-                '--installPath', "`"$vsInstallPath`"",
-                '--in', $using:rspFile,
-                '--quiet',
-                '--nickname', 'aspnetci',
-                '--wait',
-                '--norestart') `
+                -ArgumentList $arguments `
                 -Verb runas `
                 -PassThru `
                 -ErrorAction Stop
@@ -86,7 +87,7 @@ foreach ($agent in $Agents) {
             }
         }
         finally {
-           Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-Item $using:tempItemDir -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
