@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class Http1ConnectionParsingOverheadBenchmark
     {
         private const int InnerLoopCount = 512;
