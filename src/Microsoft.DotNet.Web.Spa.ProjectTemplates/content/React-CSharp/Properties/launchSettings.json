@@ -21,7 +21,6 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HTTPS_PORT": "44300",
         "ASPNETCORE_URLS": "https://localhost:44300;http://localhost:8080"
       }
     }

@@ -9,7 +9,6 @@ using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
 using Microsoft.AspNetCore.Certificates.Generation;
-using System.Threading;
 
 namespace Templates.Test.Helpers
 {
@@ -23,8 +22,6 @@ namespace Templates.Test.Helpers
         private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
-        private readonly int _httpsPort;
-        private readonly int _httpPort;
 
         public AspNetProcess(ITestOutputHelper output, string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
         {
@@ -62,12 +59,9 @@ namespace Templates.Test.Helpers
                     .WaitForExit(assertSuccess: true);
             }
 
-            _httpPort = Interlocked.Increment(ref Port);
-            _httpsPort = Interlocked.Increment(ref Port);
             var envVars = new Dictionary<string, string>
             {
-                { "ASPNETCORE_URLS", $"http://localhost:{_httpPort};https://localhost:{_httpsPort}" },
-                { "ASPNETCORE_HTTPS_PORT", $"{_httpsPort}" }
+                { "ASPNETCORE_URLS", $"http://localhost:127.0.0.0:0;https://localhost:127.0.0.0:0" }
             };
 
             if (!publish)
@@ -99,8 +93,14 @@ namespace Templates.Test.Helpers
 
             // Verify we have a valid URL to make requests to
             var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
-            _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
             output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
+            listeningUrlString = listeningUrlString.Substring(0, listeningUrlString.IndexOf(':')) +
+                "://localhost" +
+                listeningUrlString.Substring(listeningUrlString.LastIndexOf(':'));
+
+            output.WriteLine("Sending requests to " + listeningUrlString);
+
+            _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
         }
 
         public void AssertOk(string requestUrl)
