@@ -6,85 +6,139 @@
     <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
   </PropertyGroup>
 
-  <Target Name="BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
-    <!-- Clear working directory -->
-    <RemoveDir Directories="$(_WorkRoot)" />
-
+  <Target Name="_BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
     <PropertyGroup>
-      <MetapackageWorkDirectory>$(_WorkRoot)Microsoft.AspNetCore.All\</MetapackageWorkDirectory>
-      <_SharedFxProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</_SharedFxProps>
-      <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
+      <MetapackageWorkDirectory>$(_WorkRoot)$(MetapackageName)\</MetapackageWorkDirectory>
+      <CommonProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</CommonProps>
+      <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
+      <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
+
     <ItemGroup>
-      <AllMetapackageFiles Include="$(_AllMetapackageDir)**\*" />
+      <MetapackageFiles Include="$(MetapackageSource)**\*" />
     </ItemGroup>
 
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(MetapackageWorkDirectory)" />
+
     <!-- Move to working dir -->
-    <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
+    <Copy SourceFiles="@(MetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
     <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <!-- Add references to project -->
     <RepoTasks.AddMetapackageReferences
-      ReferencePackagePath="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
+      ReferencePackagePath="$(MetapackageWorkDirectory)$(MetapackageName).csproj"
+      MetapackageReferenceType="$(MetapackageReferenceType)"
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)" />
 
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
-    <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj" Targets="Restore" Properties="$(_SharedFxProps);_Target=Restore" />
+    <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Restore" Properties="$(CommonProps);_Target=Restore" />
     <!-- Pack -->
-    <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj" Targets="Pack" Properties="$(_SharedFxProps);PackageOutputPath=$(BuildDir)" />
+    <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
-  <Target Name="PrepareForSharedFx">
+  <Target Name="BuildMetapackage">
+    <PropertyGroup>
+      <AppMetapackageProps>MetapackageName=Microsoft.AspNetCore.App</AppMetapackageProps>
+      <AppMetapackageProps>$(AppMetapackageProps);MetapackageSource=$(_AppMetapackageDir)</AppMetapackageProps>
+      <AppMetapackageProps>$(AppMetapackageProps);MetapackageReferenceType=AppMetapackage</AppMetapackageProps>
+      <AllMetapackageProps>MetapackageName=Microsoft.AspNetCore.All</AllMetapackageProps>
+      <AllMetapackageProps>$(AllMetapackageProps);MetapackageSource=$(_AllMetapackageDir)</AllMetapackageProps>
+      <AllMetapackageProps>$(AllMetapackageProps);MetapackageReferenceType=AllMetapackage</AllMetapackageProps>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildMetapackage" Properties="$(AppMetapackageProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildMetapackage" Properties="$(AllMetapackageProps)" />
+  </Target>
+
+  <Target Name="DefineSharedFxPrerequisites">
     <PropertyGroup>
       <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
     </PropertyGroup>
 
     <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(AllSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
 
-    <!-- Clear working directory -->
-    <RemoveDir Directories="$(_WorkRoot)" />
-
     <PropertyGroup>
-      <SharedFxWorkDirectory>$(_WorkRoot)SharedFx\</SharedFxWorkDirectory>
+      <AppSharedFxWorkDirectory>$(_WorkRoot)AppSharedFx\</AppSharedFxWorkDirectory>
+      <AllSharedFxWorkDirectory>$(_WorkRoot)AllSharedFx\</AllSharedFxWorkDirectory>
       <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
       <SharedFxCrossGenDirectory>$(_WorkRoot)CrossGen\</SharedFxCrossGenDirectory>
       <SharedFxCrossGenSymbolsDirectory>$(_WorkRoot)CrossGenSymbols\</SharedFxCrossGenSymbolsDirectory>
       <SharedFxCrossGenToolDirectory>$(_WorkRoot)CrossGenTool\</SharedFxCrossGenToolDirectory>
       <SharedFxCrossGenRspDirectory>$(_WorkRoot)CrossGenRsp\</SharedFxCrossGenRspDirectory>
-      <SharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
+      <AppSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.App\$(PackageVersion)\</AppSharedFxPublishDirectory>
+      <AllSharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxPublishDirectory>
       <SharedFxRestoreRid>$(SharedFxRID)</SharedFxRestoreRid>
+
+      <!-- 3B = semicolon in ASCII -->
+      <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
+      <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
 
       <!-- Required because SQLitePCLRaw 1.1.8 uses win7-x64/win7-x86 as its RIDs, even though the e_sqlite3.dll file works on all supported win-x64/win-x86 platforms. -->
       <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x64'">win7-x64</SharedFxRestoreRid>
       <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x86'">win7-x86</SharedFxRestoreRid>
 
-      <_SharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</_SharedFxProps>
-      <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
-      <_SharedFxProps>$(_SharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</_SharedFxProps>
-      <_SharedFxProps>$(_SharedFxProps);AspNetUniverseBuildOffline=true</_SharedFxProps>
+      <CommonSharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</CommonSharedFxProps>
+      <CommonSharedFxProps>$(CommonSharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonSharedFxProps>
+      <CommonSharedFxProps>$(CommonSharedFxProps);AspNetUniverseBuildOffline=true</CommonSharedFxProps>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites">
+    <PropertyGroup>
+      <RestoreProps>$(CommonSharedFxProps)</RestoreProps>
+      <RestoreProps>$(RestoreProps);SharedFxPackage=$(SharedFxPackage)</RestoreProps>
+      <RestoreProps>$(RestoreProps);SharedFxPackageVersion=$(PackageVersion)</RestoreProps>
+      <RestoreProps>$(RestoreProps);SharedFxBase=$(SharedFxBase)</RestoreProps>
+      <RestoreProps>$(RestoreProps);SharedFxBaseVersion=$(SharedFxBaseVersion)</RestoreProps>
     </PropertyGroup>
 
-    <!-- Move to working dir -->
+    <!-- Copy to working dir -->
     <ItemGroup>
       <SharedFxFiles Include="$(_TemplatesDir)SharedFx\**\*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SharedFxFiles)" DestinationFolder="$(SharedFxWorkDirectory)\%(RecursiveDir)" />
-    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Restore"
-      Properties="$(_SharedFxProps);MicrosoftAspNetCoreAllVersion=$(PackageVersion);_Target=Restore" />
+      Properties="$(RestoreProps);_Target=Restore" />
   </Target>
 
-  <Target Name="ResolveSharedFxFiles" DependsOnTargets="PrepareForSharedFx;ResolveCommitHash">
-    <!-- Publish -->
+  <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
+    <PropertyGroup>
+      <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);SharedFxBase=Microsoft.NETCore.App</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);SharedFxBaseVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
+      <AllSharedFxProps>SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxBase=Microsoft.AspNetCore.App</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxBaseVersion=$(PackageVersion)</AllSharedFxProps>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <VersionLines Include="$(CommitHash)" />
+      <VersionLines Include="$(PackageVersion)" />
+    </ItemGroup>
+
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AppSharedFxProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AllSharedFxProps)" />
+  </Target>
+
+  <Target Name="_ResolveSharedFxFiles" DependsOnTargets="DefineSharedFxPrerequisites">
+     <!-- Publish -->
     <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
       Targets="Publish"
-      Properties="$(_SharedFxProps);GenerateRuntimeConfigurationFiles=true;SelfContained=false;PublishDir=$(SharedFxPublishDirectory)" />
+      Properties="$(CommonSharedFxProps);GenerateRuntimeConfigurationFiles=true;SelfContained=false;PublishDir=$(SharedFxPublishDirectory)" />
 
     <!-- Clean deps.json -->
     <RepoTasks.TrimDeps DepsFiles="$(SharedFxPublishDirectory)/SharedFx.deps.json" />
@@ -100,11 +154,11 @@
 
     <!-- Rename deps file -->
     <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.deps.json"
-      DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json" />
+      DestinationFiles="$(SharedFxPublishDirectory)\$(SharedFxPackage).deps.json" />
 
     <!-- Rename runtimeconfig.json file -->
     <Move SourceFiles="$(SharedFxPublishDirectory)\SharedFx.runtimeconfig.json"
-      DestinationFiles="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.runtimeconfig.json" />
+      DestinationFiles="$(SharedFxPublishDirectory)\$(SharedFxPackage).runtimeconfig.json" />
 
     <!-- Generate Runtime Graph -->
     <PropertyGroup>
@@ -119,19 +173,28 @@
 
     <ProcessSharedFrameworkDeps
       AssetsFilePath="@(SharedFxAssetsFile)"
-      DepsFilePath="$(SharedFxPublishDirectory)\Microsoft.AspNetCore.All.deps.json"
+      DepsFilePath="$(SharedFxPublishDirectory)\$(SharedFxPackage).deps.json"
       Runtime="$(RuntimeGraphGeneratorRuntime)" />
 
     <!-- Generate .version file -->
-    <ItemGroup>
-      <VersionLines Include="$(CommitHash)" />
-      <VersionLines Include="$(PackageVersion)" />
-    </ItemGroup>
-
     <WriteLinesToFile
       File="$(SharedFxPublishDirectory)\.version"
       Lines="@(VersionLines)"
       Overwrite="true" />
+  </Target>
+
+  <Target Name="ResolveSharedFxFiles" DependsOnTargets="PrepareForSharedFx">
+    <PropertyGroup>
+      <AppSharedFxProps>SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);SharedFxPublishDirectory=$(AppSharedFxPublishDirectory)</AppSharedFxProps>
+      <AllSharedFxProps>SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxPublishDirectory=$(AllSharedFxPublishDirectory)</AllSharedFxProps>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_ResolveSharedFxFiles" Properties="$(AppSharedFxProps)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_ResolveSharedFxFiles" Properties="$(AllSharedFxProps)" />
 
     <MakeDir Directories="$(SharedFxOutputPath)" />
   </Target>
@@ -148,8 +211,8 @@
       <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     </PropertyGroup>
 
-    <!-- Determine runtime location -->
-    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj" Targets="GetPackageDefinitions" >
+    <!-- Determine runtime location (via .App shared framework) -->
+    <MSBuild Projects="$(AppSharedFxWorkDirectory)SharedFx.csproj" Targets="GetPackageDefinitions" >
       <Output TaskParameter="TargetOutputs" ItemName="PackageDefinitions" />
     </MSBuild>
 
@@ -170,15 +233,20 @@
     <Error Text="Expected to resolve a single clr jit assembly but instead resolved @(ClrJitAssembly->Count()) with identities %(ClrJitAssembly.Identity)" Condition="'@(ClrJitAssembly->Count())' != 1" />
 
     <!-- Gather details on published assemblies -->
-    <MSBuild Projects="$(SharedFxWorkDirectory)SharedFx.csproj"
+    <MSBuild Projects="$(AppSharedFxWorkDirectory)SharedFx.csproj"
       Targets="GetPublishAssemblies"
       Properties="RuntimeIdentifier=$(SharedFxRestoreRid);SelfContained=false" >
-      <Output TaskParameter="TargetOutputs" ItemName="PublishAssemblies" />
+      <Output TaskParameter="TargetOutputs" ItemName="AppPublishAssemblies" />
+    </MSBuild>
+    <MSBuild Projects="$(AllSharedFxWorkDirectory)SharedFx.csproj"
+      Targets="GetPublishAssemblies"
+      Properties="RuntimeIdentifier=$(SharedFxRestoreRid);SelfContained=false" >
+      <Output TaskParameter="TargetOutputs" ItemName="AllPublishAssemblies" />
     </MSBuild>
 
     <ItemGroup>
-      <IgnoredAssemblies Include="@(PublishAssemblies)" Condition="'%(AssetType)' == 'native' OR '%(AssetType)' == 'resources'" />
-      <_AssembliesToCrossgen Include="$(SharedFxPublishDirectory)**\*.dll" />
+      <IgnoredAssemblies Include="@(AppPublishAssemblies);@(AllPublishAssemblies)" Condition="'%(AssetType)' == 'native' OR '%(AssetType)' == 'resources'" />
+      <_AssembliesToCrossgen Include="$(SharedFxIntermediateOutputPath)**\*.dll" />
     </ItemGroup>
 
     <!-- Compute the intersection of crossgen candidates and native/resources assemblies as the set of assemblies to skip crossgen -->
@@ -208,7 +276,7 @@
       <CrossGenArgs Include="-readytorun" />
       <CrossGenArgs Include="-in %(AssembliesToCrossgen.Source)" />
       <CrossGenArgs Include="-out %(AssembliesToCrossgen.Destination)" />
-      <CrossGenArgs Include="-platform_assemblies_paths $(SharedFxPublishDirectory)$(PathSeparator)$(SharedFxCrossGenToolDirectory)" />
+      <CrossGenArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)$(PathSeparator)$(AppSharedFxPublishDirectory)$(PathSeparator)$(AllSharedFxPublishDirectory)" />
       <CrossGenArgs Include="-JITPath %(ClrJitAssembly.FullPath)" />
     </ItemGroup>
 
@@ -232,7 +300,7 @@
     <ItemGroup>
       <CrossGenSymbolsArgs Include="-nologo" />
       <CrossGenSymbolsArgs Include="-readytorun" />
-      <CrossGenSymbolsArgs Include="-platform_assemblies_paths $(SharedFxPublishDirectory)$(PathSeparator)$(SharedFxCrossGenToolDirectory)" />
+      <CrossGenSymbolsArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)$(PathSeparator)$(AppSharedFxPublishDirectory)$(PathSeparator)$(AllSharedFxPublishDirectory)" />
       <CrossGenSymbolsArgs Include="-$(CrossGenSymbolsType)" />
       <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Symbols)" />
       <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Destination)" />
@@ -261,7 +329,7 @@
     <!-- Replace assemblies with crossgen output -->
     <Copy
       SourceFiles="$(SharedFxCrossGenDirectory)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
-      DestinationFiles="$(SharedFxPublishDirectory)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
+      DestinationFiles="$(SharedFxIntermediateOutputPath)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
       OverwriteReadOnlyFiles="True" />
 
     <ItemGroup>

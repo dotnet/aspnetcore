@@ -16,6 +16,9 @@ namespace RepoTasks
         public string ReferencePackagePath { get; set; }
 
         [Required]
+        public string MetapackageReferenceType { get; set; }
+
+        [Required]
         public ITaskItem[] BuildArtifacts { get; set; }
 
         [Required]
@@ -27,8 +30,8 @@ namespace RepoTasks
         public override bool Execute()
         {
             // Parse input
-            var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata("Metapackage") == "true");
-            var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata("Metapackage") == "true");
+            var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
+            var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata(MetapackageReferenceType) == "true");
             var buildArtifacts = BuildArtifacts.Select(ArtifactInfo.Parse)
                 .OfType<ArtifactInfo.Package>()
                 .Where(p => !p.IsSymbolsArtifact);
@@ -41,7 +44,7 @@ namespace RepoTasks
 
             // Items
             var itemGroupElement = xmlDoc.CreateElement("ItemGroup");
-            Log.LogMessage(MessageImportance.High, $"Metapackage will include the following packages");
+            Log.LogMessage(MessageImportance.High, $"{MetapackageReferenceType} will include the following packages");
 
             foreach (var package in metapackageArtifacts)
             {

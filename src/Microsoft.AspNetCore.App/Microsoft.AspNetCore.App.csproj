@@ -18,18 +18,13 @@
     <IncludeSymbols>false</IncludeSymbols>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
-    <Description>Microsoft.AspNetCore.All</Description>
+    <Description>Microsoft.AspNetCore.App</Description>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Include="build\$(TargetFramework)\*.props" PackagePath="%(Identity)" />
-    <Content Include="build\$(TargetFramework)\*.targets" PackagePath="%(Identity)" />
     <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="[$(AppMetapackageVersion)]" PrivateAssets="Build" />
   </ItemGroup>
 
 </Project>
