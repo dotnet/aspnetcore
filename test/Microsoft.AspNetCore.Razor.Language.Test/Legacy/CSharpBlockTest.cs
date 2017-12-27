@@ -1234,22 +1234,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             ParseBlockTest(prefix + markup + suffix, expected);
         }
 
-        private void NamespaceImportTest(string content, string expectedNS, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.None, string errorMessage = null, SourceLocation? location = null)
+        private void NamespaceImportTest(string content, string expectedNS, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.None, SourceLocation? location = null)
         {
-            var errors = new RazorDiagnostic[0];
-            if (!string.IsNullOrEmpty(errorMessage) && location.HasValue)
-            {
-                errors = new RazorDiagnostic[]
-                {
-                    RazorDiagnostic.Create(new RazorError(errorMessage, location.Value, length: 1))
-                };
-            }
             ParseBlockTest(content,
                            new DirectiveBlock(
                                Factory.Code(content)
                                    .AsNamespaceImport(expectedNS)
-                                   .Accepts(acceptedCharacters)),
-                           errors);
+                                   .Accepts(acceptedCharacters)));
         }
 
         private static StatementBlock CreateStatementBlock(MarkupBlock block)

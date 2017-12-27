@@ -1955,11 +1955,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string document,
             IEnumerable<DirectiveDescriptor> descriptors,
             Block expected,
-            params RazorError[] expectedErrors)
+            params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseCodeBlock(document, descriptors, designTime: false);
 
-            EvaluateResults(result, expected, expectedErrors.Select(error => RazorDiagnostic.Create(error)).ToList());
+            EvaluateResults(result, expected, expectedErrors);
         }
     }
 }

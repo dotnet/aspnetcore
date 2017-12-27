@@ -41,22 +41,5 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(RazorDiagnosticSeverity.Error, defaultDiagnostic.Severity);
             Assert.Equal(span, diagnostic.Span);
         }
-
-        [Fact]
-        public void Create_WithRazorError_CreatesLegacyRazorDiagnostic()
-        {
-            // Arrange
-            var span = new SourceSpan("test.cs", 15, 1, 8, 5);
-            var error = new RazorError("This is an error", new SourceLocation("test.cs", 15, 1, 8), 5);
-
-            // Act
-            var diagnostic = RazorDiagnostic.Create(error);
-
-            // Assert
-            var legacyDiagnostic = Assert.IsType<LegacyRazorDiagnostic>(diagnostic);
-            Assert.Equal("RZ9999", legacyDiagnostic.Id);
-            Assert.Equal(RazorDiagnosticSeverity.Error, legacyDiagnostic.Severity);
-            Assert.Equal(span, diagnostic.Span);
-        }
     }
 }

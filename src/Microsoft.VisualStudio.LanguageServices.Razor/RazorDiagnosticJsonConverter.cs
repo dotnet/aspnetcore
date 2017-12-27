@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -46,12 +45,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
 
                 return RazorDiagnostic.Create(descriptor, sourceSpan);
-            }
-            else if (string.Equals(typeName, typeof(LegacyRazorDiagnostic).FullName, StringComparison.Ordinal))
-            {
-                var error = new RazorError(message, absoluteIndex, lineIndex, characterIndex, length);
-
-                return RazorDiagnostic.Create(error);
             }
 
             return null;
