@@ -21,19 +21,19 @@
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
     <PropertyGroup>
-      <HostingArchiveName>$(HostingInstallerName)-$(PackageVersion)-linux-x64.tar.gz</HostingArchiveName>
+      <SharedFxArchiveName>$(SharedFxInstallerName)-$(PackageVersion)-linux-x64.tar.gz</SharedFxArchiveName>
     </PropertyGroup>
 
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
     <MakeDir Directories="$(_WorkRoot)" />
 
-    <!-- Create layout: Aspnet Hosting Bundle -->
+    <!-- Create layout: Aspnet Runtime  -->
     <Exec Command="tar -xzf $(SharedFxLinuxArchiveFilePath) -C $(_WorkRoot)" />
     <Exec Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeInstallerArchiveName) -C $(_WorkRoot)" />
 
-    <!-- Create Aspnet Hosting Bundle tar.gz -->
-    <Exec Command="tar -czf $(_InstallersOutputDir)$(HostingArchiveName) -C $(_WorkRoot) ."/>
+    <!-- Create Aspnet Runtime tar.gz -->
+    <Exec Command="tar -czf $(_InstallersOutputDir)$(SharedFxArchiveName) -C $(_WorkRoot) ."/>
   </Target>
 
   <Target Name="_BuildDockerImage">
@@ -100,46 +100,36 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <RpmHostingDependencies Include="$(SharedFxInstallerName)-$(PackageVersion)" Version="$(PackageVersion)" />
-      <RpmHostingDependencies Include="$(DotnetRuntimeInstallerName)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
       <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
       <RpmSharedFxDependencies Include="aspnetcore-store-2.0.3" Version="2.0.3" />
+      <RpmSharedFxDependencies Include="$(DotnetRuntimeInstallerName)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
       <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
       <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
     </ItemGroup>
 
     <PropertyGroup>
-      <RpmHostingArguments>@(RpmHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmHostingArguments>
       <RpmSharedFxArguments>@(RpmSharedFxDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RpmSharedFxArguments>
-      <RpmRHSharedFxArguments>@(RpmRHSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmRHSharedFxArguments>
-      <RpmGenericSharedFxArguments>@(RpmGenericSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmGenericSharedFxArguments>
+      <RpmRHSharedFxArguments>$(RpmSharedFxArguments) @(RpmRHSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmRHSharedFxArguments>
+      <RpmGenericSharedFxArguments>$(RpmSharedFxArguments) @(RpmGenericSharedFxDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RpmGenericSharedFxArguments>
 
       <RpmCommonArguments>Image=$(Image);RpmVendor=$(RpmVendor);RpmVersion=$(PackageVersion)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmMaintainerName=$(MaintainerName);RpmMaintainerEmail=$(MaintainerEmail)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmHomepage=$(Homepage);RpmRevision=$(PackageRevision)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmLicense=$(LicenseType)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonArguments>
       <RpmCommonGenericArguments>RpmFileSuffix=rhel.7-x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
       <RpmCommonRHArguments>RpmFileSuffix=rh.rhel.7-x64.rpm;RpmInstallRoot=$(RHInstallRoot)</RpmCommonRHArguments>
 
-      <RpmCommonSharedFxArguments>RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</RpmCommonSharedFxArguments>
-      <RpmCommonSharedFxArguments>$(RpmCommonSharedFxArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonSharedFxArguments>
-
-      <RpmCommonHostingArguments>RpmInstallerPrefix=$(HostingInstallerName);RpmArguments=$(RpmHostingArguments)</RpmCommonHostingArguments>
-      <RpmCommonHostingArguments>$(RpmCommonHostingArguments);RpmMSummary=$(HostingSummary);RpmDescription=$(HostingDescription)</RpmCommonHostingArguments>
-
-      <RpmSharedFxProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);$(RpmCommonSharedFxArguments);RpmArguments=$(RpmGenericSharedFxArguments) $(RpmSharedFxArguments)</RpmSharedFxProps>
-      <RpmHostingProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);$(RpmCommonHostingArguments)</RpmHostingProps>
-      <RpmRHSharedFxProps>$(RpmCommonArguments);$(RpmCommonRHArguments);$(RpmCommonSharedFxArguments);RpmArguments=$(RpmRHSharedFxArguments) $(RpmSharedFxArguments)</RpmRHSharedFxProps>
-      <RpmRHHostingProps>$(RpmCommonArguments);$(RpmCommonRHArguments);$(RpmCommonHostingArguments)</RpmRHHostingProps>
+      <RpmSharedFxProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);RpmArguments=$(RpmGenericSharedFxArguments)</RpmSharedFxProps>
+      <RpmRHSharedFxProps>$(RpmCommonArguments);$(RpmCommonRHArguments);RpmArguments=$(RpmRHSharedFxArguments)</RpmRHSharedFxProps>
     </PropertyGroup>
 
-    <!-- Generic installers-->
+    <!-- Generic installer-->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmSharedFxProps)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmHostingProps)" />
 
-    <!-- RH installers-->
+    <!-- RH installer-->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmRHSharedFxProps)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RpmRHHostingProps)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
@@ -180,7 +170,7 @@
 
     <GenerateFileFromTemplate TemplateFile="$(DebConfigInFile)" OutputPath="$(_WorkLayoutDir)debian_config.json" Properties="$(DebConfigProps)" />
 
-    <!-- Build SharedFx and Hosting Bundle Deb package -->
+    <!-- Build SharedFx Bundle Deb package -->
 
     <Exec Command="docker run
       --rm
@@ -192,7 +182,7 @@
       ./build.sh /t:RunDebTool"
       ContinueOnError="WarnAndContinue" />
 
-    <!-- Copy SharedFx and Hosting Bundle packages to output -->
+    <!-- Copy SharedFx packages to output -->
     <ItemGroup>
       <GeneratedDebFiles Include="$(_WorkOutputDir)/*.deb" />
     </ItemGroup>
@@ -214,23 +204,18 @@
     <ItemGroup>
       <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
       <_DebSharedFxDependencies Include="aspnetcore-store-2.0.3"/>
-      <_DebHostingDependencies Include="$(DotnetRuntimeInstallerName)"/>
-      <_DebHostingDependencies Include="$(SharedFxInstallerName)-$(Version)"/>
+      <_DebSharedFxDependencies Include="$(DotnetRuntimeInstallerName)"/>
     </ItemGroup>
 
     <PropertyGroup>
       <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": {}', ', ')</DebSharedFxDependencies>
-      <DebHostingDependencies>@(_DebHostingDependencies->'"%(Identity)": {}', ', ')</DebHostingDependencies>
 
       <CommonProps>Image=$(Image);DebVersion=$(Version)</CommonProps>
       <DebSharedFxProps>DebPrefix=$(SharedFxInstallerName);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebSharedFxProps>
       <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</DebSharedFxProps>
-      <DebHostingProps>DebPrefix=$(HostingInstallerName);DebSummary=$(HostingSummary);DebDescription=$(HostingDescription)</DebHostingProps>
-      <DebHostingProps>$(DebHostingProps);DebDependencies=$(DebHostingDependencies)</DebHostingProps>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebSharedFxProps)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebHostingProps)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
