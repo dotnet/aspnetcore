@@ -1,5 +1,9 @@
 <Project>
 
+  <PropertyGroup>
+      <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+  </PropertyGroup>
+
   <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" BeforeTargets="Compile" >
     <ItemGroup>
       <BuildConfigurations Include="/p:Configuration=Release /p:platform=Win32" />
@@ -16,11 +20,11 @@
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
-  <Target Name="PackageProjects">
+  <Target Name="PackageNativeProjects">
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
       Targets="Restore;Pack"
-      Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(BuildDir)" />
+      Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber)" />
   </Target>
   
 </Project>
