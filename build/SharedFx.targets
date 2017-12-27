@@ -2,6 +2,10 @@
   <Import Project="common.props" />
   <Import Project="SharedFx.props" />
 
+  <PropertyGroup>
+    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
+  </PropertyGroup>
+
   <Target Name="BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
@@ -121,6 +125,8 @@
       File="$(SharedFxPublishDirectory)\.version"
       Lines="@(VersionLines)"
       Overwrite="true" />
+
+    <MakeDir Directories="$(SharedFxOutputPath)" />
 
     <!--
       Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
