@@ -64,7 +64,7 @@
     <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFolder="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates" />
     <Copy SourceFiles="$(ArtifactDependencyLocation)\nuGetPackagesArchive-$(PackageVersion).lzma" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
 
-    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-shared-$(PackageVersion)-win7-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
+    <UnzipArchive File="$(ArtifactDependencyLocation)\Runtime\$(PackageVersion)\aspnetcore-runtime-$(PackageVersion)-win7-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
