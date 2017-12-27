@@ -102,7 +102,7 @@ namespace SampleApp
 
                     options.ListenAnyIP(basePort + 4, listenOptions =>
                     {
-                        listenOptions.UseHttps(StoreName.My, "aspnet.test", allowInvalid: true);
+                        listenOptions.UseHttps(StoreName.My, "localhost", allowInvalid: true);
                     });
 
                     options
