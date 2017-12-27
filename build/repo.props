@@ -49,6 +49,7 @@
     <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
     <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
     <PublishToAzureBlob Condition=" $(PublishType.Contains('blob')) ">true</PublishToAzureBlob>
+    <PublishToDotnetCliAzureBlob Condition=" $(PublishType.Contains('dotnetcliblob')) ">true</PublishToDotnetCliAzureBlob>
   </PropertyGroup>
 
 </Project>

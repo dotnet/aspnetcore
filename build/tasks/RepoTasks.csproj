@@ -7,6 +7,7 @@
 
    <ItemGroup>
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetInMSBuildVersion)" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
    </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

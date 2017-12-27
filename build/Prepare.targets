@@ -9,7 +9,7 @@
       <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
-      <UnsignedSharedFx Include="$(DepsDirectory)SharedFx\*.zip" />
+      <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
       <PoliCheckPackages Include="@(UnsignedSymbolPackages)" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
