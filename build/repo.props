@@ -10,7 +10,8 @@
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
-    <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
+    <LineupBuildDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))lineups\</LineupBuildDir>
+    <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <DependencyMirrorPackageDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorPackageDir>

@@ -13,7 +13,7 @@
         Configuration=$(Configuration);
         IsFinalBuild=$(IsFinalBuild);
       </TemplateProjProperties>
-      <TemplateProjTargets>Restore;Compile;Package</TemplateProjTargets>
+      <TemplateProjTargets>CleanArtifacts;Restore;Compile;Package</TemplateProjTargets>
       <TemplateProjTargets Condition="'$(SkipTests)' != 'true'">
         $(TemplateProjTargets);
         Test;

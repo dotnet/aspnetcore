@@ -48,8 +48,8 @@
 
     <PropertyGroup>
       <SharedFxWorkDirectory>$(_WorkRoot)SharedFx\</SharedFxWorkDirectory>
-      <SharedFxOutputDirectory>$(_WorkRoot)Publish\</SharedFxOutputDirectory>
-      <SharedFxPublishDirectory>$(SharedFxOutputDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
+      <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
+      <SharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
 
       <_SharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRID)</_SharedFxProps>
       <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
@@ -122,15 +122,31 @@
       Lines="@(VersionLines)"
       Overwrite="true" />
 
+    <!--
+      Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
+      The second line must be the package version.
+      See dotnet-install.ps1/sh.
+    -->
+
+    <WriteLinesToFile
+      File="$(SharedFxOutputPath)latest.aspnetcore.version"
+      Lines="@(VersionLines)"
+      Overwrite="true" />
+
+    <GenerateSvgBadge
+      OutputPath="$(SharedFxOutputPath)$(SharedFxInstallerName)-$(SharedFxRID)-version-badge.svg"
+      Label="version"
+      Value="$(PackageVersion)" />
+
     <ItemGroup>
-      <OutputZipFiles Include="$(SharedFxOutputDirectory)**\*" />
+      <OutputZipFiles Include="$(SharedFxIntermediateOutputPath)**\*" />
     </ItemGroup>
 
     <!-- Create archive -->
     <ZipArchive
-      File="$(ArtifactsDir)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxRID).zip"
+      File="$(SharedFxOutputPath)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxRID).zip"
       SourceFiles="@(OutputZipFiles)"
-      WorkingDirectory="$(SharedFxOutputDirectory)"
+      WorkingDirectory="$(SharedFxIntermediateOutputPath)"
       Overwrite="true"/>
   </Target>
 </Project>
