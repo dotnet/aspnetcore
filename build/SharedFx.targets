@@ -38,7 +38,7 @@
 
   <Target Name="BuildSharedFx" DependsOnTargets="ResolveCommitHash">
     <ItemGroup>
-      <_AcceptableSharedFxRIDs Include="win7-x64;win7-x86;osx-x64;linux-x64"/>
+      <_AcceptableSharedFxRIDs Include="win-x64;win-x86;osx-x64;linux-x64"/>
     </ItemGroup>
 
     <PropertyGroup>
@@ -54,8 +54,13 @@
       <SharedFxWorkDirectory>$(_WorkRoot)SharedFx\</SharedFxWorkDirectory>
       <SharedFxIntermediateOutputPath>$(_WorkRoot)Publish\</SharedFxIntermediateOutputPath>
       <SharedFxPublishDirectory>$(SharedFxIntermediateOutputPath)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</SharedFxPublishDirectory>
+      <SharedFxRestoreRid>$(SharedFxRID)</SharedFxRestoreRid>
 
-      <_SharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRID)</_SharedFxProps>
+      <!-- Required because SQLitePCLRaw 1.1.8 uses win7-x64/win7-x86 as its RIDs, even though the e_sqlite3.dll file works on all supported win-x64/win-x86 platforms. -->
+      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x64'">win7-x64</SharedFxRestoreRid>
+      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x86'">win7-x86</SharedFxRestoreRid>
+
+      <_SharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</_SharedFxProps>
       <_SharedFxProps>$(_SharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</_SharedFxProps>
       <_SharedFxProps>$(_SharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</_SharedFxProps>
       <_SharedFxProps>$(_SharedFxProps);AspNetUniverseBuildOffline=true</_SharedFxProps>
