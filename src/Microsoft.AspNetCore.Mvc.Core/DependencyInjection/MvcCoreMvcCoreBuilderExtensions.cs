@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -165,6 +166,23 @@ namespace Microsoft.Extensions.DependencyInjection
 
             setupAction(builder.PartManager);
 
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the <see cref="CompatibilityVersion"/> for ASP.NET Core MVC for the application.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcCoreBuilder"/>.</param>
+        /// <param name="version">The <see cref="CompatibilityVersion"/> value to configure.</param>
+        /// <returns>The <see cref="IMvcCoreBuilder"/>.</returns>
+        public static IMvcCoreBuilder SetCompatibilityVersion(this IMvcCoreBuilder builder, CompatibilityVersion version)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.Configure<MvcCompatibilityOptions>(o => o.CompatibilityVersion = version);
             return builder;
         }
     }

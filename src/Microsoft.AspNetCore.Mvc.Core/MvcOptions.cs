@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -15,9 +17,15 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// Provides programmatic configuration for the MVC framework.
     /// </summary>
-    public class MvcOptions
+    public class MvcOptions : IEnumerable<ICompatibilitySwitch>
     {
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
+
+        // See CompatibilitySwitch.cs for guide on how to implement these.
+        private readonly CompatibilitySwitch<bool> _allowBindingUndefinedValueToEnumType;
+        private readonly CompatibilitySwitch<InputFormatterExceptionModelStatePolicy> _inputFormatterExceptionModelStatePolicy;
+        private readonly CompatibilitySwitch<bool> _suppressJsonDeserializationExceptionMessagesInModelState;
+        private readonly ICompatibilitySwitch[] _switches;
 
         public MvcOptions()
         {
@@ -32,6 +40,16 @@ namespace Microsoft.AspNetCore.Mvc
             ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
+
+            _allowBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(AllowBindingUndefinedValueToEnumType));
+            _inputFormatterExceptionModelStatePolicy = new CompatibilitySwitch<InputFormatterExceptionModelStatePolicy>(nameof(InputFormatterExceptionModelStatePolicy), InputFormatterExceptionModelStatePolicy.AllExceptions);
+            _suppressJsonDeserializationExceptionMessagesInModelState = new CompatibilitySwitch<bool>(nameof(SuppressJsonDeserializationExceptionMessagesInModelState));
+            _switches = new ICompatibilitySwitch[]
+            {
+                _allowBindingUndefinedValueToEnumType,
+                _inputFormatterExceptionModelStatePolicy,
+                _suppressJsonDeserializationExceptionMessagesInModelState,
+            };
         }
 
         /// <summary>
@@ -167,7 +185,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets an indication whether the model binding system will bind undefined values to enumeration types.
         /// <see langword="false"/> by default.
         /// </summary>
-        public bool AllowBindingUndefinedValueToEnumType { get; set; }
+        public bool AllowBindingUndefinedValueToEnumType
+        {
+            get => _allowBindingUndefinedValueToEnumType.Value;
+            set => _allowBindingUndefinedValueToEnumType.Value = value;
+        }
 
         /// <summary>
         /// Gets or sets the option to determine if model binding should convert all exceptions (including ones not related to bad input)
@@ -175,7 +197,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// This option applies only to custom <see cref="IInputFormatter"/>s.
         /// Default is <see cref="InputFormatterExceptionModelStatePolicy.AllExceptions"/>.
         /// </summary>
-        public InputFormatterExceptionModelStatePolicy InputFormatterExceptionModelStatePolicy { get; set; }
+        public InputFormatterExceptionModelStatePolicy InputFormatterExceptionModelStatePolicy
+        {
+            get => _inputFormatterExceptionModelStatePolicy.Value;
+            set => _inputFormatterExceptionModelStatePolicy.Value = value;
+        }
 
         /// <summary>
         /// Gets or sets a flag to determine whether, if an action receives invalid JSON in
@@ -184,6 +210,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see langword="false"/> by default, meaning that clients may receive details about
         /// why the JSON they posted is considered invalid.
         /// </summary>
-        public bool SuppressJsonDeserializationExceptionMessagesInModelState { get; set; } = false;
+        public bool SuppressJsonDeserializationExceptionMessagesInModelState
+        {
+            get => _suppressJsonDeserializationExceptionMessagesInModelState.Value;
+            set => _suppressJsonDeserializationExceptionMessagesInModelState.Value = value;
+        }
+
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
+        {
+            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }
 }
