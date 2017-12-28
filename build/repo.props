@@ -5,6 +5,7 @@
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
+    <GenerateSignRequest>false</GenerateSignRequest>
 
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
