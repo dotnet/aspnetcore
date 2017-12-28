@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Internal
             httpContext.Request.Headers[HeaderNames.Range] = range;
 
             // Act
-            var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10);
+            var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10, NullLogger.Instance);
 
             // Assert
             Assert.False(isRangeRequest);
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Internal
             httpContext.Request.Headers[HeaderNames.Range] = range;
 
             // Act
-            var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10);
+            var (isRangeRequest, parsedRangeResult) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 10, NullLogger.Instance);
 
             // Assert
             Assert.False(isRangeRequest);
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Internal
             httpContext.Request.Headers[HeaderNames.Range] = range.ToString();
 
             // Act
-            var (isRangeRequest, parsedRange) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 4);
+            var (isRangeRequest, parsedRange) = RangeHelper.ParseRange(httpContext, httpContext.Request.GetTypedHeaders(), 4, NullLogger.Instance);
 
             // Assert
             Assert.True(isRangeRequest);

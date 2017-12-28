@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 return;
             }
 
-            (_isRangeRequest, _range) = RangeHelper.ParseRange(_context, _requestHeaders, _length);
+            (_isRangeRequest, _range) = RangeHelper.ParseRange(_context, _requestHeaders, _length, _logger);
         }
 
         public void ApplyResponseHeaders(int statusCode)
