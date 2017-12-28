@@ -8,7 +8,9 @@
         "minVersion": "15.0.26730.03",
         "requiredWorkloads": [
           "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-          "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81"
+          "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+          "Microsoft.VisualStudio.Component.VC.ATL",
+          "Microsoft.VisualStudio.Component.Windows10SDK.15063.Desktop"
         ]
       }
     }
