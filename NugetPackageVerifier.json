@@ -41,6 +41,36 @@
                         "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.dll": "This is a library with packages UI"
                     }
                 }
+            },
+            "Microsoft.AspNetCore.SpaTemplates": {
+                "packageTypes": [
+                    "Template"
+                ]
+            },
+            "Microsoft.AspNetCore.DeveloperCertificates.Tools": {
+                "packageTypes": [
+                    "DotnetCliTool"
+                ]
+            },
+            "Microsoft.DotNet.Watcher.Tools": {
+                "packageTypes": [
+                    "DotnetCliTool"
+                ]
+            },
+            "Microsoft.EntityFrameworkCore.Tools.DotNet": {
+                "packageTypes": [
+                    "DotnetCliTool"
+                ]
+            },
+            "Microsoft.Extensions.Caching.SqlConfig.Tools": {
+                "packageTypes": [
+                    "DotnetCliTool"
+                ]
+            },
+            "Microsoft.Extensions.SecretManager.Tools": {
+                "packageTypes": [
+                    "DotnetCliTool"
+                ]
             }
         }
     }
