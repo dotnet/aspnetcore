@@ -49,7 +49,7 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_BuildDependencyProjects</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>_BuildDependencyProjects;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
     <BuildDependsOn>_BuildDependencyProjects;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 
@@ -91,6 +91,9 @@
       <None Include="@(TaskAssemblyNetStandard)" PackagePath="tasks\netstandard2.0\" Pack="true"/>
     </ItemGroup>
 
+    <Error Text="TaskAssemblyNet46 is empty. This is a bug" Condition="'@(TaskAssemblyNet46)'==''"/>
+    <Error Text="TaskAssemblyNetStandard is empty. This is a bug" Condition="'@(TaskAssemblyNetStandard)'==''"/>
+
     <!--
       Next we need to build the netcoreapp2.0 tools. In this case we need to do a publish, because we need
       all of the output to put in the package. 
@@ -103,7 +106,13 @@
       Targets="Publish"/>
 
     <ItemGroup>
-      <None Include="$(OutputPath)tools\**\*" Exclude="$(OutputPath)tools\**\*.xml;$(OutputPath)tools\**\*.pdb" PackagePath="tools\" Pack="true"/>      
+      <_RazorTool Include="$(OutputPath)tools\**\*" Exclude="$(OutputPath)tools\**\*.xml;$(OutputPath)tools\**\*.pdb" />
     </ItemGroup>
+
+    <ItemGroup>
+      <None Include="@(_RazorTool)" PackagePath="tools\" Pack="true"/>      
+    </ItemGroup>
+
+    <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''"/>
   </Target>
 </Project>

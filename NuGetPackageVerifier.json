@@ -8,6 +8,14 @@
       "RazorPageGenerator": {}
     }
   },
+  "razor-design": { // this is a 'fat' package that contains some assets we don't own
+    "rules": [
+      // Don't run any rules (temporary, tracked by #1887)
+    ],
+    "packages": {
+      "Microsoft.AspNetCore.Razor.Design": {}
+    }
+  },
   "Default": { // Rules to run for packages not listed in any other set.
     "rules": [
       "DefaultCompositeRule"
