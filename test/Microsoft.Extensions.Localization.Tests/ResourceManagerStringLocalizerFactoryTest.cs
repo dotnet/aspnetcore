@@ -17,21 +17,30 @@ namespace Microsoft.Extensions.Localization.Tests
     {
         private ResourceLocationAttribute _resourceLocationAttribute;
 
+        private RootNamespaceAttribute _rootNamespaceAttribute;
+
         public Assembly Assembly { get; private set; }
         public string BaseName { get; private set; }
 
         public TestResourceManagerStringLocalizerFactory(
             IOptions<LocalizationOptions> localizationOptions,
             ResourceLocationAttribute resourceLocationAttribute,
+            RootNamespaceAttribute rootNamespaceAttribute,
             ILoggerFactory loggerFactory)
             : base(localizationOptions, loggerFactory)
         {
             _resourceLocationAttribute = resourceLocationAttribute;
+            _rootNamespaceAttribute = rootNamespaceAttribute;
         }
 
         protected override ResourceLocationAttribute GetResourceLocationAttribute(Assembly assembly)
         {
             return _resourceLocationAttribute;
+        }
+
+        protected override RootNamespaceAttribute GetRootNamespaceAttribute(Assembly assembly)
+        {
+            return _rootNamespaceAttribute;
         }
 
         protected override ResourceManagerStringLocalizer CreateResourceManagerStringLocalizer(Assembly assembly, string baseName)
@@ -58,11 +67,13 @@ namespace Microsoft.Extensions.Localization.Tests
             var typeFactory = new TestResourceManagerStringLocalizerFactory(
                 options.Object,
                 resourceLocationAttribute,
-                loggerFactory);
+                rootNamespaceAttribute: null,
+                loggerFactory: loggerFactory);
             var stringFactory = new TestResourceManagerStringLocalizerFactory(
                 options.Object,
                 resourceLocationAttribute,
-                loggerFactory);
+                rootNamespaceAttribute: null,
+                loggerFactory: loggerFactory);
             var type = typeof(ResourceManagerStringLocalizerFactoryTest);
             var assemblyName = new AssemblyName(type.GetTypeInfo().Assembly.FullName);
 
@@ -112,6 +123,61 @@ namespace Microsoft.Extensions.Localization.Tests
         }
 
         [Fact]
+        public void Create_ResourceLocationAttribute_RootNamespaceIgnoredWhenNoLocation()
+        {
+            // Arrange
+            var locOptions = new LocalizationOptions();
+            var options = new Mock<IOptions<LocalizationOptions>>();
+            options.Setup(o => o.Value).Returns(locOptions);
+            var loggerFactory = NullLoggerFactory.Instance;
+
+            var resourcePath = Path.Combine("My", "Resources");
+            var rootNamespace = "MyNamespace";
+            var rootNamespaceAttribute = new RootNamespaceAttribute(rootNamespace);
+
+            var typeFactory = new TestResourceManagerStringLocalizerFactory(
+                options.Object,
+                resourceLocationAttribute: null,
+                rootNamespaceAttribute: rootNamespaceAttribute,
+                loggerFactory: loggerFactory);
+
+            var type = typeof(ResourceManagerStringLocalizerFactoryTest);
+            // Act
+            typeFactory.Create(type);
+
+            // Assert
+            Assert.Equal($"Microsoft.Extensions.Localization.Tests.ResourceManagerStringLocalizerFactoryTest", typeFactory.BaseName);
+        }
+
+        [Fact]
+        public void Create_ResourceLocationAttribute_UsesRootNamespace()
+        {
+            // Arrange
+            var locOptions = new LocalizationOptions();
+            var options = new Mock<IOptions<LocalizationOptions>>();
+            options.Setup(o => o.Value).Returns(locOptions);
+            var loggerFactory = NullLoggerFactory.Instance;
+
+            var resourcePath = Path.Combine("My", "Resources");
+            var rootNamespace = "MyNamespace";
+            var resourceLocationAttribute = new ResourceLocationAttribute(resourcePath);
+            var rootNamespaceAttribute = new RootNamespaceAttribute(rootNamespace);
+
+            var typeFactory = new TestResourceManagerStringLocalizerFactory(
+                options.Object,
+                resourceLocationAttribute,
+                rootNamespaceAttribute,
+                loggerFactory);
+
+            var type = typeof(ResourceManagerStringLocalizerFactoryTest);
+            // Act
+            typeFactory.Create(type);
+
+            // Assert
+            Assert.Equal($"MyNamespace.My.Resources.ResourceManagerStringLocalizerFactoryTest", typeFactory.BaseName);
+        }
+
+        [Fact]
         public void Create_FromType_ResourcesPathDirectorySeperatorToDot()
         {
             // Arrange
@@ -123,6 +189,7 @@ namespace Microsoft.Extensions.Localization.Tests
             var factory = new TestResourceManagerStringLocalizerFactory(
                 options.Object,
                 resourceLocationAttribute: null,
+                rootNamespaceAttribute: null,
                 loggerFactory: loggerFactory);
 
             // Act
@@ -202,6 +269,7 @@ namespace Microsoft.Extensions.Localization.Tests
             var factory = new TestResourceManagerStringLocalizerFactory(
                 options.Object,
                 resourceLocationAttribute: null,
+                rootNamespaceAttribute: null,
                 loggerFactory: loggerFactory);
 
             // Act

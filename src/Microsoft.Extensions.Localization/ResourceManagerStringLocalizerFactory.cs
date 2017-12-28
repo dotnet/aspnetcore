@@ -68,7 +68,7 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(typeInfo));
             }
 
-            return GetResourcePrefix(typeInfo, new AssemblyName(typeInfo.Assembly.FullName).Name, _resourcesRelativePath);
+            return GetResourcePrefix(typeInfo, GetRootNamespace(typeInfo.Assembly), GetResourcePath(typeInfo.Assembly));
         }
 
         /// <summary>
@@ -94,9 +94,17 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(baseNamespace));
             }
 
-            return string.IsNullOrEmpty(resourcesRelativePath)
-                ? typeInfo.FullName
-                : baseNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, baseNamespace + ".");
+            if (string.IsNullOrEmpty(resourcesRelativePath))
+            {
+                return typeInfo.FullName;
+            }
+            else
+            {
+                // This expectation is defined by dotnet's automatic resource storage.
+                // We have to conform to "{RootNamespace}.{ResourceLocation}.{FullTypeName - AssemblyName}".
+                var assemblyName = new AssemblyName(typeInfo.Assembly.FullName).Name;
+                return baseNamespace + "." + resourcesRelativePath + TrimPrefix(typeInfo.FullName, assemblyName + ".");
+            }
         }
 
         /// <summary>
@@ -119,8 +127,9 @@ namespace Microsoft.Extensions.Localization
 
             var assemblyName = new AssemblyName(baseNamespace);
             var assembly = Assembly.Load(assemblyName);
+            var rootNamespace = GetRootNamespace(assembly);
             var resourceLocation = GetResourcePath(assembly);
-            var locationPath = baseNamespace + "." + resourceLocation;
+            var locationPath = rootNamespace + "." + resourceLocation;
 
             baseResourceName = locationPath + TrimPrefix(baseResourceName, baseNamespace + ".");
 
@@ -141,11 +150,10 @@ namespace Microsoft.Extensions.Localization
             }
 
             var typeInfo = resourceSource.GetTypeInfo();
-            var assembly = typeInfo.Assembly;
-            var assemblyName = new AssemblyName(assembly.FullName);
-            var resourcePath = GetResourcePath(assembly);
 
-            var baseName = GetResourcePrefix(typeInfo, assemblyName.Name, resourcePath);
+            var baseName = GetResourcePrefix(typeInfo);
+
+            var assembly = typeInfo.Assembly;
 
             return _localizerCache.GetOrAdd(baseName, _ => CreateResourceManagerStringLocalizer(assembly, baseName));
         }
@@ -215,6 +223,23 @@ namespace Microsoft.Extensions.Localization
         protected virtual ResourceLocationAttribute GetResourceLocationAttribute(Assembly assembly)
         {
             return assembly.GetCustomAttribute<ResourceLocationAttribute>();
+        }
+
+        /// <summary>Gets a <see cref="RootNamespaceAttribute"/> from the provided <see cref="Assembly"/>.</summary>
+        /// <param name="assembly">The assembly to get a <see cref="RootNamespaceAttribute"/> from.</param>
+        /// <returns>The <see cref="RootNamespaceAttribute"/> associated with the given <see cref="Assembly"/>.</returns>
+        /// <remarks>This method is protected and virtual for testing purposes only.</remarks>
+        protected virtual RootNamespaceAttribute GetRootNamespaceAttribute(Assembly assembly)
+        {
+            return assembly.GetCustomAttribute<RootNamespaceAttribute>();
+        }
+
+        private string GetRootNamespace(Assembly assembly)
+        {
+            var rootNamespaceAttribute = GetRootNamespaceAttribute(assembly);
+
+            return rootNamespaceAttribute?.RootNamespace ??
+                new AssemblyName(assembly.FullName).Name;
         }
 
         private string GetResourcePath(Assembly assembly)
