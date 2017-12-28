@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
         /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
-        /// <param name="transform">The The <see cref="IClaimsTransformation"/>.</param>
+        /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
         public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform)
         {
             Schemes = schemes;
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the only implementation of sign-in.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you intended to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and SignInAsync(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-in schemes are: {schemes}.");
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 // CookieAuth is the most common implementation of sign-out, but OpenIdConnect and WsFederation also support it.
                 return new InvalidOperationException(mismatchError
-                    + $"Did you intended to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
+                    + $"Did you forget to call AddAuthentication().AddCookies(\"Cookies\") and {nameof(SignOutAsync)}(\"Cookies\",...)?");
             }
 
             return new InvalidOperationException(mismatchError + $"The registered sign-out schemes are: {schemes}.");
