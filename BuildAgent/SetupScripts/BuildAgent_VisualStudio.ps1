@@ -64,11 +64,12 @@ foreach ($agent in $Agents) {
             '--norestart')
 
         if (Test-Path $vsInstallPath) {
+            # prepend the arg list with the verb
             if ($using:Update) {
-                $arguments += 'update'
+                $arguments = ,'update' + $arguments
             }
             else {
-                $arguments += 'modify'
+                $arguments = ,'modify' + $arguments
             }
         }
 
