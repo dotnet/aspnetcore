@@ -67,27 +67,28 @@
     <Error Condition="@(_SharedFxLatestPointerToPublish->Count()) &gt; 1" Text="More than one 'latest.aspnetcore.version' file was found. Cannot publish both." />
 
     <ItemGroup>
+      <FilesToPublishToDotnetCli Remove="@(FilesToPublishToDotnetCli)" />
       <!-- unlike PCP, we don't want to prefix publishing with BlobFileRelativePathBase-->
-      <FilesToPublish Include="@(_SharedFxFilesToPublish)" RelativeBlobPath="Runtime/$(PackageVersion)/%(_SharedFxFilesToPublish.FileName)%(_SharedFxFilesToPublish.Extension)" />
+      <FilesToPublishToDotnetCli Include="@(_SharedFxFilesToPublish)" RelativeBlobPath="Runtime/$(PackageVersion)/%(_SharedFxFilesToPublish.FileName)%(_SharedFxFilesToPublish.Extension)" />
 
-      <FilesToPublish Include="@(_SharedFxLatestBadgeToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/%(_SharedFxLatestBadgeToPublish.FileName)%(_SharedFxLatestBadgeToPublish.Extension)">
+      <FilesToPublishToDotnetCli Include="@(_SharedFxLatestBadgeToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/%(_SharedFxLatestBadgeToPublish.FileName)%(_SharedFxLatestBadgeToPublish.Extension)">
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
         <ContentType>image/svg+xml</ContentType>
         <Overwrite>true</Overwrite>
-      </FilesToPublish>
+      </FilesToPublishToDotnetCli>
 
-      <FilesToPublish Include="@(_SharedFxLatestPointerToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/latest.aspnetcore.version">
+      <FilesToPublishToDotnetCli Include="@(_SharedFxLatestPointerToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/latest.aspnetcore.version">
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
         <ContentType>text/plain</ContentType>
         <Overwrite>true</Overwrite>
-      </FilesToPublish>
+      </FilesToPublishToDotnetCli>
     </ItemGroup>
 
     <RepoTasks.PublishToAzureBlob 
         AccountName="$(PublishDotnetCliAccountName)"
         SharedAccessToken="$(DotnetCliAccessToken)"
         ContainerName="$(PublishDotnetCliContainerName)"
-        Files="@(FilesToPublish)" />
+        Files="@(FilesToPublishToDotnetCli)" />
   </Target>
 
 
