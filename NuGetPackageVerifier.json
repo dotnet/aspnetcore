@@ -8,17 +8,44 @@
       "RazorPageGenerator": {}
     }
   },
-  "razor-design": { // this is a 'fat' package that contains some assets we don't own
-    "rules": [
-      // Don't run any rules (temporary, tracked by #1887)
-    ],
-    "packages": {
-      "Microsoft.AspNetCore.Razor.Design": {}
-    }
-  },
   "Default": { // Rules to run for packages not listed in any other set.
     "rules": [
       "DefaultCompositeRule"
-    ]
+    ],
+    "packages": {
+      "Microsoft.AspNetCore.Razor.Design": {
+        "exclusions": {
+          "ASSEMBLY_DESCRIPTION": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "NEUTRAL_RESOURCES_LANGUAGE": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "ASSEMBLY_PRODUCT": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "SERVICING_ATTRIBUTE": {
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "VERSION_INFORMATIONALVERSION": {
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "WRONG_PUBLICKEYTOKEN": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Microsoft.CodeAnalysis.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/Newtonsoft.Json.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/unix/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions.",
+            "tools/runtimes/win/lib/netstandard1.3/System.Text.Encoding.CodePages.dll": "This assembly is not owned by us and does not follow our conventions."
+          },
+          "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
+            "tools/Microsoft.CodeAnalysis.CSharp.dll": "This assembly is not owned by us and does not follow our conventions."
+          }
+        }
+      }
+    }
   }
 }
