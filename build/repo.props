@@ -11,6 +11,7 @@
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj" />
     <ExcludeSolutions Include="$(RepositoryRoot)Razor.Slim.sln" />
   </ItemGroup>
+
   <PropertyGroup>
     <!-- These properties are use by the automation that updates dependencies.props -->
     <LineupPackageId>Internal.AspNetCore.Universe.Lineup</LineupPackageId>

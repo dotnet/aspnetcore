@@ -29,6 +29,8 @@
         <Version>$(AddinVersion)</Version>
         <Category>$(MPackArtifactCategory)</Category>
       </ArtifactInfo>
+
+      <FilesToExcludeFromSigning Include="$(MPackOutputPath)" />
     </ItemGroup>
   </Target>
 

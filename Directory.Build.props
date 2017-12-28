@@ -12,6 +12,7 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
 
     <!-- Generate full pdbs for desktop targeting projects on platforms that support generating full pdbs. -->
     <DebugType Condition="'$(OS)'=='Windows_NT' AND '$(TargetFramework)'=='net46'">full</DebugType>

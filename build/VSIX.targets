@@ -34,6 +34,9 @@
         <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
 
+      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
+      <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
+
     </ItemGroup>
   </Target>
 
