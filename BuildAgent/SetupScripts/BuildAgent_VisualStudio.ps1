@@ -1,6 +1,16 @@
 <#
 .SYNOPSIS
-Installs or updates Visual Studio on build agents
+    Installs or updates Visual Studio on build agents
+.PARAMETER Account
+    User name to use to remote into agents
+.PARAMETER Credential
+    Login
+.PARAMETER Agents
+    A list of computer names to install VS onto. If not specified, the list is pulled from agentlist.psm1
+.PARAMETER ExcludeAgents
+    A list of computer names to skip.
+.PARAMETER Update
+    Update VS to latest version instead of modifying the installation to include new workloads.
 #>
 [CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
@@ -8,7 +18,10 @@ param(
     [string]$Account = "REDMOND\asplab",
     [Parameter(ParameterSetName = 'Credential')]
     [pscredential]$Credential,
+    # A list of 
     [string[]]$Agents = $null,
+    # Skip agents
+    [string[]]$ExcludeAgents = $null,
     [switch]$Update
 )
 
@@ -31,6 +44,11 @@ if (-not $Credential) {
 }
 
 foreach ($agent in $Agents) {
+
+    if ($ExcludeAgents -contains $agent) {
+        Write-Host -ForegroundColor Yellow "Skipping $agent"
+        continue
+    }
     
     $session = New-PSSession -ComputerName $agent -Credential $Credential
 
