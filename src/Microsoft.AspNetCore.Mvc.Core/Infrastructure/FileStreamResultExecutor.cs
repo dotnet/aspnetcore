@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
+
+            Logger.ExecutingFileResult(result);
 
             long? fileLength = null;
             if (result.FileStream.CanSeek)
@@ -65,6 +68,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (range != null && rangeLength == 0)
             {
                 return Task.CompletedTask;
+            }
+
+            if (range != null)
+            {
+                Logger.WritingRangeToBody();
             }
 
             return WriteFileAsync(context.HttpContext, result.FileStream, range, rangeLength);

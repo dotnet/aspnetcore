@@ -1354,6 +1354,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatApiController_AttributeRouteRequired(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ApiController_AttributeRouteRequired"), p0);
 
+        /// <summary>
+        /// No file provider has been configured to process the supplied file.
+        /// </summary>
+        internal static string VirtualFileResultExecutor_NoFileProviderConfigured
+        {
+            get => GetString("VirtualFileResultExecutor_NoFileProviderConfigured");
+        }
+
+        /// <summary>
+        /// No file provider has been configured to process the supplied file.
+        /// </summary>
+        internal static string FormatVirtualFileResultExecutor_NoFileProviderConfigured()
+            => GetString("VirtualFileResultExecutor_NoFileProviderConfigured");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

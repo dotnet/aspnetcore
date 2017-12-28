@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -49,6 +50,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
             }
 
+            Logger.ExecutingFileResult(result, result.FileName);
+
             var lastModified = result.LastModified ?? fileInfo.LastModified;
             var (range, rangeLength, serveBody) = SetHeadersAndLog(
                 context,
@@ -85,6 +88,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var response = context.HttpContext.Response;
             var physicalPath = fileInfo.PhysicalPath;
+
+            if (range != null)
+            {
+                Logger.WritingRangeToBody();
+            }
+
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
@@ -110,6 +119,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         private IFileInfo GetFileInformation(VirtualFileResult result)
         {
             var fileProvider = GetFileProvider(result);
+            if (fileProvider is NullFileProvider)
+            {
+                throw new InvalidOperationException(Resources.VirtualFileResultExecutor_NoFileProviderConfigured);
+            }
 
             var normalizedPath = result.FileName;
             if (normalizedPath.StartsWith("~", StringComparison.Ordinal))

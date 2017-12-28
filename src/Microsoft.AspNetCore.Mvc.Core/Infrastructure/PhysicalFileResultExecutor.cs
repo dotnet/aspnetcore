@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -38,6 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new FileNotFoundException(
                     Resources.FormatFileResult_InvalidPath(result.FileName), result.FileName);
             }
+
+            Logger.ExecutingFileResult(result, result.FileName);
 
             var lastModified = result.LastModified ?? fileInfo.LastModified;
             var (range, rangeLength, serveBody) = SetHeadersAndLog(
@@ -77,6 +80,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (!Path.IsPathRooted(result.FileName))
             {
                 throw new NotSupportedException(Resources.FormatFileResult_PathNotRooted(result.FileName));
+            }
+
+            if (range != null)
+            {
+                Logger.WritingRangeToBody();
             }
 
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();

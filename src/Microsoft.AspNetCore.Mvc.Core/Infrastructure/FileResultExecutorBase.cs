@@ -56,7 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             SetContentType(context, result);
             SetContentDispositionHeader(context, result);
-            Logger.FileResultExecuting(result.FileDownloadName);
 
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
@@ -106,6 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         return SetRangeHeaders(context, httpRequestHeaders, fileLength.Value);
                     }
                 }
+                else
+                {
+                    Logger.NotEnabledForRangeProcessing();
+                }
             }
 
             return (range: null, rangeLength: 0, serveBody);
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             response.Headers[HeaderNames.AcceptRanges] = AcceptRangeHeaderValue;
         }
 
-        internal static bool IfRangeValid(
+        internal bool IfRangeValid(
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
@@ -168,11 +171,13 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 {
                     if (lastModified.HasValue && lastModified > ifRange.LastModified)
                     {
+                        Logger.IfRangeLastModifiedPreconditionFailed(lastModified, ifRange.LastModified);
                         return false;
                     }
                 }
                 else if (etag != null && ifRange.EntityTag != null && !ifRange.EntityTag.Compare(etag, useStrongComparison: true))
                 {
+                    Logger.IfRangeETagPreconditionFailed(etag, ifRange.EntityTag);
                     return false;
                 }
             }
@@ -181,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         // Internal for testing
-        internal static PreconditionState GetPreconditionState(
+        internal PreconditionState GetPreconditionState(
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
@@ -200,6 +205,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     etag: etag,
                     matchFoundState: PreconditionState.ShouldProcess,
                     matchNotFoundState: PreconditionState.PreconditionFailed);
+
+                if (ifMatchState == PreconditionState.PreconditionFailed)
+                {
+                    Logger.IfMatchPreconditionFailed(etag);
+                }
             }
 
             // 14.26 If-None-Match
@@ -229,6 +239,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 var unmodified = ifUnmodifiedSince >= lastModified;
                 ifUnmodifiedSinceState = unmodified ? PreconditionState.ShouldProcess : PreconditionState.PreconditionFailed;
+
+                if (ifUnmodifiedSinceState == PreconditionState.PreconditionFailed)
+                {
+                    Logger.IfUnmodifiedSincePreconditionFailed(lastModified, ifUnmodifiedSince);
+                }
             }
 
             var state = GetMaxPreconditionState(ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState);
@@ -273,7 +288,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return max;
         }
 
-        private static (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
+        private (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
             ActionContext context,
             RequestHeaders httpRequestHeaders,
             long fileLength)
@@ -286,7 +301,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var (isRangeRequest, range) = RangeHelper.ParseRange(
                 context.HttpContext,
                 httpRequestHeaders,
-                fileLength);
+                fileLength,
+                Logger);
 
             if (!isRangeRequest)
             {

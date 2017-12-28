@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(result));
             }
+
+            Logger.ExecutingFileResult(result);
 
             var (range, rangeLength, serveBody) = SetHeadersAndLog(
                 context,
@@ -60,6 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (range != null && rangeLength == 0)
             {
                 return Task.CompletedTask;
+            }
+
+            if (range != null)
+            {
+                Logger.WritingRangeToBody();
             }
 
             var fileContentStream = new MemoryStream(result.FileContents);

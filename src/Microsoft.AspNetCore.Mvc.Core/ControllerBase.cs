@@ -1551,7 +1551,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
         [NonAction]
@@ -1564,7 +1564,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
         /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
@@ -1579,7 +1579,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <returns>The created <see cref="PhysicalFileResult"/> for the response.</returns>
@@ -1597,7 +1597,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="enableRangeProcessing">Set to <c>true</c> to enable range requests processing.</param>
@@ -1620,7 +1620,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
@@ -1641,7 +1641,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
         /// <param name="entityTag">The <see cref="EntityTagHeaderValue"/> associated with the file.</param>
@@ -1664,7 +1664,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
@@ -1687,7 +1687,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// This supports range requests (<see cref="StatusCodes.Status206PartialContent"/> or
         /// <see cref="StatusCodes.Status416RangeNotSatisfiable"/> if the range is not satisfiable).
         /// </summary>
-        /// <param name="physicalPath">The physical path of the file to be returned.</param>
+        /// <param name="physicalPath">The path to the file. The path must be an absolute path.</param>
         /// <param name="contentType">The Content-Type of the file.</param>
         /// <param name="fileDownloadName">The suggested file name.</param>
         /// <param name="lastModified">The <see cref="DateTimeOffset"/> of when the file was last modified.</param>
