@@ -100,7 +100,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, MediaTypeCollection, Exception> _actionDoesNotSupportFormatFilterContentType;
         private static readonly Action<ILogger, string, Exception> _cannotApplyFormatFilterContentType;
         private static readonly Action<ILogger, Exception> _actionDoesNotExplicitlySpecifyContentTypes;
+        private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, Exception> _selectingOutputFormatterUsingAcceptHeader;
+        private static readonly Action<ILogger, IEnumerable<MediaTypeSegmentWithQuality>, MediaTypeCollection, Exception> _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes;
+        private static readonly Action<ILogger, Exception> _selectingOutputFormatterWithoutUsingContentTypes;
+        private static readonly Action<ILogger, MediaTypeCollection, Exception> _selectingOutputFormatterUsingContentTypes;
+        private static readonly Action<ILogger, Exception> _selectingFirstCanWriteFormatter;
         private static readonly Action<ILogger, Type, Type, Type, Exception> _notMostEffectiveFilter;
+        private static readonly Action<ILogger, IEnumerable<IOutputFormatter>, Exception> _registeredOutputFormatters;
 
         static MvcCoreLoggerExtensions()
         {
@@ -368,6 +374,69 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 5,
                 "Current action does not explicitly specify any content types for the response.");
+
+            _selectingOutputFormatterUsingAcceptHeader = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>>(
+                LogLevel.Debug,
+                6,
+                "Attempting to select an output formatter based on Accept header '{AcceptHeader}'.");
+
+            _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes = LoggerMessage.Define<IEnumerable<MediaTypeSegmentWithQuality>, MediaTypeCollection>(
+                LogLevel.Debug,
+                7,
+                "Attempting to select an output formatter based on Accept header '{AcceptHeader}' and explicitly specified content types '{ExplicitContentTypes}'. The content types in the accept header must be a subset of the explicitly set content types.");
+
+            _selectingOutputFormatterWithoutUsingContentTypes = LoggerMessage.Define(
+                LogLevel.Debug,
+                8,
+                "Attempting to select an output formatter without using a content type as no explicit content types were specified for the response.");
+
+            _selectingOutputFormatterUsingContentTypes = LoggerMessage.Define<MediaTypeCollection>(
+                LogLevel.Debug,
+                9,
+                "Attempting to select the first output formatter in the output formatters list which supports a content type from the explicitly specified content types '{ExplicitContentTypes}'.");
+
+            _selectingFirstCanWriteFormatter = LoggerMessage.Define(
+                LogLevel.Debug,
+                10,
+                "Attempting to select the first formatter in the output formatters list which can write the result.");
+
+            _registeredOutputFormatters = LoggerMessage.Define<IEnumerable<IOutputFormatter>>(
+                LogLevel.Debug,
+                11,
+                "List of registered output formatters, in the following order: {OutputFormatters}");
+        }
+
+        public static void RegisteredOutputFormatters(this ILogger logger, IEnumerable<IOutputFormatter> outputFormatters)
+        {
+            _registeredOutputFormatters(logger, outputFormatters, null);
+        }
+
+        public static void SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(
+            this ILogger logger, 
+            IEnumerable<MediaTypeSegmentWithQuality> acceptHeader, 
+            MediaTypeCollection mediaTypeCollection)
+        {
+            _selectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(logger, acceptHeader, mediaTypeCollection, null);
+        }
+
+        public static void SelectingOutputFormatterUsingAcceptHeader(this ILogger logger, IEnumerable<MediaTypeSegmentWithQuality> acceptHeader)
+        {
+            _selectingOutputFormatterUsingAcceptHeader(logger, acceptHeader, null);
+        }
+
+        public static void SelectingOutputFormatterUsingContentTypes(this ILogger logger, MediaTypeCollection mediaTypeCollection)
+        {
+            _selectingOutputFormatterUsingContentTypes(logger, mediaTypeCollection, null);
+        }
+
+        public static void SelectingOutputFormatterWithoutUsingContentTypes(this ILogger logger)
+        {
+            _selectingOutputFormatterWithoutUsingContentTypes(logger, null);
+        }
+
+        public static void SelectFirstCanWriteFormatter(this ILogger logger)
+        {
+            _selectingFirstCanWriteFormatter(logger, null);
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)

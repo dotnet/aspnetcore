@@ -78,6 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
             }
 
+            _logger.RegisteredOutputFormatters(formatters);
+
             var request = context.HttpContext.Request;
             var acceptableMediaTypes = GetAcceptableMediaTypes(request);
             var selectFormatterWithoutRegardingAcceptHeader = false;
@@ -95,6 +97,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 if (contentTypes.Count == 0)
                 {
+                    _logger.SelectingOutputFormatterUsingAcceptHeader(acceptableMediaTypes);
+
                     // Use whatever formatter can meet the client's request
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeaders(
                         context,
@@ -103,6 +107,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 else
                 {
+                    _logger.SelectingOutputFormatterUsingAcceptHeaderAndExplicitContentTypes(acceptableMediaTypes, contentTypes);
+
                     // Verify that a content type from the context is compatible with the client's request
                     selectedFormatter = SelectFormatterUsingSortedAcceptHeadersAndContentTypes(
                         context,
@@ -111,11 +117,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         contentTypes);
                 }
 
-                if (selectedFormatter == null && !_returnHttpNotAcceptable)
+                if (selectedFormatter == null)
                 {
                     _logger.NoFormatterFromNegotiation(acceptableMediaTypes);
 
-                    selectFormatterWithoutRegardingAcceptHeader = true;
+                    if (!_returnHttpNotAcceptable)
+                    {
+                        selectFormatterWithoutRegardingAcceptHeader = true;
+                    }
                 }
             }
 
@@ -123,12 +132,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 if (contentTypes.Count == 0)
                 {
+                    _logger.SelectingOutputFormatterWithoutUsingContentTypes();
+
                     selectedFormatter = SelectFormatterNotUsingContentType(
                         context,
                         formatters);
                 }
                 else
                 {
+                    _logger.SelectingOutputFormatterUsingContentTypes(contentTypes);
+
                     selectedFormatter = SelectFormatterUsingAnyAcceptableContentType(
                         context,
                         formatters,
@@ -179,6 +192,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 throw new ArgumentNullException(nameof(formatters));
             }
+
+            _logger.SelectFirstCanWriteFormatter();
 
             foreach (var formatter in formatters)
             {
