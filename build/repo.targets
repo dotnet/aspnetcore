@@ -9,8 +9,6 @@
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
-      <DotnetChannel>master</DotnetChannel>
-      <DotnetVersion>coherent</DotnetVersion>
   </PropertyGroup>
 
   <Target Name="_AddTestRuntimes">
@@ -64,7 +62,7 @@
     <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFolder="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates" />
     <Copy SourceFiles="$(ArtifactDependencyLocation)\nuGetPackagesArchive-$(PackageVersion).lzma" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
 
-    <UnzipArchive File="$(ArtifactDependencyLocation)\Runtime\$(PackageVersion)\aspnetcore-runtime-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
+    <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
 
