@@ -23,6 +23,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class HttpConnection : ITimeoutControl, IConnectionTimeoutFeature, IRequestProcessor
     {
+        private static readonly ReadOnlyMemory<byte> Http2Id = new ReadOnlyMemory<byte>(new[] { (byte)'h', (byte)'2' });
+
         private readonly HttpConnectionContext _context;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -303,7 +305,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private HttpProtocols SelectProtocol()
         {
             var hasTls = _context.ConnectionFeatures.Get<ITlsConnectionFeature>() != null;
-            var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol;
+            var applicationProtocol = _context.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol
+                ?? new ReadOnlyMemory<byte>();
             var http1Enabled = (_context.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1;
             var http2Enabled = (_context.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2;
 
@@ -319,7 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 error = CoreStrings.EndPointRequiresTlsForHttp1AndHttp2;
             }
 
-            if (!http1Enabled && http2Enabled && hasTls && applicationProtocol != "h2")
+            if (!http1Enabled && http2Enabled && hasTls && !Http2Id.SequenceEqual(applicationProtocol))
             {
                 error = CoreStrings.EndPointHttp2NotNegotiated;
             }
@@ -330,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 return HttpProtocols.None;
             }
 
-            return http2Enabled && (!hasTls || applicationProtocol == "h2") ? HttpProtocols.Http2 : HttpProtocols.Http1;
+            return http2Enabled && (!hasTls || Http2Id.SequenceEqual(applicationProtocol)) ? HttpProtocols.Http2 : HttpProtocols.Http1;
         }
 
         public void Tick(DateTimeOffset now)
