@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Mvc
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         // See CompatibilitySwitch.cs for guide on how to implement these.
-        private readonly CompatibilitySwitch<bool> _allowBindingUndefinedValueToEnumType;
         private readonly CompatibilitySwitch<InputFormatterExceptionModelStatePolicy> _inputFormatterExceptionModelStatePolicy;
+        private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly CompatibilitySwitch<bool> _suppressJsonDeserializationExceptionMessagesInModelState;
         private readonly ICompatibilitySwitch[] _switches;
 
@@ -41,13 +41,13 @@ namespace Microsoft.AspNetCore.Mvc
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
 
-            _allowBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(AllowBindingUndefinedValueToEnumType));
             _inputFormatterExceptionModelStatePolicy = new CompatibilitySwitch<InputFormatterExceptionModelStatePolicy>(nameof(InputFormatterExceptionModelStatePolicy), InputFormatterExceptionModelStatePolicy.AllExceptions);
+            _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
             _suppressJsonDeserializationExceptionMessagesInModelState = new CompatibilitySwitch<bool>(nameof(SuppressJsonDeserializationExceptionMessagesInModelState));
             _switches = new ICompatibilitySwitch[]
             {
-                _allowBindingUndefinedValueToEnumType,
                 _inputFormatterExceptionModelStatePolicy,
+                _suppressBindingUndefinedValueToEnumType,
                 _suppressJsonDeserializationExceptionMessagesInModelState,
             };
         }
@@ -91,6 +91,35 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
+
+        /// <summary>
+        /// Gets or sets an value indicating whether the model binding system will bind undefined values to 
+        /// enum types. The default value of the property is <c>false</c>. 
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired of the value compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have value <c>false</c> if not explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have value <c>true</c> if not explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool SuppressBindingUndefinedValueToEnumType
+        {
+            get => _suppressBindingUndefinedValueToEnumType.Value;
+            set => _suppressBindingUndefinedValueToEnumType.Value = value;
+        }
 
         /// <summary>
         /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
@@ -181,15 +210,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
 
-        /// <summary>
-        /// Gets or sets an indication whether the model binding system will bind undefined values to enumeration types.
-        /// <see langword="false"/> by default.
-        /// </summary>
-        public bool AllowBindingUndefinedValueToEnumType
-        {
-            get => _allowBindingUndefinedValueToEnumType.Value;
-            set => _allowBindingUndefinedValueToEnumType.Value = value;
-        }
 
         /// <summary>
         /// Gets or sets the option to determine if model binding should convert all exceptions (including ones not related to bad input)

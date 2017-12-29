@@ -5,7 +5,6 @@ using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
@@ -18,13 +17,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(false, typeof(IntEnum?))]
         [InlineData(false, typeof(FlagsEnum?))]
         public async Task BindModel_SetsModel_ForEmptyValue_AndNullableEnumTypes(
-            bool allowBindingUndefinedValueToEnumType,
+            bool suppressBindingUndefinedValueToEnumType,
             Type modelType)
         {
             // Arrange
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType,
+                suppressBindingUndefinedValueToEnumType,
                 valueProviderValue: "");
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -43,14 +42,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(false, typeof(IntEnum))]
         [InlineData(false, typeof(FlagsEnum))]
         public async Task BindModel_AddsErrorToModelState_ForEmptyValue_AndNonNullableEnumTypes(
-            bool allowBindingUndefinedValueToEnumType,
+            bool suprressBindingUndefinedValueToEnumType,
             Type modelType)
         {
             // Arrange
             var message = "The value '' is invalid.";
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType,
+                suprressBindingUndefinedValueToEnumType,
                 valueProviderValue: "");
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -72,14 +71,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData(false, "Value1")]
         [InlineData(false, "1")]
         public async Task BindModel_BindsEnumModels_ForValuesInArray(
-            bool allowBindingUndefinedValueToEnumType,
+            bool suppressBindingUndefinedValueToEnumType,
             string enumValue)
         {
             // Arrange
             var modelType = typeof(IntEnum);
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType,
+                suppressBindingUndefinedValueToEnumType,
                 valueProviderValue: new object[] { enumValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -102,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData("8, 1", false)]
         [InlineData("Value2, Value8", false)]
         [InlineData("value8,value4,value2,value1", false)]
-        public async Task BindModel_BindsTo_NonNullableFlagsEnumType(string flagsEnumValue, bool allowBindingUndefinedValueToEnumType)
+        public async Task BindModel_BindsTo_NonNullableFlagsEnumType(string flagsEnumValue, bool suppressBindingUndefinedValueToEnumType)
         {
             // Arrange
             var modelType = typeof(FlagsEnum);
@@ -110,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var expected = enumConverter.ConvertFrom(flagsEnumValue).ToString();
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType,
+                suppressBindingUndefinedValueToEnumType,
                 valueProviderValue: new object[] { flagsEnumValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -133,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         [InlineData("8, 1", false)]
         [InlineData("Value2, Value8", false)]
         [InlineData("value8,value4,value2,value1", false)]
-        public async Task BindModel_BindsTo_NullableFlagsEnumType(string flagsEnumValue, bool allowBindingUndefinedValueToEnumType)
+        public async Task BindModel_BindsTo_NullableFlagsEnumType(string flagsEnumValue, bool suppressBindingUndefinedValueToEnumType)
         {
             // Arrange
             var modelType = typeof(FlagsEnum?);
@@ -141,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var expected = enumConverter.ConvertFrom(flagsEnumValue).ToString();
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType,
+                suppressBindingUndefinedValueToEnumType,
                 valueProviderValue: new object[] { flagsEnumValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -168,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var message = $"The value '{suppliedValue}' is not valid.";
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType: true,
+                suppressBindingUndefinedValueToEnumType: false,
                 valueProviderValue: new object[] { suppliedValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -209,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var message = $"The value '{suppliedValue}' is invalid.";
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType: false,
+                suppressBindingUndefinedValueToEnumType: true,
                 valueProviderValue: new object[] { suppliedValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -251,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var binderProviderContext = new TestModelBinderProviderContext(modelType);
             var binderInfo = GetBinderAndContext(
                 modelType,
-                allowBindingUndefinedValueToEnumType: true,
+                suppressBindingUndefinedValueToEnumType: false,
                 valueProviderValue: new object[] { suppliedValue });
             var bindingContext = binderInfo.Item1;
             var binder = binderInfo.Item2;
@@ -267,7 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         private static (DefaultModelBindingContext, IModelBinder) GetBinderAndContext(
             Type modelType,
-            bool allowBindingUndefinedValueToEnumType,
+            bool suppressBindingUndefinedValueToEnumType,
             object valueProviderValue)
         {
             var binderProviderContext = new TestModelBinderProviderContext(modelType);
@@ -284,7 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
             var binderProvider = new EnumTypeModelBinderProvider(new MvcOptions
             {
-                AllowBindingUndefinedValueToEnumType = allowBindingUndefinedValueToEnumType
+                SuppressBindingUndefinedValueToEnumType = suppressBindingUndefinedValueToEnumType
             });
             var binder = binderProvider.GetBinder(binderProviderContext);
             return (bindingContext, binder);

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             if (context.Metadata.IsEnum)
             {
                 return new EnumTypeModelBinder(
-                    _options.AllowBindingUndefinedValueToEnumType,
+                    _options.SuppressBindingUndefinedValueToEnumType,
                     context.Metadata.UnderlyingOrModelType);
             }
 

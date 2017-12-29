@@ -48,6 +48,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// Sets the default value of settings on <see cref="MvcOptions"/> to match the behavior of 
         /// ASP.NET Core MVC 2.1.
         /// </summary>
+        /// <remarks>
+        /// ASP.NET Core MVC 2.1 introduces compatibility switches for the following:
+        /// <list type="bullet">
+        ///     <item>
+        ///         <description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description>    
+        ///     </item>
+        /// </list>
+        /// </remarks>
         Version_2_1,
 
         /// <summary>

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ReturnsBinder_ForEnumType(Type modelType)
         {
             // Arrange
-            var provider = new EnumTypeModelBinderProvider(new MvcOptions { AllowBindingUndefinedValueToEnumType = true });
+            var provider = new EnumTypeModelBinderProvider(new MvcOptions());
             var context = new TestModelBinderProviderContext(modelType);
 
             // Act
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void ReturnsBinder_ForFlagsEnumType(Type modelType)
         {
             // Arrange
-            var provider = new EnumTypeModelBinderProvider(new MvcOptions { AllowBindingUndefinedValueToEnumType = true });
+            var provider = new EnumTypeModelBinderProvider(new MvcOptions());
             var context = new TestModelBinderProviderContext(modelType);
 
             // Act
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void DoesNotReturnBinder_ForNonEnumTypes(Type modelType)
         {
             // Arrange
-            var provider = new EnumTypeModelBinderProvider(new MvcOptions { AllowBindingUndefinedValueToEnumType = false });
+            var provider = new EnumTypeModelBinderProvider(new MvcOptions());
             var context = new TestModelBinderProviderContext(modelType);
 
             // Act

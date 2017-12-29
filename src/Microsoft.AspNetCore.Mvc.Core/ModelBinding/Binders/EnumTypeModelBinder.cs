@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
     /// </summary>
     public class EnumTypeModelBinder : SimpleTypeModelBinder
     {
-        private readonly bool _allowBindingUndefinedValueToEnumType;
+        private readonly bool _suppressBindingUndefinedValueToEnumType;
 
-        public EnumTypeModelBinder(bool allowBindingUndefinedValueToEnumType, Type modelType)
+        public EnumTypeModelBinder(bool supressBindingUndefinedValueToEnumType, Type modelType)
             : base(modelType)
         {
             if (modelType == null)
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(modelType));
             }
 
-            _allowBindingUndefinedValueToEnumType = allowBindingUndefinedValueToEnumType;
+            _suppressBindingUndefinedValueToEnumType = supressBindingUndefinedValueToEnumType;
         }
 
         protected override void CheckModel(
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ValueProviderResult valueProviderResult,
             object model)
         {
-            if (model == null || _allowBindingUndefinedValueToEnumType)
+            if (model == null || !_suppressBindingUndefinedValueToEnumType)
             {
                 base.CheckModel(bindingContext, valueProviderResult, model);
             }
