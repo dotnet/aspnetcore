@@ -10,7 +10,6 @@ Install .NET Core command line. <https://dot.net/core>
 Open a terminal to the directory containing this project.
 
 ```
-dotnet restore
 dotnet watch run
 ```
 

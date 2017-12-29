@@ -10,8 +10,7 @@ Install .NET Core command line. <https://dot.net/core>
 Open a terminal to the directory containing this project.
 
 ```
-dotnet restore watch.proj
-dotnet watch msbuild watch.proj /t:TestAndRun
+dotnet watch msbuild /t:TestAndRun
 ```
 
 The "TestAndRun" target in watch.proj will execute "dotnet test" on Test.csproj and then launch the website by calling "dotnet run" on Web.csproj.

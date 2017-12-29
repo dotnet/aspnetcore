@@ -11,7 +11,6 @@ Launch any command with dotnet-watch
 Open a terminal to the directory containing this project.
 
 ```
-dotnet restore
 dotnet watch msbuild /t:RunMyNpmCommand
 ```
 

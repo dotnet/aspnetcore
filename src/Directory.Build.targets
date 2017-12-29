@@ -1,0 +1,6 @@
+<Project>
+  <Import Project="DotnetTool.props" Condition="'$(PackageType)' == 'DotnetTool'" />
+
+  <Import Project="..\Directory.Build.targets" />
+  <Import Project="PackGlobalTool.targets" />
+</Project>

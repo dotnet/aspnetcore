@@ -10,33 +10,36 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 The repository contains command-line tools for the .NET Core CLI. Follow the links below for more details on each tool.
 
- - [dotnet-watch](src/Microsoft.DotNet.Watcher.Tools/) (Microsoft.DotNet.Watcher.Tools)
- - [dotnet-user-secrets](src/Microsoft.Extensions.SecretManager.Tools/) (Microsoft.Extensions.SecretManager.Tools)
- - [dotnet-sql-cache](src/Microsoft.Extensions.Caching.SqlConfig.Tools/) (Microsoft.Extensions.Caching.SqlConfig.Tools)
+ - [dotnet-watch](src/dotnet-watch/)
+ - [dotnet-user-secrets](src/dotnet-user-secrets/)
+ - [dotnet-sql-cache](src/dotnet-sql-cache/) (dotnet-sql-cache)
+ - [dotnet-dev-certs](src/dotnet-dev-certs/) (dotnet-dev-certs)
 
 ## How to Install
 
-Install tools by editing your \*.csproj file and adding a `DotNetCliToolReference` with the package name and version.
+Install tools using the .NET Core command-line.
 
-```xml
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="2.0.0" />
-  </ItemGroup>
+```
+dotnet install tool dotnet-watch
+dotnet install tool dotnet-user-secrets
+dotnet install tool dotnet-dev-certs
+dotnet install tool dotnet-sql-cache
+
 ```
 
-Then, from command line, change directories to your project and run the following commands:
+## Usage
+
+The command line tools can be invoked as a new verb hanging off `dotnet`.
 
 ```sh
-# Location of MyProject.csproj which includes DotNetCliToolReference's
-cd C:\Source\MyProject\
-
-# Download tools into the project
-dotnet restore
-
-# Execute tools
 dotnet watch
 dotnet user-secrets
 dotnet sql-cache
+dotnet dev-certs
+```
+
+Add `--help` to see more details. For example,
+
+```
+dotnet watch --help
 ```

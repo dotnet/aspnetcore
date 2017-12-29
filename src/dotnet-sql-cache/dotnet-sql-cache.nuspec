@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>dotnet-sql-cache</id>
+    <tags>cache distributedcache sqlserver</tags>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <owners>Microsoft</owners>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <iconUrl>$iconUrl$</iconUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <serviceable>$serviceable$</serviceable>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" url="$repositoryUrl$" />
+    <dependencies />
+  </metadata>
+  <files>
+    <file src="$publishdir$" target="tools/$targetframework$/any/" />
+    <file src="DotnetToolSettings.xml" target="tools/DotnetToolSettings.xml" />
+  </files>
+</package>

@@ -5,8 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" />
-
     <ProjectReference Include="Web\Web.csproj" />
     <ProjectReference Include="Test\Test.csproj" />
   </ItemGroup>

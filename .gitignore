@@ -35,3 +35,4 @@ testWorkDir/
 .idea/
 .dotnet/
 global.json
+*.binlog

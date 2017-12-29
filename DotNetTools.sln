@@ -7,7 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{66517987-2A5
 		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools", "src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch", "src\dotnet-watch\dotnet-watch.csproj", "{8A8CEABC-AC47-43FF-A5DF-69224F7E1F46}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8321E0D1-9A47-4D2F-AED8-3AE636D44E35}"
 	ProjectSection(SolutionItems) = preProject
@@ -36,17 +36,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5B382BC-2
 		test\Directory.Build.props = test\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools.FunctionalTests", "test\Microsoft.DotNet.Watcher.Tools.FunctionalTests\Microsoft.DotNet.Watcher.Tools.FunctionalTests.csproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch.FunctionalTests", "test\dotnet-watch.FunctionalTests\dotnet-watch.FunctionalTests.csproj", "{16BADE2F-1184-4518-8A70-B68A19D0805B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.SecretManager.Tools", "src\Microsoft.Extensions.SecretManager.Tools\Microsoft.Extensions.SecretManager.Tools.csproj", "{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets", "src\dotnet-user-secrets\dotnet-user-secrets.csproj", "{8730E848-CA0F-4E0A-9A2F-BC22AD0B2C4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.SecretManager.Tools.Tests", "test\Microsoft.Extensions.SecretManager.Tools.Tests\Microsoft.Extensions.SecretManager.Tools.Tests.csproj", "{7B331122-83B1-4F08-A119-DC846959844C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets.Tests", "test\dotnet-user-secrets.Tests\dotnet-user-secrets.Tests.csproj", "{7B331122-83B1-4F08-A119-DC846959844C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Watcher.Tools.Tests", "test\Microsoft.DotNet.Watcher.Tools.Tests\Microsoft.DotNet.Watcher.Tools.Tests.csproj", "{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch.Tests", "test\dotnet-watch.Tests\dotnet-watch.Tests.csproj", "{8A2E6961-6B12-4A8E-8215-3E7301D52EAC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Caching.SqlConfig.Tools", "src\Microsoft.Extensions.Caching.SqlConfig.Tools\Microsoft.Extensions.Caching.SqlConfig.Tools.csproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sql-cache", "src\dotnet-sql-cache\dotnet-sql-cache.csproj", "{53F3B53D-303A-4DAA-9C38-4F55195FA5B9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.Tools", "src\Microsoft.AspNetCore.DeveloperCertificates.Tools\Microsoft.AspNetCore.DeveloperCertificates.Tools.csproj", "{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-dev-certs", "src\dotnet-dev-certs\dotnet-dev-certs.csproj", "{4FED5119-EE5C-4753-88A4-D61BDEB4D6C8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.VisualStudio.SecretManager", "tooling\Microsoft.VisualStudio.SecretManager\Microsoft.VisualStudio.SecretManager.csproj", "{5E117F2E-7152-447F-BF47-59F759EEF3A7}"
 EndProject

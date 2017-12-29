@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
+    <PackageType>DotnetTool</PackageType>
+    <PackageBasePath>tools/$(TargetFramework)/any/</PackageBasePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\**\*.cs" />
+
+    <!-- This should already be signed by the dotnet-core team -->
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)System.Text.Encoding.CodePages.dll" PackagePath="$(PackageBasePath)System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-arm64/native/sni.dll" PackagePath="$(PackageBasePath)runtimes/win-arm64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-x64/native/sni.dll" PackagePath="$(PackageBasePath)runtimes/win-x64/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win-x86/native/sni.dll" PackagePath="$(PackageBasePath)runtimes/win-x86/native/sni.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" PackagePath="$(PackageBasePath)runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll" />
+    <ExcludePackageFileFromSigning Include="$(PublishDir)runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll" PackagePath="$(PackageBasePath)runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(SystemDataSqlClientPackageVersion)" />
+  </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
     <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
@@ -32,7 +32,7 @@
         <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
 
-      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
+      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" IsContainer="true" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
     </ItemGroup>
   </Target>
