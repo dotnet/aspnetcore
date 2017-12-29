@@ -195,6 +195,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                     OnRemoteFailure = context =>
                     {
                         Assert.NotNull(context.Failure);
+                        Assert.Equal("The user denied permissions.", context.Failure.Message);
                         Assert.NotNull(context.Properties);
                         Assert.Equal("testvalue", context.Properties.Items["testkey"]);
                         context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var setCookieValue = setCookieValues.Single();
             var cookie = new CookieHeaderValue(setCookieValue.Name, setCookieValue.Value);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, "/signin-twitter");
+            var request = new HttpRequestMessage(HttpMethod.Get, "/signin-twitter?denied=ABCDEFG");
             request.Headers.Add(HeaderNames.Cookie, cookie.ToString());
             var client = server.CreateClient();
             var response = await client.SendAsync(request);

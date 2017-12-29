@@ -60,6 +60,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
             // REVIEW: see which of these are really errors
 
+            var denied = query["denied"];
+            if (!StringValues.IsNullOrEmpty(denied))
+            {
+                return HandleRequestResult.Fail("The user denied permissions.", properties);
+            }
+
             var returnedToken = query["oauth_token"];
             if (StringValues.IsNullOrEmpty(returnedToken))
             {
