@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         // See CompatibilitySwitch.cs for guide on how to implement these.
-        private readonly CompatibilitySwitch<InputFormatterExceptionModelStatePolicy> _inputFormatterExceptionModelStatePolicy;
+        private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly CompatibilitySwitch<bool> _suppressJsonDeserializationExceptionMessagesInModelState;
         private readonly ICompatibilitySwitch[] _switches;
@@ -41,12 +41,12 @@ namespace Microsoft.AspNetCore.Mvc
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
 
-            _inputFormatterExceptionModelStatePolicy = new CompatibilitySwitch<InputFormatterExceptionModelStatePolicy>(nameof(InputFormatterExceptionModelStatePolicy), InputFormatterExceptionModelStatePolicy.AllExceptions);
+            _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
             _suppressJsonDeserializationExceptionMessagesInModelState = new CompatibilitySwitch<bool>(nameof(SuppressJsonDeserializationExceptionMessagesInModelState));
             _switches = new ICompatibilitySwitch[]
             {
-                _inputFormatterExceptionModelStatePolicy,
+                _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
                 _suppressJsonDeserializationExceptionMessagesInModelState,
             };
@@ -88,6 +88,37 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterMappings FormatterMappings { get; }
 
         /// <summary>
+        /// Gets or sets a value which determines how the model binding system interprets exceptions thrown by an <see cref="IInputFormatter"/>.
+        /// The default value of the property is <see cref="InputFormatterExceptionPolicy.AllExceptions"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have the value <see cref="InputFormatterExceptionPolicy.AllExceptions"/> if 
+        /// not explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have the value
+        /// <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/> if not explicitly configured.
+        /// </para>
+        /// </remarks>
+        public InputFormatterExceptionPolicy InputFormatterExceptionPolicy
+        {
+            get => _inputFormatterExceptionPolicy.Value;
+            set => _inputFormatterExceptionPolicy.Value = value;
+        }
+
+        /// <summary>
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
@@ -103,16 +134,16 @@ namespace Microsoft.AspNetCore.Mvc
         /// guidance and examples of setting the application's compatibility version.
         /// </para>
         /// <para>
-        /// Configuring the desired of the value compatibility switch by calling this property's setter will take precedence
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
         /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have value <c>false</c> if not explicitly configured.
+        /// this setting will have the value <c>false</c> if not explicitly configured.
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have value <c>true</c> if not explicitly configured.
+        /// higher then this setting will have the value <c>true</c> if not explicitly configured.
         /// </para>
         /// </remarks>
         public bool SuppressBindingUndefinedValueToEnumType
@@ -210,18 +241,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
 
-
-        /// <summary>
-        /// Gets or sets the option to determine if model binding should convert all exceptions (including ones not related to bad input)
-        /// that occur during deserialization in <see cref="IInputFormatter"/>s into model state errors.
-        /// This option applies only to custom <see cref="IInputFormatter"/>s.
-        /// Default is <see cref="InputFormatterExceptionModelStatePolicy.AllExceptions"/>.
-        /// </summary>
-        public InputFormatterExceptionModelStatePolicy InputFormatterExceptionModelStatePolicy
-        {
-            get => _inputFormatterExceptionModelStatePolicy.Value;
-            set => _inputFormatterExceptionModelStatePolicy.Value = value;
-        }
 
         /// <summary>
         /// Gets or sets a flag to determine whether, if an action receives invalid JSON in

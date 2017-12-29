@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private bool ShouldHandleException(IInputFormatter formatter)
         {
-            var policy = _options.InputFormatterExceptionModelStatePolicy;
+            var policy = _options.InputFormatterExceptionPolicy;
             
             // Any explicit policy on the formatters takes precedence over the global policy on MvcOptions
             if (formatter is IInputFormatterExceptionPolicy exceptionPolicy)
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 policy = exceptionPolicy.ExceptionPolicy;
             }
 
-            return policy == InputFormatterExceptionModelStatePolicy.AllExceptions;
+            return policy == InputFormatterExceptionPolicy.AllExceptions;
         }
     }
 }

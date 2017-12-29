@@ -196,10 +196,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         // Throwing InputFormatterException
         [Theory]
-        [InlineData(InputFormatterExceptionModelStatePolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionModelStatePolicy.MalformedInputExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
         public async Task BindModel_CustomFormatter_ThrowingInputFormatterException_AddsErrorToModelState(
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new[] { formatter },
                 new MvcOptions()
                 {
-                    InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
                 });
 
             // Act
@@ -237,16 +237,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 
-        public static TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy> BuiltInFormattersThrowingInputFormatterException
+        public static TheoryData<IInputFormatter, InputFormatterExceptionPolicy> BuiltInFormattersThrowingInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy>()
+                return new TheoryData<IInputFormatter, InputFormatterExceptionPolicy>()
                 {
-                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
+                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.AllExceptions },
+                    { new XmlSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.AllExceptions },
+                    { new XmlDataContractSerializerInputFormatter(new MvcOptions()), InputFormatterExceptionPolicy.MalformedInputExceptions },
                 };
             }
         }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [MemberData(nameof(BuiltInFormattersThrowingInputFormatterException))]
         public async Task BindModel_BuiltInXmlInputFormatters_ThrowingInputFormatterException_AddsErrorToModelState(
             IInputFormatter formatter,
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(new[] { formatter }, new MvcOptions()
             {
-                InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
             });
 
             // Act
@@ -287,10 +287,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(InputFormatterExceptionModelStatePolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionModelStatePolicy.MalformedInputExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
         public async Task BindModel_BuiltInJsonInputFormatter_ThrowingInputFormatterException_AddsErrorToModelState(
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new[] { new TestableJsonInputFormatter(throwNonInputFormatterException: false) },
                 new MvcOptions()
                 {
-                    InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
                 });
 
             // Act
@@ -321,16 +321,16 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.NotEmpty(entry.Value.Errors[0].ErrorMessage);
         }
 
-        public static TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy> DerivedFormattersThrowingInputFormatterException
+        public static TheoryData<IInputFormatter, InputFormatterExceptionPolicy> DerivedFormattersThrowingInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, InputFormatterExceptionModelStatePolicy>()
+                return new TheoryData<IInputFormatter, InputFormatterExceptionPolicy>()
                 {
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.AllExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.AllExceptions },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: false), InputFormatterExceptionPolicy.MalformedInputExceptions },
                 };
             }
         }
@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         [MemberData(nameof(DerivedFormattersThrowingInputFormatterException))]
         public async Task BindModel_DerivedXmlInputFormatters_AddsErrorToModelState_(
             IInputFormatter formatter,
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(new[] { formatter }, new MvcOptions()
             {
-                InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
             });
 
             // Act
@@ -371,10 +371,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(InputFormatterExceptionModelStatePolicy.AllExceptions)]
-        [InlineData(InputFormatterExceptionModelStatePolicy.MalformedInputExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.AllExceptions)]
+        [InlineData(InputFormatterExceptionPolicy.MalformedInputExceptions)]
         public async Task BindModel_DerivedJsonInputFormatter_AddsErrorToModelState(
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new[] { new DerivedJsonInputFormatter(throwNonInputFormatterException: false) },
                 new MvcOptions()
                 {
-                    InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                    InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
                 });
 
             // Act
@@ -407,18 +407,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         // Throwing Non-InputFormatterException
-        public static TheoryData<IInputFormatter, string, InputFormatterExceptionModelStatePolicy> BuiltInFormattersThrowingNonInputFormatterException
+        public static TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy> BuiltInFormattersThrowingNonInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, string, InputFormatterExceptionModelStatePolicy>()
+                return new TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy>()
                 {
-                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
+                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
+                    { new TestableXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
+                    { new TestableXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.AllExceptions },
+                    { new TestableJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.MalformedInputExceptions },
                 };
             }
         }
@@ -428,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModel_BuiltInInputFormatters_ThrowingNonInputFormatterException_Throws(
             IInputFormatter formatter,
             string contentType,
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(new[] { formatter }, new MvcOptions()
             {
-                InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
             });
 
             // Act & Assert
@@ -449,18 +449,18 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal("Unable to read input stream!!", exception.Message);
         }
 
-        public static TheoryData<IInputFormatter, string, InputFormatterExceptionModelStatePolicy> DerivedInputFormattersThrowingNonInputFormatterException
+        public static TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy> DerivedInputFormattersThrowingNonInputFormatterException
         {
             get
             {
-                return new TheoryData<IInputFormatter, string, InputFormatterExceptionModelStatePolicy>()
+                return new TheoryData<IInputFormatter, string, InputFormatterExceptionPolicy>()
                 {
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
-                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionModelStatePolicy.AllExceptions },
-                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionModelStatePolicy.MalformedInputExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
+                    { new DerivedXmlSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.AllExceptions },
+                    { new DerivedXmlDataContractSerializerInputFormatter(throwNonInputFormatterException: true), "text/xml", InputFormatterExceptionPolicy.MalformedInputExceptions },
+                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.AllExceptions },
+                    { new DerivedJsonInputFormatter(throwNonInputFormatterException: true), "text/json", InputFormatterExceptionPolicy.MalformedInputExceptions },
                 };
             }
         }
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModel_DerivedXmlInputFormatters_ThrowingNonInputFormatingException_AddsErrorToModelState(
             IInputFormatter formatter,
             string contentType,
-            InputFormatterExceptionModelStatePolicy inputFormatterExceptionModelStatePolicy)
+            InputFormatterExceptionPolicy inputFormatterExceptionPolicy)
         {
             // Arrange
             var httpContext = new DefaultHttpContext();
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var bindingContext = GetBindingContext(typeof(Person), httpContext, metadataProvider);
             var binder = CreateBinder(new[] { formatter }, new MvcOptions()
             {
-                InputFormatterExceptionModelStatePolicy = inputFormatterExceptionModelStatePolicy
+                InputFormatterExceptionPolicy = inputFormatterExceptionPolicy
             });
 
             // Act
@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new[] { formatter },
                 new MvcOptions()
                 {
-                    InputFormatterExceptionModelStatePolicy = InputFormatterExceptionModelStatePolicy.MalformedInputExceptions
+                    InputFormatterExceptionPolicy = InputFormatterExceptionPolicy.MalformedInputExceptions
                 });
 
             // Act
@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 new[] { formatter },
                 new MvcOptions()
                 {
-                    InputFormatterExceptionModelStatePolicy = InputFormatterExceptionModelStatePolicy.AllExceptions
+                    InputFormatterExceptionPolicy = InputFormatterExceptionPolicy.AllExceptions
                 });
 
             // Act
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.MalformedInputExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
@@ -826,7 +826,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.MalformedInputExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
@@ -848,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.MalformedInputExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
@@ -870,7 +870,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.AllExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.AllExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
@@ -892,7 +892,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.AllExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.AllExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {
@@ -914,7 +914,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 _throwNonInputFormatterException = throwNonInputFormatterException;
             }
 
-            public override InputFormatterExceptionModelStatePolicy ExceptionPolicy => InputFormatterExceptionModelStatePolicy.AllExceptions;
+            public override InputFormatterExceptionPolicy ExceptionPolicy => InputFormatterExceptionPolicy.AllExceptions;
 
             public override Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
             {

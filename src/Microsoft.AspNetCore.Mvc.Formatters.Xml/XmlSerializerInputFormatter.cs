@@ -92,15 +92,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas => _readerQuotas;
 
         /// <inheritdoc />
-        public virtual InputFormatterExceptionModelStatePolicy ExceptionPolicy
+        public virtual InputFormatterExceptionPolicy ExceptionPolicy
         {
             get
             {
                 if (GetType() == typeof(XmlSerializerInputFormatter))
                 {
-                    return InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+                    return InputFormatterExceptionPolicy.MalformedInputExceptions;
                 }
-                return InputFormatterExceptionModelStatePolicy.AllExceptions;
+                return InputFormatterExceptionPolicy.AllExceptions;
             }
         }
 

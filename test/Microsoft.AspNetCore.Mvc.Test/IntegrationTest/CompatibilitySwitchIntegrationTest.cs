@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Assert
             Assert.False(mvcOptions.SuppressBindingUndefinedValueToEnumType);
-            Assert.Equal(InputFormatterExceptionModelStatePolicy.AllExceptions, mvcOptions.InputFormatterExceptionModelStatePolicy);
+            Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.False(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
         }
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
-            Assert.Equal(InputFormatterExceptionModelStatePolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionModelStatePolicy);
+            Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
         }
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
-            Assert.Equal(InputFormatterExceptionModelStatePolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionModelStatePolicy);
+            Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
         }
 

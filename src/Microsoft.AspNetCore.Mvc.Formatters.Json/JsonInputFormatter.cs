@@ -191,15 +191,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
-        public virtual InputFormatterExceptionModelStatePolicy ExceptionPolicy
+        public virtual InputFormatterExceptionPolicy ExceptionPolicy
         {
             get
             {
                 if (GetType() == typeof(JsonInputFormatter))
                 {
-                    return InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+                    return InputFormatterExceptionPolicy.MalformedInputExceptions;
                 }
-                return InputFormatterExceptionModelStatePolicy.AllExceptions;
+                return InputFormatterExceptionPolicy.AllExceptions;
             }
         }
 

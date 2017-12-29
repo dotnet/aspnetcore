@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 if (Version >= CompatibilityVersion.Version_2_1)
                 {
                     values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
-                    values[nameof(MvcOptions.InputFormatterExceptionModelStatePolicy)] = InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+                    values[nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions;
                 }
 
                 return values;
