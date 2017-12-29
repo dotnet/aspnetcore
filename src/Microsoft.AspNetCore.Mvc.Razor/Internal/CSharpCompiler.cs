@@ -21,19 +21,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         private readonly RazorReferenceManager _referenceManager;
         private readonly IHostingEnvironment _hostingEnvironment;
-        private readonly DebugInformationFormat _pdbFormat = SymbolsUtility.SupportsFullPdbGeneration() ?
-            DebugInformationFormat.Pdb :
-            DebugInformationFormat.PortablePdb;
         private bool _optionsInitialized;
         private CSharpParseOptions _parseOptions;
         private CSharpCompilationOptions _compilationOptions;
+        private EmitOptions _emitOptions;
 
         public CSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
         {
             _referenceManager = manager ?? throw new ArgumentNullException(nameof(manager));
             _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));
-
-            EmitOptions = new EmitOptions(debugInformationFormat: _pdbFormat);
         }
 
         public virtual CSharpParseOptions ParseOptions
@@ -54,7 +50,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
-        public EmitOptions EmitOptions { get; }
+        public virtual EmitOptions EmitOptions
+        {
+            get
+            {
+                EnsureOptions();
+                return _emitOptions;
+            }
+        }
 
         public SyntaxTree CreateSyntaxTree(SourceText sourceText)
         {
@@ -94,9 +97,45 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 var dependencyContextOptions = GetDependencyContextCompilationOptions();
                 _parseOptions = GetParseOptions(_hostingEnvironment, dependencyContextOptions);
                 _compilationOptions = GetCompilationOptions(_hostingEnvironment, dependencyContextOptions);
+                _emitOptions = GetEmitOptions(dependencyContextOptions);
 
                 _optionsInitialized = true;
             }
+        }
+
+        private EmitOptions GetEmitOptions(DependencyContextCompilationOptions dependencyContextOptions)
+        {
+            DebugInformationFormat debugInformationFormat;
+            if (string.IsNullOrEmpty(dependencyContextOptions.DebugType))
+            {
+                debugInformationFormat = SymbolsUtility.SupportsFullPdbGeneration() ?
+                    DebugInformationFormat.Pdb :
+                    DebugInformationFormat.PortablePdb;
+            }
+            else
+            {
+                // Based on https://github.com/dotnet/roslyn/blob/1d28ff9ba248b332de3c84d23194a1d7bde07e4d/src/Compilers/CSharp/Portable/CommandLine/CSharpCommandLineParser.cs#L624-L640
+                switch (dependencyContextOptions.DebugType.ToLower())
+                {
+                    case "portable":
+                        debugInformationFormat = DebugInformationFormat.PortablePdb;
+                        break;
+                    case "embedded":
+                        debugInformationFormat = DebugInformationFormat.Embedded;
+                        break;
+                    case "full":
+                    case "pdbonly":
+                        debugInformationFormat = SymbolsUtility.SupportsFullPdbGeneration() ?
+                            DebugInformationFormat.Pdb :
+                            DebugInformationFormat.PortablePdb;
+                        break;
+                    default:
+                        throw new InvalidOperationException(Resources.FormatUnsupportedDebugInformationFormat(dependencyContextOptions.DebugType));
+                }
+            }
+
+            var emitOptions = new EmitOptions(debugInformationFormat: debugInformationFormat);
+            return emitOptions;
         }
 
         private static CSharpCompilationOptions GetCompilationOptions(

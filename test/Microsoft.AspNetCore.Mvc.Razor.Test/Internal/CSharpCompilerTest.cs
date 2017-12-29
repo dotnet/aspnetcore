@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Xunit;
@@ -170,6 +171,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Act & Assert
             var compilationOptions = compiler.ParseOptions;
             Assert.Equal(LanguageVersion.CSharp7_1, compilationOptions.LanguageVersion);
+        }
+
+
+        [Theory]
+        [InlineData("portable", DebugInformationFormat.PortablePdb)]
+        [InlineData("embedded", DebugInformationFormat.Embedded)]
+        public void EmitOptions_ReadsDebugTypeFromDependencyContext(string debugType, DebugInformationFormat expected)
+        {
+            // Arrange
+            var dependencyContextOptions = new DependencyContextCompilationOptions(
+                new[] { "MyDefine" },
+                languageVersion: "7.1",
+                platform: null,
+                allowUnsafe: true,
+                warningsAsErrors: null,
+                optimize: null,
+                keyFile: null,
+                delaySign: null,
+                publicSign: null,
+                debugType: debugType,
+                emitEntryPoint: null,
+                generateXmlDocumentation: null);
+            var referenceManager = Mock.Of<RazorReferenceManager>();
+            var hostingEnvironment = Mock.Of<IHostingEnvironment>();
+
+            var compiler = new TestCSharpCompiler(referenceManager, hostingEnvironment, dependencyContextOptions);
+
+            // Act & Assert
+            var emitOptions = compiler.EmitOptions;
+            Assert.Equal(expected, emitOptions.DebugInformationFormat);
         }
 
         [Fact]
