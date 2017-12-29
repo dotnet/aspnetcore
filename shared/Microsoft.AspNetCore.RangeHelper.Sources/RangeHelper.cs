@@ -48,13 +48,14 @@ namespace Microsoft.AspNetCore.Internal
             var rawRangeHeader = context.Request.Headers[HeaderNames.Range];
             if (StringValues.IsNullOrEmpty(rawRangeHeader))
             {
+                logger.LogTrace("Range header's value is empty.");
                 return (false, null);
             }
 
             // Perf: Check for a single entry before parsing it
             if (rawRangeHeader.Count > 1 || rawRangeHeader[0].IndexOf(',') >= 0)
             {
-                logger.LogWarning("Multiple ranges are not supported.");
+                logger.LogDebug("Multiple ranges are not supported.");
 
                 // The spec allows for multiple ranges but we choose not to support them because the client may request
                 // very strange ranges (e.g. each byte separately, overlapping ranges, etc.) that could negatively
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Internal
             var rangeHeader = requestHeaders.Range;
             if (rangeHeader == null)
             {
+                logger.LogTrace("Range header's value is invalid.");
                 // Invalid
                 return (false, null);
             }
@@ -75,6 +77,7 @@ namespace Microsoft.AspNetCore.Internal
             var ranges = rangeHeader.Ranges;
             if (ranges == null)
             {
+                logger.LogTrace("Range header's value is invalid.");
                 return (false, null);
             }
 
