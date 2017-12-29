@@ -2,6 +2,8 @@
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
+    <GenerateSignRequest>false</GenerateSignRequest>
+    <GenerateBillOfMaterials>false</GenerateBillOfMaterials>
 
     <SignType Condition=" '$(SignType)' == '' ">public</SignType>
 
