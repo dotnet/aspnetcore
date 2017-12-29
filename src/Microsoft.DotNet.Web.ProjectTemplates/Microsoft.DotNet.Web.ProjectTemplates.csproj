@@ -29,7 +29,6 @@
       MicrosoftEntityFrameworkCoreSqlServerPackageVersion=$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion);
       MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion=$(MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion);
       MicrosoftEntityFrameworkCoreToolsPackageVersion=$(MicrosoftEntityFrameworkCoreToolsPackageVersion);
-      MicrosoftExtensionsSecretManagerToolsPackageVersion=$(MicrosoftExtensionsSecretManagerToolsPackageVersion);
       MicrosoftVisualStudioWebBrowserLinkPackageVersion=$(MicrosoftVisualStudioWebBrowserLinkPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);

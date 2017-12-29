@@ -9,17 +9,17 @@
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>
   </PropertyGroup>
-  
+
   <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="${MicrosoftAspNetCoreAllPackageVersion}" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="${MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
     <PackageReference Include="Microsoft.AspNetCore" Version="${MicrosoftAspNetCorePackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="${MicrosoftAspNetCoreAuthenticationCookiesPackageVersion}" Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
@@ -38,11 +38,10 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="${MicrosoftVisualStudioWebBrowserLinkPackageVersion}" Condition="'$(UseBrowserLink)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="${MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion}" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>
-  
+
   <ItemGroup Condition="'$(NoTools)' != 'True'">
     <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="${MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion}" Condition="'$(IndividualLocalAuth)' == 'True'" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="${MicrosoftExtensionsSecretManagerToolsPackageVersion}" Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}" />
   </ItemGroup>
-  
+
 </Project>

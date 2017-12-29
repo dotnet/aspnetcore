@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="${MicrosoftExtensionsSecretManagerToolsPackageVersion}" Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}" />
   </ItemGroup>
 

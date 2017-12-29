@@ -76,7 +76,6 @@ namespace Templates.Test
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
-            Assert.Contains("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
             foreach (var publish in new[] { false, true })
             {
