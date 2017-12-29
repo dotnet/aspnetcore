@@ -60,7 +60,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ApplicationType = applicationType,
                     AdditionalPublishParameters = ApplicationType.Standalone == applicationType && RuntimeFlavor.CoreClr == runtimeFlavor
                         ? "-r " + windowsRid
-                        : null
+                        : null,
+                    Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
