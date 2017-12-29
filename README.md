@@ -62,7 +62,7 @@ These are some of the most common repos:
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [Razor](https://github.com/aspnet/Razor) - template language and syntax for CSHTML files
 * [SignalR](https://github.com/aspnet/SignalR) - library to add real-time web functionality
-* [Templates](https://github.com/aspnet/Templates) - project templates for Visual Studio
+* [Templating](https://github.com/aspnet/Templating) - project templates for Visual Studio and the .NET Core SDK
 * [Tooling](https://github.com/aspnet/Tooling) - Visual Studio tooling, editors, and dialogs
 
 ## NuGet feeds and branches
