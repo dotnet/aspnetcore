@@ -35,6 +35,11 @@ namespace Company.WebApplication1.Controllers
             return View();
         }
 
+        public IActionResult Privacy()
+        {
+            return View();
+        }
+
 #if (OrganizationalAuth)
         [AllowAnonymous]
 #endif

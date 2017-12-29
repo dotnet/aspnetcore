@@ -72,6 +72,12 @@ namespace Company.WebApplication1
             .AddCookie();
 
 #endif
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+            });
+
             services.AddMvc();
         }
 
@@ -96,6 +102,7 @@ namespace Company.WebApplication1
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseCookiePolicy();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
