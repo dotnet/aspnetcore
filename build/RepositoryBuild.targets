@@ -23,7 +23,7 @@
     <!-- If we are building a sub-graph, we need to re-examine the list of artifacts that will actual build. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=$(SubmoduleRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=$(SubmoduleRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
              Condition="'$(BuildGraphOf)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
     </MSBuild>
