@@ -11,6 +11,10 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <PackageArtifact Include="dotnet-dev-certs" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="dotnet-sql-cache" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="dotnet-user-secrets" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="dotnet-watch" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
@@ -48,7 +52,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Extensions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.Redis" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.Tools" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
@@ -158,7 +161,6 @@
     <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.Data.Sqlite" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Data.Sqlite.Core" Category="ship" Metapackage="true" RuntimeStore="true" />
-    <PackageArtifact Include="Microsoft.DotNet.Watcher.Tools" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
     <PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" Category="shipoob" />
@@ -180,7 +182,6 @@
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Memory" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Redis" Category="ship" Metapackage="true" RuntimeStore="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.SqlServer" Category="ship" Metapackage="true" RuntimeStore="true" />
     <PackageArtifact Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.CommandLineUtils.Sources" Category="noship" />
@@ -237,7 +238,6 @@
     <PackageArtifact Include="Microsoft.Extensions.PropertyActivator.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.PropertyHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.RazorViews.Sources" Category="noship" />
-    <PackageArtifact Include="Microsoft.Extensions.SecretManager.Tools" Category="ship" LZMATools="true" />
     <PackageArtifact Include="Microsoft.Extensions.SecurityHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.StackTrace.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.TypeNameHelper.Sources" Category="noship" />
