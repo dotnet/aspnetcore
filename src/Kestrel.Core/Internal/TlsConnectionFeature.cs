@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
     {
         public X509Certificate2 ClientCertificate { get; set; }
 
-        public string ApplicationProtocol { get; set; }
+        public ReadOnlyMemory<byte> ApplicationProtocol { get; set; }
 
         public Task<X509Certificate2> GetClientCertificateAsync(CancellationToken cancellationToken)
         {
