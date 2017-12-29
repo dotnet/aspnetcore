@@ -5,7 +5,6 @@
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15638</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.1.0-preview1-27867</MicrosoftAspNetCoreAllPackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>1.0.0-pre-10223</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
     <MicrosoftAspNetCoreAuthenticationCorePackageVersion>2.1.0-preview1-27867</MicrosoftAspNetCoreAuthenticationCorePackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-27867</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27867</MicrosoftAspNetCoreHostingPackageVersion>

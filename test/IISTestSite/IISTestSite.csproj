@@ -8,8 +8,14 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
   </ItemGroup>
   
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\aspnetcorerh.dll" />
+    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\aspnetcorerh.dll" />
+    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\aspnetcore.dll" />
+    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\aspnetcore.dll" />
+  </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(MicrosoftAspNetCoreWebUtilitiesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />

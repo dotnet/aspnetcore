@@ -1,10 +1,11 @@
 <Project>
 
   <PropertyGroup>
-      <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
+    <CompileDependsOn Condition="'$(OS)'=='Windows_NT'">BuildNativeAssets;$(CompileDependsOn)</CompileDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageNativeProjects</PackageDependsOn>
   </PropertyGroup>
 
-  <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" BeforeTargets="Compile" >
+  <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" >
     <ItemGroup>
       <BuildConfigurations Include="/p:Configuration=$(Configuration) /p:platform=Win32" />
       <BuildConfigurations Include="/p:Configuration=$(Configuration) /p:platform=x64" />
@@ -25,6 +26,7 @@
       <ArtifactType>NuGetPackage</ArtifactType>
       <PackageId>Microsoft.AspNetCore.AspNetCoreModule</PackageId>
       <Version>$(PackageVersion)</Version>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
     </ArtifactInfo>
     <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
   </ItemGroup>
