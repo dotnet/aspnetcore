@@ -35,14 +35,24 @@ interface DevServerOptions {
     EnvParam: any;
 }
 
-// We support these three kinds of webpack.config.js export. We don't currently support exported promises
-// (though we might be able to add that in the future, if there's a need).
-type WebpackConfigOrArray = webpack.Configuration | webpack.Configuration[];
-interface WebpackConfigFunc {
-    (env?: any): WebpackConfigOrArray;
+// Interface as defined in es6-promise
+interface Thenable<T> {
+    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => U | Thenable<U>): Thenable<U>;
+    then<U>(onFulfilled?: (value: T) => U | Thenable<U>, onRejected?: (error: any) => void): Thenable<U>;
 }
-type WebpackConfigExport = WebpackConfigOrArray | WebpackConfigFunc;
+
+// We support these four kinds of webpack.config.js export
+type WebpackConfigOrArray = webpack.Configuration | webpack.Configuration[];
+type WebpackConfigOrArrayOrThenable = WebpackConfigOrArray | Thenable<WebpackConfigOrArray>;
+interface WebpackConfigFunc {
+    (env?: any): WebpackConfigOrArrayOrThenable;
+}
+type WebpackConfigExport = WebpackConfigOrArrayOrThenable | WebpackConfigFunc;
 type WebpackConfigModuleExports = WebpackConfigExport | EsModuleExports<WebpackConfigExport>;
+
+function isThenable(obj: any) {
+    return obj && typeof (<Thenable<any>>obj).then === 'function';
+}
 
 function attachWebpackDevMiddleware(app: any, webpackConfig: webpack.Configuration, enableHotModuleReplacement: boolean, enableReactHotModuleReplacement: boolean, hmrClientOptions: StringMap<string>, hmrServerEndpoint: string) {
     // Build the final Webpack config based on supplied options
@@ -251,76 +261,85 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         // your Startup.cs.
         webpackConfigExport = webpackConfigExport(options.suppliedOptions.EnvParam);
     }
-    const webpackConfigArray = webpackConfigExport instanceof Array ? webpackConfigExport : [webpackConfigExport];
 
-    const enableHotModuleReplacement = options.suppliedOptions.HotModuleReplacement;
-    const enableReactHotModuleReplacement = options.suppliedOptions.ReactHotModuleReplacement;
-    if (enableReactHotModuleReplacement && !enableHotModuleReplacement) {
-        callback('To use ReactHotModuleReplacement, you must also enable the HotModuleReplacement option.', null);
-        return;
-    }
+    const webpackConfigThenable = isThenable(webpackConfigExport)
+        ? webpackConfigExport
+        : { then: callback => callback(webpackConfigExport) };
 
-    // The default value, 0, means 'choose randomly'
-    const suggestedHMRPortOrZero = options.suppliedOptions.HotModuleReplacementServerPort || 0;
+    webpackConfigThenable.then(webpackConfigResolved => {
+        const webpackConfigArray = webpackConfigResolved instanceof Array ? webpackConfigResolved : [webpackConfigResolved];
 
-    const app = connect();
-    const listener = app.listen(suggestedHMRPortOrZero, () => {
-        try {
-            // For each webpack config that specifies a public path, add webpack dev middleware for it
-            const normalizedPublicPaths: string[] = [];
-            webpackConfigArray.forEach(webpackConfig => {
-                if (webpackConfig.target === 'node') {
-                    // For configs that target Node, it's meaningless to set up an HTTP listener, since
-                    // Node isn't going to load those modules over HTTP anyway. It just loads them directly
-                    // from disk. So the most relevant thing we can do with such configs is just write
-                    // updated builds to disk, just like "webpack --watch".
-                    beginWebpackWatcher(webpackConfig);
-                } else {
-                    // For configs that target browsers, we can set up an HTTP listener, and dynamically
-                    // modify the config to enable HMR etc. This just requires that we have a publicPath.
-                    const publicPath = (webpackConfig.output.publicPath || '').trim();
-                    if (!publicPath) {
-                        throw new Error('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack config (for any configuration that targets browsers)');
-                    }
-                    const publicPathNoTrailingSlash = removeTrailingSlash(publicPath);
-                    normalizedPublicPaths.push(publicPathNoTrailingSlash);
-
-                    // This is the URL the client will connect to, except that since it's a relative URL
-                    // (no leading slash), Webpack will resolve it against the runtime <base href> URL
-                    // plus it also adds the publicPath
-                    const hmrClientEndpoint = removeLeadingSlash(options.hotModuleReplacementEndpointUrl);
-
-                    // This is the URL inside the Webpack middleware Node server that we'll proxy to.
-                    // We have to prefix with the public path because Webpack will add the publicPath
-                    // when it resolves hmrClientEndpoint as a relative URL.
-                    const hmrServerEndpoint = ensureLeadingSlash(publicPathNoTrailingSlash + options.hotModuleReplacementEndpointUrl);
-
-                    // We always overwrite the 'path' option as it needs to match what the .NET side is expecting
-                    const hmrClientOptions = options.suppliedOptions.HotModuleReplacementClientOptions || <StringMap<string>>{};
-                    hmrClientOptions['path'] = hmrClientEndpoint;
-
-                    const dynamicPublicPathKey = 'dynamicPublicPath';
-                    if (!(dynamicPublicPathKey in hmrClientOptions)) {
-                        // dynamicPublicPath default to true, so we can work with nonempty pathbases (virtual directories)
-                        hmrClientOptions[dynamicPublicPathKey] = true;
-                    } else {
-                        // ... but you can set it to any other value explicitly if you want (e.g., false)
-                        hmrClientOptions[dynamicPublicPathKey] = JSON.parse(hmrClientOptions[dynamicPublicPathKey]);
-                    }
-
-                    attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement, hmrClientOptions, hmrServerEndpoint);
-                }
-            });
-
-            // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
-            callback(null, {
-                Port: listener.address().port,
-                PublicPaths: normalizedPublicPaths
-            });
-        } catch (ex) {
-            callback(ex.stack, null);
+        const enableHotModuleReplacement = options.suppliedOptions.HotModuleReplacement;
+        const enableReactHotModuleReplacement = options.suppliedOptions.ReactHotModuleReplacement;
+        if (enableReactHotModuleReplacement && !enableHotModuleReplacement) {
+            callback('To use ReactHotModuleReplacement, you must also enable the HotModuleReplacement option.', null);
+            return;
         }
-    });
+
+        // The default value, 0, means 'choose randomly'
+        const suggestedHMRPortOrZero = options.suppliedOptions.HotModuleReplacementServerPort || 0;
+
+        const app = connect();
+        const listener = app.listen(suggestedHMRPortOrZero, () => {
+            try {
+                // For each webpack config that specifies a public path, add webpack dev middleware for it
+                const normalizedPublicPaths: string[] = [];
+                webpackConfigArray.forEach(webpackConfig => {
+                    if (webpackConfig.target === 'node') {
+                        // For configs that target Node, it's meaningless to set up an HTTP listener, since
+                        // Node isn't going to load those modules over HTTP anyway. It just loads them directly
+                        // from disk. So the most relevant thing we can do with such configs is just write
+                        // updated builds to disk, just like "webpack --watch".
+                        beginWebpackWatcher(webpackConfig);
+                    } else {
+                        // For configs that target browsers, we can set up an HTTP listener, and dynamically
+                        // modify the config to enable HMR etc. This just requires that we have a publicPath.
+                        const publicPath = (webpackConfig.output.publicPath || '').trim();
+                        if (!publicPath) {
+                            throw new Error('To use the Webpack dev server, you must specify a value for \'publicPath\' on the \'output\' section of your webpack config (for any configuration that targets browsers)');
+                        }
+                        const publicPathNoTrailingSlash = removeTrailingSlash(publicPath);
+                        normalizedPublicPaths.push(publicPathNoTrailingSlash);
+
+                        // This is the URL the client will connect to, except that since it's a relative URL
+                        // (no leading slash), Webpack will resolve it against the runtime <base href> URL
+                        // plus it also adds the publicPath
+                        const hmrClientEndpoint = removeLeadingSlash(options.hotModuleReplacementEndpointUrl);
+
+                        // This is the URL inside the Webpack middleware Node server that we'll proxy to.
+                        // We have to prefix with the public path because Webpack will add the publicPath
+                        // when it resolves hmrClientEndpoint as a relative URL.
+                        const hmrServerEndpoint = ensureLeadingSlash(publicPathNoTrailingSlash + options.hotModuleReplacementEndpointUrl);
+
+                        // We always overwrite the 'path' option as it needs to match what the .NET side is expecting
+                        const hmrClientOptions = options.suppliedOptions.HotModuleReplacementClientOptions || <StringMap<string>>{};
+                        hmrClientOptions['path'] = hmrClientEndpoint;
+
+                        const dynamicPublicPathKey = 'dynamicPublicPath';
+                        if (!(dynamicPublicPathKey in hmrClientOptions)) {
+                            // dynamicPublicPath default to true, so we can work with nonempty pathbases (virtual directories)
+                            hmrClientOptions[dynamicPublicPathKey] = true;
+                        } else {
+                            // ... but you can set it to any other value explicitly if you want (e.g., false)
+                            hmrClientOptions[dynamicPublicPathKey] = JSON.parse(hmrClientOptions[dynamicPublicPathKey]);
+                        }
+
+                        attachWebpackDevMiddleware(app, webpackConfig, enableHotModuleReplacement, enableReactHotModuleReplacement, hmrClientOptions, hmrServerEndpoint);
+                    }
+                });
+
+                // Tell the ASP.NET app what addresses we're listening on, so that it can proxy requests here
+                callback(null, {
+                    Port: listener.address().port,
+                    PublicPaths: normalizedPublicPaths
+                });
+            } catch (ex) {
+                callback(ex.stack, null);
+            }
+        });
+        },
+        err => callback(err.stack, null)
+    );
 }
 
 function removeLeadingSlash(str: string) {
