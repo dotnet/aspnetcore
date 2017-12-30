@@ -35,8 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             }
 
             var request = context.RouteContext.HttpContext.Request;
-            if (request.Headers.ContainsKey(OriginHeader) &&
-                string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+            // Perf: Check http method before accessing the Headers collection.
+            if (string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                request.Headers.ContainsKey(OriginHeader) &&
                 request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
