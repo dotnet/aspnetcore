@@ -1,6 +1,6 @@
 ﻿# Autobahn Testing
 
-This application is used to provide the server for the [Autobahn Test Suite](http://autobahn.ws/testsuite) 'fuzzingclient' mode to test. It is a simple echo server that echos each frame recieved back to the client.
+This application is used to provide the server for the [Autobahn Test Suite](http://autobahn.ws/testsuite) 'fuzzingclient' mode to test. It is a simple echo server that echos each frame received back to the client.
 
 In order to run these tests you must install CPython 2.7, Pip, and the test suite modules. You must also have
 the `wstest` executable provided by the Autobahn Suite on the `PATH`. See http://autobahn.ws/testsuite/installation.html#installation for more info
