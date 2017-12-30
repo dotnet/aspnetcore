@@ -22,7 +22,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="$(MicrosoftAspNetCoreAuthenticationGooglePackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" Version="$(MicrosoftAspNetCoreAuthenticationTwitterPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Certificates.Configuration.Sources" Version="$(MicrosoftAspNetCoreCertificatesConfigurationSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="$(MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(MicrosoftAspNetCoreDiagnosticsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion)" />

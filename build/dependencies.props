@@ -10,7 +10,6 @@
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
     <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreCertificatesConfigurationSourcesPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreCertificatesConfigurationSourcesPackageVersion>
     <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
     <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview1-27871</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
