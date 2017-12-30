@@ -12,6 +12,7 @@
         BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);
         IsFinalBuild=$(IsFinalBuild);
+        SkipAspNetCoreRuntimeInstall=true;
       </TemplateProjProperties>
       <TemplateProjTargets>CleanArtifacts;Restore;Compile;Package</TemplateProjTargets>
       <TemplateProjTargets Condition="'$(SkipTests)' != 'true'">
