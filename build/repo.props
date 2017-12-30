@@ -9,10 +9,10 @@
 
   <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
+
+    <!-- SkipAspNetCoreRuntimeInstall must be set when building templates before the shared framework is available -->
+    <AspNetCoreRuntime Include="$(MicrosoftAspNetCoreAllPackageVersion)"
+      Condition=" '$(SkipAspNetCoreRuntimeInstall)' != 'true' " />
   </ItemGroup>
 
-  <ItemGroup>
-   <AspNetCoreRuntime Include="$(MicrosoftAspNetCoreAllPackageVersion)" />
-  </ItemGroup>
-  
 </Project>
