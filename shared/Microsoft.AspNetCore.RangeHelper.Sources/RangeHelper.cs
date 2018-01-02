@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Internal
             var rangeHeader = requestHeaders.Range;
             if (rangeHeader == null)
             {
-                logger.LogTrace("Range header's value is invalid.");
+                logger.LogDebug("Range header's value is invalid.");
                 // Invalid
                 return (false, null);
             }
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Internal
             var ranges = rangeHeader.Ranges;
             if (ranges == null)
             {
-                logger.LogTrace("Range header's value is invalid.");
+                logger.LogDebug("Range header's value is invalid.");
                 return (false, null);
             }
 
