@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Identity.UI
 
         public IHostingEnvironment Environment { get; }
 
-        public void Configure(RazorPagesOptions options) => options.EnableAreas = true;
+        public void Configure(RazorPagesOptions options) => options.AllowAreas = true;
 
         public void Configure(RazorViewEngineOptions options) => 
             options.FileProviders.Add(new ManifestEmbeddedFileProvider(GetType().Assembly));
