@@ -24,8 +24,6 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class SpaPrerenderingExtensions
     {
-        private static TimeSpan BuildTimeout = TimeSpan.FromSeconds(50); // Note that the HTTP request itself by default times out after 60s, so you only get useful error information if this is shorter
-
         /// <summary>
         /// Enables server-side prerendering middleware for a Single Page Application.
         /// </summary>
@@ -71,6 +69,7 @@ namespace Microsoft.AspNetCore.Builder
             var excludePathStrings = (options.ExcludeUrls ?? Array.Empty<string>())
                 .Select(url => new PathString(url))
                 .ToArray();
+            var buildTimeout = spaBuilder.Options.StartupTimeout;
 
             applicationBuilder.Use(async (context, next) =>
             {
@@ -93,9 +92,9 @@ namespace Microsoft.AspNetCore.Builder
                     // For better debuggability, create a per-request timeout that makes it clear if the
                     // prerendering builder took too long for this request, but without aborting the
                     // underlying build task so that subsequent requests could still work.
-                    await buildOnDemandTask.WithTimeout(BuildTimeout,
+                    await buildOnDemandTask.WithTimeout(buildTimeout,
                         $"The prerendering build process did not complete within the " +
-                        $"timeout period of {BuildTimeout.Seconds} seconds. " +
+                        $"timeout period of {buildTimeout.Seconds} seconds. " +
                         $"Check the log output for error information.");
                 }
 

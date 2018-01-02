@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     {
         private const string LogCategoryName = "Microsoft.AspNetCore.SpaServices";
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
-        private static TimeSpan StartupTimeout = TimeSpan.FromSeconds(50); // Note that the HTTP request itself by default times out after 60s, so you only get useful error information if this is shorter
 
         public static void Attach(
             ISpaBuilder spaBuilder,
@@ -54,9 +53,10 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             {
                 // On each request, we create a separate startup task with its own timeout. That way, even if
                 // the first request times out, subsequent requests could still work.
-                return targetUriTask.WithTimeout(StartupTimeout,
+                var timeout = spaBuilder.Options.StartupTimeout;
+                return targetUriTask.WithTimeout(timeout,
                     $"The Angular CLI process did not start listening for requests " +
-                    $"within the timeout period of {StartupTimeout.Seconds} seconds. " +
+                    $"within the timeout period of {timeout.Seconds} seconds. " +
                     $"Check the log output for error information.");
             });
         }

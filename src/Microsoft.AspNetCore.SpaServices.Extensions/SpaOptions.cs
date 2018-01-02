@@ -67,5 +67,11 @@ namespace Microsoft.AspNetCore.SpaServices
         /// development. The directory may not exist in published applications.
         /// </summary>
         public string SourcePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the maximum duration that a request will wait for the SPA
+        /// to become ready to serve to the client.
+        /// </summary>
+        public TimeSpan StartupTimeout { get; set; } = TimeSpan.FromSeconds(50);
     }
 }
