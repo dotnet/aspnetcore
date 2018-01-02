@@ -172,6 +172,69 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_DoesNotAddAreaAndNonAreaRoutesForAPage()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var conformingFileUnderAreasDirectory = fileProvider.AddFile("Categories.cshtml", "@page");
+            // We shouldn't add a route for this.
+            var nonConformingFileUnderAreasDirectory = fileProvider.AddFile("Home.cshtml", "@page");
+            var rootFile = fileProvider.AddFile("About.cshtml", "@page");
+
+            var productsDir = fileProvider.AddDirectoryContent("/Areas/Products", new[] { conformingFileUnderAreasDirectory });
+            var areasDir = fileProvider.AddDirectoryContent("/Areas", new IFileInfo[] { productsDir, nonConformingFileUnderAreasDirectory });
+            var rootDir = fileProvider.AddDirectoryContent("/", new IFileInfo[] { areasDir, rootFile });
+
+            var project = new TestRazorProject(fileProvider);
+
+            var optionsManager = Options.Create(new RazorPagesOptions
+            {
+                RootDirectory = "/",
+                AreaRootDirectory = "/Areas",
+                AllowAreas = true,
+            });
+            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                model =>
+                {
+                    Assert.Equal("/Areas/Products/Categories.cshtml", model.RelativePath);
+                    Assert.Equal("/Categories", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Products/Categories", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Products", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Categories", kvp.Value);
+                      });
+                },
+                model =>
+                {
+                    Assert.Equal("/About.cshtml", model.RelativePath);
+                    Assert.Equal("/About", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("About", selector.AttributeRouteModel.Template));
+                    Assert.Collection(model.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/About", kvp.Value);
+                      });
+                });
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPages()
         {
             // Arrange

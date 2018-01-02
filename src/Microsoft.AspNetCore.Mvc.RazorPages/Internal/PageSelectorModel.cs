@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             result = default;
             Debug.Assert(path.StartsWith("/", StringComparison.Ordinal));
 
+            // 1. Parse the area name. This  will be the first token we encounter.
             var areaEndIndex = path.IndexOf('/', startIndex: 1);
             if (areaEndIndex == -1 || areaEndIndex == path.Length)
             {
@@ -63,25 +64,37 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 return false;
             }
 
-            // Normalize the pages root directory so that it has a 
-            var normalizedPagesRootDirectory = razorPagesOptions.RootDirectory.TrimStart('/');
-            if (!normalizedPagesRootDirectory.EndsWith("/", StringComparison.Ordinal))
-            {
-                normalizedPagesRootDirectory += "/";
-            }
-
-            if (string.Compare(path, areaEndIndex + 1, normalizedPagesRootDirectory, 0, normalizedPagesRootDirectory.Length, StringComparison.OrdinalIgnoreCase) != 0)
-            {
-                logger.UnsupportedAreaPath(razorPagesOptions, path);
-                return false;
-            }
-
             var areaName = path.Substring(1, areaEndIndex - 1);
 
-            var pagePathIndex = areaEndIndex + normalizedPagesRootDirectory.Length;
-            Debug.Assert(path.EndsWith(RazorViewEngine.ViewExtension), $"{path} does not end in extension '{RazorViewEngine.ViewExtension}'.");
+            string pageName;
+            if (razorPagesOptions.RootDirectory == "/")
+            {
+                // When RootDirectory is "/", every thing past the area name is the page path.
+                Debug.Assert(path.EndsWith(RazorViewEngine.ViewExtension), $"{path} does not end in extension '{RazorViewEngine.ViewExtension}'.");
+                pageName = path.Substring(areaEndIndex, path.Length - areaEndIndex - RazorViewEngine.ViewExtension.Length);
+            }
+            else
+            {
+                // Normalize the pages root directory so that it has a trailing slash. This ensures we're looking at a directory delimiter
+                // and not just the area name occuring as part of a segment.
+                Debug.Assert(razorPagesOptions.RootDirectory.StartsWith("/", StringComparison.Ordinal));
+                var normalizedPagesRootDirectory = razorPagesOptions.RootDirectory.Substring(1);
+                if (!normalizedPagesRootDirectory.EndsWith("/", StringComparison.Ordinal))
+                {
+                    normalizedPagesRootDirectory += "/";
+                }
 
-            var pageName = path.Substring(pagePathIndex, path.Length - pagePathIndex - RazorViewEngine.ViewExtension.Length);
+                Debug.Assert(normalizedPagesRootDirectory.Length > 0);
+                // If the pages root has a value i.e. it's not the app root "/", ensure that the area path contains this value.
+                if (string.Compare(path, areaEndIndex + 1, normalizedPagesRootDirectory, 0, normalizedPagesRootDirectory.Length, StringComparison.OrdinalIgnoreCase) != 0)
+                {
+                    logger.UnsupportedAreaPath(razorPagesOptions, path);
+                    return false;
+                }
+
+                var pageNameIndex = areaEndIndex + normalizedPagesRootDirectory.Length;
+                pageName = path.Substring(pageNameIndex, path.Length - pageNameIndex - RazorViewEngine.ViewExtension.Length);
+            }
 
             var builder = new InplaceStringBuilder(areaEndIndex + pageName.Length);
             builder.Append(path, 0, areaEndIndex);

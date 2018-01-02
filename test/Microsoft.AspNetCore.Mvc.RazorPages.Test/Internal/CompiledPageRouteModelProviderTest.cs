@@ -176,6 +176,63 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_DoesNotAddAreaAndNonAreaRoutesForAPage()
+        {
+            // Arrange
+            var descriptors = new[]
+            {
+                GetDescriptor("/Areas/Accounts/Manage/Home.cshtml"),
+                GetDescriptor("/Areas/About.cshtml"),
+                GetDescriptor("/Contact.cshtml"),
+            };
+            var options = new RazorPagesOptions
+            {
+                AllowAreas = true,
+                AreaRootDirectory = "/Areas",
+                RootDirectory = "/",
+            };
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, options);
+            var context = new PageRouteModelProviderContext();
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                result =>
+                {
+                    Assert.Equal("/Areas/Accounts/Manage/Home.cshtml", result.RelativePath);
+                    Assert.Equal("/Manage/Home", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Accounts/Manage/Home", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("area", kvp.Key);
+                          Assert.Equal("Accounts", kvp.Value);
+                      },
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Manage/Home", kvp.Value);
+                      });
+                },
+                result =>
+                {
+                    Assert.Equal("/Contact.cshtml", result.RelativePath);
+                    Assert.Equal("/Contact", result.ViewEnginePath);
+                    Assert.Collection(result.Selectors,
+                        selector => Assert.Equal("Contact", selector.AttributeRouteModel.Template));
+                    Assert.Collection(result.RouteValues.OrderBy(k => k.Key),
+                      kvp =>
+                      {
+                          Assert.Equal("page", kvp.Key);
+                          Assert.Equal("/Contact", kvp.Value);
+                      });
+                });
+        }
+
+        [Fact]
         public void OnProvidersExecuting_AddsMultipleSelectorsForIndexPage_WithIndexAtRoot()
         {
             // Arrange

@@ -73,13 +73,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
                 {
                     PageRouteModel model = null;
-                    if (viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
-                    {
-                        model = GetPageRouteModel(rootDirectory, viewDescriptor);
-                    }
-                    else if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                    // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
+                    // only want to allow a page to be associated with the area route.
+                    if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                     {
                         model = GetAreaPageRouteModel(areaRootDirectory, viewDescriptor);
+                    }
+                    else if (viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
+                    {
+                        model = GetPageRouteModel(rootDirectory, viewDescriptor);
                     }
 
                     if (model != null)

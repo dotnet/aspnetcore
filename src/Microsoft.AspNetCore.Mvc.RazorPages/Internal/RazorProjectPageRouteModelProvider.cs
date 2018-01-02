@@ -37,20 +37,37 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public void OnProvidersExecuting(PageRouteModelProviderContext context)
         {
-            AddPageModels(context);
-
+            // When RootDirectory and AreaRootDirectory overlap, e.g. RootDirectory = /, AreaRootDirectoryy = /Areas;
+            // we need to ensure that the page is only route-able via the area route. By adding area routes first,
+            // we'll ensure non area routes get skipped when it encounters an IsAlreadyRegistered check.
             if (_pagesOptions.AllowAreas)
             {
                 AddAreaPageModels(context);
             }
+
+            AddPageModels(context);
         }
 
         private void AddPageModels(PageRouteModelProviderContext context)
         {
+            var normalizedAreaRootDirectory = _pagesOptions.AreaRootDirectory;
+            if (!normalizedAreaRootDirectory.EndsWith("/", StringComparison.Ordinal))
+            {
+                normalizedAreaRootDirectory += "/";
+            }
+
             foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
             {
                 if (!IsRouteable(item))
                 {
+                    continue;
+                }
+
+                var relativePath = item.CombinedPath;
+                if (IsAlreadyRegistered(context, relativePath))
+                {
+                    // A route for this file was already registered either by the CompiledPageRouteModel or as an area route.
+                    // by this provider. Skip registering an additional entry.
                     continue;
                 }
 
@@ -60,17 +77,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                var routeModel = new PageRouteModel(
-                    relativePath: item.CombinedPath,
-                    viewEnginePath: item.FilePathWithoutExtension);
-
-                if (IsAlreadyRegistered(context, routeModel))
+                if (_pagesOptions.AllowAreas && relativePath.StartsWith(normalizedAreaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    // The CompiledPageRouteModelProvider (or another provider) already registered a PageRoute for this path.
-                    // Don't register a duplicate entry for this route.
+                    // Ignore Razor pages that are under the area root directory when AllowAreas is enabled. 
+                    // Conforming page paths will be added by AddAreaPageModels.
+                    _logger.UnsupportedAreaPath(_pagesOptions, relativePath);
                     continue;
                 }
 
+                var routeModel = new PageRouteModel(relativePath, viewEnginePath: item.FilePathWithoutExtension);
                 PageSelectorModel.PopulateDefaults(routeModel, routeModel.ViewEnginePath, routeTemplate);
                 context.RouteModels.Add(routeModel);
             }
@@ -85,6 +100,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
+                var relativePath = item.CombinedPath;
+                if (IsAlreadyRegistered(context, relativePath))
+                {
+                    // A route for this file was already registered either by the CompiledPageRouteModel.
+                    // Skip registering an additional entry.
+                    continue;
+                }
+
                 if (!PageDirectiveFeature.TryGetPageDirective(_logger, item, out var routeTemplate))
                 {
                     // .cshtml pages without @page are not RazorPages.
@@ -96,9 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                var routeModel = new PageRouteModel(
-                    relativePath: item.CombinedPath,
-                    viewEnginePath: areaResult.viewEnginePath)
+                var routeModel = new PageRouteModel(relativePath, viewEnginePath: areaResult.viewEnginePath)
                 {
                     RouteValues =
                     {
@@ -106,25 +127,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     },
                 };
 
-                if (IsAlreadyRegistered(context, routeModel))
-                {
-                    // The CompiledPageRouteModelProvider (or another provider) already registered a PageRoute for this path.
-                    // Don't register a duplicate entry for this route.
-                    continue;
-                }
-
                 PageSelectorModel.PopulateDefaults(routeModel, areaResult.pageRoute, routeTemplate);
                 context.RouteModels.Add(routeModel);
             }
         }
 
-        private bool IsAlreadyRegistered(PageRouteModelProviderContext context, PageRouteModel routeModel)
+        private bool IsAlreadyRegistered(PageRouteModelProviderContext context, string relativePath)
         {
             for (var i = 0; i < context.RouteModels.Count; i++)
             {
                 var existingRouteModel = context.RouteModels[i];
-                if (string.Equals(existingRouteModel.ViewEnginePath, routeModel.ViewEnginePath, StringComparison.OrdinalIgnoreCase) &&
-                    string.Equals(existingRouteModel.RelativePath, existingRouteModel.RelativePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(relativePath, existingRouteModel.RelativePath, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
