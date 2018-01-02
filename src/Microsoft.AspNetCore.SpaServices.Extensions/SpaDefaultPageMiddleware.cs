@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.SpaServices
             // Developers who need to host more than one SPA with distinct default pages can
             // override the file provider
             app.UseSpaStaticFilesInternal(
-                overrideFileProvider: options.DefaultPageFileProvider,
+                options.DefaultPageStaticFileOptions ?? new StaticFileOptions(),
                 allowFallbackOnServingWebRootFiles: true);
 
             // If the default file didn't get served as a static file (usually because it was not

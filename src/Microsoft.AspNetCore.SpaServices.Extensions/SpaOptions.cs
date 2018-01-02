@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.SpaServices
         internal SpaOptions(SpaOptions copyFromOptions)
         {
             _defaultPage = copyFromOptions.DefaultPage;
-            DefaultPageFileProvider = copyFromOptions.DefaultPageFileProvider;
+            DefaultPageStaticFileOptions = copyFromOptions.DefaultPageStaticFileOptions;
             SourcePath = copyFromOptions.SourcePath;
         }
 
@@ -52,14 +53,14 @@ namespace Microsoft.AspNetCore.SpaServices
         }
 
         /// <summary>
-        /// Gets or sets the <see cref="IFileProvider"/> that supplies content
+        /// Gets or sets the <see cref="StaticFileOptions"/> that supplies content
         /// for serving the SPA's default page.
         /// 
         /// If not set, a default file provider will read files from the
         /// <see cref="IHostingEnvironment.WebRootPath"/>, which by default is
         /// the <c>wwwroot</c> directory.
         /// </summary>
-        public IFileProvider DefaultPageFileProvider { get; set; }
+        public StaticFileOptions DefaultPageStaticFileOptions { get; set; }
 
         /// <summary>
         /// Gets or sets the path, relative to the application working directory,

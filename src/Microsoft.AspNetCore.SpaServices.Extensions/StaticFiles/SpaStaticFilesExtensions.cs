@@ -51,52 +51,74 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
         public static void UseSpaStaticFiles(this IApplicationBuilder applicationBuilder)
         {
+            UseSpaStaticFiles(applicationBuilder, new StaticFileOptions());
+        }
+
+        /// <summary>
+        /// Configures the application to serve static files for a Single Page Application (SPA).
+        /// The files will be located using the registered <see cref="ISpaStaticFileProvider"/> service.
+        /// </summary>
+        /// <param name="applicationBuilder">The <see cref="IApplicationBuilder"/>.</param>
+        /// <param name="options">Specifies options for serving the static files.</param>
+        public static void UseSpaStaticFiles(this IApplicationBuilder applicationBuilder, StaticFileOptions options)
+        {
             if (applicationBuilder == null)
             {
                 throw new ArgumentNullException(nameof(applicationBuilder));
             }
 
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
             UseSpaStaticFilesInternal(applicationBuilder,
-                overrideFileProvider: null,
+                staticFileOptions: options,
                 allowFallbackOnServingWebRootFiles: false);
         }
 
         internal static void UseSpaStaticFilesInternal(
             this IApplicationBuilder app,
-            IFileProvider overrideFileProvider,
+            StaticFileOptions staticFileOptions,
             bool allowFallbackOnServingWebRootFiles)
         {
-            var shouldServeStaticFiles = ShouldServeStaticFiles(
-                app,
-                overrideFileProvider,
-                allowFallbackOnServingWebRootFiles,
-                out var fileProviderOrDefault);
-
-            if (shouldServeStaticFiles)
+            if (staticFileOptions == null)
             {
-                app.UseStaticFiles(new StaticFileOptions
-                {
-                    FileProvider = fileProviderOrDefault
-                });
+                throw new ArgumentNullException(nameof(staticFileOptions));
             }
+
+            // If the file provider was explicitly supplied, that takes precedence over any other
+            // configured file provider. This is most useful if the application hosts multiple SPAs
+            // (via multiple calls to UseSpa()), so each needs to serve its own separate static files
+            // instead of using AddSpaStaticFiles/UseSpaStaticFiles.
+            // But if no file provider was specified, try to get one from the DI config.
+            if (staticFileOptions.FileProvider == null)
+            {
+                var shouldServeStaticFiles = ShouldServeStaticFiles(
+                    app,
+                    allowFallbackOnServingWebRootFiles,
+                    out var fileProviderOrDefault);
+                if (shouldServeStaticFiles)
+                {
+                    staticFileOptions.FileProvider = fileProviderOrDefault;
+                }
+                else
+                {
+                    // The registered ISpaStaticFileProvider says we shouldn't
+                    // serve static files
+                    return;
+                }
+            }
+
+            
+            app.UseStaticFiles(staticFileOptions);
         }
 
         private static bool ShouldServeStaticFiles(
             IApplicationBuilder app,
-            IFileProvider overrideFileProvider,
             bool allowFallbackOnServingWebRootFiles,
             out IFileProvider fileProviderOrDefault)
         {
-            if (overrideFileProvider != null)
-            {
-                // If the file provider was explicitly supplied, that takes precedence over any other
-                // configured file provider. This is most useful if the application hosts multiple SPAs
-                // (via multiple calls to UseSpa()), so each needs to serve its own separate static files
-                // instead of using AddSpaStaticFiles/UseSpaStaticFiles.
-                fileProviderOrDefault = overrideFileProvider;
-                return true;
-            }
-
             var spaStaticFilesService = app.ApplicationServices.GetService<ISpaStaticFileProvider>();
             if (spaStaticFilesService != null)
             {
