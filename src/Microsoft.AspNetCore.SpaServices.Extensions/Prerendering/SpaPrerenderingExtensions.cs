@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.SpaServices;
+using Microsoft.AspNetCore.SpaServices.Extensions.Util;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
@@ -23,6 +24,8 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class SpaPrerenderingExtensions
     {
+        private static TimeSpan BuildTimeout = TimeSpan.FromSeconds(50); // Note that the HTTP request itself by default times out after 60s, so you only get useful error information if this is shorter
+
         /// <summary>
         /// Enables server-side prerendering middleware for a Single Page Application.
         /// </summary>
@@ -85,9 +88,15 @@ namespace Microsoft.AspNetCore.Builder
                 }
 
                 // If we're building on demand, wait for that to finish, or raise any build errors
-                if (buildOnDemandTask != null)
+                if (buildOnDemandTask != null && !buildOnDemandTask.IsCompleted)
                 {
-                    await buildOnDemandTask;
+                    // For better debuggability, create a per-request timeout that makes it clear if the
+                    // prerendering builder took too long for this request, but without aborting the
+                    // underlying build task so that subsequent requests could still work.
+                    await buildOnDemandTask.WithTimeout(BuildTimeout,
+                        $"The prerendering build process did not complete within the " +
+                        $"timeout period of {BuildTimeout.Seconds} seconds. " +
+                        $"Check the log output for error information.");
                 }
 
                 // It's no good if we try to return a 304. We need to capture the actual

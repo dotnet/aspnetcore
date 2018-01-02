@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             UseProxyToSpaDevelopmentServer(
                 spaBuilder,
-                Task.FromResult(baseUri));
+                () => Task.FromResult(baseUri));
         }
 
         /// <summary>
@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Builder
         /// development. Do not enable this middleware in production applications.
         /// </summary>
         /// <param name="spaBuilder">The <see cref="ISpaBuilder"/>.</param>
-        /// <param name="baseUriTask">A <see cref="Task"/> that resolves with the target base URI to which requests should be proxied.</param>
+        /// <param name="baseUriTaskFactory">A callback that will be invoked on each request to supply a <see cref="Task"/> that resolves with the target base URI to which requests should be proxied.</param>
         public static void UseProxyToSpaDevelopmentServer(
             this ISpaBuilder spaBuilder,
-            Task<Uri> baseUriTask)
+            Func<Task<Uri>> baseUriTaskFactory)
         {
             var applicationBuilder = spaBuilder.ApplicationBuilder;
             var applicationStoppingToken = GetStoppingToken(applicationBuilder);
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.Builder
             var neverTimeOutHttpClient =
                 SpaProxy.CreateHttpClientForProxy(Timeout.InfiniteTimeSpan);
 
-            // Proxy all requests into the Angular CLI server
+            // Proxy all requests to the SPA development server
             applicationBuilder.Use(async (context, next) =>
             {
                 var didProxyRequest = await SpaProxy.PerformProxyRequest(
-                    context, neverTimeOutHttpClient, baseUriTask, applicationStoppingToken,
+                    context, neverTimeOutHttpClient, baseUriTaskFactory(), applicationStoppingToken,
                     proxy404s: true);
             });
         }

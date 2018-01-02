@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Net.Http;
+using Microsoft.AspNetCore.SpaServices.Extensions.Util;
 
 namespace Microsoft.AspNetCore.SpaServices.AngularCli
 {
@@ -49,7 +50,15 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
             var targetUriTask = angularCliServerInfoTask.ContinueWith(
                 task => new UriBuilder("http", "localhost", task.Result.Port).Uri);
 
-            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, targetUriTask);
+            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
+            {
+                // On each request, we create a separate startup task with its own timeout. That way, even if
+                // the first request times out, subsequent requests could still work.
+                return targetUriTask.WithTimeout(StartupTimeout,
+                    $"The Angular CLI process did not start listening for requests " +
+                    $"within the timeout period of {StartupTimeout.Seconds} seconds. " +
+                    $"Check the log output for error information.");
+            });
         }
 
         private static async Task<AngularCliServerInfo> StartAngularCliServerAsync(
@@ -68,8 +77,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 try
                 {
                     openBrowserLine = await npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout),
-                        StartupTimeout);
+                        new Regex("open your browser on (http\\S+)", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -77,13 +85,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                         $"The NPM script '{npmScriptName}' exited without indicating that the " +
                         $"Angular CLI was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    throw new InvalidOperationException(
-                        $"The Angular CLI process did not start listening for requests " +
-                        $"within the timeout period of {StartupTimeout.Seconds} seconds. " +
-                        $"Check the log output for error information.", ex);
                 }
             }
 

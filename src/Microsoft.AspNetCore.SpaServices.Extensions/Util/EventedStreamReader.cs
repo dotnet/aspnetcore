@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.NodeServices.Util
             Task.Factory.StartNew(Run);
         }
 
-        public Task<Match> WaitForMatch(Regex regex, TimeSpan timeout = default)
+        public Task<Match> WaitForMatch(Regex regex)
         {
             var tcs = new TaskCompletionSource<Match>();
             var completionLock = new object();
@@ -71,15 +71,6 @@ namespace Microsoft.AspNetCore.NodeServices.Util
 
             OnReceivedLine += onReceivedLineHandler;
             OnStreamClosed += onStreamClosedHandler;
-
-            if (timeout != default)
-            {
-                var timeoutToken = new CancellationTokenSource(timeout);
-                timeoutToken.Token.Register(() =>
-                {
-                    ResolveIfStillPending(() => tcs.SetCanceled());
-                });
-            }
 
             return tcs.Task;
         }

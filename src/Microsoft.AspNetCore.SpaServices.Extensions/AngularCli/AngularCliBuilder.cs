@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
     public class AngularCliBuilder : ISpaPrerendererBuilder
     {
         private static TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(5); // This is a development-time only feature, so a very long timeout is fine
-        private static TimeSpan BuildTimeout = TimeSpan.FromSeconds(50); // Note that the HTTP request itself by default times out after 60s, so you only get useful error information if this is shorter
 
         private readonly string _npmScriptName;
 
@@ -63,8 +62,7 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
                 try
                 {
                     await npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("Date", RegexOptions.None, RegexMatchTimeout),
-                        BuildTimeout);
+                        new Regex("Date", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {

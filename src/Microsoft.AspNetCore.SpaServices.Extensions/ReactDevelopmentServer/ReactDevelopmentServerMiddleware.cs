@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SpaServices.Extensions.Util;
 
 namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
 {
@@ -48,7 +49,15 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
             var targetUriTask = portTask.ContinueWith(
                 task => new UriBuilder("http", "localhost", task.Result).Uri);
 
-            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, targetUriTask);
+            SpaProxyingExtensions.UseProxyToSpaDevelopmentServer(spaBuilder, () =>
+            {
+                // On each request, we create a separate startup task with its own timeout. That way, even if
+                // the first request times out, subsequent requests could still work.
+                return targetUriTask.WithTimeout(StartupTimeout,
+                    $"The create-react-app server did not start listening for requests " +
+                    $"within the timeout period of {StartupTimeout.Seconds} seconds. " +
+                    $"Check the log output for error information.");
+            });
         }
 
         private static async Task<int> StartCreateReactAppServerAsync(
@@ -75,8 +84,7 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                     // no compiler warnings. So instead of waiting for that, consider it ready as soon
                     // as it starts listening for requests.
                     await npmScriptRunner.StdOut.WaitForMatch(
-                        new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout),
-                        StartupTimeout);
+                        new Regex("Starting the development server", RegexOptions.None, RegexMatchTimeout));
                 }
                 catch (EndOfStreamException ex)
                 {
@@ -84,13 +92,6 @@ namespace Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer
                         $"The NPM script '{npmScriptName}' exited without indicating that the " +
                         $"create-react-app server was listening for requests. The error output was: " +
                         $"{stdErrReader.ReadAsString()}", ex);
-                }
-                catch (TaskCanceledException ex)
-                {
-                    throw new InvalidOperationException(
-                        $"The create-react-app server did not start listening for requests " +
-                        $"within the timeout period of {StartupTimeout.Seconds} seconds. " +
-                        $"Check the log output for error information.", ex);
                 }
             }
 
