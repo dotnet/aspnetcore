@@ -8,10 +8,10 @@ Document -
         UsingDirective - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::AllTagHelper - __AllTagHelper
-            FieldDeclaration -  - private - global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper - __TestViewComponentTagHelper
+            FieldDeclaration -  - private - global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper - __TestViewComponentTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
@@ -43,7 +43,7 @@ Document -
                 TagHelper - (61:5,0 [50] ViewComponentTagHelper.cshtml) - vc:test - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                     DefaultTagHelperCreate -  - AllTagHelper
-                    DefaultTagHelperCreate -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper
+                    DefaultTagHelperCreate -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper
                     DefaultTagHelperProperty - (82:5,21 [4] ViewComponentTagHelper.cshtml) - first-name - string TestViewComponentTagHelper.firstName - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (83:5,22 [3] ViewComponentTagHelper.cshtml)
                             IntermediateToken - (83:5,22 [3] ViewComponentTagHelper.cshtml) - CSharp - foo

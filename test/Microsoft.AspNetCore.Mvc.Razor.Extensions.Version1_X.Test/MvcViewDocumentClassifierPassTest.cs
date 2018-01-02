@@ -91,12 +91,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             // Assert
             Assert.Equal("global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>", visitor.Class.BaseType);
             Assert.Equal(new[] { "public" }, visitor.Class.Modifiers);
-            Assert.Equal("Test_cshtml", visitor.Class.ClassName);
+            Assert.Equal("Test", visitor.Class.ClassName);
         }
 
         [Theory]
-        [InlineData("/Views/Home/Index.cshtml", "_Views_Home_Index_cshtml")]
-        [InlineData("/Areas/MyArea/Views/Home/About.cshtml", "_Areas_MyArea_Views_Home_About_cshtml")]
+        [InlineData("/Views/Home/Index.cshtml", "_Views_Home_Index")]
+        [InlineData("/Areas/MyArea/Views/Home/About.cshtml", "_Areas_MyArea_Views_Home_About")]
         public void MvcViewDocumentClassifierPass_UsesRelativePathToGenerateTypeName(string relativePath, string expected)
         {
             // Arrange
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         public void MvcViewDocumentClassifierPass_UsesAbsolutePath_IfRelativePathIsNotSet()
         {
             // Arrange
-            var expected = "x___application_Views_Home_Index_cshtml";
+            var expected = "x___application_Views_Home_Index";
             var path = @"x::\application\Views\Home\Index.cshtml";
             var codeDocument = CreateDocument("some-content", path);
             var engine = CreateEngine();

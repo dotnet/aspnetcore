@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
-            var vcthFullName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(engine, codeDocument);
 
-            var vcthFullName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var irDocument = CreateIRDocument(engine, codeDocument);
             
-            var vcthFullName = "AspNetCore.test_cshtml.__Generated__TagCloudViewComponentTagHelper";
+            var vcthFullName = "AspNetCore.test.__Generated__TagCloudViewComponentTagHelper";
 
             // Act
             pass.Execute(codeDocument, irDocument);

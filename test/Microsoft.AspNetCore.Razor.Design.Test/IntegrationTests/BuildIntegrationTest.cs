@@ -38,5 +38,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
         }
+
+        [Fact]
+        [InitializeTestProject("SimplePages")]
+        public async Task Build_Works_WhenFilesAtDifferentPathsHaveSameNamespaceHierarchy()
+        {
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimplePages.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimplePages.PrecompiledViews.dll");
+        }
     }
 }

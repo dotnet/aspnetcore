@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class NamespaceDirectiveTest
     {
         [Fact]
-        public void TryComputeNamespace_IncompleteDirective_UsesEmptyNamespace()
+        public void GetNamespace_IncompleteDirective_UsesEmptyNamespace()
         {
             // Arrange
             var source = "c:\\foo\\bar\\bleh.cshtml";
@@ -22,15 +22,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             // Act
-            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+            var @namespace = NamespaceDirective.GetNamespace(source, node);
 
             // Assert
-            Assert.False(computed);
             Assert.Equal(string.Empty, @namespace);
         }
 
         [Fact]
-        public void TryComputeNamespace_EmptyDirective_UsesEmptyNamespace()
+        public void GetNamespace_EmptyDirective_UsesEmptyNamespace()
         {
             // Arrange
             var source = "c:\\foo\\bar\\bleh.cshtml";
@@ -43,10 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             node.Children.Add(new DirectiveTokenIntermediateNode() { Content = string.Empty });
 
             // Act
-            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+            var @namespace = NamespaceDirective.GetNamespace(source, node);
 
             // Assert
-            Assert.False(computed);
             Assert.Equal(string.Empty, @namespace);
         }
 
@@ -60,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         [InlineData("/foo.cshtml", "/foo/bar.cshtml")]
         [InlineData("c:\\foo.cshtml", "d:\\foo\\bar.cshtml")]
         [InlineData("c:\\foo\\bar\\bleh.cshtml", "c:\\foo\\baz\\bleh.cshtml")]
-        public void TryComputeNamespace_ForNonRelatedFiles_UsesNamespaceVerbatim(string source, string imports)
+        public void GetNamespace_ForNonRelatedFiles_UsesNamespaceVerbatim(string source, string imports)
         {
             // Arrange
             var node = new DirectiveIntermediateNode()
@@ -72,10 +70,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             node.Children.Add(new DirectiveTokenIntermediateNode() { Content = "Base" });
 
             // Act
-            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+            var @namespace = NamespaceDirective.GetNamespace(source, node);
 
             // Assert
-            Assert.False(computed);
             Assert.Equal("Base", @namespace);
         }
 
@@ -90,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         [InlineData("c:\\foo\\bar\\baz.cshtml", "c:\\_ViewImports.cshtml", "Base.foo.bar")]
         [InlineData("c:\\foo\\bar\\baz.cshtml", "c:\\foo\\_ViewImports.cshtml", "Base.bar")]
         [InlineData("c:\\Foo\\bar\\baz.cshtml", "c:\\foo\\_ViewImports.cshtml", "Base.bar")]
-        public void TryComputeNamespace_ForRelatedFiles_ComputesNamespaceWithSuffix(string source, string imports, string expected)
+        public void GetNamespace_ForRelatedFiles_ComputesNamespaceWithSuffix(string source, string imports, string expected)
         {
             // Arrange
             var node = new DirectiveIntermediateNode()
@@ -102,16 +99,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             node.Children.Add(new DirectiveTokenIntermediateNode() { Content = "Base" });
 
             // Act
-            var computed = NamespaceDirective.TryComputeNamespace(source, node, out var @namespace);
+            var @namespace = NamespaceDirective.GetNamespace(source, node);
 
             // Assert
-            Assert.True(computed);
             Assert.Equal(expected, @namespace);
         }
 
         // This is the case where a _ViewImports sets the namespace.
         [Fact]
-        public void Pass_SetsNamespaceAndClassName_ComputedFromImports()
+        public void Pass_SetsNamespace_ComputedFromImports()
         {
             // Arrange
             var document = new DocumentIntermediateNode();
@@ -143,12 +139,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_Page", @class.ClassName);
+            Assert.Equal("default", @class.ClassName);
         }
 
         // This is the case where the source file sets the namespace.
         [Fact]
-        public void Pass_SetsNamespaceAndClassName_ComputedFromSource()
+        public void Pass_SetsNamespace_ComputedFromSource()
         {
             // Arrange
             var document = new DocumentIntermediateNode();
@@ -190,13 +186,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_Page", @class.ClassName);
+            Assert.Equal("default", @class.ClassName);
         }
 
         // Handles cases where invalid characters appears in FileNames. Note that we don't sanitize the part of
         // the namespace that you put in an import, just the file-based-suffix. Garbage in, garbage out.
         [Fact]
-        public void Pass_SetsNamespaceAndClassName_SanitizesClassAndNamespace()
+        public void Pass_SetsNamespace_SanitizesClassAndNamespace()
         {
             // Arrange
             var document = new DocumentIntermediateNode();
@@ -228,12 +224,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage_Info", @namespace.Content);
-            Assert.Equal("Add_User_Page", @class.ClassName);
+            Assert.Equal("default", @class.ClassName);
         }
 
         // This is the case where the source file sets the namespace.
         [Fact]
-        public void Pass_SetsNamespaceAndClassName_ComputedFromSource_ForView()
+        public void Pass_SetsNamespace_ComputedFromSource_ForView()
         {
             // Arrange
             var document = new DocumentIntermediateNode();
@@ -275,13 +271,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_View", @class.ClassName);
+            Assert.Equal("default", @class.ClassName);
         }
 
         // This handles an error case where we can't determine the relationship between the
         // imports and the source.
         [Fact]
-        public void Pass_SetsNamespaceButNotClassName_VerbatimFromImports()
+        public void Pass_SetsNamespace_VerbatimFromImports()
         {
             // Arrange
             var document = new DocumentIntermediateNode();

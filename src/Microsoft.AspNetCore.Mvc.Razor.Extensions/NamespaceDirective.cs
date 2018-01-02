@@ -66,22 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     return;
                 }
 
-                if (TryComputeNamespace(codeDocument.Source.FilePath, directive, out var computedNamespace))
-                {
-                    // Beautify the class name since we're using a hierarchy for namespaces.
-                    var @class = visitor.FirstClass;
-                    var prefix = CSharpIdentifier.SanitizeClassName(Path.GetFileNameWithoutExtension(codeDocument.Source.FilePath));
-                    if (@class != null && documentNode.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
-                    {
-                        @class.ClassName = prefix + "_Page";
-                    }
-                    else if (@class != null && documentNode.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
-                    {
-                        @class.ClassName = prefix + "_View";
-                    }
-                }
-
-                @namespace.Content = computedNamespace;
+                @namespace.Content = GetNamespace(codeDocument.Source.FilePath, directive);
             }
         }
 
@@ -92,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         //
         // In the event that these two source either don't have FileNames set or don't follow a coherent hierarchy,
         // we will just use the namespace verbatim.
-        internal static bool TryComputeNamespace(string source, DirectiveIntermediateNode directive, out string @namespace)
+        internal static string GetNamespace(string source, DirectiveIntermediateNode directive)
         {
             var directiveSource = NormalizeDirectory(directive.Source?.FilePath);
 
@@ -100,15 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             if (string.IsNullOrEmpty(baseNamespace))
             {
                 // The namespace directive was incomplete.
-                @namespace = string.Empty;
-                return false;
+                return string.Empty;
             }
 
             if (string.IsNullOrEmpty(source) || directiveSource == null)
             {
                 // No sources, can't compute a suffix.
-                @namespace = baseNamespace;
-                return false;
+                return baseNamespace;
             }
 
             // We're specifically using OrdinalIgnoreCase here because Razor treats all paths as case-insensitive.
@@ -116,8 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 source.Length <= directiveSource.Length)
             {
                 // The imports are not from the directory hierarchy, can't compute a suffix.
-                @namespace = baseNamespace;
-                return false;
+                return baseNamespace;
             }
 
             // OK so that this point we know that the 'imports' file containing this directive is in the directory
@@ -136,8 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 builder.Append(CSharpIdentifier.SanitizeClassName(segments[i]));
             }
 
-            @namespace = builder.ToString();
-            return true;
+            return builder.ToString();
         }
 
         // We want to normalize the path of the file containing the '@namespace' directive to just the containing

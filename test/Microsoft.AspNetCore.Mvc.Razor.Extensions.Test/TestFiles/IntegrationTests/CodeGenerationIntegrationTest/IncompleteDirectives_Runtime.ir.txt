@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml), null)]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
@@ -9,7 +9,7 @@ Document -
         UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(83, 4, true);
@@ -88,6 +88,6 @@ Document -
             Inject - 
             Inject - 
             CSharpCode - 
-                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml>)PageContext?.ViewData;
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives>)PageContext?.ViewData;
             CSharpCode - 
-                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml Model => ViewData.Model;
+                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives Model => ViewData.Model;
