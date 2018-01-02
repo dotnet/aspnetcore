@@ -583,7 +583,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 var pDataChunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[1];
 
-                fixed (byte* pBuffer = &buffer.First.Span.DangerousGetPinnableReference())
+                fixed (byte* pBuffer = &MemoryMarshal.GetReference(buffer.First.Span))
                 {
                     ref var chunk = ref pDataChunks[0];
 
