@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Internal;
@@ -25,10 +26,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var services = new ServiceCollection();
             var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
-            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider());
-            pipelineBuilderService.ApplicationBuilder = appBuilder;
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
+            {
+                ApplicationBuilder = appBuilder,
+            };
+
             var configureCount = 0;
-            Pipeline1.ConfigurePipeline = (ab) =>
+            Pipeline1.ConfigurePipeline = _ =>
             {
                 configureCount++;
             };
@@ -47,10 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var services = new ServiceCollection();
             var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
-            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider());
-            pipelineBuilderService.ApplicationBuilder = appBuilder;
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
+            {
+                ApplicationBuilder = appBuilder,
+            };
+
             var configureCount = 0;
-            Pipeline1.ConfigurePipeline = (ab) =>
+            Pipeline1.ConfigurePipeline = _ =>
             {
                 configureCount++;
             };
@@ -77,11 +84,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var services = new ServiceCollection();
             var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
-            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider());
-            pipelineBuilderService.ApplicationBuilder = appBuilder;
-            Pipeline1.ConfigurePipeline = (ab) =>
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
             {
-                ab.Use((httpContext, next) =>
+                ApplicationBuilder = appBuilder,
+            };
+
+            var httpContext = new DefaultHttpContext();
+            Pipeline1.ConfigurePipeline = ab =>
+            {
+                ab.Use((_, next) =>
                 {
                     return next();
                 });
@@ -92,36 +103,48 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.NotNull(pipeline);
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(new DefaultHttpContext()));
-            Assert.Equal(
-                "Could not find 'IMiddlewareFilterFeature' in the feature list.",
-                exception.Message);
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(httpContext));
+            Assert.Equal("Could not find 'IMiddlewareFilterFeature' in the feature list.", exception.Message);
         }
 
         [Fact]
-        public async Task EndMiddleware_PropagatesBackException_ToEarlierMiddleware()
+        public async Task EndMiddleware_DoesNotThrow_IfExceptionHandled()
         {
             // Arrange
             var services = new ServiceCollection();
             var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
-            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider());
-            pipelineBuilderService.ApplicationBuilder = appBuilder;
-            Pipeline1.ConfigurePipeline = (ab) =>
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
             {
-                ab.Use((httpCtxt, next) =>
+                ApplicationBuilder = appBuilder,
+            };
+
+            Pipeline1.ConfigurePipeline = ab =>
+            {
+                ab.Use((_, next) =>
                 {
                     return next();
                 });
             };
-            var middlewareFilterFeature = new MiddlewareFilterFeature();
-            middlewareFilterFeature.ResourceExecutionDelegate = () =>
+
+            var middlewareFilterFeature = new MiddlewareFilterFeature
             {
-                var context = new ResourceExecutedContext(
-                    new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor(), new ModelStateDictionary()),
-                    new List<IFilterMetadata>());
-                context.Exception = new InvalidOperationException("Error!!!");
-                return Task.FromResult(context);
+                ResourceExecutionDelegate = () =>
+                {
+                    var actionContext = new ActionContext(
+                        new DefaultHttpContext(),
+                        new RouteData(),
+                        new ActionDescriptor(),
+                        new ModelStateDictionary());
+                    var context = new ResourceExecutedContext(actionContext, new List<IFilterMetadata>())
+                    {
+                        Exception = new InvalidOperationException("Error!!!"),
+                        ExceptionHandled = true,
+                    };
+
+                    return Task.FromResult(context);
+                },
             };
+
             var features = new FeatureCollection();
             features.Set<IMiddlewareFilterFeature>(middlewareFilterFeature);
             var httpContext = new DefaultHttpContext(features);
@@ -131,20 +154,148 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.NotNull(pipeline);
-            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(httpContext));
-            Assert.Equal("Error!!!", exception.Message);
+
+            // Does not throw.
+            await pipeline(httpContext);
         }
-        private class Pipeline1
+
+        [Fact]
+        public async Task EndMiddleware_PropagatesBackException_ToEarlierMiddleware()
         {
-            public static Action<IApplicationBuilder> ConfigurePipeline { get; set; }
-
-            public void Configure(IApplicationBuilder appBuilder)
+            // Arrange
+            var services = new ServiceCollection();
+            var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
             {
-                ConfigurePipeline(appBuilder);
-            }
+                ApplicationBuilder = appBuilder,
+            };
+
+            Pipeline1.ConfigurePipeline = ab =>
+            {
+                ab.Use((_, next) =>
+                {
+                    return next();
+                });
+            };
+
+            var middlewareFilterFeature = new MiddlewareFilterFeature
+            {
+                ResourceExecutionDelegate = () =>
+                {
+                    Exception thrownException;
+                    try
+                    {
+                        // Create a small stack trace.
+                        throw new InvalidOperationException("Error!!!");
+                    }
+                    catch (Exception ex)
+                    {
+                        thrownException = ex;
+                    }
+
+                    var actionContext = new ActionContext(
+                        new DefaultHttpContext(),
+                        new RouteData(),
+                        new ActionDescriptor(),
+                        new ModelStateDictionary());
+                    var context = new ResourceExecutedContext(actionContext, new List<IFilterMetadata>())
+                    {
+                        Exception = thrownException,
+                    };
+
+                    return Task.FromResult(context);
+                },
+            };
+
+            var features = new FeatureCollection();
+            features.Set<IMiddlewareFilterFeature>(middlewareFilterFeature);
+            var httpContext = new DefaultHttpContext(features);
+
+            // Act
+            var pipeline = pipelineBuilderService.GetPipeline(typeof(Pipeline1));
+
+            // Assert
+            Assert.NotNull(pipeline);
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(httpContext));
+            Assert.Null(exception.InnerException);
+            Assert.Equal("Error!!!", exception.Message);
+
+            var stack = exception.StackTrace;
+            Assert.Contains(typeof(MiddlewareFilterBuilder).FullName, stack);
+            Assert.DoesNotContain(typeof(MiddlewareFilterBuilderTest).FullName, stack);
+            Assert.DoesNotContain(nameof(EndMiddleware_PropagatesBackException_ToEarlierMiddleware), stack);
         }
 
-        private class Pipeline2
+        [Fact]
+        public async Task EndMiddleware_PropagatesFullExceptionInfo_ToEarlierMiddleware()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var appBuilder = new ApplicationBuilder(services.BuildServiceProvider());
+            var pipelineBuilderService = new MiddlewareFilterBuilder(new MiddlewareFilterConfigurationProvider())
+            {
+                ApplicationBuilder = appBuilder,
+            };
+
+            Pipeline1.ConfigurePipeline = ab =>
+            {
+                ab.Use((_, next) =>
+                {
+                    return next();
+                });
+            };
+
+            var middlewareFilterFeature = new MiddlewareFilterFeature
+            {
+                ResourceExecutionDelegate = () =>
+                {
+                    ExceptionDispatchInfo exceptionInfo;
+                    try
+                    {
+                        // Create a small stack trace.
+                        throw new InvalidOperationException("Error!!!");
+                    }
+                    catch (Exception ex)
+                    {
+                        exceptionInfo = ExceptionDispatchInfo.Capture(ex);
+                    }
+
+                    var actionContext = new ActionContext(
+                        new DefaultHttpContext(),
+                        new RouteData(),
+                        new ActionDescriptor(),
+                        new ModelStateDictionary());
+                    var context = new ResourceExecutedContext(actionContext, new List<IFilterMetadata>())
+                    {
+                        ExceptionDispatchInfo = exceptionInfo,
+                    };
+
+                    return Task.FromResult(context);
+                },
+            };
+
+            var features = new FeatureCollection();
+            features.Set<IMiddlewareFilterFeature>(middlewareFilterFeature);
+            var httpContext = new DefaultHttpContext(features);
+
+            // Act
+            var pipeline = pipelineBuilderService.GetPipeline(typeof(Pipeline1));
+
+            // Assert
+            Assert.NotNull(pipeline);
+
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline(httpContext));
+            Assert.Null(exception.InnerException);
+            Assert.Equal("Error!!!", exception.Message);
+
+            var stack = exception.StackTrace;
+            Assert.Contains(typeof(MiddlewareFilterBuilder).FullName, stack);
+            Assert.Contains(typeof(MiddlewareFilterBuilderTest).FullName, stack);
+            Assert.Contains(nameof(EndMiddleware_PropagatesFullExceptionInfo_ToEarlierMiddleware), stack);
+        }
+
+        private class Pipeline1
         {
             public static Action<IApplicationBuilder> ConfigurePipeline { get; set; }
 
