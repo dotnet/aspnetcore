@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             AddPageModels(context);
 
-            if (_pagesOptions.EnableAreas)
+            if (_pagesOptions.AllowAreas)
             {
                 AddAreaPageModels(context);
             }

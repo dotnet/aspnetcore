@@ -51,9 +51,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// ASP.NET Core MVC 2.1 introduces compatibility switches for the following:
         /// <list type="bullet">
-        ///     <item>
-        ///         <description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description>    
-        ///     </item>
+        ///     <item><description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description></item>
+        ///     <item><description><c>RazorPagesOptions.AllowAreas</c></description></item>
         /// </list>
         /// </remarks>
         Version_2_1,

@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
                 new FileProviderRazorProject(accessor));
-            var options = Options.Create(new RazorPagesOptions { EnableAreas = true });
+            var options = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
             // Act
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 new FileProviderRazorProject(accessor));
             var options = Options.Create(new RazorPagesOptions
             {
-                EnableAreas = true,
+                AllowAreas = true,
                 AreaRootDirectory = rootDirectory,
             });
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
             options.Value.AreaRootDirectory = "/dir3/dir4";
-            options.Value.EnableAreas = true;
+            options.Value.AllowAreas = true;
 
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 RazorEngine.Create(),
                 new FileProviderRazorProject(accessor));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
-            var options = Options.Create(new RazorPagesOptions { EnableAreas = false });
+            var options = Options.Create(new RazorPagesOptions { AllowAreas = false });
 
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 

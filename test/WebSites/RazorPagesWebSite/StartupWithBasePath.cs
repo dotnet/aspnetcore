@@ -17,7 +17,7 @@ namespace RazorPagesWebSite
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {
-                    options.EnableAreas = true;
+                    options.AllowAreas = true;
                     options.Conventions.AuthorizePage("/Conventions/Auth");
                     options.Conventions.AuthorizeFolder("/Conventions/AuthFolder");
                 });

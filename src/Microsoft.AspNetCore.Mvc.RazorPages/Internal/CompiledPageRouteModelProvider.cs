@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     {
                         model = GetPageRouteModel(rootDirectory, viewDescriptor);
                     }
-                    else if (_pagesOptions.EnableAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
+                    else if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                     {
                         model = GetAreaPageRouteModel(areaRootDirectory, viewDescriptor);
                     }

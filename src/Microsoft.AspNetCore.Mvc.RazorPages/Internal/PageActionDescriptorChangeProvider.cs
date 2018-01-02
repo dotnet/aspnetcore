@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var additionalImportFilePaths = templateEngine.GetImportItems(importFileAtPagesRoot)
                 .Select(item => item.FilePath);
 
-            if (razorPagesOptions.Value.EnableAreas)
+            if (razorPagesOptions.Value.AllowAreas)
             {
                 var areaRootDirectory = razorPagesOptions.Value.AreaRootDirectory;
                 Debug.Assert(!string.IsNullOrEmpty(areaRootDirectory));

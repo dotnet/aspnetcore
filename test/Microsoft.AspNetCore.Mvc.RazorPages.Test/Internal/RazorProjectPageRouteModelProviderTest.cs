@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = Options.Create(new RazorPagesOptions { EnableAreas = true });
+            var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var project = new TestRazorProject(fileProvider);
 
-            var optionsManager = Options.Create(new RazorPagesOptions { EnableAreas = false });
+            var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = false });
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 

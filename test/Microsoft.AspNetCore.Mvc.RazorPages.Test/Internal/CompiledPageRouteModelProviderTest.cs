@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
             var options = new RazorPagesOptions
             {
-                EnableAreas = true,
+                AllowAreas = true,
                 AreaRootDirectory = "/Features",
                 RootDirectory = "/Files",
             };
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 GetDescriptor("/Pages/About.cshtml"),
                 GetDescriptor("/Areas/Accounts/Pages/Home.cshtml"),
             };
-            var options = new RazorPagesOptions { EnableAreas = false };
+            var options = new RazorPagesOptions { AllowAreas = false };
             var provider = new TestCompiledPageRouteModelProvider(descriptors, options);
             var context = new PageRouteModelProviderContext();
 
