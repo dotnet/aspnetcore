@@ -253,7 +253,7 @@
     </Csc>
 
     <!-- Output the PDB and COPY of things to FileWrites -->
-    <Message Importance="High" Text="$(_RazorIntermediateAssembly) -> $(OutDir)$(RazorTargetName)" />
+    <Message Importance="High" Text="$(TargetName) -&gt; $([System.IO.Path]::GetFullPath('$(OutDir)$(RazorTargetName).dll'))" />
     <Copy
       SourceFiles="$(_RazorIntermediateAssembly)"
       DestinationFolder="$(OutDir)"

@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+
+            Assert.BuildOutputContainsLine(result, $"SimpleMvc -> {Path.Combine(Path.GetFullPath(Project.DirectoryPath), OutputPath, "SimpleMvc.PrecompiledViews.dll")}");
         }
 
         [Fact]
