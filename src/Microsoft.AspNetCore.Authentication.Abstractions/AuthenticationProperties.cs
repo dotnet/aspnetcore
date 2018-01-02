@@ -46,24 +46,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public bool IsPersistent
         {
-            get { return Items.ContainsKey(IsPersistentKey); }
-            set
-            {
-                if (Items.ContainsKey(IsPersistentKey))
-                {
-                    if (!value)
-                    {
-                        Items.Remove(IsPersistentKey);
-                    }
-                }
-                else
-                {
-                    if (value)
-                    {
-                        Items.Add(IsPersistentKey, string.Empty);
-                    }
-                }
-            }
+            get => GetString(IsPersistentKey) != null;
+            set => SetString(IsPersistentKey, value ? string.Empty : null);
         }
 
         /// <summary>
@@ -71,25 +55,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public string RedirectUri
         {
-            get
-            {
-                string value;
-                return Items.TryGetValue(RedirectUriKey, out value) ? value : null;
-            }
-            set
-            {
-                if (value != null)
-                {
-                    Items[RedirectUriKey] = value;
-                }
-                else
-                {
-                    if (Items.ContainsKey(RedirectUriKey))
-                    {
-                        Items.Remove(RedirectUriKey);
-                    }
-                }
-            }
+            get => GetString(RedirectUriKey);
+            set => SetString(RedirectUriKey, value);
         }
 
         /// <summary>
@@ -97,33 +64,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public DateTimeOffset? IssuedUtc
         {
-            get
-            {
-                string value;
-                if (Items.TryGetValue(IssuedUtcKey, out value))
-                {
-                    DateTimeOffset dateTimeOffset;
-                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
-                    {
-                        return dateTimeOffset;
-                    }
-                }
-                return null;
-            }
-            set
-            {
-                if (value.HasValue)
-                {
-                    Items[IssuedUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    if (Items.ContainsKey(IssuedUtcKey))
-                    {
-                        Items.Remove(IssuedUtcKey);
-                    }
-                }
-            }
+            get => GetDateTimeOffset(IssuedUtcKey);
+            set => SetDateTimeOffset(IssuedUtcKey, value);
         }
 
         /// <summary>
@@ -131,33 +73,8 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public DateTimeOffset? ExpiresUtc
         {
-            get
-            {
-                string value;
-                if (Items.TryGetValue(ExpiresUtcKey, out value))
-                {
-                    DateTimeOffset dateTimeOffset;
-                    if (DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out dateTimeOffset))
-                    {
-                        return dateTimeOffset;
-                    }
-                }
-                return null;
-            }
-            set
-            {
-                if (value.HasValue)
-                {
-                    Items[ExpiresUtcKey] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    if (Items.ContainsKey(ExpiresUtcKey))
-                    {
-                        Items.Remove(ExpiresUtcKey);
-                    }
-                }
-            }
+            get => GetDateTimeOffset(ExpiresUtcKey);
+            set => SetDateTimeOffset(ExpiresUtcKey, value);
         }
 
         /// <summary>
@@ -165,32 +82,67 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         public bool? AllowRefresh
         {
-            get
+            get => GetBool(RefreshKey);
+            set => SetBool(RefreshKey, value);
+        }
+
+        private string GetString(string key)
+        {
+            return Items.TryGetValue(key, out string value) ? value : null;
+        }
+
+        private void SetString(string key, string value)
+        {
+            if (value != null)
             {
-                string value;
-                if (Items.TryGetValue(RefreshKey, out value))
-                {
-                    bool refresh;
-                    if (bool.TryParse(value, out refresh))
-                    {
-                        return refresh;
-                    }
-                }
-                return null;
+                Items[key] = value;
             }
-            set
+            else if (Items.ContainsKey(key))
             {
-                if (value.HasValue)
-                {
-                    Items[RefreshKey] = value.Value.ToString();
-                }
-                else
-                {
-                    if (Items.ContainsKey(RefreshKey))
-                    {
-                        Items.Remove(RefreshKey);
-                    }
-                }
+                Items.Remove(key);
+            }
+        }
+
+        private bool? GetBool(string key)
+        {
+            if (Items.TryGetValue(key, out string value) && bool.TryParse(value, out bool refresh))
+            {
+                return refresh;
+            }
+            return null;
+        }
+
+        private void SetBool(string key, bool? value)
+        {
+            if (value.HasValue)
+            {
+                Items[key] = value.Value.ToString();
+            }
+            else if (Items.ContainsKey(key))
+            {
+                Items.Remove(key);
+            }
+        }
+
+        private DateTimeOffset? GetDateTimeOffset(string key)
+        {
+            if (Items.TryGetValue(key, out string value)
+                && DateTimeOffset.TryParseExact(value, UtcDateTimeFormat, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out DateTimeOffset dateTimeOffset))
+            {
+                return dateTimeOffset;
+            }
+            return null;
+        }
+
+        private void SetDateTimeOffset(string key, DateTimeOffset? value)
+        {
+            if (value.HasValue)
+            {
+                Items[key] = value.Value.ToString(UtcDateTimeFormat, CultureInfo.InvariantCulture);
+            }
+            else if (Items.ContainsKey(key))
+            {
+                Items.Remove(key);
             }
         }
     }
