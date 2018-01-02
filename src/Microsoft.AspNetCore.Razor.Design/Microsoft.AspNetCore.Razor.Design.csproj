@@ -110,7 +110,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Include="@(_RazorTool)" PackagePath="tools\" Pack="true"/>      
+      <None Include="@(_RazorTool)">
+        <PackagePath>tools\%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
+        <Pack>true</Pack>
+      </None>
     </ItemGroup>
 
     <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''"/>
