@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExcludeFromTest Include="$(RepositoryRoot)test\*\*.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)" />
   </ItemGroup>
