@@ -1828,6 +1828,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatUnexpectedEOFAfterDirective(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedEOFAfterDirective"), p0, p1);
 
+        /// <summary>
+        /// The hash algorithm '{0}' is not supported for checksum generation. Supported algorithms are: '{1}'. Set '{2}' to '{3}' to suppress automatic checksum generation.
+        /// </summary>
+        internal static string UnsupportedChecksumAlgorithm
+        {
+            get => GetString("UnsupportedChecksumAlgorithm");
+        }
+
+        /// <summary>
+        /// The hash algorithm '{0}' is not supported for checksum generation. Supported algorithms are: '{1}'. Set '{2}' to '{3}' to suppress automatic checksum generation.
+        /// </summary>
+        internal static string FormatUnsupportedChecksumAlgorithm(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedChecksumAlgorithm"), p0, p1, p2, p3);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

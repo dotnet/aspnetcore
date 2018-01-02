@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MinimizedTagHelpers_Runtime -  - 
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - btn - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_1 - input-bound-required-string - hello - HtmlAttributeValueStyle.DoubleQuotes

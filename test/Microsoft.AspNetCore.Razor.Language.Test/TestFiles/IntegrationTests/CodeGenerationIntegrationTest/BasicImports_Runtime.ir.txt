@@ -1,8 +1,12 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         UsingDirective - (1:0,1 [28] BasicImports_Imports0.cshtml) - System.Globalization
         UsingDirective - (30:1,1 [29] BasicImports_Imports0.cshtml) - System.ComponentModel
         UsingDirective - (23:1,1 [20] BasicImports_Imports1.cshtml) - System.Text
+        RazorSourceChecksumAttribute - 
+        RazorSourceChecksumAttribute - 
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_Runtime - Hello - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] BasicImports.cshtml)

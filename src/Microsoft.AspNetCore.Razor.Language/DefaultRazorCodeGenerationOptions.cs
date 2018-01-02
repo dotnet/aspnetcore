@@ -5,12 +5,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorCodeGenerationOptions : RazorCodeGenerationOptions
     {
-        public DefaultRazorCodeGenerationOptions(bool indentWithTabs, int indentSize, bool designTime, bool suppressChecksum)
+        public DefaultRazorCodeGenerationOptions(
+            bool indentWithTabs, 
+            int indentSize, 
+            bool designTime, 
+            bool suppressChecksum,
+            bool supressMetadataAttributes)
         {
             IndentWithTabs = indentWithTabs;
             IndentSize = indentSize;
             DesignTime = designTime;
             SuppressChecksum = suppressChecksum;
+            SuppressMetadataAttributes = supressMetadataAttributes;
         }
 
         public override bool DesignTime { get; }

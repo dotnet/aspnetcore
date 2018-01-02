@@ -1,4 +1,5 @@
 Document - 
+    RazorCompiledItemAttribute - 
     CSharpCode - 
         IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper))]
     NamespaceDeclaration -  - AspNetCore
@@ -9,6 +10,7 @@ Document -
         UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             FieldDeclaration -  - private - global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper.__Generated__TestViewComponentTagHelper - __TestViewComponentTagHelper
             PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - bar -  World - HtmlAttributeValueStyle.DoubleQuotes

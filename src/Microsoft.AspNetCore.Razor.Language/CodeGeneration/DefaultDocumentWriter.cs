@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -67,28 +68,52 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 if (!Context.Options.SuppressChecksum)
                 {
                     // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx
-                    const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
+                    // And https://github.com/dotnet/roslyn/blob/614299ff83da9959fa07131c6d0ffbc58873b6ae/src/Compilers/Core/Portable/PEWriter/DebugSourceDocument.cs#L67
+                    //
+                    // We only support algorithms that the debugger understands, which is currently SHA1 and SHA256.
+
+                    string algorithmId;
+                    var algorithm = Context.SourceDocument.GetChecksumAlgorithm();
+                    if (string.Equals(algorithm, HashAlgorithmName.SHA256.Name, StringComparison.Ordinal))
+                    {
+                        algorithmId = "{8829d00f-11b8-4213-878b-770e8597ac16}";
+                    }
+                    else if (string.Equals(algorithm, HashAlgorithmName.SHA1.Name, StringComparison.Ordinal) || 
+                        
+                        // In 2.0, we didn't actually expose the name of the algorithm, so it's possible we could get null here.
+                        // If that's the case, we just assume SHA1 since that's the only thing we supported in 2.0.
+                        algorithm == null)
+                    {
+                        algorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
+                    }
+                    else
+                    {
+                        var supportedAlgorithms = string.Join(" ", new string[] 
+                        {
+                            HashAlgorithmName.SHA1.Name,
+                            HashAlgorithmName.SHA256.Name
+                        });
+
+                        var message = Resources.FormatUnsupportedChecksumAlgorithm(
+                            algorithm,
+                            supportedAlgorithms,
+                            nameof(RazorCodeGenerationOptions) + "." + nameof(RazorCodeGenerationOptions.SuppressChecksum),
+                            bool.TrueString);
+                        throw new InvalidOperationException(message);
+                    }
 
                     var sourceDocument = Context.SourceDocument;
 
-                    var checksum = sourceDocument.GetChecksum();
-                    var fileHashBuilder = new StringBuilder(checksum.Length * 2);
-                    foreach (var value in checksum)
-                    {
-                        fileHashBuilder.Append(value.ToString("x2"));
-                    }
-
-                    var bytes = fileHashBuilder.ToString();
-
-                    if (!string.IsNullOrEmpty(bytes))
+                    var checksum = Checksum.BytesToString(sourceDocument.GetChecksum());
+                    if (!string.IsNullOrEmpty(checksum))
                     {
                         Context.CodeWriter
                             .Write("#pragma checksum \"")
                             .Write(sourceDocument.FilePath)
                             .Write("\" \"")
-                            .Write(Sha1AlgorithmId)
+                            .Write(algorithmId)
                             .Write("\" \"")
-                            .Write(bytes)
+                            .Write(checksum)
                             .WriteLine("\"");
                     }
                 }

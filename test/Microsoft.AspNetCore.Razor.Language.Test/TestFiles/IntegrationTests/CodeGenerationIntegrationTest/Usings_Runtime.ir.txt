@@ -1,4 +1,5 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         UsingDirective - (1:0,1 [17] Usings.cshtml) - System.IO
         UsingDirective - (19:1,1 [34] Usings.cshtml) - Foo = System.Text.Encoding
@@ -6,6 +7,7 @@ Document -
         UsingDirective - (71:4,1 [21] Usings.cshtml) - static System
         UsingDirective - (93:5,1 [29] Usings.cshtml) - static System.Console
         UsingDirective - (123:6,1 [43] Usings.cshtml) - static global::System.Text.Encoding
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (68:3,0 [2] Usings.cshtml)

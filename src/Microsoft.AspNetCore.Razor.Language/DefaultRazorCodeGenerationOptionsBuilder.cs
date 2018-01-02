@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool IndentWithTabs { get; set; }
 
         public override bool SuppressChecksum { get; set; }
-
+        
         public override RazorCodeGenerationOptions Build()
         {
-            return new DefaultRazorCodeGenerationOptions(IndentWithTabs, IndentSize, DesignTime, SuppressChecksum);
+            return new DefaultRazorCodeGenerationOptions(IndentWithTabs, IndentSize, DesignTime, SuppressChecksum, SuppressMetadataAttributes);
         }
     }
 }

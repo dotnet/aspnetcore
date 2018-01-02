@@ -67,11 +67,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Intermediate Node Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
+            builder.Features.Add(new MetadataAttributePass());
             builder.Features.Add(new DirectiveRemovalOptimizationPass());
             builder.Features.Add(new DefaultTagHelperOptimizationPass());
 
             // Default Code Target Extensions
-            // (currently none)
+            builder.AddTargetExtension(new MetadataAttributeTargetExtension());
 
             // Default configuration
             var configurationFeature = new DefaultDocumentClassifierPassFeature();

@@ -527,4 +527,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="UnexpectedEOFAfterDirective" xml:space="preserve">
     <value>Unexpected end of file following the '{0}' directive. Expected '{1}'.</value>
   </data>
+  <data name="UnsupportedChecksumAlgorithm" xml:space="preserve">
+    <value>The hash algorithm '{0}' is not supported for checksum generation. Supported algorithms are: '{1}'. Set '{2}' to '{3}' to suppress automatic checksum generation.</value>
+  </data>
 </root>
