@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.DotNet.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -19,7 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
 
-            Assert.BuildOutputContainsLine(result, $"SimpleMvc -> {Path.Combine(Path.GetFullPath(Project.DirectoryPath), OutputPath, "SimpleMvc.PrecompiledViews.dll")}");
+            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+            {
+                // GetFullPath on OSX doesn't work well in travis. We end up computing a different path than will
+                // end up in the MSBuild logs.
+                Assert.BuildOutputContainsLine(result, $"SimpleMvc -> {Path.Combine(Path.GetFullPath(Project.DirectoryPath), OutputPath, "SimpleMvc.PrecompiledViews.dll")}");
+            }
         }
 
         [Fact]
