@@ -214,8 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
                 if (modelExplorer.Model != null)
                 {
-                    bool modelChecked;
-                    if (bool.TryParse(modelExplorer.Model.ToString(), out modelChecked))
+                    if (bool.TryParse(modelExplorer.Model.ToString(), out var modelChecked))
                     {
                         isChecked = modelChecked;
                     }
@@ -261,7 +260,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
 
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            tagBuilder.MergeAttribute("name", fullName);
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                tagBuilder.MergeAttribute("name", fullName);
+            }
 
             return tagBuilder;
         }
@@ -363,8 +365,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             // Special-case opaque values and arbitrary binary data.
-            var byteArrayValue = value as byte[];
-            if (byteArrayValue != null)
+            if (value is byte[] byteArrayValue)
             {
                 value = Convert.ToBase64String(byteArrayValue);
             }
@@ -596,7 +597,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            if (string.IsNullOrEmpty(fullName))
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
+            if (!IsFullNameValid(fullName, htmlAttributeDictionary))
             {
                 throw new ArgumentException(
                     Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
@@ -622,17 +624,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var tagBuilder = new TagBuilder("select");
             tagBuilder.InnerHtml.SetHtmlContent(listItemBuilder);
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
-            tagBuilder.MergeAttribute("name", fullName, true /* replaceExisting */);
+            tagBuilder.MergeAttributes(htmlAttributeDictionary);
             NameAndIdProvider.GenerateId(viewContext, tagBuilder, fullName, IdAttributeDotReplacement);
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+            }
+
             if (allowMultiple)
             {
                 tagBuilder.MergeAttribute("multiple", "multiple");
             }
 
             // If there are any errors for a named field, we add the css attribute.
-            ModelStateEntry entry;
-            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out entry))
+            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out var entry))
             {
                 if (entry.Errors.Count > 0)
                 {
@@ -672,7 +677,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            if (string.IsNullOrEmpty(fullName))
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
+            if (!IsFullNameValid(fullName, htmlAttributeDictionary))
             {
                 throw new ArgumentException(
                     Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
@@ -684,8 +690,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     nameof(expression));
             }
 
-            ModelStateEntry entry;
-            viewContext.ViewData.ModelState.TryGetValue(fullName, out entry);
+            viewContext.ViewData.ModelState.TryGetValue(fullName, out var entry);
 
             var value = string.Empty;
             if (entry != null && entry.AttemptedValue != null)
@@ -699,18 +704,24 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var tagBuilder = new TagBuilder("textarea");
             NameAndIdProvider.GenerateId(viewContext, tagBuilder, fullName, IdAttributeDotReplacement);
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes), true);
+            tagBuilder.MergeAttributes(htmlAttributeDictionary, replaceExisting: true);
             if (rows > 0)
             {
-                tagBuilder.MergeAttribute("rows", rows.ToString(CultureInfo.InvariantCulture), true);
+                tagBuilder.MergeAttribute("rows", rows.ToString(CultureInfo.InvariantCulture), replaceExisting: true);
             }
 
             if (columns > 0)
             {
-                tagBuilder.MergeAttribute("cols", columns.ToString(CultureInfo.InvariantCulture), true);
+                tagBuilder.MergeAttribute(
+                    "cols",
+                    columns.ToString(CultureInfo.InvariantCulture),
+                    replaceExisting: true);
             }
 
-            tagBuilder.MergeAttribute("name", fullName, true);
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+            }
 
             AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             AddValidationAttributes(viewContext, tagBuilder, modelExplorer, expression);
@@ -773,7 +784,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            if (string.IsNullOrEmpty(fullName))
+            var htmlAttributeDictionary = GetHtmlAttributeDictionaryOrNull(htmlAttributes);
+            if (!IsFullNameValid(fullName, htmlAttributeDictionary, fallbackAttributeName: "data-valmsg-for"))
             {
                 throw new ArgumentException(
                     Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
@@ -791,8 +803,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return null;
             }
 
-            ModelStateEntry entry;
-            var tryGetModelStateResult = viewContext.ViewData.ModelState.TryGetValue(fullName, out entry);
+            var tryGetModelStateResult = viewContext.ViewData.ModelState.TryGetValue(fullName, out var entry);
             var modelErrors = tryGetModelStateResult ? entry.Errors : null;
 
             ModelError modelError = null;
@@ -812,8 +823,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 tag = viewContext.ValidationMessageElement;
             }
+
             var tagBuilder = new TagBuilder(tag);
-            tagBuilder.MergeAttributes(GetHtmlAttributeDictionaryOrNull(htmlAttributes));
+            tagBuilder.MergeAttributes(htmlAttributeDictionary);
 
             // Only the style of the span is changed according to the errors if message is null or empty.
             // Otherwise the content and style is handled by the client-side validation.
@@ -838,7 +850,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (formContext != null)
             {
-                tagBuilder.MergeAttribute("data-valmsg-for", fullName);
+                if (!string.IsNullOrEmpty(fullName))
+                {
+                    tagBuilder.MergeAttribute("data-valmsg-for", fullName);
+                }
 
                 var replaceValidationMessageContents = string.IsNullOrEmpty(message);
                 tagBuilder.MergeAttribute("data-valmsg-replace",
@@ -868,9 +883,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return null;
             }
 
-            ModelStateEntry entryForModel;
             if (excludePropertyErrors &&
-                (!viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out entryForModel) ||
+                (!viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out var entryForModel) ||
                  entryForModel.Errors.Count == 0))
             {
                 // Client-side validation (if enabled) will not affect the generated element and element will be empty.
@@ -964,18 +978,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            if (string.IsNullOrEmpty(fullName))
-            {
-                throw new ArgumentException(
-                    Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
-                        typeof(IHtmlHelper).FullName,
-                        nameof(IHtmlHelper.Editor),
-                        typeof(IHtmlHelper<>).FullName,
-                        nameof(IHtmlHelper<object>.EditorFor),
-                        "htmlFieldName"),
-                    nameof(expression));
-            }
-
             var type = allowMultiple ? typeof(string[]) : typeof(string);
             var rawValue = GetModelStateValue(viewContext, fullName, type);
 
@@ -1133,8 +1135,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         internal static object GetModelStateValue(ViewContext viewContext, string key, Type destinationType)
         {
-            ModelStateEntry entry;
-            if (viewContext.ViewData.ModelState.TryGetValue(key, out entry) && entry.RawValue != null)
+            if (viewContext.ViewData.ModelState.TryGetValue(key, out var entry) && entry.RawValue != null)
             {
                 return ModelBindingHelper.ConvertTo(entry.RawValue, destinationType, culture: null);
             }
@@ -1207,7 +1208,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // elements. But we support the *ForModel() methods in any lower-level template, once HtmlFieldPrefix is
             // non-empty.
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
-            if (string.IsNullOrEmpty(fullName))
+            if (!IsFullNameValid(fullName, htmlAttributes))
             {
                 throw new ArgumentException(
                     Resources.FormatHtmlGenerator_FieldNameCannotBeNullOrEmpty(
@@ -1220,11 +1221,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             var inputTypeString = GetInputTypeString(inputType);
-            var tagBuilder = new TagBuilder("input");
-            tagBuilder.TagRenderMode = TagRenderMode.SelfClosing;
+            var tagBuilder = new TagBuilder("input")
+            {
+                TagRenderMode = TagRenderMode.SelfClosing,
+            };
+
             tagBuilder.MergeAttributes(htmlAttributes);
             tagBuilder.MergeAttribute("type", inputTypeString);
-            tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+            if (!string.IsNullOrEmpty(fullName))
+            {
+                tagBuilder.MergeAttribute("name", fullName, replaceExisting: true);
+            }
 
             var suppliedTypeString = tagBuilder.Attributes["type"];
             if (_placeholderInputTypes.Contains(suppliedTypeString))
@@ -1249,8 +1256,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 case InputType.Radio:
                     if (!usedModelState)
                     {
-                        var modelStateValue = GetModelStateValue(viewContext, fullName, typeof(string)) as string;
-                        if (modelStateValue != null)
+                        if (GetModelStateValue(viewContext, fullName, typeof(string)) is string modelStateValue)
                         {
                             isChecked = string.Equals(modelStateValue, valueParameter, StringComparison.Ordinal);
                             usedModelState = true;
@@ -1313,8 +1319,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             // If there are any errors for a named field, we add the CSS attribute.
-            ModelStateEntry entry;
-            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out entry) && entry.Errors.Count > 0)
+            if (viewContext.ViewData.ModelState.TryGetValue(fullName, out var entry) && entry.Errors.Count > 0)
             {
                 tagBuilder.AddCssClass(HtmlHelper.ValidationInputCssClassName);
             }
@@ -1410,8 +1415,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private static object ConvertEnumFromString<TEnum>(string value) where TEnum : struct
         {
-            TEnum enumValue;
-            if (Enum.TryParse(value, out enumValue))
+            if (Enum.TryParse(value, out TEnum enumValue))
             {
                 return enumValue;
             }
@@ -1500,10 +1504,41 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             return selectList;
         }
 
+        private static bool IsFullNameValid(string fullName, IDictionary<string, object> htmlAttributeDictionary)
+        {
+            return IsFullNameValid(fullName, htmlAttributeDictionary, fallbackAttributeName: "name");
+        }
+
+        private static bool IsFullNameValid(
+            string fullName,
+            IDictionary<string, object> htmlAttributeDictionary,
+            string fallbackAttributeName)
+        {
+            if (string.IsNullOrEmpty(fullName))
+            {
+                // fullName==null is normally an error because name="" is not valid in HTML 5.
+                if (htmlAttributeDictionary == null)
+                {
+                    return false;
+                }
+
+                // Check if user has provided an explicit name attribute.
+                // Generalized a bit because other attributes e.g. data-valmsg-for refer to element names.
+                htmlAttributeDictionary.TryGetValue(fallbackAttributeName, out var attributeObject);
+                var attributeString = Convert.ToString(attributeObject, CultureInfo.InvariantCulture);
+                if (string.IsNullOrEmpty(attributeString))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         /// <inheritdoc />
         public IHtmlContent GenerateGroupsAndOptions(string optionLabel, IEnumerable<SelectListItem> selectList)
         {
-            return GenerateGroupsAndOptions(optionLabel: optionLabel, selectList: selectList, currentValues: null);
+            return GenerateGroupsAndOptions(optionLabel, selectList, currentValues: null);
         }
 
         private IHtmlContent GenerateGroupsAndOptions(

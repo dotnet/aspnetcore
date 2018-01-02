@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -40,6 +41,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(ForAttributeName)]
         public ModelExpression For { get; set; }
 
+        /// <summary>
+        /// The name of the &lt;input&gt; element.
+        /// </summary>
+        /// <remarks>
+        /// Passed through to the generated HTML in all cases. Also used to determine whether <see cref="For"/> is
+        /// valid with an empty <see cref="ModelExpression.Name"/>.
+        /// </remarks>
+        public string Name { get; set; }
+
         /// <inheritdoc />
         /// <remarks>Does nothing if <see cref="For"/> is <c>null</c>.</remarks>
         public override void Process(TagHelperContext context, TagHelperOutput output)
@@ -54,13 +64,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 throw new ArgumentNullException(nameof(output));
             }
 
+            // Pass through attribute that is also a well-known HTML attribute. Must be done prior to any copying
+            // from a TagBuilder.
+            if (Name != null)
+            {
+                output.CopyHtmlAttribute(nameof(Name), context);
+            }
+
+            // Ensure Generator does not throw due to empty "fullName" if user provided a name attribute.
+            IDictionary<string, object> htmlAttributes = null;
+            if (string.IsNullOrEmpty(For.Name) &&
+                string.IsNullOrEmpty(ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix) &&
+                !string.IsNullOrEmpty(Name))
+            {
+                htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "name", Name },
+                };
+            }
+
             var tagBuilder = Generator.GenerateTextArea(
                 ViewContext,
                 For.ModelExplorer,
                 For.Name,
                 rows: 0,
                 columns: 0,
-                htmlAttributes: null);
+                htmlAttributes: htmlAttributes);
 
             if (tagBuilder != null)
             {

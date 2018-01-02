@@ -15,19 +15,36 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public class HtmlHelperHiddenTest
     {
-        public static IEnumerable<object[]> HiddenWithAttributesData
+        public static TheoryData<object, string> HiddenWithAttributesData
         {
             get
             {
-                var expected1 = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                var expected1 = @"<input baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" " +
+                    @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
                     @"value=""HtmlEncode[[ModelStateValue]]"" />";
-                yield return new object[] { new Dictionary<string, object> { { "baz", "BazValue" } }, expected1 };
-                yield return new object[] { new { baz = "BazValue" }, expected1 };
+                var expected2 = @"<input foo-baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" " +
+                    @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
+                    @"value=""HtmlEncode[[ModelStateValue]]"" />";
+                var htmlAttributes1 = new Dictionary<string, object>
+                {
+                    { "baz", "BazValue" },
+                    { "name", "-expression-" }, // overridden
+                };
+                var htmlAttributes2 = new
+                {
+                    baz = "BazValue",
+                    name = "-expression-", // overridden
+                };
 
-                var expected2 = @"<input foo-baz=""HtmlEncode[[BazValue]]"" id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" " +
-                    @"value=""HtmlEncode[[ModelStateValue]]"" />";
-                yield return new object[] { new Dictionary<string, object> { { "foo-baz", "BazValue" } }, expected2 };
-                yield return new object[] { new { foo_baz = "BazValue" }, expected2 };
+                var data = new TheoryData<object, string>
+                {
+                    { htmlAttributes1, expected1 },
+                    { htmlAttributes2, expected1 },
+                    { new Dictionary<string, object> { { "foo-baz", "BazValue" } }, expected2 },
+                    { new { foo_baz = "BazValue" }, expected2 }
+                };
+
+                return data;
             }
         }
 
@@ -408,7 +425,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void HiddenWithEmptyNameAndPrefixThrows()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("model-value");
             var attributes = new Dictionary<string, object>
             {
                 { "class", "some-class"}
@@ -419,9 +436,29 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
-                () => helper.Hidden(string.Empty, string.Empty, attributes),
+                () => helper.Hidden(expression: string.Empty, value: null, htmlAttributes: attributes),
                 "expression",
                 expected);
+        }
+
+        [Fact]
+        public void HiddenWithEmptyNameAndPrefix_DoesNotThrow_WithNameAttribute()
+        {
+            // Arrange
+            var expected = @"<input class=""HtmlEncode[[some-class]]"" name=""HtmlEncode[[-expression-]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[model-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("model-value");
+            var attributes = new Dictionary<string, object>
+            {
+                { "class", "some-class"},
+                { "name", "-expression-" },
+            };
+
+            // Act
+            var result = helper.Hidden(expression: string.Empty, value: null, htmlAttributes: attributes);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]

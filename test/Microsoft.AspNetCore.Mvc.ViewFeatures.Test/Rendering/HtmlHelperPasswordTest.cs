@@ -15,39 +15,58 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public class HtmlHelperPasswordTest
     {
-        public static IEnumerable<object[]> PasswordWithViewDataAndAttributesData
+        public static TheoryData<object> HtmlAttributeData
         {
             get
             {
-                var attributes1 = new Dictionary<string, object>
+                return new TheoryData<object>
                 {
-                    { "test-key", "test-value" },
-                    { "value", "attribute-value" }
+                    new Dictionary<string, object>
+                    {
+                        { "name", "-expression-" }, // overridden
+                        { "test-key", "test-value" },
+                        { "value", "attribute-value" },
+                    },
+                    new
+                    {
+                        name = "-expression-", // overridden
+                        test_key = "test-value",
+                        value = "attribute-value",
+                    },
                 };
+            }
+        }
 
-                var attributes2 = new { test_key = "test-value", value = "attribute-value" };
+        public static TheoryData<ViewDataDictionary<PasswordModel>, object> PasswordWithViewDataAndAttributesData
+        {
+            get
+            {
+                var nullModelViewData = GetViewDataWithNullModelAndNonEmptyViewData();
+                var viewData = GetViewDataWithModelStateAndModelAndViewDataValues();
+                viewData.Model.Property1 = "does-not-get-used";
 
-                var vdd = GetViewDataWithModelStateAndModelAndViewDataValues();
-                vdd.Model.Property1 = "does-not-get-used";
-                yield return new object[] { vdd, attributes1 };
-                yield return new object[] { vdd, attributes2 };
+                var data = new TheoryData<ViewDataDictionary<PasswordModel>, object>();
+                foreach (var items in HtmlAttributeData)
+                {
+                    data.Add(viewData, items[0]);
+                    data.Add(nullModelViewData, items[0]);
+                }
 
-                var nullModelVdd = GetViewDataWithNullModelAndNonEmptyViewData();
-                yield return new object[] { nullModelVdd, attributes1 };
-                yield return new object[] { nullModelVdd, attributes2 };
+                return data;
             }
         }
 
         [Theory]
         [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
         public void Password_UsesAttributeValueWhenValueArgumentIsNull(
-            ViewDataDictionary<PasswordModel> vdd,
+            ViewDataDictionary<PasswordModel> viewData,
             object attributes)
         {
             // Arrange
-            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
-                           @"value=""HtmlEncode[[attribute-value]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(vdd);
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
+                @"test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
+                @"value=""HtmlEncode[[attribute-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
 
             // Act
             var result = helper.Password("Property1", value: null, htmlAttributes: attributes);
@@ -59,13 +78,14 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         [Theory]
         [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
         public void Password_UsesExplicitValue_IfSpecified(
-            ViewDataDictionary<PasswordModel> vdd,
+            ViewDataDictionary<PasswordModel> viewData,
             object attributes)
         {
             // Arrange
-            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
-                           @"value=""HtmlEncode[[explicit-value]]"" />";
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(vdd);
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
+                @"test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
+                @"value=""HtmlEncode[[explicit-value]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(viewData);
 
             // Act
             var result = helper.Password("Property1", "explicit-value", attributes);
@@ -128,18 +148,33 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public void PasswordWithEmptyNameAndPrefixThrows()
         {
             // Arrange
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
-            var name = string.Empty;
-            var value = string.Empty;
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("model-value");
+            var expression = string.Empty;
             var expectedMessage = "The name of an HTML field cannot be null or empty. Instead use methods " +
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
             // Act and Assert
             ExceptionAssert.ThrowsArgument(
-                () => helper.Password(name, value, htmlAttributes: null),
+                () => helper.Password(expression, value: null, htmlAttributes: null),
                 "expression",
                 expectedMessage);
+        }
+
+        [Fact]
+        public void PasswordWithEmptyNameAndPrefix_DoesNotThrow_WithNameAttribute()
+        {
+            // Arrange
+            var expected = @"<input name=""HtmlEncode[[-expression-]]"" type=""HtmlEncode[[password]]"" />";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("model-value");
+            var expression = string.Empty;
+            var htmlAttributes = new { name = "-expression-" };
+
+            // Act
+            var result = helper.Password(expression, value: null, htmlAttributes: htmlAttributes);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
         [Fact]
@@ -218,14 +253,13 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         [Theory]
-        [MemberData(nameof(PasswordWithViewDataAndAttributesData))]
-        public void PasswordForWithAttributes_GeneratesExpectedValue(
-            ViewDataDictionary<PasswordModel> vdd,
-            object htmlAttributes)
+        [MemberData(nameof(HtmlAttributeData))]
+        public void PasswordForWithAttributes_GeneratesExpectedValue(object htmlAttributes)
         {
             // Arrange
-            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
-                           @"value=""HtmlEncode[[attribute-value]]"" />";
+            var expected = @"<input id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
+                @"test-key=""HtmlEncode[[test-value]]"" type=""HtmlEncode[[password]]"" " +
+                @"value=""HtmlEncode[[attribute-value]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetViewDataWithModelStateAndModelAndViewDataValues());
             helper.ViewData.Model.Property1 = "test";
 

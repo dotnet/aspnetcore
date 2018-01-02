@@ -95,13 +95,36 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model: false);
 
             // Act & Assert
             ExceptionAssert.ThrowsArgument(
                 () => helper.CheckBox(null, isChecked: true, htmlAttributes: null),
                 "expression",
                 expected);
+        }
+
+        [Fact]
+        public void CheckBoxWithNullExpression_DoesNotThrow_WithNameAttribute()
+        {
+            // Arrange
+            var expected = @"<input class=""HtmlEncode[[some-class]]"" name=""HtmlEncode[[-expression-]]"" " +
+                @"type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input " +
+                @"name=""HtmlEncode[[-expression-]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model: false);
+            helper.ViewContext.ClientValidationEnabled = false;
+            var attributes = new Dictionary<string, object>
+            {
+                { "class", "some-class"},
+                { "name", "-expression-" },
+            };
+
+            // Act
+            var html = helper.CheckBox(null, isChecked: false, htmlAttributes: attributes);
+
+            // Assert
+            Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(html));
         }
 
         [Fact]
@@ -413,12 +436,17 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var requiredMessage = ValidationAttributeUtil.GetRequiredErrorMessage("Boolean");
             var expected =
                 $@"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[{requiredMessage}]]"" " +
-                @"id=""HtmlEncode[[MyPrefix]]"" name=""HtmlEncode[[MyPrefix]]"" Property3=""HtmlEncode[[Property3Value]]"" " +
-                @"type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[MyPrefix]]"" type=""HtmlEncode[[hidden]]"" " +
-                @"value=""HtmlEncode[[false]]"" />";
+                @"id=""HtmlEncode[[MyPrefix]]"" name=""HtmlEncode[[MyPrefix]]"" " +
+                @"Property3=""HtmlEncode[[Property3Value]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[MyPrefix]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model: false);
-            var attributes = new Dictionary<string, object> { { "Property3", "Property3Value" } };
             helper.ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix = "MyPrefix";
+            var attributes = new Dictionary<string, object>
+            {
+                { "Property3", "Property3Value" },
+                { "name", "-expression-" }, // overridden
+            };
 
             // Act
             var html = helper.CheckBox(string.Empty, isChecked: false, htmlAttributes: attributes);
@@ -589,10 +617,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var expected =
                 $@"<input data-val=""HtmlEncode[[true]]"" data-val-required=""HtmlEncode[[{requiredMessage}]]"" " +
                 @"id=""HtmlEncode[[Property1]]"" name=""HtmlEncode[[Property1]]"" " +
-                @"Property3=""HtmlEncode[[Property3Value]]"" type=""HtmlEncode[[checkbox]]"" value=""HtmlEncode[[true]]"" /><input " +
-                @"name=""HtmlEncode[[Property1]]"" type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
+                @"Property3=""HtmlEncode[[Property3Value]]"" type=""HtmlEncode[[checkbox]]"" " +
+                @"value=""HtmlEncode[[true]]"" /><input name=""HtmlEncode[[Property1]]"" " +
+                @"type=""HtmlEncode[[hidden]]"" value=""HtmlEncode[[false]]"" />";
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(GetTestModelViewData());
-            var attributes = new Dictionary<string, object> { { "Property3", "Property3Value" } };
+            var attributes = new Dictionary<string, object>
+            {
+                { "Property3", "Property3Value" },
+                { "name", "-expression-" }, // overridden
+            };
 
             // Act
             var html = helper.CheckBoxFor(m => m.Property1, attributes);

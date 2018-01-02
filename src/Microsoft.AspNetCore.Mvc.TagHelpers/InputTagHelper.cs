@@ -114,6 +114,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public string InputTypeName { get; set; }
 
         /// <summary>
+        /// The name of the &lt;input&gt; element.
+        /// </summary>
+        /// <remarks>
+        /// Passed through to the generated HTML in all cases. Also used to determine whether <see cref="For"/> is
+        /// valid with an empty <see cref="ModelExpression.Name"/>.
+        /// </remarks>
+        public string Name { get; set; }
+
+        /// <summary>
         /// The value of the &lt;input&gt; element.
         /// </summary>
         /// <remarks>
@@ -144,6 +153,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             if (InputTypeName != null)
             {
                 output.CopyHtmlAttribute("type", context);
+            }
+
+            if (Name != null)
+            {
+                output.CopyHtmlAttribute(nameof(Name), context);
             }
 
             if (Value != null)
@@ -183,15 +197,27 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 output.Attributes.SetAttribute("type", inputType);
             }
 
+            // Ensure Generator does not throw due to empty "fullName" if user provided a name attribute.
+            IDictionary<string, object> htmlAttributes = null;
+            if (string.IsNullOrEmpty(For.Name) &&
+                string.IsNullOrEmpty(ViewContext.ViewData.TemplateInfo.HtmlFieldPrefix) &&
+                !string.IsNullOrEmpty(Name))
+            {
+                htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+                {
+                    { "name", Name },
+                };
+            }
+
             TagBuilder tagBuilder;
             switch (inputType)
             {
                 case "hidden":
-                    tagBuilder = GenerateHidden(modelExplorer);
+                    tagBuilder = GenerateHidden(modelExplorer, htmlAttributes);
                     break;
 
                 case "checkbox":
-                    tagBuilder = GenerateCheckBox(modelExplorer, output);
+                    tagBuilder = GenerateCheckBox(modelExplorer, output, htmlAttributes);
                     break;
 
                 case "password":
@@ -200,15 +226,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         modelExplorer,
                         For.Name,
                         value: null,
-                        htmlAttributes: null);
+                        htmlAttributes: htmlAttributes);
                     break;
 
                 case "radio":
-                    tagBuilder = GenerateRadio(modelExplorer);
+                    tagBuilder = GenerateRadio(modelExplorer, htmlAttributes);
                     break;
 
                 default:
-                    tagBuilder = GenerateTextBox(modelExplorer, inputTypeHint, inputType);
+                    tagBuilder = GenerateTextBox(modelExplorer, inputTypeHint, inputType, htmlAttributes);
                     break;
             }
 
@@ -248,7 +274,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             return inputTypeHint;
         }
 
-        private TagBuilder GenerateCheckBox(ModelExplorer modelExplorer, TagHelperOutput output)
+        private TagBuilder GenerateCheckBox(
+            ModelExplorer modelExplorer,
+            TagHelperOutput output,
+            IDictionary<string, object> htmlAttributes)
         {
             if (modelExplorer.ModelType == typeof(string))
             {
@@ -282,6 +311,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var renderingMode =
                     output.TagMode == TagMode.SelfClosing ? TagRenderMode.SelfClosing : TagRenderMode.StartTag;
                 hiddenForCheckboxTag.TagRenderMode = renderingMode;
+                if (!hiddenForCheckboxTag.Attributes.ContainsKey("name") &&
+                    !string.IsNullOrEmpty(Name))
+                {
+                    // The checkbox and hidden elements should have the same name attribute value. Attributes will
+                    // match if both are present because both have a generated value. Reach here in the special case
+                    // where user provided a non-empty fallback name.
+                    hiddenForCheckboxTag.MergeAttribute("name", Name);
+                }
 
                 if (ViewContext.FormContext.CanRenderAtEndOfForm)
                 {
@@ -298,10 +335,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 modelExplorer,
                 For.Name,
                 isChecked: null,
-                htmlAttributes: null);
+                htmlAttributes: htmlAttributes);
         }
 
-        private TagBuilder GenerateRadio(ModelExplorer modelExplorer)
+        private TagBuilder GenerateRadio(ModelExplorer modelExplorer, IDictionary<string, object> htmlAttributes)
         {
             // Note empty string is allowed.
             if (Value == null)
@@ -319,10 +356,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 For.Name,
                 Value,
                 isChecked: null,
-                htmlAttributes: null);
+                htmlAttributes: htmlAttributes);
         }
 
-        private TagBuilder GenerateTextBox(ModelExplorer modelExplorer, string inputTypeHint, string inputType)
+        private TagBuilder GenerateTextBox(
+            ModelExplorer modelExplorer,
+            string inputTypeHint,
+            string inputType,
+            IDictionary<string, object> htmlAttributes)
         {
             var format = Format;
             if (string.IsNullOrEmpty(format))
@@ -338,12 +379,18 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     format = GetFormat(modelExplorer, inputTypeHint, inputType);
                 }
             }
-            var htmlAttributes = new Dictionary<string, object>
-            {
-                { "type", inputType }
-            };
 
-            if (string.Equals(inputType, "file") && string.Equals(inputTypeHint, TemplateRenderer.IEnumerableOfIFormFileName))
+            if (htmlAttributes == null)
+            {
+                htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            }
+
+            htmlAttributes["type"] = inputType;
+            if (string.Equals(inputType, "file") &&
+                string.Equals(
+                    inputTypeHint,
+                    TemplateRenderer.IEnumerableOfIFormFileName,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 htmlAttributes["multiple"] = "multiple";
             }
@@ -352,14 +399,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 ViewContext,
                 modelExplorer,
                 For.Name,
-                value: modelExplorer.Model,
-                format: format,
-                htmlAttributes: htmlAttributes);
+                modelExplorer.Model,
+                format,
+                htmlAttributes);
         }
 
         // Imitate Generator.GenerateHidden() using Generator.GenerateTextBox(). This adds support for asp-format that
         // is not available in Generator.GenerateHidden().
-        private TagBuilder GenerateHidden(ModelExplorer modelExplorer)
+        private TagBuilder GenerateHidden(ModelExplorer modelExplorer, IDictionary<string, object> htmlAttributes)
         {
             var value = For.Model;
             if (value is byte[] byteArrayValue)
@@ -367,21 +414,17 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 value = Convert.ToBase64String(byteArrayValue);
             }
 
+            if (htmlAttributes == null)
+            {
+                htmlAttributes = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            }
+
             // In DefaultHtmlGenerator(), GenerateTextBox() calls GenerateInput() _almost_ identically to how
             // GenerateHidden() does and the main switch inside GenerateInput() handles InputType.Text and
             // InputType.Hidden identically. No behavior differences at all when a type HTML attribute already exists.
-            var htmlAttributes = new Dictionary<string, object>
-            {
-                { "type", "hidden" }
-            };
+            htmlAttributes["type"] = "hidden";
 
-            return Generator.GenerateTextBox(
-                ViewContext,
-                modelExplorer,
-                For.Name,
-                value: value,
-                format: Format,
-                htmlAttributes: htmlAttributes);
+            return Generator.GenerateTextBox(ViewContext, modelExplorer, For.Name, value, Format, htmlAttributes);
         }
 
         // Get a fall-back format based on the metadata.

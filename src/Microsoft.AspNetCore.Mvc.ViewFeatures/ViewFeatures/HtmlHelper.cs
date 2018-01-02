@@ -160,8 +160,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </remarks>
         public static IDictionary<string, object> AnonymousObjectToHtmlAttributes(object htmlAttributes)
         {
-            var dictionary = htmlAttributes as IDictionary<string, object>;
-            if (dictionary != null)
+            if (htmlAttributes is IDictionary<string, object> dictionary)
             {
                 return new Dictionary<string, object>(dictionary, StringComparer.OrdinalIgnoreCase);
             }
@@ -586,7 +585,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent Raw(object value)
         {
-            return new HtmlString(value == null ? null : value.ToString());
+            return new HtmlString(value?.ToString());
         }
 
         /// <inheritdoc />
@@ -685,7 +684,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent TextBox(string expression, object value, string format, object htmlAttributes)
         {
-            return GenerateTextBox(modelExplorer: null, expression: expression, value: value, format: format,
+            return GenerateTextBox(
+                modelExplorer: null,
+                expression: expression,
+                value: value,
+                format: format,
                 htmlAttributes: htmlAttributes);
         }
 
@@ -722,6 +725,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (checkbox == null || hiddenForCheckbox == null)
             {
                 return HtmlString.Empty;
+            }
+
+            if (!hiddenForCheckbox.Attributes.ContainsKey("name") &&
+                checkbox.Attributes.TryGetValue("name", out var name))
+            {
+                // The checkbox and hidden elements should have the same name attribute value. Attributes will match
+                // if both are present because both have a generated value. Reach here in the special case where user
+                // provided a non-empty fallback name.
+                hiddenForCheckbox.MergeAttribute("name", name);
             }
 
             if (ViewContext.FormContext.CanRenderAtEndOfForm)
@@ -861,7 +873,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
-            var shouldGenerateAntiforgery = antiforgery.HasValue ? antiforgery.Value : method != FormMethod.Get;
+            var shouldGenerateAntiforgery = antiforgery ?? method != FormMethod.Get;
             if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
@@ -917,7 +929,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 tagBuilder.WriteTo(ViewContext.Writer, _htmlEncoder);
             }
 
-            var shouldGenerateAntiforgery = antiforgery.HasValue ? antiforgery.Value : method != FormMethod.Get;
+            var shouldGenerateAntiforgery = antiforgery ?? method != FormMethod.Get;
             if (shouldGenerateAntiforgery)
             {
                 ViewContext.FormContext.EndOfFormContent.Add(_htmlGenerator.GenerateAntiforgery(ViewContext));
@@ -969,9 +981,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var tagBuilder = _htmlGenerator.GenerateLabel(
                 ViewContext,
                 modelExplorer,
-                expression: expression,
-                labelText: labelText,
-                htmlAttributes: htmlAttributes);
+                expression,
+                labelText,
+                htmlAttributes);
             if (tagBuilder == null)
             {
                 return HtmlString.Empty;

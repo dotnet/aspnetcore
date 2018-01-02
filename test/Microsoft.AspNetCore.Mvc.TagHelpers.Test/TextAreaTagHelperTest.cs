@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -158,6 +158,84 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedAttributes, output.Attributes);
             Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
             Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Fact]
+        public void Process_WithEmptyForName_Throws()
+        {
+            // Arrange
+            var expectedMessage = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
+            var expectedTagName = "textarea";
+
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var model = "model-value";
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model);
+            var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+            var tagHelper = new TextAreaTagHelper(htmlGenerator)
+            {
+                For = modelExpression,
+                ViewContext = viewContext,
+            };
+
+            var context = new TagHelperContext(new TagHelperAttributeList(), new Dictionary<object, object>(), "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                new TagHelperAttributeList(),
+                (_, __) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => tagHelper.Process(context, output),
+                paramName: "expression",
+                exceptionMessage: expectedMessage);
+        }
+
+        [Fact]
+        public void Process_WithEmptyForName_DoesNotThrow_WithName()
+        {
+            // Arrange
+            var expectedAttributeValue = "-expression-";
+            var expectedContent = Environment.NewLine + "HtmlEncode[[model-value]]";
+            var expectedTagName = "textarea";
+
+            var metadataProvider = new EmptyModelMetadataProvider();
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var model = "model-value";
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model);
+            var modelExpression = new ModelExpression(name: string.Empty, modelExplorer: modelExplorer);
+            var viewContext = TestableHtmlGenerator.GetViewContext(model, htmlGenerator, metadataProvider);
+            var tagHelper = new TextAreaTagHelper(htmlGenerator)
+            {
+                For = modelExpression,
+                Name = expectedAttributeValue,
+                ViewContext = viewContext,
+            };
+
+            var attributes = new TagHelperAttributeList
+            {
+                { "name", expectedAttributeValue },
+            };
+
+            var context = new TagHelperContext(attributes, new Dictionary<object, object>(), "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                new TagHelperAttributeList(),
+                (_, __) => Task.FromResult<TagHelperContent>(new DefaultTagHelperContent()));
+
+            // Act
+            tagHelper.Process(context, output);
+
+            // Assert
+            Assert.Equal(expectedTagName, output.TagName);
+            Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
+
+            var attribute = Assert.Single(output.Attributes);
+            Assert.Equal("name", attribute.Name);
+            Assert.Equal(expectedAttributeValue, attribute.Value);
         }
 
         public class NameAndId

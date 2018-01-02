@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void GetCurrentValues_WithNullExpression_Throws()
+        public void GetCurrentValues_WithNullExpression_DoesNotThrow()
         {
             // Arrange
             var metadataProvider = new TestModelMetadataProvider();
@@ -77,19 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
             var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
 
-            var expected = "The name of an HTML field cannot be null or empty. Instead use " +
-                "methods Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
-                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
-
-            // Act and assert
-            ExceptionAssert.ThrowsArgument(
-                () => htmlGenerator.GetCurrentValues(
-                    viewContext,
-                    modelExplorer,
-                    expression: null,
-                    allowMultiple: true),
-                "expression",
-                expected);
+            // Act and Assert (does not throw).
+            htmlGenerator.GetCurrentValues(viewContext, modelExplorer, expression: null, allowMultiple: true);
         }
 
         [Fact]
@@ -105,18 +94,47 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
-            // Act and assert
+            // Act and Assert
             ExceptionAssert.ThrowsArgument(
                 () => htmlGenerator.GenerateSelect(
                     viewContext,
                     modelExplorer,
                     "label",
-                    null,
-                    new List<SelectListItem>(),
-                    true,
-                    null),
+                    expression: null,
+                    selectList: new List<SelectListItem>(),
+                    allowMultiple: true,
+                    htmlAttributes: null),
                 "expression",
                 expected);
+        }
+
+        [Fact]
+        public void GenerateSelect_WithNullExpression_WithNameAttribute_DoesNotThrow()
+        {
+            // Arrange
+            var expected = "-expression-";
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "name", expected },
+            };
+
+            // Act
+            var tagBuilder = htmlGenerator.GenerateSelect(
+                viewContext,
+                modelExplorer,
+                "label",
+                expression: null,
+                selectList: new List<SelectListItem>(),
+                allowMultiple: true,
+                htmlAttributes: htmlAttributes);
+
+            // Assert
+            var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "name");
+            Assert.Equal(expected, attribute.Value);
         }
 
         [Fact]
@@ -132,17 +150,45 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
-            // Act and assert
+            // Act and Assert
             ExceptionAssert.ThrowsArgument(
                 () => htmlGenerator.GenerateTextArea(
                     viewContext,
                     modelExplorer,
-                    null,
-                    1,
-                    1,
-                    null),
+                    expression: null,
+                    rows: 1,
+                    columns: 1,
+                    htmlAttributes: null),
                 "expression",
                 expected);
+        }
+
+        [Fact]
+        public void GenerateTextArea_WithNullExpression_WithNameAttribute_DoesNotThrow()
+        {
+            // Arrange
+            var expected = "-expression-";
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "name", expected },
+            };
+
+            // Act
+            var tagBuilder = htmlGenerator.GenerateTextArea(
+                viewContext,
+                modelExplorer,
+                expression: null,
+                rows: 1,
+                columns: 1,
+                htmlAttributes: htmlAttributes);
+
+            // Assert
+            var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "name");
+            Assert.Equal(expected, attribute.Value);
         }
 
         [Fact]
@@ -158,11 +204,45 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
                 "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
 
-            // Act and assert
+            // Act and Assert
             ExceptionAssert.ThrowsArgument(
-                () => htmlGenerator.GenerateValidationMessage(viewContext, null, null, "Message", "tag", null),
+                () => htmlGenerator.GenerateValidationMessage(
+                    viewContext,
+                    modelExplorer: null,
+                    expression: null,
+                    message: "Message",
+                    tag: "tag",
+                    htmlAttributes: null),
                 "expression",
                 expected);
+        }
+
+        [Fact]
+        public void GenerateValidationMessage_WithNullExpression_WithValidationForAttribute_DoesNotThrow()
+        {
+            // Arrange
+            var expected = "-expression-";
+            var metadataProvider = new TestModelMetadataProvider();
+            var htmlGenerator = GetGenerator(metadataProvider);
+            var viewContext = GetViewContext<Model>(model: null, metadataProvider: metadataProvider);
+            var modelExplorer = metadataProvider.GetModelExplorerForType(typeof(string), model: null);
+            var htmlAttributes = new Dictionary<string, object>
+            {
+                { "data-valmsg-for", expected },
+            };
+
+            // Act
+            var tagBuilder = htmlGenerator.GenerateValidationMessage(
+                viewContext,
+                modelExplorer: null,
+                expression: null,
+                message: "Message",
+                tag: "tag",
+                htmlAttributes: htmlAttributes);
+
+            // Assert
+            var attribute = Assert.Single(tagBuilder.Attributes, a => a.Key == "data-valmsg-for");
+            Assert.Equal(expected, attribute.Value);
         }
 
         [Theory]

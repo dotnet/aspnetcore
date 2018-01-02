@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Core
@@ -108,17 +109,27 @@ namespace Microsoft.AspNetCore.Mvc.Core
         public void TextBox_UsesSpecifiedHtmlAttributes()
         {
             // Arrange
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-", // overridden
+            };
+
+            var model = new TestModel
+            {
+                Property1 = "propValue"
+            };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
             helper.ViewContext.ClientValidationEnabled = false;
-            helper.ViewData.Model = new TestModel { Property1 = "propValue" };
 
             // Act
-            var textBoxResult = helper.TextBox("Property1", value: "myvalue", htmlAttributes: new { attr = "value" });
+            var textBoxResult = helper.TextBox("Property1", "myvalue", htmlAttributes);
 
             // Assert
             Assert.Equal(
-                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[myvalue]]\" />",
+                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[myvalue]]\" />",
                 HtmlContentUtilities.HtmlContentToString(textBoxResult));
         }
 
@@ -126,17 +137,73 @@ namespace Microsoft.AspNetCore.Mvc.Core
         public void TextBoxFor_UsesSpecifiedHtmlAttributes()
         {
             // Arrange
-            var metadataProvider = new EmptyModelMetadataProvider();
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-", // overridden
+            };
+
+            var model = new TestModel
+            {
+                Property1 = "propValue"
+            };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
             helper.ViewContext.ClientValidationEnabled = false;
-            helper.ViewData.Model = new TestModel { Property1 = "propValue" };
 
             // Act
-            var textBoxForResult = helper.TextBoxFor(m => m.Property1, htmlAttributes: new { attr = "value" });
+            var textBoxForResult = helper.TextBoxFor(m => m.Property1, htmlAttributes);
 
             // Assert
             Assert.Equal(
-                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[propValue]]\" />",
+                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[propValue]]\" />",
+                HtmlContentUtilities.HtmlContentToString(textBoxForResult));
+        }
+
+        [Fact]
+        public void TextBoxFor_Throws_IfFullNameEmpty()
+        {
+            // Arrange
+            var expectedMessage = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
+
+            var htmlAttributes = new
+            {
+                attr = "value",
+            };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("propValue");
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => helper.TextBoxFor(m => m, htmlAttributes),
+                paramName: "expression",
+                exceptionMessage: expectedMessage);
+        }
+
+        [Fact]
+        public void TextBoxFor_DoesNotThrow_IfFullNameEmpty_WithNameAttribute()
+        {
+            // Arrange
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-",
+            };
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("propValue");
+            helper.ViewContext.ClientValidationEnabled = false;
+
+            // Act
+            var textBoxForResult = helper.TextBoxFor(m => m, htmlAttributes);
+
+            // Assert
+            Assert.Equal(
+                "<input attr=\"HtmlEncode[[value]]\" " +
+                "name=\"HtmlEncode[[-expression-]]\" type=\"HtmlEncode[[text]]\" value=\"HtmlEncode[[propValue]]\" />",
                 HtmlContentUtilities.HtmlContentToString(textBoxForResult));
         }
 

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.AspNetCore.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Core
@@ -122,13 +123,19 @@ namespace Microsoft.AspNetCore.Mvc.Core
         {
             // Arrange
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-", // overridden
+            };
 
             // Act
-            var radioButtonResult = helper.RadioButton("Property1", value: "myvalue", htmlAttributes: new { attr = "value" });
+            var radioButtonResult = helper.RadioButton("Property1", "myvalue", htmlAttributes);
 
             // Assert
             Assert.Equal(
-                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[radio]]\" value=\"HtmlEncode[[myvalue]]\" />",
+                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[radio]]\" value=\"HtmlEncode[[myvalue]]\" />",
                 HtmlContentUtilities.HtmlContentToString(radioButtonResult));
         }
 
@@ -137,13 +144,61 @@ namespace Microsoft.AspNetCore.Mvc.Core
         {
             // Arrange
             var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-", // overridden
+            };
 
             // Act
-            var radioButtonForResult = helper.RadioButtonFor(m => m.Property1, value: "myvalue", htmlAttributes: new { attr = "value" });
+            var radioButtonForResult = helper.RadioButtonFor(m => m.Property1, "myvalue", htmlAttributes);
 
             // Assert
             Assert.Equal(
-                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[radio]]\" value=\"HtmlEncode[[myvalue]]\" />",
+                "<input attr=\"HtmlEncode[[value]]\" id=\"HtmlEncode[[Property1]]\" " +
+                "name=\"HtmlEncode[[Property1]]\" type=\"HtmlEncode[[radio]]\" value=\"HtmlEncode[[myvalue]]\" />",
+                HtmlContentUtilities.HtmlContentToString(radioButtonForResult));
+        }
+
+        [Fact]
+        public void RadioButtonFor_Throws_IfFullNameEmpty()
+        {
+            // Arrange
+            var expectedMessage = "The name of an HTML field cannot be null or empty. Instead use methods " +
+                "Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper.Editor or Microsoft.AspNetCore.Mvc.Rendering." +
+                "IHtmlHelper`1.EditorFor with a non-empty htmlFieldName argument value.";
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("anotherValue");
+            var htmlAttributes = new
+            {
+                attr = "value",
+            };
+
+            // Act & Assert
+            ExceptionAssert.ThrowsArgument(
+                () => helper.RadioButtonFor(m => m, "myvalue", htmlAttributes),
+                paramName: "expression",
+                exceptionMessage: expectedMessage);
+        }
+
+        [Fact]
+        public void RadioButtonFor_DoesNotThrow_IfFullNameEmpty_WithNameAttribute()
+        {
+            // Arrange
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper("anotherValue");
+            var htmlAttributes = new
+            {
+                attr = "value",
+                name = "-expression-",
+            };
+
+            // Act
+            var radioButtonForResult = helper.RadioButtonFor(m => m, "myvalue", htmlAttributes);
+
+            // Assert
+            Assert.Equal(
+                "<input attr=\"HtmlEncode[[value]]\" " +
+                "name=\"HtmlEncode[[-expression-]]\" type=\"HtmlEncode[[radio]]\" value=\"HtmlEncode[[myvalue]]\" />",
                 HtmlContentUtilities.HtmlContentToString(radioButtonForResult));
         }
 
