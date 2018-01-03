@@ -1,55 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubContext<THub> : IHubContext<THub>, IHubClients where THub : Hub
+    public class HubContext<THub> : IHubContext<THub> where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
+        private readonly IHubClients _clients;
 
         public HubContext(HubLifetimeManager<THub> lifetimeManager)
         {
             _lifetimeManager = lifetimeManager;
-            All = new AllClientProxy<THub>(_lifetimeManager);
+            _clients = new HubClients<THub>(_lifetimeManager);
             Groups = new GroupManager<THub>(lifetimeManager);
         }
 
-        public IHubClients Clients => this;
-
-        public virtual IClientProxy All { get; }
+        public IHubClients Clients => _clients;
 
         public virtual IGroupManager Groups { get; }
-
-        public IClientProxy AllExcept(IReadOnlyList<string> excludedIds)
-        {
-            return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedIds);
-        }
-
-        public virtual IClientProxy Client(string connectionId)
-        {
-            return new SingleClientProxy<THub>(_lifetimeManager, connectionId);
-        }
-
-        public virtual IClientProxy Group(string groupName)
-        {
-            return new GroupProxy<THub>(_lifetimeManager, groupName);
-        }
-
-        public IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludeIds)
-        {
-            return new GroupExceptProxy<THub>(_lifetimeManager, groupName, excludeIds);
-        }
-
-        public virtual IClientProxy User(string userId)
-        {
-            return new UserProxy<THub>(_lifetimeManager, userId);
-        }
-
-        public virtual IClientProxy MultipleClients(IReadOnlyList<string> connectionIds)
-        {
-            return new MultipleClientProxy<THub>(_lifetimeManager, connectionIds);
-        }
     }
 }
