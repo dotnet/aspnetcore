@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -8,7 +9,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageSelectorModelTest
     {
-        [Theory]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
         [InlineData("/Areas/About.cshtml")]
         [InlineData("/Areas/MyArea/Index.cshtml")]
         public void TryParseAreaPath_ReturnsFalse_IfPathDoesNotConform(string path)
@@ -23,7 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.False(success);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
         [InlineData("/MyArea/Views/About.cshtml")]
         [InlineData("/MyArea/SubDir/Pages/Index.cshtml")]
         [InlineData("/MyArea/NotPages/SubDir/About.cshtml")]
@@ -39,7 +42,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.False(success);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
         [InlineData("/MyArea/Pages/Index.cshtml", "MyArea", "/Index", "/MyArea/Index")]
         [InlineData("/Accounts/Pages/Manage/Edit.cshtml", "Accounts", "/Manage/Edit", "/Accounts/Manage/Edit")]
         public void TryParseAreaPath_ParsesAreaPath(
@@ -61,7 +65,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(expectedRoute, result.pageRoute);
         }
 
-        [Theory]
+        [ConditionalTheory]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
         [InlineData("/MyArea/Dir1/Dir2/Index.cshtml", "MyArea", "/Index", "/MyArea/Index")]
         [InlineData("/Accounts/Dir1/Dir2/Manage/Edit.cshtml", "Accounts", "/Manage/Edit", "/Accounts/Manage/Edit")]
         public void TryParseAreaPath_ParsesAreaPath_WithMultiLevelRootDirectory(
