@@ -4,19 +4,22 @@ Common ASP.NET and Entity Framework repos and projects:
 
  - Documentation: https://github.com/aspnet/Docs
  - MVC: https://github.com/aspnet/Mvc
- - Entity Framework Core: https://github.com/aspnet/EntityFramework
+ - Entity Framework Core: https://github.com/aspnet/EntityFrameworkCore
  - Entity Framework 6: https://github.com/aspnet/EntityFramework6
  - SignalR: https://github.com/aspnet/SignalR
- - ASP.NET Core in Docker: https://github.com/aspnet/aspnet-docker
+ - Docker with ASP.NET Core: https://github.com/aspnet/aspnet-docker
  - Microsoft.NET.Sdk.Web: https://github.com/aspnet/websdk
  - Kestrel HTTP Server: https://github.com/aspnet/KestrelHttpServer
  - ASP.NET Katana: https://github.com/aspnet/AspNetKatana
  - and more! See a full list here: https://github.com/aspnet
+ - note: several repositories have migrated their issues tracker to this repo here
 
 Other common projects:
 
+ - .NET Core CLI and SDK: https://github.com/dotnet/core
+ - .NET Core runtime: https://github.com/dotnet/coreclr
+ - .NET Core libraries: https://github.com/dotnet/corefx
  - NuGet: https://github.com/NuGet/home
- - .NET Core CLI, SDK, or runtime: https://github.com/dotnet/core
  - Visual Studio: https://developercommunity.visualstudio.com
  - Visual Studio Code: https://github.com/microsoft/vscode
  - Omnisharp (C# support for VS Code): https://github.com/omnisharp/omnisharp-vscode
