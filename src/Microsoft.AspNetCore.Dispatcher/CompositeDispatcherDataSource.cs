@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public override IChangeToken ChangeToken { get; }
 
-        protected override IReadOnlyList<Address> GetAddesses()
+        protected override IReadOnlyList<Address> GetAddresses()
         {
             var addresses = new List<Address>();
             for (var i = 0; i < _dataSources.Length; i++)

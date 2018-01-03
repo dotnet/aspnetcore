@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public IList<Endpoint> Endpoints => _endpoints;
 
-        protected override IReadOnlyList<Address> GetAddesses() => _addresses;
+        protected override IReadOnlyList<Address> GetAddresses() => _addresses;
 
         protected override IReadOnlyList<Endpoint> GetEndpoints() => _endpoints;
     }

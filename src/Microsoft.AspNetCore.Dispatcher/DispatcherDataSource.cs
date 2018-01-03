@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Dispatcher
     {
         public abstract IChangeToken ChangeToken { get; }
 
-        protected abstract IReadOnlyList<Address> GetAddesses();
+        protected abstract IReadOnlyList<Address> GetAddresses();
 
         protected abstract IReadOnlyList<Endpoint> GetEndpoints();
 
-        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => GetAddesses();
+        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => GetAddresses();
 
         IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => GetEndpoints();
     }

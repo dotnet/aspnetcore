@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,11 +11,13 @@ using Microsoft.AspNetCore.Dispatcher.Patterns;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Primitives = Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
     public class TreeMatcher : MatcherBase
     {
+        private bool _onChange;
         private bool _dataInitialized;
         private object _lock;
         private Cache _cache;
@@ -30,8 +31,6 @@ namespace Microsoft.AspNetCore.Dispatcher
             _initializer = CreateCache;
         }
 
-        public int Version { get; private set; }
-
         public override async Task MatchAsync(MatcherContext context)
         {
             if (context == null)
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(context));
             }
 
-            EnsureServicesInitialized(context);
+            EnsureTreeMatcherServicesInitialized(context);
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
 
@@ -101,6 +100,24 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
+        private void EnsureTreeMatcherServicesInitialized(MatcherContext context)
+        {
+            EnsureServicesInitialized(context);
+            if (Volatile.Read(ref _onChange))
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                if (!Volatile.Read(ref _onChange))
+                {
+                    _onChange = true;
+                    Primitives.ChangeToken.OnChange(() => ChangeToken, () => Volatile.Write(ref _dataInitialized, false));
+                }
+            }
+        }
+
         private bool MatchConstraints(HttpContext httpContext, DispatcherValueCollection values, IDictionary<string, IDispatcherValueConstraint> constraints)
         {
             if (constraints != null)
@@ -136,8 +153,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             {
                 var endpoint = endpoints[i];
 
-                var templateEndpoint = endpoint as IRoutePatternEndpoint;
-                if (templateEndpoint == null)
+                if (!(endpoint is IRoutePatternEndpoint templateEndpoint))
                 {
                     continue;
                 }
