@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { DataReceived, TransportClosed } from "./Common"
-import { IHttpClient } from "./HttpClient"
-import { HttpError } from "./HttpError"
-import { ILogger, LogLevel } from "./ILogger"
-import { IConnection } from "./IConnection"
+import { DataReceived, TransportClosed } from "./Common";
+import { HttpClient, HttpRequest } from "./HttpClient";
+import { HttpError, TimeoutError } from "./Errors";
+import { ILogger, LogLevel } from "./ILogger";
+import { IConnection } from "./IConnection";
+import { AbortController } from "./AbortController";
 
 export enum TransportType {
     WebSockets,
@@ -103,13 +104,13 @@ export class WebSocketTransport implements ITransport {
 }
 
 export class ServerSentEventsTransport implements ITransport {
-    private readonly httpClient: IHttpClient;
+    private readonly httpClient: HttpClient;
     private readonly accessToken: () => string;
     private readonly logger: ILogger;
     private eventSource: EventSource;
     private url: string;
 
-    constructor(httpClient: IHttpClient, accessToken: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessToken: () => string, logger: ILogger) {
         this.httpClient = httpClient;
         this.accessToken = accessToken;
         this.logger = logger;
@@ -183,23 +184,23 @@ export class ServerSentEventsTransport implements ITransport {
 }
 
 export class LongPollingTransport implements ITransport {
-    private readonly httpClient: IHttpClient;
+    private readonly httpClient: HttpClient;
     private readonly accessToken: () => string;
     private readonly logger: ILogger;
 
     private url: string;
     private pollXhr: XMLHttpRequest;
-    private shouldPoll: boolean;
+    private pollAbort: AbortController;
 
-    constructor(httpClient: IHttpClient, accessToken: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessToken: () => string, logger: ILogger) {
         this.httpClient = httpClient;
         this.accessToken = accessToken;
         this.logger = logger;
+        this.pollAbort = new AbortController();
     }
 
     connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
         this.url = url;
-        this.shouldPoll = true;
 
         // Set a flag indicating we have inherent keep-alive in this transport.
         connection.features.inherentKeepAlive = true;
@@ -213,73 +214,70 @@ export class LongPollingTransport implements ITransport {
         return Promise.resolve(requestedTransferMode);
     }
 
-    private poll(url: string, transferMode: TransferMode): void {
-        if (!this.shouldPoll) {
-            return;
+    private async poll(url: string, transferMode: TransferMode): Promise<void> {
+        let pollOptions: HttpRequest = {
+            timeout: 120000,
+            abortSignal: this.pollAbort.signal,
+            headers: new Map<string, string>(),
+        };
+
+        if (transferMode === TransferMode.Binary) {
+            pollOptions.responseType = "arraybuffer";
         }
 
-        let pollXhr = new XMLHttpRequest();
+        if (this.accessToken) {
+            pollOptions.headers.set("Authorization", `Bearer ${this.accessToken()}`);
+        }
 
-        pollXhr.onload = () => {
-            if (pollXhr.status == 200) {
-                if (this.onreceive) {
-                    try {
-                        let response = transferMode === TransferMode.Text
-                            ? pollXhr.responseText
-                            : pollXhr.response;
+        while (!this.pollAbort.signal.aborted) {
+            try {
+                let pollUrl = `${url}&_=${Date.now()}`;
+                this.logger.log(LogLevel.Trace, `(LongPolling transport) polling: ${pollUrl}`);
+                let response = await this.httpClient.get(pollUrl, pollOptions)
+                if (response.statusCode === 204) {
+                    this.logger.log(LogLevel.Information, "(LongPolling transport) Poll terminated by server");
 
-                        if (response) {
-                            this.logger.log(LogLevel.Trace, `(LongPolling transport) data received: ${response}`);
-                            this.onreceive(response);
+                    // Poll terminated by server
+                    if (this.onclose) {
+                        this.onclose();
+                    }
+                    this.pollAbort.abort();
+                }
+                else if (response.statusCode !== 200) {
+                    this.logger.log(LogLevel.Error, `(LongPolling transport) Unexpected response code: ${response.statusCode}`);
+
+                    // Unexpected status code
+                    if (this.onclose) {
+                        this.onclose(new HttpError(response.statusText, response.statusCode));
+                    }
+                    this.pollAbort.abort();
+                }
+                else {
+                    // Process the response
+                    if (response.content) {
+                        this.logger.log(LogLevel.Trace, `(LongPolling transport) data received: ${response.content}`);
+                        if (this.onreceive) {
+                            this.onreceive(response.content);
                         }
-                        else {
-                            this.logger.log(LogLevel.Information, "(LongPolling transport) timed out");
-                        }
-                    } catch (error) {
-                        if (this.onclose) {
-                            this.onclose(error);
-                        }
-                        return;
+                    }
+                    else {
+                        // This is another way timeout manifest.
+                        this.logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
                     }
                 }
-                this.poll(url, transferMode);
-            }
-            else if (this.pollXhr.status == 204) {
-                if (this.onclose) {
-                    this.onclose();
+            } catch (e) {
+                if (e instanceof TimeoutError) {
+                    // Ignore timeouts and reissue the poll.
+                    this.logger.log(LogLevel.Trace, "(LongPolling transport) Poll timed out, reissuing.");
+                } else {
+                    // Close the connection with the error as the result.
+                    if (this.onclose) {
+                        this.onclose(e);
+                    }
+                    this.pollAbort.abort();
                 }
             }
-            else {
-                if (this.onclose) {
-                    this.onclose(new HttpError(pollXhr.statusText, pollXhr.status));
-                }
-            }
-        };
-
-        pollXhr.onerror = () => {
-            if (this.onclose) {
-                // network related error or denied cross domain request
-                this.onclose(new Error("Sending HTTP request failed."));
-            }
-        };
-
-        pollXhr.ontimeout = () => {
-            this.poll(url, transferMode);
         }
-
-        this.pollXhr = pollXhr;
-
-        this.pollXhr.open("GET", `${url}&_=${Date.now()}`, true);
-        if (this.accessToken) {
-            this.pollXhr.setRequestHeader("Authorization", `Bearer ${this.accessToken()}`);
-        }
-        if (transferMode === TransferMode.Binary) {
-            this.pollXhr.responseType = "arraybuffer";
-        }
-
-        // TODO: consider making timeout configurable
-        this.pollXhr.timeout = 120000;
-        this.pollXhr.send();
     }
 
     async send(data: any): Promise<void> {
@@ -287,11 +285,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     stop(): Promise<void> {
-        this.shouldPoll = false;
-        if (this.pollXhr) {
-            this.pollXhr.abort();
-            this.pollXhr = null;
-        }
+        this.pollAbort.abort();
         return Promise.resolve();
     }
 
@@ -299,12 +293,15 @@ export class LongPollingTransport implements ITransport {
     onclose: TransportClosed;
 }
 
-async function send(httpClient: IHttpClient, url: string, accessToken: () => string, data: any): Promise<void> {
+async function send(httpClient: HttpClient, url: string, accessToken: () => string, content: string | ArrayBuffer): Promise<void> {
     let headers;
     if (accessToken) {
         headers = new Map<string, string>();
         headers.set("Authorization", `Bearer ${accessToken()}`)
     }
 
-    await httpClient.post(url, data, headers);
+    await httpClient.post(url, {
+        content,
+        headers
+    });
 }

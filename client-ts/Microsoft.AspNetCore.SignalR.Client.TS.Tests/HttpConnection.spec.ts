@@ -1,14 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
+import { TestHttpClient } from "./TestHttpClient"
 import { HttpConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpConnection"
 import { IHttpConnectionOptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHttpConnectionOptions"
 import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
 import { ITransport, TransportType, TransferMode } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 import { eachTransport, eachEndpointUrl } from "./Common";
+import { HttpResponse } from "../Microsoft.AspNetCore.SignalR.Client.TS/index";
 
-describe("Connection", () => {
+describe("HttpConnection", () => {
     it("cannot be created with relative url if document object is not present", () => {
         expect(() => new HttpConnection("/test"))
             .toThrow(new Error("Cannot resolve '/test'."));
@@ -23,14 +24,9 @@ describe("Connection", () => {
 
     it("starting connection fails if getting id fails", async (done) => {
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
-                    return Promise.reject("error");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            },
+            httpClient: new TestHttpClient()
+                .on("POST", r => Promise.reject("error"))
+                .on("GET", r => ""),
             logger: null
         } as IHttpConnectionOptions;
 
@@ -49,8 +45,8 @@ describe("Connection", () => {
 
     it("cannot start a running connection", async (done) => {
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
+            httpClient: new TestHttpClient()
+                .on("POST", r => {
                     connection.start()
                         .then(() => {
                             fail();
@@ -60,13 +56,8 @@ describe("Connection", () => {
                             expect(error.message).toBe("Cannot start a connection that is not in the 'Disconnected' state.");
                             done();
                         });
-
                     return Promise.reject("error");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            },
+                }),
             logger: null
         } as IHttpConnectionOptions;
 
@@ -84,15 +75,12 @@ describe("Connection", () => {
     it("can start a stopped connection", async (done) => {
         let negotiateCalls = 0;
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
+            httpClient: new TestHttpClient()
+                .on("POST", r => {
                     negotiateCalls += 1;
                     return Promise.reject("reached negotiate");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            },
+                })
+                .on("GET", r => ""),
             logger: null
         } as IHttpConnectionOptions;
 
@@ -115,16 +103,15 @@ describe("Connection", () => {
 
     it("can stop a starting connection", async (done) => {
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
+            httpClient: new TestHttpClient()
+                .on("POST", r => {
                     connection.stop();
-                    return Promise.resolve("{}");
-                },
-                get(url: string): Promise<string> {
+                    return "{}";
+                })
+                .on("GET", r => {
                     connection.stop();
-                    return Promise.resolve("");
-                }
-            },
+                    return "";
+                }),
             logger: null
         } as IHttpConnectionOptions;
 
@@ -164,16 +151,11 @@ describe("Connection", () => {
         }
 
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
-                    return Promise.resolve("{ \"connectionId\": \"42\" }");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            },
+            httpClient: new TestHttpClient()
+                .on("POST", r => "{ \"connectionId\": \"42\" }")
+                .on("GET", r => ""),
             transport: fakeTransport,
-            logger: null
+            logger: null,
         } as IHttpConnectionOptions;
 
 
@@ -196,17 +178,16 @@ describe("Connection", () => {
             let negotiateUrl: string;
             let connection: HttpConnection;
             let options: IHttpConnectionOptions = {
-                httpClient: <IHttpClient>{
-                    post(url: string): Promise<string> {
-                        negotiateUrl = url;
+                httpClient: new TestHttpClient()
+                    .on("POST", r => {
+                        negotiateUrl = r.url;
                         connection.stop();
-                        return Promise.resolve("{}");
-                    },
-                    get(url: string): Promise<string> {
+                        return "{}";
+                    })
+                    .on("GET", r => {
                         connection.stop();
-                        return Promise.resolve("");
-                    }
-                },
+                        return "";
+                    }),
                 logger: null
             } as IHttpConnectionOptions;
 
@@ -231,14 +212,9 @@ describe("Connection", () => {
         }
         it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
             let options: IHttpConnectionOptions = {
-                httpClient: <IHttpClient>{
-                    post(url: string): Promise<string> {
-                        return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
-                    },
-                    get(url: string): Promise<string> {
-                        return Promise.resolve("");
-                    }
-                },
+                httpClient: new TestHttpClient()
+                    .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
+                    .on("GET", r => ""),
                 transport: requestedTransport,
                 logger: null
             } as IHttpConnectionOptions;
@@ -258,14 +234,9 @@ describe("Connection", () => {
 
     it("cannot be started if no transport available on server and no transport requested", async done => {
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
-                    return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            },
+            httpClient: new TestHttpClient()
+                .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
+                .on("GET", r => ""),
             logger: null
         } as IHttpConnectionOptions;
 
@@ -283,14 +254,7 @@ describe("Connection", () => {
 
     it('does not send negotiate request if WebSockets transport requested explicitly', async done => {
         let options: IHttpConnectionOptions = {
-            httpClient: <IHttpClient>{
-                post(url: string): Promise<string> {
-                    return Promise.reject("Should not be called");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.reject("Should not be called");
-                }
-            },
+            httpClient: new TestHttpClient(),
             transport: TransportType.WebSockets,
             logger: null
         } as IHttpConnectionOptions;
@@ -327,14 +291,9 @@ describe("Connection", () => {
             } as ITransport;
 
             let options: IHttpConnectionOptions = {
-                httpClient: <IHttpClient>{
-                    post(url: string): Promise<string> {
-                        return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
-                    },
-                    get(url: string): Promise<string> {
-                        return Promise.resolve("");
-                    }
-                },
+                httpClient: new TestHttpClient()
+                    .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
+                    .on("GET", r => ""),
                 transport: fakeTransport,
                 logger: null
             } as IHttpConnectionOptions;

@@ -4,7 +4,7 @@
 import { DataReceived, ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
 import { ITransport, TransferMode, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
-import { IHttpClient, HttpClient } from "./HttpClient"
+import { HttpClient, DefaultHttpClient } from "./HttpClient"
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions"
 import { ILogger, LogLevel } from "./ILogger"
 import { LoggerFactory } from "./Loggers"
@@ -24,7 +24,7 @@ export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
     private baseUrl: string;
     private url: string;
-    private readonly httpClient: IHttpClient;
+    private readonly httpClient: HttpClient;
     private readonly logger: ILogger;
     private readonly options: IHttpConnectionOptions;
     private transport: ITransport;
@@ -37,7 +37,7 @@ export class HttpConnection implements IConnection {
         this.logger = LoggerFactory.createLogger(options.logger);
         this.baseUrl = this.resolveUrl(url);
         options = options || {};
-        this.httpClient = options.httpClient || new HttpClient();
+        this.httpClient = options.httpClient || new DefaultHttpClient();
         this.connectionState = ConnectionState.Disconnected;
         this.options = options;
     }
@@ -67,9 +67,12 @@ export class HttpConnection implements IConnection {
                     headers.set("Authorization", `Bearer ${this.options.accessToken()}`);
                 }
 
-                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.baseUrl), "", headers);
+                let negotiatePayload = await this.httpClient.post(this.resolveNegotiateUrl(this.baseUrl), {
+                    content: "",
+                    headers
+                });
 
-                let negotiateResponse: INegotiateResponse = JSON.parse(negotiatePayload);
+                let negotiateResponse: INegotiateResponse = JSON.parse(<string>negotiatePayload.content);
                 this.connectionId = negotiateResponse.connectionId;
 
                 // the user tries to stop the the connection when it is being started

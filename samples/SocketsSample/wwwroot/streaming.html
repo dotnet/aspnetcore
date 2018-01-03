@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title></title>
 </head>
+
 <body>
     <h1 id="transportName">Unknown Transport</h1>
 
@@ -24,14 +26,12 @@
 
     <ul id="messages"></ul>
     <script type="text/javascript">
-        if (typeof Promise === 'undefined')
-        {
+        if (typeof Promise === 'undefined') {
             document.write(
                 '<script type="text/javascript" src="lib/signalr-client/signalr-clientES5.js"><\/script>' +
                 '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocolES5.js"><\/script>');
         }
-        else
-        {
+        else {
             document.write(
                 '<script type="text/javascript" src="lib/signalr-client/signalr-client.js"><\/script>' +
                 '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocol.js"><\/script>');
@@ -39,7 +39,7 @@
     </script>
     <script src="utils.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             let resultsList = document.getElementById('resultsList');
             let channelButton = document.getElementById('channelButton');
             let observableButton = document.getElementById('observableButton');
@@ -48,7 +48,7 @@
             let connectButton = document.getElementById('connectButton');
             let disconnectButton = document.getElementById('disconnectButton');
 
-            let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
+            let logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
             let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 
             let invocationCounter = 0;
@@ -107,11 +107,12 @@
                         addLine('resultsList', method + '(' + id + '):' + err, 'red');
                     },
                     complete: function () {
-                        addLine('resultsList', method + '(' +  id + '): complete', 'green');
+                        addLine('resultsList', method + '(' + id + '): complete', 'green');
                     }
                 });
             }
         });
     </script>
 </body>
+
 </html>

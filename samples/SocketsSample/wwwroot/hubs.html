@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8" />
     <title></title>
 </head>
+
 <body>
     <h1 id="head1"></h1>
     <div>
@@ -48,16 +50,15 @@
 
     <ul id="message-list"></ul>
 </body>
+
 </html>
 <script type="text/javascript">
-    if (typeof Promise === 'undefined')
-    {
+    if (typeof Promise === 'undefined') {
         document.write(
             '<script type="text/javascript" src="lib/signalr-client/signalr-clientES5.js"><\/script>' +
             '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocolES5.js"><\/script>');
     }
-    else
-    {
+    else {
         document.write(
             '<script type="text/javascript" src="lib/signalr-client/signalr-client.js"><\/script>' +
             '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocol.js"><\/script>');
@@ -65,102 +66,102 @@
 </script>
 <script src="utils.js"></script>
 <script>
-var isConnected = false;
-function invoke(connection, method) {
-    if (!isConnected) {
-        return;
-    }
-    var argsArray = Array.prototype.slice.call(arguments);
-    connection.invoke.apply(connection, argsArray.slice(1))
-            .then(function(result) {
+    var isConnected = false;
+    function invoke(connection, method) {
+        if (!isConnected) {
+            return;
+        }
+        var argsArray = Array.prototype.slice.call(arguments);
+        connection.invoke.apply(connection, argsArray.slice(1))
+            .then(function (result) {
                 console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
                 if (result) {
                     addLine('message-list', result);
                 }
             })
-            .catch(function(err) {
+            .catch(function (err) {
                 addLine('message-list', err, 'red');
             });
-}
+    }
 
-function getText(id) {
-    return document.getElementById(id).value;
-}
+    function getText(id) {
+        return document.getElementById(id).value;
+    }
 
-let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
-let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
-let hubRoute = getParameterByName('hubType') || "default";
-console.log('Hub Route:' + hubRoute);
+    let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
+    let logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
+    let hubRoute = getParameterByName('hubType') || "default";
+    console.log('Hub Route:' + hubRoute);
 
-document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
+    document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
-let connectButton = document.getElementById('connect');
-let disconnectButton = document.getElementById('disconnect');
-disconnectButton.disabled = true;
-var connection;
-
-click('connect', function(event) {
-    connectButton.disabled = true;
-    disconnectButton.disabled = false;
-    console.log('http://' + document.location.host + '/' + hubRoute);
-    connection = new signalR.HubConnection(hubRoute, { transport: transportType, logging: logger });
-    connection.on('Send', function(msg) {
-        addLine('message-list', msg);
-    });
-
-    connection.onclose(function(e) {
-        if (e) {
-            addLine('message-list', 'Connection closed with error: ' + e, 'red');
-        }
-        else {
-            addLine('message-list', 'Disconnected', 'green');
-        }
-    });
-
-    connection.start()
-        .then(function() {
-            isConnected = true;
-            addLine('message-list', 'Connected successfully', 'green');
-        })
-        .catch(function(err) {
-            addLine('message-list', err, 'red');
-        });
-});
-
-click('disconnect', function(event) {
-    connectButton.disabled = false;
+    let connectButton = document.getElementById('connect');
+    let disconnectButton = document.getElementById('disconnect');
     disconnectButton.disabled = true;
-    connection.stop()
-        .then(function() {
-            isConnected = false;
+    var connection;
+
+    click('connect', function (event) {
+        connectButton.disabled = true;
+        disconnectButton.disabled = false;
+        console.log('http://' + document.location.host + '/' + hubRoute);
+        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logging: logger });
+        connection.on('Send', function (msg) {
+            addLine('message-list', msg);
         });
-});
 
-click('broadcast', function(event) {
-    let data = getText('message-text');
-    invoke(connection, 'Send', data);
-});
+        connection.onclose(function (e) {
+            if (e) {
+                addLine('message-list', 'Connection closed with error: ' + e, 'red');
+            }
+            else {
+                addLine('message-list', 'Disconnected', 'green');
+            }
+        });
 
-click('join-group', function(event) {
-    let groupName = getText('message-text');
-    invoke(connection, 'JoinGroup', groupName);
-});
+        connection.start()
+            .then(function () {
+                isConnected = true;
+                addLine('message-list', 'Connected successfully', 'green');
+            })
+            .catch(function (err) {
+                addLine('message-list', err, 'red');
+            });
+    });
 
-click('leave-group', function(event) {
-    let groupName = getText('message-text');
-    invoke(connection, 'LeaveGroup', groupName);
-});
+    click('disconnect', function (event) {
+        connectButton.disabled = false;
+        disconnectButton.disabled = true;
+        connection.stop()
+            .then(function () {
+                isConnected = false;
+            });
+    });
 
-click('groupmsg', function(event) {
-    let groupName = getText('target');
-    let message = getText('private-message-text');
-    invoke(connection, 'SendToGroup', groupName, message);
-});
+    click('broadcast', function (event) {
+        let data = getText('message-text');
+        invoke(connection, 'Send', data);
+    });
 
-click('send', function(event) {
-    let data = getText('me-message-text');
-    invoke(connection, 'Echo', data);
-});
+    click('join-group', function (event) {
+        let groupName = getText('message-text');
+        invoke(connection, 'JoinGroup', groupName);
+    });
+
+    click('leave-group', function (event) {
+        let groupName = getText('message-text');
+        invoke(connection, 'LeaveGroup', groupName);
+    });
+
+    click('groupmsg', function (event) {
+        let groupName = getText('target');
+        let message = getText('private-message-text');
+        invoke(connection, 'SendToGroup', groupName, message);
+    });
+
+    click('send', function (event) {
+        let data = getText('me-message-text');
+        invoke(connection, 'Echo', data);
+    });
 
 </script>

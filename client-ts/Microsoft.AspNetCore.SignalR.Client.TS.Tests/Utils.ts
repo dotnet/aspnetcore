@@ -3,16 +3,20 @@
 
 import { clearTimeout, setTimeout } from "timers";
 
-export function asyncit(expectation: string, assertion?: () => Promise<any>, timeout?: number): void {
+export function asyncit(expectation: string, assertion?: () => Promise<any> | void, timeout?: number): void {
     let testFunction: (done: DoneFn) => void;
     if (assertion) {
         testFunction = done => {
-            assertion()
-                .then(() => done())
-                .catch((err) => {
-                    fail(err);
-                    done();
-                });
+            let promise = assertion();
+            if (promise) {
+                promise.then(() => done())
+                    .catch((err) => {
+                        fail(err);
+                        done();
+                    });
+            } else {
+                done();
+            }
         };
     }
 

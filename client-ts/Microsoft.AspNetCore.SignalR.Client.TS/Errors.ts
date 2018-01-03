@@ -8,3 +8,9 @@ export class HttpError extends Error {
         this.statusCode = statusCode;
     }
 }
+
+export class TimeoutError extends Error {
+    constructor(errorMessage: string = "A timeout occurred.") {
+        super(errorMessage);
+    }
+}
