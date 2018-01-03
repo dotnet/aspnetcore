@@ -22,7 +22,7 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="identifier">The identifier used when registering the target function.</param>
         /// <param name="args">The arguments to pass, each of which will be supplied as a <see cref="System.Object" /> instance.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<TRes>(string identifier, params object[] args)
+        public static TRes InvokeUnmarshalled<TRes>(string identifier, params object[] args)
         {
             var result = Runtime.InvokeJSArray<TRes>(out var exception, identifier, args);
             return exception != null
@@ -36,8 +36,8 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <typeparam name="TRes">The .NET type corresponding to the function's return value type.</typeparam>
         /// <param name="identifier">The identifier used when registering the target function.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<TRes>(string identifier)
-            => Invoke<object, object, object, TRes>(identifier, null, null, null);
+        public static TRes InvokeUnmarshalled<TRes>(string identifier)
+            => InvokeUnmarshalled<object, object, object, TRes>(identifier, null, null, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
@@ -47,8 +47,8 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="identifier">The identifier used when registering the target function.</param>
         /// <param name="arg0">The first argument.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<T0, TRes>(string identifier, T0 arg0)
-            => Invoke<T0, object, object, TRes>(identifier, arg0, null, null);
+        public static TRes InvokeUnmarshalled<T0, TRes>(string identifier, T0 arg0)
+            => InvokeUnmarshalled<T0, object, object, TRes>(identifier, arg0, null, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
@@ -60,8 +60,8 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="arg0">The first argument.</param>
         /// <param name="arg1">The second argument.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<T0, T1, TRes>(string identifier, T0 arg0, T1 arg1)
-            => Invoke<T0, T1, object, TRes>(identifier, arg0, arg1, null);
+        public static TRes InvokeUnmarshalled<T0, T1, TRes>(string identifier, T0 arg0, T1 arg1)
+            => InvokeUnmarshalled<T0, T1, object, TRes>(identifier, arg0, arg1, null);
 
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
@@ -75,7 +75,7 @@ namespace Microsoft.Blazor.Browser.Interop
         /// <param name="arg1">The second argument.</param>
         /// <param name="arg2">The third argument.</param>
         /// <returns>The result of the function invocation.</returns>
-        public static TRes Invoke<T0, T1, T2, TRes>(string identifier, T0 arg0, T1 arg1, T2 arg2)
+        public static TRes InvokeUnmarshalled<T0, T1, T2, TRes>(string identifier, T0 arg0, T1 arg1, T2 arg2)
         {
             var result = Runtime.InvokeJS<T0, T1, T2, TRes>(out var exception, identifier, arg0, arg1, arg2);
             return exception != null
