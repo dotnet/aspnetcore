@@ -23,12 +23,12 @@ namespace ChatSample.Hubs
 
         public override Task OnUsersJoined(UserDetails[] users)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersJoined", users);
+            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersJoined", new[] { users });
         }
 
         public override Task OnUsersLeft(UserDetails[] users)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersLeft", users);
+            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersLeft", new[] { users });
         }
 
         public async Task Send(string message)
