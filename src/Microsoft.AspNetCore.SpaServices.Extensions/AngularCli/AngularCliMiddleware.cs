@@ -102,34 +102,25 @@ namespace Microsoft.AspNetCore.SpaServices.AngularCli
         {
             // To determine when it's actually ready, try making HEAD requests to '/'. If it
             // produces any HTTP response (even if it's 404) then it's ready. If it rejects the
-            // connection then it's not ready.
-            const int MaxAttempts = 10;
-            const int SecondsBetweenAttempts = 1;
-
-            var attemptsMade = 0;
-            var client = new HttpClient();
-
-            while (true)
+            // connection then it's not ready. We keep trying forever because this is dev-mode
+            // only, and only a single startup attempt will be made, and there's a further level
+            // of timeouts enforced on a per-request basis.
+            using (var client = new HttpClient())
             {
-                try
+                while (true)
                 {
-                    // If we get any HTTP response, the CLI server is ready
-                    await client.SendAsync(
-                        new HttpRequestMessage(HttpMethod.Head, cliServerUri),
-                        new CancellationTokenSource(1000).Token);
-                    return;
-                }
-                catch (Exception ex)
-                {
-                    attemptsMade++;
-                    if (attemptsMade >= MaxAttempts)
+                    try
                     {
-                        throw new InvalidOperationException(
-                            "Timed out waiting for the @angular/cli server to accept HTTP requests. " +
-                            "See inner exception for details.", ex);
+                        // If we get any HTTP response, the CLI server is ready
+                        await client.SendAsync(
+                            new HttpRequestMessage(HttpMethod.Head, cliServerUri),
+                            new CancellationTokenSource(1000).Token);
+                        return;
                     }
-
-                    Thread.Sleep(SecondsBetweenAttempts * 1000);
+                    catch (Exception)
+                    {
+                        await Task.Delay(1000); // 1 second
+                    }
                 }
             }
         }
