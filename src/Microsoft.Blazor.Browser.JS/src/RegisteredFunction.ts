@@ -1,4 +1,7 @@
-﻿const registeredFunctions = {};
+﻿import { System_String } from './Platform/Platform';
+import { platform } from './Environment';
+
+const registeredFunctions: { [identifier: string]: Function } = {};
 
 // Code in Mono 'driver.c' looks for the registered functions here
 window['__blazorRegisteredFunctions'] = registeredFunctions;
@@ -10,3 +13,16 @@ export function registerFunction(identifier: string, implementation: Function) {
 
   registeredFunctions[identifier] = implementation;
 }
+
+// Handle the JSON-marshalled RegisteredFunction.Invoke calls
+registerFunction('__blazor_InvokeJson', (identifier: System_String, ...argsJson: System_String[]) => {
+  const identifierJsString = platform.toJavaScriptString(identifier);
+  if (!(registeredFunctions && registeredFunctions.hasOwnProperty(identifierJsString))) {
+    throw new Error(`Could not find registered function with name "${identifier}".`);
+  }
+  const funcInstance = registeredFunctions[identifierJsString];
+  const args = argsJson.map(json => JSON.parse(platform.toJavaScriptString(json)));
+  const result = funcInstance.apply(null, args);
+  const resultJson = JSON.stringify(result);
+  return platform.toDotNetString(resultJson);
+});

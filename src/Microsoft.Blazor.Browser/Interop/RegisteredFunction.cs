@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using WebAssembly;
 
 namespace Microsoft.Blazor.Browser.Interop
@@ -10,6 +11,24 @@ namespace Microsoft.Blazor.Browser.Interop
     /// </summary>
     public static class RegisteredFunction
     {
+        /// <summary>
+        /// Invokes the JavaScript function registered with the specified identifier.
+        /// Arguments and return values are marshalled via JSON serialization.
+        /// </summary>
+        /// <typeparam name="TRes">The .NET type corresponding to the function's return value type. This type must be JSON deserializable.</typeparam>
+        /// <param name="identifier">The identifier used when registering the target function.</param>
+        /// <param name="args">The arguments to pass, each of which must be JSON serializable.</param>
+        /// <returns>The result of the function invocation.</returns>
+        public static TRes Invoke<TRes>(string identifier, params object[] args)
+        {
+            // This is a low-perf convenience method that bypasses the need to deal with
+            // .NET memory and data structures on the JS side
+            var argsJson = args.Select(Json.Serialize);
+            var resultJson = InvokeUnmarshalled<string>("__blazor_InvokeJson",
+                argsJson.Prepend(identifier).ToArray());
+            return Json.Deserialize<TRes>(resultJson);
+        }
+
         /// <summary>
         /// Invokes the JavaScript function registered with the specified identifier.
         /// 
