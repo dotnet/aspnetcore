@@ -75,14 +75,20 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void OnHeartbeat(Action<object> action, object state)
         {
-            _heartbeatHandlers.Add((action, state));
+            lock (_heartbeatHandlers)
+            {
+                _heartbeatHandlers.Add((action, state));
+            }
         }
 
         public void TickHeartbeat()
         {
-            foreach (var (handler, state) in _heartbeatHandlers)
+            lock (_heartbeatHandlers)
             {
-                handler(state);
+                foreach (var (handler, state) in _heartbeatHandlers)
+                {
+                    handler(state);
+                }
             }
         }
 
