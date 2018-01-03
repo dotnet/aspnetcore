@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <!-- Currently, the MonoWASM BCL only supports netstandard2.0, not netcoreapp2.0,
+         so there will be an error if you reference certain types directly from this
+         project (e.g., StringReader). To fix this, the TFM here should be netstandard2.0,
+         but that is inconvenient during builds so for now it stays as this. The issue
+         will go away if a later MonoWASM BCL supports netcoreapp2.0 fully. -->
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
