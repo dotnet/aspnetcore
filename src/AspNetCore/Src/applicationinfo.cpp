@@ -198,7 +198,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
 {
     HRESULT hr = S_OK;
     BOOL    fLocked = FALSE;
-    STACK_STRU(struFileName, 256);
+    STACK_STRU(struFileName, 300); // >MAX_PATH
 
     if (g_fAspnetcoreRHLoadedError)
     {
@@ -296,7 +296,7 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
     // let's still load with full path to avoid security issue
     while (!fDone)
     {
-        DWORD dwReturnedSize = GetModuleFileName(NULL, struFilename->QueryStr(), dwSize);
+        DWORD dwReturnedSize = GetModuleFileNameW(g_hModule, struFilename->QueryStr(), dwSize);
         if (dwReturnedSize == 0)
         {
             hr = HRESULT_FROM_WIN32(GetLastError());

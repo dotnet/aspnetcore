@@ -25,13 +25,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact]
         public Task Https_HelloWorld_CLR_X64()
         {
             return HttpsHelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44396);
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact]
         public Task Https_HelloWorld_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable, port: 44394);
@@ -93,13 +93,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact]
         public Task Https_HelloWorld_NoClientCert_CoreCLR_X64_Portable()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.CoreClr, ApplicationType.Portable , port: 44397, sendClientCert: false);
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/498")]
+        [Fact]
         public Task Https_HelloWorld_NoClientCert_Clr_X64()
         {
             return HttpsHelloWorldCerts(RuntimeFlavor.Clr, ApplicationType.Portable, port: 44398, sendClientCert: false);
@@ -138,7 +138,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Https.config") : null,
                     SiteName = "HttpsTestSite", // This is configured in the Https.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
