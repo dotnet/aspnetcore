@@ -43,11 +43,9 @@
 
   <!-- Runs NuGetPackageVerifier on signed packages -->
   <Target Name="VerifySignedPackages" DependsOnTargets="GetPackagesToPublish">
-    <PropertyGroup>
-      <ExcludedRules Condition="'$(SignType)' != 'real'">AuthenticodeSigningRule</ExcludedRules>
-    </PropertyGroup>
-
     <ItemGroup>
+      <ExcludedRules Include="PowerShellScriptIsSignedRule" Condition="'$(SignType)' != 'real'" />
+      <ExcludedRules Include="AuthenticodeSigningRule" Condition="'$(SignType)' != 'real'" />
       <DirectoriesToScan Include="%(PackagesToPublish.RootDir)%(PackagesToPublish.Directory)" />
     </ItemGroup>
 
@@ -55,7 +53,7 @@
       ArtifactDirectory="%(DirectoriesToScan.Identity)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
       Condition="Exists('%(DirectoriesToScan.Identity)')"
-      ExcludedRules="$(ExcludedRules)" />
+      ExcludedRules="@(ExcludedRules)" />
   </Target>
 
   <!-- Ensures binaries in the aspnetcore shared framework are correctly authenticode signed -->
