@@ -42,12 +42,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected string TargetFramework { get; set; } = "netcoreapp2.0";
 
-        internal Task<MSBuildResult> DotnetMSBuild(string target, string args = null, bool suppressRestore = false, bool suppressTimeout = false)
+        internal Task<MSBuildResult> DotnetMSBuild(
+            string target,
+            string args = null,
+            bool suppressRestore = false,
+            bool suppressTimeout = false,
+            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
             var restoreArgument = suppressRestore ? "" : "/restore";
 
-            return MSBuildProcessManager.RunProcessAsync(Project, $"{restoreArgument} /t:{target} /p:Configuration={Configuration} {args}", timeout);
+            return MSBuildProcessManager.RunProcessAsync(
+                Project,
+                $"{restoreArgument} /t:{target} /p:Configuration={Configuration} {args}",
+                timeout,
+                msBuildProcessKind);
         }
 
         internal void ReplaceContent(string content, params string[] paths)

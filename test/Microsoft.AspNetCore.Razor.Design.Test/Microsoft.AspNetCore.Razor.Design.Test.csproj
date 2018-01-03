@@ -12,10 +12,13 @@
     <DefineConstants Condition="'$(PreserveWorkingDirectory)'=='true'">$(DefineConstants);PRESERVE_WORKING_DIRECTORY</DefineConstants>
     <!-- Copy references locally so that we can use them in the test. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <BuildVariablesGeneratedFile>$(MSBuildProjectDirectory)\obj\BuildVariables.generated.cs</BuildVariablesGeneratedFile>
+    <CompileDependsOn>EnsureBuildVariablesGeneratedFile;$(CompileDependsOn)</CompileDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(BuildVariablesGeneratedFile)" Condition="Exists('$(BuildVariablesGeneratedFile)')" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,5 +43,11 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
+
+  <Target Name="EnsureBuildVariablesGeneratedFile">
+    <Error
+      Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it."
+      Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
+  </Target>
   
 </Project>

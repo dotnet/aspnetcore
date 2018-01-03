@@ -7,4 +7,27 @@
       <AdditionalProperties>Configuration=$(Configuration)NoVSIX</AdditionalProperties>
     </Solutions>
   </ItemGroup>
+
+  <PropertyGroup>
+    <PrepareDependsOn>$(PrepareDependsOn);GenerateMSBuildLocationFile</PrepareDependsOn>
+    <RazorDesignTestProject>$(RepositoryRoot)test\Microsoft.AspNetCore.Razor.Design.Test\</RazorDesignTestProject>
+    <MSBuildLocationFileTemplate>$(RazorDesignTestProject)BuildVariables.cs.template</MSBuildLocationFileTemplate>
+    <MSBuildLocationFileOutput>$(RazorDesignTestProject)obj\BuildVariables.generated.cs</MSBuildLocationFileOutput>
+  </PropertyGroup>
+
+  <Target Name="GenerateMSBuildLocationFile"
+      DependsOnTargets="GetToolsets"
+      Inputs="$(MSBuildLocationFileTemplate);$(VisualStudioMSBuildx86Path)"
+      Outputs="$(MSBuildLocationFileOutput)">
+
+    <PropertyGroup>
+      <TemplateProperties>MSBuildLocation=$(VisualStudioMSBuildx86Path)</TemplateProperties>
+    </PropertyGroup>
+
+    <GenerateFileFromTemplate
+      TemplateFile="$(MSBuildLocationFileTemplate)"
+      Properties="$(TemplateProperties)"
+      OutputPath="$(MSBuildLocationFileOutput)" />
+
+  </Target>
 </Project>

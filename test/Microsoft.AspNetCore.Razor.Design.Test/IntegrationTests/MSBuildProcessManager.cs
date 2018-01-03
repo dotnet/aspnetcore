@@ -11,21 +11,41 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static class MSBuildProcessManager
     {
-        public static Task<MSBuildResult> RunProcessAsync(ProjectDirectory project, string arguments, TimeSpan? timeout = null)
+        public static Task<MSBuildResult> RunProcessAsync(
+            ProjectDirectory project,
+            string arguments,
+            TimeSpan? timeout = null,
+            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             timeout = timeout ?? TimeSpan.FromSeconds(30);
 
+            var processStartInfo = new ProcessStartInfo()
+            {
+                WorkingDirectory = project.DirectoryPath,
+                UseShellExecute = false,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+            };
+
+            if (msBuildProcessKind == MSBuildProcessKind.Desktop)
+            {
+                if (string.IsNullOrEmpty(BuildVariables.MSBuildPath))
+                {
+                    throw new ArgumentException("Unable to locate MSBuild.exe to run desktop tests.");
+                }
+
+                processStartInfo.FileName = BuildVariables.MSBuildPath;
+                processStartInfo.Arguments = arguments;
+            }
+            else
+            {
+                processStartInfo.FileName = "dotnet";
+                processStartInfo.Arguments = $"msbuild {arguments}";
+            }
+
             var process = new Process()
             {
-                StartInfo = new ProcessStartInfo()
-                {
-                    FileName = "dotnet",
-                    Arguments = "msbuild " + arguments,
-                    WorkingDirectory = project.DirectoryPath,
-                    UseShellExecute = false,
-                    RedirectStandardError = true,
-                    RedirectStandardOutput = true,
-                },
+                StartInfo = processStartInfo,
                 EnableRaisingEvents = true,
             };
 

@@ -3,6 +3,7 @@
 
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.PlatformAbstractions;
 using Xunit;
 
@@ -12,9 +13,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_SimpleMvc_CanBuildSuccessfully()
+        public Task Build_SimpleMvc_UsingDotnetMSBuild_CanBuildSuccessfully()
+            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InitializeTestProject("SimpleMvc")]
+        public Task Build_SimpleMvc_UsingDesktopMSBuild_CanBuildSuccessfully()
+            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
+
+        private async Task Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind msBuildProcessKind)
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true", msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
