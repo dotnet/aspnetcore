@@ -41,7 +41,7 @@ namespace Microsoft.Blazor.Build.Core.FileSystem
             var referenceNames = binFiles
                 .Where(file => !string.Equals(file.Name, assemblyNameWithExtension))
                 .Select(file => file.Name);
-            var referencesAttribute = string.Join(',', referenceNames.ToArray());
+            var referencesAttribute = string.Join(",", referenceNames.ToArray());
 
             return $"<script src=\"/_framework/blazor.js\"" +
                    $" main=\"{assemblyNameWithExtension}\"" +

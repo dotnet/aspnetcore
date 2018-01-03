@@ -44,12 +44,12 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
             {
                 _file = file;
 
-                if (!file.PhysicalPath.StartsWith('/'))
+                if (!file.PhysicalPath.StartsWith("/"))
                 {
                     throw new ArgumentException($"For mounted files, {nameof(file.PhysicalPath)} must start with '/'. Value supplied: '{file.PhysicalPath}'.");
                 }
 
-                if (!mountPoint.StartsWith('/'))
+                if (!mountPoint.StartsWith("/"))
                 {
                     throw new ArgumentException("The path must start with '/'", nameof(mountPoint));
                 }
@@ -60,7 +60,7 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
                 }
                 else
                 {
-                    if (mountPoint.EndsWith('/'))
+                    if (mountPoint.EndsWith("/"))
                     {
                         throw new ArgumentException("Non-root paths must not end with '/'", nameof(mountPoint));
                     }

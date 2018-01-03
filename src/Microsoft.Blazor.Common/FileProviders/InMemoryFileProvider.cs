@@ -18,7 +18,7 @@ namespace Microsoft.Blazor.Internal.Common.FileProviders
         private readonly IDictionary<string, InMemoryDirectoryContents> _directoriesByFullPath;
 
         // It's convenient to use forward slash, because it matches URL conventions
-        public const char DirectorySeparatorChar = '/';
+        public const string DirectorySeparatorChar = "/";
 
         public InMemoryFileProvider(IEnumerable<(string, byte[])> contents) : this(
             contents.Select(pair => InMemoryFileInfo
