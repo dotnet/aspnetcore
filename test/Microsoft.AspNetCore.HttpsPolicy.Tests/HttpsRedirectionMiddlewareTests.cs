@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
 
             var response = await client.SendAsync(request);
 
-            Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+            Assert.Equal(HttpStatusCode.RedirectKeepVerb, response.StatusCode);
             Assert.Equal("https://localhost/", response.Headers.Location.ToString());
         }
 

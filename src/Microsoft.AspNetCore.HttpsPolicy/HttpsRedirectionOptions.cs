@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.HttpsPolicy
     public class HttpsRedirectionOptions
     {
         /// <summary>
-        /// The status code to redirect the response to.
+        /// The status code used for the redirect response. The default is 307.
         /// </summary>
-        public int RedirectStatusCode { get; set; } = StatusCodes.Status302Found;
+        public int RedirectStatusCode { get; set; } = StatusCodes.Status307TemporaryRedirect;
 
         /// <summary>
         /// The HTTPS port to be added to the redirected URL.
