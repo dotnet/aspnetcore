@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public class UrlRewriteRuleBuilder
     {
-        private readonly TimeSpan RegexTimeout = TimeSpan.FromMilliseconds(1);
+        private readonly TimeSpan _regexTimeout = TimeSpan.FromSeconds(1);
 
         public string Name { get; set; }
         public bool Enabled { get; set; }
@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     {
                         if (ignoreCase)
                         {
-                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, RegexTimeout);
+                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled | RegexOptions.IgnoreCase, _regexTimeout);
                             _initialMatch = new RegexMatch(regex, negate);
                         }
                         else
                         {
-                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled, RegexTimeout);
+                            var regex = new Regex(input, RegexOptions.CultureInvariant | RegexOptions.Compiled, _regexTimeout);
                             _initialMatch = new RegexMatch(regex, negate);
                         }
                         break;
