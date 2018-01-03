@@ -50,6 +50,10 @@ namespace Microsoft.AspNetCore.Razor.TagHelperTool
 
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
+
+                // TagHelperDescriptorProviders (actually do tag helper discovery)
+                b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider());
+                b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
             });
 
             var feature = engine.Features.OfType<ITagHelperFeature>().Single();
