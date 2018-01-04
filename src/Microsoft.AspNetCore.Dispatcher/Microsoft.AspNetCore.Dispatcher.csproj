@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>API for dispatching.</Description>
+    <Description>ASP.NET Core middleware for dispatching requests to endpoints and use addresses to generate URLs.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <DefineConstants>$(DefineConstants);DISPATCHER</DefineConstants>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;routing</PackageTags>
+    <PackageTags>aspnetcore;routing;dispatcher</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

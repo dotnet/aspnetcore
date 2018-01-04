@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>Abstractions for dispatching.</Description>
+    <Description>ASP.NET Core abstractions for dispatching requests to endpoints and use addresses to generate URLs.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;routing</PackageTags>
+    <PackageTags>aspnetcore;routing;dispatcher</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
