@@ -25,20 +25,21 @@
     <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26016-05</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26102-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview1-27965</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview1-26016-05</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-e171215-1</SystemIOPipelinesPackageVersion>
-    <SystemIOPipelinesTestingPackageVersion>0.1.0-e171215-1</SystemIOPipelinesTestingPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview1-26016-05</SystemMemoryPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26016-05</SystemNumericsVectorsPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26016-05</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26016-05</SystemSecurityCryptographyCngPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e171215-1</SystemTextEncodingsWebUtf8PackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-25707-02</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview1-26102-01</SystemBuffersPackageVersion>
+    <SystemBuffersPrimitivesPackageVersion>0.1.0-e180104-2</SystemBuffersPrimitivesPackageVersion>
+    <SystemIOPipelinesPackageVersion>0.1.0-e180104-2</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesTestingPackageVersion>0.1.0-e180104-2</SystemIOPipelinesTestingPackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview1-26102-01</SystemMemoryPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26102-01</SystemNumericsVectorsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26102-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26102-01</SystemSecurityCryptographyCngPackageVersion>
+    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e180104-2</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>

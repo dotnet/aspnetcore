@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
-        private ReadableBuffer _buffer;
+        private ReadOnlyBuffer _buffer;
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
         public void PlaintextTechEmpower()
@@ -46,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void InsertData(byte[] data)
         {
-            _buffer = ReadableBuffer.Create(data);
+            _buffer = new ReadOnlyBuffer(data);
         }
 
         private void ParseData()

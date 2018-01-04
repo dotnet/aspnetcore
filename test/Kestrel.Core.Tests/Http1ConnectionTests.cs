@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Sequences;
 using System.IO;
 using System.IO.Pipelines;
 using System.Linq;
@@ -33,8 +34,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
         private readonly MemoryPool _pipelineFactory;
-        private ReadCursor _consumed;
-        private ReadCursor _examined;
+        private Position _consumed;
+        private Position _examined;
         private Mock<ITimeoutControl> _timeoutControl;
 
         public Http1ConnectionTests()

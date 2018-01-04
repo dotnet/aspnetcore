@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvThread : IScheduler
+    public class LibuvThread : Scheduler
     {
         // maximum times the work queues swapped and are processed in a single pass
         // as completing a task may immediately have write data to put on the network
@@ -390,7 +390,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
-        public void Schedule(Action<object> action, object state)
+        public override void Schedule(Action action)
+        {
+            Post(state => state(), action);
+        }
+
+        public override void Schedule(Action<object> action, object state)
         {
             Post(action, state);
         }

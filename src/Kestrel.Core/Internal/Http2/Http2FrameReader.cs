@@ -1,13 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
+using System.Collections.Sequences;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public static class Http2FrameReader
     {
-        public static bool ReadFrame(ReadableBuffer readableBuffer, Http2Frame frame, out ReadCursor consumed, out ReadCursor examined)
+        public static bool ReadFrame(ReadOnlyBuffer readableBuffer, Http2Frame frame, out Position consumed, out Position examined)
         {
             consumed = readableBuffer.Start;
             examined = readableBuffer.End;

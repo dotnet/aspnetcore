@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public ListenerContext ListenerContext { get; set; }
 
         public override MemoryPool MemoryPool => ListenerContext.Thread.MemoryPool;
-        public override IScheduler InputWriterScheduler => ListenerContext.Thread;
-        public override IScheduler OutputReaderScheduler => ListenerContext.Thread;
+        public override Scheduler InputWriterScheduler => ListenerContext.Thread;
+        public override Scheduler OutputReaderScheduler => ListenerContext.Thread;
     }
 }

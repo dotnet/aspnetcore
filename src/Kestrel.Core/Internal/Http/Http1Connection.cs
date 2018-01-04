@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Sequences;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web.Utf8;
+using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -66,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Input.CancelPendingRead();
         }
 
-        public void ParseRequest(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        public void ParseRequest(ReadOnlyBuffer buffer, out Position consumed, out Position examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public bool TakeStartLine(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        public bool TakeStartLine(ReadOnlyBuffer buffer, out Position consumed, out Position examined)
         {
             var overLength = false;
             if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
@@ -122,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        public bool TakeMessageHeaders(ReadOnlyBuffer buffer, out Position consumed, out Position examined)
         {
             // Make sure the buffer is limited
             bool overLength = false;
@@ -424,7 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
         }
 
-        protected override bool BeginRead(out ReadableBufferAwaitable awaitable)
+        protected override bool BeginRead(out ValueAwaiter<ReadResult> awaitable)
         {
             awaitable = Input.ReadAsync();
             return true;

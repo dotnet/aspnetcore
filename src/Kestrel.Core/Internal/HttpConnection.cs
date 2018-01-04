@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         (
             pool: MemoryPool,
             readerScheduler: _context.ServiceContext.ThreadPool,
-            writerScheduler: InlineScheduler.Default,
+            writerScheduler: Scheduler.Inline,
             maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
         );
@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
         (
             pool: MemoryPool,
-            readerScheduler: InlineScheduler.Default,
-            writerScheduler: InlineScheduler.Default,
+            readerScheduler: Scheduler.Inline,
+            writerScheduler: Scheduler.Inline,
             maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
             maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
         );

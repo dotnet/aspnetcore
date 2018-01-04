@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         public IKestrelTrace Log { get; set; }
 
-        public IThreadPool ThreadPool { get; set; }
+        public KestrelThreadPool ThreadPool { get; set; }
 
         public IHttpParser<Http1ParsingHandler> HttpParser { get; set; }
 

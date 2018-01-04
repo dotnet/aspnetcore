@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             public IPipeConnection Transport { get; set; }
             public IPipeConnection Application { get; set; }
 
-            public IScheduler InputWriterScheduler => TaskRunScheduler.Default;
+            public Scheduler InputWriterScheduler => Scheduler.TaskRun;
 
-            public IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
+            public Scheduler OutputReaderScheduler => Scheduler.TaskRun;
 
             public string ConnectionId { get; set; }
         }

@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
-using System.IO.Pipelines.Testing;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             string expectedVersion)
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             Assert.True(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ParseRequestLineReturnsFalseWhenGivenIncompleteRequestLines(string requestLine)
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             Assert.False(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void ParseRequestLineDoesNotConsumeIncompleteRequestLine(string requestLine)
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             Assert.False(parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Returns(true);
 
             var parser = CreateParser(mockTrace.Object);
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Returns(true);
 
             var parser = CreateParser(mockTrace.Object);
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Returns(true);
 
             var parser = CreateParser(mockTrace.Object);
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(requestLine));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
 
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(rawHeaders));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
             Assert.False(parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes));
         }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
 
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(rawHeaders));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
             parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes);
 
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
 
             const string headerLine = "Header: value\r\n\r";
-            var buffer1 = ReadableBuffer.Create(Encoding.ASCII.GetBytes(headerLine));
+            var buffer1 = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(headerLine));
             var requestHandler = new RequestHandler();
             Assert.False(parser.ParseHeaders(requestHandler, buffer1, out var consumed, out var examined, out var consumedBytes));
 
@@ -302,7 +302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(buffer1.End, examined);
             Assert.Equal(headerLine.Length - 1, consumedBytes);
 
-            var buffer2 = ReadableBuffer.Create(Encoding.ASCII.GetBytes("\r\n"));
+            var buffer2 = new ReadOnlyBuffer(Encoding.ASCII.GetBytes("\r\n"));
             Assert.True(parser.ParseHeaders(requestHandler, buffer2, out consumed, out examined, out consumedBytes));
 
             Assert.Equal(buffer2.End, consumed);
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Returns(true);
 
             var parser = CreateParser(mockTrace.Object);
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(rawHeaders));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var parser = CreateParser(mockTrace.Object);
 
             // Invalid request line
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("GET % HTTP/1.1\r\n"));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes("GET % HTTP/1.1\r\n"));
             var requestHandler = new RequestHandler();
 
             var exception = Assert.Throws<BadHttpRequestException>(() =>
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(StatusCodes.Status400BadRequest, (exception as BadHttpRequestException).StatusCode);
 
             // Unrecognized HTTP version
-            buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
+            buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes("GET / HTTP/1.2\r\n"));
 
             exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined));
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(StatusCodes.Status505HttpVersionNotsupported, (exception as BadHttpRequestException).StatusCode);
 
             // Invalid request header
-            buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
+            buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes("Header: value\n\r\n"));
 
             exception = Assert.Throws<BadHttpRequestException>(() =>
                 parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes));
@@ -369,27 +369,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
-        [Fact]
-        public void ParseRequestLineSplitBufferWithoutNewLineDoesNotUpdateConsumed()
-        {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = BufferUtilities.CreateBuffer("GET ", "/");
-
-            var requestHandler = new RequestHandler();
-            var result = parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
-
-            Assert.False(result);
-            Assert.Equal(buffer.Start, consumed);
-            Assert.Equal(buffer.End, examined);
-        }
-
         private void VerifyHeader(
             string headerName,
             string rawHeaderValue,
             string expectedHeaderValue)
         {
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes($"{headerName}:{rawHeaderValue}\r\n"));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes($"{headerName}:{rawHeaderValue}\r\n"));
 
             var requestHandler = new RequestHandler();
             parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes);
@@ -407,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(expectedHeaderNames.Count() == expectedHeaderValues.Count(), $"{nameof(expectedHeaderNames)} and {nameof(expectedHeaderValues)} sizes must match");
 
             var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = ReadableBuffer.Create(Encoding.ASCII.GetBytes(rawHeaders));
+            var buffer = new ReadOnlyBuffer(Encoding.ASCII.GetBytes(rawHeaders));
 
             var requestHandler = new RequestHandler();
             parser.ParseHeaders(requestHandler, buffer, out var consumed, out var examined, out var consumedBytes);

@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FlushAsyncAwaited(awaitable, bytesWritten, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, long count, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(ValueAwaiter<FlushResult> awaitable, long count, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters

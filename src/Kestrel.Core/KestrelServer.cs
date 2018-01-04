@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
             // TODO: This logic will eventually move into the IConnectionHandler<T> and off
             // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
-            IThreadPool threadPool = null;
+            KestrelThreadPool threadPool = null;
             switch (serverOptions.ApplicationSchedulingMode)
             {
                 case SchedulingMode.Default:

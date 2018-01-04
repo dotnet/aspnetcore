@@ -7,9 +7,9 @@ using System.Threading;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface IThreadPool : IScheduler
+    public abstract class KestrelThreadPool: Scheduler
     {
-        void Run(Action action);
-        void UnsafeRun(WaitCallback action, object state);
+        public abstract void Run(Action action);
+        public abstract void UnsafeRun(WaitCallback action, object state);
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static byte[] _numericBytesScratch;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Span<byte> ToSpan(this ReadableBuffer buffer)
+        public static ReadOnlySpan<byte> ToSpan(this ReadOnlyBuffer buffer)
         {
             if (buffer.IsSingleSpan)
             {
@@ -29,6 +30,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             ArraySegment<byte> result;
             if (!buffer.TryGetArray(out result))
+            {
+                throw new InvalidOperationException("Buffer backed by array was expected");
+            }
+            return result;
+        }
+
+        public static ArraySegment<byte> GetArray(this ReadOnlyMemory<byte> memory)
+        {
+            if (!MemoryMarshal.TryGetArray(memory, out var result))
             {
                 throw new InvalidOperationException("Buffer backed by array was expected");
             }

@@ -117,11 +117,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContext = new TestLibuvTransportContext() { ConnectionHandler = mockConnectionHandler };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
-            var mockScheduler = new Mock<IScheduler>();
+            var mockScheduler = new Mock<Scheduler>();
             Action backPressure = null;
-            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action<object>>(), It.IsAny<object>())).Callback<Action<object>, object>((a, o) =>
+            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action>())).Callback<Action>(a =>
             {
-                backPressure = () => a(o);
+                backPressure = a;
             });
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(

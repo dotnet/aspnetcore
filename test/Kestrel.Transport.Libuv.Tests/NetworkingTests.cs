@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
@@ -161,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                             {
                                 var req = new UvWriteReq(_logger);
                                 req.DangerousInit(loop);
-                                var block = ReadableBuffer.Create(new byte[] { 65, 66, 67, 68, 69 });
+                                var block = new ReadOnlyBuffer(new byte[] { 65, 66, 67, 68, 69 });
 
                                 await req.WriteAsync(
                                     tcp2,

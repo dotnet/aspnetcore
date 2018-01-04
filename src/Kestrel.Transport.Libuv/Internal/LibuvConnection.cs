@@ -6,6 +6,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _bufferHandle.Dispose();
         }
 
-        private async Task ApplyBackpressureAsync(WritableBufferAwaitable flushTask)
+        private async Task ApplyBackpressureAsync(ValueAwaiter<FlushResult> flushTask)
         {
             Log.ConnectionPause(ConnectionId);
             _socket.ReadStop();

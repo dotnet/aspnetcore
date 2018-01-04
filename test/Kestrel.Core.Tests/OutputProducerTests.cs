@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pipeOptions = new PipeOptions
             (
                 pool: _memoryPool,
-                readerScheduler: Mock.Of<IScheduler>()
+                readerScheduler: Mock.Of<Scheduler>()
             );
 
             using (var socketOutput = CreateOutputProducer(pipeOptions))

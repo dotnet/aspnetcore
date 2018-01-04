@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
         }
 
-        protected virtual bool BeginRead(out ReadableBufferAwaitable awaitable)
+        protected virtual bool BeginRead(out ValueAwaiter<ReadResult> awaitable)
         {
             awaitable = default;
             return false;
@@ -1302,7 +1302,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             (
                 pool: _context.MemoryPool,
                 readerScheduler: ServiceContext.ThreadPool,
-                writerScheduler: InlineScheduler.Default,
+                writerScheduler: Scheduler.Inline,
                 maximumSizeHigh: 1,
                 maximumSizeLow: 1
             ));

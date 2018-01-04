@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxResponseBufferSize = maxResponseBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var mockScheduler = Mock.Of<IScheduler>();
+            var mockScheduler = Mock.Of<Scheduler>();
             var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, new MemoryPool(), readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.MaximumSizeLow);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var mockScheduler = Mock.Of<IScheduler>();
+            var mockScheduler = Mock.Of<Scheduler>();
             var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, new MemoryPool(), writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.MaximumSizeLow);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeHigh);
             Assert.Same(serviceContext.ThreadPool, connectionLifetime.AdaptedInputPipeOptions.ReaderScheduler);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
+            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
         }
 
         [Theory]
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeHigh);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedOutputPipeOptions.ReaderScheduler);
-            Assert.Same(InlineScheduler.Default, connectionLifetime.AdaptedOutputPipeOptions.WriterScheduler);
+            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.ReaderScheduler);
+            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.WriterScheduler);
         }
     }
 }

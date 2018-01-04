@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.Protocols.Features
 
         IPipeConnection Application { get; set; }
 
-        IScheduler InputWriterScheduler { get; }
+        Scheduler InputWriterScheduler { get; }
 
-        IScheduler OutputReaderScheduler { get; }
+        Scheduler OutputReaderScheduler { get; }
     }
 }

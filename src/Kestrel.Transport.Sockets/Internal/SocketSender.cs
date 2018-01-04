@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }
 
-        public SocketAwaitable SendAsync(ReadableBuffer buffers)
+        public SocketAwaitable SendAsync(ReadOnlyBuffer buffers)
         {
             if (buffers.IsSingleSpan)
             {
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             return _awaitable;
         }
 
-        private SocketAwaitable SendAsync(Memory<byte> buffer)
+        private SocketAwaitable SendAsync(ReadOnlyMemory<byte> memory)
         {
             // The BufferList getter is much less expensive then the setter.
             if (_eventArgs.BufferList != null)
@@ -59,9 +61,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
 
 #if NETCOREAPP2_1
-            _eventArgs.SetBuffer(buffer);
+            _eventArgs.SetBuffer(MemoryMarshal.AsMemory(memory));
 #else
-            var segment = buffer.GetArray();
+            var segment = memory.GetArray();
 
             _eventArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
 #endif
@@ -73,7 +75,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             return _awaitable;
         }
 
-        private List<ArraySegment<byte>> GetBufferList(ReadableBuffer buffer)
+        private List<ArraySegment<byte>> GetBufferList(ReadOnlyBuffer buffer)
         {
             Debug.Assert(!buffer.IsEmpty);
             Debug.Assert(!buffer.IsSingleSpan);

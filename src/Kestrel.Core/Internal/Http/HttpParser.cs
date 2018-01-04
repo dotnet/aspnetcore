@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections.Sequences;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private const byte ByteQuestionMark = (byte)'?';
         private const byte BytePercentage = (byte)'%';
 
-        public unsafe bool ParseRequestLine(TRequestHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined)
+        public unsafe bool ParseRequestLine(TRequestHandler handler, ReadOnlyBuffer buffer, out Position consumed, out Position examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -186,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             handler.OnStartLine(method, httpVersion, targetBuffer, pathBuffer, query, customMethod, pathEncoded);
         }
 
-        public unsafe bool ParseHeaders(TRequestHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
+        public unsafe bool ParseHeaders(TRequestHandler handler, ReadOnlyBuffer buffer, out Position consumed, out Position examined, out int consumedBytes)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -194,8 +196,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var bufferEnd = buffer.End;
 
-            var reader = new ReadableBufferReader(buffer);
-            var start = default(ReadableBufferReader);
+            var reader = BufferReader.Create(buffer);
+            var start = default(BufferReader<ReadOnlyBuffer>);
             var done = false;
 
             try
@@ -276,10 +278,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             }
                             else
                             {
-                                var current = reader.Cursor;
+                                var current = reader.Position;
 
                                 // Split buffers
-                                if (ReadCursorOperations.Seek(current, bufferEnd, out var lineEnd, ByteLF) == -1)
+                                if (ReadOnlyBuffer.Seek(current, bufferEnd, out var lineEnd, ByteLF) == -1)
                                 {
                                     // Not there
                                     return false;
@@ -312,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             finally
             {
-                consumed = reader.Cursor;
+                consumed = reader.Position;
                 consumedBytes = reader.ConsumedBytes;
 
                 if (done)
@@ -412,10 +414,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static bool TryGetNewLine(ref ReadableBuffer buffer, out ReadCursor found)
+        private static bool TryGetNewLine(ref ReadOnlyBuffer buffer, out Position found)
         {
             var start = buffer.Start;
-            if (ReadCursorOperations.Seek(start, buffer.End, out found, ByteLF) != -1)
+            if (ReadOnlyBuffer.Seek(start, buffer.End, out found, ByteLF) != -1)
             {
                 // Move 1 byte past the \n
                 found = buffer.Move(found, 1);

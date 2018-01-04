@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 await writeRequest.WriteAsync(
                     serverConnectionPipe,
-                    ReadableBuffer.Create(new byte[] { 1, 2, 3, 4 }));
+                    new ReadOnlyBuffer(new byte[] { 1, 2, 3, 4 }));
 
                 writeRequest.Dispose();
                 serverConnectionPipe.Dispose();
