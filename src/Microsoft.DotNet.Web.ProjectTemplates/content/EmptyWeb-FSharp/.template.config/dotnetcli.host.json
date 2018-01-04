@@ -13,6 +13,16 @@
       "longName": "no-restore",
       "shortName": ""
     },
+    "HttpPort": {
+      "isHidden": true
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "ExcludeLaunchSettings": {
+      "longName": "exclude-launch-settings",
+      "shortName": ""
+    },
     "RuntimeFrameworkVersion": {
       "longName": "runtime-framework-version",
       "shortName": "fv",

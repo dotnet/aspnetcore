@@ -27,16 +27,34 @@
           "exclude": [
             "app.config"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
         }
       ]
     }
   ],
   "symbols": {
+    "RuntimeFrameworkVersion": {
+      "type": "parameter",
+      "replaces": "2.1.0-preview2-25624-02",
+      "datatype": "string",
+      "defaultValue": "2.1.0-preview2-25624-02"
+    },
     "ExcludeLaunchSettings": {
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
       "description": "Whether to exclude launchSettings.json from the generated template."
+    },
+    "UseBrowserLink": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to include BrowserLink in the project"
     },
     "HttpPort": {
       "type": "parameter",
@@ -77,12 +95,6 @@
         "fallbackVariableName": "HttpsPortGenerated"
       },
       "replaces": "44300"
-    },
-    "RuntimeFrameworkVersion": {
-      "type": "parameter",
-      "replaces": "2.1.0-preview2-25624-02",
-      "datatype": "string",
-      "defaultValue": "2.1.0-preview2-25624-02"
     },
     "TargetFrameworkOverride": {
       "type": "parameter",

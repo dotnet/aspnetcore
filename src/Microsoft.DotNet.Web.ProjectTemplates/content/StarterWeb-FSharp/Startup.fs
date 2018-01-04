@@ -1,14 +1,10 @@
 ﻿namespace Company.WebApplication1
 
-open System
-open System.Collections.Generic
-open System.Linq
-open System.Threading.Tasks
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
+open Microsoft.AspNetCore.HttpsPolicy
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
-
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -27,7 +23,9 @@ type Startup private () =
             app.UseDeveloperExceptionPage() |> ignore
         else
             app.UseExceptionHandler("/Home/Error") |> ignore
+            app.UseHsts() |> ignore
 
+        app.UseHttpsRedirection() |> ignore
         app.UseStaticFiles() |> ignore
 
         app.UseMvc(fun routes ->

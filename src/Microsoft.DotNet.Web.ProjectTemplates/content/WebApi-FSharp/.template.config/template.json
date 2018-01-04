@@ -26,6 +26,12 @@
           "exclude": [
             "app.config"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
         }
       ]
     }

@@ -26,6 +26,12 @@
           "exclude": [
             "app.config"
           ]
+        },
+        {
+          "condition": "(ExcludeLaunchSettings)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
         }
       ]
     }
@@ -36,6 +42,12 @@
       "replaces": "2.1.0-preview2-25624-02",
       "datatype": "string",
       "defaultValue": "2.1.0-preview2-25624-02"
+    },
+    "ExcludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to exclude launchSettings.json from the generated template."
     },
     "TargetFrameworkOverride": {
       "type": "parameter",
