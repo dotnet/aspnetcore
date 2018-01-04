@@ -1,6 +1,10 @@
 ﻿<Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+  </PropertyGroup>
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestCommon\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\*.csproj" />
