@@ -1,4 +1,4 @@
-﻿import { MethodHandle, System_Object, System_String, Platform } from '../Platform';
+﻿import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getAssemblyNameFromUrl } from '../DotNet';
 
 let assembly_load: (assemblyName: string) => number;
@@ -93,7 +93,25 @@ export const monoPlatform: Platform = {
 
   toDotNetString: function toDotNetString(jsString: string): System_String {
     return mono_string(jsString);
-  }
+  },
+
+  getArrayLength: function getArrayLength(array: System_Array): number {
+    return Module.getValue(getArrayDataPointer(array), 'i32');
+  },
+
+  getArrayEntryPtr: function getArrayEntryPtr(array: System_Array, index: number, itemSize: number): Pointer {
+    // First byte is array length, followed by entries
+    const address = getArrayDataPointer(array) + 4 + index * itemSize;
+    return address as any as Pointer;
+  },
+
+  readHeapInt32: function readHeapInt32(address: Pointer, offset?: number): number {
+    return Module.getValue((address as any as number) + (offset || 0), 'i32');
+  },
+
+  readHeapObject: function readHeapObject(address: Pointer, offset?: number): System_Object {
+    return monoPlatform.readHeapInt32(address, offset) as any as System_Object;
+  },
 };
 
 function addScriptTagsToDocument() {
@@ -161,4 +179,8 @@ function asyncLoad(url, onload, onerror) {
   };
   xhr.onerror = onerror;
   xhr.send(null);
+}
+
+function getArrayDataPointer(array: System_Array): number {
+  return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }

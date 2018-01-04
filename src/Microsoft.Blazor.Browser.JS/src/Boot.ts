@@ -1,5 +1,6 @@
 ﻿import { platform } from './Environment';
 import { getAssemblyNameFromUrl } from './Platform/DotNet';
+import './Rendering/Renderer';
 
 async function boot() {
   // Read startup config from the <script> element that's importing this file

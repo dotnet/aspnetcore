@@ -13,6 +13,7 @@
   <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
   </ItemGroup>
 
 </Project>
