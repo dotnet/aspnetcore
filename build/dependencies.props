@@ -120,10 +120,10 @@
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview1-26102-01</SystemBuffersPackageVersion>
-    <SystemBuffersPrimitivesPackageVersion>0.1.0-e171215-1</SystemBuffersPrimitivesPackageVersion>
+    <SystemBuffersPrimitivesPackageVersion>0.1.0-e180104-2</SystemBuffersPrimitivesPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview1-26102-01</SystemCodeDomPackageVersion>
     <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-26102-01</SystemCollectionsImmutablePackageVersion>
-    <SystemCollectionsSequencesPackageVersion>0.1.0-e171215-1</SystemCollectionsSequencesPackageVersion>
+    <SystemCollectionsSequencesPackageVersion>0.1.0-e180104-2</SystemCollectionsSequencesPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview1-26102-01</SystemComponentModelAnnotationsPackageVersion>
     <SystemCompositionAttributedModelPackageVersion>1.2.0-preview1-26102-01</SystemCompositionAttributedModelPackageVersion>
     <SystemCompositionConventionPackageVersion>1.2.0-preview1-26102-01</SystemCompositionConventionPackageVersion>
@@ -137,10 +137,10 @@
     <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
     <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview1-26102-01</SystemIOFileSystemAccessControlPackageVersion>
     <SystemIOPackagingPackageVersion>4.5.0-preview1-26102-01</SystemIOPackagingPackageVersion>
-    <SystemIOPipelinesExtensionsPackageVersion>0.1.0-e171215-1</SystemIOPipelinesExtensionsPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-e171215-1</SystemIOPipelinesPackageVersion>
-    <SystemIOPipelinesTestingPackageVersion>0.1.0-e171215-1</SystemIOPipelinesTestingPackageVersion>
-    <SystemIOPipelinesTextPrimitivesPackageVersion>0.1.0-e171215-1</SystemIOPipelinesTextPrimitivesPackageVersion>
+    <SystemIOPipelinesExtensionsPackageVersion>0.1.0-e180104-2</SystemIOPipelinesExtensionsPackageVersion>
+    <SystemIOPipelinesPackageVersion>0.1.0-e180104-2</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesTestingPackageVersion>0.1.0-e180104-2</SystemIOPipelinesTestingPackageVersion>
+    <SystemIOPipelinesTextPrimitivesPackageVersion>0.1.0-e180104-2</SystemIOPipelinesTextPrimitivesPackageVersion>
     <SystemIOPipesAccessControlPackageVersion>4.5.0-preview1-26102-01</SystemIOPipesAccessControlPackageVersion>
     <SystemIOPortsPackageVersion>4.5.0-preview1-26102-01</SystemIOPortsPackageVersion>
     <SystemJsonPackageVersion>4.5.0-preview1-26102-01</SystemJsonPackageVersion>
@@ -166,10 +166,10 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview1-26102-01</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>4.5.0-preview1-26102-01</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.5.0-preview1-26102-01</SystemTextEncodingsWebPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e171215-1</SystemTextEncodingsWebUtf8PackageVersion>
-    <SystemTextFormattingPackageVersion>0.1.0-e171215-1</SystemTextFormattingPackageVersion>
-    <SystemTextPrimitivesPackageVersion>0.1.0-e171215-1</SystemTextPrimitivesPackageVersion>
-    <SystemTextUtf8StringPackageVersion>0.1.0-e171215-1</SystemTextUtf8StringPackageVersion>
+    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e180104-2</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemTextFormattingPackageVersion>0.1.0-e180104-2</SystemTextFormattingPackageVersion>
+    <SystemTextPrimitivesPackageVersion>0.1.0-e180104-2</SystemTextPrimitivesPackageVersion>
+    <SystemTextUtf8StringPackageVersion>0.1.0-e180104-2</SystemTextUtf8StringPackageVersion>
     <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-26102-01</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingChannelsPackageVersion>
     <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26102-01</SystemThreadingTasksDataflowPackageVersion>
