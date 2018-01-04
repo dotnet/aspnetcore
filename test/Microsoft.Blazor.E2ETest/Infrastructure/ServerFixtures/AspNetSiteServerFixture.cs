@@ -23,9 +23,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
                     $"No value was provided for {nameof(BuildWebHostMethod)}");
             }
 
-            var sampleSitePath = Path.Combine(
-                FindSolutionDir(),
-                "samples",
+            var sampleSitePath = FindSampleOrTestSitePath(
                 BuildWebHostMethod.Method.DeclaringType.Assembly.GetName().Name);
 
             return BuildWebHostMethod(new[]

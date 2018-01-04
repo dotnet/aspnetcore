@@ -11,9 +11,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
     {
         protected override IWebHost CreateWebHost()
         {
-            var sampleSitePath = Path.Combine(
-                FindSolutionDir(),
-                "samples",
+            var sampleSitePath = FindSampleOrTestSitePath(
                 typeof(TProgram).Assembly.GetName().Name);
 
             return DevHostServerProgram.BuildWebHost(new string[]

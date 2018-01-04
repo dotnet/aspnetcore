@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
     <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj" />
+    <ProjectReference Include="..\testapps\BasicTestApp\BasicTestApp.csproj" />
   </ItemGroup>
 
 </Project>

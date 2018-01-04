@@ -23,10 +23,7 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
                 throw new InvalidOperationException($"No value was provided for {nameof(SampleSiteName)}");
             }
 
-            var sampleSitePath = Path.Combine(
-                    FindSolutionDir(),
-                    "samples",
-                    SampleSiteName);
+            var sampleSitePath = FindSampleOrTestSitePath(SampleSiteName);
 
             return new WebHostBuilder()
                 .UseKestrel()

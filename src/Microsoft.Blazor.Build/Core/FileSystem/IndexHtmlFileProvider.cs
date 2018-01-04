@@ -29,10 +29,21 @@ namespace Microsoft.Blazor.Build.Core.FileSystem
 
         private static string GetIndexHtmlContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
         {
-            // TODO: Consider parsing the HTML properly so for example we don't insert into
-            // the wrong place if there was also '</body>' in a JavaScript string literal
+            // TODO: Instead of inserting the script as the first element in <body>,
+            // consider either:
+            // [1] Inserting it just before the first <script> in the <body>, so that
+            //     developers can still put other <script> elems after (and therefore
+            //     reference Blazor JS APIs from them) but we don't block the page
+            //     rendering while fetching that script. Note that adding async/defer
+            //     alone isn't enough because that doesn't help older browsers that
+            //     don't suppor them.
+            // [2] Or possibly better, don't insert the <script> magically at all.
+            //     Instead, just insert a block of configuration data at the top of
+            //     <body> (e.g., <script type='blazor-config'>{ ...json... }</script>)
+            //     and then let the developer manually place the tag that loads blazor.js
+            //     wherever they want (adding their own async/defer if they want).
             return htmlTemplate
-                .Replace("</body>", CreateBootMarkup(assemblyName, binFiles) + "\n</body>");
+                .Replace("<body>", "<body>\n" + CreateBootMarkup(assemblyName, binFiles));
         }
 
         private static string CreateBootMarkup(string assemblyName, IEnumerable<IFileInfo> binFiles)

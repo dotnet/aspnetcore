@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
@@ -28,6 +29,19 @@ namespace Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures
             return FindClosestDirectoryContaining(
                 "Blazor.sln",
                 Path.GetDirectoryName(typeof(ServerFixture).Assembly.Location));
+        }
+
+        protected static string FindSampleOrTestSitePath(string projectName)
+        {
+            var solutionDir = FindSolutionDir();
+            var possibleLocations = new[]
+            {
+                Path.Combine(solutionDir, "samples", projectName),
+                Path.Combine(solutionDir, "test", "testapps", projectName)
+            };
+
+            return possibleLocations.FirstOrDefault(Directory.Exists)
+                ?? throw new ArgumentException($"Cannot find a sample or test site with name '{projectName}'.");
         }
 
         private static string FindClosestDirectoryContaining(

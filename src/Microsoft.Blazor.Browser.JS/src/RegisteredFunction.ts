@@ -18,11 +18,15 @@ export function registerFunction(identifier: string, implementation: Function) {
 registerFunction('__blazor_InvokeJson', (identifier: System_String, ...argsJson: System_String[]) => {
   const identifierJsString = platform.toJavaScriptString(identifier);
   if (!(registeredFunctions && registeredFunctions.hasOwnProperty(identifierJsString))) {
-    throw new Error(`Could not find registered function with name "${identifier}".`);
+    throw new Error(`Could not find registered function with name "${identifierJsString}".`);
   }
   const funcInstance = registeredFunctions[identifierJsString];
   const args = argsJson.map(json => JSON.parse(platform.toJavaScriptString(json)));
   const result = funcInstance.apply(null, args);
-  const resultJson = JSON.stringify(result);
-  return platform.toDotNetString(resultJson);
+  if (result !== null && result !== undefined) {
+    const resultJson = JSON.stringify(result);
+    return platform.toDotNetString(resultJson);
+  } else {
+    return null;
+  }
 });

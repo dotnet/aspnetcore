@@ -68,7 +68,7 @@ namespace Microsoft.Blazor.Server.Test
         public void InsertsScriptTagReferencingAssemblyAndDependencies()
         {
             // Arrange
-            var htmlTemplate = "<html><body>Hello</body></html>";
+            var htmlTemplate = "<html><body><h1>Hello</h1>Some text</body></html>";
             var dependencies = new IFileInfo[]
             {
                 new TestFileInfo("System.Abc.dll"),
@@ -80,7 +80,7 @@ namespace Microsoft.Blazor.Server.Test
             // Act
             var file = instance.GetFileInfo("/index.html");
             var parsedHtml = new HtmlParser().Parse(ReadString(file));
-            var scriptElem = parsedHtml.Body.LastElementChild;
+            var scriptElem = parsedHtml.Body.FirstElementChild;
 
             // Assert
             Assert.Equal("script", scriptElem.TagName.ToLowerInvariant());
