@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Sequences;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void ParseSSEMessageSuccessCases(string encodedMessage, string expectedMessage)
         {
             var buffer = Encoding.UTF8.GetBytes(encodedMessage);
-            var readableBuffer = ReadableBuffer.Create(buffer);
+            var readableBuffer = new ReadOnlyBuffer(buffer);
             var parser = new ServerSentEventsMessageParser();
 
             var parseResult = parser.ParseMessage(readableBuffer, out var consumed, out var examined, out var message);
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void ParseSSEMessageFailureCases(string encodedMessage, string expectedExceptionMessage)
         {
             var buffer = Encoding.UTF8.GetBytes(encodedMessage);
-            var readableBuffer = ReadableBuffer.Create(buffer);
+            var readableBuffer = new ReadOnlyBuffer(buffer);
             var parser = new ServerSentEventsMessageParser();
 
             var ex = Assert.Throws<FormatException>(() => { parser.ParseMessage(readableBuffer, out var consumed, out var examined, out var message); });
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void ParseSSEMessageIncompleteParseResult(string encodedMessage)
         {
             var buffer = Encoding.UTF8.GetBytes(encodedMessage);
-            var readableBuffer = ReadableBuffer.Create(buffer);
+            var readableBuffer = new ReadOnlyBuffer(buffer);
             var parser = new ServerSentEventsMessageParser();
 
             var parseResult = parser.ParseMessage(readableBuffer, out var consumed, out var examined, out var message);
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var pipe = new Pipe(new PipeOptions(pool));
 
                 byte[] message = null;
-                ReadCursor consumed = default, examined = default;
+                Position consumed = default, examined = default;
 
                 for (var i = 0; i < messageParts.Length; i++)
                 {
@@ -222,7 +223,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public void ParseMessagesWithMultipleDataLines(string encodedMessage, string expectedMessage)
         {
             var buffer = Encoding.UTF8.GetBytes(encodedMessage);
-            var readableBuffer = ReadableBuffer.Create(buffer);
+            var readableBuffer = new ReadOnlyBuffer(buffer);
             var parser = new ServerSentEventsMessageParser();
 
             var parseResult = parser.ParseMessage(readableBuffer, out var consumed, out var examined, out var message);

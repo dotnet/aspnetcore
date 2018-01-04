@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
+using System.Collections.Sequences;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private List<byte[]> _data = new List<byte[]>();
 
-        public ParseResult ParseMessage(ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out byte[] message)
+        public ParseResult ParseMessage(ReadOnlyBuffer buffer, out Position consumed, out Position examined, out byte[] message)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             while (buffer.Length > 0)
             {
-                if (ReadCursorOperations.Seek(start, end, out var lineEnd, ByteLF) == -1)
+                if (ReadOnlyBuffer.Seek(start, end, out var lineEnd, ByteLF) == -1)
                 {
                     // For the case of  data: Foo\r\n\r\<Anytine except \n>
                     if (_internalParserState == InternalParseState.ReadEndOfMessage)
@@ -146,7 +148,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadableBuffer buffer)
+        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlyBuffer buffer)
         {
             if (buffer.IsSingleSpan)
             {
