@@ -69,5 +69,50 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimplePages.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimplePages.PrecompiledViews.dll");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_SkipsCopyingBinariesToOutputDirectory_IfCopyBuildOutputToOutputDirectory_IsUnset()
+        {
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:CopyBuildOutputToOutputDirectory=false");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_SkipsCopyingBinariesToOutputDirectory_IfCopyOutputSymbolsToOutputDirectory_IsUnset()
+        {
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:CopyOutputSymbolsToOutputDirectory=false");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_Works_WhenSymbolsAreNotGenerated()
+        {
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:DebugType=none");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
     }
 }

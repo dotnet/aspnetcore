@@ -2,6 +2,8 @@
   <!-- 
     Targets supporting Razor MSBuild integration
   -->
+  <Import Project="Microsoft.AspNetCore.Razor.Design.Compilation.targets" />
+
   <Target Name="RazorGenerate" DependsOnTargets="$(RazorGenerateDependsOn)">
   </Target>
 
@@ -9,7 +11,7 @@
   </Target>
 
   <PropertyGroup Condition="'$(RazorCompileOnBuild)'=='true'">
-    <BuildDependsOn>$(BuildDependsOn);RazorCompile</BuildDependsOn>
+    <PrepareForRunDependsOn>RazorCompile;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
   </PropertyGroup>
 
   <!-- 
@@ -28,10 +30,6 @@
     <!-- Used for tag helper discovery -->
     <_RazorTagHelperInputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.input.cache</_RazorTagHelperInputCache>
     <_RazorTagHelperOutputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.output.cache</_RazorTagHelperOutputCache>
-    
-    <!-- Used to creating the final compiled Razor dll -->
-    <_RazorIntermediateAssembly>$(IntermediateOutputPath)$(RazorTargetName).dll</_RazorIntermediateAssembly>
-    <_RazorIntermediatePdb>$(IntermediateOutputPath)$(RazorTargetName).pdb</_RazorIntermediatePdb>
     
     <!-- Used to locate our tools -->
     <_RazorGenerateToolAssembly>$(_RazorMSBuildRoot)tools\Microsoft.AspNetCore.Razor.GenerateTool.dll</_RazorGenerateToolAssembly>
@@ -141,122 +139,5 @@
     <ItemGroup>
       <FileWrites Include="@(_RazorGenerated)" />
     </ItemGroup>
-  </Target>
-
-  <!--
-    What follows here was copied and modified from the XamlPreCompile target in 
-    Microsoft.CSharp.CurrentVersion.targets
-
-    The XamlPreCompile target must remain identical to
-    the CoreCompile target in Microsoft.CSharp.Core.targets.
-    Any updates to one must be made to the other.
-  -->
-  <Target
-    Name="RazorCoreCompile"
-    Inputs="$(MSBuildAllProjects);
-            @(_RazorGenerated);
-            @(_CoreCompileResourceInputs);
-            $(ApplicationIcon);
-            $(AssemblyOriginatorKeyFile);
-            @(RazorReferencePath);"
-              
-    Outputs="$(_RazorIntermediateAssembly)"
-    Returns=""
-    DependsOnTargets="_RazorResolveTagHelpers;RazorCoreGenerate">
-
-    <!-- These two compiler warnings are raised when a reference is bound to a different version
-          than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
-          so the compiler warning would be redundant. -->
-    <PropertyGroup Condition="('$(TargetFrameworkVersion)' != 'v1.0') and ('$(TargetFrameworkVersion)' != 'v1.1')">
-      <NoWarn>$(NoWarn);1701;1702</NoWarn>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <!-- To match historical behavior, when inside VS11+ disable the warning from csc.exe indicating that no sources were passed in-->
-      <NoWarn Condition=" '$(BuildingInsideVisualStudio)' == 'true' and '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' > '10.0' ">$(NoWarn);2008</NoWarn>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(TargetingClr2Framework)'=='true'">
-      <ReferencePath>
-        <EmbedInteropTypes/>
-      </ReferencePath>
-    </ItemGroup>
-
-    <PropertyGroup>
-      <!-- If the user has specified AppConfigForCompiler, we'll use it. If they have not, but they set UseAppConfigForCompiler,
-              then we'll use AppConfig -->
-      <AppConfigForCompiler Condition="'$(AppConfigForCompiler)' == '' and '$(UseAppConfigForCompiler)' == 'true'">$(AppConfig)</AppConfigForCompiler>
-    </PropertyGroup>
-
-    <!-- Prefer32Bit was introduced in .NET 4.5. Set it to false if we are targeting 4.0 -->
-    <PropertyGroup Condition="('$(TargetFrameworkVersion)' == 'v4.0')">
-      <Prefer32Bit>false</Prefer32Bit>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
-      <UseSharedCompilation>true</UseSharedCompilation>
-    </PropertyGroup>
-
-    <Csc
-         AllowUnsafeBlocks="$(AllowUnsafeBlocks)"
-         ApplicationConfiguration="$(AppConfigForCompiler)"
-         BaseAddress="$(BaseAddress)"
-         CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
-         CodePage="$(CodePage)"
-         DebugType="$(DebugType)"
-         DefineConstants="$(DefineConstants)"
-         DelaySign="$(DelaySign)"
-         DisabledWarnings="$(NoWarn)"
-         EmitDebugInformation="$(DebugSymbols)"
-         EnvironmentVariables="$(CscEnvironment)"
-         ErrorEndLocation="$(ErrorEndLocation)"
-         ErrorLog="$(ErrorLog)"
-         ErrorReport="$(ErrorReport)"
-         FileAlignment="$(FileAlignment)"
-         GenerateFullPaths="$(GenerateFullPaths)"
-         HighEntropyVA="$(HighEntropyVA)"
-         KeyContainer="$(KeyContainerName)"
-         KeyFile="$(KeyOriginatorFile)"
-         LangVersion="$(LangVersion)"
-         NoConfig="true"
-         NoLogo="$(NoLogo)"
-         NoStandardLib="$(NoCompilerStandardLib)"
-         NoWin32Manifest="$(NoWin32Manifest)"
-         Optimize="$(Optimize)"
-         OutputAssembly="$(_RazorIntermediateAssembly)"
-         PdbFile="$(_RazorIntermediatePdb)"
-         Platform="$(PlatformTarget)"
-         Prefer32Bit="$(Prefer32Bit)"
-         PreferredUILang="$(PreferredUILang)"
-         References="@(RazorReferencePath)"
-         ReportAnalyzer="$(ReportAnalyzer)"
-         ResponseFiles="$(CompilerResponseFile)"
-         Sources="@(_RazorGenerated)"
-         SubsystemVersion="$(SubsystemVersion)"
-         TargetType="Library"
-         ToolExe="$(CscToolExe)"
-         ToolPath="$(CscToolPath)"
-         TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
-         UseHostCompilerIfAvailable="$(UseHostCompilerIfAvailable)"
-         UseSharedCompilation="$(UseSharedCompilation)"
-         Utf8Output="$(Utf8Output)"
-         VsSessionGuid="$(VsSessionGuid)"
-         WarningLevel="$(WarningLevel)"
-         WarningsAsErrors="$(WarningsAsErrors)"
-         WarningsNotAsErrors="$(WarningsNotAsErrors)"
-         Win32Icon="$(ApplicationIcon)"
-         Win32Manifest="$(Win32Manifest)"
-         Win32Resource="$(Win32Resource)">
-      <Output
-        TaskParameter="OutputAssembly"
-        ItemName="FileWrites" />
-    </Csc>
-
-    <!-- Output the PDB and COPY of things to FileWrites -->
-    <Message Importance="High" Text="$(TargetName) -&gt; $([System.IO.Path]::GetFullPath('$(OutDir)$(RazorTargetName).dll'))" />
-    <Copy
-      SourceFiles="$(_RazorIntermediateAssembly)"
-      DestinationFolder="$(OutDir)"
-      SkipUnchangedFiles="true"/>
   </Target>
 </Project>
