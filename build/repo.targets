@@ -6,22 +6,25 @@
   </PropertyGroup>
 
   <Target Name="BuildNativeAssets" DependsOnTargets="GetToolsets" >
+    <PropertyGroup>
+      <BuildArgs>-p:Configuration=$(Configuration) -v:m -nologo -clp:NoSummary</BuildArgs>
+    </PropertyGroup>
+
     <ItemGroup>
-      <BuildConfigurations Include="/p:Configuration=$(Configuration) /p:platform=Win32" />
-      <BuildConfigurations Include="/p:Configuration=$(Configuration) /p:platform=x64" />
+      <Platforms Include="Win32;x64" />
     </ItemGroup>
 
     <Error
       Text="Could not find an installation of Visual Studio with the C++ development tools."
       Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
-      
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; %(BuildConfigurations.Identity)"
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\AspNetCore\AspNetCore.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
-    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\RequestHandler\RequestHandler.vcxproj&quot; %(BuildConfigurations.Identity)"
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; &quot;$(RepositoryRoot)src\RequestHandler\RequestHandler.vcxproj&quot; $(BuildArgs) -p:Platform=%(Platforms.Identity) -bl:$(LogOutputDir)native.%(Platforms.Identity).binlog"
       Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
   </Target>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg">
       <ArtifactType>NuGetPackage</ArtifactType>
       <PackageId>Microsoft.AspNetCore.AspNetCoreModule</PackageId>
@@ -29,14 +32,43 @@
       <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
     </ArtifactInfo>
     <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
-  </ItemGroup>
 
+    <ArtifactInfo Include="$(AncmZipOutputPath)">
+      <ArtifactType>ZipArchive</ArtifactType>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+      <Category>shipoob</Category>
+    </ArtifactInfo>
+
+    <FilesToSign Include="$(AncmZipOutputPath)" IsContainer="true" />
+    <FilesToSign Include="x64/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="x86/aspnetcore.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="x64/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+    <FilesToSign Include="x86/aspnetcorerh.dll" Container="$(AncmZipOutputPath)" Certificate="$(AssemblySigningCertName)" />
+  </ItemGroup>
 
   <Target Name="PackageNativeProjects">
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCore.nuspec"
       DestinationFolder="$(BuildDir)"
       Properties="version=$(PackageVersion);Configuration=$(Configuration)"
       BasePath="$(RepositoryRoot)" />
+
+    <ItemGroup>
+      <!-- x64 -->
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" Link="x64\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\x64\aspnetcore.pdb" Link="x64\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" Link="x64\aspnetcorerh.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.pdb" Link="x64\aspnetcorerh.pdb" />
+      <!-- x86 -->
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" Link="x86\aspnetcore.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.pdb" Link="x86\aspnetcore.pdb" />
+      <AncmFiles Include="$(RepositoryRoot)src\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" Link="x86\aspnetcorerh.dll" />
+      <AncmFiles Include="$(RepositoryRoot)src\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="x86\aspnetcorerh.pdb" />
+    </ItemGroup>
+
+    <ZipArchive File="$(AncmZipOutputPath)"
+      Overwrite="true"
+      SourceFiles="@(AncmFiles)"
+      WorkingDirectory="$(RepositoryRoot)" />
   </Target>
-  
+
 </Project>

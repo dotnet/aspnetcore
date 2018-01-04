@@ -1,6 +1,11 @@
 <Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+    <AncmZipOutputPath>$(BuildDir)AspNetCoreModule.zip</AncmZipOutputPath>
+  </PropertyGroup>
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestSites\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\IISTestSite\*.csproj" />
