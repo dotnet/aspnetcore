@@ -103,6 +103,7 @@ inline bool IsSpace(char ch)
 
 #include "..\..\CommonLib\environmentvariablehash.h"
 #include "..\..\CommonLib\aspnetcoreconfig.h"
+#include "..\..\CommonLib\hostfxr_utility.h"
 #include "..\..\CommonLib\application.h"
 #include "..\..\CommonLib\utility.h"
 #include "..\..\CommonLib\debugutil.h"
@@ -116,6 +117,7 @@ inline bool IsSpace(char ch)
 #include "globalmodule.h"
 #include "resource.h"
 #include "proxymodule.h"
+#include "applicationinfo.h"
 
 
 FORCEINLINE

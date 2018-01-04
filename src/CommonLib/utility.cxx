@@ -545,45 +545,6 @@ UTILITY::DirectoryExists(
     return GetFileAttributesExW(pstrPath->QueryStr(), GetFileExInfoStandard, &data);
 }
 
-BOOL
-UTILITY::GetSystemPathVariable(
-    _In_ PCWSTR pszEnvironmentVariable,
-    _Out_ STRU *pstrResult
-)
-{
-    DWORD dwLength;
-    PWSTR pszBuffer = NULL;
-    BOOL fSucceeded = FALSE;
-
-    if (pszEnvironmentVariable == NULL)
-    {
-        goto Finished;
-    }
-    pstrResult->Reset();
-    dwLength = GetEnvironmentVariableW(pszEnvironmentVariable, NULL, 0);
-
-    if (dwLength == 0)
-    {
-        goto Finished;
-    }
-
-    pszBuffer = new WCHAR[dwLength];
-    if (GetEnvironmentVariableW(pszEnvironmentVariable, pszBuffer, dwLength) == 0)
-    {
-        goto Finished;
-    }
-
-    pstrResult->Copy(pszBuffer);
-
-    fSucceeded = TRUE;
-
-Finished:
-    if (pszBuffer != NULL) {
-        delete[] pszBuffer;
-    }
-    return fSucceeded;
-}
-
 VOID
 UTILITY::FindDotNetFolders(
     _In_ PCWSTR pszPath,
@@ -606,4 +567,35 @@ UTILITY::FindDotNetFolders(
     } while (FindNextFileW(handle, &data));
 
     FindClose(handle);
+}
+
+BOOL
+UTILITY::CheckIfFileExists(
+    _In_ PCWSTR pszFilePath
+)
+{
+    HANDLE              hFileHandle = INVALID_HANDLE_VALUE;
+    SECURITY_ATTRIBUTES saAttr;
+    BOOL                fFileExists = FALSE;
+
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
+    hFileHandle = CreateFile(pszFilePath,
+        GENERIC_READ,
+        FILE_SHARE_READ,
+        &saAttr,
+        OPEN_EXISTING,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL);
+
+    fFileExists = hFileHandle != INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION;
+
+    if (fFileExists)
+    {
+        CloseHandle(hFileHandle);
+    }
+
+    return fFileExists;
 }

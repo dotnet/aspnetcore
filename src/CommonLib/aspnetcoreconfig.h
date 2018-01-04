@@ -68,7 +68,7 @@ public:
         _In_  IHttpServer             *pHttpServer,
         _In_  HTTP_MODULE_ID           pModuleId,
         _In_  IHttpContext            *pHttpContext,
-        _Out_ ASPNETCORE_CONFIG     **ppAspNetCoreConfig
+        _Out_ ASPNETCORE_CONFIG       **ppAspNetCoreConfig
     );
 
     ENVIRONMENT_VAR_HASH*
@@ -215,18 +215,54 @@ public:
         return &m_struConfigPath;
     }
 
-    STRU*
-    QueryHostfxrPath()
-    {
-        return &m_struHostFxrPath;
-    }
-
-    BOOL
-    QueryIsStandAloneApplication(
+    CONST
+    PCWSTR*
+    QueryHostFxrArguments(
         VOID
     )
     {
-        return m_fIsStandAloneApplication;
+        return m_ppStrArguments;
+    }
+
+    CONST
+    DWORD
+    QueryHostFxrArgCount(
+        VOID
+    )
+    {
+        return m_dwArgc;
+    }
+
+    CONST
+    PCWSTR
+    QueryHostFxrFullPath(
+        VOID
+    )
+    {
+        return m_struHostFxrLocation.QueryStr();
+    }
+
+    HRESULT
+    SetHostFxrFullPath(
+        PCWSTR pStrHostFxrFullPath
+    )
+    {
+        return m_struHostFxrLocation.Copy(pStrHostFxrFullPath);
+    }
+
+    VOID
+    SetHostFxrArguments(
+        DWORD dwArgc,
+        PCWSTR* ppStrArguments
+    )
+    {
+        if (m_ppStrArguments != NULL)
+        {
+            delete[] m_ppStrArguments;
+        }
+
+        m_dwArgc = dwArgc;
+        m_ppStrArguments = ppStrArguments;
     }
 
     VOID
@@ -248,7 +284,8 @@ private:
         m_fStdoutLogEnabled( FALSE ),
         m_pEnvironmentVariables( NULL ),
         m_cRefs( 1 ),
-        m_hostingModel( HOSTING_UNKNOWN )
+        m_hostingModel( HOSTING_UNKNOWN ),
+        m_ppStrArguments(NULL)
     {
     }
 
@@ -272,8 +309,6 @@ private:
     STRU                   m_struApplicationPhysicalPath;
     STRU                   m_struApplicationVirtualPath;
     STRU                   m_struConfigPath;
-    STRU                   m_strHostingModel;
-    STRU                   m_struHostFxrPath;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
     BOOL                   m_fDisableStartUpErrorPage;
@@ -283,4 +318,7 @@ private:
     BOOL                   m_fIsStandAloneApplication;
     APP_HOSTING_MODEL      m_hostingModel;
     ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
+    STRU                   m_struHostFxrLocation;
+    PCWSTR*                m_ppStrArguments;
+    DWORD                  m_dwArgc;
 };

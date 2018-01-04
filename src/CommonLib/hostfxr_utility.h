@@ -3,6 +3,10 @@
 
 #pragma once
 
+typedef INT(*hostfxr_get_native_search_directories_fn) (const int argc, const PCWSTR argv[], PCWSTR dest, size_t dest_size);
+typedef INT(*hostfxr_main_fn) (CONST DWORD argc, CONST PCWSTR argv[]);
+
+
 class HOSTFXR_UTILITY
 {
 public:
@@ -11,23 +15,23 @@ public:
 
     static
     HRESULT
-    FindHostFxrDll(
-        ASPNETCORE_CONFIG *pConfig,
-        STRU* struHostFxrDllLocation,
-        BOOL* fStandAlone
+    GetHostFxrParameters(
+        ASPNETCORE_CONFIG *pConfig
     );
 
+private:
     static
     HRESULT
-    GetStandaloneHostfxrLocation(
-        STRU* struHostfxrPath,
+    GetStandaloneHostfxrParameters(
         ASPNETCORE_CONFIG *pConfig
     );
 
     static
     HRESULT
-    GetPortableHostfxrLocation(
-        STRU* struHostfxrPath
+    SetHostFxrArguments(
+        STRU * struArguments,
+        STRU * pstruExePath,
+        ASPNETCORE_CONFIG *pConfig
     );
 };
 

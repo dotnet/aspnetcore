@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
+#define API_BUFFER_TOO_SMALL 0x80008098
 
 typedef
 HRESULT
@@ -145,8 +146,7 @@ public:
 private:
     HRESULT FindRequestHandlerAssembly();
     HRESULT FindNativeAssemblyFromGlobalLocation(STRU* struFilename);
-    HRESULT FindNativeAssemblyFromLocalBin(STRU* struFilename);
-    HRESULT GetRequestHandlerFromRuntimeStore(STRU* struFilename);
+    HRESULT FindNativeAssemblyFromHostfxr(STRU* struFilename);
 
     mutable LONG            m_cRefs;
     APPLICATION_INFO_KEY    m_applicationInfoKey;

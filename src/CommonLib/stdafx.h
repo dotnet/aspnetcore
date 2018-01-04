@@ -11,6 +11,7 @@
 #include <httpserv.h>
 #include <wchar.h>
 #include <vector>
+#include <shellapi.h>
 #include <sstream>
 #include "..\IISLib\hashtable.h"
 #include "..\IISLib\stringu.h"

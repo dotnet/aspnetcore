@@ -45,7 +45,7 @@ public:
 
         if (handle == INVALID_HANDLE_VALUE)
         {
-            if (GetLastError() == ERROR_FILE_NOT_FOUND)
+            if (HRESULT_FROM_WIN32(GetLastError()) == ERROR_FILE_NOT_FOUND)
             {
                 fResult = FALSE;
             }

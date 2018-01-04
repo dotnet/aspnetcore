@@ -7,12 +7,11 @@ typedef void(*request_handler_cb) (int error, IHttpContext* pHttpContext, void* 
 typedef REQUEST_NOTIFICATION_STATUS(*PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
 typedef BOOL(*PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 typedef REQUEST_NOTIFICATION_STATUS(*PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
-typedef DWORD(*hostfxr_main_fn) (CONST DWORD argc, CONST WCHAR* argv[]);
 
 class IN_PROCESS_APPLICATION : public APPLICATION
 {
 public:
-    IN_PROCESS_APPLICATION(IHttpServer* pHttpServer, ASPNETCORE_CONFIG  *pConfig);
+    IN_PROCESS_APPLICATION(IHttpServer* pHttpServer, ASPNETCORE_CONFIG* pConfig);
 
     ~IN_PROCESS_APPLICATION();
 
@@ -57,16 +56,6 @@ public:
     (
         IHttpContext* pHttpContext,
         IN_PROCESS_HANDLER* pInProcessHandler
-    );
-
-    static 
-    INT
-    FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
-
-    HRESULT
-    RunDotnetApplication(
-        PCWSTR* argv,
-        hostfxr_main_fn pProc
     );
 
     static
@@ -122,33 +111,18 @@ private:
 
     static
     VOID
-    FindDotNetFolders(
-        _In_ PCWSTR pszPath,
-        _Out_ std::vector<std::wstring> *pvFolders
-    );
-
-    static
-    HRESULT
-    FindHighestDotNetVersion(
-        _In_ std::vector<std::wstring> vFolders,
-        _Out_ STRU *pstrResult
-    );
-
-    static
-    BOOL
-    DirectoryExists(
-        _In_ STRU *pstrPath  //todo: this does not need to be stru, can be PCWSTR
-    );
-
-    static BOOL
-    GetEnv(
-        _In_ PCWSTR pszEnvironmentVariable,
-        _Out_ STRU *pstrResult
-    );
-
-    static
-    VOID
     ExecuteAspNetCoreProcess(
         _In_ LPVOID pContext
+    );
+
+    static
+    INT
+    FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
+
+    HRESULT
+    RunDotnetApplication(
+        DWORD argc,
+        CONST PCWSTR* argv,
+        hostfxr_main_fn pProc
     );
 };

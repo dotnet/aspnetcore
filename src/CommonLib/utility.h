@@ -92,13 +92,6 @@ public:
     );
 
     static
-    BOOL
-    GetSystemPathVariable(
-        _In_ PCWSTR pszEnvironmentVariable,
-        _Out_ STRU *pstrResult
-    );
-
-    static
     VOID
     FindDotNetFolders(
         _In_ PCWSTR pszPath,
@@ -110,6 +103,12 @@ public:
     FindHighestDotNetVersion(
         _In_ std::vector<std::wstring> vFolders,
         _Out_ STRU *pstrResult
+    );
+
+    static
+    BOOL
+    CheckIfFileExists(
+        PCWSTR pszFilePath
     );
 
 private:

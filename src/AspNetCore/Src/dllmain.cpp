@@ -17,7 +17,7 @@ DWORD               g_dwActiveServerProcesses = 0;
 SRWLOCK             g_srwLock;
 DWORD               g_dwDebugFlags = 0;
 PCSTR               g_szDebugLabel = "ASPNET_CORE_MODULE";
-PCWSTR              g_pwzAspnetcoreRequestHandlerName = L"\\aspnetcorerh.dll";
+PCWSTR              g_pwzAspnetcoreRequestHandlerName = L"aspnetcorerh.dll";
 PFN_ASPNETCORE_CREATE_APPLICATION      g_pfnAspNetCoreCreateApplication;
 PFN_ASPNETCORE_CREATE_REQUEST_HANDLER  g_pfnAspNetCoreCreateRequestHandler;
 

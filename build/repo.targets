@@ -31,7 +31,14 @@
       <Version>$(PackageVersion)</Version>
       <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
     </ArtifactInfo>
+     <ArtifactInfo Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.RequestHandler.$(PackageVersion).nupkg">
+      <ArtifactType>NuGetPackage</ArtifactType>
+      <PackageId>Microsoft.AspNetCore.AspNetCoreModule.RequestHandler</PackageId>
+      <Version>$(PackageVersion)</Version>
+      <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+    </ArtifactInfo>
     <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.$(PackageVersion).nupkg" />
+    <FilesToExcludeFromSigning Include="$(BuildDir)Microsoft.AspNetCore.AspNetCoreModule.RequestHandler.$(PackageVersion).nupkg" />
 
     <ArtifactInfo Include="$(AncmZipOutputPath)">
       <ArtifactType>ZipArchive</ArtifactType>
@@ -69,6 +76,11 @@
       Overwrite="true"
       SourceFiles="@(AncmFiles)"
       WorkingDirectory="$(RepositoryRoot)" />
+
+    <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCoreRequestHandler.nuspec"
+      DestinationFolder="$(BuildDir)"
+      Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      BasePath="$(RepositoryRoot)" />
   </Target>
 
 </Project>

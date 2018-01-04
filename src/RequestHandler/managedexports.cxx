@@ -127,7 +127,7 @@ struct IISConfigurationData
 };
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-HRESULT // TODO probably should make this a wide string
+HRESULT
 http_get_application_properties(
     _In_ IISConfigurationData* pIISCofigurationData
 )

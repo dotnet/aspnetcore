@@ -145,11 +145,11 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
 HRESULT
 APPLICATION_INFO::EnsureApplicationCreated()
 {
-    HRESULT hr = S_OK;
-    BOOL    fLocked = FALSE;
-    APPLICATION* pApplication = NULL;
+    HRESULT             hr = S_OK;
+    BOOL                fLocked = FALSE;
+    APPLICATION*        pApplication = NULL;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
-    STRU        hostFxrDllLocation;
+    STRU                hostFxrDllLocation;
 
     if (m_pApplication != NULL)
     {
@@ -184,7 +184,6 @@ APPLICATION_INFO::EnsureApplicationCreated()
         }
         m_pApplication = pApplication;
     }
-
 Finished:
     if (fLocked)
     {
@@ -196,9 +195,9 @@ Finished:
 HRESULT
 APPLICATION_INFO::FindRequestHandlerAssembly()
 {
-    HRESULT hr = S_OK;
-    BOOL    fLocked = FALSE;
-    STACK_STRU(struFileName, 300); // >MAX_PATH
+    HRESULT             hr = S_OK;
+    BOOL                fLocked = FALSE;
+    STACK_STRU(struFileName, 256);
 
     if (g_fAspnetcoreRHLoadedError)
     {
@@ -219,19 +218,10 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
             goto Finished;
         }
 
-        // load assembly and create the application
-        if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(m_pConfiguration)) ||
+            FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
         {
-            // Look at inetsvr only for now. TODO add in functionality
-            hr = FindNativeAssemblyFromGlobalLocation(&struFileName);
-
-            if (FAILED(hr))
-            {
-                goto Finished;
-            }
-        }
-        else
-        {
+            // TODO eventually make this fail for in process loading.
             hr = FindNativeAssemblyFromGlobalLocation(&struFileName);
             if (FAILED(hr))
             {
@@ -294,6 +284,11 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
     // Though we could call LoadLibrary(L"aspnetcorerh.dll") relying the OS to solve
     // the path (the targeted dll is the same folder of w3wp.exe/iisexpress)
     // let's still load with full path to avoid security issue
+    if (FAILED(hr = struFilename->Resize(dwSize + 20)))
+    {
+        goto Finished;
+    }
+
     while (!fDone)
     {
         DWORD dwReturnedSize = GetModuleFileNameW(g_hModule, struFilename->QueryStr(), dwSize);
@@ -306,7 +301,10 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
         else if ((dwReturnedSize == dwSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER))
         {
             dwSize *= 2; // smaller buffer. increase the buffer and retry
-            struFilename->Resize(dwSize + 20); // aspnetcorerh.dll
+            if (FAILED(hr = struFilename->Resize(dwSize + 20))) // + 20 for aspnetcorerh.dll
+            {
+                goto Finished;
+            }
         }
         else
         {
@@ -322,11 +320,146 @@ APPLICATION_INFO::FindNativeAssemblyFromGlobalLocation(STRU* struFilename)
     struFilename->QueryStr()[dwPosition] = L'\0';
 
     if (FAILED(hr = struFilename->SyncWithBuffer()) ||
+        FAILED(hr = struFilename->Append(L"\\")) ||
         FAILED(hr = struFilename->Append(g_pwzAspnetcoreRequestHandlerName)))
     {
         goto Finished;
     }
 
 Finished:
+    return hr;
+}
+
+// 
+// Tries to find aspnetcorerh.dll from the application
+// Calls into hostfxr.dll to find it.
+// Will leave hostfxr.dll loaded as it will be used again to call hostfxr_main.
+// 
+
+HRESULT
+APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
+    STRU* struFilename
+)
+{
+    HRESULT     hr = S_OK;
+    STRU        struApplicationFullPath;
+    STRU        struNativeSearchPaths;
+    STRU        struNativeDllLocation;
+    HMODULE     hmHostFxrDll = NULL;
+    INT         intHostFxrExitCode = 0;
+    INT         intIndex = -1;
+    INT         intPrevIndex = 0;
+    BOOL        fFound = FALSE;
+    DWORD       dwBufferSize = 1024 * 10;
+
+    DBG_ASSERT(struFileName != NULL);
+
+    hmHostFxrDll = LoadLibraryW(m_pConfiguration->QueryHostFxrFullPath());
+    
+    if (hmHostFxrDll == NULL)
+    {
+        // Could not load hostfxr
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    hostfxr_get_native_search_directories_fn pFnHostFxrSearchDirectories = (hostfxr_get_native_search_directories_fn)
+        GetProcAddress(hmHostFxrDll, "hostfxr_get_native_search_directories");
+
+    if (pFnHostFxrSearchDirectories == NULL)
+    {
+        // Host fxr version is incorrect (need a higher version).
+        // TODO log error 
+        hr = E_FAIL;
+        goto Finished;
+    }
+
+    if (FAILED(hr = struNativeSearchPaths.Resize(dwBufferSize)))
+    {
+        goto Finished;
+    }
+
+    while (TRUE)
+    {
+        intHostFxrExitCode = pFnHostFxrSearchDirectories(
+            m_pConfiguration->QueryHostFxrArgCount(),
+            m_pConfiguration->QueryHostFxrArguments(),
+            struNativeSearchPaths.QueryStr(),
+            dwBufferSize
+        );
+
+        if (intHostFxrExitCode == 0)
+        {
+            break;
+        }
+        else if (intHostFxrExitCode == API_BUFFER_TOO_SMALL)
+        {
+            dwBufferSize *= 2; // smaller buffer. increase the buffer and retry
+            if (FAILED(hr = struNativeSearchPaths.Resize(dwBufferSize)))
+            {
+                goto Finished;
+            }
+        }
+        else
+        {
+            hr = E_FAIL;
+            // Log "Error finding native search directories from aspnetcore application.
+            goto Finished;
+        }
+    }
+
+    if (FAILED(hr = struNativeSearchPaths.SyncWithBuffer()))
+    {
+        goto Finished;
+    }
+
+    fFound = FALSE;
+    
+    // The native search directories are semicolon delimited.
+    // Split on semicolons, append aspnetcorerh.dll, and check if the file exists.
+    while ((intIndex = struNativeSearchPaths.IndexOf(L";", intPrevIndex)) != -1)
+    {
+        if (FAILED(hr = struNativeDllLocation.Copy(struNativeSearchPaths.QueryStr(), intIndex - intPrevIndex)))
+        {
+            goto Finished;
+        }
+
+        if (!struNativeDllLocation.EndsWith(L"\\"))
+        {
+            if (FAILED(hr = struNativeDllLocation.Append(L"\\")))
+            {
+                goto Finished;
+            }
+        }
+
+        if (FAILED(hr = struNativeDllLocation.Append(g_pwzAspnetcoreRequestHandlerName)))
+        {
+            goto Finished;
+        }
+
+        if (UTILITY::CheckIfFileExists(struNativeDllLocation.QueryStr()))
+        {
+            if (FAILED(hr = struFilename->Copy(struNativeDllLocation)))
+            {
+                goto Finished;
+            }
+            fFound = TRUE;
+            break;
+        }
+
+        intPrevIndex = intIndex + 1;
+    }
+
+    if (!fFound)
+    {
+        hr = E_FAIL;
+        goto Finished;
+    }
+
+Finished:
+    if (FAILED(hr) && hmHostFxrDll != NULL)
+    {
+        FreeLibrary(hmHostFxrDll);
+    }
     return hr;
 }
