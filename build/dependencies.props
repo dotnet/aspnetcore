@@ -145,11 +145,12 @@
   <PropertyGroup>
     <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
     <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" />
   </ItemGroup>
 
   <!-- ASP.NET Core (non-Universe builds) -->
