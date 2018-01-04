@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
+    <RunArguments>run --project ..\..\..\src\Microsoft.Blazor.DevHost serve</RunArguments>
+  </PropertyGroup>
+
+  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
+  <Import Project="..\..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>
