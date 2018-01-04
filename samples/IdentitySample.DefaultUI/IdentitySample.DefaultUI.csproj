@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Identity.UI\Microsoft.AspNetCore.Identity.UI.csproj" />
+    <ProjectReference Include="..\..\src\EF\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\UI\Microsoft.AspNetCore.Identity.UI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

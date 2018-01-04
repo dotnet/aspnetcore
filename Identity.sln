@@ -12,59 +12,59 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{52D59F18-6
 		test\Directory.Build.props = test\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "src\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.csproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "src\Identity\Microsoft.AspNetCore.Identity.csproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Test", "test\Microsoft.AspNetCore.Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{2CF3927B-19E4-4866-9BAA-2C131580E7C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Test", "test\Identity.Test\Microsoft.AspNetCore.Identity.Test.csproj", "{2CF3927B-19E4-4866-9BAA-2C131580E7C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\Microsoft.AspNetCore.Identity.InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.InMemory.Test", "test\InMemory.Test\Microsoft.AspNetCore.Identity.InMemory.Test.csproj", "{65161409-C4C4-4D63-A73B-231FCFF4D503}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.Mvc", "samples\IdentitySample.Mvc\IdentitySample.Mvc.csproj", "{E1BFA023-CFFD-49CE-8466-1C28DD2EC1F6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj", "{37236EA3-915D-46D5-997C-DF513C500E4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test", "test\EF.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj", "{37236EA3-915D-46D5-997C-DF513C500E4B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj", "{EA7EB28F-53B8-4009-9C6B-74DB090CA8DD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test", "test\EF.InMemory.Test\Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj", "{EA7EB28F-53B8-4009-9C6B-74DB090CA8DD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\Microsoft.AspNetCore.Identity.EntityFrameworkCore\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{4490894C-3572-4E63-86F1-EE5105CE8A06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.EntityFrameworkCore", "src\EF\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj", "{4490894C-3572-4E63-86F1-EE5105CE8A06}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.Identity.AspNetCoreCompat", "src\Microsoft.AspNet.Identity.AspNetCoreCompat\Microsoft.AspNet.Identity.AspNetCoreCompat.csproj", "{6A74C6EA-B241-4D6B-BCE4-BF89EC1D2475}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNet.Identity.AspNetCoreCompat", "src\AspNetCoreCompat\Microsoft.AspNet.Identity.AspNetCoreCompat.csproj", "{6A74C6EA-B241-4D6B-BCE4-BF89EC1D2475}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Microsoft.AspNetCore.Identity.Specification.Tests\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Specification.Tests", "src\Specification.Tests\Microsoft.AspNetCore.Identity.Specification.Tests.csproj", "{5608E828-DD54-4E2A-B73C-FC22268BE797}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Identity.Service", "src\Microsoft.AspNetCore.Diagnostics.Identity.Service\Microsoft.AspNetCore.Diagnostics.Identity.Service.csproj", "{CD787C9A-58B7-4CBC-B8E3-66698EE58C11}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Diagnostics.Identity.Service", "src\Service.Diagnostics\Microsoft.AspNetCore.Diagnostics.Identity.Service.csproj", "{CD787C9A-58B7-4CBC-B8E3-66698EE58C11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service", "src\Microsoft.AspNetCore.Identity.Service\Microsoft.AspNetCore.Identity.Service.csproj", "{B44C2A7F-EA9E-4A9F-9698-1C9F9BB40E0C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service", "src\Service\Microsoft.AspNetCore.Identity.Service.csproj", "{B44C2A7F-EA9E-4A9F-9698-1C9F9BB40E0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Abstractions", "src\Microsoft.AspNetCore.Identity.Service.Abstractions\Microsoft.AspNetCore.Identity.Service.Abstractions.csproj", "{F34C3ED8-D4A9-47CE-BE0F-1F234A33AC81}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Abstractions", "src\Service.Abstractions\Microsoft.AspNetCore.Identity.Service.Abstractions.csproj", "{F34C3ED8-D4A9-47CE-BE0F-1F234A33AC81}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Core", "src\Microsoft.AspNetCore.Identity.Service.Core\Microsoft.AspNetCore.Identity.Service.Core.csproj", "{590697C1-EA60-4412-8A21-4EF35142381F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Core", "src\Service.Core\Microsoft.AspNetCore.Identity.Service.Core.csproj", "{590697C1-EA60-4412-8A21-4EF35142381F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore", "src\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.csproj", "{CD360545-3395-4C44-AD27-C32EECDD9572}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore", "src\Service.EF\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.csproj", "{CD360545-3395-4C44-AD27-C32EECDD9572}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.IntegratedWebClient", "src\Microsoft.AspNetCore.Identity.Service.IntegratedWebClient\Microsoft.AspNetCore.Identity.Service.IntegratedWebClient.csproj", "{CA19785B-CE2F-480D-BB57-93A43A2DFDAB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.IntegratedWebClient", "src\Service.IntegratedWebClient\Microsoft.AspNetCore.Identity.Service.IntegratedWebClient.csproj", "{CA19785B-CE2F-480D-BB57-93A43A2DFDAB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Mvc", "src\Microsoft.AspNetCore.Identity.Service.Mvc\Microsoft.AspNetCore.Identity.Service.Mvc.csproj", "{B3AE446B-859B-4C2C-98FD-A084C854941E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Mvc", "src\Service.Mvc\Microsoft.AspNetCore.Identity.Service.Mvc.csproj", "{B3AE446B-859B-4C2C-98FD-A084C854941E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Abstractions.Test", "test\Microsoft.AspNetCore.Identity.Service.Abstractions.Test\Microsoft.AspNetCore.Identity.Service.Abstractions.Test.csproj", "{27D28F0E-08F6-4EEA-8705-E0B559C87F3B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Abstractions.Test", "test\Service.Abstractions.Test\Microsoft.AspNetCore.Identity.Service.Abstractions.Test.csproj", "{27D28F0E-08F6-4EEA-8705-E0B559C87F3B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Core.Test", "test\Microsoft.AspNetCore.Identity.Service.Core.Test\Microsoft.AspNetCore.Identity.Service.Core.Test.csproj", "{444F07E7-CF65-4717-BEF3-BA29F60DDE6E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Core.Test", "test\Service.Core.Test\Microsoft.AspNetCore.Identity.Service.Core.Test.csproj", "{444F07E7-CF65-4717-BEF3-BA29F60DDE6E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Test", "test\Microsoft.AspNetCore.Identity.Service.Test\Microsoft.AspNetCore.Identity.Service.Test.csproj", "{204163F9-E9BB-4940-9659-77F617C00D97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Test", "test\Service.Test\Microsoft.AspNetCore.Identity.Service.Test.csproj", "{204163F9-E9BB-4940-9659-77F617C00D97}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Specification.Tests", "src\Microsoft.AspNetCore.Identity.Service.Specification.Tests\Microsoft.AspNetCore.Identity.Service.Specification.Tests.csproj", "{C05D641C-A3EE-4A56-9A39-F20F3B9C4D36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.Specification.Tests", "src\Service.Specification.Tests\Microsoft.AspNetCore.Identity.Service.Specification.Tests.csproj", "{C05D641C-A3EE-4A56-9A39-F20F3B9C4D36}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.InMemory.Test", "test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.InMemory.Test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.InMemory.Test.csproj", "{7423EB30-FFE9-4707-A44B-571E89A7CA15}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.InMemory.Test", "test\Service.EF.InMemory.Test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.InMemory.Test.csproj", "{7423EB30-FFE9-4707-A44B-571E89A7CA15}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.Test", "test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.Test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.Test.csproj", "{4F5D777E-3CFA-4EDF-BA89-4FE04BBF7A66}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.Test", "test\Service.EF.Test\Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore.Test.csproj", "{4F5D777E-3CFA-4EDF-BA89-4FE04BBF7A66}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.InMemory.Test", "test\Microsoft.AspNetCore.Identity.Service.InMemory.Test\Microsoft.AspNetCore.Identity.Service.InMemory.Test.csproj", "{94EC586A-2AE6-4AF2-894A-B0973C65BD68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.InMemory.Test", "test\Service.InMemory.Test\Microsoft.AspNetCore.Identity.Service.InMemory.Test.csproj", "{94EC586A-2AE6-4AF2-894A-B0973C65BD68}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "src\Microsoft.Extensions.Identity.Core\Microsoft.Extensions.Identity.Core.csproj", "{D5905D78-A32E-44B8-8F21-EDAEDC95D9B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Core", "src\Core\Microsoft.Extensions.Identity.Core.csproj", "{D5905D78-A32E-44B8-8F21-EDAEDC95D9B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "src\Microsoft.Extensions.Identity.Stores\Microsoft.Extensions.Identity.Stores.csproj", "{FADA11FC-DC06-4832-A569-7B2374A6CD42}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Identity.Stores", "src\Stores\Microsoft.Extensions.Identity.Stores.csproj", "{FADA11FC-DC06-4832-A569-7B2374A6CD42}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.AzureKeyVault", "src\Microsoft.AspNetCore.Identity.Service.AzureKeyVault\Microsoft.AspNetCore.Identity.Service.AzureKeyVault.csproj", "{174180AE-00AD-4C2D-9F96-2EE2C5E60457}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.Service.AzureKeyVault", "src\Service.AzureKeyVault\Microsoft.AspNetCore.Identity.Service.AzureKeyVault.csproj", "{174180AE-00AD-4C2D-9F96-2EE2C5E60457}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityOIDCWebApplicationSample", "samples\IdentityOIDCWebApplicationSample\IdentityOIDCWebApplicationSample.csproj", "{D7CE9BDF-84E5-405D-8A4E-12E41DAC6935}"
 EndProject
@@ -72,7 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{1F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.OpenIdConnect.WebSite", "test\WebSites\Identity.OpenIdConnect.WebSite\Identity.OpenIdConnect.WebSite.csproj", "{D6FF6433-336F-42E0-8F3A-60F3787A0261}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspnetCore.Identity.Service.FunctionalTests", "test\Microsoft.AspnetCore.Identity.Service.FunctionalTests\Microsoft.AspnetCore.Identity.Service.FunctionalTests.csproj", "{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspnetCore.Identity.Service.FunctionalTests", "test\Service.FunctionalTests\Microsoft.AspnetCore.Identity.Service.FunctionalTests.csproj", "{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{42F5B772-1D61-4C18-9457-412DE8E170A5}"
 	ProjectSection(SolutionItems) = preProject
@@ -84,7 +84,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeWPFClient", "samples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentitySample.DefaultUI", "samples\IdentitySample.DefaultUI\IdentitySample.DefaultUI.csproj", "{ACC75F4F-EA7D-49E0-A64C-9D4A3DFD5B8A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "src\Microsoft.AspNetCore.Identity.UI\Microsoft.AspNetCore.Identity.UI.csproj", "{894E102D-56D4-4B02-8F13-8781F4324C3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity.UI", "src\UI\Microsoft.AspNetCore.Identity.UI.csproj", "{894E102D-56D4-4B02-8F13-8781F4324C3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
