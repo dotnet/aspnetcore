@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
         private const int ErrorUserCancelledTrustPrompt = 5;
         private const int ErrorNoValidCertificateFound = 6;
         private const int ErrorCertificateNotTrusted = 7;
+        private const int ErrorCleaningUpCertificates = 8;
 
         public static readonly TimeSpan HttpsCertificateValidity = TimeSpan.FromDays(365);
 
@@ -50,6 +51,11 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                         "Check for the existence of the certificate but do not perform any action",
                         CommandOptionType.NoValue);
 
+                    var clean = c.Option(
+                        "--clean",
+                        "Cleans all HTTPS development certificates from the machine.",
+                        CommandOptionType.NoValue);
+
                     CommandOption trust = null;
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
@@ -71,10 +77,25 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     c.OnExecute(() =>
                     {
                         var reporter = new ConsoleReporter(PhysicalConsole.Singleton, verbose.HasValue(), quiet.HasValue());
+                        if ((clean.HasValue() && (exportPath.HasValue() || password.HasValue() || trust?.HasValue() == true)) ||
+                            (check.HasValue() && (exportPath.HasValue() || password.HasValue() || clean.HasValue())))
+                        {
+                            reporter.Error(@"Incompatible set of flags. Sample usages
+'dotnet dev-certs https --clean'
+'dotnet dev-certs https --check --trust'
+'dotnet dev-certs https -ep ./certificate.pfx -p password --trust'");
+                        }
+
                         if (check.HasValue())
                         {
-                            return CheckHttpsCertificate(check, trust, reporter);
+                            return CheckHttpsCertificate(trust, reporter);
                         }
+
+                        if (clean.HasValue())
+                        {
+                            return CleanHttpsCertificates(reporter);
+                        }
+
                         return EnsureHttpsCertificate(exportPath, password, trust, reporter);
                     });
                 });
@@ -95,7 +116,36 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             }
         }
 
-        private static int CheckHttpsCertificate(CommandOption check, CommandOption trust, IReporter reporter)
+        private static int CleanHttpsCertificates(IReporter reporter)
+        {
+            var manager = new CertificateManager();
+            try
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    reporter.Output("Cleaning HTTPS development certificates from the machine. A prompt might get " +
+                        "displayed to confirm the removal of some of the certificates.");
+                }
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    reporter.Output("Cleaning HTTPS development certificates from the machine. This operation might " +
+                        "require elevated privileges. If that is the case, a prompt for credentials will be displayed.");
+                }
+
+                manager.CleanupHttpsCertificates();
+                reporter.Verbose("HTTPS development certificates successfully removed from the machine.");
+                return Success;
+            }
+            catch(Exception e)
+            {
+                reporter.Error("There was an error trying to clean HTTPS development certificates on this machine.");
+                reporter.Error(e.Message);
+
+                return ErrorCleaningUpCertificates;
+            }
+        }
+
+        private static int CheckHttpsCertificate(CommandOption trust, IReporter reporter)
         {
             var now = DateTimeOffset.Now;
             var certificateManager = new CertificateManager();
@@ -112,7 +162,8 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
 
             if (trust != null && trust.HasValue())
             {
-                var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, isValid: true, requireExportable: false);
+                var store = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? StoreName.My : StoreName.Root;
+                var trustedCertificates = certificateManager.ListCertificates(CertificatePurpose.HTTPS, store, StoreLocation.CurrentUser, isValid: true);
                 if (!certificates.Any(c => certificateManager.IsTrusted(c)))
                 {
                     reporter.Verbose($@"The following certificates were found, but none of them is trusted:
@@ -140,6 +191,12 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
                     "'sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain <<certificate>>'" +
                     Environment.NewLine + "This command might prompt you for your password to install the certificate " +
                     "on the system keychain.");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && trust?.HasValue() == true)
+            {
+                reporter.Warn("Trusting the HTTPS development certificate was requested. A confirmation prompt will be displayed " +
+                    "if the certificate was not previously trusted. Click yes on the prompt to trust the certificate.");
             }
 
             var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(
