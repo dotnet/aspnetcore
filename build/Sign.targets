@@ -3,6 +3,7 @@
     <SignDependsOn>
       PrepareFilesForSigning;
       SignFiles;
+      RebuildOobArchives;
       RebuildPackages;
       RebuildVSIXes;
       RebuildSharedFxs;
@@ -36,6 +37,8 @@
 
       <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
 
+      <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
+
       <SharedFxBinaries Include="
         $(UnsignedSharedFxPath)**\microsoft.*.dll;
         $(UnsignedSharedFxPath)**\system.*.dll;
@@ -62,7 +65,8 @@
         @(PackageBinaries);
         @(OobPackageBinaries);
         @(SymbolsPackageBinaries);
-        @(VSIXBinaries)" />
+        @(VSIXBinaries);
+        @(OobArchiveBinaries);" />
 
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -235,6 +239,19 @@
     <Exec Command="&quot;$(ZipExePath)&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ZipExePath)&quot; a -y -si &quot;$(OutputFile)&quot;"
        WorkingDirectory="$(WorkingDir)"
        Condition="'$(CreateTarGzip)' == 'true'" />
+  </Target>
+
+  <Target Name="RebuildOobArchives">
+    <MakeDir Directories="$(SignedOobArchivePath)" />
+
+    <ItemGroup>
+      <OobArchiveFiles Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedOobArchivePath)&quot;))" />
+    </ItemGroup>
+
+    <MSBuild
+        Projects="$(MSBuildProjectFullPath)"
+        Targets="ZipFile"
+        Properties="ZipRoot=$([MSBuild]::NormalizeDirectory(%(OobArchiveFiles.FullPath)));OutputDir=$(SignedOobArchivePath);Extension=.zip" />
   </Target>
 
   <Target Name="ZipFile">

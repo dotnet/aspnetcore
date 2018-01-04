@@ -10,6 +10,7 @@
       <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
       <UnsignedSharedFx Include="$(DepsDirectory)assets\Runtime\*\*.zip" />
+      <UnsignedOobArchive Include="$(DepsDirectory)build\AspNetCoreModule.zip" />
       <PoliCheckPackages Include="@(UnsignedSymbolPackages)" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
@@ -17,6 +18,7 @@
       <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
       <_UnzipFiles Include="@(UnsignedSharedFx)" Destination="$(UnsignedSharedFxPath)" />
+      <_UnzipFiles Include="@(UnsignedOobArchive)" Destination="$(UnsignedOobArchivePath)" />
       <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
     </ItemGroup>
 
