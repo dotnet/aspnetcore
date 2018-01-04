@@ -11,11 +11,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <!--
+        Skipping native binaries. BinScope only works on managed assemblies.
+      -->
       <BinScopeTargetFiles
         Include="$(UnsignedPackagesPath)**\*.dll"
         Exclude="
           $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\netcoreapp2.1\any\runtimes\win-arm64\native\sni.dll;
-          $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\netcoreapp2.1\any\runtimes\win-x86\native\sni.dll;" />
+          $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\netcoreapp2.1\any\runtimes\win-x86\native\sni.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.RequestHandler*\runtimes\**\aspnetcorerh.dll;" />
     </ItemGroup>
 
     <RemoveDir Directories="$(BinScopeTargetDir)" />
