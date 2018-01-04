@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
-            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: TaskRunScheduler.Default));
-            var pipe = new Pipe(new PipeOptions(_memoryPool,  readerScheduler: TaskRunScheduler.Default));
+            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: Scheduler.TaskRun));
+            var pipe = new Pipe(new PipeOptions(_memoryPool,  readerScheduler: Scheduler.TaskRun));
             Output = new OutputProducer(pipe);
         }
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public string RequestConnectionId { get; set; }
         public string TraceIdentifier { get; set; }
         public ClaimsPrincipal User { get; set; }
-        internal WindowsPrincipal WindowsUser { get; set; } 
+        internal WindowsPrincipal WindowsUser { get; set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
         public IPipe Input { get; set; }
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             Output.Reader.Complete();
         }
 
-        private unsafe IISAwaitable WriteAsync(ReadableBuffer buffer)
+        private unsafe IISAwaitable WriteAsync(ReadOnlyBuffer buffer)
         {
             var fCompletionExpected = false;
             var hr = 0;
