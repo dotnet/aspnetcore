@@ -54,8 +54,7 @@ try {
 
     $oldVersion = Get-KoreBuildVersion
 
-    # Executes a command that no-ops. The only thing we really need is the updated version of korebuild-lock.txt
-    & "$RepoRoot/run.ps1" -Update --help | Out-Null
+    & "$RepoRoot/run.ps1" -Update -Command noop | Out-Null
 
     $newVersion = Get-KoreBuildVersion
 
