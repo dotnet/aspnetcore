@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This assembly contains infrastructure supporting Razor MSBuild integration.</Description>
+
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>rzc</AssemblyName>
+
+    <!-- This is not a package, it is part of Microsoft.AspNetCore.Razor.Design. -->
+    <IsPackable>false</IsPackable>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\RazorDiagnosticJsonConverter.cs">
+      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\TagHelperDescriptorJsonConverter.cs">
+      <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
+  </ItemGroup>
+</Project>
