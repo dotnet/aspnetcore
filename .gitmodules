@@ -177,6 +177,7 @@
 [submodule "modules/Templating"]
 	path = modules/Templating
 	url = https://github.com/aspnet/Templating.git
+	branch = dev
 [submodule "modules/Testing"]
 	path = modules/Testing
 	url = https://github.com/aspnet/Testing.git
