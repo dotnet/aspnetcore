@@ -39,7 +39,7 @@
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26102-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26102-01</SystemSecurityCryptographyCngPackageVersion>
     <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-e180104-2</SystemTextEncodingsWebUtf8PackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-25707-02</SystemThreadingTasksExtensionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>
