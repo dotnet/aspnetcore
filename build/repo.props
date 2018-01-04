@@ -1,6 +1,10 @@
 ﻿<Project>
   <Import Project="dependencies.props" />
 
+  <PropertyGroup>
+    <EnableBenchmarkValidation>true</EnableBenchmarkValidation>
+  </PropertyGroup>
+
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test\Microsoft.VisualStudio.Mac.LanguageServices.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.VisualStudio.LanguageServices.Razor.Test\Microsoft.VisualStudio.LanguageServices.Razor.Test.csproj" Condition="'$(OS)'!='Windows_NT'" />

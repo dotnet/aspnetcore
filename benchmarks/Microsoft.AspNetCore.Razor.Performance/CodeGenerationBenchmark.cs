@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.Performance
 {
-    [Config(typeof(CoreConfig))]
     public class CodeGenerationBenchmark
     {
         public CodeGenerationBenchmark()
