@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Blazor.Browser.Interop;
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.UITree;
 using System;
@@ -14,8 +15,16 @@ namespace Microsoft.Blazor.Browser
     /// </summary>
     internal class DOMComponentRenderState
     {
-        private static ConditionalWeakTable<IComponent, DOMComponentRenderState> _stateInstances
+        // Track the associations between component IDs, IComponent instances, and
+        // DOMComponentRenderState instances, but without pinning any IComponent instances
+        // in memory.
+        // TODO: Instead of storing these as statics, have some kind of RenderContext instance
+        // that holds them. It can also hold a reference to the root component, since otherwise
+        // there isn't anything stopping the whole hierarchy of components from being GCed.
+        private static ConditionalWeakTable<IComponent, DOMComponentRenderState> _renderStatesByComponent
             = new ConditionalWeakTable<IComponent, DOMComponentRenderState>();
+        private static WeakValueDictionary<string, DOMComponentRenderState> _renderStatesByComponentId
+            = new WeakValueDictionary<string, DOMComponentRenderState>();
         private static long _nextDOMComponentId = 0;
 
         private readonly UITreeBuilder _uITreeBuilder; // TODO: Maintain two, so we can diff successive renders
@@ -26,16 +35,16 @@ namespace Microsoft.Blazor.Browser
 
         private DOMComponentRenderState(string componentId, IComponent component)
         {
-            DOMComponentId = DOMComponentId;
+            DOMComponentId = componentId;
             Component = component;
             _uITreeBuilder = new UITreeBuilder();
         }
 
         public static DOMComponentRenderState GetOrCreate(IComponent component)
         {
-            lock (_stateInstances)
+            lock (_renderStatesByComponent)
             {
-                if (_stateInstances.TryGetValue(component, out var existingState))
+                if (_renderStatesByComponent.TryGetValue(component, out var existingState))
                 {
                     return existingState;
                 }
@@ -43,19 +52,48 @@ namespace Microsoft.Blazor.Browser
                 {
                     var newId = (_nextDOMComponentId++).ToString();
                     var newState = new DOMComponentRenderState(newId, component);
-                    _stateInstances.Add(component, newState);
+                    _renderStatesByComponent.Add(component, newState);
+                    _renderStatesByComponentId.Add(newId, newState);
                     return newState;
                 }
             }
         }
 
-        public ArraySegment<UITreeNode> UpdateRender()
+        public static DOMComponentRenderState FindByDOMComponentID(string id)
+            => _renderStatesByComponentId.TryGetValue(id, out var result)
+            ? result
+            : throw new ArgumentException($"No component was found with ID {id}");
+
+        private ArraySegment<UITreeNode> UpdateRender()
         {
             _uITreeBuilder.Clear();
             Component.BuildUITree(_uITreeBuilder);
 
             // TODO: Change this to return a diff between the previous render result and this new one
             return _uITreeBuilder.GetNodes();
+        }
+
+        public void RaiseEvent(int uiTreeNodeIndex)
+        {
+            var nodes = _uITreeBuilder.GetNodes();
+            var eventHandler = nodes.Array[nodes.Offset + uiTreeNodeIndex].AttributeEventHandlerValue;
+            if (eventHandler == null)
+            {
+                throw new ArgumentException($"Cannot raise event because the specified {nameof(UITreeNode)} at index {uiTreeNodeIndex} does not have any {nameof(UITreeNode.AttributeEventHandlerValue)}.");
+            }
+
+            eventHandler.Invoke();
+            RenderToDOM();
+        }
+
+        public void RenderToDOM()
+        {
+            var tree = UpdateRender();
+            RegisteredFunction.InvokeUnmarshalled<string, UITreeNode[], int, object>(
+                "_blazorRender",
+                DOMComponentId,
+                tree.Array,
+                tree.Count);
         }
     }
 }

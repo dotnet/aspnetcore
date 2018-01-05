@@ -3,7 +3,6 @@
 
 using Microsoft.Blazor.Browser.Interop;
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
 
 namespace Microsoft.Blazor.Browser
 {
@@ -26,17 +25,7 @@ namespace Microsoft.Blazor.Browser
             RegisteredFunction.InvokeUnmarshalled<string, string, object>(
                 "_blazorAttachComponentToElement", elementSelector, renderState.DOMComponentId);
 
-            RefreshComponentInDOM(renderState);
-        }
-
-        private static void RefreshComponentInDOM(DOMComponentRenderState renderState)
-        {
-            var tree = renderState.UpdateRender();
-            RegisteredFunction.InvokeUnmarshalled<string, UITreeNode[], int, object>(
-                "_blazorRender",
-                renderState.DOMComponentId,
-                tree.Array,
-                tree.Count);
+            renderState.RenderToDOM();
         }
     }
 }

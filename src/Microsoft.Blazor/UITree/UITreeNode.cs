@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.Blazor.UITree
 {
     // TODO: Consider coalescing properties of compatible types that don't need to be
@@ -48,6 +50,12 @@ namespace Microsoft.Blazor.UITree
         /// </summary>
         public string AttributeValue { get; private set; }
 
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// gets the attribute's event handle, if any. Otherwise, the value is <see langword="null"/>.
+        /// </summary>
+        public UIEventHandler AttributeEventHandlerValue { get; private set; }
+
         internal static UITreeNode Element(string elementName) => new UITreeNode
         {
             NodeType = UITreeNodeType.Element,
@@ -65,6 +73,13 @@ namespace Microsoft.Blazor.UITree
             NodeType = UITreeNodeType.Attribute,
             AttributeName = name,
             AttributeValue = value
+        };
+
+        internal static UITreeNode Attribute(string name, UIEventHandler value) => new UITreeNode
+        {
+            NodeType = UITreeNodeType.Attribute,
+            AttributeName = name,
+            AttributeEventHandlerValue = value
         };
 
         internal void CloseElement(int descendantsEndIndex)

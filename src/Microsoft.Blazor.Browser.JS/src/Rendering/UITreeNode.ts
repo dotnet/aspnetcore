@@ -1,6 +1,6 @@
 ﻿import { System_String, System_Array, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-const uiTreeNodeStructLength = 24;
+const uiTreeNodeStructLength = 28;
 
 // To minimise GC pressure, instead of instantiating a JS object to represent each tree node,
 // we work in terms of pointers to the structs on the .NET heap, and use static functions that

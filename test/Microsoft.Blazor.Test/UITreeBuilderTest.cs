@@ -136,13 +136,14 @@ namespace Microsoft.Blazor.Test
         {
             // Arrange
             var builder = new UITreeBuilder();
+            UIEventHandler eventHandler = () => { };
 
             // Act
             builder.OpenElement("myelement");                       //  0: <myelement
             builder.AddAttribute("attribute1", "value 1");          //  1:     attribute1="value 1"
             builder.AddAttribute("attribute2", "value 2");          //  2:     attribute2="value 2">
             builder.OpenElement("child");                           //  3:   <child
-            builder.AddAttribute("attribute1", "child value");      //  4:       attribute1="child value">
+            builder.AddAttribute("childevent", eventHandler);       //  4:       childevent=eventHandler>
             builder.AddText("some text");                           //  5:     some text
             builder.CloseElement();                                 //       </child>
             builder.CloseElement();                                 //     </myelement>
@@ -153,12 +154,12 @@ namespace Microsoft.Blazor.Test
                 node => AssertAttribute(node, "attribute1", "value 1"),
                 node => AssertAttribute(node, "attribute2", "value 2"),
                 node => AssertElement(node, "child", 5),
-                node => AssertAttribute(node, "attribute1", "child value"),
+                node => AssertAttribute(node, "childevent", eventHandler),
                 node => AssertText(node, "some text"));
         }
 
         [Fact]
-        public void CannotAddAttributesAtRoot()
+        public void CannotAddAttributeAtRoot()
         {
             // Arrange
             var builder = new UITreeBuilder();
@@ -171,7 +172,20 @@ namespace Microsoft.Blazor.Test
         }
 
         [Fact]
-        public void CannotAddAttributesToText()
+        public void CannotAddEventHandlerAttributeAtRoot()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.AddAttribute("name", () => { });
+            });
+        }
+
+        [Fact]
+        public void CannotAddAttributeToText()
         {
             // Arrange
             var builder = new UITreeBuilder();
@@ -182,6 +196,21 @@ namespace Microsoft.Blazor.Test
                 builder.OpenElement("some element");
                 builder.AddText("hello");
                 builder.AddAttribute("name", "value");
+            });
+        }
+
+        [Fact]
+        public void CannotAddEventHandlerAttributeToText()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.OpenElement("some element");
+                builder.AddText("hello");
+                builder.AddAttribute("name", () => { });
             });
         }
 
@@ -216,11 +245,22 @@ namespace Microsoft.Blazor.Test
             Assert.Equal(descendantsEndIndex, node.ElementDescendantsEndIndex);
         }
 
-        void AssertAttribute(UITreeNode node, string attributeName, string attributeValue)
+        void AssertAttribute(UITreeNode node, string attributeName)
         {
             Assert.Equal(UITreeNodeType.Attribute, node.NodeType);
             Assert.Equal(attributeName, node.AttributeName);
+        }
+
+        void AssertAttribute(UITreeNode node, string attributeName, string attributeValue)
+        {
+            AssertAttribute(node, attributeName);
             Assert.Equal(attributeValue, node.AttributeValue);
+        }
+
+        void AssertAttribute(UITreeNode node, string attributeName, UIEventHandler attributeEventHandlerValue)
+        {
+            AssertAttribute(node, attributeName);
+            Assert.Equal(attributeEventHandlerValue, node.AttributeEventHandlerValue);
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿import { registerFunction } from '../RegisteredFunction';
-import { System_String, System_Array } from '../Platform/Platform';
+import { System_Object, System_String, System_Array, MethodHandle } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, uiTreeNode, NodeType, UITreeNodePointer } from './UITreeNode';
+let raiseEventMethod: MethodHandle;
 
 // TODO: Instead of associating components to parent elements, associate them with a
 // start/end node, so that components don't have to be enclosed in a wrapper
@@ -20,8 +21,6 @@ function attachComponentToElement(elementSelector: System_String, componentId: S
     throw new Error(`Could not find any element matching selector '${elementSelectorJs}'.`);
   }
 
-  clearElement(element);
-
   const componentIdJs = platform.toJavaScriptString(componentId);
   componentIdToParentElement[componentIdJs] = element;
 }
@@ -33,13 +32,14 @@ function renderUITree(componentId: System_String, tree: System_Array, treeLength
     throw new Error(`No element is currently associated with component ${componentIdJs}`);
   }
 
-  insertNodeRange(element, tree, 0, treeLength - 1);
+  clearElement(element);
+  insertNodeRange(componentIdJs, element, tree, 0, treeLength - 1);
 }
 
-function insertNodeRange(intoDomElement: Element, tree: System_Array, startIndex: number, endIndex: number) {
+function insertNodeRange(componentId: string, intoDomElement: Element, tree: System_Array, startIndex: number, endIndex: number) {
   for (let index = startIndex; index <= endIndex; index++) {
     const node = getTreeNodePtr(tree, index);
-    insertNode(intoDomElement, tree, node, index);
+    insertNode(componentId, intoDomElement, tree, node, index);
 
     // Skip over any descendants, since they are already dealt with recursively
     const descendantsEndIndex = uiTreeNode.descendantsEndIndex(node);
@@ -49,11 +49,11 @@ function insertNodeRange(intoDomElement: Element, tree: System_Array, startIndex
   }
 }
 
-function insertNode(intoDomElement: Element, tree: System_Array, node: UITreeNodePointer, nodeIndex: number) {
+function insertNode(componentId: string, intoDomElement: Element, tree: System_Array, node: UITreeNodePointer, nodeIndex: number) {
   const nodeType = uiTreeNode.nodeType(node);
   switch (nodeType) {
     case NodeType.element:
-      insertElement(intoDomElement, tree, node, nodeIndex);
+      insertElement(componentId, intoDomElement, tree, node, nodeIndex);
       break;
     case NodeType.text:
       insertText(intoDomElement, node);
@@ -66,7 +66,7 @@ function insertNode(intoDomElement: Element, tree: System_Array, node: UITreeNod
   }
 }
 
-function insertElement(intoDomElement: Element, tree: System_Array, elementNode: UITreeNodePointer, elementNodeIndex: number) {
+function insertElement(componentId: string, intoDomElement: Element, tree: System_Array, elementNode: UITreeNodePointer, elementNodeIndex: number) {
   const tagName = uiTreeNode.elementName(elementNode);
   const newDomElement = document.createElement(tagName);
   intoDomElement.appendChild(newDomElement);
@@ -76,21 +76,46 @@ function insertElement(intoDomElement: Element, tree: System_Array, elementNode:
   for (let descendantIndex = elementNodeIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
     const descendantNode = getTreeNodePtr(tree, descendantIndex);
     if (uiTreeNode.nodeType(descendantNode) === NodeType.attribute) {
-      applyAttribute(newDomElement, descendantNode);
+      applyAttribute(componentId, newDomElement, descendantNode, descendantIndex);
     } else {
       // As soon as we see a non-attribute child, all the subsequent child nodes are
       // not attributes, so bail out and insert the remnants recursively
-      insertNodeRange(newDomElement, tree, descendantIndex, descendantsEndIndex);
+      insertNodeRange(componentId, newDomElement, tree, descendantIndex, descendantsEndIndex);
       break;
     }
   }
 }
 
-function applyAttribute(toDomElement: Element, attributeNode: UITreeNodePointer) {
-  toDomElement.setAttribute(
-    uiTreeNode.attributeName(attributeNode),
-    uiTreeNode.attributeValue(attributeNode)
-  );
+function applyAttribute(componentId: string, toDomElement: Element, attributeNode: UITreeNodePointer, attributeNodeIndex: number) {
+  const attributeName = uiTreeNode.attributeName(attributeNode);
+
+  switch (attributeName) {
+    case 'onclick':
+      toDomElement.addEventListener('click', () => raiseEvent(componentId, attributeNodeIndex, 'click'));
+      break;
+    default:
+      // Treat as a regular string-valued attribute
+      toDomElement.setAttribute(
+        attributeName,
+        uiTreeNode.attributeValue(attributeNode)
+      );
+      break;
+  }
+}
+
+function raiseEvent(componentId: string, uiTreeNodeIndex: number, eventName: string) {
+  if (!raiseEventMethod) {
+    raiseEventMethod = platform.findMethod(
+      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser', 'Events', 'RaiseEvent'
+    );
+  }
+
+  // TODO: Find a way of passing the uiTreeNodeIndex as a System.Int32, possibly boxing
+  // it first if necessary. Until then we have to send it as a string.
+  platform.callMethod(raiseEventMethod, null, [
+    platform.toDotNetString(componentId),
+    platform.toDotNetString(uiTreeNodeIndex.toString())
+  ]);
 }
 
 function insertText(intoDomElement: Element, textNode: UITreeNodePointer) {

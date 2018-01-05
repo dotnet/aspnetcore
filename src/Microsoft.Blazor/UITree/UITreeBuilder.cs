@@ -48,18 +48,32 @@ namespace Microsoft.Blazor.UITree
             => Append(UITreeNode.Text(textContent));
 
         /// <summary>
-        /// Appends a node representing an attribute. The attribute is associated
-        /// with the most recently added element.
+        /// Appends a node representing a string-valued attribute.
+        /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(string name, string value)
         {
-            if (_lastNonAttributeNodeType == UITreeNodeType.Element)
-            {
-                Append(UITreeNode.Attribute(name, value));
-            }
-            else
+            AssertCanAddAttribute();
+            Append(UITreeNode.Attribute(name, value));
+        }
+
+        /// <summary>
+        /// Appends a node representing an <see cref="UIEventHandler"/>-valued attribute.
+        /// The attribute is associated with the most recently added element.
+        /// </summary>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public void AddAttribute(string name, UIEventHandler value)
+        {
+            AssertCanAddAttribute();
+            Append(UITreeNode.Attribute(name, value));
+        }
+
+        private void AssertCanAddAttribute()
+        {
+            if (_lastNonAttributeNodeType != UITreeNodeType.Element)
             {
                 throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {UITreeNodeType.Element}");
             }

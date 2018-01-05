@@ -3,6 +3,7 @@
 
 using System;
 using BasicTestApp;
+using Microsoft.Blazor.Components;
 using Microsoft.Blazor.E2ETest.Infrastructure;
 using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
@@ -17,43 +18,55 @@ namespace Microsoft.Blazor.E2ETest.Tests
         public ComponentRenderingTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
+            Navigate("/", noReload: true);
         }
 
         [Fact]
         public void BasicTestAppCanBeServed()
         {
-            Navigate("/", noReload: true);
             Assert.Equal("Basic test app", Browser.Title);
         }
 
         [Fact]
         public void CanRenderTextOnlyComponent()
         {
-            Navigate("/", noReload: true);
-            MountTestComponent("BasicTestApp.TextOnlyComponent");
-
-            var appElement = Browser.FindElement(By.TagName("app"));
+            var appElement = MountTestComponent<TextOnlyComponent>();
             Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
         }
 
         [Fact]
         public void CanRenderComponentWithAttributes()
         {
-            Navigate("/", noReload: true);
-            MountTestComponent("BasicTestApp.RedTextComponent");
-
-            var appElement = Browser.FindElement(By.TagName("app"));
+            var appElement = MountTestComponent<RedTextComponent>();
             var styledElement = appElement.FindElement(By.TagName("h1"));
             Assert.Equal("Hello, world!", styledElement.Text);
             Assert.Equal("color: red;", styledElement.GetAttribute("style"));
             Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
         }
 
-        private void MountTestComponent(string componentTypeName)
+        [Fact]
+        public void CanTriggerEvents()
         {
+            var appElement = MountTestComponent<CounterComponent>();
+
+            Assert.Equal(
+                "Current count: 0",
+                appElement.FindElement(By.TagName("p")).Text);
+
+            appElement.FindElement(By.TagName("button")).Click();
+
+            Assert.Equal(
+                "Current count: 1",
+                appElement.FindElement(By.TagName("p")).Text);
+        }
+
+        private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
+        {
+            var componentTypeName = typeof(TComponent).FullName;
             WaitUntilDotNetRunningInBrowser();
             ((IJavaScriptExecutor)Browser).ExecuteScript(
                 $"mountTestComponent('{componentTypeName}')");
+            return Browser.FindElement(By.TagName("app"));
         }
 
         private void WaitUntilDotNetRunningInBrowser()
