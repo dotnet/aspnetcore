@@ -11,9 +11,9 @@ namespace Microsoft.Blazor.Components
     public interface IComponent
     {
         /// <summary>
-        /// Renders the component.
+        /// Builds a <see cref="UITree"/> representing the current state of the component.
         /// </summary>
         /// <param name="builder">A <see cref="UITreeBuilder"/> to which the rendered nodes should be appended.</param>
-        void Render(UITreeBuilder builder);
+        void BuildUITree(UITreeBuilder builder);
     }
 }

@@ -20,7 +20,7 @@ namespace BasicTestApp
         {
             var componentType = Type.GetType(componentTypeName);
             var componentInstance = (IComponent)Activator.CreateInstance(componentType);
-            Renderer.Render(componentInstance, "app");
+            DOM.AttachComponent("app", componentInstance);
         }
     }
 }

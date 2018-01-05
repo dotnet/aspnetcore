@@ -8,7 +8,7 @@ namespace BasicTestApp
 {
     public class TextOnlyComponent : IComponent
     {
-        public void Render(UITreeBuilder builder)
+        public void BuildUITree(UITreeBuilder builder)
         {
             builder.AddText($"Hello from {nameof(TextOnlyComponent)}");
         }

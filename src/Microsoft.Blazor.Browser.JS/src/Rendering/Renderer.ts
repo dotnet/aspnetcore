@@ -3,16 +3,36 @@ import { System_String, System_Array } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, uiTreeNode, NodeType, UITreeNodePointer } from './UITreeNode';
 
+// TODO: Instead of associating components to parent elements, associate them with a
+// start/end node, so that components don't have to be enclosed in a wrapper
+// TODO: To avoid leaking memory, automatically remove entries from this dict as soon
+// as the corresponding DOM nodes are removed (or maybe when the associated component
+// is disposed, assuming we can guarantee that always happens).
+const componentIdToParentElement: { [componentId: string]: Element } = {};
+
+registerFunction('_blazorAttachComponentToElement', attachComponentToElement);
 registerFunction('_blazorRender', renderUITree);
 
-function renderUITree(elementSelector: System_String, tree: System_Array, treeLength: number) {
+function attachComponentToElement(elementSelector: System_String, componentId: System_String) {
   const elementSelectorJs = platform.toJavaScriptString(elementSelector);
   const element = document.querySelector(elementSelectorJs);
   if (!element) {
-    throw new Error(`Could not find any element matching selector '${ elementSelectorJs }'.`);
+    throw new Error(`Could not find any element matching selector '${elementSelectorJs}'.`);
   }
 
   clearElement(element);
+
+  const componentIdJs = platform.toJavaScriptString(componentId);
+  componentIdToParentElement[componentIdJs] = element;
+}
+
+function renderUITree(componentId: System_String, tree: System_Array, treeLength: number) {
+  const componentIdJs = platform.toJavaScriptString(componentId);
+  const element = componentIdToParentElement[componentIdJs];
+  if (!element) {
+    throw new Error(`No element is currently associated with component ${componentIdJs}`);
+  }
+
   insertNodeRange(element, tree, 0, treeLength - 1);
 }
 

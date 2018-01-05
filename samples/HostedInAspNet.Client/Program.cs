@@ -13,13 +13,13 @@ namespace HostedInAspNet.Client
         {
             // Temporarily render this test component until there's a proper mechanism
             // for testing this.
-            Renderer.Render(new MyComponent(), "app");
+            DOM.AttachComponent("app", new MyComponent());
         }
     }
 
     internal class MyComponent : IComponent
     {
-        public void Render(UITreeBuilder builder)
+        public void BuildUITree(UITreeBuilder builder)
         {
             builder.OpenElement("h1");
             builder.AddText("Hello from UITree");
