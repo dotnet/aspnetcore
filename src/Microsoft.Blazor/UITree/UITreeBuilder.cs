@@ -15,6 +15,7 @@ namespace Microsoft.Blazor.UITree
         private UITreeNode[] _entries = new UITreeNode[100];
         private int _entriesInUse = 0;
         private Stack<int> _openElementIndices = new Stack<int>();
+        private UITreeNodeType? _lastNonAttributeNodeType;
 
         /// <summary>
         /// Appends a node representing an element, i.e., a container for other nodes.
@@ -47,6 +48,24 @@ namespace Microsoft.Blazor.UITree
             => Append(UITreeNode.Text(textContent));
 
         /// <summary>
+        /// Appends a node representing an attribute. The attribute is associated
+        /// with the most recently added element.
+        /// </summary>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public void AddAttribute(string name, string value)
+        {
+            if (_lastNonAttributeNodeType == UITreeNodeType.Element)
+            {
+                Append(UITreeNode.Attribute(name, value));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {UITreeNodeType.Element}");
+            }
+        }
+
+        /// <summary>
         /// Clears the builder.
         /// </summary>
         public void Clear()
@@ -61,6 +80,7 @@ namespace Microsoft.Blazor.UITree
 
             _entriesInUse = 0;
             _openElementIndices.Clear();
+            _lastNonAttributeNodeType = null;
         }
 
         /// <summary>
@@ -79,6 +99,12 @@ namespace Microsoft.Blazor.UITree
             }
 
             _entries[_entriesInUse++] = node;
+
+            var nodeType = node.NodeType;
+            if (nodeType != UITreeNodeType.Attribute)
+            {
+                _lastNonAttributeNodeType = node.NodeType;
+            }
         }
     }
 }

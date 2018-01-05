@@ -17,5 +17,10 @@ namespace Microsoft.Blazor.UITree
         /// Represents text content.
         /// </summary>
         Text = 2,
+
+        /// <summary>
+        /// Represents a key-value pair associated with another <see cref="UITreeNode"/>.
+        /// </summary>
+        Attribute = 3,
     }
 }

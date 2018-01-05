@@ -3,6 +3,10 @@
 
 namespace Microsoft.Blazor.UITree
 {
+    // TODO: Consider coalescing properties of compatible types that don't need to be
+    // used simultaneously. For example, 'ElementName' and 'AttributeName' could be replaced
+    // by a single 'Name' property.
+
     /// <summary>
     /// Represents an entry in a tree of user interface (UI) items.
     /// </summary>
@@ -32,6 +36,18 @@ namespace Microsoft.Blazor.UITree
         /// </summary>
         public string TextContent { get; private set; }
 
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// gets the attribute name. Otherwise, the value is <see langword="null"/>.
+        /// </summary>
+        public string AttributeName { get; private set; }
+
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// gets the attribute value. Otherwise, the value is <see langword="null"/>.
+        /// </summary>
+        public string AttributeValue { get; private set; }
+
         internal static UITreeNode Element(string elementName) => new UITreeNode
         {
             NodeType = UITreeNodeType.Element,
@@ -42,6 +58,13 @@ namespace Microsoft.Blazor.UITree
         {
             NodeType = UITreeNodeType.Text,
             TextContent = textContent,
+        };
+
+        internal static UITreeNode Attribute(string name, string value) => new UITreeNode
+        {
+            NodeType = UITreeNodeType.Attribute,
+            AttributeName = name,
+            AttributeValue = value
         };
 
         internal void CloseElement(int descendantsEndIndex)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.UITree;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -131,6 +132,60 @@ namespace Microsoft.Blazor.Test
         }
 
         [Fact]
+        public void CanAddAttributes()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act
+            builder.OpenElement("myelement");                       //  0: <myelement
+            builder.AddAttribute("attribute1", "value 1");          //  1:     attribute1="value 1"
+            builder.AddAttribute("attribute2", "value 2");          //  2:     attribute2="value 2">
+            builder.OpenElement("child");                           //  3:   <child
+            builder.AddAttribute("attribute1", "child value");      //  4:       attribute1="child value">
+            builder.AddText("some text");                           //  5:     some text
+            builder.CloseElement();                                 //       </child>
+            builder.CloseElement();                                 //     </myelement>
+
+            // Assert
+            Assert.Collection(builder.GetNodes(),
+                node => AssertElement(node, "myelement", 5),
+                node => AssertAttribute(node, "attribute1", "value 1"),
+                node => AssertAttribute(node, "attribute2", "value 2"),
+                node => AssertElement(node, "child", 5),
+                node => AssertAttribute(node, "attribute1", "child value"),
+                node => AssertText(node, "some text"));
+        }
+
+        [Fact]
+        public void CannotAddAttributesAtRoot()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.AddAttribute("name", "value");
+            });
+        }
+
+        [Fact]
+        public void CannotAddAttributesToText()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.OpenElement("some element");
+                builder.AddText("hello");
+                builder.AddAttribute("name", "value");
+            });
+        }
+
+        [Fact]
         public void CanClear()
         {
             // Arrange
@@ -159,6 +214,13 @@ namespace Microsoft.Blazor.Test
             Assert.Equal(UITreeNodeType.Element, node.NodeType);
             Assert.Equal(elementName, node.ElementName);
             Assert.Equal(descendantsEndIndex, node.ElementDescendantsEndIndex);
+        }
+
+        void AssertAttribute(UITreeNode node, string attributeName, string attributeValue)
+        {
+            Assert.Equal(UITreeNodeType.Attribute, node.NodeType);
+            Assert.Equal(attributeName, node.AttributeName);
+            Assert.Equal(attributeValue, node.AttributeValue);
         }
     }
 }
