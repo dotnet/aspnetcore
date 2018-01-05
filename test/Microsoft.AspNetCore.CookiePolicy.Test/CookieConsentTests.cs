@@ -542,6 +542,91 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.Empty(httpContext.Response.Headers[HeaderNames.SetCookie]);
         }
 
+        [Fact]
+        public async Task CreateConsentCookieMatchesGrantConsentCookie()
+        {
+            var httpContext = await RunTestAsync(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+            },
+            requestContext => { },
+            context =>
+            {
+                var feature = context.Features.Get<ITrackingConsentFeature>();
+                Assert.True(feature.IsConsentNeeded);
+                Assert.False(feature.HasConsent);
+                Assert.False(feature.CanTrack);
+
+                feature.GrantConsent();
+
+                Assert.True(feature.IsConsentNeeded);
+                Assert.True(feature.HasConsent);
+                Assert.True(feature.CanTrack);
+
+                var cookie = feature.CreateConsentCookie();
+                context.Response.Headers["ManualCookie"] = cookie;
+
+                return Task.CompletedTask;
+            });
+
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal(1, cookies.Count);
+            var consentCookie = cookies[0];
+            Assert.Equal(".AspNet.Consent", consentCookie.Name);
+            Assert.Equal("yes", consentCookie.Value);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Lax, consentCookie.SameSite);
+            Assert.NotNull(consentCookie.Expires);
+
+            Assert.Equal(httpContext.Response.Headers[HeaderNames.SetCookie], httpContext.Response.Headers["ManualCookie"]);
+        }
+
+        [Fact]
+        public async Task CreateConsentCookieAppliesPolicy()
+        {
+            var httpContext = await RunTestAsync(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = Http.SameSiteMode.Strict;
+                options.OnAppendCookie = context =>
+                {
+                    Assert.Equal(".AspNet.Consent", context.CookieName);
+                    Assert.Equal("yes", context.CookieValue);
+                    Assert.Equal(Http.SameSiteMode.Strict, context.CookieOptions.SameSite);
+                    context.CookieName += "1";
+                    context.CookieValue += "1";
+                };
+            },
+            requestContext => { },
+            context =>
+            {
+                var feature = context.Features.Get<ITrackingConsentFeature>();
+                Assert.True(feature.IsConsentNeeded);
+                Assert.False(feature.HasConsent);
+                Assert.False(feature.CanTrack);
+
+                feature.GrantConsent();
+
+                Assert.True(feature.IsConsentNeeded);
+                Assert.True(feature.HasConsent);
+                Assert.True(feature.CanTrack);
+
+                var cookie = feature.CreateConsentCookie();
+                context.Response.Headers["ManualCookie"] = cookie;
+
+                return Task.CompletedTask;
+            });
+
+            var cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers[HeaderNames.SetCookie]);
+            Assert.Equal(1, cookies.Count);
+            var consentCookie = cookies[0];
+            Assert.Equal(".AspNet.Consent1", consentCookie.Name);
+            Assert.Equal("yes1", consentCookie.Value);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.Strict, consentCookie.SameSite);
+            Assert.NotNull(consentCookie.Expires);
+
+            Assert.Equal(httpContext.Response.Headers[HeaderNames.SetCookie], httpContext.Response.Headers["ManualCookie"]);
+        }
+
         private Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
         {
             var builder = new WebHostBuilder()

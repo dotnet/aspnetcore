@@ -82,6 +82,30 @@ namespace Microsoft.AspNetCore.CookiePolicy
             _hasConsent = false;
         }
 
+        // Note policy will be applied. We don't want to bypass policy because we want HttpOnly, Secure, etc. to apply.
+        public string CreateConsentCookie()
+        {
+            var key = Options.ConsentCookie.Name;
+            var value = ConsentValue;
+            var options = Options.ConsentCookie.Build(Context);
+            ApplyAppendPolicy(ref key, ref value, options);
+
+            var setCookieHeaderValue = new Net.Http.Headers.SetCookieHeaderValue(
+                Uri.EscapeDataString(key),
+                Uri.EscapeDataString(value))
+                {
+                    Domain = options.Domain,
+                    Path = options.Path,
+                    Expires = options.Expires,
+                    MaxAge = options.MaxAge,
+                    Secure = options.Secure,
+                    SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
+                    HttpOnly = options.HttpOnly
+                };
+
+            return setCookieHeaderValue.ToString();
+        }
+
         private bool CheckPolicyRequired()
         {
             return !CanTrack
@@ -109,6 +133,14 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (ApplyAppendPolicy(ref key, ref value, options))
+            {
+                Cookies.Append(key, value, options);
+            }
+        }
+
+        private bool ApplyAppendPolicy(ref string key, ref string value, CookieOptions options)
+        {
             var issueCookie = CanTrack || options.IsEssential;
             ApplyPolicy(options);
             if (Options.OnAppendCookie != null)
@@ -126,10 +158,7 @@ namespace Microsoft.AspNetCore.CookiePolicy
                 issueCookie = context.IssueCookie;
             }
 
-            if (issueCookie)
-            {
-                Cookies.Append(key, value, options);
-            }
+            return issueCookie;
         }
 
         public void Delete(string key)
