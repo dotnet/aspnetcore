@@ -58,6 +58,8 @@ function insertNode(intoDomElement: Element, tree: System_Array, node: UITreeNod
     case NodeType.text:
       insertText(intoDomElement, node);
       break;
+    case NodeType.attribute:
+      throw new Error('Attribute nodes should only be present as leading children of element nodes.');
     default:
       const unknownType: never = nodeType; // Compile-time verification that the switch was exhaustive
       throw new Error(`Unknown node type: ${ unknownType }`);
@@ -69,9 +71,26 @@ function insertElement(intoDomElement: Element, tree: System_Array, elementNode:
   const newDomElement = document.createElement(tagName);
   intoDomElement.appendChild(newDomElement);
 
-  // Recursively insert children
+  // Apply attributes
   const descendantsEndIndex = uiTreeNode.descendantsEndIndex(elementNode);
-  insertNodeRange(newDomElement, tree, elementNodeIndex + 1, descendantsEndIndex);
+  for (let descendantIndex = elementNodeIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
+    const descendantNode = getTreeNodePtr(tree, descendantIndex);
+    if (uiTreeNode.nodeType(descendantNode) === NodeType.attribute) {
+      applyAttribute(newDomElement, descendantNode);
+    } else {
+      // As soon as we see a non-attribute child, all the subsequent child nodes are
+      // not attributes, so bail out and insert the remnants recursively
+      insertNodeRange(newDomElement, tree, descendantIndex, descendantsEndIndex);
+      break;
+    }
+  }
+}
+
+function applyAttribute(toDomElement: Element, attributeNode: UITreeNodePointer) {
+  toDomElement.setAttribute(
+    uiTreeNode.attributeName(attributeNode),
+    uiTreeNode.attributeValue(attributeNode)
+  );
 }
 
 function insertText(intoDomElement: Element, textNode: UITreeNodePointer) {

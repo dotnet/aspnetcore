@@ -36,6 +36,19 @@ namespace Microsoft.Blazor.E2ETest.Tests
             Assert.Equal("Hello from TextOnlyComponent", appElement.Text);
         }
 
+        [Fact]
+        public void CanRenderComponentWithAttributes()
+        {
+            Navigate("/", noReload: true);
+            MountTestComponent("BasicTestApp.RedTextComponent");
+
+            var appElement = Browser.FindElement(By.TagName("app"));
+            var styledElement = appElement.FindElement(By.TagName("h1"));
+            Assert.Equal("Hello, world!", styledElement.Text);
+            Assert.Equal("color: red;", styledElement.GetAttribute("style"));
+            Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
+        }
+
         private void MountTestComponent(string componentTypeName)
         {
             WaitUntilDotNetRunningInBrowser();
