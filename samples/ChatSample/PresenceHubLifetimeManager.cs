@@ -162,6 +162,11 @@ namespace ChatSample
             return _wrappedHubLifetimeManager.InvokeGroupAsync(groupName, methodName, args);
         }
 
+        public override Task InvokeGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeGroupsAsync(groupNames, methodName, args);
+        }
+
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
             return _wrappedHubLifetimeManager.InvokeUserAsync(userId, methodName, args);

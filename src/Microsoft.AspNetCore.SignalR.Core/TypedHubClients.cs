@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.SignalR
             return TypedClientBuilder<T>.Build(_hubClients.Clients(connectionIds));
         }
 
+        public T Groups(IReadOnlyList<string> groupNames)
+        {
+            return TypedClientBuilder<T>.Build(_hubClients.Groups(groupNames));
+        }
+
         public T OthersInGroup(string groupName)
         {
             return TypedClientBuilder<T>.Build(_hubClients.OthersInGroup(groupName));

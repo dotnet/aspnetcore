@@ -47,6 +47,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return Clients.GroupExcept(groupName, excludedIds).InvokeAsync("Send", message);
         }
 
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
+        {
+            return Clients.Groups(groupNames).InvokeAsync("Send", message);
+        }
+
         public Task SendToOthersInGroup(string groupName, string message)
         {
             return Clients.OthersInGroup(groupName).InvokeAsync("Send", message);
@@ -206,6 +211,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return Clients.OthersInGroup(groupName).Send(message);
         }
 
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
+        {
+            return Clients.Groups(groupNames).Send(message);
+        }
+
         public Task BroadcastMethod(string message)
         {
             return Clients.All.Broadcast(message);
@@ -275,6 +285,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
         public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
         {
             return Clients.GroupExcept(groupName, excludedIds).Send(message);
+        }
+
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
+        {
+            return Clients.Groups(groupNames).Send(message);
         }
 
         public Task SendToOthersInGroup(string groupName, string message)

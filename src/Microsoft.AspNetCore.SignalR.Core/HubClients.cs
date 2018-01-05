@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.SignalR
             return new MultipleClientProxy<THub>(_lifetimeManager, connectionIds);
         }
 
+        public IClientProxy Groups(IReadOnlyList<string> groupNames)
+        {
+            return new MultipleGroupProxy<THub>(_lifetimeManager, groupNames);
+        }
+
         public IClientProxy User(string userId)
         {
             return new UserProxy<THub>(_lifetimeManager, userId);
