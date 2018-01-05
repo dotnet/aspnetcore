@@ -14,7 +14,7 @@
     <Content Update="ForTesting\**\*" CopyToPublishDirectory="Never" Condition=" '$(PublishForTesting)' != 'true' " />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" />
   </ItemGroup>
 
