@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BasicWebSite.Filters;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BasicWebSite.Controllers
@@ -116,6 +117,12 @@ namespace BasicWebSite.Controllers
         public string UnhandledExceptionAndGetTempData()
         {
             return TempData[nameof(UnhandledExceptionAndSettingTempData)]?.ToString();
+        }
+
+        [HttpGet]
+        public void GrantConsent()
+        {
+            HttpContext.Features.Get<ITrackingConsentFeature>().GrantConsent();
         }
     }
 }

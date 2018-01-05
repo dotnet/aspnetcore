@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Mvc
             HttpOnly = true,
             SameSite = SameSiteMode.Strict,
 
+            // This cookie has been marked as non-essential because a user could use the SessionStateTempDataProvider,
+            // which is more common in production scenarios. Check the comment on CookieBuilder below
+            // for more information.
+            IsEssential = false,
+
             // Some browsers do not allow non-secure endpoints to set cookies with a 'secure' flag or overwrite cookies
             // whose 'secure' flag is set (http://httpwg.org/http-extensions/draft-ietf-httpbis-cookie-alone.html).
             // Since mixing secure and non-secure endpoints is a common scenario in applications, we are relaxing the
@@ -33,7 +38,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// <para>
         /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Strict"/>.
         /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest" />.
-        /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>
+        /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+        /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>, This property is only considered when a
+        /// user opts into the CookiePolicyMiddleware. If you are using this middleware and want to use
+        /// <see cref="CookieTempDataProvider"/>, then either set this property to <c>true</c> or
+        /// request user consent for non-essential cookies.
         /// </para>
         /// </summary>
         public CookieBuilder Cookie
