@@ -152,6 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
                     { helper => helper.RenderPartial("test"), null, null },
                     { helper => helper.RenderPartial("test", model), model, null },
                     { helper => helper.RenderPartial("test", viewData), null, viewData },
+                    { helper => helper.RenderPartial("test", model, viewData), model, viewData },
                 };
             }
         }
