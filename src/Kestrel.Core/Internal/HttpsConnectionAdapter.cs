@@ -160,7 +160,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             }
 
 #if NETCOREAPP2_1
-            feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.Protocol;
+            // Don't allocate in the common case, see https://github.com/dotnet/corefx/issues/25432
+            if (sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http11)
+            {
+                feature.ApplicationProtocol = "http/1.1";
+            }
+            else if (sslStream.NegotiatedApplicationProtocol == SslApplicationProtocol.Http2)
+            {
+                feature.ApplicationProtocol = "h2";
+            }
+            else
+            {
+                feature.ApplicationProtocol = sslStream.NegotiatedApplicationProtocol.ToString();
+            }
+
             context.Features.Set<ITlsApplicationProtocolFeature>(feature);
 #endif
             feature.ClientCertificate = ConvertToX509Certificate2(sslStream.RemoteCertificate);

@@ -15,9 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="testCert.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Content Include="../../test/shared/TestCertificates/testCert.pfx" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
