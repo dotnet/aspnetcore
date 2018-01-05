@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
             return TypedClientBuilder<T>.Build(new SingleClientProxy<THub>(_lifetimeManager, connectionId));
         }
 
-        public T MultipleClients(IReadOnlyList<string> connectionIds)
+        public T Clients(IReadOnlyList<string> connectionIds)
         {
             return TypedClientBuilder<T>.Build(new MultipleClientProxy<THub>(_lifetimeManager, connectionIds));
         }

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
-            return Clients.MultipleClients(connectionIds).InvokeAsync("Send", message);
+            return Clients.Clients(connectionIds).InvokeAsync("Send", message);
         }
 
         public Task GroupAddMethod(string groupName)
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
-            return Clients.MultipleClients(connectionIds).Send(message);
+            return Clients.Clients(connectionIds).Send(message);
         }
 
         public Task GroupAddMethod(string groupName)
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
-            return Clients.MultipleClients(connectionIds).Send(message);
+            return Clients.Clients(connectionIds).Send(message);
         }
 
         public async Task DelayedSend(string connectionId, string message)

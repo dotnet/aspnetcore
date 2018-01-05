@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         T Client(string connectionId);
 
-        T MultipleClients(IReadOnlyList<string> connectionIds);
+        T Clients(IReadOnlyList<string> connectionIds);
 
         T Group(string groupName);
 

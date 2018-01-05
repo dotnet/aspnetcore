@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR
         public dynamic AllExcept(IReadOnlyList<string> excludedIds) => new DynamicClientProxy(_clients.AllExcept(excludedIds));
         public dynamic Caller => new DynamicClientProxy(_clients.Caller);
         public dynamic Client(string connectionId) => new DynamicClientProxy(_clients.Client(connectionId));
-        public dynamic MultipleClients(IReadOnlyList<string> connectionIds) => new DynamicClientProxy(_clients.MultipleClients(connectionIds));
+        public dynamic Clients(IReadOnlyList<string> connectionIds) => new DynamicClientProxy(_clients.Clients(connectionIds));
         public dynamic Group(string groupName) => new DynamicClientProxy(_clients.Group(groupName));
         public dynamic GroupExcept(string groupName, IReadOnlyList<string> excludedIds) => new DynamicClientProxy(_clients.GroupExcept(groupName, excludedIds));
         public dynamic OthersInGroup(string groupName) => new DynamicClientProxy(_clients.OthersInGroup(groupName));

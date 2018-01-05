@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.SignalR
            return _hubClients.User(userId);
         }
 
-        public IClientProxy MultipleClients(IReadOnlyList<string> connectionIds)
+        public IClientProxy Clients(IReadOnlyList<string> connectionIds)
         {
-            return _hubClients.MultipleClients(connectionIds);
+            return _hubClients.Clients(connectionIds);
         }
     }
 }
