@@ -173,7 +173,7 @@
     <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-26102-01</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingChannelsPackageVersion>
     <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26102-01</SystemThreadingTasksDataflowPackageVersion>
-    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26102-01</SystemThreadingTasksExtensionsPackageVersion>
+    <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26102-01</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview1-26102-01</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.6.0-beta1-62023-02</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
