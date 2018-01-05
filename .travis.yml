@@ -6,9 +6,10 @@ env:
     - DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     - DOTNET_CLI_TELEMETRY_OPTOUT: 1
     - AUTOBAHN_SUITES_LOG: 1
+    - ASPNETCORE_WSTEST_PATH: "$TRAVIS_BUILD_DIR/.virtualenv/bin/wstest"
 mono: none
 python:
-  - "2.7"
+  - pypy
 os:
   - linux
   - osx
@@ -23,9 +24,7 @@ branches:
     - release
     - dev
     - /^(.*\/)?ci-.*$/
-before_install:
-  - if test "$TRAVIS_OS_NAME" == "osx"; then brew update; brew install openssl python; ln -s /usr/local/opt/openssl/lib/libcrypto.1.0.0.dylib /usr/local/lib/; ln -s /usr/local/opt/openssl/lib/libssl.1.0.0.dylib /usr/local/lib/; fi
 install:
-  - pip install autobahntestsuite "six>=1.9.0"
+  - ./build/setup-wstest.sh
 script:
   - ./build.sh

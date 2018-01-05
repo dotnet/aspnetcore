@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
                 Spec.WriteJson(specFile);
 
                 // Run the test (write something to the console so people know this will take a while...)
+                _logger.LogInformation("Using 'wstest' from: {WsTestPath}", Wstest.Default.Location);
                 _logger.LogInformation("Now launching Autobahn Test Suite. This will take a while.");
                 var exitCode = await Wstest.Default.ExecAsync("-m fuzzingclient -s " + specFile, cancellationToken, _loggerFactory.CreateLogger("wstest"));
                 if (exitCode != 0)

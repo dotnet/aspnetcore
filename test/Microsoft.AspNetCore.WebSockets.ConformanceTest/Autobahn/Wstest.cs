@@ -15,7 +15,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
 
         private static Wstest Create()
         {
-            var location = Locate("wstest");
+            var location = Environment.GetEnvironmentVariable("ASPNETCORE_WSTEST_PATH");
+            if (string.IsNullOrEmpty(location))
+            {
+                location = Locate("wstest");
+            }
             return location == null ? null : new Wstest(location);
         }
     }

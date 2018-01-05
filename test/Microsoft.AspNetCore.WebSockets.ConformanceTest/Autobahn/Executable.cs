@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
     {
         private static readonly string _exeSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
 
-        private readonly string _path;
+        public string Location { get; }
 
         protected Executable(string path)
         {
-            _path = path;
+            Location = path;
         }
 
         public static string Locate(string name)
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn
             {
                 StartInfo = new ProcessStartInfo()
                 {
-                    FileName = _path,
+                    FileName = Location,
                     Arguments = args,
                     UseShellExecute = false,
                     RedirectStandardError = true,
