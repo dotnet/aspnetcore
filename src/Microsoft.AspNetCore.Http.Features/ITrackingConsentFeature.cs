@@ -35,5 +35,10 @@ namespace Microsoft.AspNetCore.Http.Features
         /// this will also withdraw consent for future requests.
         /// </summary>
         void WithdrawConsent();
+
+        /// <summary>
+        /// Creates a consent cookie for use when granting consent from a javascript client.
+        /// </summary>
+        string CreateConsentCookie();
     }
 }
