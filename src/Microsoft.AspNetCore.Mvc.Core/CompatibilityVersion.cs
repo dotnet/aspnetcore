@@ -51,7 +51,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// <remarks>
         /// ASP.NET Core MVC 2.1 introduces compatibility switches for the following:
         /// <list type="bullet">
+        ///     <item><description><see cref="MvcOptions.InputFormatterExceptionPolicy"/></description></item>
         ///     <item><description><see cref="MvcOptions.SuppressBindingUndefinedValueToEnumType"/></description></item>
+        ///     <item><description><c>MvcJsonOptions.AllowInputFormatterExceptionMessages</c></description></item>
         ///     <item><description><c>RazorPagesOptions.AllowAreas</c></description></item>
         /// </list>
         /// </remarks>

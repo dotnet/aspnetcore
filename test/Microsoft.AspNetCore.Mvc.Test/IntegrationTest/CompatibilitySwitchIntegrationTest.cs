@@ -28,11 +28,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
 
             // Assert
             Assert.False(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.False(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
+            Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
         }
 
         [Fact(Skip = "#7157 - some settings have the wrong values, this test should pass once #7157 is fixed")]
@@ -47,11 +48,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.True(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
+            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
         }
 
         [Fact(Skip = "#7157 - some settings have the wrong values, this test should pass once #7157 is fixed")]
@@ -66,11 +68,12 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
 
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
-            Assert.True(mvcOptions.SuppressJsonDeserializationExceptionMessagesInModelState); // This name needs to be inverted in #7157
+            Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
         }
 
         // This just does the minimum needed to be able to resolve these options.

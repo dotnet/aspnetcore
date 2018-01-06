@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
-        [Fact]
+        [Fact] // This test covers the 2.0 behavior. JSON.Net error messages are not preserved.
         public async Task JsonInputFormatter_SuppliedJsonDeserializationErrorMessage()
         {
             // Arrange
@@ -109,7 +109,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("{\"\":[\"Unexpected end when reading JSON. Path '', line 1, position 1.\"]}", responseBody);
+
+            // Update me in 3.0 xD
+            Assert.Equal("{\"\":[\"The input was not valid.\"]}", responseBody);
         }
 
         [Theory]

@@ -24,9 +24,11 @@ namespace Microsoft.AspNetCore.Mvc
         // See CompatibilitySwitch.cs for guide on how to implement these.
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
-        private readonly CompatibilitySwitch<bool> _suppressJsonDeserializationExceptionMessagesInModelState;
         private readonly ICompatibilitySwitch[] _switches;
 
+        /// <summary>
+        /// Creates a new instance of <see cref="MvcOptions"/>.
+        /// </summary>
         public MvcOptions()
         {
             CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
@@ -43,12 +45,11 @@ namespace Microsoft.AspNetCore.Mvc
 
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
-            _suppressJsonDeserializationExceptionMessagesInModelState = new CompatibilitySwitch<bool>(nameof(SuppressJsonDeserializationExceptionMessagesInModelState));
+            
             _switches = new ICompatibilitySwitch[]
             {
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
-                _suppressJsonDeserializationExceptionMessagesInModelState,
             };
         }
 
@@ -240,20 +241,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the default value for the Permanent property of <see cref="RequireHttpsAttribute"/>.
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
-
-
-        /// <summary>
-        /// Gets or sets a flag to determine whether, if an action receives invalid JSON in
-        /// the request body, the JSON deserialization exception message should be replaced
-        /// by a generic error message in model state.
-        /// <see langword="false"/> by default, meaning that clients may receive details about
-        /// why the JSON they posted is considered invalid.
-        /// </summary>
-        public bool SuppressJsonDeserializationExceptionMessagesInModelState
-        {
-            get => _suppressJsonDeserializationExceptionMessagesInModelState.Value;
-            set => _suppressJsonDeserializationExceptionMessagesInModelState.Value = value;
-        }
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
         {

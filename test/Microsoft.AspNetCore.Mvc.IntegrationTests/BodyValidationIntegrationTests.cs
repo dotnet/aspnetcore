@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.IntegrationTests
@@ -448,7 +449,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             public int Address { get; set; }
         }
 
-        [Fact]
+        [Fact] // This tests the 2.0 behavior. Error messages from JSON.NET are not preserved.
         public async Task FromBodyAndRequiredOnValueTypeProperty_EmptyBody_JsonFormatterAddsModelStateError()
         {
             // Arrange
@@ -485,11 +486,10 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(entry.Value.AttemptedValue);
             Assert.Null(entry.Value.RawValue);
             var error = Assert.Single(entry.Value.Errors);
-            Assert.Null(error.Exception);
-
-            // Json.NET currently throws an exception starting with "No JSON content found and type 'System.Int32' is
-            // not nullable." but do not tie test to a particular Json.NET build.
-            Assert.NotEmpty(error.ErrorMessage);
+            
+            // Update me in 3.0 when MvcJsonOptions.AllowInputFormatterExceptionMessages is removed
+            Assert.IsType<JsonSerializationException>(error.Exception);
+            Assert.Empty(error.ErrorMessage);
         }
 
         private class Person5
@@ -545,7 +545,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelState);
         }
 
-        [Fact]
+        [Fact] // This test covers the 2.0 behavior. Error messages from JSON.Net are preserved.
         public async Task FromBodyWithInvalidPropertyData_JsonFormatterAddsModelError()
         {
             // Arrange
@@ -586,18 +586,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(state.AttemptedValue);
             Assert.Null(state.RawValue);
             var error = Assert.Single(state.Errors);
-            Assert.Null(error.Exception);
 
-            // Json.NET currently throws an Exception with a Message starting with "Could not convert string to
-            // integer: not a number." but do not tie test to a particular Json.NET build.
-            Assert.NotEmpty(error.ErrorMessage);
+            // Update me in 3.0 when MvcJsonOptions.AllowInputFormatterExceptionMessages is removed
+            Assert.IsType<JsonReaderException>(error.Exception);
+            Assert.Empty(error.ErrorMessage);
         }
 
         [Theory]
         [InlineData(false, false)]
         [InlineData(true, true)]
         public async Task FromBodyWithEmptyBody_JsonFormatterAddsModelErrorWhenExpected(
-            bool allowEmptyInputInBodyModelBindingSetting, bool expectedModelStateIsValid)
+            bool allowEmptyInputInBodyModelBindingSetting, 
+            bool expectedModelStateIsValid)
         {
             // Arrange
             var parameter = new ParameterDescriptor

@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ArrayPool<char> charPool,
             ObjectPoolProvider objectPoolProvider,
             bool suppressInputFormatterBuffering)
-            : this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, suppressJsonDeserializationExceptionMessages: false)
+            : this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, allowInputFormatterExceptionMessages: false)
         {
         }
 
@@ -75,7 +75,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         /// <param name="suppressInputFormatterBuffering">Flag to buffer entire request body before deserializing it.</param>
-        /// <param name="suppressJsonDeserializationExceptionMessages">If <see langword="true"/>, JSON deserialization exception messages will replaced by a generic message in model state.</param>
+        /// <param name="allowInputFormatterExceptionMessages">
+        /// If <see langword="false"/>, JSON deserialization exception messages will replaced by a generic message in model state.
+        /// </param>
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public JsonPatchInputFormatter(
             ILogger logger,
@@ -83,8 +85,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ArrayPool<char> charPool,
             ObjectPoolProvider objectPoolProvider,
             bool suppressInputFormatterBuffering,
-            bool suppressJsonDeserializationExceptionMessages)
-            : base(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, suppressJsonDeserializationExceptionMessages)
+            bool allowInputFormatterExceptionMessages)
+            : base(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering, allowInputFormatterExceptionMessages)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();
@@ -104,13 +106,15 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
         /// <param name="objectPoolProvider">The <see cref="ObjectPoolProvider"/>.</param>
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
+        /// <param name="jsonOptions">The <see cref="MvcJsonOptions"/>.</param>
         public JsonPatchInputFormatter(
             ILogger logger,
             JsonSerializerSettings serializerSettings,
             ArrayPool<char> charPool,
             ObjectPoolProvider objectPoolProvider,
-            MvcOptions options)
-            : base(logger, serializerSettings, charPool, objectPoolProvider, options)
+            MvcOptions options,
+            MvcJsonOptions jsonOptions)
+            : base(logger, serializerSettings, charPool, objectPoolProvider, options, jsonOptions)
         {
             // Clear all values and only include json-patch+json value.
             SupportedMediaTypes.Clear();

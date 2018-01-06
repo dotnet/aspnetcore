@@ -387,6 +387,13 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
+                        typeof(IPostConfigureOptions<MvcJsonOptions>),
+                        new[]
+                        {
+                            typeof(MvcJsonOptions).Assembly.GetType("Microsoft.AspNetCore.Mvc.MvcJsonOptionsConfigureCompatibilityOptions", throwOnError: true),
+                        }
+                    },
+                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {
