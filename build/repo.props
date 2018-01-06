@@ -19,12 +19,47 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <IntermediateInstaller Include="win-x86" FileExt=".zip" />
+    <IntermediateInstaller Include="win-x86" FileExt=".msi" />
+    <IntermediateInstaller Include="win-x86" FileExt=".wixlib" />
+    <IntermediateInstaller Include="win-x64" FileExt=".msi" />
+    <IntermediateInstaller Include="win-x64" FileExt=".zip" />
+    <IntermediateInstaller Include="win-x64" FileExt=".wixlib" />
+    <IntermediateInstaller Include="osx-x64" FileExt=".tar.gz" />
+    <IntermediateInstaller Include="linux-x64" FileExt=".tar.gz" />
+
+    <RuntimeSymbolsArchive Include="win-x86" FileExt=".zip" />
+    <RuntimeSymbolsArchive Include="win-x64" FileExt=".zip" />
+    <RuntimeSymbolsArchive Include="linux-x64" FileExt=".tar.gz" />
+
+    <NativeInstaller Include="win-x86" FileExt=".exe" />
+    <NativeInstaller Include="win-x86" FileExt=".zip" />
+    <NativeInstaller Include="win-x64" FileExt=".exe" />
+    <NativeInstaller Include="win-x64" FileExt=".zip" />
+    <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
+    <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
+
+    <NativeInstaller Include="debian.8" FileExt=".deb" />
+    <NativeInstaller Include="debian.9" FileExt=".deb" />
+    <NativeInstaller Include="ubuntu.14.04" FileExt=".deb" />
+    <NativeInstaller Include="ubuntu.16.04" FileExt=".deb" />
+    <NativeInstaller Include="ubuntu.17.04" FileExt=".deb" />
+
+    <NativeInstaller Include="rhel.7" FileExt=".rpm" />
+    <NativeInstaller Include="rh.rhel.7" FileExt=".rpm" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Explicitly require the 2.0.x and 2.1.0-* version of shared runtime used by universe -->
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)" />
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp21PackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
+  </PropertyGroup>
 
   <Import Project="external-dependencies.props" />
   <Import Project="artifacts.props" />

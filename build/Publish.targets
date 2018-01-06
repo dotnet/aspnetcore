@@ -1,0 +1,135 @@
+<Project>
+
+  <PropertyGroup>
+    <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
+    <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
+    <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
+    <BaseRuntimeVersionFile>$(ArtifactsDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
+    <LatestRuntimeVersionFileName>latest.aspnetcore.version</LatestRuntimeVersionFileName>
+    <LatestRuntimeVersionFile>$(ArtifactsDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
+  </PropertyGroup>
+
+  <Target Name="Publish"
+    DependsOnTargets="GetFilesToPublish;PublishToAzureFeed" />
+
+  <Target Name="GeneratePublishFiles" DependsOnTargets="ResolveCommitHash">
+    <MakeDir Directories="$(ArtifactsDir)" />
+
+    <!--
+      Used by the dotnet/cli build to determine which version of Microsoft.NETCore.App is used.
+    -->
+    <WriteLinesToFile File="$(BaseRuntimeVersionFile)" Lines="$(MicrosoftNETCoreApp21PackageVersion)" Overwrite="true" />
+
+    <!--
+      Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
+      The second line must be the package version.
+      See dotnet-install.ps1/sh.
+    -->
+    <WriteLinesToFile
+      File="$(LatestRuntimeVersionFile)"
+      Lines="$(CommitHash);$(PackageVersion)"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <SharedFxVersionBadge Include="$(ArtifactsDir)$(SharedFxInstallerName)-%(AllSharedFxRIDs.Identity)-version-badge.svg" />
+    </ItemGroup>
+
+    <GenerateSvgBadge
+      OutputPath="%(SharedFxVersionBadge.Identity)"
+      Label="version"
+      Value="$(PackageVersion)" />
+  </Target>
+
+  <Target Name="GetFilesToPublish" DependsOnTargets="GeneratePublishFiles">
+    <PropertyGroup>
+      <BlobBasePath>Runtime/$(PackageVersion)/</BlobBasePath>
+      <AliasBlobBasePath>Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
+      <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
+      <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
+      <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
+      <SymbolsArchiveBaseFileName>aspnetcore-runtime-symbols-$(PackageVersion)</SymbolsArchiveBaseFileName>
+      <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- symbols -->
+      <FilesToPublish Include="$(DependencyAssetsDir)-$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)" Condition=" '%(RuntimeSymbolsArchive.Identity)' != '' ">
+        <RelativeBlobPath>$(BlobBasePath)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)</RelativeBlobPath>
+      </FilesToPublish>
+
+      <!-- Intermediate files passed on to the dotnet-CLI. -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
+        <RelativeBlobPath>$(BlobBasePath)$(PackageArchiveFileName)</RelativeBlobPath>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)$(IntermediateInstallerBaseFileName)-%(IntermediateInstaller.Identity)%(IntermediateInstaller.FileExt)" Condition=" '%(IntermediateInstaller.Identity)' != '' ">
+        <RelativeBlobPath>$(BlobBasePath)$(IntermediateInstallerBaseFileName)-%(IntermediateInstaller.Identity)%(IntermediateInstaller.FileExt)</RelativeBlobPath>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(BaseRuntimeVersionFile)">
+        <RelativeBlobPath>$(BlobBasePath)$(BaseRuntimeVersionFileName)</RelativeBlobPath>
+        <ContentType>text/plain</ContentType>
+      </FilesToPublish>
+
+      <!-- Archive installers -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)" Condition=" '%(NativeInstaller.FileExt)' != '' ">
+        <RelativeBlobPath>$(BlobBasePath)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(DependencyAssetsDir)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)" Condition=" '%(NativeInstaller.FileExt)' != '' ">
+        <RelativeBlobPath>$(AliasBlobBasePath)$(InstallerAliasBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
+        <Overwrite>true</Overwrite>
+      </FilesToPublish>
+
+      <!-- Support for README badges and dotnet-install.ps1/sh -->
+      <FilesToPublish Include="@(SharedFxVersionBadge)">
+        <RelativeBlobPath>$(AliasBlobBasePath)%(SharedFxVersionBadge.FileName)%(SharedFxVersionBadge.Extension)</RelativeBlobPath>
+        <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
+        <ContentType>image/svg+xml</ContentType>
+        <Overwrite>true</Overwrite>
+      </FilesToPublish>
+
+      <FilesToPublish Include="$(LatestRuntimeVersionFile)">
+        <RelativeBlobPath>$(AliasBlobBasePath)$(LatestRuntimeVersionFileName)</RelativeBlobPath>
+        <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
+        <ContentType>text/plain</ContentType>
+        <Overwrite>true</Overwrite>
+      </FilesToPublish>
+    </ItemGroup>
+
+    <Message Text="Publish @(FilesToPublish -> Count()) file(s)" Importance="High" />
+    <Message Text="@(FilesToPublish -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" Importance="High" />
+  </Target>
+
+  <Target Name="_CheckFilesToPublish">
+    <ItemGroup>
+      <_MissingFiles Include="%(FilesToPublish.Identity)" Condition=" ! Exists(%(FilesToPublish.Identity))" />
+    </ItemGroup>
+
+    <Error Text="Missing expected files:%0A - @(_MissingFiles, '%0A - ')" Condition="@(_MissingFiles->Count()) != 0" />
+  </Target>
+
+  <Target Name="PublishToAzureFeed"
+    DependsOnTargets="_CheckFilesToPublish"
+    Condition="'$(PublishToAzureFeed)' == 'true'">
+
+    <PropertyGroup>
+      <!--
+        Allow setting AzureBlobRelativePathBase to control the base path of all uploaded blobs.
+        AzureBlobRelativePathBase should end in a slash.
+      -->
+      <AzureBlobRelativePathBase Condition="'$(AzureBlobRelativePathBase)' != '' AND !HasTrailingSlash('$(AzureBlobRelativePathBase)')">$(AzureBlobRelativePathBase)/</AzureBlobRelativePathBase>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" '$(AzureBlobRelativePathBase)' != '' ">
+      <FilesToPublish Update="@(FilesToPublish)" RelativeBlobPath="$(AzureBlobRelativePathBase)%(FilesToPublish.RelativeBlobPath)" />
+    </ItemGroup>
+
+    <RepoTasks.PublishToAzureBlob
+        AccountName="$(AzureAccountName)"
+        SharedAccessToken="$(AzureSharedAccessToken)"
+        ContainerName="$(AzureContainerName)"
+        Files="@(FilesToPublish)" />
+  </Target>
+
+</Project>

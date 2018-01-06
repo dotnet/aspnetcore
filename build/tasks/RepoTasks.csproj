@@ -8,6 +8,7 @@
   <ItemGroup>
     <PackageReference Include="NuGet.Build.Tasks" Version="$(NuGetInMSBuildVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" PrivateAssets="All" />
+    <PackageReference Include="WindowsAzure.Storage" Version="8.7.0" />
   </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

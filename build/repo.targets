@@ -5,6 +5,7 @@
   <Import Project="Templating.targets" />
   <Import Project="SharedFx.targets" />
   <Import Project="SharedFxInstaller.targets" />
+  <Import Project="Publish.targets" />
 
   <PropertyGroup>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(SkipTests)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>

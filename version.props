@@ -5,5 +5,7 @@
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <!-- Even though we build from 'dev', this is set to 'master' to align with the dotnet-CLI channel name for their 'dev' branch. -->
+    <SharedFxCliBlobChannel>master</SharedFxCliBlobChannel>
   </PropertyGroup>
 </Project>

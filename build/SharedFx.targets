@@ -41,7 +41,7 @@
       <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
     </PropertyGroup>
 
-    <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(_AcceptableSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
+    <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(AllSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>
 
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
@@ -134,22 +134,6 @@
       Overwrite="true" />
 
     <MakeDir Directories="$(SharedFxOutputPath)" />
-
-    <!--
-      Used by the downloader scripts when pulling from a 'channel' instead of a specific version.
-      The second line must be the package version.
-      See dotnet-install.ps1/sh.
-    -->
-
-    <WriteLinesToFile
-      File="$(SharedFxOutputPath)latest.aspnetcore.version"
-      Lines="@(VersionLines)"
-      Overwrite="true" />
-
-    <GenerateSvgBadge
-      OutputPath="$(SharedFxOutputPath)$(SharedFxInstallerName)-$(SharedFxRID)-version-badge.svg"
-      Label="version"
-      Value="$(PackageVersion)" />
   </Target>
 
   <Target Name="PrepareForCrossGen" DependsOnTargets="PrepareForSharedFx;ResolveSharedFxFiles">
