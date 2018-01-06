@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Engine = engine,
             };
 
-            var sourceDocument = TestRazorSourceDocument.Create();
+            var sourceDocument = TestRazorSourceDocument.Create("", new RazorSourceDocumentProperties(null, null));
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
             var irDocument = new DocumentIntermediateNode()
@@ -243,9 +243,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Engine = engine,
             };
 
-            var sourceDocument = TestRazorSourceDocument.Create();
+            var sourceDocument = TestRazorSourceDocument.Create("", new RazorSourceDocumentProperties(null, "Foo\\Bar.cshtml"));
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            codeDocument.SetIdentifier("Foo/Bar");
 
             var irDocument = new DocumentIntermediateNode()
             {
@@ -279,7 +278,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Assert.Equal(2, irDocument.Children.Count);
 
             var item = Assert.IsType<RazorCompiledItemAttributeIntermediateNode>(irDocument.Children[0]);
-            Assert.Equal("Foo/Bar", item.Identifier);
+            Assert.Equal("/Foo/Bar.cshtml", item.Identifier);
             Assert.Equal("test", item.Kind);
             Assert.Equal("Some.Namespace.Test", item.TypeName);
 
@@ -287,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var checksum = Assert.IsType<RazorSourceChecksumAttributeIntermediateNode>(@namespace.Children[0]);
             Assert.NotNull(checksum.Checksum); // Not verifying the checksum here
             Assert.Equal("SHA1", checksum.ChecksumAlgorithm);
-            Assert.Equal("Foo/Bar", checksum.Identifier);
+            Assert.Equal("/Foo/Bar.cshtml", checksum.Identifier);
         }
 
         [Fact]
@@ -300,11 +299,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Engine = engine,
             };
 
-            var sourceDocument = TestRazorSourceDocument.Create();
-            var import = TestRazorSourceDocument.Create("@using System");
+            var sourceDocument = TestRazorSourceDocument.Create("", new RazorSourceDocumentProperties(null, "Foo\\Bar.cshtml"));
+            var import = TestRazorSourceDocument.Create("@using System", new RazorSourceDocumentProperties(null, "Foo\\Import.cshtml"));
             var codeDocument = RazorCodeDocument.Create(sourceDocument, new[] { import, });
-            codeDocument.SetIdentifier("Foo/Bar");
-            codeDocument.SetImportIdentifiers(new[] { "Foo/Import" });
 
             var irDocument = new DocumentIntermediateNode()
             {
@@ -338,7 +335,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             Assert.Equal(2, irDocument.Children.Count);
 
             var item = Assert.IsType<RazorCompiledItemAttributeIntermediateNode>(irDocument.Children[0]);
-            Assert.Equal("Foo/Bar", item.Identifier);
+            Assert.Equal("/Foo/Bar.cshtml", item.Identifier);
             Assert.Equal("test", item.Kind);
             Assert.Equal("Some.Namespace.Test", item.TypeName);
 
@@ -346,19 +343,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var checksum = Assert.IsType<RazorSourceChecksumAttributeIntermediateNode>(@namespace.Children[0]);
             Assert.NotNull(checksum.Checksum); // Not verifying the checksum here
             Assert.Equal("SHA1", checksum.ChecksumAlgorithm);
-            Assert.Equal("Foo/Bar", checksum.Identifier);
+            Assert.Equal("/Foo/Bar.cshtml", checksum.Identifier);
 
             checksum = Assert.IsType<RazorSourceChecksumAttributeIntermediateNode>(@namespace.Children[1]);
             Assert.NotNull(checksum.Checksum); // Not verifying the checksum here
             Assert.Equal("SHA1", checksum.ChecksumAlgorithm);
-            Assert.Equal("Foo/Import", checksum.Identifier);
+            Assert.Equal("/Foo/Import.cshtml", checksum.Identifier);
         }
 
         private static RazorEngine CreateEngine()
         {
             return RazorEngine.Create(b =>
             {
-                InheritsDirective.Register(b);
+                b.Features.Add(new DefaultMetadataIdentifierFeature());
             });
         }
     }

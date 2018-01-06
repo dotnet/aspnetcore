@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder.Build();
         }
 
-
         public static RazorEngine CreateDesignTime()
         {
             return CreateDesignTime(configure: null);
@@ -60,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // General extensibility
             builder.Features.Add(new DefaultRazorDirectiveFeature());
             builder.Features.Add(new DefaultRazorTargetExtensionFeature());
+            builder.Features.Add(new DefaultMetadataIdentifierFeature());
 
             // Syntax Tree passes
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());

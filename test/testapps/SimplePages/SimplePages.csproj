@@ -13,6 +13,7 @@
     <Reference Include="$(BinariesRoot)\System.Diagnostics.DiagnosticSource.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
     <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.dll"/>
   </ItemGroup>
 </Project>

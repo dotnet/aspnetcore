@@ -102,9 +102,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // This is to make tests work cross platform.
             codeDocument.Items[CodeRenderingContext.NewLineString] = "\r\n";
 
-            codeDocument.SetIdentifier(normalizedFileName);
-            codeDocument.SetImportIdentifiers(importIdentifiers);
-
             OnCreatedCodeDocument(ref codeDocument);
 
             return codeDocument;

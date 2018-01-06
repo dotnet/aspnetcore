@@ -1,7 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Diagnostics;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
@@ -10,6 +11,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     // meaningful information.
     internal class MetadataAttributePass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        private IMetadataIdentifierFeature _identifierFeature;
+
+        protected override void OnInitialized()
+        {
+            _identifierFeature = Engine.Features.OfType<IMetadataIdentifierFeature>().FirstOrDefault();    
+        }
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             if (documentNode.Options == null || documentNode.Options.SuppressMetadataAttributes)
@@ -42,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            var identifier = codeDocument.GetIdentifier();
+            var identifier = _identifierFeature?.GetIdentifier(codeDocument, codeDocument.Source);
             if (identifier == null)
             {
                 // No identifier. Skip
@@ -77,32 +85,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
 
             // Checksum of the main source
-            AddChecksum(codeDocument.Source.GetChecksum(), codeDocument.Source.GetChecksumAlgorithm(), identifier);
-
-            // Now process the checksums of the imports
-            //
-            // It's possible that the counts of these won't match, just process as many as we can.
-            var importIdentifiers = codeDocument.GetImportIdentifiers() ?? Array.Empty<string>();
-            for (var i = 0; i < codeDocument.Imports.Count && i < importIdentifiers.Count; i++)
+            var checksum = codeDocument.Source.GetChecksum();
+            var checksumAlgorithm = codeDocument.Source.GetChecksumAlgorithm();
+            if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null || identifier == null)
             {
-                var import = codeDocument.Imports[i];
-                AddChecksum(import.GetChecksum(), import.GetChecksumAlgorithm(), importIdentifiers[i]);
+                // Don't generate anything unless we have all of the required information.
+                return;
             }
 
-            void AddChecksum(byte[] checksum, string checksumAlgorithm, string id)
+            @namespace.Children.Insert((int)insert++, new RazorSourceChecksumAttributeIntermediateNode()
             {
-                if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null || id == null)
+                Checksum = checksum,
+                ChecksumAlgorithm = checksumAlgorithm,
+                Identifier = identifier,
+            });
+
+            // Now process the checksums of the imports
+            Debug.Assert(_identifierFeature != null);
+            for (var i = 0; i < codeDocument.Imports.Count; i++)
+            {
+                var import = codeDocument.Imports[i];
+
+                checksum = import.GetChecksum();
+                checksumAlgorithm = import.GetChecksumAlgorithm();
+                identifier = _identifierFeature.GetIdentifier(codeDocument, import);
+
+                if (checksum == null || checksum.Length == 0 || checksumAlgorithm == null || identifier == null)
                 {
-                    // Don't generate anything unless we have all of the required information.
-                    return;
+                    // It's ok to skip an import if we don't have all of the required information.
+                    continue;
                 }
 
-                // Checksum of the main source
                 @namespace.Children.Insert((int)insert++, new RazorSourceChecksumAttributeIntermediateNode()
                 {
                     Checksum = checksum,
                     ChecksumAlgorithm = checksumAlgorithm,
-                    Identifier = id,
+                    Identifier = identifier,
                 });
             }
         }

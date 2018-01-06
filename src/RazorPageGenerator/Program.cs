@@ -60,6 +60,8 @@ Examples:
                     });
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());
+                builder.Features.Add(new SuppressMetadataAttributesFeature());
+
                 if (configure != null)
                 {
                     configure(builder);
@@ -136,6 +138,21 @@ Examples:
                 }
 
                 options.SuppressChecksum = true;
+            }
+        }
+
+        private class SuppressMetadataAttributesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SuppressMetadataAttributes = true;
             }
         }
 

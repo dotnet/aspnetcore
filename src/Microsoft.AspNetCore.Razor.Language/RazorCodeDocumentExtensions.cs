@@ -3,62 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class RazorCodeDocumentExtensions
     {
-        // Internal for testing
-        internal static readonly string IdentifierKey = "identifier";
-        internal static readonly string ImportIdentifiersKey = "imports-identifiers";
-
-        public static string GetIdentifier(this RazorCodeDocument document)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            return document.Items[IdentifierKey] as string;
-        }
-
-        public static void SetIdentifier(this RazorCodeDocument document, string identifier)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            document.Items[IdentifierKey] = identifier;
-        }
-
-        public static IReadOnlyList<string> GetImportIdentifiers(this RazorCodeDocument document)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            return document.Items[ImportIdentifiersKey] as string[];
-        }
-
-        public static void SetImportIdentifiers(this RazorCodeDocument document, IEnumerable<string> identifiers)
-        {
-            if (document == null)
-            {
-                throw new ArgumentNullException(nameof(document));
-            }
-
-            if (identifiers == null)
-            {
-                throw new ArgumentNullException(nameof(identifiers));
-            }
-
-            document.Items[ImportIdentifiersKey] = identifiers.ToArray();
-        }
-
         public static TagHelperDocumentContext GetTagHelperContext(this RazorCodeDocument document)
         {
             if (document == null)
