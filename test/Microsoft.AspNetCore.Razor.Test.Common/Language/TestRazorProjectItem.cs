@@ -9,11 +9,11 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class TestRazorProjectItem : RazorProjectItem
     {
         public TestRazorProjectItem(
-            string path, 
+            string filePath, 
             string physicalPath = null,
             string basePath = "/")
         {
-            FilePath = path;
+            FilePath = filePath;
             PhysicalPath = physicalPath;
             BasePath = basePath;
         }

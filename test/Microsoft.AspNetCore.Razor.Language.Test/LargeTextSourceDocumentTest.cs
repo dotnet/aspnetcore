@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var contentString = "Hello World";
             var stream = TestRazorSourceDocument.CreateStreamContent(contentString);
             var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
-            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var firstChecksum = document.GetChecksum();
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var contentString = "Hello World";
             var stream = TestRazorSourceDocument.CreateStreamContent(contentString);
             var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
-            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF8, RazorSourceDocumentProperties.Default);
             var expectedChecksum = new byte[] { 10, 77, 85, 168, 215, 120, 229, 2, 47, 171, 112, 25, 119, 197, 216, 64, 187, 196, 134, 208 };
 
             // Act
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var contentString = "Hello World";
             var stream = TestRazorSourceDocument.CreateStreamContent(contentString, Encoding.UTF32);
             var reader = new StreamReader(stream, detectEncodingFromByteOrderMarks: true);
-            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF32, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, 5, Encoding.UTF32, RazorSourceDocumentProperties.Default);
             var expectedChecksum = new byte[] { 108, 172, 130, 171, 42, 19, 155, 176, 211, 80, 224, 121, 169, 133, 25, 134, 48, 228, 199, 141 };
 
             // Act
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
 
             var stream = TestRazorSourceDocument.CreateStreamContent(new string(content));
             var reader = new StreamReader(stream, true);
-            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var output = new char[contentLength];
@@ -106,10 +106,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var reader = new StreamReader(stream, true);
 
             // Act
-            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, filePath);
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: filePath, relativePath: null));
 
             // Assert
             Assert.Equal(filePath, document.FilePath);
+        }
+
+        [Theory]
+        [InlineData("test.cshtml")]
+        [InlineData(null)]
+        public void RelativePath(string relativePath)
+        {
+            // Arrange
+            var stream = TestRazorSourceDocument.CreateStreamContent("abc");
+            var reader = new StreamReader(stream, true);
+
+            // Act
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: null, relativePath: relativePath));
+
+            // Assert
+            Assert.Equal(relativePath, document.RelativePath);
         }
 
         [Fact]
@@ -120,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var reader = new StreamReader(stream, true);
 
             // Act
-            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Assert
             Assert.Equal(3, document.Lines.Count);
@@ -142,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var stream = TestRazorSourceDocument.CreateStreamContent("abcdefghijklmnopqrstuvwxyz");
 
             var reader = new StreamReader(stream, true);
-            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, "file.cshtml");
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var destination = new char[1000];

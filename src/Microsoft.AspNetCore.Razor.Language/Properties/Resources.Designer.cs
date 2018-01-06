@@ -1842,6 +1842,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatUnsupportedChecksumAlgorithm(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("UnsupportedChecksumAlgorithm"), p0, p1, p2, p3);
 
+        /// <summary>
+        /// The '{0}.{1}' property must not be null.
+        /// </summary>
+        internal static string PropertyMustNotBeNull
+        {
+            get => GetString("PropertyMustNotBeNull");
+        }
+
+        /// <summary>
+        /// The '{0}.{1}' property must not be null.
+        /// </summary>
+        internal static string FormatPropertyMustNotBeNull(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("PropertyMustNotBeNull"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

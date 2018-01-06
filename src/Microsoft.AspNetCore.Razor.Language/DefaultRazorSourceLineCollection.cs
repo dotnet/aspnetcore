@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 // We have an exact match for the start of a line.
                 Debug.Assert(_lineStarts[index] == position);
 
-                return new SourceLocation(_document.FilePath, position, index, characterIndex: 0);
+                return new SourceLocation(_document.GetFilePathForDisplay(), position, index, characterIndex: 0);
             }
 
 
@@ -59,12 +59,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (index == -1)
             {
                 // There's no preceding line, so it's based on the start of the string
-                return new SourceLocation(_document.FilePath, position, 0, position);
+                return new SourceLocation(_document.GetFilePathForDisplay(), position, 0, position);
             }
             else
             {
                 var characterIndex = position - _lineStarts[index];
-                return new SourceLocation(_document.FilePath, position, index, characterIndex);
+                return new SourceLocation(_document.GetFilePathForDisplay(), position, index, characterIndex);
             }
         }
 

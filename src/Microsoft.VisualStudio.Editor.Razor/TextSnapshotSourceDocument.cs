@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public override RazorSourceLineCollection Lines => _lines;
 
         public override string FilePath { get; }
-
+        
         public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
         {
             if (destination == null)

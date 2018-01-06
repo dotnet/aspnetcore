@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         {
             // Arrange
             var filePath = "test.cshtml";
-            var source = TestRazorSourceDocument.Create("@if (true) { @if(false) { <div>@something.</div> } }", fileName: filePath);
+            var source = TestRazorSourceDocument.Create("@if (true) { @if(false) { <div>@something.</div> } }", filePath: filePath);
 
             // Act
             var syntaxTree = RazorSyntaxTree.Parse(source);

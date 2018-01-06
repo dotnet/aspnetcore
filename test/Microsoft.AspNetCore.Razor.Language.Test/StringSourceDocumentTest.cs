@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello World!";
-            var document = new StringSourceDocument(content, Encoding.UTF8, "file.cshtml");
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var firstChecksum = document.GetChecksum();
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello World!";
-            var document = new StringSourceDocument(content, Encoding.UTF8, "file.cshtml");
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
             var expectedChecksum = new byte[] { 46, 247, 189, 230, 8, 206, 84, 4, 233, 125, 95, 4, 47, 149, 248, 159, 28, 35, 40, 113 };
 
             // Act
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello World!";
-            var document = new StringSourceDocument(content, Encoding.UTF32, "file.cshtml");
+            var document = new StringSourceDocument(content, Encoding.UTF32, RazorSourceDocumentProperties.Default);
             var expectedChecksum = new byte[] { 8, 149, 159, 15, 242, 255, 115, 227, 219, 78, 61, 53, 127, 239, 77, 239, 215, 140, 248, 44 };
 
             // Act
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var expectedContent = "Hello, World!";
             var indexerBuffer = new char[expectedContent.Length];
-            var document = new StringSourceDocument(expectedContent, Encoding.UTF8, filePath: "file.cshtml");
+            var document = new StringSourceDocument(expectedContent, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             for (var i = 0; i < document.Length; i++)
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var expectedContent = "Hello, World!";
-            var document = new StringSourceDocument(expectedContent, Encoding.UTF8, filePath: "file.cshtml");
+            var document = new StringSourceDocument(expectedContent, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act & Assert
             Assert.Equal(expectedContent.Length, document.Length);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var content = "Hello, World!";
 
             // Act
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: "file.cshtml");
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: "file.cshtml", relativePath: null));
 
             // Assert
             Assert.Equal("file.cshtml", document.FilePath);
@@ -104,10 +104,36 @@ namespace Microsoft.AspNetCore.Razor.Language
             var content = "Hello, World!";
 
             // Act
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: null, relativePath: null));
 
             // Assert
             Assert.Null(document.FilePath);
+        }
+
+        [Fact]
+        public void RelativePath()
+        {
+            // Arrange
+            var content = "Hello, World!";
+
+            // Act
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: null, relativePath: "file.cshtml"));
+
+            // Assert
+            Assert.Equal("file.cshtml", document.RelativePath);
+        }
+
+        [Fact]
+        public void RelativePath_Null()
+        {
+            // Arrange
+            var content = "Hello, World!";
+
+            // Act
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: null, relativePath: null));
+
+            // Assert
+            Assert.Null(document.RelativePath);
         }
 
         [Fact]
@@ -115,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
             var expectedContent = "Hello";
             var charBuffer = new char[expectedContent.Length];
 
@@ -132,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
             var expectedContent = "$Hello";
             var charBuffer = new char[expectedContent.Length];
             charBuffer[0] = '$';
@@ -150,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "Hello, World!";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
             var expectedContent = "World";
             var charBuffer = new char[expectedContent.Length];
 
@@ -163,27 +189,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void CopyTo_WithEncoding()
-        {
-            // Arrange
-            var content = "Hi";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
-            var charBuffer = new char[2];
-
-            // Act
-            document.CopyTo(0, charBuffer, 0, 2);
-
-            // Assert
-            var copiedContent = new string(charBuffer);
-            Assert.Equal("Hi", copiedContent);
-        }
-
-        [Fact]
         public void CopyTo_CanCopyMultipleTimes()
         {
             // Arrange
             var content = "Hi";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act & Assert
             //
@@ -202,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = string.Empty;
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.Count;
@@ -216,7 +226,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = string.Empty;
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -230,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "hello\n";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -244,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var content = "hello\r\n";
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLineLength(0);
@@ -263,7 +273,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 .Append("jumps over the lazy dog.")
                 .ToString();
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -278,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -293,7 +303,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\rWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -309,7 +319,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\rBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -324,7 +334,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -339,7 +349,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\u0085World!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -354,7 +364,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\u2028World!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -369,7 +379,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\u2029World!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = GetAllSourceMappings(document);
@@ -384,13 +394,29 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello, World!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: "Hi.cshtml");
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: "Hi.cshtml", relativePath: null));
 
             // Act
             var actual = document.Lines.GetLocation(1);
 
             // Assert
             Assert.Equal("Hi.cshtml", actual.FilePath);
+            Assert.Equal(1, actual.AbsoluteIndex);
+        }
+
+        [Fact]
+        public void Lines_GetLocation_PrefersRelativePath()
+        {
+            // Arrange
+            var content = "Hello, World!";
+
+            var document = new StringSourceDocument(content, Encoding.UTF8, new RazorSourceDocumentProperties(filePath: "Hi.cshtml", relativePath: "Bye.cshtml"));
+
+            // Act
+            var actual = document.Lines.GetLocation(1);
+
+            // Assert
+            Assert.Equal("Bye.cshtml", actual.FilePath);
             Assert.Equal(1, actual.AbsoluteIndex);
         }
 
@@ -402,7 +428,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLocation(0);
@@ -418,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLocation(5);
@@ -434,7 +460,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLocation(7);
@@ -450,7 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLocation(11);
@@ -466,7 +492,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var content = "Hello\nBig\r\nWorld!";
 
-            var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
+            var document = new StringSourceDocument(content, Encoding.UTF8, RazorSourceDocumentProperties.Default);
 
             // Act
             var actual = document.Lines.GetLocation(16);

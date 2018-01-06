@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
 
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 

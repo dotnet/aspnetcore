@@ -15,15 +15,21 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private readonly byte[] _checksum;
 
-        public StreamSourceDocument(Stream stream, Encoding encoding, string fileName)
+        public StreamSourceDocument(Stream stream, Encoding encoding, RazorSourceDocumentProperties properties)
         {
             if (stream == null)
             {
                 throw new ArgumentNullException(nameof(stream));
             }
 
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            // Notice we don't validate the encoding here. StreamSourceDocument can compute it.
             _checksum = ComputeChecksum(stream);
-            _innerSourceDocument = CreateInnerSourceDocument(stream, encoding, fileName);
+            _innerSourceDocument = CreateInnerSourceDocument(stream, encoding, properties);
         }
 
         public override char this[int position] => _innerSourceDocument[position];
@@ -35,6 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int Length => _innerSourceDocument.Length;
 
         public override RazorSourceLineCollection Lines => _innerSourceDocument.Lines;
+
+        public override string RelativePath => _innerSourceDocument.RelativePath;
 
         public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
             => _innerSourceDocument.CopyTo(sourceIndex, destination, destinationIndex, count);
@@ -58,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        private static RazorSourceDocument CreateInnerSourceDocument(Stream stream, Encoding encoding, string fileName)
+        private static RazorSourceDocument CreateInnerSourceDocument(Stream stream, Encoding encoding, RazorSourceDocumentProperties properties)
         {
             var streamLength = (int)stream.Length;
             var content = string.Empty;
@@ -98,14 +106,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                             reader,
                             LargeObjectHeapLimitInChars,
                             contentEncoding,
-                            fileName);
+                            properties);
                     }
 
                     content = reader.ReadToEnd();
                 }
             }
 
-            return new StringSourceDocument(content, contentEncoding, fileName);
+            return new StringSourceDocument(content, contentEncoding, properties);
         }
     }
 }

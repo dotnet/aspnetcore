@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var content =
             @"
 @addTagHelper """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var content =
             @"
 @removeTagHelper """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var content =
             @"
 @tagHelperPrefix """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 @addTagHelper *, TestAssembly
 <form>
     <input value='Hello' type='text' />";
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string expectedPrefix)
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor(tagHelpers: new List<TagHelperDescriptor>());
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var expected = (TagHelperDescriptor[])expectedDescriptors;
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
@@ -850,7 +850,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             object tagHelpers)
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
@@ -885,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 <form>
     <input value='Hello' type='text' />
 </form>";
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             return sourceDocument;
         }
 
