@@ -175,8 +175,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 Engine = RazorEngine.Create(),
             };
-            var document = TestRazorCodeDocument.CreateEmpty();
-            document.SetRelativePath("/Views/Index.cshtml");
+
+            var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
+            var document = RazorCodeDocument.Create(source);
 
             // Act
             pass.Execute(document, irDocument);
@@ -197,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_EscapesViewPathWhenAddingAttributeToViews()
         {
             // Arrange
-            var expectedAttribute = "[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@\"\\test\\\"\"Index.cshtml\", typeof(SomeNamespace.SomeName))]";
+            var expectedAttribute = "[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@\"/test/\"\"Index.cshtml\", typeof(SomeNamespace.SomeName))]";
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
@@ -226,8 +227,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 Engine = RazorEngine.Create(),
             };
-            var document = TestRazorCodeDocument.CreateEmpty();
-            document.SetRelativePath("\\test\\\"Index.cshtml");
+
+            var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "\\test\\\"Index.cshtml"));
+            var document = RazorCodeDocument.Create(source);
 
             // Act
             pass.Execute(document, irDocument);
@@ -283,8 +285,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 Engine = RazorEngine.Create(),
             };
-            var document = TestRazorCodeDocument.CreateEmpty();
-            document.SetRelativePath("/Views/Index.cshtml");
+
+            var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
+            var document = RazorCodeDocument.Create(source);
 
             // Act
             pass.Execute(document, irDocument);
@@ -306,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_EscapesViewPathAndRouteWhenAddingAttributeToPage()
         {
             // Arrange
-            var expectedAttribute = "[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@\"\\test\\\"\"Index.cshtml\", typeof(SomeNamespace.SomeName))]";
+            var expectedAttribute = "[assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@\"/test/\"\"Index.cshtml\", typeof(SomeNamespace.SomeName))]";
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
@@ -336,8 +339,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 Engine = RazorEngine.Create(),
             };
-            var document = TestRazorCodeDocument.CreateEmpty();
-            document.SetRelativePath("\\test\\\"Index.cshtml");
+
+            var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "test\\\"Index.cshtml"));
+            var document = RazorCodeDocument.Create(source);
 
             // Act
             pass.Execute(document, irDocument);

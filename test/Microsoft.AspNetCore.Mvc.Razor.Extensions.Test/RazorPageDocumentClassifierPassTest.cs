@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -40,7 +39,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_SetsDocumentKind()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", "Test.cshtml"));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -59,7 +59,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_NoOpsIfDocumentKindIsAlreadySet()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", "Test.cshtml"));
+            
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             irDocument.DocumentKind = "some-value";
@@ -79,7 +80,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_NoOpsIfPageDirectiveIsMalformed()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page+1");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page+1", "Test.cshtml"));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             irDocument.DocumentKind = "some-value";
@@ -99,7 +101,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_SetsNamespace()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", "Test.cshtml"));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -120,14 +123,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_SetsClass()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
+            var properties = new RazorSourceDocumentProperties(filePath: "ignored", relativePath: "Test.cshtml");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", properties));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
             {
                 Engine = engine
             };
-            codeDocument.SetRelativePath("Test.cshtml");
 
             // Act
             pass.Execute(codeDocument, irDocument);
@@ -146,8 +150,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_UsesRelativePathToGenerateTypeName(string relativePath, string expected)
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
-            codeDocument.SetRelativePath(relativePath);
+            var properties = new RazorSourceDocumentProperties(filePath: "ignored", relativePath: relativePath);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", properties));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -168,9 +173,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void RazorPageDocumentClassifierPass_UsesAbsolutePath_IfRelativePathIsNotSet()
         {
             // Arrange
-            var expected = "x___application_Views_Home_Index";
-            var path = @"x::\application\Views\Home\Index.cshtml";
-            var codeDocument = CreateDocument("@page", path);
+            var properties = new RazorSourceDocumentProperties(filePath: @"x::\application\Views\Home\Index.cshtml", relativePath: null);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", properties));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -184,16 +189,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(expected, visitor.Class.ClassName);
+            Assert.Equal("x___application_Views_Home_Index", visitor.Class.ClassName);
         }
 
         [Fact]
         public void RazorPageDocumentClassifierPass_SanitizesClassName()
         {
             // Arrange
-            var expected = "path_with_invalid_chars";
-            var codeDocument = CreateDocument("@page");
-            codeDocument.SetRelativePath("path.with+invalid-chars");
+            var properties = new RazorSourceDocumentProperties(filePath: @"x:\Test.cshtml", relativePath: "path.with+invalid-chars");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", properties));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -207,14 +212,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(expected, visitor.Class.ClassName);
+            Assert.Equal("path_with_invalid_chars", visitor.Class.ClassName);
         }
 
         [Fact]
         public void RazorPageDocumentClassifierPass_SetsUpExecuteAsyncMethod()
         {
             // Arrange
-            var codeDocument = CreateDocument("@page");
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("@page", "Test.cshtml"));
+
             var engine = CreateEngine();
             var irDocument = CreateIRDocument(engine, codeDocument);
             var pass = new RazorPageDocumentClassifierPass
@@ -231,14 +237,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("ExecuteAsync", visitor.Method.MethodName);
             Assert.Equal("global::System.Threading.Tasks.Task", visitor.Method.ReturnType);
             Assert.Equal(new[] { "public", "async", "override" }, visitor.Method.Modifiers);
-        }
-
-        private static RazorCodeDocument CreateDocument(string content, string filePath = null)
-        {
-            filePath = filePath ?? Path.Combine(Directory.GetCurrentDirectory(), "Test.cshtml");
-
-            var source = RazorSourceDocument.Create(content, filePath);
-            return RazorCodeDocument.Create(source);
         }
 
         private static RazorEngine CreateEngine()

@@ -29,8 +29,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             var generatedTypeName = $"{@namespace.Content}.{@class.ClassName}";
-            var path = codeDocument.GetRelativePath();
-            var escapedPath = EscapeAsVerbatimLiteral(path);
+
+            // The MVC attributes require a relative path to be specified so that we can make a view engine path.
+            // We can't use a rooted path because we don't know what the project root is.
+            //
+            // If we can't sanitize the path, we'll just set it to null and let is blow up at runtime - we don't
+            // want to create noise if this code has to run in some unanticipated scenario.
+            var escapedPath = MakeVerbatimStringLiteral(ConvertToViewEnginePath(codeDocument.Source.RelativePath));
 
             string attribute;
             if (documentNode.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
@@ -40,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             else if (documentNode.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
                 PageDirective.TryGetPageDirective(documentNode, out var pageDirective))
             {
-                var escapedRoutePrefix = EscapeAsVerbatimLiteral(pageDirective.RouteTemplate);
+                var escapedRoutePrefix = MakeVerbatimStringLiteral(pageDirective.RouteTemplate);
                 attribute = $"[assembly:{RazorPageAttribute}({escapedPath}, typeof({generatedTypeName}), {escapedRoutePrefix})]";
             }
             else
@@ -61,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             documentNode.Children.Insert(index, pageAttribute);
         }
 
-        private static string EscapeAsVerbatimLiteral(string value)
+        private static string MakeVerbatimStringLiteral(string value)
         {
             if (value == null)
             {
@@ -70,6 +75,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             value = value.Replace("\"", "\"\"");
             return $"@\"{value}\"";
+        }
+        
+        private static string ConvertToViewEnginePath(string relativePath)
+        {
+            if (string.IsNullOrEmpty(relativePath))
+            {
+                return null;
+            }
+
+            // Checking for both / and \ because a \ will become a /.
+            if (!relativePath.StartsWith("/") && !relativePath.StartsWith("\\"))
+            {
+                relativePath = "/" + relativePath;
+            }
+            
+            relativePath = relativePath.Replace('\\', '/');
+            return relativePath;
         }
     }
 }

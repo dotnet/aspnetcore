@@ -26,13 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Options.DefaultImports = GetDefaultImports();
         }
 
-        /// <inheritsdoc />
         public override RazorCodeDocument CreateCodeDocument(RazorProjectItem projectItem)
         {
-            var codeDocument = base.CreateCodeDocument(projectItem);
-            codeDocument.SetRelativePath(projectItem.FilePath);
-
-            return codeDocument;
+            return base.CreateCodeDocument(projectItem);
         }
 
         // Internal for testing.

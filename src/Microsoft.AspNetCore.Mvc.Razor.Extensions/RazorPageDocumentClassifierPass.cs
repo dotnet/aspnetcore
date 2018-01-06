@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
-            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
-
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
 
             @namespace.Content = "AspNetCore";
 
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
+
+            var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
             @class.ClassName = CSharpIdentifier.GetClassNameFromPath(filePath);
 
             @class.Modifiers.Clear();

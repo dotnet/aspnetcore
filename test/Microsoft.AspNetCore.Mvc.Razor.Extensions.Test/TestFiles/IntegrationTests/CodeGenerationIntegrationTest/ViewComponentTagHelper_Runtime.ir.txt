@@ -1,7 +1,7 @@
 Document - 
     RazorCompiledItemAttribute - 
     CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper))]
     NamespaceDeclaration -  - AspNetCore
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic

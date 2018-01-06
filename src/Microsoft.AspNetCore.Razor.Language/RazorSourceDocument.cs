@@ -201,7 +201,37 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <returns>The <see cref="RazorSourceDocument"/>.</returns>
         /// <remarks>Uses <see cref="System.Text.Encoding.UTF8" /></remarks>
         public static RazorSourceDocument Create(string content, string fileName)
-            => Create(content, fileName, Encoding.UTF8);
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            return Create(content, fileName, Encoding.UTF8);
+        }
+           
+
+        /// <summary>
+        /// Creates a <see cref="RazorSourceDocument"/> from the specified <paramref name="content"/>.
+        /// </summary>
+        /// <param name="content">The source document content.</param>
+        /// <param name="properties">Properties to configure the <see cref="RazorSourceDocument"/>.</param>
+        /// <returns>The <see cref="RazorSourceDocument"/>.</returns>
+        /// <remarks>Uses <see cref="System.Text.Encoding.UTF8" /></remarks>
+        public static RazorSourceDocument Create(string content, RazorSourceDocumentProperties properties)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
+            return Create(content, Encoding.UTF8, properties);
+        }
 
         /// <summary>
         /// Creates a <see cref="RazorSourceDocument"/> from the specified <paramref name="content"/>.

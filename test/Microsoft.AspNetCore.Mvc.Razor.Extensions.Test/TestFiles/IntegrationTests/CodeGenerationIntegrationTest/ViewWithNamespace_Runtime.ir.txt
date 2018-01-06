@@ -1,7 +1,7 @@
 Document - 
     RazorCompiledItemAttribute - 
     CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewWithNamespace.cshtml", typeof(Test.Namespace.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace))]
     NamespaceDeclaration -  - Test.Namespace
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic

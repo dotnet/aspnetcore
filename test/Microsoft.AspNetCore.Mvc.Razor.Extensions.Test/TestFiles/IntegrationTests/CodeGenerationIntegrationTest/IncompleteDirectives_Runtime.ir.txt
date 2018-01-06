@@ -1,7 +1,7 @@
 Document - 
     RazorCompiledItemAttribute - 
     CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives), null)]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(@"/TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml", typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingDirective - (1:0,1 [14] ) - System
         UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
