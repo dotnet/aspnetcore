@@ -292,7 +292,7 @@
 
     <!-- Create archive -->
     <ZipArchive
-      File="$(SharedFxOutputPath)$(SharedFxInstallerName)-$(PackageVersion)-$(SharedFxRID).zip"
+      File="$(SharedFxOutputPath)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-$(SharedFxRID).zip"
       SourceFiles="@(OutputZipFiles)"
       WorkingDirectory="$(SharedFxIntermediateOutputPath)"
       Overwrite="true"/>

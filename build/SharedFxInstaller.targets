@@ -10,7 +10,7 @@
     </Exec>
 
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
-    <Error Text="Linux archive not found at $(SharedFxLinuxArchiveFilePath)." Condition="!Exists('$(SharedFxLinuxArchiveFilePath)')" />
+    <Error Text="Linux archive not found at $(SharedFxLinuxIntermediateArchiveFilePath)." Condition="!Exists('$(SharedFxLinuxIntermediateArchiveFilePath)')" />
   </Target>
 
   <Target Name="_DownloadInstallers">
@@ -29,7 +29,7 @@
     <MakeDir Directories="$(_WorkRoot)" />
 
     <!-- Create layout: Aspnet Runtime  -->
-    <Exec Command="tar -xzf $(SharedFxLinuxArchiveFilePath) -C $(_WorkRoot)" />
+    <Exec Command="tar -xzf $(SharedFxLinuxIntermediateArchiveFilePath) -C $(_WorkRoot)" />
     <Exec Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeInstallerArchiveName) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Runtime tar.gz -->
