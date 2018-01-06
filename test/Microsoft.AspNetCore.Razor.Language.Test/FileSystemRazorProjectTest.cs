@@ -73,24 +73,31 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystemProject = new FileSystemRazorProject(TestFolder);
 
             // Act
-            var files = fileSystemProject.EnumerateItems("/");
+            var items = fileSystemProject.EnumerateItems("/");
 
             // Assert
-            Assert.Collection(files.OrderBy(f => f.FilePath),
-                file =>
+            Assert.Collection(items.OrderBy(f => f.FilePath),
+                item =>
                 {
-                    Assert.Equal("/Home.cshtml", file.FilePath);
-                    Assert.Equal("/", file.BasePath);
+                    Assert.Equal("/Home.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Home.cshtml"), item.PhysicalPath);
+                    Assert.Equal("Home.cshtml", item.RelativePhysicalPath);
+
                 },
-                file =>
+                item =>
                 {
-                    Assert.Equal("/Views/About/About.cshtml", file.FilePath);
-                    Assert.Equal("/", file.BasePath);
+                    Assert.Equal("/Views/About/About.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
                 },
-                file =>
+                item =>
                 {
-                    Assert.Equal("/Views/Home/Index.cshtml", file.FilePath);
-                    Assert.Equal("/", file.BasePath);
+                    Assert.Equal("/Views/Home/Index.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "Index.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), item.RelativePhysicalPath);
                 });
         }
 
@@ -101,19 +108,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystemProject = new FileSystemRazorProject(TestFolder);
 
             // Act
-            var files = fileSystemProject.EnumerateItems("/Views");
+            var items = fileSystemProject.EnumerateItems("/Views");
 
             // Assert
-            Assert.Collection(files.OrderBy(f => f.FilePath),
-                file =>
+            Assert.Collection(items.OrderBy(f => f.FilePath),
+                item =>
                 {
-                    Assert.Equal("/About/About.cshtml", file.FilePath);
-                    Assert.Equal("/Views", file.BasePath);
+                    Assert.Equal("/About/About.cshtml", item.FilePath);
+                    Assert.Equal("/Views", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("About", "About.cshtml"), item.RelativePhysicalPath);
                 },
-                file =>
+                item =>
                 {
-                    Assert.Equal("/Home/Index.cshtml", file.FilePath);
-                    Assert.Equal("/Views", file.BasePath);
+                    Assert.Equal("/Home/Index.cshtml", item.FilePath);
+                    Assert.Equal("/Views", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "Index.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Home", "Index.cshtml"), item.RelativePhysicalPath);
                 });
         }
 
@@ -124,25 +135,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystemProject = new FileSystemRazorProject(TestFolder);
 
             // Act
-            var files = fileSystemProject.EnumerateItems("/Does-Not-Exist");
+            var items = fileSystemProject.EnumerateItems("/Does-Not-Exist");
 
             // Assert
-            Assert.Empty(files);
+            Assert.Empty(items);
         }
 
         [Fact]
         public void GetItem_ReturnsFileFromDisk()
         {
             // Arrange
-            var path = "/Views/About/About.cshtml";
+            var filePath = "/Views/About/About.cshtml";
             var fileSystemProject = new FileSystemRazorProject(TestFolder);
 
             // Act
-            var file = fileSystemProject.GetItem(path);
+            var item = fileSystemProject.GetItem(filePath);
 
             // Assert
-            Assert.True(file.Exists);
-            Assert.Equal(path, file.FilePath);
+            Assert.True(item.Exists);
+            Assert.Equal(filePath, item.FilePath);
+            Assert.Equal("/", item.BasePath);
+            Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
+            Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
         }
 
         [Fact]
@@ -153,10 +167,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileSystemProject = new FileSystemRazorProject(TestFolder);
 
             // Act
-            var file = fileSystemProject.GetItem(path);
+            var item = fileSystemProject.GetItem(path);
 
             // Assert
-            Assert.False(file.Exists);
+            Assert.False(item.Exists);
         }
 
         private class TestFileSystemRazorProject : FileSystemRazorProject

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(root));
             }
-
+            
             Root = root.Replace('\\', '/').TrimEnd('/');
         }
 
@@ -36,16 +36,24 @@ namespace Microsoft.AspNetCore.Razor.Language
                 .EnumerateFiles("*.cshtml", SearchOption.AllDirectories)
                 .Select(file =>
                 {
-                    var relativePath = file.FullName.Substring(absoluteBasePath.Length).Replace(Path.DirectorySeparatorChar, '/');
-                    return new FileSystemRazorProjectItem(basePath, relativePath, file);
+                    var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
+                    var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');
+
+                    return new FileSystemRazorProjectItem(basePath, filePath, relativePhysicalPath, file);
                 });
         }
 
         public override RazorProjectItem GetItem(string path)
         {
+            var absoluteBasePath = NormalizeAndEnsureValidPath("/");
             var absolutePath = NormalizeAndEnsureValidPath(path);
 
-            return new FileSystemRazorProjectItem("/", path, new FileInfo(absolutePath));
+            var file = new FileInfo(absolutePath);
+
+            var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
+            var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');
+
+            return new FileSystemRazorProjectItem("/", filePath, relativePhysicalPath, new FileInfo(absolutePath));
         }
 
         protected override string NormalizeAndEnsureValidPath(string path)

@@ -20,14 +20,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Home.cshtml"));
 
             // Act
-            var projectItem = new FileSystemRazorProjectItem("/Views", "/Home.cshtml", fileInfo);
+            var projectItem = new FileSystemRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
 
             // Assert
             Assert.Equal("/Home.cshtml", projectItem.FilePath);
-            Assert.Equal("/Views", projectItem.BasePath);
+            Assert.Equal("/", projectItem.BasePath);
             Assert.True(projectItem.Exists);
             Assert.Equal("Home.cshtml", projectItem.FileName);
             Assert.Equal(fileInfo.FullName, projectItem.PhysicalPath);
+            Assert.Equal("Home.cshtml", projectItem.RelativePhysicalPath);
         }
 
         [Fact]
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Views", "FileDoesNotExist.cshtml"));
 
             // Act
-            var projectItem = new FileSystemRazorProjectItem("/Views", "/FileDoesNotExist.cshtml", fileInfo);
+            var projectItem = new FileSystemRazorProjectItem("/Views", "/FileDoesNotExist.cshtml", Path.Combine("Views", "FileDoesNotExist.cshtml"), fileInfo);
 
             // Assert
             Assert.False(projectItem.Exists);
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Home.cshtml"));
-            var projectItem = new FileSystemRazorProjectItem("/", "/Home.cshtml", fileInfo);
+            var projectItem = new FileSystemRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
 
             // Act
             var stream = projectItem.Read();

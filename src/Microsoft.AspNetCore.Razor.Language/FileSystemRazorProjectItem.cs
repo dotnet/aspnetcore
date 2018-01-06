@@ -11,12 +11,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Initializes a new instance of <see cref="FileSystemRazorProjectItem"/>.
         /// </summary>
         /// <param name="basePath">The base path.</param>
-        /// <param name="path">The path.</param>
+        /// <param name="relativePhysicalPath">The physical path of the base path.</param>
+        /// <param name="filePath">The path.</param>
         /// <param name="file">The <see cref="FileInfo"/>.</param>
-        public FileSystemRazorProjectItem(string basePath, string path, FileInfo file)
+        public FileSystemRazorProjectItem(string basePath, string filePath, string relativePhysicalPath, FileInfo file)
         {
             BasePath = basePath;
-            FilePath = path;
+            FilePath = filePath;
+            RelativePhysicalPath = relativePhysicalPath;
             File = file;
         }
 
@@ -29,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool Exists => File.Exists;
 
         public override string PhysicalPath => File.FullName;
+
+        public override string RelativePhysicalPath { get; }
 
         public override Stream Read() => new FileStream(PhysicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
     }
