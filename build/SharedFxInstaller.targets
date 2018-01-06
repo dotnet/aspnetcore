@@ -116,7 +116,7 @@
       <RpmCommonArguments>$(RpmCommonArguments);RpmMaintainerName=$(MaintainerName);RpmMaintainerEmail=$(MaintainerEmail)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmHomepage=$(Homepage);RpmRevision=$(PackageRevision)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmLicense=$(LicenseType)</RpmCommonArguments>
-      <RpmCommonArguments>$(RpmCommonArguments);RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</RpmCommonArguments>
+      <RpmCommonArguments>$(RpmCommonArguments);RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxLinuxIntermediateArchiveFilePath)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonArguments>
       <RpmCommonGenericArguments>RpmFileSuffix=rhel.7-x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
       <RpmCommonRHArguments>RpmFileSuffix=rh.rhel.7-x64.rpm;RpmInstallRoot=$(RHInstallRoot)</RpmCommonRHArguments>
@@ -212,7 +212,7 @@
 
       <CommonProps>Image=$(Image);DebVersion=$(Version)</CommonProps>
       <DebSharedFxProps>DebPrefix=$(SharedFxInstallerName);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebSharedFxProps>
-      <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxLinuxArchiveFilePath)</DebSharedFxProps>
+      <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxLinuxIntermediateArchiveFilePath)</DebSharedFxProps>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDeb" Properties="$(CommonProps);$(DebSharedFxProps)" />
