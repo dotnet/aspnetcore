@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <!--
+      This property is used by Microsoft.NET.Sdk.Web to generate a web.config file with 'hostingModel="InProcess"'.
+      When this package is referenced, it is set by default to InProcess, unless the user project contains
+      a different value for this property, or DisableInProcessHosting == true.
+
+      When AspNetCoreModuleHostingModel is empty, ANCM defaults to the reverse-proxy and out-of-process hosting model.
+
+      This property is only supported on .NET Core web applications.
+    -->
+    <AspNetCoreModuleHostingModel Condition=" '$(AspNetCoreModuleHostingModel)' == '' AND '$(DisableInProcessHosting)' != 'true' ">InProcess</AspNetCoreModuleHostingModel>
+  </PropertyGroup>
+</Project>

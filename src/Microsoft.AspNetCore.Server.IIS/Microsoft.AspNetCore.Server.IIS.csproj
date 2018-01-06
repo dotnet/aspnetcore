@@ -1,0 +1,52 @@
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <PackageId>Microsoft.AspNetCore.Server.IIS</PackageId>
+    <Description>Provides support for hosting ASP.NET Core in IIS using the AspNetCoreModule.</Description>
+    <IsPackable Condition="'$(OS)' != 'Windows_NT'">false</IsPackable>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>false</IncludeSymbols>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnableApiCheck>false</EnableApiCheck>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>$(PackageId).nuspec</NuspecFile>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SignedPackageFile Include="aspnetcorerh_x86" PackagePath="runtimes/win-x86/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
+    <SignedPackageFile Include="aspnetcorerh_x64" PackagePath="runtimes/win-x64/nativeassets/$(TargetFramework)/aspnetcorerh.dll" Certificate="Microsoft" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+  </ItemGroup>
+
+  <Target Name="SetPackageProperties" BeforeTargets="GenerateNuspec">
+    <PropertyGroup>
+      <NuspecProperties>
+        id=$(PackageId);
+        tfm=$(TargetFramework);
+        tfmGroup=$(TargetFrameworkIdentifier)$(_TargetFrameworkVersionWithoutV);
+        configuration=$(Configuration);
+        copyright=$(Copyright);
+        licenseUrl=$(PackageLicenseUrl);
+        iconUrl=$(PackageIconUrl);
+        projectUrl=$(PackageProjectUrl);
+        repositoryUrl=$(RepositoryUrl);
+        version=$(PackageVersion);
+        description=$(Description);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- This project doesn't actually compile anything. It's a shim into packing a nuspec -->
+  <Target Name="Compile" />
+  <Target Name="CopyFilesToOutputDirectory" />
+
+</Project>
