@@ -4,20 +4,21 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
@@ -575,10 +576,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Null(controller.UntouchedProperty);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties(bool isModelSet)
+        [Fact]
+        public async Task BindActionArgumentsAsync_DoesNotSetNullValues_ForNonNullableProperties()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
@@ -901,8 +900,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // BindingContext.ModelName will be string.Empty here. This is a 'fallback to empty prefix'
                 // because the value providers have no data.
-                object model;
-                if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out model))
+                if (inputPropertyValues.TryGetValue(bindingContext.FieldName, out var model))
                 {
                     bindingContext.Result = ModelBindingResult.Success(model);
                 }

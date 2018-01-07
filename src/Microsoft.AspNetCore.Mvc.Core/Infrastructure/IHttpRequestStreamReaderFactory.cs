@@ -4,7 +4,7 @@
 using System.IO;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// Creates <see cref="TextReader"/> instances for reading from <see cref="Http.HttpRequest.Body"/>.

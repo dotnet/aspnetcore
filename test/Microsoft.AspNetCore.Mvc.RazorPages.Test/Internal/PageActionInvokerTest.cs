@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -25,7 +26,6 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -102,8 +102,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     resourceExecutingContext.ValueProviderFactories.Add(valueProviderFactory2);
                 });
             var valueProviderFactory1 = Mock.Of<IValueProviderFactory>();
-            var valueProviderFactories = new List<IValueProviderFactory>();
-            valueProviderFactories.Add(valueProviderFactory1);
+            var valueProviderFactories = new List<IValueProviderFactory>
+            {
+                valueProviderFactory1
+            };
 
             var invoker = CreateInvoker(
                 new IFilterMetadata[] { resourceFilter.Object }, valueProviderFactories: valueProviderFactories);
@@ -133,9 +135,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var valueProviderFactory1 = Mock.Of<IValueProviderFactory>();
             var valueProviderFactory2 = Mock.Of<IValueProviderFactory>();
-            var valueProviderFactories = new List<IValueProviderFactory>();
-            valueProviderFactories.Add(valueProviderFactory1);
-            valueProviderFactories.Add(valueProviderFactory2);
+            var valueProviderFactories = new List<IValueProviderFactory>
+            {
+                valueProviderFactory1,
+                valueProviderFactory2
+            };
 
             var invoker = CreateInvoker(
                 new IFilterMetadata[] { resourceFilter.Object }, valueProviderFactories: valueProviderFactories);
@@ -1164,13 +1168,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 tempDataFactory = Mock.Of<ITempDataDictionaryFactory>(m => m.GetTempData(It.IsAny<HttpContext>()) == Mock.Of<ITempDataDictionary>());
             }
 
-            Func<PageContext, ViewContext, object> pageFactory = (context, viewContext) =>
+            object pageFactory(PageContext context, ViewContext viewContext)
             {
                 var instance = (Page)Activator.CreateInstance(actionDescriptor.PageTypeInfo.AsType());
                 instance.PageContext = context;
                 instance.ViewContext = viewContext;
                 return instance;
-            };
+            }
 
             if (handlers == null)
             {

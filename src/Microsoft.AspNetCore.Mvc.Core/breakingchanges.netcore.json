@@ -1,2 +1,32 @@
 [
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinder : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinder",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions options)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Binders.BodyModelBinderProvider : Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider",
+    "MemberId": "public .ctor(System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IInputFormatter> formatters, Microsoft.AspNetCore.Mvc.Internal.IHttpRequestStreamReaderFactory readerFactory, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.Mvc.MvcOptions options)",
+    "Kind": "Removal"
+  }
 ]

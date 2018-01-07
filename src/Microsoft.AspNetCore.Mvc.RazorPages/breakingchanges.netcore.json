@@ -1,0 +1,7 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.PageResultExecutor : Microsoft.AspNetCore.Mvc.ViewFeatures.ViewExecutor",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Mvc.Internal.IHttpResponseStreamWriterFactory writerFactory, Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine compositeViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorViewEngine razorViewEngine, Microsoft.AspNetCore.Mvc.Razor.IRazorPageActivator razorPageActivator, System.Diagnostics.DiagnosticSource diagnosticSource, System.Text.Encodings.Web.HtmlEncoder htmlEncoder)",
+    "Kind": "Removal"
+  }
+]

@@ -4,8 +4,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -217,14 +217,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var response = viewContext.HttpContext.Response;
 
-            string resolvedContentType;
-            Encoding resolvedContentTypeEncoding;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 contentType,
                 response.ContentType,
                 DefaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             response.ContentType = resolvedContentType;
 
