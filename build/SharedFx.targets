@@ -37,12 +37,8 @@
   </Target>
 
   <Target Name="PrepareForSharedFx">
-    <ItemGroup>
-      <_AcceptableSharedFxRIDs Include="win-x64;win-x86;osx-x64;linux-x64"/>
-    </ItemGroup>
-
     <PropertyGroup>
-      <RIDIsAcceptable Condition="'%(_AcceptableSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
+      <RIDIsAcceptable Condition="'%(AllSharedFxRIDs.Identity)' == '$(SharedFxRID)'">true</RIDIsAcceptable>
     </PropertyGroup>
 
     <Error Text="&quot;$(SharedFxRID)&quot; not acceptable as a SharedFxRID, please specify an acceptable value: {@(_AcceptableSharedFxRIDs)}." Condition="'$(RIDIsAcceptable)' != 'true'"/>

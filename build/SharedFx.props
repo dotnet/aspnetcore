@@ -29,11 +29,11 @@
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
 
     <DotnetRuntimePackageName>dotnet-runtime</DotnetRuntimePackageName>
-    <DotnetRuntimeInstallerName>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerName>
-    <DotnetRuntimeInstallerArchiveName>$(DotnetRuntimeInstallerName)-linux-x64.tar.gz</DotnetRuntimeInstallerArchiveName>
-    <RuntimeTargzLink>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerArchiveName)</RuntimeTargzLink>
-
-    <SharedFxLinuxIntermediateArchiveFilePath>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)-linux-x64.tar.gz</SharedFxLinuxIntermediateArchiveFilePath>
+    <DotnetRuntimeInstallerPrefix>$(DotnetRuntimePackageName)-$(MicrosoftNETCoreApp21PackageVersion)</DotnetRuntimeInstallerPrefix>
+    <RuntimeArchiveLinkPrefix>$(DotNetAssetRootUrl)Runtime/$(MicrosoftNETCoreApp21PackageVersion)/$(DotnetRuntimeInstallerPrefix)</RuntimeArchiveLinkPrefix>
+    <RuntimeStoreArchiveLinkPrefix>$(DotNetAssetRootUrl)aspnetcore/store/2.0.3-125/</RuntimeStoreArchiveLinkPrefix>
+    <RuntimeStoreArchiveFilename>Build.RS</RuntimeStoreArchiveFilename>
+    <SharedFxIntermediateArchiveFilePrefix>$(_SharedFxSourceDir)$(SharedFxIntermediateArchiveBaseName)-$(PackageVersion)</SharedFxIntermediateArchiveFilePrefix>
 
     <!-- installer metadata -->
     <MaintainerName>Microsoft</MaintainerName>
@@ -45,4 +45,10 @@
     <SharedFxSummary>Microsoft ASP.NET Core $(PackageVersion) Shared Framework</SharedFxSummary>
     <SharedFxDescription>Shared Framework for hosting of Microsoft ASP.NET Core applications. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.</SharedFxDescription>
   </PropertyGroup>
+
+  <ItemGroup>
+    <WindowsSharedFxRIDs Include="win-x64;win-x86"/>
+    <NonWindowsSharedFxRIDs Include="osx-x64;linux-x64"/>
+    <AllSharedFxRIDs Include="@(WindowsSharedFxRIDs);@(NonWindowsSharedFxRIDs)"/>
+  </ItemGroup>
 </Project>
