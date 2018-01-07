@@ -1,5 +1,5 @@
 <Project>
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateCumulativeArchives;GenerateRpms;GenerateDebs;GenerateRelabeledInstallers" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateCumulativeArchives;GenerateRpms;GenerateDebs" />
 
   <Target Name="_EnsureInstallerPrerequisites">
     <MakeDir Directories="$(_InstallersOutputDir)" />
@@ -255,7 +255,7 @@
     <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
 
     <Copy
-      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
+      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebVersion)-x64.deb"
       SourceFiles="@(GeneratedDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
@@ -287,26 +287,6 @@
   </Target>
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=debian.8" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=ubuntu.14.04" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=ubuntu.16.04" />
-  </Target>
-
-  <Target Name="_GenerateRelabeledInstaller">
-    <ItemGroup>
-      <Installers Include="$(_InstallersOutputDir)*$(Source)*" />
-    </ItemGroup>
-
-    <Copy
-      SourceFiles="%(Installers.FullPath)"
-      DestinationFiles="$([System.String]::Copy('%(Installers.FullPath)').Replace('$(Source)','$(Replacement)'))"
-      OverwriteReadOnlyFiles="True"
-      SkipUnchangedFiles="False"
-      UseHardlinksIfPossible="False" />
-  </Target>
-
-  <Target Name="GenerateRelabeledInstallers">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=debian.8;Replacement=debian.9" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRelabeledInstaller" Properties="Source=ubuntu.16.04;Replacement=ubuntu.17.04" />
   </Target>
 </Project>
