@@ -8,7 +8,9 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,19 +18,40 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class CompiledPageRouteModelProvider : IPageRouteModelProvider
     {
-        private readonly object _cacheLock = new object();
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
+        private readonly RazorTemplateEngine _templateEngine;
         private readonly ILogger<CompiledPageRouteModelProvider> _logger;
-        private List<PageRouteModel> _cachedModels;
 
         public CompiledPageRouteModelProvider(
             ApplicationPartManager applicationManager,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
+            RazorTemplateEngine templateEngine,
             ILoggerFactory loggerFactory)
         {
+            if (applicationManager == null)
+            {
+                throw new ArgumentNullException(nameof(applicationManager));
+            }
+
+            if (pagesOptionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(pagesOptionsAccessor));
+            }
+
+            if (templateEngine == null)
+            {
+                throw new ArgumentNullException(nameof(templateEngine));
+            }
+
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             _applicationManager = applicationManager;
             _pagesOptions = pagesOptionsAccessor.Value;
+            _templateEngine = templateEngine;
             _logger = loggerFactory.CreateLogger<CompiledPageRouteModelProvider>();
         }
 
@@ -36,61 +59,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public void OnProvidersExecuting(PageRouteModelProviderContext context)
         {
-            EnsureCache();
-            for (var i = 0; i < _cachedModels.Count; i++)
+            if (context == null)
             {
-                var pageModel = _cachedModels[i];
-                context.RouteModels.Add(new PageRouteModel(pageModel));
+                throw new ArgumentNullException(nameof(context));
             }
+
+            CreateModels(context.RouteModels);
         }
 
         public void OnProvidersExecuted(PageRouteModelProviderContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
         }
 
-        private void EnsureCache()
+        private void CreateModels(IList<PageRouteModel> results)
         {
-            lock (_cacheLock)
+            var rootDirectory = _pagesOptions.RootDirectory;
+            if (!rootDirectory.EndsWith("/", StringComparison.Ordinal))
             {
-                if (_cachedModels != null)
+                rootDirectory = rootDirectory + "/";
+            }
+
+            var areaRootDirectory = _pagesOptions.AreaRootDirectory;
+            if (!areaRootDirectory.EndsWith("/", StringComparison.Ordinal))
+            {
+                areaRootDirectory = areaRootDirectory + "/";
+            }
+
+            foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
+            {
+                if (viewDescriptor.Item != null && !ChecksumValidator.IsItemValid(_templateEngine.Project, viewDescriptor.Item))
                 {
-                    return;
+                    // If we get here, this compiled Page has different local content, so ignore it.
+                    continue;
                 }
 
-                var rootDirectory = _pagesOptions.RootDirectory;
-                if (!rootDirectory.EndsWith("/", StringComparison.Ordinal))
+                PageRouteModel model = null;
+                // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
+                // only want to allow a page to be associated with the area route.
+                if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
                 {
-                    rootDirectory = rootDirectory + "/";
+                    model = GetAreaPageRouteModel(areaRootDirectory, viewDescriptor);
+                }
+                else if (viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
+                {
+                    model = GetPageRouteModel(rootDirectory, viewDescriptor);
                 }
 
-                var areaRootDirectory = _pagesOptions.AreaRootDirectory;
-                if (!areaRootDirectory.EndsWith("/", StringComparison.Ordinal))
+                if (model != null)
                 {
-                    areaRootDirectory = areaRootDirectory + "/";
+                    results.Add(model);
                 }
-
-                var cachedApplicationModels = new List<PageRouteModel>();
-                foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
-                {
-                    PageRouteModel model = null;
-                    // When RootDirectory and AreaRootDirectory overlap (e.g. RootDirectory = '/', AreaRootDirectory = '/Areas'), we
-                    // only want to allow a page to be associated with the area route.
-                    if (_pagesOptions.AllowAreas && viewDescriptor.RelativePath.StartsWith(areaRootDirectory, StringComparison.OrdinalIgnoreCase))
-                    {
-                        model = GetAreaPageRouteModel(areaRootDirectory, viewDescriptor);
-                    }
-                    else if (viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
-                    {
-                        model = GetPageRouteModel(rootDirectory, viewDescriptor);
-                    }
-
-                    if (model != null)
-                    {
-                        cachedApplicationModels.Add(model);
-                    }
-                }
-
-                _cachedModels = cachedApplicationModels;
             }
         }
 

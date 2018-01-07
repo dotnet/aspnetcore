@@ -30,6 +30,7 @@
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
+    <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPageExecutionInstrumentationWebSite\RazorPageExecutionInstrumentationWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />

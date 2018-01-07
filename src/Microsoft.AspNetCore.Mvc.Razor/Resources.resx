@@ -197,4 +197,7 @@
   <data name="UnsupportedDebugInformationFormat" xml:space="preserve">
     <value>The debug type specified in the dependency context could be parsed. The debug type value '{0}' is not supported.</value>
   </data>
+  <data name="CompiledViewDescriptor_NoData" xml:space="preserve">
+    <value>At least one of the '{0}' or '{1}' values must be non-null.</value>
+  </data>
 </root>

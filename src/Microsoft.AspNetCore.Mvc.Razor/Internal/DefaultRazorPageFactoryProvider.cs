@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var compileTask = Compiler.CompileAsync(relativePath);
             var viewDescriptor = compileTask.GetAwaiter().GetResult();
-            if (viewDescriptor.ViewAttribute != null)
-            {
-                var compiledType = viewDescriptor.ViewAttribute.ViewType;
 
-                var newExpression = Expression.New(compiledType);
-                var pathProperty = compiledType.GetTypeInfo().GetProperty(nameof(IRazorPage.Path));
+            var viewType = viewDescriptor.Type;
+            if (viewType != null)
+            {
+                var newExpression = Expression.New(viewType);
+                var pathProperty = viewType.GetTypeInfo().GetProperty(nameof(IRazorPage.Path));
 
                 // Generate: page.Path = relativePath;
                 // Use the normalized path specified from the result.
