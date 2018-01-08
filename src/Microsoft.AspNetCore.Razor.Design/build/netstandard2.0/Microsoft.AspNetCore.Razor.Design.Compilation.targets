@@ -1,60 +1,85 @@
 <Project>
-  <!--
-    What follows here was copied and modified from the XamlPreCompile target in 
-    Microsoft.CSharp.CurrentVersion.targets
-
-    The XamlPreCompile target must remain identical to
-    the CoreCompile target in Microsoft.CSharp.Core.targets.
-    Any updates to one must be made to the other.
-  -->
-
-
   <ItemGroup>
     <!-- Used to creating the final compiled Razor dll -->
-    <_RazorIntermediateAssembly Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
+    <RazorIntermediateAssembly Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
 
     <!-- Similar to https://github.com/Microsoft/msbuild/blob/908cc9ccd4961441628f68e37a148183a87bb067/src/Tasks/Microsoft.Common.CurrentVersion.targets#L146-L153 -->
-    <_RazorIntermediatePdb 
+    <_RazorDebugSymbolsIntermediatePath 
       Condition="'$(DebugSymbols)'=='true' and '$(DebugType)'!='' and '$(DebugType)'!='none' and '$(DebugType)'!='embedded'" 
       Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
   </ItemGroup>
- 
-  <Target
-    Name="RazorCoreCompile"
-    Inputs="$(MSBuildAllProjects);
-            @(RazorCompile);
-            @(_CoreCompileResourceInputs);
-            $(ApplicationIcon);
-            $(AssemblyOriginatorKeyFile);
-            @(RazorReferencePath);"
-              
-    Outputs="@(_RazorIntermediateAssembly);
-             @(_RazorIntermediatePdb)"
-    Returns=""
-    DependsOnTargets="_RazorResolveTagHelpers;RazorCoreGenerate">
 
+  <!--
+  What follows in this file is based on:
+     https://github.com/dotnet/roslyn/blob/4d92b18aee99ba8b1b4770ce65133e9ca65a94fe/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets 
+
+  We need to keep this basically up to date, as well as track the set of modifications we've made. Try to keep the formatting
+  similar to the original to reduce noise. In general try to only deviate from the CoreCompile target when we need to for
+  correctness.
+
+  We also want to avoid doubling up on things that don't make a ton of sense in the Razor views assembly, like
+  embedded files and resources, these are already present in the application's assembly.
+
+  Changes:
+    Name="RazorCoreCompile" and DependsOnTarget="RazorCoreGenerate"
+    
+    Replace @(Compile) with @(RazorCompile)
+    Replace @(_DebugSymbolsIntermediatePath) with @(_RazorDebugSymbolsIntermediatePath)
+    Replace @(IntermediateAssembly) with @(RazorIntermediateAssembly)
+    Replace @(ReferencePathWithRefAssemblies) with @(RazorReferencePath)
+
+    Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
+
+    Remove Returns="@(CscCommandLineArgs)"
+    Remove @(_CoreCompileResourceInputs)
+    Remove $(ApplicationIcon) $(Win32Resource) $(Win32Manifest)
+    Remove @(EmbeddedDocumentation) and @(EmbeddedFiles)
+    Remove @(CustomAdditionalCompileInputs) and @(CustomAdditionalCompileOutputs)
+    Remove @(DocFileItem)
+    Remove PdbFile="$(PdbFile)"
+    Remove OutputRefAssembly="@(IntermediateRefAssembly)"
+
+    Remove EmbedAllSources="$(EmbedAllSources)" - not supported by our supported version of MSBuild
+
+    Remove additional steps after calling CSC
+
+    Add our FileWrites after the call to CSC
+  -->
+ <Target Name="RazorCoreCompile"
+          Inputs="$(MSBuildAllProjects);
+                  @(RazorCompile);
+                  $(AssemblyOriginatorKeyFile);
+                  @(RazorReferencePath);
+                  @(CompiledLicenseFile);
+                  @(LinkResource);
+                  $(ResolvedCodeAnalysisRuleSet);
+                  @(AdditionalFiles)"
+          Outputs="@(RazorIntermediateAssembly);
+                   @(_RazorDebugSymbolsIntermediatePath);
+                   $(NonExistentFile)"
+          DependsOnTargets="RazorCoreGenerate">
     <!-- These two compiler warnings are raised when a reference is bound to a different version
-          than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
-          so the compiler warning would be redundant. -->
+             than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
+             so the compiler warning would be redundant. -->
     <PropertyGroup Condition="('$(TargetFrameworkVersion)' != 'v1.0') and ('$(TargetFrameworkVersion)' != 'v1.1')">
       <NoWarn>$(NoWarn);1701;1702</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup>
       <!-- To match historical behavior, when inside VS11+ disable the warning from csc.exe indicating that no sources were passed in-->
-      <NoWarn Condition=" '$(BuildingInsideVisualStudio)' == 'true' and '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' > '10.0' ">$(NoWarn);2008</NoWarn>
+      <NoWarn Condition="'$(BuildingInsideVisualStudio)' == 'true' AND '$(VisualStudioVersion)' != '' AND '$(VisualStudioVersion)' &gt; '10.0'">$(NoWarn);2008</NoWarn>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(TargetingClr2Framework)'=='true'">
-      <ReferencePath>
-        <EmbedInteropTypes/>
-      </ReferencePath>
+    <ItemGroup Condition="'$(TargetingClr2Framework)' == 'true'">
+      <ReferencePathWithRefAssemblies>
+        <EmbedInteropTypes />
+      </ReferencePathWithRefAssemblies>
     </ItemGroup>
 
     <PropertyGroup>
       <!-- If the user has specified AppConfigForCompiler, we'll use it. If they have not, but they set UseAppConfigForCompiler,
-              then we'll use AppConfig -->
-      <AppConfigForCompiler Condition="'$(AppConfigForCompiler)' == '' and '$(UseAppConfigForCompiler)' == 'true'">$(AppConfig)</AppConfigForCompiler>
+                 then we'll use AppConfig -->
+      <AppConfigForCompiler Condition="'$(AppConfigForCompiler)' == '' AND '$(UseAppConfigForCompiler)' == 'true'">$(AppConfig)</AppConfigForCompiler>
     </PropertyGroup>
 
     <!-- Prefer32Bit was introduced in .NET 4.5. Set it to false if we are targeting 4.0 -->
@@ -62,15 +87,28 @@
       <Prefer32Bit>false</Prefer32Bit>
     </PropertyGroup>
 
+    <!-- TODO: Remove this ItemGroup once it has been moved to "_GenerateCompileInputs" target in Microsoft.Common.CurrentVersion.targets.
+         https://github.com/dotnet/roslyn/issues/12223 -->
+    <ItemGroup Condition="('$(AdditionalFileItemNames)' != '')">
+      <AdditionalFileItems Include="$(AdditionalFileItemNames)" />
+      <AdditionalFiles Include="@(%(AdditionalFileItems.Identity))" />
+    </ItemGroup>
+
     <PropertyGroup Condition="'$(UseSharedCompilation)' == ''">
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
     <Csc
+         AdditionalLibPaths="$(AdditionalLibPaths)"
+         AddModules="@(AddModules)"
+         AdditionalFiles="@(AdditionalFiles)"
          AllowUnsafeBlocks="$(AllowUnsafeBlocks)"
+         Analyzers="@(Analyzer)"
          ApplicationConfiguration="$(AppConfigForCompiler)"
          BaseAddress="$(BaseAddress)"
          CheckForOverflowUnderflow="$(CheckForOverflowUnderflow)"
+         ChecksumAlgorithm="$(ChecksumAlgorithm)"
+         CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
          CodePage="$(CodePage)"
          DebugType="$(DebugType)"
          DefineConstants="$(DefineConstants)"
@@ -81,25 +119,36 @@
          ErrorEndLocation="$(ErrorEndLocation)"
          ErrorLog="$(ErrorLog)"
          ErrorReport="$(ErrorReport)"
+         Features="$(Features)"
          FileAlignment="$(FileAlignment)"
          GenerateFullPaths="$(GenerateFullPaths)"
          HighEntropyVA="$(HighEntropyVA)"
+         Instrument="$(Instrument)"
          KeyContainer="$(KeyContainerName)"
          KeyFile="$(KeyOriginatorFile)"
          LangVersion="$(LangVersion)"
+         LinkResources="@(LinkResource)"
+         MainEntryPoint="$(StartupObject)"
+         ModuleAssemblyName="$(ModuleAssemblyName)"
          NoConfig="true"
          NoLogo="$(NoLogo)"
          NoStandardLib="$(NoCompilerStandardLib)"
          NoWin32Manifest="$(NoWin32Manifest)"
          Optimize="$(Optimize)"
-         OutputAssembly="@(_RazorIntermediateAssembly)"
-         PdbFile="@(_RazorIntermediatePdb)"
+         Deterministic="$(Deterministic)"
+         PublicSign="$(PublicSign)"
+         OutputAssembly="@(RazorIntermediateAssembly)"
          Platform="$(PlatformTarget)"
          Prefer32Bit="$(Prefer32Bit)"
          PreferredUILang="$(PreferredUILang)"
+         ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
          References="@(RazorReferencePath)"
          ReportAnalyzer="$(ReportAnalyzer)"
+         Resources="@(CompiledLicenseFile)"
          ResponseFiles="$(CompilerResponseFile)"
+         RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
+         SharedCompilationId="$(SharedCompilationId)"
+         SkipCompilerExecution="$(SkipCompilerExecution)"
          Sources="@(RazorCompile)"
          SubsystemVersion="$(SubsystemVersion)"
          TargetType="Library"
@@ -113,55 +162,14 @@
          WarningLevel="$(WarningLevel)"
          WarningsAsErrors="$(WarningsAsErrors)"
          WarningsNotAsErrors="$(WarningsNotAsErrors)"
-         Win32Icon="$(ApplicationIcon)"
-         Win32Manifest="$(Win32Manifest)"
-         Win32Resource="$(Win32Resource)">
+         PathMap="$(PathMap)"
+         SourceLink="$(SourceLink)">
+      <Output TaskParameter="CommandLineArgs" ItemName="CscCommandLineArgs" />
     </Csc>
 
     <ItemGroup>
       <FileWrites Include="@(_RazorIntermediateAssembly)" Condition="Exists('@(_RazorIntermediateAssembly)')" />
-      <FileWrites Include="@(_RazorIntermediatePdb)" Condition="Exists('@(_RazorIntermediatePdb)')" />
+      <FileWrites Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)')" />
     </ItemGroup>
-
-</Target>
-
-<Target Name="_CopyRazorAssemblies"
-        AfterTargets="CopyFilesToOutputDirectory">
-
-    <!-- Copy the Razor dll  -->
-    <Copy
-        SourceFiles="@(_RazorIntermediateAssembly)"
-        DestinationFolder="$(OutDir)"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        Condition="Exists('@(_RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly"/>
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-
-    </Copy>
-
-    <Message Importance="High" Text="$(MSBuildProjectName) -&gt; @(_RazorAssembly->'%(FullPath)')" Condition="Exists('@(_RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
-
-    <!-- Copy the Razor debug information file (.pdb), if any -->
-    <Copy
-        SourceFiles="$(_RazorIntermediatePdb)"
-        DestinationFiles="@(_DebugSymbolsOutputPath)"
-        SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
-        OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
-        Retries="$(CopyRetryCount)"
-        RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
-        UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
-        UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
-        Condition="Exists('@(_RazorIntermediatePdb)') and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true' and '$(CopyOutputSymbolsToOutputDirectory)'=='true'">
-
-      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
-
-    </Copy>
-    
   </Target>
 </Project>

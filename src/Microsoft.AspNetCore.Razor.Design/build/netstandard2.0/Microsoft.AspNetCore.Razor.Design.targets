@@ -140,4 +140,45 @@
       <RazorCompile Include="@(_RazorGenerateOutput)" />
     </ItemGroup>
   </Target>
+
+  <Target Name="_RazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
+
+    <!-- Copy the Razor dll  -->
+    <Copy
+      SourceFiles="@(RazorIntermediateAssembly)"
+      DestinationFolder="$(OutDir)"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+      Condition="Exists('@(RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)' != 'true'">
+
+      <Output TaskParameter="DestinationFiles" ItemName="_RazorAssembly"/>
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+
+    <Message 
+      Importance="High" 
+      Text="$(MSBuildProjectName) -&gt; @(_RazorAssembly->'%(FullPath)')" 
+      Condition="Exists('@(RazorIntermediateAssembly)') and '$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
+
+    <!-- Copy the Razor debug information file (.pdb), if any -->
+    <Copy
+      SourceFiles="$(_RazorDebugSymbolsIntermediatePath)"
+      DestinationFiles="@(_DebugSymbolsOutputPath)"
+      SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+      OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+      Retries="$(CopyRetryCount)"
+      RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+      UseHardlinksIfPossible="$(CreateHardLinksForCopyFilesToOutputDirectoryIfPossible)"
+      UseSymboliclinksIfPossible="$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)"
+      Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)') and '$(SkipCopyingSymbolsToOutputDirectory)' != 'true' and '$(CopyOutputSymbolsToOutputDirectory)'=='true'">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+    </Copy>
+    
+  </Target>
+
 </Project>
