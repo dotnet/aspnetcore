@@ -15,8 +15,6 @@
       <Mirror>false</Mirror>
       <!-- When true, this dependency will be included in the metapackage. -->
       <Metapackage>false</Metapackage>
-      <!-- When true, this dependency will be included in the runtime store. -->
-      <RuntimeStore>false</RuntimeStore>
       <!-- When true, this dependency will be used to generate a deps.json for hosting startup that will be included in the runtime store. -->
       <HostingStartup>false</HostingStartup>
       <!-- When true, this dependency will be included in the LZMA. -->
