@@ -21,7 +21,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" Metapackage="true" RuntimeStore="true" HostingStartup="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule.RequestHandler" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" Metapackage="true" RuntimeStore="true"/>
@@ -129,6 +128,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.UrlMatchingTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" Metapackage="true" RuntimeStore="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IntegrationTesting" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel" Category="ship" Metapackage="true" RuntimeStore="true"/>
