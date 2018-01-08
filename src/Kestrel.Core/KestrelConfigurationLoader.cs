@@ -6,14 +6,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel
 {
@@ -205,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel
             var configReader = new ConfigurationReader(Configuration);
 
             LoadDefaultCert(configReader);
-            
+
             foreach (var endpoint in configReader.Endpoints)
             {
                 var listenOptions = AddressBinder.ParseAddress(endpoint.Url, out var https);
@@ -259,6 +263,76 @@ namespace Microsoft.AspNetCore.Server.Kestrel
                     Options.DefaultCertificate = defaultCert;
                 }
             }
+            else
+            {
+                var logger = Options.ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+                var certificate = FindDeveloperCertificateFile(configReader, logger);
+                if (certificate != null)
+                {
+                    logger.LocatedDevelopmentCertificate(certificate);
+                    Options.DefaultCertificate = certificate;
+                }
+            }
+        }
+
+        private X509Certificate2 FindDeveloperCertificateFile(ConfigurationReader configReader, ILogger<KestrelServer> logger)
+        {
+            string certificatePath = null;
+            try
+            {
+                if (configReader.Certificates.TryGetValue("Development", out var certificateConfig) &&
+                    certificateConfig.Path == null &&
+                    certificateConfig.Password != null &&
+                    TryGetCertificatePath(out certificatePath) &&
+                    File.Exists(certificatePath))
+                {
+                    var certificate = new X509Certificate2(certificatePath, certificateConfig.Password);
+                    return IsDevelopmentCertificate(certificate) ? certificate : null;
+                }
+                else if (!File.Exists(certificatePath))
+                {
+                    logger.FailedToLocateDevelopmentCertificateFile(certificatePath);
+                }
+            }
+            catch (CryptographicException)
+            {
+                logger.FailedToLoadDevelopmentCertificate(certificatePath);
+            }
+
+            return null;
+        }
+
+        private bool IsDevelopmentCertificate(X509Certificate2 certificate)
+        {
+            if (!string.Equals(certificate.Subject, "CN=localhost", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            foreach (var ext in certificate.Extensions)
+            {
+                if (string.Equals(ext.Oid.Value, CertificateManager.AspNetHttpsOid, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool TryGetCertificatePath(out string path)
+        {
+            var hostingEnvironment = Options.ApplicationServices.GetRequiredService<IHostingEnvironment>();
+            var appName = hostingEnvironment.ApplicationName;
+
+            // This will go away when we implement
+            // https://github.com/aspnet/Hosting/issues/1294
+            var appData = Environment.GetEnvironmentVariable("APPDATA");
+            var home = Environment.GetEnvironmentVariable("HOME");
+            var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
+            basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
+            path = basePath != null ? Path.Combine(basePath, $"{appName}.pfx") : null;
+            return path != null;
         }
 
         private X509Certificate2 LoadCertificate(CertificateConfig certInfo, string endpointName)

@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             var serverOptions = new KestrelServerOptions();
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
+                .AddSingleton<IHostingEnvironment>(new HostingEnvironment() { ApplicationName = "TestApplication" })
                 .BuildServiceProvider();
             return serverOptions;
         }
@@ -208,6 +211,118 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
             // You only get Https once per endpoint.
             Assert.NotNull(serverOptions.ListenOptions[0].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
             Assert.NotNull(serverOptions.ListenOptions[1].ConnectionAdapters.Where(adapter => adapter.IsHttps).SingleOrDefault());
+        }
+
+        [Fact]
+        public void ConfigureEndpointDevelopmentCertificateGetsLoadedWhenPresent()
+        {
+            try
+            {
+                var serverOptions = CreateServerOptions();
+                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "aspnetdevcert", X509KeyStorageFlags.Exportable);
+                var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+                var path = GetCertificatePath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllBytes(path, bytes);
+
+                var ran1 = false;
+                var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                    new KeyValuePair<string, string>("Certificates:Development:Password", "1234"),
+                }).Build();
+
+                serverOptions
+                    .Configure(config)
+                    .Endpoint("End1", opt =>
+                    {
+                        ran1 = true;
+                        Assert.True(opt.IsHttps);
+                        Assert.Equal(opt.HttpsOptions.ServerCertificate.SerialNumber, certificate.SerialNumber);
+                    }).Load();
+
+                Assert.True(ran1);
+                Assert.NotNull(serverOptions.DefaultCertificate);
+            }
+            finally
+            {
+                if (File.Exists(GetCertificatePath()))
+                {
+                    File.Delete(GetCertificatePath());
+                }
+            }
+        }
+
+        [Fact]
+        public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPasswordIsNotCorrect()
+        {
+            try
+            {
+                var serverOptions = CreateServerOptions();
+                var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "aspnetdevcert", X509KeyStorageFlags.Exportable);
+                var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
+                var path = GetCertificatePath();
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllBytes(path, bytes);
+
+                var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Certificates:Development:Password", "12341234"),
+                }).Build();
+
+                serverOptions
+                    .Configure(config)
+                    .Load();
+
+                Assert.Null(serverOptions.DefaultCertificate);
+            }
+            finally
+            {
+                if (File.Exists(GetCertificatePath()))
+                {
+                    File.Delete(GetCertificatePath());
+                }
+            }
+        }
+
+        [Fact]
+        public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPfxFileDoesNotExist()
+        {
+            try
+            {
+                var serverOptions = CreateServerOptions();
+                if (File.Exists(GetCertificatePath()))
+                {
+                    File.Delete(GetCertificatePath());
+                }
+
+                var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("Certificates:Development:Password", "12341234")
+                }).Build();
+
+                serverOptions
+                    .Configure(config)
+                    .Load();
+
+                Assert.Null(serverOptions.DefaultCertificate);
+            }
+            finally
+            {
+                if (File.Exists(GetCertificatePath()))
+                {
+                    File.Delete(GetCertificatePath());
+                }
+            }
+        }
+
+        private static string GetCertificatePath()
+        {
+            var appData = Environment.GetEnvironmentVariable("APPDATA");
+            var home = Environment.GetEnvironmentVariable("HOME");
+            var basePath = appData != null ? Path.Combine(appData, "ASP.NET", "https") : null;
+            basePath = basePath ?? (home != null ? Path.Combine(home, ".aspnet", "https") : null);
+            return Path.Combine(basePath, $"TestApplication.pfx");
         }
     }
 }

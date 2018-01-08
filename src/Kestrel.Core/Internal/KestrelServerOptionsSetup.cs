@@ -29,10 +29,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void UseDefaultDeveloperCertificate(KestrelServerOptions options)
         {
-            var certificateManager = new CertificateManager();
-            var certificate = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
-                .FirstOrDefault();
             var logger = options.ApplicationServices.GetRequiredService<ILogger<KestrelServer>>();
+            X509Certificate2 certificate = null;
+            try
+            {
+                var certificateManager = new CertificateManager();
+                certificate = certificateManager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: true)
+                    .FirstOrDefault();
+            }
+            catch
+            {
+                logger.UnableToLocateDevelopmentCertificate();
+            }
+
             if (certificate != null)
             {
                 logger.LocatedDevelopmentCertificate(certificate);
