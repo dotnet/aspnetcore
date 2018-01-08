@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
+    <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
