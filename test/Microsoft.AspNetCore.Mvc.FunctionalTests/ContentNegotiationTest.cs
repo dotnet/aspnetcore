@@ -450,13 +450,12 @@ END:VCARD
         [Fact]
         public async Task ProducesAttribute_And_FormatFilterAttribute_Conflicting()
         {
-            // Arrange
-            var expectedContentType = MediaTypeHeaderValue.Parse("application/json");
-
-            // Act
-            var response = await Client.GetAsync("http://localhost/FormatFilter/MethodWithFormatFilter.json");
+            // Arrange & Act
+            var response = await Client.GetAsync(
+                "http://localhost/FormatFilter/ProducesTakesPrecedenceOverUserSuppliedFormatMethod?format=json");
 
             // Assert
+            // Explicit content type set by the developer takes precedence over the format requested by the end user
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         }
 
@@ -464,7 +463,8 @@ END:VCARD
         public async Task ProducesAttribute_And_FormatFilterAttribute_Collaborating()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("http://localhost/FormatFilter/MethodWithFormatFilter");
+            var response = await Client.GetAsync(
+                "http://localhost/FormatFilter/ProducesTakesPrecedenceOverUserSuppliedFormatMethod");
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -507,6 +507,25 @@ END:VCARD
             var xmlDeserializer = new DataContractSerializer(typeof(Contact));
             var contact = xmlDeserializer.ReadObject(bodyStream) as Contact;
             Assert.Equal("Jason Ecsemelle", contact.Name);
+        }
+
+        [Fact]
+        public async Task FormatFilter_XmlAsFormat_ReturnsXml()
+        {
+            // Arrange
+            var expectedBody = "<FormatFilterController.Customer xmlns:i=\"http://www.w3.org/2001/XMLSchema-instance\""
+                + " xmlns=\"http://schemas.datacontract.org/2004/07/BasicWebSite.Controllers.ContentNegotiation\">"
+                + "<Name>John</Name></FormatFilterController.Customer>";
+
+            // Act
+            var response = await Client.GetAsync(
+                "http://localhost/FormatFilter/CustomerInfo?format=xml");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("application/xml; charset=utf-8", response.Content.Headers.ContentType.ToString());
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(expectedBody, body);
         }
     }
 }

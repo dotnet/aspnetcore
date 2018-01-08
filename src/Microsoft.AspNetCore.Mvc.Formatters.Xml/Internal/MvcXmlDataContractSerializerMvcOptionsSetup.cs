@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 {
@@ -41,6 +42,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
 
             options.OutputFormatters.Add(new XmlDataContractSerializerOutputFormatter(_loggerFactory));
             options.InputFormatters.Add(new XmlDataContractSerializerInputFormatter(options));
+
+            // Do not override any user mapping
+            var key = "xml";
+            var mapping = options.FormatterMappings.GetMediaTypeMappingForFormat(key);
+            if (string.IsNullOrEmpty(mapping))
+            {
+                options.FormatterMappings.SetMediaTypeMappingForFormat(
+                    key,
+                    MediaTypeHeaderValues.ApplicationXml);
+            }
 
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.Linq.XObject"));
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider("System.Xml.XmlNode"));

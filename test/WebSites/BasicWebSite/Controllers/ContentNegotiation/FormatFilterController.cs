@@ -7,24 +7,39 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace BasicWebSite.Controllers.ContentNegotiation
 {
-    [Produces("application/FormatFilterController")]
     public class FormatFilterController : Controller
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
-        {
-            var result = context.Result as ObjectResult;
-            if (result != null)
-            {
-                result.Formatters.Add(new CustomFormatter("application/FormatFilterController"));
-            }
-
-            base.OnActionExecuted(context);
-        }
-
+        [Produces("application/FormatFilterController")]
         [FormatFilter]
-        public string MethodWithFormatFilter()
+        [CustomFormatterActionFilter]
+        public string ProducesTakesPrecedenceOverUserSuppliedFormatMethod()
         {
             return "MethodWithFormatFilter";
         }
+
+        [HttpGet]
+        [FormatFilter]
+        public Customer CustomerInfo()
+        {
+            return new Customer() { Name = "John" };
+        }
+
+        private class CustomFormatterActionFilter : ActionFilterAttribute
+        {
+            public override void OnActionExecuted(ActionExecutedContext context)
+            {
+                var result = context.Result as ObjectResult;
+                if (result != null)
+                {
+                    result.Formatters.Add(new CustomFormatter("application/FormatFilterController"));
+                }
+            }
+        }
+
+        public class Customer
+        {
+            public string Name { get; set; }
+        }
     }
+
 }
