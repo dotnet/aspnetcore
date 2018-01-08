@@ -115,6 +115,117 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             Assert.Equal(typeof(Exception), metadata.ContainerType);
         }
 
+        [Fact]
+        public void DisplayFormatString_DoesNotCacheInitialDelegateValue()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForProperty(
+                typeof(string),
+                nameof(TypeWithProperties.PublicGetPublicSetProperty),
+                typeof(TypeWithProperties));
+
+            var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
+            var displayFormat = "initial format";
+            var cache = new DefaultMetadataDetails(key, attributes)
+            {
+                DisplayMetadata = new DisplayMetadata
+                {
+                    DisplayFormatStringProvider = () => displayFormat,
+                },
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            foreach (var newFormat in new[] { "one", "two", "three" })
+            {
+                // Arrange n
+                displayFormat = newFormat;
+
+                // Act n
+                var result = metadata.DisplayFormatString;
+
+                // Assert n
+                Assert.Equal(newFormat, result);
+            }
+        }
+
+        [Fact]
+        public void EditFormatString_DoesNotCacheInitialDelegateValue()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForProperty(
+                typeof(string),
+                nameof(TypeWithProperties.PublicGetPublicSetProperty),
+                typeof(TypeWithProperties));
+
+            var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
+            var editFormat = "initial format";
+            var cache = new DefaultMetadataDetails(key, attributes)
+            {
+                DisplayMetadata = new DisplayMetadata
+                {
+                    EditFormatStringProvider = () => editFormat,
+                },
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            foreach (var newFormat in new[] { "one", "two", "three" })
+            {
+                // Arrange n
+                editFormat = newFormat;
+
+                // Act n
+                var result = metadata.EditFormatString;
+
+                // Assert n
+                Assert.Equal(newFormat, result);
+            }
+        }
+
+        [Fact]
+        public void NullDisplayText_DoesNotCacheInitialDelegateValue()
+        {
+            // Arrange
+            var provider = new EmptyModelMetadataProvider();
+            var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
+
+            var key = ModelMetadataIdentity.ForProperty(
+                typeof(string),
+                nameof(TypeWithProperties.PublicGetPublicSetProperty),
+                typeof(TypeWithProperties));
+
+            var attributes = new ModelAttributes(Array.Empty<object>(), Array.Empty<object>(), null);
+            var nullDisplay = "initial display text";
+            var cache = new DefaultMetadataDetails(key, attributes)
+            {
+                DisplayMetadata = new DisplayMetadata
+                {
+                    NullDisplayTextProvider = () => nullDisplay,
+                },
+            };
+
+            var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
+
+            foreach (var newDisplay in new[] { "one", "two", "three" })
+            {
+                // Arrange n
+                nullDisplay = newDisplay;
+
+                // Act n
+                var result = metadata.NullDisplayText;
+
+                // Assert n
+                Assert.Equal(newDisplay, result);
+            }
+        }
+
         [Theory]
         [InlineData(typeof(object))]
         [InlineData(typeof(int))]
@@ -188,10 +299,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.BindingMetadata = new BindingMetadata()
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                IsBindingAllowed = false, // Will be ignored.
+                BindingMetadata = new BindingMetadata()
+                {
+                    IsBindingAllowed = false, // Will be ignored.
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -213,10 +326,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.BindingMetadata = new BindingMetadata()
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                IsBindingRequired = true, // Will be ignored.
+                BindingMetadata = new BindingMetadata()
+                {
+                    IsBindingRequired = true, // Will be ignored.
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -461,9 +576,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
                 var propertyCache = new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), kvp.Key, typeof(string)),
-                        attributes: new ModelAttributes(new object[0], new object[0], null));
+                        attributes: new ModelAttributes(new object[0], new object[0], null))
+                {
+                    DisplayMetadata = new DisplayMetadata(),
+                };
 
-                propertyCache.DisplayMetadata = new DisplayMetadata();
                 propertyCache.DisplayMetadata.Order = kvp.Value;
 
                 expectedProperties.Add(new DefaultModelMetadata(
@@ -539,10 +656,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int[]));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.BindingMetadata = new BindingMetadata()
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                IsReadOnly = true, // Will be ignored.
+                BindingMetadata = new BindingMetadata()
+                {
+                    IsReadOnly = true, // Will be ignored.
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -650,7 +769,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
-            var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
+            var key = ModelMetadataIdentity.ForType(modelType);
             var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -683,10 +802,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.ValidationMetadata = new ValidationMetadata
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                PropertyValidationFilter = value,
+                ValidationMetadata = new ValidationMetadata
+                {
+                    PropertyValidationFilter = value,
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -706,10 +827,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.ValidationMetadata = new ValidationMetadata()
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                ValidateChildren = true,
+                ValidationMetadata = new ValidationMetadata()
+                {
+                    ValidateChildren = true,
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -729,10 +852,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(XmlDocument));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
-            cache.ValidationMetadata = new ValidationMetadata()
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null))
             {
-                ValidateChildren = false,
+                ValidationMetadata = new ValidationMetadata()
+                {
+                    ValidateChildren = false,
+                },
             };
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);

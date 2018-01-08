@@ -39,12 +39,32 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                     { new DisplayFormatAttribute() { ConvertEmptyStringToNull = true }, d => d.ConvertEmptyStringToNull, true },
                     { new DisplayFormatAttribute() { DataFormatString = "{0:G}" }, d => d.DisplayFormatString, "{0:G}" },
                     {
+                        new DisplayFormatAttribute() { DataFormatString = "{0:G}" },
+                        d => d.DisplayFormatStringProvider(),
+                        "{0:G}"
+                    },
+                    {
                         new DisplayFormatAttribute() { DataFormatString = "{0:G}", ApplyFormatInEditMode = true },
                         d => d.EditFormatString,
                         "{0:G}"
                     },
+                    {
+                        new DisplayFormatAttribute() { DataFormatString = "{0:G}", ApplyFormatInEditMode = true },
+                        d => d.EditFormatStringProvider(),
+                        "{0:G}"
+                    },
+                    {
+                        new DisplayFormatAttribute() { DataFormatString = "{0:G}", ApplyFormatInEditMode = true },
+                        d => d.HasNonDefaultEditFormat,
+                        true
+                    },
                     { new DisplayFormatAttribute() { HtmlEncode = false }, d => d.HtmlEncode, false },
                     { new DisplayFormatAttribute() { NullDisplayText = "(null)" }, d => d.NullDisplayText, "(null)" },
+                    {
+                        new DisplayFormatAttribute() { NullDisplayText = "(null)" },
+                        d => d.NullDisplayTextProvider(),
+                        "(null)"
+                    },
 
                     { new DisplayNameAttribute("DisplayNameValue"), d => d.DisplayName(), "DisplayNameValue"},
                     { new HiddenInputAttribute() { DisplayValue = false }, d => d.HideSurroundingHtml, true },
@@ -299,7 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 .Returns(() => sharedLocalizer.Object);
 
             var options = Options.Create(new MvcDataAnnotationsLocalizationOptions());
-            bool dataAnnotationLocalizerProviderWasUsed = false;
+            var dataAnnotationLocalizerProviderWasUsed = false;
             options.Value.DataAnnotationLocalizerProvider = (type, stringLocalizerFactory) =>
             {
                 dataAnnotationLocalizerProviderWasUsed = true;

@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override string DisplayFormatString => DisplayMetadata.DisplayFormatString;
+        public override string DisplayFormatString => DisplayMetadata.DisplayFormatStringProvider();
 
         /// <inheritdoc />
         public override string DisplayName
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc />
-        public override string EditFormatString => DisplayMetadata.EditFormatString;
+        public override string EditFormatString => DisplayMetadata.EditFormatStringProvider();
 
         /// <inheritdoc />
         public override ModelMetadata ElementMetadata
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             BindingMetadata.ModelBindingMessageProvider;
 
         /// <inheritdoc />
-        public override string NullDisplayText => DisplayMetadata.NullDisplayText;
+        public override string NullDisplayText => DisplayMetadata.NullDisplayTextProvider();
 
         /// <inheritdoc />
         public override int Order => DisplayMetadata.Order;
