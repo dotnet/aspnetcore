@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
     // here should include verification for all of the switches.
     public class CompatibilitySwitchIntegrationTest
     {
-        [Fact(Skip = "#7157 - some settings have the wrong values, this test should pass once #7157 is fixed")]
+        [Fact]
         public void CompatibilitySwitches_Version_2_0()
         {
             // Arrange
@@ -29,51 +30,57 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
+            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
             Assert.False(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
+            Assert.False(razorPagesOptions.AllowAreas);
         }
 
-        [Fact(Skip = "#7157 - some settings have the wrong values, this test should pass once #7157 is fixed")]
+        [Fact]
         public void CompatibilitySwitches_Version_2_1()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
+            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             var services = serviceCollection.BuildServiceProvider();
 
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
+            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
+            Assert.True(razorPagesOptions.AllowAreas);
         }
 
-        [Fact(Skip = "#7157 - some settings have the wrong values, this test should pass once #7157 is fixed")]
+        [Fact]
         public void CompatibilitySwitches_Version_Latest()
         {
             // Arrange
             var serviceCollection = new ServiceCollection();
             AddHostingServices(serviceCollection);
-            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_0);
+            serviceCollection.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             var services = serviceCollection.BuildServiceProvider();
 
             // Act
             var mvcOptions = services.GetRequiredService<IOptions<MvcOptions>>().Value;
             var jsonOptions = services.GetRequiredService<IOptions<MvcJsonOptions>>().Value;
+            var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
+            Assert.True(razorPagesOptions.AllowAreas);
         }
 
         // This just does the minimum needed to be able to resolve these options.
