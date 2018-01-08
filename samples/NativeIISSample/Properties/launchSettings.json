@@ -21,7 +21,7 @@
       "commandLineArgs": "/config:\"$(MSBuildThisFileDirectory)applicationhost.config\" /site:\"$(ProjectName)\" /apppool:\"Clr4IntegratedAppPool\"",
       "environmentVariables": {
         "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
-        "ANCM_PATH": "$(ProgramW6432)\\IIS Express",
+        "ANCM_PATH": "$(MSBuildThisFileDirectory)bin\\$(Configuration)\\$(TargetFramework)\\x64\\aspnetcore.dll",
         "LAUNCHER_ARGS": "$(TargetPath)",
         "ASPNETCORE_ENVIRONMENT": "Development",
         "LAUNCHER_PATH": "dotnet.exe"

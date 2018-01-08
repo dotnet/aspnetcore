@@ -78,7 +78,6 @@
     <ClInclude Include="outofprocess\winhttphelper.h">
       <Filter>OutOfProcess</Filter>
     </ClInclude>
-    <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="aspnetcore_msg.h" />

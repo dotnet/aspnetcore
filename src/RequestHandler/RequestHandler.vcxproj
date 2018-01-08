@@ -202,7 +202,6 @@
   <ItemGroup>
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="aspnetcore_msg.h" />
-    <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="outofprocess\forwarderconnection.h" />
     <ClInclude Include="outofprocess\processmanager.h" />

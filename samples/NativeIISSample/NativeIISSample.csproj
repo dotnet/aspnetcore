@@ -1,11 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IISIntegration\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
+    <!-- x86 -->
+    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\aspnetcorerh.dll" />
+    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\Win32\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x86\aspnetcore.dll" />
+    <!-- x64 -->
+    <None Include="..\..\src\RequestHandler\bin\$(Configuration)\x64\aspnetcorerh.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\aspnetcorerh.dll" />
+    <None Include="..\..\src\AspNetCore\bin\$(Configuration)\x64\aspnetcore.dll" CopyToOutputDirectory="PreserveNewest" Visible="false" Link="x64\aspnetcore.dll" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
   </ItemGroup>
+
 </Project>

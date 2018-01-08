@@ -172,6 +172,7 @@
     <ClInclude Include="application.h" />
     <ClInclude Include="aspnetcoreconfig.h" />
     <ClInclude Include="debugutil.h" />
+    <ClInclude Include="disconnectcontext.h" />
     <ClInclude Include="environmentvariablehash.h" />
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="hostfxr_utility.h" />
