@@ -80,22 +80,19 @@
 
   </Target>
 
-  <Target Name="_RazorResolveSourceFiles">
-    <ItemGroup>
-      <RazorCompile Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
-      <_RazorGenerated Include="@(RazorCompile->'$(RazorGenerateOutputPath)%(RelativeDir)%(Filename).cs')">
-        <Source>%(Identity)</Source>
-      </_RazorGenerated>
-    </ItemGroup>
-  </Target>
+  <Target Name="_ResolveRazorCoreGenerateInputs">
 
-   <Target Name="_RazorCreateSourceHashFiles" DependsOnTargets="_RazorResolveSourceFiles">
+    <ItemGroup>
+      <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
+      <_RazorGenerateOutput Include="@(RazorGenerate->'$(RazorGenerateOutputPath)%(RelativeDir)%(Filename).cs')" />
+    </ItemGroup>
+
     <PropertyGroup>
-      <_RazorSourcesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorSourceHash.cache</_RazorSourcesHashFile>
+      <_RazorGenerateHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateHashFile>
     </PropertyGroup>
 
-    <Hash ItemsToHash="@(RazorCompile)">
-      <Output TaskParameter="HashResult" PropertyName="_RazorSourcesHash" />
+    <Hash ItemsToHash="@(RazorGenerate)">
+      <Output TaskParameter="HashResult" PropertyName="_RazorGenerateHash" />
     </Hash>
 
     <MakeDir
@@ -103,41 +100,44 @@
       Condition="!Exists('$(IntermediateOutputPath)')" />
 
     <WriteLinesToFile
-      Lines="$(_RazorSourcesHash)"
-      File="$(_RazorSourcesHashFile)"
+      Lines="$(_RazorGenerateHash)"
+      File="$(_RazorGenerateHashFile)"
       Overwrite="True"
       WriteOnlyWhenDifferent="True" />
 
     <ItemGroup>
-      <FileWrites Include="$(_RazorSourcesHashFile)" />
+      <FileWrites Include="$(_RazorGenerateHashFile)" />
     </ItemGroup>
   </Target>
 
   <Target
     Name="RazorCoreGenerate"
-    DependsOnTargets="_RazorResolveSourceFiles;_RazorCreateSourceHashFiles;_RazorResolveTagHelpers"
-    Inputs="$(MSBuildAllProjects);$(_RazorSourcesHashFile);@(RazorCompile);$(_RazorTagHelperOutputCache)"
-    Outputs="@(_RazorGenerated)">
+    DependsOnTargets="_ResolveRazorCoreGenerateInputs;_RazorResolveTagHelpers"
+    Inputs="$(MSBuildAllProjects);$(_RazorGenerateHashFile);$(_RazorTagHelperOutputCache);@(RazorGenerate)"
+    Outputs="@(_RazorGenerateOutput)">
 
     <RemoveDir
       Directories="$(RazorGenerateOutputPath)"
       Condition = "Exists('$(RazorGenerateOutputPath)')"/>
 
     <MakeDir
-      Directories="%(_RazorGenerated.RelativeDir)"
-      Condition="!Exists('%(_RazorGenerated.RelativeDir)')" />
+      Directories="%(_RazorGenerateOutput.RelativeDir)"
+      Condition="!Exists('%(_RazorGenerateOutput.RelativeDir)')" />
 
     <RazorGenerate
       Debug="$(_RazorDebugGenerateCodeTask)"
       DebugTool="$(_RazorDebugGenerateCodeTool)"
       ToolAssembly="$(_RazorGenerateToolAssembly)"
-      Sources="@(RazorCompile)"
+      Sources="@(RazorGenerate)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)"
       OutputPath="$(RazorGenerateOutputPath)" />
 
     <ItemGroup>
-      <FileWrites Include="@(_RazorGenerated)" />
+      <FileWrites Include="@(_RazorGenerateOutput)" />
+
+      <!-- These items are used by RazorCoreCompile -->
+      <RazorCompile Include="@(_RazorGenerateOutput)" />
     </ItemGroup>
   </Target>
 </Project>

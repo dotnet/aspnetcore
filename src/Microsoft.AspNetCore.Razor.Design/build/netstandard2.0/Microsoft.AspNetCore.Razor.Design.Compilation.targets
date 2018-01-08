@@ -22,7 +22,7 @@
   <Target
     Name="RazorCoreCompile"
     Inputs="$(MSBuildAllProjects);
-            @(_RazorGenerated);
+            @(RazorCompile);
             @(_CoreCompileResourceInputs);
             $(ApplicationIcon);
             $(AssemblyOriginatorKeyFile);
@@ -100,7 +100,7 @@
          References="@(RazorReferencePath)"
          ReportAnalyzer="$(ReportAnalyzer)"
          ResponseFiles="$(CompilerResponseFile)"
-         Sources="@(_RazorGenerated)"
+         Sources="@(RazorCompile)"
          SubsystemVersion="$(SubsystemVersion)"
          TargetType="Library"
          ToolExe="$(CscToolExe)"
