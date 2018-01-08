@@ -73,7 +73,7 @@ namespace Microsoft.Blazor.Browser
             return _uITreeBuilder.GetNodes();
         }
 
-        public void RaiseEvent(int uiTreeNodeIndex)
+        public void RaiseEvent(int uiTreeNodeIndex, UIEventInfo eventInfo)
         {
             var nodes = _uITreeBuilder.GetNodes();
             var eventHandler = nodes.Array[nodes.Offset + uiTreeNodeIndex].AttributeEventHandlerValue;
@@ -82,7 +82,7 @@ namespace Microsoft.Blazor.Browser
                 throw new ArgumentException($"Cannot raise event because the specified {nameof(UITreeNode)} at index {uiTreeNodeIndex} does not have any {nameof(UITreeNode.AttributeEventHandlerValue)}.");
             }
 
-            eventHandler.Invoke();
+            eventHandler.Invoke(eventInfo);
             RenderToDOM();
         }
 

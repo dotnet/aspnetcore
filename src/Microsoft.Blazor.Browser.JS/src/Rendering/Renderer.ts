@@ -91,7 +91,16 @@ function applyAttribute(componentId: string, toDomElement: Element, attributeNod
 
   switch (attributeName) {
     case 'onclick':
-      toDomElement.addEventListener('click', () => raiseEvent(componentId, attributeNodeIndex, 'click'));
+      toDomElement.addEventListener('click', () => raiseEvent(componentId, attributeNodeIndex, 'mouse', { Type: 'click' }));
+      break;
+    case 'onkeypress':
+      toDomElement.addEventListener('keypress', evt => {
+        // This does not account for special keys nor cross-browser differences. So far it's
+        // just to establish that we can pass parameters when raising events.
+        // We use C#-style PascalCase on the eventInfo to simplify deserialization, but this could
+        // change if we introduced a richer JSON library on the .NET side.
+        raiseEvent(componentId, attributeNodeIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
+      });
       break;
     default:
       // Treat as a regular string-valued attribute
@@ -103,7 +112,7 @@ function applyAttribute(componentId: string, toDomElement: Element, attributeNod
   }
 }
 
-function raiseEvent(componentId: string, uiTreeNodeIndex: number, eventName: string) {
+function raiseEvent(componentId: string, uiTreeNodeIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
   if (!raiseEventMethod) {
     raiseEventMethod = platform.findMethod(
       'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser', 'Events', 'RaiseEvent'
@@ -114,7 +123,9 @@ function raiseEvent(componentId: string, uiTreeNodeIndex: number, eventName: str
   // it first if necessary. Until then we have to send it as a string.
   platform.callMethod(raiseEventMethod, null, [
     platform.toDotNetString(componentId),
-    platform.toDotNetString(uiTreeNodeIndex.toString())
+    platform.toDotNetString(uiTreeNodeIndex.toString()),
+    platform.toDotNetString(eventInfoType),
+    platform.toDotNetString(JSON.stringify(eventInfo))
   ]);
 }
 
@@ -130,3 +141,5 @@ function clearElement(element: Element) {
     element.removeChild(childNode);
   }
 }
+
+type EventInfoType = 'mouse' | 'keyboard';

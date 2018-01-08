@@ -136,7 +136,7 @@ namespace Microsoft.Blazor.Test
         {
             // Arrange
             var builder = new UITreeBuilder();
-            UIEventHandler eventHandler = () => { };
+            UIEventHandler eventHandler = eventInfo => { };
 
             // Act
             builder.OpenElement("myelement");                       //  0: <myelement
@@ -180,7 +180,7 @@ namespace Microsoft.Blazor.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute("name", () => { });
+                builder.AddAttribute("name", eventInfo => { });
             });
         }
 
@@ -210,7 +210,7 @@ namespace Microsoft.Blazor.Test
             {
                 builder.OpenElement("some element");
                 builder.AddText("hello");
-                builder.AddAttribute("name", () => { });
+                builder.AddAttribute("name", eventInfo => { });
             });
         }
 

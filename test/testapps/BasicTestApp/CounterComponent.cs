@@ -27,7 +27,7 @@ namespace BasicTestApp
             builder.CloseElement();
         }
 
-        private void OnButtonClicked()
+        private void OnButtonClicked(UIEventInfo eventInfo)
         {
             currentCount++;
         }

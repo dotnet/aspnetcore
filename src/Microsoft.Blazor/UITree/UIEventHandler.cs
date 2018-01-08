@@ -6,5 +6,5 @@ namespace Microsoft.Blazor.UITree
     /// <summary>
     /// Handles an event raised for a <see cref="UITreeNode"/>.
     /// </summary>
-    public delegate void UIEventHandler();
+    public delegate void UIEventHandler(UIEventInfo eventInfo);
 }

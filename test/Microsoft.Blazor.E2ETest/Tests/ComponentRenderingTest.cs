@@ -60,6 +60,23 @@ namespace Microsoft.Blazor.E2ETest.Tests
                 appElement.FindElement(By.TagName("p")).Text);
         }
 
+        [Fact]
+        public void CanTriggerKeyPressEvents()
+        {
+            var appElement = MountTestComponent<KeyPressEventComponent>();
+
+            Assert.Empty(appElement.FindElements(By.TagName("li")));
+
+            appElement.FindElement(By.TagName("input")).SendKeys("a");
+            Assert.Collection(appElement.FindElements(By.TagName("li")),
+                li => Assert.Equal("a", li.Text));
+
+            appElement.FindElement(By.TagName("input")).SendKeys("b");
+            Assert.Collection(appElement.FindElements(By.TagName("li")),
+                li => Assert.Equal("a", li.Text),
+                li => Assert.Equal("b", li.Text));
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;
