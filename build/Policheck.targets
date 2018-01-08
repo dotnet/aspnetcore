@@ -20,22 +20,22 @@
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Identity.UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
+        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
         <term>Edge</term>
         <Justification>Refers to the Microsoft Browser.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Identity.UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
+        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
         <term>hanging</term>
         <Justification>Refers to keeping a reference to a DOM element longer than needed.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Identity.UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
+        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
         <term>screw</term>
         <Justification>Refers to leaving an object in an invalid state.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Identity.UI\wwwroot\Identity\lib\jquery-validation\dist\additional-methods.js">
+        src\UI\wwwroot\Identity\lib\jquery-validation\dist\additional-methods.js">
         <term>Brazilian</term>
         <Justification>It is part of a sample in the documentation of a library.</Justification>
       </SrcExclusions>      
