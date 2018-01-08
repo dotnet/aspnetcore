@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -30,23 +29,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOptions>, IAuthenticationSignOutHandler
     {
         private const string NonceProperty = "N";
-        private const string UriSchemeDelimiter = "://";
 
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
-        private const string InputTagFormat = @"<input type=""hidden"" name=""{0}"" value=""{1}"" />";
-        private const string HtmlFormFormat = @"<!doctype html>
-<html>
-<head>
-    <title>Please wait while you're being redirected to the identity provider</title>
-</head>
-<body>
-    <form name=""form"" method=""post"" action=""{0}"">
-        {1}
-        <noscript>Click here to finish the process: <input type=""submit"" /></noscript>
-    </form>
-    <script>document.form.submit();</script>
-</body>
-</html>";
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
@@ -241,19 +225,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
             else if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.FormPost)
             {
-                var inputs = new StringBuilder();
-                foreach (var parameter in message.Parameters)
-                {
-                    var name = HtmlEncoder.Encode(parameter.Key);
-                    var value = HtmlEncoder.Encode(parameter.Value);
-
-                    var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
-                    inputs.AppendLine(input);
-                }
-
-                var issuer = HtmlEncoder.Encode(message.IssuerAddress);
-
-                var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
+                var content = message.BuildFormPost();
                 var buffer = Encoding.UTF8.GetBytes(content);
 
                 Response.ContentLength = buffer.Length;
@@ -422,19 +394,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
             else if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.FormPost)
             {
-                var inputs = new StringBuilder();
-                foreach (var parameter in message.Parameters)
-                {
-                    var name = HtmlEncoder.Encode(parameter.Key);
-                    var value = HtmlEncoder.Encode(parameter.Value);
-
-                    var input = string.Format(CultureInfo.InvariantCulture, InputTagFormat, name, value);
-                    inputs.AppendLine(input);
-                }
-
-                var issuer = HtmlEncoder.Encode(message.IssuerAddress);
-
-                var content = string.Format(CultureInfo.InvariantCulture, HtmlFormFormat, issuer, inputs);
+                var content = message.BuildFormPost();
                 var buffer = Encoding.UTF8.GetBytes(content);
 
                 Response.ContentLength = buffer.Length;
