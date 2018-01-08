@@ -7,8 +7,9 @@ open System.Threading.Tasks
 open Microsoft.AspNetCore.Mvc
 
 [<Route("api/[controller]")>]
+[<ApiController>]
 type ValuesController () =
-    inherit Controller()
+    inherit ControllerBase()
 
     [<HttpGet>]
     member this.Get() =
@@ -19,11 +20,11 @@ type ValuesController () =
         "value"
 
     [<HttpPost>]
-    member this.Post([<FromBody>]value:string) =
+    member this.Post([<FromBody>] value:string) =
         ()
 
     [<HttpPut("{id}")>]
-    member this.Put(id:int, [<FromBody>]value:string ) =
+    member this.Put(id:int, [<FromBody>] value:string ) =
         ()
 
     [<HttpDelete("{id}")>]

@@ -13,7 +13,8 @@ namespace Company.WebApplication1.Controllers
     [Authorize]
 #endif
     [Route("api/[controller]")]
-    public class ValuesController : Controller
+    [ApiController]
+    public class ValuesController : ControllerBase
     {
         // GET api/values
         [HttpGet]
@@ -31,7 +32,7 @@ namespace Company.WebApplication1.Controllers
 
         // POST api/values
         [HttpPost]
-        public void Post([FromBody]string value)
+        public void Post([FromBody] string value)
         {
 #if (OrganizationalAuth || WindowsAuth)
             // For more information on protecting this API from Cross Site Request Forgery (CSRF) attacks, see https://go.microsoft.com/fwlink/?LinkID=717803
@@ -40,7 +41,7 @@ namespace Company.WebApplication1.Controllers
 
         // PUT api/values/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        public void Put(int id, [FromBody] string value)
         {
 #if (OrganizationalAuth || WindowsAuth)
             // For more information on protecting this API from Cross Site Request Forgery (CSRF) attacks, see https://go.microsoft.com/fwlink/?LinkID=717803

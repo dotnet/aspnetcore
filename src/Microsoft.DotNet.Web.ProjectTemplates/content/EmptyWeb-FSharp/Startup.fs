@@ -1,5 +1,6 @@
 namespace Company.WebApplication1
 
+open System
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
