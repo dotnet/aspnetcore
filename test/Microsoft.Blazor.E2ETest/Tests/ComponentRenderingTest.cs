@@ -77,6 +77,19 @@ namespace Microsoft.Blazor.E2ETest.Tests
                 li => Assert.Equal("b", li.Text));
         }
 
+        [Fact]
+        public void CanRenderChildComponents()
+        {
+            var appElement = MountTestComponent<ParentChildComponent>();
+            Assert.Equal("Parent component",
+                appElement.FindElement(By.CssSelector("fieldset > legend")).Text);
+
+            // TODO: Once we remove the wrapper elements from around child components,
+            // assert that the child component text node is directly inside the <fieldset>
+            Assert.Equal("Child component",
+                appElement.FindElement(By.CssSelector("fieldset > blazor-component")).Text);
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;

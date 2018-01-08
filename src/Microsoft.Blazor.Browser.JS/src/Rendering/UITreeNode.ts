@@ -1,6 +1,6 @@
 ﻿import { System_String, System_Array, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-const uiTreeNodeStructLength = 28;
+const uiTreeNodeStructLength = 32;
 
 // To minimise GC pressure, instead of instantiating a JS object to represent each tree node,
 // we work in terms of pointers to the structs on the .NET heap, and use static functions that
@@ -25,6 +25,7 @@ export enum NodeType {
   element = 1,
   text = 2,
   attribute = 3,
+  component = 4,
 }
 
 function _readInt32Property(baseAddress: Pointer, offsetBytes: number) {

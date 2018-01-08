@@ -22,5 +22,10 @@ namespace Microsoft.Blazor.UITree
         /// Represents a key-value pair associated with another <see cref="UITreeNode"/>.
         /// </summary>
         Attribute = 3,
+
+        /// <summary>
+        /// Represents a child component.
+        /// </summary>
+        Component = 4,
     }
 }

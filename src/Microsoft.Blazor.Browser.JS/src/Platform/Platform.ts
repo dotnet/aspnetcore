@@ -11,6 +11,8 @@
   getArrayLength(array: System_Array): number;
   getArrayEntryPtr(array: System_Array, index: number, itemSize: number): Pointer;
 
+  getHeapObjectFieldsPtr(heapObject: System_Object): Pointer;
+
   readHeapInt32(address: Pointer, offset?: number): number;
   readHeapObject(address: Pointer, offset?: number): System_Object;
 }

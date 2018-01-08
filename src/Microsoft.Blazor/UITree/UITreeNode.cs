@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Blazor.Components;
 using System;
 
 namespace Microsoft.Blazor.UITree
@@ -56,6 +57,12 @@ namespace Microsoft.Blazor.UITree
         /// </summary>
         public UIEventHandler AttributeEventHandlerValue { get; private set; }
 
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Component"/>,
+        /// gets the child component instance. Otherwise, the value is <see langword="null"/>.
+        /// </summary>
+        public IComponent Component { get; private set; }
+
         internal static UITreeNode Element(string elementName) => new UITreeNode
         {
             NodeType = UITreeNodeType.Element,
@@ -80,6 +87,12 @@ namespace Microsoft.Blazor.UITree
             NodeType = UITreeNodeType.Attribute,
             AttributeName = name,
             AttributeEventHandlerValue = value
+        };
+
+        internal static UITreeNode ChildComponent(IComponent component) => new UITreeNode
+        {
+            NodeType = UITreeNodeType.Component,
+            Component = component
         };
 
         internal void CloseElement(int descendantsEndIndex)

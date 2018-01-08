@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Blazor.Components;
 using Microsoft.Blazor.UITree;
 using System;
 using System.Linq;
@@ -215,6 +216,31 @@ namespace Microsoft.Blazor.Test
         }
 
         [Fact]
+        public void CanAddChildComponents()
+        {
+            // Arrange
+            var builder = new UITreeBuilder();
+
+            // Act
+            builder.OpenElement("parent");                      //  0: <parent>
+            builder.AddComponent<TestComponent>();              //  1:     <testcomponent
+            builder.AddAttribute("child1attribute1", "A");      //  2:       child1attribute1="A"
+            builder.AddAttribute("child1attribute2", "B");      //  3:       child1attribute2="B" />
+            builder.AddComponent<TestComponent>();              //  4:     <testcomponent
+            builder.AddAttribute("child2attribute", "C");       //  5:       child2attribute="C" />
+            builder.CloseElement();                             //     </parent>
+
+            // Assert
+            Assert.Collection(builder.GetNodes(),
+                node => AssertElement(node, "parent", 5),
+                node => AssertComponent<TestComponent>(node),
+                node => AssertAttribute(node, "child1attribute1", "A"),
+                node => AssertAttribute(node, "child1attribute2", "B"),
+                node => AssertComponent<TestComponent>(node),
+                node => AssertAttribute(node, "child2attribute", "C"));
+        }
+
+        [Fact]
         public void CanClear()
         {
             // Arrange
@@ -261,6 +287,24 @@ namespace Microsoft.Blazor.Test
         {
             AssertAttribute(node, attributeName);
             Assert.Equal(attributeEventHandlerValue, node.AttributeEventHandlerValue);
+        }
+
+        private void AssertComponent<T>(UITreeNode node) where T: IComponent
+        {
+            Assert.Equal(UITreeNodeType.Component, node.NodeType);
+
+            // Currently, we instantiate child components during the tree building phase.
+            // Later this will change so it happens during the tree diffing phase, so this
+            // logic will need to change. It will need to verify that we're tracking the
+            // information needed to instantiate the component.
+            Assert.NotNull(node.Component);
+            Assert.IsType<T>(node.Component);
+        }
+
+        private class TestComponent : IComponent
+        {
+            public void BuildUITree(UITreeBuilder builder)
+                => throw new NotImplementedException();
         }
     }
 }

@@ -3,6 +3,7 @@ import { System_Object, System_String, System_Array, MethodHandle } from '../Pla
 import { platform } from '../Environment';
 import { getTreeNodePtr, uiTreeNode, NodeType, UITreeNodePointer } from './UITreeNode';
 let raiseEventMethod: MethodHandle;
+let getComponentRenderInfoMethod: MethodHandle;
 
 // TODO: Instead of associating components to parent elements, associate them with a
 // start/end node, so that components don't have to be enclosed in a wrapper
@@ -60,10 +61,37 @@ function insertNode(componentId: string, intoDomElement: Element, tree: System_A
       break;
     case NodeType.attribute:
       throw new Error('Attribute nodes should only be present as leading children of element nodes.');
+    case NodeType.component:
+      insertComponent(intoDomElement, componentId, nodeIndex);
+      break;
     default:
       const unknownType: never = nodeType; // Compile-time verification that the switch was exhaustive
       throw new Error(`Unknown node type: ${ unknownType }`);
   }
+}
+
+function insertComponent(intoDomElement: Element, parentComponentId: string, componentNodeIndex: number) {
+  if (!getComponentRenderInfoMethod) {
+    getComponentRenderInfoMethod = platform.findMethod(
+      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser', 'DOMComponentRenderState', 'GetComponentRenderInfo'
+    );
+  }
+
+  // Currently, platform.callMethod always returns a heap object. If the target method
+  // tries to return a value, it gets boxed before return.
+  const renderInfoBoxed = platform.callMethod(getComponentRenderInfoMethod, null, [
+    platform.toDotNetString(parentComponentId),
+    platform.toDotNetString(componentNodeIndex.toString())
+  ]);
+  const renderInfoFields = platform.getHeapObjectFieldsPtr(renderInfoBoxed);
+  const componentId = platform.toJavaScriptString(platform.readHeapObject(renderInfoFields, 0) as System_String);
+  const componentTree = platform.readHeapObject(renderInfoFields, 4) as System_Array;
+  const componentTreeLength = platform.readHeapInt32(renderInfoFields, 8);
+
+  const containerElement = document.createElement('blazor-component');
+  intoDomElement.appendChild(containerElement);
+  componentIdToParentElement[componentId] = containerElement;
+  insertNodeRange(componentId, containerElement, componentTree, 0, componentTreeLength - 1);
 }
 
 function insertElement(componentId: string, intoDomElement: Element, tree: System_Array, elementNode: UITreeNodePointer, elementNodeIndex: number) {

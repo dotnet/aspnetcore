@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Blazor.Components;
 using System;
 using System.Collections.Generic;
 
@@ -71,11 +72,27 @@ namespace Microsoft.Blazor.UITree
             Append(UITreeNode.Attribute(name, value));
         }
 
+        /// <summary>
+        /// Appends a node representing a child component.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of the child component.</typeparam>
+        public void AddComponent<TComponent>() where TComponent: IComponent
+        {
+            // Later, instead of instantiating the child component here, we'll instead
+            // store a descriptor of the component (type, parameters) on the attributes
+            // of the appended nodes. Then after the tree is diffed against the
+            // previous tree, we'll either instantiate a new component or reuse the
+            // existing instance (and notify it about changes to parameters).
+            var instance = Activator.CreateInstance<TComponent>();
+            Append(UITreeNode.ChildComponent(instance));
+        }
+
         private void AssertCanAddAttribute()
         {
-            if (_lastNonAttributeNodeType != UITreeNodeType.Element)
+            if (_lastNonAttributeNodeType != UITreeNodeType.Element
+                && _lastNonAttributeNodeType != UITreeNodeType.Component)
             {
-                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {UITreeNodeType.Element}");
+                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {UITreeNodeType.Element} or {UITreeNodeType.Component}");
             }
         }
 

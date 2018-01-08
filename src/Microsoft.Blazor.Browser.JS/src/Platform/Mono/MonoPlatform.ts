@@ -105,6 +105,11 @@ export const monoPlatform: Platform = {
     return address as any as Pointer;
   },
 
+  getHeapObjectFieldsPtr: function getHeapObjectFieldsPtr(heapObject: System_Object): Pointer {
+    // The first two int32 values are internal Mono data
+    return (heapObject as any as number + 8) as any as Pointer;
+  },
+
   readHeapInt32: function readHeapInt32(address: Pointer, offset?: number): number {
     return Module.getValue((address as any as number) + (offset || 0), 'i32');
   },

@@ -95,5 +95,37 @@ namespace Microsoft.Blazor.Browser
                 tree.Array,
                 tree.Count);
         }
+
+        public static ComponentRenderInfo GetComponentRenderInfo(string parentComponentId, string componentNodeIndexString)
+        {
+            var parentComponentRenderState = FindByDOMComponentID(parentComponentId);
+            var parentComponentNodes = parentComponentRenderState._uITreeBuilder.GetNodes();
+            var component = parentComponentNodes
+                .Array[int.Parse(componentNodeIndexString)]
+                .Component;
+            if (component == null )
+            {
+                throw new ArgumentException($"The tree entry at position {componentNodeIndexString} does not refer to a component.");
+            }
+
+            var componentRenderState = GetOrCreate(component);
+
+            // Don't necessarily need to re-render the child at this point. Review when the
+            // component lifecycle has more details (e.g., async init method)
+            var componentNodes = componentRenderState.UpdateRender();
+            return new ComponentRenderInfo
+            {
+                ComponentId = componentRenderState.DOMComponentId,
+                UITree = componentNodes.Array,
+                UITreeLength = componentNodes.Count
+            };
+        }
+
+        public struct ComponentRenderInfo
+        {
+            public string ComponentId;
+            public UITreeNode[] UITree;
+            public int UITreeLength;
+        }
     }
 }
