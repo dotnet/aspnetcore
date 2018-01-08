@@ -222,6 +222,68 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task AuthorizationFilterCombinesMultipleFilters()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
+            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.CombineAuthorizeFilters = true));
+            // Effective policy should fail, if both are combined
+            authorizationContext.Filters.Add(authorizeFilter);
+            var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
+            authorizationContext.Filters.Add(secondFilter);
+
+            // Act
+            await secondFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.IsType<ForbidResult>(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task AuthorizationFilterIgnoresFirstFilterWhenCombining()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
+            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.CombineAuthorizeFilters = true));
+            // Effective policy should fail, if both are combined
+            authorizationContext.Filters.Add(authorizeFilter);
+            var secondFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build());
+            authorizationContext.Filters.Add(secondFilter);
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
+        public async Task AuthorizationFilterCombinesDerivedFilters()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(a => true).Build());
+            var authorizationContext = GetAuthorizationContext(anonymous: false, registerServices: s => s.Configure<MvcOptions>(o => o.CombineAuthorizeFilters = true));
+            // Effective policy should fail, if both are combined
+            authorizationContext.Filters.Add(authorizeFilter);
+            authorizationContext.Filters.Add(new DerivedAuthorizeFilter());
+            authorizationContext.Filters.Add(new DerivedAuthorizeFilter());
+            var lastFilter = new DerivedAuthorizeFilter();
+            authorizationContext.Filters.Add(lastFilter);
+
+            // Act
+            await lastFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.IsType<ForbidResult>(authorizationContext.Result);
+        }
+    
+        public class DerivedAuthorizeFilter : AuthorizeFilter 
+        {
+            public DerivedAuthorizeFilter() : base(new AuthorizationPolicyBuilder().RequireAssertion(a => false).Build())
+            { }
+        }
+
+        [Fact]
         public async Task AuthZResourceShouldBeAuthorizationFilterContext()
         {
             // Arrange

@@ -4,17 +4,23 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite
 {
-    public class Startup
+    public class StartupWithGlobalAuthorizeAndCombineAuthorizeFilters
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddMvc();
+            services.AddMvc(o =>
+            {
+                o.CombineAuthorizeFilters = true;
+                o.Filters.Add(new AuthorizeFilter());
+            });
+
             services.AddAntiforgery();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => 
             {
