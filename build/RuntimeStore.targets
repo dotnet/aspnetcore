@@ -28,10 +28,16 @@
     </PropertyGroup>
     <ItemGroup>
       <AllMetapackageFiles Include="$(_AllMetapackageDirectory)**\*" />
+      <ManifestFiles Include="$(ArtifactsDir)*.xml" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
     <Copy SourceFiles="$(_SrcDirectory)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+
+    <!-- Create a consolidated manifest and place in metapackage -->
+    <RepoTasks.ConsolidateManifests
+      Manifests="@(ManifestFiles)"
+      ManifestDestination="$(MetapackageWorkDirectory)build\aspnetcore-store-$(PackageVersion).xml"/>
 
     <!-- Add references to project -->
     <RepoTasks.AddMetapackageReferences
@@ -43,12 +49,12 @@
     <!-- Set _Target=Restore so the project will be re-evaluated to include Internal.AspNetCore.Sdk MSBuild properties on the next step. -->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       Targets="Restore"
-      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true;_Target=Restore" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true;_Target=Restore" />
 
     <!-- Pack -->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       Targets="Pack"
-      Properties="Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
 
     <!-- Copy to output directory -->
     <ItemGroup>
@@ -142,18 +148,52 @@
              Properties="$(_ComposeStoreProps)" />
   </Target>
 
+  <Target Name="_BuildHostingDeps" >
+    <PropertyGroup>
+      <HostingStartupWorkDir>$(_WorkRoot)HostingStartup\</HostingStartupWorkDir>
+      <_HostingStartupProps>DepsOutputPath=$(_DepsOutputDirectory)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageName=$(HostingStartupPackageName)</_HostingStartupProps>
+      <_HostingStartupProps>$(_HostingStartupProps);HostingStartupPackageVersion=$(HostingStartupPackageVersion)</_HostingStartupProps>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <HostingStartupFiles Include="$(_TemplatesDirectory)HostingStartup\**\*" />
+    </ItemGroup>
+
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(HostingStartupWorkDir)bin" />
+    <RemoveDir Directories="$(HostingStartupWorkDir)obj" />
+
+    <!-- Copy build assets -->
+    <Copy SourceFiles="@(HostingStartupFiles)" DestinationFolder="$(HostingStartupWorkDir)\%(RecursiveDir)" />
+
+    <!--- Workaround for https://github.com/dotnet/sdk/issues/1779 -->
+    <MSBuild Projects="$(HostingStartupWorkDir)HostingStartup.csproj"
+             Targets="Restore"
+             Properties="$(_HostingStartupProps);_SolutionTarget=Restore" />
+
+    <!--- MSBuild caches things if you run inproc so have to use Exec -->
+    <MSBuild Projects="$(HostingStartupWorkDir)HostingStartup.csproj"
+             Targets="Publish;CollectDeps"
+             Properties="$(_HostingStartupProps)" />
+  </Target>
+
   <Target Name="BuildHostingDeps" DependsOnTargets="ResolveRepoInfo">
+
     <!-- Generate RS.Reference project -->
     <RepoTasks.ResolveHostingStartupPackages
       BuildArtifacts="@(ArtifactInfo)"
-      PackageArtifacts="@(PackageArtifact)">
+      PackageArtifacts="@(PackageArtifact)"
+      ExternalDependencies="@(ExternalDependency)">
       <Output TaskParameter="HostingStartupArtifacts" ItemName="HostingStartupArtifacts" />
     </RepoTasks.ResolveHostingStartupPackages>
 
-    <!--- MSBuild caches things if you run inproc so have to use Exec -->
-    <MSBuild Projects="$(_TemplatesDirectory)HostingStartup/HostingStartup.csproj"
-             Targets="Restore;Rebuild;CollectDeps"
-             Properties="DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildHostingDeps"
+      Properties="HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version)" />
 
     <ItemGroup>
       <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />
@@ -207,6 +247,7 @@
     <!-- Trim packages guaranteed to be in the runtime but isn't included in our runtime store -->
     <ItemGroup>
       <PackagesToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
+      <ExistingStoreManifests Include="$(_ExistingManifestsDirectory)*.xml" />
     </ItemGroup>
 
     <MSBuild Projects="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj"
@@ -216,26 +257,11 @@
     </MSBuild>
 
     <RepoTasks.CreateCommonManifest DestinationFilePath="$(ArtifactsDir)$(CommonManifestFileName)" PackageDefinitions="@(_PackageDefinitions)" Packages="@(PackagesToTrim)"/>
-  </Target>
 
-  <Target Name="AddManifestsToMetapackage">
-    <ItemGroup>
-      <MetaPackageNupkg Include="$(_DependencyBuildDirectory)Microsoft.AspNetCore.All.*.nupkg" />
-      <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
-    </ItemGroup>
-
-    <RemoveDir Directories="$(_WorkRoot)" />
-    <UnzipArchive File="%(MetaPackageNupkg.FullPath)" Destination="$(_WorkRoot)" />
-
-    <!-- Create a consolidated manifest and place in metapackage -->
-    <RepoTasks.ConsolidateManifests
-      Manifests="@(ManifestFiles)"
-      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(PackageVersion).xml"/>
-
-    <ItemGroup>
-      <ArchiveFiles Include="$(_WorkRoot)**\*" />
-    </ItemGroup>
-
-    <ZipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
+    <!-- Trim built manifest with existing manifests -->
+    <RepoTasks.ComposeNewStore
+      ExistingManifests="@(ExistingStoreManifests)"
+      NewManifests="$(ArtifactsDir)$(CommonManifestFileName)"
+      ManifestDestination="$(ArtifactsDir)$(CommonManifestFileName)"/>
   </Target>
 </Project>

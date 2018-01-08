@@ -20,12 +20,12 @@
 
     <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet</PublicCoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
-    <CoreFeedPrefix>$(PublicCoreFeedPrefix)</CoreFeedPrefix>
+    <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
-    <RuntimeStore200LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.</RuntimeStore200LinkPrefix>
+    <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.3-125/Build.RS.</RuntimeStore20LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
-    <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-2.0.3-rtm-125-linux-x64.tar.gz</TimestampRSArchive>
-    <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-2.0.3-</TimestampFreeRSArchivePrefix>
+    <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
+    <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
     <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</TimestampFreeLinuxRSArchive>
   </PropertyGroup>
 
@@ -47,7 +47,7 @@
     <Error
       Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeLinuxRSArchive)."
       Condition="!Exists('$(TimestampFreeLinuxRSArchive)')" />
-    <!-- <Error
+    <Error
       Text="Non-timestamp osx archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)osx-x64.tar.gz."
       Condition="!Exists('$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz')" />
     <Error
@@ -55,7 +55,7 @@
       Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x64.zip')" />
     <Error
       Text="Non-timestamp winx86 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x86.zip."
-      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.zip')" /> -->
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.zip')" />
   </Target>
 
   <Target Name="_EnsureInstallerDirectory" >
@@ -71,8 +71,8 @@
       MSBuild doesn't to the substitution correctly because the string contains %,
       so we'll let bash do it instead.
     -->
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
   </Target>
 
   <Target Name="_GenerateTargz">
@@ -140,9 +140,9 @@
   </Target>
 
   <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory;_DownloadInstallers">
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
   </Target>
 
   <Target Name="GenerateCumulativeArchives" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadAdditionalRSZips">
@@ -304,17 +304,17 @@
       <RHStoreDirectories Include="$(RHInstallerInstallRoot)store" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)additionalDeps" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)store" />
-      <RSDependencies Include="$(RSInstallerName)-2.0.0">
-        <Version>2.0.0</Version>
+      <RSDependencies Include="$(RSInstallerName)-$(RuntimeStoreInstallerDependencyVersion)">
+        <Version>$(RuntimeStoreInstallerDependencyVersion)</Version>
       </RSDependencies>
-      <HostingDependencies Include="$(RSInstallerName)-2.0.3-rtm-125">
-        <Version>2.0.3-rtm-125</Version>
+      <HostingDependencies Include="$(RSInstallerName)-$(PackageVersion)">
+        <Version>$(PackageVersion)</Version>
       </HostingDependencies>
       <HostingDependencies Include="dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)">
         <Version>$(MicrosoftNETCoreApp20PackageVersion)</Version>
       </HostingDependencies>
-      <TimestampFreeHostingDependencies Include="$(RSInstallerName)-2.0.3">
-        <Version>2.0.3</Version>
+      <TimestampFreeHostingDependencies Include="$(RSInstallerName)-$(PackageVersionNoTimestamp)">
+        <Version>$(PackageVersionNoTimestamp)</Version>
       </TimestampFreeHostingDependencies>
       <TimestampFreeHostingDependencies Include="dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)">
         <Version>$(MicrosoftNETCoreApp20PackageVersion)</Version>
@@ -368,18 +368,18 @@
     </PropertyGroup>
 
     <!-- General Timestamp runtime store -->
-    <!-- <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampRSArguments)" /> -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampRSArguments)" />
     <!-- General Timestamp free runtime store -->
-    <!-- <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeRSArguments)" /> -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeRSArguments)" />
     <!-- General Timestamp hosting bundle -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampHostingArguments)" />
     <!-- General Timestamp free hosting bundle -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeHostingArguments)" />
 
     <!-- RH Timestamp runtime store -->
-    <!-- <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampRSArguments)" /> -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampRSArguments)" />
     <!-- RH Timestamp free runtime store -->
-    <!-- <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeRSArguments)" /> -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeRSArguments)" />
     <!-- RH Timestamp hosting bundle -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampHostingArguments)" />
     <!-- RH Timestamp free hosting bundle -->
@@ -409,7 +409,7 @@
     <ItemGroup>
       <DebConfigItems Include="DOTNET_VERSION" Replacement="$(DotnetVersion)" />
       <DebConfigItems Include="DEB_VERSION" Replacement="$(DebVersion)" />
-      <DebConfigItems Include="STORE_VERSION" Replacement="$(StoreVersion)" />
+      <DebConfigItems Include="RS_DEP_VERSION" Replacement="$(RsDepVersion)" />
     </ItemGroup>
 
     <!-- Update versions -->
@@ -462,22 +462,22 @@
     <!-- Build Docker Image -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
-    <!-- <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp)" /> -->
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonHostingArguments);DebVersion=$(Version);StoreVersion=2.0.3-rtm-125" />
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonHostingArguments);DebVersion=$(PackageVersionNoTimestamp);StoreVersion=2.0.3" />
+      Properties="$(CommonHostingArguments);DebVersion=$(Version)" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateDeb"
+      Properties="$(CommonHostingArguments);DebVersion=$(PackageVersionNoTimestamp)" />
 
     <!-- Remove Docker Image to save disk space -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
@@ -491,7 +491,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=debian.8" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.14.04" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.04" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.10" />
   </Target>
 
   <Target Name="RunDebTool">

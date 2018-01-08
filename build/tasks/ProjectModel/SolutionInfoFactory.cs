@@ -27,7 +27,7 @@ namespace RepoTasks.ProjectModel
             _buildEngine = buildEngine;
         }
 
-        public IReadOnlyList<SolutionInfo> Create(IEnumerable<ITaskItem> solutionItems, IDictionary<string, string> properties, CancellationToken ct)
+        public IReadOnlyList<SolutionInfo> Create(IEnumerable<ITaskItem> solutionItems, IDictionary<string, string> properties, string defaultConfig, CancellationToken ct)
         {
             var timer = Stopwatch.StartNew();
 
@@ -49,7 +49,7 @@ namespace RepoTasks.ProjectModel
 
                 if (solutionProps.TryGetValue("Configuration", out var configName))
                 {
-                    solutionProps["Configuration"] = configName = "Debug";
+                    solutionProps["Configuration"] = configName = defaultConfig;
                 }
 
                 var key = $"SlnInfo:{solutionFile}:{configName}";
@@ -85,12 +85,14 @@ namespace RepoTasks.ProjectModel
                 }
 
                 bool.TryParse(solution.GetMetadata("Build"), out var shouldBuild);
+                bool.TryParse(solution.GetMetadata("Shipped"), out var shipped);
 
                 var solutionInfo = new SolutionInfo(
                     solutionFile,
                     configName,
                     projects.ToArray(),
-                    shouldBuild);
+                    shouldBuild,
+                    shipped);
 
                 _buildEngine.RegisterTaskObject(key, solutionInfo, RegisteredTaskObjectLifetime.Build, allowEarlyCollection: true);
 

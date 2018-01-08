@@ -30,6 +30,6 @@
 
     "debian_dependencies": {
         "dotnet-runtime-DOTNET_VERSION": {},
-        "aspnetcore-store-STORE_VERSION": {}
+        "aspnetcore-store-DEB_VERSION": {}
     }
 }

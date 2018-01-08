@@ -15,6 +15,9 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] PackageArtifacts { get; set; }
 
+        [Required]
+        public ITaskItem[] ExternalDependencies { get; set; }
+
         [Output]
         public ITaskItem[] HostingStartupArtifacts { get; set; }
 
@@ -22,7 +25,18 @@ namespace RepoTasks
         {
             // Parse input
             var hostingStartupArtifacts = PackageArtifacts.Where(p => p.GetMetadata("HostingStartup") == "true");
-            HostingStartupArtifacts = BuildArtifacts.Where(p => hostingStartupArtifacts.Any(h => h.GetMetadata("Identity") == p.GetMetadata("PackageId"))).ToArray();
+            var externalHostingStartupArtifacts = ExternalDependencies.Where(p => p.GetMetadata("HostingStartup") == "true");
+
+            var hostingStartups = BuildArtifacts.Where(p => hostingStartupArtifacts.Any(h => h.GetMetadata("Identity") == p.GetMetadata("PackageId")));
+
+            foreach (var externalHostingStartup in externalHostingStartupArtifacts)
+            {
+                // The parameters PackageId and Version are required for output. For external dependencies, the identity is the pacakge id.
+                externalHostingStartup.SetMetadata("PackageId", externalHostingStartup.GetMetadata("Identity"));
+                hostingStartups = hostingStartups.Append(externalHostingStartup);
+            }
+
+            HostingStartupArtifacts = hostingStartups.ToArray();
 
             return true;
         }

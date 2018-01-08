@@ -20,11 +20,11 @@
     <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.props</GeneratedPackageVersionPropsPath>
     <GeneratedRestoreSourcesPropsPath>$(IntermediateDir)sources.props</GeneratedRestoreSourcesPropsPath>
 
-    <PrepareDependsOn>$(PrepareDependsOn);PrepareOutputPath</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPath</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn>$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages</PackageDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
@@ -107,10 +107,18 @@
     </MSBuild>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(TemplatingProjectRoot);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
-      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" Condition="'%(Repository.Build)' == 'true'" />
+      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" Condition="'%(Repository.Build)' != 'true'" />
     </MSBuild>
 
     <!--
@@ -127,19 +135,35 @@
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=%(ShippedRepository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
-      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
+      <Output TaskParameter="TargetOutputs" ItemName="_ShippedSolution" />
     </MSBuild>
 
     <ItemGroup>
       <Solution Update="@(Solution)" Build="true" />
+      <_ShippedSolution Update="@(_ShippedSolution)" Build="false" Shipped="true" />
       <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
-      <Solution Include="@(_NoBuildSolution)" />
+      <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
 
     <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
+
+    <ItemGroup>
+      <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+      <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />
+    </ItemGroup>
+
+    <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"
+      Condition=" @(_UndeclaredPackageArtifact->Count()) != 0 " />
+
+    <RepoTasks.CheckRepoGraph
+      Solutions="@(Solution)"
+      Artifacts="@(ArtifactInfo);@(ShippedArtifactInfo)"
+      Repositories="@(Repository);@(ShippedRepository)"
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)" />
+
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
@@ -162,6 +186,20 @@
       Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
       DestinationFolder="$(ArtifactsDir)"
       Overwrite="true" />
+  </Target>
+
+  <Target Name="VerifyPackageArtifactConfig">
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
+           Condition="'%(PackageArtifact.Category)' == '' " />
+
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as Metapackage='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.Metapackage)' == 'true' " />
+
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMA='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMA)' == 'true' " />
+
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMATools='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMATools)' == 'true' " />
   </Target>
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">

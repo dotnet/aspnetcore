@@ -1,8 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
+
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+    </RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
+      $(RestoreSources);
+      https://api.nuget.org/v3/index.json;
+    </RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +26,6 @@
       <DestinationDepsFile>$(DepsOutputPath)\$(HostingStartupPackageName)\shared\Microsoft.NETCore.App\$(DepsRuntimeFrameworkVersion)\$(HostingStartupPackageName).deps.json</DestinationDepsFile>
     </PropertyGroup>
 
-    <Copy SourceFiles="$(ProjectDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
+    <Copy SourceFiles="$(PublishDepsFilePath)" DestinationFiles="$(DestinationDepsFile)" />
   </Target>
 </Project>

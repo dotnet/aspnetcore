@@ -34,6 +34,11 @@
     <!-- Copy the archive template -->
     <Copy SourceFiles="$(_TemplatesDirectory)Archive\Archive.csproj" DestinationFiles="$(_WorkRoot)Archive.csproj" />
 
+    <!-- Add .All metapacakge to PackageArtifact for LZMA generation -->
+    <ItemGroup>
+      <PackageArtifact Include="Microsoft.AspNetCore.All" LZMA="true" />
+    </ItemGroup>
+
     <!-- Copy the archive template -->
     <RepoTasks.AddArchiveReferences
       ReferencePackagePath="$(_WorkRoot)Archive.csproj"
@@ -66,7 +71,7 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(LZMAMicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
