@@ -24,6 +24,26 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Theory]
+        [InlineData(null)]
+        [InlineData("null")]
+        [InlineData("http://")]
+        [InlineData("http://*")]
+        [InlineData("http://.domain")]
+        [InlineData("http://.domain/hello")]
+        public void IsOriginAnAllowedSubdomain_ReturnsFalseIfOriginIsMalformedUri(string malformedOrigin)
+        {
+            // Arrange
+            var policy = new CorsPolicy();
+            policy.Origins.Add("http://*.domain");
+
+            // Act
+            var actual = policy.IsOriginAnAllowedSubdomain(malformedOrigin);
+
+            // Assert
+            Assert.False(actual);
+        }
+
+        [Theory]
         [InlineData("http://sub.domain", "http://*.domain")]
         [InlineData("http://sub.sub.domain", "http://*.domain")]
         [InlineData("http://sub.sub.domain", "http://*.sub.domain")]

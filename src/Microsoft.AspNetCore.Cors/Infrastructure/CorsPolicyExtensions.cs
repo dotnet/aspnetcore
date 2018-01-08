@@ -16,11 +16,16 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             {
                 return true;
             }
-            var originUri = new Uri(origin, UriKind.Absolute);
-            return policy.Origins
-                .Where(o => o.Contains($"://{_WildcardSubdomain}"))
-                .Select(CreateDomainUri)
-                .Any(domain => UriHelpers.IsSubdomainOf(originUri, domain));
+
+            if (Uri.TryCreate(origin, UriKind.Absolute, out var originUri))
+            {
+                return policy.Origins
+                    .Where(o => o.Contains($"://{_WildcardSubdomain}"))
+                    .Select(CreateDomainUri)
+                    .Any(domain => UriHelpers.IsSubdomainOf(originUri, domain));
+            }
+
+            return false;
         }
 
         private static Uri CreateDomainUri(string origin)
