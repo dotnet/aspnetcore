@@ -91,12 +91,14 @@
         <RelativeBlobPath>$(BlobBasePath)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
       </FilesToPublish>
 
+      <!-- Support for README badges and dotnet-install.ps1/sh -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)" Condition=" '%(NativeInstaller.FileExt)' != '' ">
         <RelativeBlobPath>$(AliasBlobBasePath)$(InstallerAliasBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
         <Overwrite>true</Overwrite>
+        <!-- These uploads duplicate the same blob in a separate location for README download links and to make dotnet-install.ps1/sh work when specifying -Channel. -->
+        <IsDuplicateUpload>true</IsDuplicateUpload>
       </FilesToPublish>
 
-      <!-- Support for README badges and dotnet-install.ps1/sh -->
       <FilesToPublish Include="@(SharedFxVersionBadge)">
         <RelativeBlobPath>$(AliasBlobBasePath)%(SharedFxVersionBadge.FileName)%(SharedFxVersionBadge.Extension)</RelativeBlobPath>
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
@@ -160,7 +162,11 @@
 
     <ItemGroup>
       <PackagesToPublishToTransport Include="@(PackagesToPublish)" Condition=" '%(PackagesToPublish.IsSymbolsPackage)' != 'true' " />
-      <FilesToPublishToTransport Include="@(FilesToPublish)" RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)" />
+
+      <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
+      <FilesToPublishToTransport Include="@(FilesToPublish)"
+        RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)"
+        Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
 
     <Message Text="Publishing %(PackagesToPublishToTransport.FullPath)" Importance="high" />
