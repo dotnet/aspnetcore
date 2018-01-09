@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -130,60 +129,22 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             using (var db = new SqlConnection(sqlConn.ConnectionString))
             {
                 db.Open();
-                Assert.True(VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
                     "EmailConfirmed", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled",
                     "LockoutEnd", "AccessFailedCount", "ConcurrencyStamp", "NormalizedUserName", "NormalizedEmail"));
-                Assert.True(VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
-                Assert.True(VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
-                Assert.True(VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
-                Assert.True(VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
-                Assert.True(VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
+                Assert.True(DbUtil.VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
-                VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
-                VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
-                VerifyIndex(db, "AspNetUsers", "EmailIndex");
+                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
+                Assert.True(DbUtil.VerifyMaxLength(db, "AspNetRoles", 256, "Name", "NormalizedName"));
+
+                DbUtil.VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
+                DbUtil.VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
+                DbUtil.VerifyIndex(db, "AspNetUsers", "EmailIndex");
                 db.Close();
-            }
-        }
-
-        internal static bool VerifyColumns(SqlConnection conn, string table, params string[] columns)
-        {
-            var count = 0;
-            using (
-                var command =
-                    new SqlCommand("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS where TABLE_NAME=@Table", conn))
-            {
-                command.Parameters.Add(new SqlParameter("Table", table));
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        count++;
-                        if (!columns.Contains(reader.GetString(0)))
-                        {
-                            return false;
-                        }
-                    }
-                    return count == columns.Length;
-                }
-            }
-        }
-
-        internal static void VerifyIndex(SqlConnection conn, string table, string index, bool isUnique = false)
-        {
-            using (
-                var command =
-                    new SqlCommand(
-                        "SELECT COUNT(*) FROM sys.indexes where NAME=@Index AND object_id = OBJECT_ID(@Table) AND is_unique = @Unique", conn))
-            {
-                command.Parameters.Add(new SqlParameter("Index", index));
-                command.Parameters.Add(new SqlParameter("Table", table));
-                command.Parameters.Add(new SqlParameter("Unique", isUnique));
-                using (var reader = command.ExecuteReader())
-                {
-                    Assert.True(reader.Read());
-                    Assert.True(reader.GetInt32(0) > 0);
-                }
             }
         }
 

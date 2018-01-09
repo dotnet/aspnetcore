@@ -2,7 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 {
@@ -91,6 +96,18 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public DbSet<TUserToken> UserTokens { get; set; }
 
+        private int GetMaxLengthForKeys()
+        {
+            // Need to get the actual application service provider, fallback will cause
+            // options to not work since IEnumerable<IConfigureOptions> don't flow across providers
+            var options = this.GetService<IDbContextOptions>()
+                            .Extensions.OfType<CoreOptionsExtension>()
+                            .FirstOrDefault()?.ApplicationServiceProvider
+                            ?.GetService<IOptions<IdentityOptions>>()
+                            ?.Value?.Stores;
+            return options != null ? options.MaxLengthForKeys : 0;
+        }
+
         /// <summary>
         /// Configures the schema needed for the identity framework.
         /// </summary>
@@ -99,6 +116,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            var maxKeyLength = GetMaxLengthForKeys();
+
             builder.Entity<TUser>(b =>
             {
                 b.HasKey(u => u.Id);
@@ -112,7 +131,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 b.Property(u => u.Email).HasMaxLength(256);
                 b.Property(u => u.NormalizedEmail).HasMaxLength(256);
 
-                // Replace with b.HasMany<IdentityUserClaim>().
                 b.HasMany<TUserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
                 b.HasMany<TUserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
                 b.HasMany<TUserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
@@ -127,12 +145,26 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             builder.Entity<TUserLogin>(b =>
             {
                 b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+
+                if (maxKeyLength > 0)
+                {
+                    b.Property(l => l.LoginProvider).HasMaxLength(maxKeyLength);
+                    b.Property(l => l.ProviderKey).HasMaxLength(maxKeyLength);
+                }
+
                 b.ToTable("AspNetUserLogins");
             });
 
             builder.Entity<TUserToken>(b => 
             {
-                b.HasKey(l => new { l.UserId, l.LoginProvider, l.Name });
+                b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+
+                if (maxKeyLength > 0)
+                {
+                    b.Property(t => t.LoginProvider).HasMaxLength(maxKeyLength);
+                    b.Property(t => t.Name).HasMaxLength(maxKeyLength);
+                }
+
                 b.ToTable("AspNetUserTokens");
             });
         }

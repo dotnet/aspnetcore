@@ -55,5 +55,13 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="TokenOptions"/> for the identity system.
         /// </value>
         public TokenOptions Tokens { get; set; } = new TokenOptions();
+
+        /// <summary>
+        /// Gets or sets the <see cref="StoreOptions"/> for the identity system.
+        /// </summary>
+        /// <value>
+        /// The <see cref="StoreOptions"/> for the identity system.
+        /// </value>
+        public StoreOptions Stores { get; set; } = new StoreOptions();
     }
 }

@@ -32,7 +32,7 @@ namespace IdentitySample.DefaultUI
                 options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentity<IdentityUser, IdentityRole>(o => o.Stores.MaxLengthForKeys = 128)
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
