@@ -10,6 +10,10 @@ using System.Collections.Generic;
 
 namespace Microsoft.Blazor.Browser.Rendering
 {
+    /// <summary>
+    /// Provides mechanisms for rendering <see cref="IComponent"/> instances in a
+    /// web browser, dispatching events to them, and refreshing the UI as required.
+    /// </summary>
     public class BrowserRenderer : Renderer, IDisposable
     {
         private readonly int _browserRendererId;
@@ -53,7 +57,9 @@ namespace Microsoft.Blazor.Browser.Rendering
             RenderComponent(componentId);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Disposes the instance.
+        /// </summary>
         public void Dispose()
         {
             BrowserRendererRegistry.TryRemove(_browserRendererId);
