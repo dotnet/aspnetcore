@@ -58,6 +58,12 @@ namespace Microsoft.Blazor.RenderTree
 
         /// <summary>
         /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
+        /// gets the child component instance identifier.
+        /// </summary>
+        public int ComponentId { get; private set; }
+
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
         /// gets the child component instance. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public IComponent Component { get; private set; }
@@ -88,9 +94,10 @@ namespace Microsoft.Blazor.RenderTree
             AttributeEventHandlerValue = value
         };
 
-        internal static RenderTreeNode ChildComponent(IComponent component) => new RenderTreeNode
+        internal static RenderTreeNode ChildComponent(int componentId, IComponent component) => new RenderTreeNode
         {
             NodeType = RenderTreeNodeType.Component,
+            ComponentId = componentId,
             Component = component
         };
 

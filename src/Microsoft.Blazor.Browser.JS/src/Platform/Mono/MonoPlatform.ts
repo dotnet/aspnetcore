@@ -53,6 +53,11 @@ export const monoPlatform: Platform = {
   },
 
   callMethod: function callMethod(method: MethodHandle, target: System_Object, args: System_Object[]): System_Object {
+    if (args.length > 4) {
+      // Hopefully this restriction can be eased soon, but for now make it clear what's going on
+      throw new Error(`Currently, MonoPlatform supports passing a maximum of 4 arguments from JS to .NET. You tried to pass ${args.length}.`);
+    }
+
     const stack = Module.Runtime.stackSave();
 
     try {

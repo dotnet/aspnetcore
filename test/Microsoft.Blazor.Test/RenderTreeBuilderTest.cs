@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
+using Microsoft.Blazor.Rendering;
 using Microsoft.Blazor.RenderTree;
 using System;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Microsoft.Blazor.Test
         public void StartsEmpty()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Assert
             var nodes = builder.GetNodes();
@@ -28,7 +29,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.AddText("First item");
@@ -46,7 +47,7 @@ namespace Microsoft.Blazor.Test
         public void UnclosedElementsHaveNoEndDescendantIndex()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenElement("my element");
@@ -60,7 +61,7 @@ namespace Microsoft.Blazor.Test
         public void ClosedEmptyElementsHaveSelfAsEndDescendantIndex()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.AddText("some node so that the element isn't at position zero");
@@ -77,7 +78,7 @@ namespace Microsoft.Blazor.Test
         public void ClosedElementsHaveCorrectEndDescendantIndex()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenElement("my element");
@@ -96,7 +97,7 @@ namespace Microsoft.Blazor.Test
         public void CanNestElements()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.AddText("standalone text 1");   //  0: standalone text 1
@@ -136,7 +137,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddAttributes()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
             UIEventHandler eventHandler = eventInfo => { };
 
             // Act
@@ -163,7 +164,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddAttributeAtRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -176,7 +177,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddEventHandlerAttributeAtRoot()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -189,7 +190,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddAttributeToText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -204,7 +205,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddEventHandlerAttributeToText()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -219,7 +220,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddChildComponents()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.OpenElement("parent");                      //  0: <parent>
@@ -244,7 +245,7 @@ namespace Microsoft.Blazor.Test
         public void CanClear()
         {
             // Arrange
-            var builder = new RenderTreeBuilder();
+            var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
             builder.AddText("some text");
@@ -304,6 +305,12 @@ namespace Microsoft.Blazor.Test
         private class TestComponent : IComponent
         {
             public void BuildRenderTree(RenderTreeBuilder builder)
+                => throw new NotImplementedException();
+        }
+
+        private class TestRenderer : Renderer
+        {
+            protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
                 => throw new NotImplementedException();
         }
     }

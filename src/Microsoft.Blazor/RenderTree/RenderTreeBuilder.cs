@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
+using Microsoft.Blazor.Rendering;
 using System;
 using System.Collections.Generic;
 
@@ -13,10 +14,20 @@ namespace Microsoft.Blazor.RenderTree
     public class RenderTreeBuilder
     {
         private const int MinBufferLength = 10;
+        private readonly Renderer _renderer;
         private RenderTreeNode[] _entries = new RenderTreeNode[100];
         private int _entriesInUse = 0;
-        private Stack<int> _openElementIndices = new Stack<int>();
+        private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeNodeType? _lastNonAttributeNodeType;
+
+        /// <summary>
+        /// Constructs an instance of <see cref="RenderTreeBuilder"/>.
+        /// </summary>
+        /// <param name="renderer">The associated <see cref="Renderer"/>.</param>
+        public RenderTreeBuilder(Renderer renderer)
+        {
+            _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        }
 
         /// <summary>
         /// Appends a node representing an element, i.e., a container for other nodes.
@@ -84,7 +95,8 @@ namespace Microsoft.Blazor.RenderTree
             // previous tree, we'll either instantiate a new component or reuse the
             // existing instance (and notify it about changes to parameters).
             var instance = Activator.CreateInstance<TComponent>();
-            Append(RenderTreeNode.ChildComponent(instance));
+            var instanceId = _renderer.AssignComponentId(instance);
+            Append(RenderTreeNode.ChildComponent(instanceId, instance));
         }
 
         private void AssertCanAddAttribute()

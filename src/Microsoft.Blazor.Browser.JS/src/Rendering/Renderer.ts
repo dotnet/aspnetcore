@@ -1,46 +1,57 @@
 ﻿import { registerFunction } from '../RegisteredFunction';
-import { System_Object, System_String, System_Array, MethodHandle } from '../Platform/Platform';
+import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
 let raiseEventMethod: MethodHandle;
-let getComponentRenderInfoMethod: MethodHandle;
+let renderComponentMethod: MethodHandle;
 
 // TODO: Instead of associating components to parent elements, associate them with a
 // start/end node, so that components don't have to be enclosed in a wrapper
 // TODO: To avoid leaking memory, automatically remove entries from this dict as soon
 // as the corresponding DOM nodes are removed (or maybe when the associated component
 // is disposed, assuming we can guarantee that always happens).
-const componentIdToParentElement: { [componentId: string]: Element } = {};
+type ComponentIdToParentElement = { [componentId: number]: Element };
+type BrowserRendererRegistry = { [browserRendererId: number]: ComponentIdToParentElement };
+const browserRenderers: BrowserRendererRegistry = {};
 
 registerFunction('_blazorAttachComponentToElement', attachComponentToElement);
 registerFunction('_blazorRender', renderRenderTree);
 
-function attachComponentToElement(elementSelector: System_String, componentId: System_String) {
+function attachComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
   const elementSelectorJs = platform.toJavaScriptString(elementSelector);
   const element = document.querySelector(elementSelectorJs);
   if (!element) {
     throw new Error(`Could not find any element matching selector '${elementSelectorJs}'.`);
   }
 
-  const componentIdJs = platform.toJavaScriptString(componentId);
-  componentIdToParentElement[componentIdJs] = element;
+  browserRenderers[browserRendererId] = browserRenderers[browserRendererId] || {};
+  browserRenderers[browserRendererId][componentId] = element;
 }
 
-function renderRenderTree(componentId: System_String, tree: System_Array, treeLength: number) {
-  const componentIdJs = platform.toJavaScriptString(componentId);
-  const element = componentIdToParentElement[componentIdJs];
+function renderRenderTree(renderComponentArgs: Pointer) {
+  const browserRendererId = platform.readHeapInt32(renderComponentArgs, 0);
+  const browserRenderer = browserRenderers[browserRendererId];
+  if (!browserRenderer) {
+    throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
+  }
+
+  const componentId = platform.readHeapInt32(renderComponentArgs, 4);
+  const element = browserRenderer[componentId];
   if (!element) {
-    throw new Error(`No element is currently associated with component ${componentIdJs}`);
+    throw new Error(`No element is currently associated with component ${componentId}`);
   }
 
   clearElement(element);
-  insertNodeRange(componentIdJs, element, tree, 0, treeLength - 1);
+
+  const tree = platform.readHeapObject(renderComponentArgs, 8) as System_Array;
+  const treeLength = platform.readHeapInt32(renderComponentArgs, 12);
+  insertNodeRange(browserRendererId, componentId, element, tree, 0, treeLength - 1);
 }
 
-function insertNodeRange(componentId: string, intoDomElement: Element, tree: System_Array, startIndex: number, endIndex: number) {
+function insertNodeRange(browserRendererId: number, componentId: number, intoDomElement: Element, tree: System_Array, startIndex: number, endIndex: number) {
   for (let index = startIndex; index <= endIndex; index++) {
     const node = getTreeNodePtr(tree, index);
-    insertNode(componentId, intoDomElement, tree, node, index);
+    insertNode(browserRendererId, componentId, intoDomElement, tree, node, index);
 
     // Skip over any descendants, since they are already dealt with recursively
     const descendantsEndIndex = renderTreeNode.descendantsEndIndex(node);
@@ -50,11 +61,11 @@ function insertNodeRange(componentId: string, intoDomElement: Element, tree: Sys
   }
 }
 
-function insertNode(componentId: string, intoDomElement: Element, tree: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
+function insertNode(browserRendererId: number, componentId: number, intoDomElement: Element, tree: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
   const nodeType = renderTreeNode.nodeType(node);
   switch (nodeType) {
     case NodeType.element:
-      insertElement(componentId, intoDomElement, tree, node, nodeIndex);
+      insertElement(browserRendererId, componentId, intoDomElement, tree, node, nodeIndex);
       break;
     case NodeType.text:
       insertText(intoDomElement, node);
@@ -62,7 +73,7 @@ function insertNode(componentId: string, intoDomElement: Element, tree: System_A
     case NodeType.attribute:
       throw new Error('Attribute nodes should only be present as leading children of element nodes.');
     case NodeType.component:
-      insertComponent(intoDomElement, componentId, nodeIndex);
+      insertComponent(browserRendererId, intoDomElement, node);
       break;
     default:
       const unknownType: never = nodeType; // Compile-time verification that the switch was exhaustive
@@ -70,31 +81,26 @@ function insertNode(componentId: string, intoDomElement: Element, tree: System_A
   }
 }
 
-function insertComponent(intoDomElement: Element, parentComponentId: string, componentNodeIndex: number) {
-  if (!getComponentRenderInfoMethod) {
-    getComponentRenderInfoMethod = platform.findMethod(
-      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser', 'DOMComponentRenderState', 'GetComponentRenderInfo'
+function insertComponent(browserRendererId: number, intoDomElement: Element, node: RenderTreeNodePointer) {
+  const containerElement = document.createElement('blazor-component');
+  intoDomElement.appendChild(containerElement);
+
+  var childComponentId = renderTreeNode.componentId(node);
+  browserRenderers[browserRendererId][childComponentId] = containerElement;
+
+  if (!renderComponentMethod) {
+    renderComponentMethod = platform.findMethod(
+      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'RenderChildComponent'
     );
   }
 
-  // Currently, platform.callMethod always returns a heap object. If the target method
-  // tries to return a value, it gets boxed before return.
-  const renderInfoBoxed = platform.callMethod(getComponentRenderInfoMethod, null, [
-    platform.toDotNetString(parentComponentId),
-    platform.toDotNetString(componentNodeIndex.toString())
+  platform.callMethod(renderComponentMethod, null, [
+    platform.toDotNetString(browserRendererId.toString()),
+    platform.toDotNetString(childComponentId.toString())
   ]);
-  const renderInfoFields = platform.getHeapObjectFieldsPtr(renderInfoBoxed);
-  const componentId = platform.toJavaScriptString(platform.readHeapObject(renderInfoFields, 0) as System_String);
-  const componentTree = platform.readHeapObject(renderInfoFields, 4) as System_Array;
-  const componentTreeLength = platform.readHeapInt32(renderInfoFields, 8);
-
-  const containerElement = document.createElement('blazor-component');
-  intoDomElement.appendChild(containerElement);
-  componentIdToParentElement[componentId] = containerElement;
-  insertNodeRange(componentId, containerElement, componentTree, 0, componentTreeLength - 1);
 }
 
-function insertElement(componentId: string, intoDomElement: Element, tree: System_Array, elementNode: RenderTreeNodePointer, elementNodeIndex: number) {
+function insertElement(browserRendererId: number, componentId: number, intoDomElement: Element, tree: System_Array, elementNode: RenderTreeNodePointer, elementNodeIndex: number) {
   const tagName = renderTreeNode.elementName(elementNode);
   const newDomElement = document.createElement(tagName);
   intoDomElement.appendChild(newDomElement);
@@ -104,22 +110,22 @@ function insertElement(componentId: string, intoDomElement: Element, tree: Syste
   for (let descendantIndex = elementNodeIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
     const descendantNode = getTreeNodePtr(tree, descendantIndex);
     if (renderTreeNode.nodeType(descendantNode) === NodeType.attribute) {
-      applyAttribute(componentId, newDomElement, descendantNode, descendantIndex);
+      applyAttribute(browserRendererId, componentId, newDomElement, descendantNode, descendantIndex);
     } else {
       // As soon as we see a non-attribute child, all the subsequent child nodes are
       // not attributes, so bail out and insert the remnants recursively
-      insertNodeRange(componentId, newDomElement, tree, descendantIndex, descendantsEndIndex);
+      insertNodeRange(browserRendererId, componentId, newDomElement, tree, descendantIndex, descendantsEndIndex);
       break;
     }
   }
 }
 
-function applyAttribute(componentId: string, toDomElement: Element, attributeNode: RenderTreeNodePointer, attributeNodeIndex: number) {
+function applyAttribute(browserRendererId: number, componentId: number, toDomElement: Element, attributeNode: RenderTreeNodePointer, attributeNodeIndex: number) {
   const attributeName = renderTreeNode.attributeName(attributeNode);
 
   switch (attributeName) {
     case 'onclick':
-      toDomElement.addEventListener('click', () => raiseEvent(componentId, attributeNodeIndex, 'mouse', { Type: 'click' }));
+      toDomElement.addEventListener('click', () => raiseEvent(browserRendererId, componentId, attributeNodeIndex, 'mouse', { Type: 'click' }));
       break;
     case 'onkeypress':
       toDomElement.addEventListener('keypress', evt => {
@@ -127,7 +133,7 @@ function applyAttribute(componentId: string, toDomElement: Element, attributeNod
         // just to establish that we can pass parameters when raising events.
         // We use C#-style PascalCase on the eventInfo to simplify deserialization, but this could
         // change if we introduced a richer JSON library on the .NET side.
-        raiseEvent(componentId, attributeNodeIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
+        raiseEvent(browserRendererId, componentId, attributeNodeIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
       });
       break;
     default:
@@ -140,19 +146,22 @@ function applyAttribute(componentId: string, toDomElement: Element, attributeNod
   }
 }
 
-function raiseEvent(componentId: string, renderTreeNodeIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
+function raiseEvent(browserRendererId: number, componentId: number, renderTreeNodeIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
   if (!raiseEventMethod) {
     raiseEventMethod = platform.findMethod(
-      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser', 'Events', 'RaiseEvent'
+      'Microsoft.Blazor.Browser', 'Microsoft.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'DispatchEvent'
     );
   }
 
-  // TODO: Find a way of passing the renderTreeNodeIndex as a System.Int32, possibly boxing
-  // it first if necessary. Until then we have to send it as a string.
+  const eventDescriptor = {
+    BrowserRendererId: browserRendererId,
+    ComponentId: componentId,
+    RenderTreeNodeIndex: renderTreeNodeIndex,
+    EventArgsType: eventInfoType
+  };
+
   platform.callMethod(raiseEventMethod, null, [
-    platform.toDotNetString(componentId),
-    platform.toDotNetString(renderTreeNodeIndex.toString()),
-    platform.toDotNetString(eventInfoType),
+    platform.toDotNetString(JSON.stringify(eventDescriptor)),
     platform.toDotNetString(JSON.stringify(eventInfo))
   ]);
 }

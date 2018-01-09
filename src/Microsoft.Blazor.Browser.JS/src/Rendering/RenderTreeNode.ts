@@ -1,6 +1,6 @@
 ﻿import { System_String, System_Array, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-const renderTreeNodeStructLength = 32;
+const renderTreeNodeStructLength = 36;
 
 // To minimise GC pressure, instead of instantiating a JS object to represent each tree node,
 // we work in terms of pointers to the structs on the .NET heap, and use static functions that
@@ -18,6 +18,9 @@ export const renderTreeNode = {
   textContent: (node: RenderTreeNodePointer) => _readStringProperty(node, 12),
   attributeName: (node: RenderTreeNodePointer) => _readStringProperty(node, 16),
   attributeValue: (node: RenderTreeNodePointer) => _readStringProperty(node, 20),
+  attributeEventHandlerValue: (node: RenderTreeNodePointer) => _readObjectProperty(node, 24),
+  componentId: (node: RenderTreeNodePointer) => _readInt32Property(node, 28),
+  component: (node: RenderTreeNodePointer) => _readObjectProperty(node, 32),
 };
 
 export enum NodeType {
@@ -30,6 +33,10 @@ export enum NodeType {
 
 function _readInt32Property(baseAddress: Pointer, offsetBytes: number) {
   return platform.readHeapInt32(baseAddress, offsetBytes);
+}
+
+function _readObjectProperty(baseAddress: Pointer, offsetBytes: number) {
+  return platform.readHeapObject(baseAddress, offsetBytes);
 }
 
 function _readStringProperty(baseAddress: Pointer, offsetBytes: number) {

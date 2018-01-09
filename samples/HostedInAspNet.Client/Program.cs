@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Browser;
+using Microsoft.Blazor.Browser.Rendering;
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.RenderTree;
 
@@ -13,7 +14,7 @@ namespace HostedInAspNet.Client
         {
             // Temporarily render this test component until there's a proper mechanism
             // for testing this.
-            DOM.AttachComponent("app", new MyComponent());
+            new BrowserRenderer().AddComponent("app", new MyComponent());
         }
     }
 

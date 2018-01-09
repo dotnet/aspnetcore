@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.Blazor.Browser
+namespace Microsoft.Blazor.Rendering
 {
     internal class WeakValueDictionary<TKey, TValue> where TValue : class
     {
