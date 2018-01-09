@@ -3,7 +3,7 @@
 
 using Microsoft.Blazor.Browser;
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 
 namespace HostedInAspNet.Client
 {
@@ -19,10 +19,10 @@ namespace HostedInAspNet.Client
 
     internal class MyComponent : IComponent
     {
-        public void BuildUITree(UITreeBuilder builder)
+        public void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement("h1");
-            builder.AddText("Hello from UITree");
+            builder.AddText("Hello from RenderTree");
             builder.CloseElement();
 
             builder.OpenElement("ul");

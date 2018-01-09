@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.Blazor.UITree
+namespace Microsoft.Blazor.RenderTree
 {
     /// <summary>
-    /// Describes the type of a <see cref="UITreeNode"/>.
+    /// Describes the type of a <see cref="RenderTreeNode"/>.
     /// </summary>
-    public enum UITreeNodeType: int
+    public enum RenderTreeNodeType: int
     {
         /// <summary>
         /// Represents a container for other nodes.
@@ -19,7 +19,7 @@ namespace Microsoft.Blazor.UITree
         Text = 2,
 
         /// <summary>
-        /// Represents a key-value pair associated with another <see cref="UITreeNode"/>.
+        /// Represents a key-value pair associated with another <see cref="RenderTreeNode"/>.
         /// </summary>
         Attribute = 3,
 

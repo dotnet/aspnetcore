@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Browser.Interop;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 using System;
 
 namespace Microsoft.Blazor.Browser
@@ -20,14 +20,14 @@ namespace Microsoft.Blazor.Browser
             renderState.RaiseEvent(int.Parse(uiTreeNodeIndex), eventInfo);
         }
 
-        private static UIEventInfo ParseEventInfo(string eventInfoType, string eventInfoJson)
+        private static UIEventArgs ParseEventInfo(string eventInfoType, string eventInfoJson)
         {
             switch (eventInfoType)
             {
                 case "mouse":
-                    return Json.Deserialize<UIMouseEventInfo>(eventInfoJson);
+                    return Json.Deserialize<UIMouseEventArgs>(eventInfoJson);
                 case "keyboard":
-                    return Json.Deserialize<UIKeyboardEventInfo>(eventInfoJson);
+                    return Json.Deserialize<UIKeyboardEventArgs>(eventInfoJson);
                 default:
                     throw new ArgumentException($"Unsupported value '{eventInfoType}'.", nameof(eventInfoType));
             }

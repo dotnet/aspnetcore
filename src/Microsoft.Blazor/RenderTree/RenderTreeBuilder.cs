@@ -5,22 +5,22 @@ using Microsoft.Blazor.Components;
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.Blazor.UITree
+namespace Microsoft.Blazor.RenderTree
 {
     /// <summary>
-    /// Provides methods for building a collection of <see cref="UITreeNode"/> entries.
+    /// Provides methods for building a collection of <see cref="RenderTreeNode"/> entries.
     /// </summary>
-    public class UITreeBuilder
+    public class RenderTreeBuilder
     {
         private const int MinBufferLength = 10;
-        private UITreeNode[] _entries = new UITreeNode[100];
+        private RenderTreeNode[] _entries = new RenderTreeNode[100];
         private int _entriesInUse = 0;
         private Stack<int> _openElementIndices = new Stack<int>();
-        private UITreeNodeType? _lastNonAttributeNodeType;
+        private RenderTreeNodeType? _lastNonAttributeNodeType;
 
         /// <summary>
         /// Appends a node representing an element, i.e., a container for other nodes.
-        /// In order for the <see cref="UITreeBuilder"/> state to be valid, you must
+        /// In order for the <see cref="RenderTreeBuilder"/> state to be valid, you must
         /// also call <see cref="CloseElement"/> immediately after appending the
         /// new element's child nodes.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Microsoft.Blazor.UITree
         public void OpenElement(string elementName)
         {
             _openElementIndices.Push(_entriesInUse);
-            Append(UITreeNode.Element(elementName));
+            Append(RenderTreeNode.Element(elementName));
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Microsoft.Blazor.UITree
         /// </summary>
         /// <param name="textContent">Content for the new text node.</param>
         public void AddText(string textContent)
-            => Append(UITreeNode.Text(textContent));
+            => Append(RenderTreeNode.Text(textContent));
 
         /// <summary>
         /// Appends a node representing a string-valued attribute.
@@ -57,11 +57,11 @@ namespace Microsoft.Blazor.UITree
         public void AddAttribute(string name, string value)
         {
             AssertCanAddAttribute();
-            Append(UITreeNode.Attribute(name, value));
+            Append(RenderTreeNode.Attribute(name, value));
         }
 
         /// <summary>
-        /// Appends a node representing an <see cref="UIEventHandler"/>-valued attribute.
+        /// Appends a node representing an <see cref="UIEventArgs"/>-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="name">The name of the attribute.</param>
@@ -69,7 +69,7 @@ namespace Microsoft.Blazor.UITree
         public void AddAttribute(string name, UIEventHandler value)
         {
             AssertCanAddAttribute();
-            Append(UITreeNode.Attribute(name, value));
+            Append(RenderTreeNode.Attribute(name, value));
         }
 
         /// <summary>
@@ -84,15 +84,15 @@ namespace Microsoft.Blazor.UITree
             // previous tree, we'll either instantiate a new component or reuse the
             // existing instance (and notify it about changes to parameters).
             var instance = Activator.CreateInstance<TComponent>();
-            Append(UITreeNode.ChildComponent(instance));
+            Append(RenderTreeNode.ChildComponent(instance));
         }
 
         private void AssertCanAddAttribute()
         {
-            if (_lastNonAttributeNodeType != UITreeNodeType.Element
-                && _lastNonAttributeNodeType != UITreeNodeType.Component)
+            if (_lastNonAttributeNodeType != RenderTreeNodeType.Element
+                && _lastNonAttributeNodeType != RenderTreeNodeType.Component)
             {
-                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {UITreeNodeType.Element} or {UITreeNodeType.Component}");
+                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {RenderTreeNodeType.Element} or {RenderTreeNodeType.Component}");
             }
         }
 
@@ -115,14 +115,14 @@ namespace Microsoft.Blazor.UITree
         }
 
         /// <summary>
-        /// Returns the <see cref="UITreeNode"/> values that have been appended.
+        /// Returns the <see cref="RenderTreeNode"/> values that have been appended.
         /// The return value's <see cref="ArraySegment{T}.Offset"/> is always zero.
         /// </summary>
-        /// <returns>An array segment of <see cref="UITreeNode"/> values.</returns>
-        public ArraySegment<UITreeNode> GetNodes() =>
-            new ArraySegment<UITreeNode>(_entries, 0, _entriesInUse);
+        /// <returns>An array segment of <see cref="RenderTreeNode"/> values.</returns>
+        public ArraySegment<RenderTreeNode> GetNodes() =>
+            new ArraySegment<RenderTreeNode>(_entries, 0, _entriesInUse);
 
-        private void Append(UITreeNode node)
+        private void Append(RenderTreeNode node)
         {
             if (_entriesInUse == _entries.Length)
             {
@@ -132,7 +132,7 @@ namespace Microsoft.Blazor.UITree
             _entries[_entriesInUse++] = node;
 
             var nodeType = node.NodeType;
-            if (nodeType != UITreeNodeType.Attribute)
+            if (nodeType != RenderTreeNodeType.Attribute)
             {
                 _lastNonAttributeNodeType = node.NodeType;
             }

@@ -3,7 +3,7 @@
 
 using Microsoft.Blazor.Browser.Interop;
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -27,7 +27,7 @@ namespace Microsoft.Blazor.Browser
             = new WeakValueDictionary<string, DOMComponentRenderState>();
         private static long _nextDOMComponentId = 0;
 
-        private readonly UITreeBuilder _uITreeBuilder; // TODO: Maintain two, so we can diff successive renders
+        private readonly RenderTreeBuilder _uITreeBuilder; // TODO: Maintain two, so we can diff successive renders
 
         public string DOMComponentId { get; }
 
@@ -37,7 +37,7 @@ namespace Microsoft.Blazor.Browser
         {
             DOMComponentId = componentId;
             Component = component;
-            _uITreeBuilder = new UITreeBuilder();
+            _uITreeBuilder = new RenderTreeBuilder();
         }
 
         public static DOMComponentRenderState GetOrCreate(IComponent component)
@@ -64,22 +64,22 @@ namespace Microsoft.Blazor.Browser
             ? result
             : throw new ArgumentException($"No component was found with ID {id}");
 
-        private ArraySegment<UITreeNode> UpdateRender()
+        private ArraySegment<RenderTreeNode> UpdateRender()
         {
             _uITreeBuilder.Clear();
-            Component.BuildUITree(_uITreeBuilder);
+            Component.BuildRenderTree(_uITreeBuilder);
 
             // TODO: Change this to return a diff between the previous render result and this new one
             return _uITreeBuilder.GetNodes();
         }
 
-        public void RaiseEvent(int uiTreeNodeIndex, UIEventInfo eventInfo)
+        public void RaiseEvent(int uiTreeNodeIndex, UIEventArgs eventInfo)
         {
             var nodes = _uITreeBuilder.GetNodes();
             var eventHandler = nodes.Array[nodes.Offset + uiTreeNodeIndex].AttributeEventHandlerValue;
             if (eventHandler == null)
             {
-                throw new ArgumentException($"Cannot raise event because the specified {nameof(UITreeNode)} at index {uiTreeNodeIndex} does not have any {nameof(UITreeNode.AttributeEventHandlerValue)}.");
+                throw new ArgumentException($"Cannot raise event because the specified {nameof(RenderTreeNode)} at index {uiTreeNodeIndex} does not have any {nameof(RenderTreeNode.AttributeEventHandlerValue)}.");
             }
 
             eventHandler.Invoke(eventInfo);
@@ -89,7 +89,7 @@ namespace Microsoft.Blazor.Browser
         public void RenderToDOM()
         {
             var tree = UpdateRender();
-            RegisteredFunction.InvokeUnmarshalled<string, UITreeNode[], int, object>(
+            RegisteredFunction.InvokeUnmarshalled<string, RenderTreeNode[], int, object>(
                 "_blazorRender",
                 DOMComponentId,
                 tree.Array,
@@ -116,16 +116,16 @@ namespace Microsoft.Blazor.Browser
             return new ComponentRenderInfo
             {
                 ComponentId = componentRenderState.DOMComponentId,
-                UITree = componentNodes.Array,
-                UITreeLength = componentNodes.Count
+                RenderTree = componentNodes.Array,
+                RenderTreeLength = componentNodes.Count
             };
         }
 
         public struct ComponentRenderInfo
         {
             public string ComponentId;
-            public UITreeNode[] UITree;
-            public int UITreeLength;
+            public RenderTreeNode[] RenderTree;
+            public int RenderTreeLength;
         }
     }
 }

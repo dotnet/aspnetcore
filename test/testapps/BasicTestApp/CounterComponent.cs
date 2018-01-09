@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 
 namespace BasicTestApp
 {
@@ -10,7 +10,7 @@ namespace BasicTestApp
     {
         private int currentCount = 0;
 
-        public void BuildUITree(UITreeBuilder builder)
+        public void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement("h1");
             builder.AddText("Counter");
@@ -27,7 +27,7 @@ namespace BasicTestApp
             builder.CloseElement();
         }
 
-        private void OnButtonClicked(UIEventInfo eventInfo)
+        private void OnButtonClicked(UIEventArgs eventInfo)
         {
             currentCount++;
         }

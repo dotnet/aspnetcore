@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 
 namespace Microsoft.Blazor.Components
 {
@@ -11,9 +11,9 @@ namespace Microsoft.Blazor.Components
     public interface IComponent
     {
         /// <summary>
-        /// Builds a <see cref="UITree"/> representing the current state of the component.
+        /// Builds a <see cref="RenderTree"/> representing the current state of the component.
         /// </summary>
-        /// <param name="builder">A <see cref="UITreeBuilder"/> to which the rendered nodes should be appended.</param>
-        void BuildUITree(UITreeBuilder builder);
+        /// <param name="builder">A <see cref="RenderTreeBuilder"/> to which the rendered nodes should be appended.</param>
+        void BuildRenderTree(RenderTreeBuilder builder);
     }
 }

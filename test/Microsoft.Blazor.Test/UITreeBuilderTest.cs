@@ -2,20 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 using System;
 using System.Linq;
 using Xunit;
 
 namespace Microsoft.Blazor.Test
 {
-    public class UITreeBuilderTest
+    public class RenderTreeBuilderTest
     {
         [Fact]
         public void StartsEmpty()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Assert
             var nodes = builder.GetNodes();
@@ -28,7 +28,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddText()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddText("First item");
@@ -46,7 +46,7 @@ namespace Microsoft.Blazor.Test
         public void UnclosedElementsHaveNoEndDescendantIndex()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement("my element");
@@ -60,7 +60,7 @@ namespace Microsoft.Blazor.Test
         public void ClosedEmptyElementsHaveSelfAsEndDescendantIndex()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddText("some node so that the element isn't at position zero");
@@ -77,7 +77,7 @@ namespace Microsoft.Blazor.Test
         public void ClosedElementsHaveCorrectEndDescendantIndex()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement("my element");
@@ -96,7 +96,7 @@ namespace Microsoft.Blazor.Test
         public void CanNestElements()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddText("standalone text 1");   //  0: standalone text 1
@@ -136,7 +136,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddAttributes()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
             UIEventHandler eventHandler = eventInfo => { };
 
             // Act
@@ -163,7 +163,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddAttributeAtRoot()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -176,7 +176,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddEventHandlerAttributeAtRoot()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -189,7 +189,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddAttributeToText()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -204,7 +204,7 @@ namespace Microsoft.Blazor.Test
         public void CannotAddEventHandlerAttributeToText()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
@@ -219,7 +219,7 @@ namespace Microsoft.Blazor.Test
         public void CanAddChildComponents()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.OpenElement("parent");                      //  0: <parent>
@@ -244,7 +244,7 @@ namespace Microsoft.Blazor.Test
         public void CanClear()
         {
             // Arrange
-            var builder = new UITreeBuilder();
+            var builder = new RenderTreeBuilder();
 
             // Act
             builder.AddText("some text");
@@ -257,41 +257,41 @@ namespace Microsoft.Blazor.Test
             Assert.Empty(builder.GetNodes());
         }
 
-        void AssertText(UITreeNode node, string textContent)
+        void AssertText(RenderTreeNode node, string textContent)
         {
-            Assert.Equal(UITreeNodeType.Text, node.NodeType);
+            Assert.Equal(RenderTreeNodeType.Text, node.NodeType);
             Assert.Equal(textContent, node.TextContent);
             Assert.Equal(0, node.ElementDescendantsEndIndex);
         }
 
-        void AssertElement(UITreeNode node, string elementName, int descendantsEndIndex)
+        void AssertElement(RenderTreeNode node, string elementName, int descendantsEndIndex)
         {
-            Assert.Equal(UITreeNodeType.Element, node.NodeType);
+            Assert.Equal(RenderTreeNodeType.Element, node.NodeType);
             Assert.Equal(elementName, node.ElementName);
             Assert.Equal(descendantsEndIndex, node.ElementDescendantsEndIndex);
         }
 
-        void AssertAttribute(UITreeNode node, string attributeName)
+        void AssertAttribute(RenderTreeNode node, string attributeName)
         {
-            Assert.Equal(UITreeNodeType.Attribute, node.NodeType);
+            Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
             Assert.Equal(attributeName, node.AttributeName);
         }
 
-        void AssertAttribute(UITreeNode node, string attributeName, string attributeValue)
+        void AssertAttribute(RenderTreeNode node, string attributeName, string attributeValue)
         {
             AssertAttribute(node, attributeName);
             Assert.Equal(attributeValue, node.AttributeValue);
         }
 
-        void AssertAttribute(UITreeNode node, string attributeName, UIEventHandler attributeEventHandlerValue)
+        void AssertAttribute(RenderTreeNode node, string attributeName, UIEventHandler attributeEventHandlerValue)
         {
             AssertAttribute(node, attributeName);
             Assert.Equal(attributeEventHandlerValue, node.AttributeEventHandlerValue);
         }
 
-        private void AssertComponent<T>(UITreeNode node) where T: IComponent
+        private void AssertComponent<T>(RenderTreeNode node) where T: IComponent
         {
-            Assert.Equal(UITreeNodeType.Component, node.NodeType);
+            Assert.Equal(RenderTreeNodeType.Component, node.NodeType);
 
             // Currently, we instantiate child components during the tree building phase.
             // Later this will change so it happens during the tree diffing phase, so this
@@ -303,7 +303,7 @@ namespace Microsoft.Blazor.Test
 
         private class TestComponent : IComponent
         {
-            public void BuildUITree(UITreeBuilder builder)
+            public void BuildRenderTree(RenderTreeBuilder builder)
                 => throw new NotImplementedException();
         }
     }

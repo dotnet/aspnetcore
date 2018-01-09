@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
-using System;
 
-namespace Microsoft.Blazor.UITree
+namespace Microsoft.Blazor.RenderTree
 {
     // TODO: Consider coalescing properties of compatible types that don't need to be
     // used simultaneously. For example, 'ElementName' and 'AttributeName' could be replaced
@@ -13,85 +12,85 @@ namespace Microsoft.Blazor.UITree
     /// <summary>
     /// Represents an entry in a tree of user interface (UI) items.
     /// </summary>
-    public struct UITreeNode
+    public struct RenderTreeNode
     {
         /// <summary>
         /// Describes the type of this node.
         /// </summary>
-        public UITreeNodeType NodeType { get; private set; }
+        public RenderTreeNodeType NodeType { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Element"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
         /// gets a name representing the type of the element. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string ElementName { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Element"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
         /// gets the index of the final descendant node in the tree. The value is
         /// zero if the node is of a different type, or if it has not yet been closed.
         /// </summary>
         public int ElementDescendantsEndIndex { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Text"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Text"/>,
         /// gets the content of the text node. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string TextContent { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string AttributeName { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string AttributeValue { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Attribute"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
         /// gets the attribute's event handle, if any. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public UIEventHandler AttributeEventHandlerValue { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="UITreeNodeType.Component"/>,
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
         /// gets the child component instance. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public IComponent Component { get; private set; }
 
-        internal static UITreeNode Element(string elementName) => new UITreeNode
+        internal static RenderTreeNode Element(string elementName) => new RenderTreeNode
         {
-            NodeType = UITreeNodeType.Element,
+            NodeType = RenderTreeNodeType.Element,
             ElementName = elementName,
         };
 
-        internal static UITreeNode Text(string textContent) => new UITreeNode
+        internal static RenderTreeNode Text(string textContent) => new RenderTreeNode
         {
-            NodeType = UITreeNodeType.Text,
+            NodeType = RenderTreeNodeType.Text,
             TextContent = textContent,
         };
 
-        internal static UITreeNode Attribute(string name, string value) => new UITreeNode
+        internal static RenderTreeNode Attribute(string name, string value) => new RenderTreeNode
         {
-            NodeType = UITreeNodeType.Attribute,
+            NodeType = RenderTreeNodeType.Attribute,
             AttributeName = name,
             AttributeValue = value
         };
 
-        internal static UITreeNode Attribute(string name, UIEventHandler value) => new UITreeNode
+        internal static RenderTreeNode Attribute(string name, UIEventHandler value) => new RenderTreeNode
         {
-            NodeType = UITreeNodeType.Attribute,
+            NodeType = RenderTreeNodeType.Attribute,
             AttributeName = name,
             AttributeEventHandlerValue = value
         };
 
-        internal static UITreeNode ChildComponent(IComponent component) => new UITreeNode
+        internal static RenderTreeNode ChildComponent(IComponent component) => new RenderTreeNode
         {
-            NodeType = UITreeNodeType.Component,
+            NodeType = RenderTreeNodeType.Component,
             Component = component
         };
 

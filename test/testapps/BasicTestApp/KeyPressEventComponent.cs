@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
-using Microsoft.Blazor.UITree;
+using Microsoft.Blazor.RenderTree;
 using System.Collections.Generic;
 
 namespace BasicTestApp
@@ -11,7 +11,7 @@ namespace BasicTestApp
     {
         private List<string> keysPressed = new List<string>();
 
-        public void BuildUITree(UITreeBuilder builder)
+        public void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.AddText("Type here:");
             builder.OpenElement("input");
@@ -28,9 +28,9 @@ namespace BasicTestApp
             builder.CloseElement();
         }
 
-        private void OnKeyPressed(UIEventInfo eventInfo)
+        private void OnKeyPressed(UIEventArgs eventInfo)
         {
-            keysPressed.Add(((UIKeyboardEventInfo)eventInfo).Key);
+            keysPressed.Add(((UIKeyboardEventArgs)eventInfo).Key);
         }
     }
 }
