@@ -4,16 +4,16 @@
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
-    <BaseRuntimeVersionFile>$(ArtifactsDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
+    <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
     <LatestRuntimeVersionFileName>latest.aspnetcore.version</LatestRuntimeVersionFileName>
-    <LatestRuntimeVersionFile>$(ArtifactsDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
+    <LatestRuntimeVersionFile>$(IntermediateDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
   </PropertyGroup>
 
   <Target Name="Publish"
-    DependsOnTargets="GetFilesToPublish;PublishToAzureFeed" />
+    DependsOnTargets="PrepareOutputPaths;GetFilesToPublish;CopyToPublishArtifacts;PublishToAzureFeed;" />
 
   <Target Name="GeneratePublishFiles" DependsOnTargets="ResolveCommitHash">
-    <MakeDir Directories="$(ArtifactsDir)" />
+    <MakeDir Directories="$(IntermediateDir)" />
 
     <!--
       Used by the dotnet/cli build to determine which version of Microsoft.NETCore.App is used.
@@ -107,6 +107,10 @@
     </ItemGroup>
 
     <Error Text="Missing expected files:%0A - @(_MissingFiles, '%0A - ')" Condition="@(_MissingFiles->Count()) != 0" />
+  </Target>
+
+  <Target Name="CopyToPublishArtifacts" DependsOnTargets="_CheckFilesToPublish">
+    <Copy SourceFiles="@(FilesToPublish)" DestinationFolder="$(ArtifactsDir)" />
   </Target>
 
   <Target Name="PublishToAzureFeed"
