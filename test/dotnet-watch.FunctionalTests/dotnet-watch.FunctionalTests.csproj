@@ -21,6 +21,32 @@
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
   </ItemGroup>
 
+  <Target Name="GenerateRestoreSourcesFile" BeforeTargets="Compile">
+    <PropertyGroup>
+      <RestoreSourcesFile>$(MSBuildThisFileDirectory)/TestProjects/NuGet.config</RestoreSourcesFile>
+    </PropertyGroup>
+
+    <CreateItem Include="$(RestoreSources)">
+      <Output TaskParameter="Include" ItemName="RestoreSourcesItems"/>
+    </CreateItem>
+
+    <ItemGroup>
+      <NuGetConfigLines Include="&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;" />
+      <NuGetConfigLines Include="&lt;configuration&gt;" />
+      <NuGetConfigLines Include="&lt;packageSources&gt;" />
+      <NuGetConfigLines Include="&lt;clear/&gt;" />
+      <NuGetConfigLines Include="&lt;add key=&quot;%(RestoreSourcesItems.Identity)&quot; value=&quot;%(RestoreSourcesItems.Identity)&quot; /&gt;" />
+      <NuGetConfigLines Include="&lt;/packageSources&gt;" />
+      <NuGetConfigLines Include="&lt;/configuration&gt;" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(RestoreSourcesFile)"
+      Lines="@(NuGetConfigLines)"
+      Overwrite="true"
+      Encoding="UTF-8" />
+  </Target>
+
   <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>

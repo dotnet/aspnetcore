@@ -35,7 +35,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             CreateTestDirectory();
         }
 
-        public string TempFolder { get; } = Path.Combine(Path.GetDirectoryName(FindNugetConfig()), "testWorkDir", Guid.NewGuid().ToString("N"));
+
+        public static string TestWorkFolder { get; } = Path.Combine(AppContext.BaseDirectory, "testWorkDir");
+
+        public string TempFolder { get; } = Path.Combine(TestWorkFolder, Guid.NewGuid().ToString("N"));
 
         public string WorkFolder { get; }
 
@@ -154,7 +157,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private static string FindNugetConfig()
         {
-            var currentDirPath = AppContext.BaseDirectory;
+            var currentDirPath = TestWorkFolder;
 
             string nugetConfigFile;
             while (true)

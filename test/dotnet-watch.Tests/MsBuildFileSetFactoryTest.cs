@@ -83,6 +83,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
                 .SubDir("src")
                     .SubDir("Project1")
                         .WithCSharpProject("Project1", out var target)
+                        .WithProperty("BaseIntermediateOutputPath", "obj")
                         .WithTargetFrameworks("netcoreapp1.0")
                         .Dir()
                         .WithFile("Program.cs")
@@ -111,18 +112,18 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         [Fact]
         public async Task MultiTfm()
         {
-             _tempDir
-                .SubDir("src")
-                    .SubDir("Project1")
-                        .WithCSharpProject("Project1", out var target)
-                        .WithTargetFrameworks("netcoreapp1.0", "net451")
-                        .WithProperty("EnableDefaultCompileItems", "false")
-                        .WithItem("Compile", "Class1.netcore.cs", "'$(TargetFramework)'=='netcoreapp1.0'")
-                        .WithItem("Compile", "Class1.desktop.cs", "'$(TargetFramework)'=='net451'")
-                        .Dir()
-                        .WithFile("Class1.netcore.cs")
-                        .WithFile("Class1.desktop.cs")
-                        .WithFile("Class1.notincluded.cs");
+            _tempDir
+               .SubDir("src")
+                   .SubDir("Project1")
+                       .WithCSharpProject("Project1", out var target)
+                       .WithTargetFrameworks("netcoreapp1.0", "net451")
+                       .WithProperty("EnableDefaultCompileItems", "false")
+                       .WithItem("Compile", "Class1.netcore.cs", "'$(TargetFramework)'=='netcoreapp1.0'")
+                       .WithItem("Compile", "Class1.desktop.cs", "'$(TargetFramework)'=='net451'")
+                       .Dir()
+                       .WithFile("Class1.netcore.cs")
+                       .WithFile("Class1.desktop.cs")
+                       .WithFile("Class1.notincluded.cs");
 
             var fileset = await GetFileSet(target);
 

@@ -36,3 +36,4 @@ testWorkDir/
 .dotnet/
 global.json
 *.binlog
+test/dotnet-watch.FunctionalTests/TestProjects/NuGet.config
