@@ -157,34 +157,50 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public void EnsureObjectCanBeSerialized(object item)
         {
-            var itemType = item.GetType();
-            Type actualType = null;
+            item = item ?? throw new ArgumentNullException(nameof(item));
 
-            if (itemType.IsArray)
+            var itemType = item.GetType();
+
+            if (!CanSerializeType(itemType, out var errorMessage))
             {
-                itemType = itemType.GetElementType();
+                throw new InvalidOperationException(errorMessage);
             }
-            else if (itemType.GetTypeInfo().IsGenericType)
+        }
+
+        public static bool CanSerializeType(Type typeToSerialize, out string errorMessage)
+        {
+            typeToSerialize = typeToSerialize ?? throw new ArgumentNullException(nameof(typeToSerialize));
+
+            errorMessage = null;
+
+            Type actualType = null;
+            if (typeToSerialize.IsArray)
             {
-                if (ClosedGenericMatcher.ExtractGenericInterface(itemType, typeof(IList<>)) != null)
+                actualType = typeToSerialize.GetElementType();
+            }
+            else if (typeToSerialize.GetTypeInfo().IsGenericType)
+            {
+                if (ClosedGenericMatcher.ExtractGenericInterface(typeToSerialize, typeof(IList<>)) != null)
                 {
-                    var genericTypeArguments = itemType.GenericTypeArguments;
+                    var genericTypeArguments = typeToSerialize.GenericTypeArguments;
                     Debug.Assert(genericTypeArguments.Length == 1, "IList<T> has one generic argument");
                     actualType = genericTypeArguments[0];
                 }
-                else if (ClosedGenericMatcher.ExtractGenericInterface(itemType, typeof(IDictionary<,>)) != null)
+                else if (ClosedGenericMatcher.ExtractGenericInterface(typeToSerialize, typeof(IDictionary<,>)) != null)
                 {
-                    var genericTypeArguments = itemType.GenericTypeArguments;
+                    var genericTypeArguments = typeToSerialize.GenericTypeArguments;
                     Debug.Assert(
                         genericTypeArguments.Length == 2,
                         "IDictionary<TKey, TValue> has two generic arguments");
 
-                    // Throw if the key type of the dictionary is not string.
+                    // The key must be of type string.
                     if (genericTypeArguments[0] != typeof(string))
                     {
-                        var message = Resources.FormatTempData_CannotSerializeDictionary(
-                            typeof(TempDataSerializer).FullName, genericTypeArguments[0]);
-                        throw new InvalidOperationException(message);
+                        errorMessage = Resources.FormatTempData_CannotSerializeDictionary(
+                            typeof(TempDataSerializer).FullName,
+                            genericTypeArguments[0],
+                            typeof(string).FullName);
+                        return false;
                     }
                     else
                     {
@@ -193,14 +209,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 }
             }
 
-            actualType = actualType ?? itemType;
+            actualType = actualType ?? typeToSerialize;
             if (!IsSimpleType(actualType))
             {
-                var underlyingType = Nullable.GetUnderlyingType(actualType) ?? actualType;
-                var message = Resources.FormatTempData_CannotSerializeType(
-                    typeof(TempDataSerializer).FullName, underlyingType);
-                throw new InvalidOperationException(message);
+                errorMessage = Resources.FormatTempData_CannotSerializeType(
+                    typeof(TempDataSerializer).FullName,
+                    actualType);
+                return false;
             }
+
+            return true;
         }
 
         private static IList<TVal> ConvertArray<TVal>(JArray array)

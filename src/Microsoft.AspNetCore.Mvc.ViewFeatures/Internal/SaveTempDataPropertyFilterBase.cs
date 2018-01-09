@@ -98,10 +98,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             var propertyType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
 
-            if (!(propertyType.GetTypeInfo().IsPrimitive || propertyType == typeof(string)))
+            if (!TempDataSerializer.CanSerializeType(propertyType, out var errorMessage))
             {
-                throw new InvalidOperationException(
-                    Resources.FormatTempDataProperties_PrimitiveTypeOrString(property.DeclaringType.FullName, property.Name, nameof(TempDataAttribute)));
+                var messageWithPropertyInfo = Resources.FormatTempDataProperties_InvalidType(
+                    property.DeclaringType.FullName,
+                    property.Name,
+                    nameof(TempDataAttribute));
+
+                throw new InvalidOperationException($"{messageWithPropertyInfo} {errorMessage}");
             }
         }
 

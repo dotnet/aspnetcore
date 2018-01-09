@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 testProvider.EnsureObjectCanBeSerialized(value);
             });
             Assert.Equal($"The '{typeof(TempDataSerializer).FullName}' cannot serialize a dictionary " +
-                $"with a key of type '{type}'.",
+                $"with a key of type '{type}'. The key must be of type 'System.String'.",
                 exception.Message);
         }
 

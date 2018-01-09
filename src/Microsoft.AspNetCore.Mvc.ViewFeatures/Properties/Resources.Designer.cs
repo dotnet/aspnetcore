@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             => string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotDeserializeToken"), p0, p1);
 
         /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'.
+        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'. The key must be of type '{2}'.
         /// </summary>
         internal static string TempData_CannotSerializeDictionary
         {
@@ -691,10 +691,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         /// <summary>
-        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'.
+        /// The '{0}' cannot serialize a dictionary with a key of type '{1}'. The key must be of type '{2}'.
         /// </summary>
-        internal static string FormatTempData_CannotSerializeDictionary(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeDictionary"), p0, p1);
+        internal static string FormatTempData_CannotSerializeDictionary(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TempData_CannotSerializeDictionary"), p0, p1, p2);
 
         /// <summary>
         /// The '{0}' cannot serialize an object of type '{1}'.
@@ -795,18 +795,18 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             => string.Format(CultureInfo.CurrentCulture, GetString("ViewEnginesAreRequired"), p0, p1, p2);
 
         /// <summary>
-        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be a primitive or string type.
+        /// The '{0}.{1}' property with {2} is invalid.
         /// </summary>
-        internal static string TempDataProperties_PrimitiveTypeOrString
+        internal static string TempDataProperties_InvalidType
         {
-            get => GetString("TempDataProperties_PrimitiveTypeOrString");
+            get => GetString("TempDataProperties_InvalidType");
         }
 
         /// <summary>
-        /// The '{0}.{1}' property with {2} is invalid. A property using {2} must be a primitive or string type.
+        /// The '{0}.{1}' property with {2} is invalid.
         /// </summary>
-        internal static string FormatTempDataProperties_PrimitiveTypeOrString(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TempDataProperties_PrimitiveTypeOrString"), p0, p1, p2);
+        internal static string FormatTempDataProperties_InvalidType(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TempDataProperties_InvalidType"), p0, p1, p2);
 
         /// <summary>
         /// The '{0}.{1}' property with {2} is invalid. A property using {2} must have a public getter and setter.
