@@ -18,10 +18,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         public DefaultTemplateEngineFactoryServiceTest()
         {
-            Workspace = new AdhocWorkspace();
+            Project project = null;
 
-            var info = ProjectInfo.Create(ProjectId.CreateNewId("Test"), VersionStamp.Default, "Test", "Test", LanguageNames.CSharp, filePath: "/TestPath/SomePath/Test.csproj");
-            Project = Workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
+            Workspace = TestWorkspace.Create(workspace =>
+            {
+                var info = ProjectInfo.Create(ProjectId.CreateNewId("Test"), VersionStamp.Default, "Test", "Test", LanguageNames.CSharp, filePath: "/TestPath/SomePath/Test.csproj");
+                project = workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
+            });
+
+            Project = project;
         }
 
         // We don't actually look at the project, we rely on the ProjectStateManager

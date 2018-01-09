@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            Workspace = new AdhocWorkspace();
+            Workspace = TestWorkspace.Create();
             ProjectManager = new TestProjectSnapshotManager(Enumerable.Empty<ProjectSnapshotChangeTrigger>(), Workspace);
         }
 

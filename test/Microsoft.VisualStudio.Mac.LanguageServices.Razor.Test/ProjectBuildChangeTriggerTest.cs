@@ -22,9 +22,11 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             var expectedProjectName = "Test1";
             var expectedProjectPath = "Path/To/Project";
             var projectService = CreateProjectService(expectedProjectName, expectedProjectPath);
-            var workspace = new AdhocWorkspace();
-            CreateProjectInWorkspace(workspace, expectedProjectName, expectedProjectPath);
-            CreateProjectInWorkspace(workspace, "Test2", "Path/To/AnotherProject");
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                CreateProjectInWorkspace(ws, expectedProjectName, expectedProjectPath);
+                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
+            });
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
             projectManager.SetupGet(p => p.Workspace).Returns(workspace);
@@ -46,8 +48,10 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             // Arrange
             var args = new BuildEventArgs(monitor: null, success: true);
             var projectService = CreateProjectService("Test1", "Path/To/Project");
-            var workspace = new AdhocWorkspace();
-            CreateProjectInWorkspace(workspace, "Test2", "Path/To/AnotherProject");
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
+            });
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(workspace);
             projectManager

@@ -36,7 +36,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var textView = Mock.Of<ITextView>();
             var buffers = new Collection<ITextBuffer>();
-            var workspace = new AdhocWorkspace();
             var documentManager = new Mock<RazorDocumentManager>(MockBehavior.Strict);
             documentManager.Setup(d => d.OnTextViewClosed(textView, buffers)).Verifiable();
 

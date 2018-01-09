@@ -31,7 +31,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private ImportDocumentManager ImportDocumentManager => Mock.Of<ImportDocumentManager>();
 
-        private Workspace Workspace => new AdhocWorkspace();
+        private Workspace Workspace => TestWorkspace.Create();
 
         private TextBufferProjectService SupportedProjectService { get; } = Mock.Of<TextBufferProjectService>(
             s => s.GetHostProject(It.IsAny<ITextBuffer>()) == Mock.Of<object>() &&

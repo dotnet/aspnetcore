@@ -56,9 +56,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             projectService.Setup(p => p.GetProjectName(It.IsAny<IVsHierarchy>())).Returns(expectedProjectName);
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
 
-            var workspace = new AdhocWorkspace();
-            CreateProjectInWorkspace(workspace, expectedProjectName, expectedProjectPath);
-            CreateProjectInWorkspace(workspace, "Test2", "Path/To/AnotherProject");
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                CreateProjectInWorkspace(ws, expectedProjectName, expectedProjectPath);
+                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
+            });
 
             var called = false;
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
@@ -101,9 +103,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             projectService.Setup(p => p.GetProjectName(It.IsAny<IVsHierarchy>())).Returns(expectedProjectName);
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
 
-            var workspace = new AdhocWorkspace();
-            CreateProjectInWorkspace(workspace, "Test2", "Path/To/AnotherProject");
-            CreateProjectInWorkspace(workspace, "Test3", "Path/To/DifferenProject");
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
+                CreateProjectInWorkspace(ws, "Test3", "Path/To/DifferenProject");
+            });
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
             projectManager.SetupGet(p => p.Workspace).Returns(workspace);

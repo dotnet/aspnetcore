@@ -9,15 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.Common\Microsoft.AspNetCore.Razor.Test.Common.csproj" />
+    <ProjectReference Include="..\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common\Microsoft.CodeAnalysis.Razor.Workspaces.Test.Common.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(VSIX_MicrosoftCodeAnalysisCommonPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
   </ItemGroup>
 
 </Project>

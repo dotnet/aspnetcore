@@ -102,7 +102,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private Project GetProject(string name)
         {
-            var project = new AdhocWorkspace().AddProject(name, LanguageNames.CSharp);
+            Project project = null;
+            TestWorkspace.Create(workspace =>
+            {
+                project = workspace.AddProject(name, LanguageNames.CSharp);
+            });
             return project;
         }
     }

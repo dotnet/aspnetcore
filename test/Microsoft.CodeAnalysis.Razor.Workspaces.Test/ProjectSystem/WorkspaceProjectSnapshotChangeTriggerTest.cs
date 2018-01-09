@@ -14,15 +14,31 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public WorkspaceProjectSnapshotChangeTriggerTest()
         {
-            Workspace = new AdhocWorkspace();
-            EmptySolution = Workspace.CurrentSolution.GetIsolatedSolution();
+            Solution emptySolution = null;
+            Project project1 = null;
+            Project project2 = null;
+            Project project3 = null;
+            Solution solutionWithTwoProjects = null;
+            Solution solutionWithOneProject = null;
 
-            ProjectNumberOne = Workspace.CurrentSolution.AddProject("One", "One", LanguageNames.CSharp);
-            ProjectNumberTwo = ProjectNumberOne.Solution.AddProject("Two", "Two", LanguageNames.CSharp);
-            SolutionWithTwoProjects = ProjectNumberTwo.Solution;
+            Workspace = TestWorkspace.Create(ws =>
+            {
+                emptySolution = ws.CurrentSolution.GetIsolatedSolution();
+                project1 = ws.CurrentSolution.AddProject("One", "One", LanguageNames.CSharp);
+                project2 = project1.Solution.AddProject("Two", "Two", LanguageNames.CSharp);
+                solutionWithTwoProjects = project2.Solution;
 
-            ProjectNumberThree = EmptySolution.GetIsolatedSolution().AddProject("Three", "Three", LanguageNames.CSharp);
-            SolutionWithOneProject = ProjectNumberThree.Solution;
+                project3 = emptySolution.GetIsolatedSolution().AddProject("Three", "Three", LanguageNames.CSharp);
+                solutionWithOneProject = project3.Solution;
+            });
+
+            EmptySolution = emptySolution;
+            ProjectNumberOne = project1;
+            ProjectNumberTwo = project2;
+            ProjectNumberThree = project3;
+            SolutionWithTwoProjects = solutionWithTwoProjects;
+            SolutionWithOneProject = solutionWithOneProject;
+
         }
 
         private Solution EmptySolution { get; }

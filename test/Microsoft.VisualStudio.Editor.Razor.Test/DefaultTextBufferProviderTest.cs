@@ -92,13 +92,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static Document CreateDocumentWithoutText()
         {
-            var project = ProjectInfo
-                .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
-                .WithFilePath("/TestProject.csproj");
-            var workspace = new AdhocWorkspace();
-            workspace.AddProject(project);
-            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
-            var document = workspace.AddDocument(documentInfo);
+            Document document = null;
+            TestWorkspace.Create(workspace =>
+            {
+                var project = ProjectInfo
+                    .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
+                    .WithFilePath("/TestProject.csproj");
+                workspace.AddProject(project);
+                var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
+                document = workspace.AddDocument(documentInfo);
+            });
 
             return document;
         }

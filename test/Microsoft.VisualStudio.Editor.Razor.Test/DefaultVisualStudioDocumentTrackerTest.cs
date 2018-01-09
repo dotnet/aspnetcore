@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private EditorSettingsManagerInternal EditorSettingsManager => new DefaultEditorSettingsManagerInternal(Dispatcher);
 
-        private Workspace Workspace => new AdhocWorkspace();
+        private Workspace Workspace => TestWorkspace.Create();
 
         private ImportDocumentManager ImportDocumentManager => Mock.Of<ImportDocumentManager>();
 
@@ -57,9 +57,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_ProjectChanged_TriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
+            Project project = null;
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                project = ws.AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
+            });
+            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, workspace, TextBuffer, ImportDocumentManager);
 
-            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
 
@@ -81,9 +85,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_TagHelpersChanged_TriggersContextChanged()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
+            Project project = null;
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                project = ws.AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
+            });
+            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, workspace, TextBuffer, ImportDocumentManager);
 
-            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.TagHelpersChanged);
 
@@ -105,9 +113,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void ProjectManager_Changed_IgnoresUnknownProject()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, Workspace, TextBuffer, ImportDocumentManager);
+            Project project = null;
+            var workspace = TestWorkspace.Create(ws =>
+            {
+                project = ws.AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Other/Path/TestProject.csproj"));
+            });
+            var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, EditorSettingsManager, workspace, TextBuffer, ImportDocumentManager);
 
-            var project = new AdhocWorkspace().AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), "Test1", "TestAssembly", LanguageNames.CSharp, filePath: "C:/Some/Other/Path/TestProject.csproj"));
             var projectSnapshot = new DefaultProjectSnapshot(project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
 
