@@ -2,15 +2,30 @@
 
   <PropertyGroup>
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
+    <DependencyPackagesDir>$(RepositoryRoot).deps\packages\</DependencyPackagesDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
     <LatestRuntimeVersionFileName>latest.aspnetcore.version</LatestRuntimeVersionFileName>
     <LatestRuntimeVersionFile>$(IntermediateDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
+
+    <PublishDependsOn>
+      PrepareOutputPaths;
+      GetFilesToPublish;
+      CopyToPublishArtifacts;
+      PublishToAzureFeed;
+      PublisthToTransportFeed;
+      $(PublishDependsOn);
+    </PublishDependsOn>
+
+    <!-- Settings for pushing to the transport feed -->
+    <PushToBlobFeed_Overwrite Condition="'$(PushToBlobFeed_Overwrite)' == ''">false</PushToBlobFeed_Overwrite>
+    <PushToBlobFeed_MaxClients Condition="'$(PushToBlobFeed_MaxClients)' == ''">8</PushToBlobFeed_MaxClients>
+    <BlobFileRelativePathBase Condition="'$(BlobFileRelativePathBase)' == ''">assets</BlobFileRelativePathBase>
+    <BlobFileRelativePathBase Condition="!HasTrailingSlash('$(BlobFileRelativePathBase)')">$(BlobFileRelativePathBase)/</BlobFileRelativePathBase>
   </PropertyGroup>
 
-  <Target Name="Publish"
-    DependsOnTargets="PrepareOutputPaths;GetFilesToPublish;CopyToPublishArtifacts;PublishToAzureFeed;" />
+  <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
 
   <Target Name="GeneratePublishFiles" DependsOnTargets="ResolveCommitHash">
     <MakeDir Directories="$(IntermediateDir)" />
@@ -95,10 +110,12 @@
         <ContentType>text/plain</ContentType>
         <Overwrite>true</Overwrite>
       </FilesToPublish>
+
+      <PackagesToPublish Include="$(DependencyPackagesDir)*.nupkg" Exclude="$(DependencyPackagesDir)*.symbols.nupkg" />
+      <PackagesToPublish Include="$(DependencyPackagesDir)*.symbols.nupkg" Exclude="@(PackagesToPublish)" IsSymbolsPackage="true" />
     </ItemGroup>
 
-    <Message Text="Publish @(FilesToPublish -> Count()) file(s)" Importance="High" />
-    <Message Text="@(FilesToPublish -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" Importance="High" />
+    <Message Text="@(FilesToPublish -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" />
   </Target>
 
   <Target Name="_CheckFilesToPublish">
@@ -110,7 +127,8 @@
   </Target>
 
   <Target Name="CopyToPublishArtifacts" DependsOnTargets="_CheckFilesToPublish">
-    <Copy SourceFiles="@(FilesToPublish)" DestinationFolder="$(ArtifactsDir)" />
+    <MakeDir Directories="$(ArtifactsDir)files\" />
+    <Copy SourceFiles="@(FilesToPublish)" DestinationFolder="$(ArtifactsDir)files\" />
   </Target>
 
   <Target Name="PublishToAzureFeed"
@@ -134,6 +152,33 @@
         SharedAccessToken="$(AzureSharedAccessToken)"
         ContainerName="$(AzureContainerName)"
         Files="@(FilesToPublish)" />
+  </Target>
+
+  <Target Name="PublishToTransportFeed"
+    DependsOnTargets="GetFilesToPublish;_CheckFilesToPublish"
+    Condition="'$(PublishToTransportFeed)' == 'true'">
+
+    <ItemGroup>
+      <PackagesToPublishToTransport Include="@(PackagesToPublish)" Condition=" '%(PackagesToPublish.IsSymbolsPackage)' != 'true' " />
+      <FilesToPublishToTransport Include="@(FilesToPublish)" RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)" />
+    </ItemGroup>
+
+    <Message Text="Publishing %(PackagesToPublishToTransport.FullPath)" Importance="high" />
+    <Message Text="@(FilesToPublishToTransport -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" Importance="high" />
+
+    <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
+                    AccountKey="$(PublishBlobFeedKey)"
+                    ItemsToPush="@(PackagesToPublishToTransport)"
+                    Overwrite="$(PushToBlobFeed_Overwrite)"
+                    MaxClients="$(PushToBlobFeed_MaxClients)"
+                    Condition="@(PackagesToPublish->Count()) != 0" />
+
+    <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
+                    AccountKey="$(PublishBlobFeedKey)"
+                    ItemsToPush="@(FilesToPublishToTransport)"
+                    PublishFlatContainer="true"
+                    Overwrite="$(PushToBlobFeed_Overwrite)"
+                    MaxClients="$(PushToBlobFeed_MaxClients)" />
   </Target>
 
 </Project>
