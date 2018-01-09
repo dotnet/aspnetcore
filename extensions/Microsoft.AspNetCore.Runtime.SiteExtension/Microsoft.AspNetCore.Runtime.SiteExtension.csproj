@@ -22,18 +22,12 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="install.cmd" />
     <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
-    <Content Include="$(AspNetCoreModuleX86Location)" PackagePath="content\ancm\x86" />
-    <Content Include="$(AspNetCoreModuleX64Location)" PackagePath="content\ancm\x64" />
 
     <Content Include="$(DotnetHomeDirectory)**\*.*" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Web.Xdt.Extensions\Microsoft.Web.Xdt.Extensions.csproj" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(MicrosoftAspNetCoreAspNetCoreModulePackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
