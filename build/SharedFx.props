@@ -26,11 +26,7 @@
     <DebConfigInFile>$(_PackagingDir)debian_config.json.in</DebConfigInFile>
 
     <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
-    
-    <!-- Previously released versions of the RS are included in 2.1.0-preview1 for compat. They should be removed by RTM once the "trampoline" feature is in. -->
-    <RuntimeStoreArchiveLinkPrefix>$(PublicCoreFeedPrefix)aspnetcore/store/2.0.3-125/</RuntimeStoreArchiveLinkPrefix>
-    <RuntimeStoreArchiveFilename>Build.RS</RuntimeStoreArchiveFilename>
-    
+
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">$(PublicCoreFeedPrefix)</DotNetAssetRootUrl>
 

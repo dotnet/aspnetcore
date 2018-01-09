@@ -31,25 +31,12 @@
       Uri="$(RuntimeArchiveLinkPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz$(DotNetAssetRootAccessTokenSuffix)"
       DestinationPath="$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz"
       Condition="!Exists('$(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-%(NonWindowsSharedFxRIDs.Identity).tar.gz')" />
-
-    <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
-    <ItemGroup>
-      <RuntimeStoreArchiveLinkSuffix Include=".linux.tar.gz;.osx.tar.gz;.winx64.zip;.winx86.zip" />
-    </ItemGroup>
-    <KoreBuild.Tasks.DownloadFile
-      Uri="$(RuntimeStoreArchiveLinkPrefix)$(RuntimeStoreArchiveFilename)%(RuntimeStoreArchiveLinkSuffix.Identity)$(DotNetAssetRootAccessTokenSuffix)"
-      DestinationPath="$(_InstallerSourceDir)$(RuntimeStoreArchiveFilename)%(RuntimeStoreArchiveLinkSuffix.Identity)"
-      Condition="!Exists('$(_InstallerSourceDir)$(RuntimeStoreArchiveFilename)%(RuntimeStoreArchiveLinkSuffix.Identity)')" />
   </Target>
 
   <Target Name="_GenerateCumulativeArchive">
     <PropertyGroup>
       <ArchiveExtension>.tar.gz</ArchiveExtension>
       <ArchiveExtension Condition="$(SharedFxPlatform.StartsWith('win'))">.zip</ArchiveExtension>
-      <RuntimeStoreArchiveLinkSuffix Condition="'$(SharedFxPlatform)' == 'win-x64'">.winx64.zip</RuntimeStoreArchiveLinkSuffix>
-      <RuntimeStoreArchiveLinkSuffix Condition="'$(SharedFxPlatform)' == 'win-x86'">.winx86.zip</RuntimeStoreArchiveLinkSuffix>
-      <RuntimeStoreArchiveLinkSuffix Condition="'$(SharedFxPlatform)' == 'osx-x64'">.osx.tar.gz</RuntimeStoreArchiveLinkSuffix>
-      <RuntimeStoreArchiveLinkSuffix Condition="'$(SharedFxPlatform)' == 'linux-x64'">.linux.tar.gz</RuntimeStoreArchiveLinkSuffix>
     </PropertyGroup>
 
     <!-- Clear working directory -->
@@ -60,20 +47,11 @@
     <Exec
       Command="tar -xzf $(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
-    <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
-    <Exec
-      Command="tar -xzf $(_InstallerSourceDir)$(RuntimeStoreArchiveFilename)$(RuntimeStoreArchiveLinkSuffix) -C $(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
     <Exec
       Command="tar -xzf $(_InstallerSourceDir)$(DotnetRuntimeInstallerPrefix)-$(SharedFxPlatform)$(ArchiveExtension) -C $(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.tar.gz'"/>
     <UnzipArchive
       File="$(SharedFxIntermediateArchiveFilePrefix)-$(SharedFxPlatform)$(ArchiveExtension)"
-      Destination="$(_WorkRoot)"
-      Condition="'$(ArchiveExtension)' == '.zip'" />
-    <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
-    <UnzipArchive
-      File="$(_InstallerSourceDir)$(RuntimeStoreArchiveFilename)$(RuntimeStoreArchiveLinkSuffix)"
       Destination="$(_WorkRoot)"
       Condition="'$(ArchiveExtension)' == '.zip'" />
     <UnzipArchive
@@ -165,8 +143,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
-      <RpmSharedFxDependencies Include="aspnetcore-store-2.0.3" Version="2.0.3" />
       <RpmSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)" Version="$(MicrosoftNETCoreApp21PackageVersion)" />
       <RpmRHSharedFxDirectories Include="$(RHInstallRoot)/shared" />
       <RpmGenericSharedFxDirectories Include="$(InstallRoot)/shared" />
@@ -267,8 +243,6 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
 
     <ItemGroup>
-      <!-- TODO: REMOVE - This dependency is a stop gap requirement until trampoline from 2.0 => 2.1 is implemented -->
-      <_DebSharedFxDependencies Include="aspnetcore-store-2.0.3"/>
       <_DebSharedFxDependencies Include="$(DotnetRuntimeInstallerPrefix)"/>
     </ItemGroup>
 
