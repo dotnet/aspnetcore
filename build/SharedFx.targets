@@ -208,8 +208,7 @@
       <CrossGenArgs Include="-readytorun" />
       <CrossGenArgs Include="-in %(AssembliesToCrossgen.Source)" />
       <CrossGenArgs Include="-out %(AssembliesToCrossgen.Destination)" />
-      <CrossGenArgs Include="-app_paths $(SharedFxPublishDirectory)" />
-      <CrossGenArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)" />
+      <CrossGenArgs Include="-platform_assemblies_paths $(SharedFxPublishDirectory)$(PathSeparator)$(SharedFxCrossGenToolDirectory)" />
       <CrossGenArgs Include="-JITPath %(ClrJitAssembly.FullPath)" />
     </ItemGroup>
 
@@ -233,8 +232,7 @@
     <ItemGroup>
       <CrossGenSymbolsArgs Include="-nologo" />
       <CrossGenSymbolsArgs Include="-readytorun" />
-      <CrossGenSymbolsArgs Include="-app_paths $(SharedFxPublishDirectory)" />
-      <CrossGenSymbolsArgs Include="-platform_assemblies_paths $(SharedFxCrossGenToolDirectory)" />
+      <CrossGenSymbolsArgs Include="-platform_assemblies_paths $(SharedFxPublishDirectory)$(PathSeparator)$(SharedFxCrossGenToolDirectory)" />
       <CrossGenSymbolsArgs Include="-$(CrossGenSymbolsType)" />
       <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Symbols)" />
       <CrossGenSymbolsArgs Include="%(AssembliesToCrossgen.Destination)" />

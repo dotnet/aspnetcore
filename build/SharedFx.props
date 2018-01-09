@@ -14,6 +14,9 @@
     <_InstallerSourceDir>$(RepositoryRoot).deps\Installers\</_InstallerSourceDir>
     <_DockerRootDir>/opt/code/</_DockerRootDir>
     <_InstallersOutputDir>$(ArtifactsDir)installers\</_InstallersOutputDir>
+    <!-- 3B = semicolon in ASCII -->
+    <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
+    <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
 
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>
