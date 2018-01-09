@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj" />
   </ItemGroup>
 
   <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->

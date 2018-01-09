@@ -68,11 +68,11 @@ namespace Microsoft.Blazor.Server.Test
                  fewer assemblies from the server, and during publishing, illink would remove all the
                  uncalled implementation code from mscorlib.dll anyway.
                  */
+                "/Microsoft.Blazor.Browser.dll",
                 "/Microsoft.Blazor.dll",
                 "/mscorlib.dll",
                 "/netstandard.dll",
                 "/StandaloneApp.dll",
-                "/System.Console.dll",
                 "/System.Core.dll",
                 "/System.Diagnostics.StackTrace.dll",
                 "/System.dll",
