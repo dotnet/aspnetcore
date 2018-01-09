@@ -37,18 +37,14 @@
       <!--
       PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
       Ensure that this only contains artifacts we produce (and not mirrored dependencies) since that would result in conflicts.
-
-      BlobFileRelativePathBase is set by default in KoreBuild to 'assets/'.
-       -->
+      -->
       <_SharedFxFilesToPublish Include="$(SharedFxOutputPath)*" />
-      <_SharedFxLatestBadgeToPublish Include="$(DepsDirectory)assets\Runtime\*\*.svg" />
-      <_SharedFxLatestPointerToPublish Include="$(DepsDirectory)assets\Runtime\*\latest.aspnetcore.version" />
     </ItemGroup>
   </Target>
 
   <!-- For orchestrated build -->
-  <Target Name="GetAzureFilesToPublish" 
-    BeforeTargets="PublishToAzure" 
+  <Target Name="GetAzureFilesToPublish"
+    BeforeTargets="PublishToAzure"
     DependsOnTargets="GetPackagesToPublish;GetFilesToPublish"
     Condition="'$(PublishToAzureBlob)' == 'true'">
 
@@ -58,39 +54,6 @@
 
     <Message Text="Publishing %(FilesToPublish.Identity)" Importance="High" />
   </Target>
-
-  <!-- For non-orchestrated builds (temporary until PCP pushes to dotnetcli for us) -->
-  <Target Name="PublishToDotnetCliFeed" 
-    DependsOnTargets="GetFilesToPublish"
-    Condition="'$(PublishToDotnetCliAzureBlob)' == 'true'">
-
-    <Error Condition="@(_SharedFxLatestPointerToPublish->Count()) &gt; 1" Text="More than one 'latest.aspnetcore.version' file was found. Cannot publish both." />
-
-    <ItemGroup>
-      <FilesToPublishToDotnetCli Remove="@(FilesToPublishToDotnetCli)" />
-      <!-- unlike PCP, we don't want to prefix publishing with BlobFileRelativePathBase-->
-      <FilesToPublishToDotnetCli Include="@(_SharedFxFilesToPublish)" RelativeBlobPath="Runtime/$(PackageVersion)/%(_SharedFxFilesToPublish.FileName)%(_SharedFxFilesToPublish.Extension)" />
-
-      <FilesToPublishToDotnetCli Include="@(_SharedFxLatestBadgeToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/%(_SharedFxLatestBadgeToPublish.FileName)%(_SharedFxLatestBadgeToPublish.Extension)">
-        <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
-        <ContentType>image/svg+xml</ContentType>
-        <Overwrite>true</Overwrite>
-      </FilesToPublishToDotnetCli>
-
-      <FilesToPublishToDotnetCli Include="@(_SharedFxLatestPointerToPublish)" RelativeBlobPath="Runtime/$(SharedFxCliBlobChannel)/latest.aspnetcore.version">
-        <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
-        <ContentType>text/plain</ContentType>
-        <Overwrite>true</Overwrite>
-      </FilesToPublishToDotnetCli>
-    </ItemGroup>
-
-    <RepoTasks.PublishToAzureBlob 
-        AccountName="$(PublishDotnetCliAccountName)"
-        SharedAccessToken="$(DotnetCliAccessToken)"
-        ContainerName="$(PublishDotnetCliContainerName)"
-        Files="@(FilesToPublishToDotnetCli)" />
-  </Target>
-
 
   <Target Name="PushNuGetPackages" DependsOnTargets="GetPackagesToPublish" Condition="'$(PublishToMyget)' == 'true'">
     <Error Text="Cannot publish unsigned files to MyGet. Set SignType to 'real' to ensuring files are signed first."
