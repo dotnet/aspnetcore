@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
@@ -18,15 +17,6 @@ namespace Microsoft.AspNetCore.Internal
     /// </summary>
     internal static class RangeHelper
     {
-        // Is temporary to avoid build break
-        public static (bool isRangeRequest, RangeItemHeaderValue range) ParseRange(
-            HttpContext context,
-            RequestHeaders requestHeaders,
-            long length)
-        {
-            return ParseRange(context, requestHeaders, length, NullLogger.Instance);
-        }
-
         /// <summary>
         /// Returns the normalized form of the requested range if the Range Header in the <see cref="HttpContext.Request"/> is valid.
         /// </summary>
