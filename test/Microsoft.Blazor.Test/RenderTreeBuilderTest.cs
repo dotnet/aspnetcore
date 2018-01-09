@@ -48,8 +48,8 @@ namespace Microsoft.Blazor.Test
             var nodes = builder.GetNodes();
             Assert.Equal(0, nodes.Offset);
             Assert.Collection(nodes,
-                node => AssertText(node, "First item"),
-                node => AssertText(node, "Second item"));
+                node => AssertNode.Text(node, "First item"),
+                node => AssertNode.Text(node, "Second item"));
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             var node = builder.GetNodes().Single();
-            AssertElement(node, "my element", 0);
+            AssertNode.Element(node, "my element", 0);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace Microsoft.Blazor.Test
             // Assert
             var nodes = builder.GetNodes();
             Assert.Equal(2, nodes.Count);
-            AssertElement(nodes[1], "my element", 1);
+            AssertNode.Element(nodes[1], "my element", 1);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.Blazor.Test
             // Assert
             var nodes = builder.GetNodes();
             Assert.Equal(4, nodes.Count);
-            AssertElement(nodes[0], "my element", 2);
+            AssertNode.Element(nodes[0], "my element", 2);
         }
 
         [Fact]
@@ -128,18 +128,18 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(builder.GetNodes(),
-                node => AssertText(node, "standalone text 1"),
-                node => AssertElement(node, "root", 10),
-                node => AssertText(node, "root text 1"),
-                node => AssertText(node, "root text 2"),
-                node => AssertElement(node, "child", 8),
-                node => AssertText(node, "child text"),
-                node => AssertElement(node, "grandchild", 8),
-                node => AssertText(node, "grandchild text 1"),
-                node => AssertText(node, "grandchild text 2"),
-                node => AssertText(node, "root text 3"),
-                node => AssertElement(node, "child 2", 10),
-                node => AssertText(node, "standalone text 2"));
+                node => AssertNode.Text(node, "standalone text 1"),
+                node => AssertNode.Element(node, "root", 10),
+                node => AssertNode.Text(node, "root text 1"),
+                node => AssertNode.Text(node, "root text 2"),
+                node => AssertNode.Element(node, "child", 8),
+                node => AssertNode.Text(node, "child text"),
+                node => AssertNode.Element(node, "grandchild", 8),
+                node => AssertNode.Text(node, "grandchild text 1"),
+                node => AssertNode.Text(node, "grandchild text 2"),
+                node => AssertNode.Text(node, "root text 3"),
+                node => AssertNode.Element(node, "child 2", 10),
+                node => AssertNode.Text(node, "standalone text 2"));
         }
 
         [Fact]
@@ -161,12 +161,12 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(builder.GetNodes(),
-                node => AssertElement(node, "myelement", 5),
-                node => AssertAttribute(node, "attribute1", "value 1"),
-                node => AssertAttribute(node, "attribute2", "value 2"),
-                node => AssertElement(node, "child", 5),
-                node => AssertAttribute(node, "childevent", eventHandler),
-                node => AssertText(node, "some text"));
+                node => AssertNode.Element(node, "myelement", 5),
+                node => AssertNode.Attribute(node, "attribute1", "value 1"),
+                node => AssertNode.Attribute(node, "attribute2", "value 2"),
+                node => AssertNode.Element(node, "child", 5),
+                node => AssertNode.Attribute(node, "childevent", eventHandler),
+                node => AssertNode.Text(node, "some text"));
         }
 
         [Fact]
@@ -242,12 +242,12 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(builder.GetNodes(),
-                node => AssertElement(node, "parent", 5),
-                node => AssertComponent<TestComponent>(node),
-                node => AssertAttribute(node, "child1attribute1", "A"),
-                node => AssertAttribute(node, "child1attribute2", "B"),
-                node => AssertComponent<TestComponent>(node),
-                node => AssertAttribute(node, "child2attribute", "C"));
+                node => AssertNode.Element(node, "parent", 5),
+                node => AssertNode.Component<TestComponent>(node),
+                node => AssertNode.Attribute(node, "child1attribute1", "A"),
+                node => AssertNode.Attribute(node, "child1attribute2", "B"),
+                node => AssertNode.Component<TestComponent>(node),
+                node => AssertNode.Attribute(node, "child2attribute", "C"));
         }
 
         [Fact]
@@ -265,50 +265,6 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Empty(builder.GetNodes());
-        }
-
-        void AssertText(RenderTreeNode node, string textContent)
-        {
-            Assert.Equal(RenderTreeNodeType.Text, node.NodeType);
-            Assert.Equal(textContent, node.TextContent);
-            Assert.Equal(0, node.ElementDescendantsEndIndex);
-        }
-
-        void AssertElement(RenderTreeNode node, string elementName, int descendantsEndIndex)
-        {
-            Assert.Equal(RenderTreeNodeType.Element, node.NodeType);
-            Assert.Equal(elementName, node.ElementName);
-            Assert.Equal(descendantsEndIndex, node.ElementDescendantsEndIndex);
-        }
-
-        void AssertAttribute(RenderTreeNode node, string attributeName)
-        {
-            Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-            Assert.Equal(attributeName, node.AttributeName);
-        }
-
-        void AssertAttribute(RenderTreeNode node, string attributeName, string attributeValue)
-        {
-            AssertAttribute(node, attributeName);
-            Assert.Equal(attributeValue, node.AttributeValue);
-        }
-
-        void AssertAttribute(RenderTreeNode node, string attributeName, UIEventHandler attributeEventHandlerValue)
-        {
-            AssertAttribute(node, attributeName);
-            Assert.Equal(attributeEventHandlerValue, node.AttributeEventHandlerValue);
-        }
-
-        private void AssertComponent<T>(RenderTreeNode node) where T: IComponent
-        {
-            Assert.Equal(RenderTreeNodeType.Component, node.NodeType);
-
-            // Currently, we instantiate child components during the tree building phase.
-            // Later this will change so it happens during the tree diffing phase, so this
-            // logic will need to change. It will need to verify that we're tracking the
-            // information needed to instantiate the component.
-            Assert.NotNull(node.Component);
-            Assert.IsType<T>(node.Component);
         }
 
         private class TestComponent : IComponent
