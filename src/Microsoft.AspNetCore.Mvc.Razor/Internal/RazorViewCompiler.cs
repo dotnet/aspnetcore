@@ -259,6 +259,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 item.ExpirationTokens.Add(_fileProvider.Watch(checksums[i].Identifier));
             }
 
+            // We also need to create a new descriptor, because the original one doesn't have expiration tokens on
+            // it. These will be used by the view location cache, which is like an L1 cache for views (this class is
+            // the L2 cache).
+            item.Descriptor = new CompiledViewDescriptor()
+            {
+                ExpirationTokens = item.ExpirationTokens,
+                IsPrecompiled = true,
+                Item = precompiledView.Item,
+                RelativePath = precompiledView.RelativePath,
+                ViewAttribute = precompiledView.ViewAttribute,
+            };
+
             return item;
         }
 

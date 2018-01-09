@@ -204,6 +204,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             Assert.Same(precompiledView, result);
+
+            // This view doesn't have checksums so it can't be recompiled.
+            Assert.Null(precompiledView.ExpirationTokens);
         }
 
         [Theory]
@@ -273,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert - 1
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
 
             // Act - 2
             fileProvider.Watch(path);
@@ -281,7 +284,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             result = await viewCompiler.CompileAsync(path);
 
             // Assert - 2
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
+
+            // This view doesn't have checksums so it can't be recompiled.
+            Assert.Null(result.ExpirationTokens);
         }
 
         [Fact]
@@ -314,6 +320,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert - 2
             Assert.Same(precompiledView, result);
+
+            // This view doesn't have checksums so it can't be recompiled.
+            Assert.Null(result.ExpirationTokens);
         }
 
         [Fact]
@@ -340,7 +349,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
+
+            // This view has checksums so it should also have tokens
+            Assert.Collection(
+                 result.ExpirationTokens,
+                 token => Assert.Same(fileProvider.GetChangeToken(path), token));
         }
 
         [Fact]
@@ -399,7 +413,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert - 1
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
 
             // Act - 2
             fileInfo.Content = "some other content";
@@ -435,14 +449,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert - 1
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
 
             // Act - 2
             fileProvider.GetChangeToken(path).HasChanged = true;
             result = await viewCompiler.CompileAsync(path);
 
             // Assert - 2
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
         }
 
         [Fact]
@@ -480,7 +494,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             result = await viewCompiler.CompileAsync(path);
 
             // Assert - 2
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
         }
 
         [Fact]
@@ -512,7 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var result = await viewCompiler.CompileAsync(path);
 
             // Assert - 1
-            Assert.Same(precompiledView, result);
+            Assert.Same(precompiledView.Item, result.Item);
 
             // Act - 2
             importFileInfo.Content = "some import changed";
