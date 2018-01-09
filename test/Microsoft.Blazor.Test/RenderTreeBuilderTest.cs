@@ -13,6 +13,15 @@ namespace Microsoft.Blazor.Test
     public class RenderTreeBuilderTest
     {
         [Fact]
+        public void RequiresNonnullRenderer()
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                new RenderTreeBuilder(null);
+            });
+        }
+
+        [Fact]
         public void StartsEmpty()
         {
             // Arrange

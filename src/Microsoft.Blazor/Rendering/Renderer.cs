@@ -4,6 +4,7 @@
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.RenderTree;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.Blazor.Rendering
 {
@@ -19,6 +20,8 @@ namespace Microsoft.Blazor.Rendering
         // these reference descendant components and associated ComponentState instances.
         private readonly WeakValueDictionary<int, ComponentState> _componentStateById
             = new WeakValueDictionary<int, ComponentState>();
+        private readonly ConditionalWeakTable<IComponent, ComponentState> _componentStateByComponent
+            = new ConditionalWeakTable<IComponent, ComponentState>();
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
 
         /// <summary>
@@ -34,6 +37,7 @@ namespace Microsoft.Blazor.Rendering
                 var componentId = _nextComponentId++;
                 var componentState = new ComponentState(this, componentId, component);
                 _componentStateById.Add(componentId, componentState);
+                _componentStateByComponent.Add(component, componentState); // Ensure the componentState lives for at least as long as the component
                 return componentId;
             }
         }
