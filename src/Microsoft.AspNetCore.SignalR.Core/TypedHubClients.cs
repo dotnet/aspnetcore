@@ -56,5 +56,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             return TypedClientBuilder<T>.Build(_hubClients.User(userId));
         }
+
+        public T Users(IReadOnlyList<string> userIds)
+        {
+            return TypedClientBuilder<T>.Build(_hubClients.Users(userIds));
+        }
     }
 }

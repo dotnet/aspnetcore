@@ -23,6 +23,23 @@ namespace Microsoft.AspNetCore.SignalR
         }
     }
 
+    public class MultipleUserProxy<THub> : IClientProxy
+    {
+        private readonly IReadOnlyList<string> _userIds;
+        private readonly HubLifetimeManager<THub> _lifetimeManager;
+
+        public MultipleUserProxy(HubLifetimeManager<THub> lifetimeManager, IReadOnlyList<string> userIds)
+        {
+            _lifetimeManager = lifetimeManager;
+            _userIds = userIds;
+        }
+
+        public Task InvokeAsync(string method, params object[] args)
+        {
+            return _lifetimeManager.InvokeUsersAsync(_userIds, method, args);
+        }
+    }
+
     public class GroupProxy<THub> : IClientProxy
     {
         private readonly string _groupName;

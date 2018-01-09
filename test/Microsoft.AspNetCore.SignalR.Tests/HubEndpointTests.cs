@@ -956,8 +956,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var secondAndThirdClients = new HashSet<string> {secondClient.Connection.ConnectionId,
                     thirdClient.Connection.ConnectionId };
 
-                secondAndThirdClients.Add(secondClient.Connection.ConnectionId);
-
                 await firstClient.SendInvocationAsync("SendToMultipleClients", "Second and Third", secondAndThirdClients).OrTimeout();
 
                 var secondClientResult = await secondClient.ReadAsync().OrTimeout();
@@ -972,6 +970,51 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 // Check that first client only got the completion message
                 var hubMessage= await firstClient.ReadAsync().OrTimeout();
+                Assert.IsType<CompletionMessage>(hubMessage);
+                Assert.Null(firstClient.TryRead());
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+                thirdClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask, thirdEndPointTask).OrTimeout();
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubTypes))]
+        public async Task SendToMultipleUsers(Type hubType)
+        {
+            dynamic endPoint = HubEndPointTestUtils.GetHubEndpoint(hubType);
+
+            using (var firstClient = new TestClient(addClaimId: true))
+            using (var secondClient = new TestClient(addClaimId: true))
+            using (var thirdClient = new TestClient(addClaimId: true))
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+                Task thirdEndPointTask = endPoint.OnConnectedAsync(thirdClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected, thirdClient.Connected).OrTimeout();
+
+                var secondAndThirdClients = new HashSet<string> {secondClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value,
+                    thirdClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value };
+
+                await firstClient.SendInvocationAsync(nameof(MethodHub.SendToMultipleUsers), secondAndThirdClients, "Second and Third").OrTimeout();
+
+                var secondClientResult = await secondClient.ReadAsync().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(secondClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("Second and Third", invocation.Arguments[0]);
+
+                var thirdClientResult = await thirdClient.ReadAsync().OrTimeout();
+                invocation = Assert.IsType<InvocationMessage>(thirdClientResult);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal("Second and Third", invocation.Arguments[0]);
+
+                // Check that first client only got the completion message
+                var hubMessage = await firstClient.ReadAsync().OrTimeout();
                 Assert.IsType<CompletionMessage>(hubMessage);
                 Assert.Null(firstClient.TryRead());
 

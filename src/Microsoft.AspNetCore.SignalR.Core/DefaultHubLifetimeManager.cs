@@ -208,5 +208,13 @@ namespace Microsoft.AspNetCore.SignalR
                 return connectionIds.Contains(connection.ConnectionId);
             });
         }
+
+        public override Task InvokeUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
+        {
+            return InvokeAllWhere(methodName, args, connection =>
+            {
+                return userIds.Contains(connection.UserIdentifier);
+            });
+        }
     }
 }

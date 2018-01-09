@@ -186,5 +186,10 @@ namespace ChatSample
         {
             return _wrappedHubLifetimeManager.InvokeGroupExceptAsync(groupName, methodName, args, excludedIds);
         }
+
+        public override Task InvokeUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
+        {
+            return _wrappedHubLifetimeManager.InvokeUsersAsync(userIds, methodName, args);
+        }
     }
 }

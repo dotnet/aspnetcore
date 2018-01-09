@@ -1,9 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -52,6 +50,11 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual T User(string userId)
         {
             return TypedClientBuilder<T>.Build(new UserProxy<THub>(_lifetimeManager, userId));
+        }
+
+        public virtual T Users(IReadOnlyList<string> userIds)
+        {
+            return TypedClientBuilder<T>.Build(new MultipleUserProxy<THub>(_lifetimeManager, userIds));
         }
     }
 }

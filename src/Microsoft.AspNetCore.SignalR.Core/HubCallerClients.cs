@@ -63,5 +63,10 @@ namespace Microsoft.AspNetCore.SignalR
         {
             return _hubClients.Clients(connectionIds);
         }
+
+        public IClientProxy Users(IReadOnlyList<string> userIds)
+        {
+            return _hubClients.Users(userIds);
+        }
     }
 }

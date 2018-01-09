@@ -25,5 +25,6 @@ namespace Microsoft.AspNetCore.SignalR
         public dynamic OthersInGroup(string groupName) => new DynamicClientProxy(_clients.OthersInGroup(groupName));
         public dynamic Others => new DynamicClientProxy(_clients.Others);
         public dynamic User(string userId) => new DynamicClientProxy(_clients.User(userId));
+        public dynamic Users(IReadOnlyList<string> users) => new DynamicClientProxy(_clients.Users(users));
     }
 }

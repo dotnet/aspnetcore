@@ -22,6 +22,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return Clients.User(userId).InvokeAsync("Send", message);
         }
 
+        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        {
+            return Clients.Users(userIds).InvokeAsync("Send", message);
+        }
+
         public Task ConnectionSendMethod(string connectionId, string message)
         {
             return Clients.Client(connectionId).InvokeAsync("Send", message);
@@ -181,6 +186,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return Clients.User(userId).Send(message);
         }
 
+        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        {
+            return Clients.Users(userIds).Send(message);
+        }
+
         public Task ConnectionSendMethod(string connectionId, string message)
         {
             return Clients.Client(connectionId).Send(message);
@@ -254,6 +264,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
         public Task ClientSendMethod(string userId, string message)
         {
             return Clients.User(userId).Send(message);
+        }
+
+        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        {
+            return Clients.Users(userIds).Send(message);
         }
 
         public Task ConnectionSendMethod(string connectionId, string message)
