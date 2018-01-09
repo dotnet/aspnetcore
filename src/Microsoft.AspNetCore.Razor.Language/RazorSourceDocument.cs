@@ -183,13 +183,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (string.IsNullOrEmpty(filePath))
             {
                 // Fall back to the relative path only if necessary.
+                filePath = projectItem.RelativePhysicalPath;
+            }
+
+            if (string.IsNullOrEmpty(filePath))
+            {
+                // Then fall back to the FilePath (yeah it's a bad name) which is like an MVC view engine path
+                // It's much better to have something than nothing.
                 filePath = projectItem.FilePath;
             }
 
             using (var stream = projectItem.Read())
             {
                 // Autodetect the encoding.
-                return new StreamSourceDocument(stream, null, new RazorSourceDocumentProperties(filePath, projectItem.FilePath));
+                return new StreamSourceDocument(stream, null, new RazorSourceDocumentProperties(filePath, projectItem.RelativePhysicalPath));
             }
         }
 

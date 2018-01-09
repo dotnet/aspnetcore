@@ -11,10 +11,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         public TestRazorProjectItem(
             string filePath, 
             string physicalPath = null,
+            string relativePhysicalPath = null,
             string basePath = "/")
         {
             FilePath = filePath;
             PhysicalPath = physicalPath;
+            RelativePhysicalPath = relativePhysicalPath;
             BasePath = basePath;
         }
 
@@ -23,6 +25,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override string FilePath { get; }
 
         public override string PhysicalPath { get; }
+
+        public override string RelativePhysicalPath { get; }
 
         public override bool Exists => true;
 

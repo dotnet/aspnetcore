@@ -310,5 +310,51 @@ namespace Microsoft.AspNetCore.Razor.Language
             var paths = imports.Select(i => i.FilePath);
             Assert.Equal(expected, paths);
         }
+
+        [Fact]
+        public void CreateCodeDocument_WithFileSystemProject_ReturnsCorrectItems()
+        {
+            // Arrange
+            var testFolder = Path.Combine(
+                TestProject.GetProjectDirectory(typeof(FileSystemRazorProjectTest)),
+                "TestFiles",
+                "FileSystemRazorProject");
+
+            var project = new FileSystemRazorProject(testFolder);
+            var razorEngine = RazorEngine.Create();
+            var templateEngine = new RazorTemplateEngine(razorEngine, project)
+            {
+                Options =
+                {
+                    ImportsFileName = "_ViewImports.cshtml"
+                }
+            };
+
+            // Act
+            var codeDocument = templateEngine.CreateCodeDocument("/Views/Home/Index.cshtml");
+
+            // Assert
+            Assert.Collection(
+                codeDocument.Imports,
+                item =>
+                {
+                    Assert.Equal(Path.Combine(testFolder, "_ViewImports.cshtml"), item.FilePath);
+                    Assert.Equal("_ViewImports.cshtml", item.RelativePath);
+
+                },
+                item =>
+                {
+                    Assert.Equal(Path.Combine(testFolder, "Views", "_ViewImports.cshtml"), item.FilePath);
+                    Assert.Equal(Path.Combine("Views", "_ViewImports.cshtml"), item.RelativePath);
+
+                },
+                item =>
+                {
+                    Assert.Equal(Path.Combine(testFolder, "Views", "Home", "_ViewImports.cshtml"), item.FilePath);
+                    Assert.Equal(Path.Combine("Views", "Home", "_ViewImports.cshtml"), item.RelativePath);
+
+                });
+        }
+
     }
 }

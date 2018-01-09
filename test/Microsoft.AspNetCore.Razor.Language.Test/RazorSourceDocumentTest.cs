@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void ReadFrom_ProjectItem()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("filePath.cshtml", "c:\\myapp\\filePath.cshtml", "c:\\myapp\\");
+            var projectItem = new TestRazorProjectItem("filePath.cshtml", "c:\\myapp\\filePath.cshtml", "filePath.cshtml", "c:\\myapp\\");
 
             // Act
             var document = RazorSourceDocument.ReadFrom(projectItem);
@@ -79,6 +79,51 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Equal("c:\\myapp\\filePath.cshtml", document.FilePath);
             Assert.Equal("filePath.cshtml", document.RelativePath);
+            Assert.Equal(projectItem.Content, ReadContent(document));
+        }
+
+        [Fact]
+        public void ReadFrom_ProjectItem_NoRelativePath()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("filePath.cshtml", "c:\\myapp\\filePath.cshtml", basePath: "c:\\myapp\\");
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(projectItem);
+
+            // Assert
+            Assert.Equal("c:\\myapp\\filePath.cshtml", document.FilePath);
+            Assert.Null(document.RelativePath);
+            Assert.Equal(projectItem.Content, ReadContent(document));
+        }
+
+        [Fact]
+        public void ReadFrom_ProjectItem_FallbackToRelativePath()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("filePath.cshtml", relativePhysicalPath: "filePath.cshtml", basePath: "c:\\myapp\\");
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(projectItem);
+
+            // Assert
+            Assert.Equal("filePath.cshtml", document.FilePath);
+            Assert.Equal("filePath.cshtml", document.RelativePath);
+            Assert.Equal(projectItem.Content, ReadContent(document));
+        }
+
+        [Fact]
+        public void ReadFrom_ProjectItem_FallbackToFileName()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("filePath.cshtml", basePath: "c:\\myapp\\");
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(projectItem);
+
+            // Assert
+            Assert.Equal("filePath.cshtml", document.FilePath);
+            Assert.Null(document.RelativePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 

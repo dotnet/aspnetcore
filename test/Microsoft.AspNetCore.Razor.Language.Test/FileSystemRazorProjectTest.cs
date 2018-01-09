@@ -76,7 +76,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             var items = fileSystemProject.EnumerateItems("/");
 
             // Assert
-            Assert.Collection(items.OrderBy(f => f.FilePath),
+            Assert.Collection(
+                items.OrderBy(f => f.FilePath),
+                item =>
+                {
+                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal("_ViewImports.cshtml", item.RelativePhysicalPath);
+
+                },
                 item =>
                 {
                     Assert.Equal("/Home.cshtml", item.FilePath);
@@ -87,10 +96,26 @@ namespace Microsoft.AspNetCore.Razor.Language
                 },
                 item =>
                 {
+                    Assert.Equal("/Views/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+
+                },
+                item =>
+                {
                     Assert.Equal("/Views/About/About.cshtml", item.FilePath);
                     Assert.Equal("/", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
                     Assert.Equal(Path.Combine("Views", "About", "About.cshtml"), item.RelativePhysicalPath);
+                },
+                item =>
+                {
+                    Assert.Equal("/Views/Home/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "Home", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+
                 },
                 item =>
                 {
@@ -111,13 +136,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             var items = fileSystemProject.EnumerateItems("/Views");
 
             // Assert
-            Assert.Collection(items.OrderBy(f => f.FilePath),
+            Assert.Collection(
+                items.OrderBy(f => f.FilePath),
+                item =>
+                {
+                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/Views", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine( "_ViewImports.cshtml"), item.RelativePhysicalPath);
+                },
                 item =>
                 {
                     Assert.Equal("/About/About.cshtml", item.FilePath);
                     Assert.Equal("/Views", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Views", "About", "About.cshtml"), item.PhysicalPath);
                     Assert.Equal(Path.Combine("About", "About.cshtml"), item.RelativePhysicalPath);
+                },
+                item =>
+                {
+                    Assert.Equal("/Home/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/Views", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Home", "_ViewImports.cshtml"), item.RelativePhysicalPath);
                 },
                 item =>
                 {
@@ -139,6 +179,44 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Empty(items);
+        }
+
+        [Fact]
+        public void FindHierarchicalItems_FindsItemsWithMatchingNames()
+        {
+            // Arrange
+            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+
+            // Act
+            var items = fileSystemProject.FindHierarchicalItems("/Views/Home/Index.cshtml", "_ViewImports.cshtml");
+
+            // Assert
+            Assert.Collection(
+                items,
+                item =>
+                {
+                    Assert.Equal("/Views/Home/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "Home", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "Home", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+
+                },
+                item =>
+                {
+                    Assert.Equal("/Views/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal(Path.Combine("Views", "_ViewImports.cshtml"), item.RelativePhysicalPath);
+
+                },
+                item =>
+                {
+                    Assert.Equal("/_ViewImports.cshtml", item.FilePath);
+                    Assert.Equal("/", item.BasePath);
+                    Assert.Equal(Path.Combine(TestFolder, "_ViewImports.cshtml"), item.PhysicalPath);
+                    Assert.Equal("_ViewImports.cshtml", item.RelativePhysicalPath);
+
+                });
         }
 
         [Fact]
