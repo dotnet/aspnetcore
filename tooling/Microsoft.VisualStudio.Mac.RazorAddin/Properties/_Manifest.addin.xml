@@ -10,8 +10,8 @@
     <Import assembly="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />
   </Runtime>
   <Dependencies>
-    <Addin id="::MonoDevelop.Core" version="7.4" />
-    <Addin id="::MonoDevelop.Ide" version="7.4" />
+    <Addin id="::MonoDevelop.Core" version="7.5" />
+    <Addin id="::MonoDevelop.Ide" version="7.5" />
   </Dependencies>
   
   <!-- MEF catalog -->

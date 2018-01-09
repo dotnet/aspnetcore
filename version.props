@@ -11,7 +11,13 @@
     <AddinBuildNumber Condition="'$(AddinBuildNumber)' == ''">$(BuildNumber)</AddinBuildNumber>
     
     <!-- Properties for VS for Mac addin -->
-    <VSForMacVersion>7.0</VSForMacVersion>
+
+    <!--
+      When changing the VSForMacVersion you must also update the following locations:
+      1. tooling/Microsoft.VisualStudio.Mac.RazorAddin/RazorAddin.cs Version property
+      2. MonoDevelop.Core and MonoDevelop.Ide version properties in tooling\Microsoft.VisualStudio.Mac.RazorAddin\Properties\_Manifest.addin.xml
+    -->
+    <VSForMacVersion>7.5.0</VSForMacVersion>
     <AddinVersion>$(VSForMacVersion).$(AddinBuildNumber)</AddinVersion>
   </PropertyGroup>
 </Project>
