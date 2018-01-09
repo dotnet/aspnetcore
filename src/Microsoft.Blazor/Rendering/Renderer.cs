@@ -4,8 +4,6 @@
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.RenderTree;
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Microsoft.Blazor.Rendering
 {
@@ -21,14 +19,7 @@ namespace Microsoft.Blazor.Rendering
         // these reference descendant components and associated ComponentState instances.
         private readonly WeakValueDictionary<int, ComponentState> _componentStateById
             = new WeakValueDictionary<int, ComponentState>();
-        private readonly ConditionalWeakTable<IComponent, ComponentState> _componentStateByComponent
-            = new ConditionalWeakTable<IComponent, ComponentState>();
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
-
-        // Ensure that explictly-added components (and transitively, their current descendants)
-        // aren't GCed. If we don't do this then the display layer (e.g., browser) might send
-        // us events for component IDs where the corresponding state has already been collected.
-        private readonly IList<IComponent> _topLevelComponents = new List<IComponent>();
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -38,17 +29,11 @@ namespace Microsoft.Blazor.Rendering
         /// <returns>The assigned identifier for the <see cref="IComponent"/>.</returns>
         protected internal int AssignComponentId(IComponent component)
         {
-            lock (_componentStateByComponent)
+            lock (_componentStateById)
             {
-                if (_componentStateByComponent.TryGetValue(component, out _))
-                {
-                    throw new ArgumentException("The component was already associated with the renderer.");
-                }
-
                 var componentId = _nextComponentId++;
                 var componentState = new ComponentState(this, componentId, component);
                 _componentStateById.Add(componentId, componentState);
-                _componentStateByComponent.Add(component, componentState);
                 return componentId;
             }
         }
@@ -60,13 +45,6 @@ namespace Microsoft.Blazor.Rendering
         /// <param name="componentId">The identifier for the updated <see cref="IComponent"/>.</param>
         /// <param name="renderTree">The updated render tree to be displayed.</param>
         internal protected abstract void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree);
-
-        /// <summary>
-        /// Updates the rendered state of the specified <see cref="IComponent"/>.
-        /// </summary>
-        /// <param name="component">The <see cref="IComponent"/>.</param>
-        protected void RenderComponent(IComponent component)
-            => GetRequiredComponentState(component).Render();
 
         /// <summary>
         /// Updates the rendered state of the specified <see cref="IComponent"/>.
@@ -88,10 +66,5 @@ namespace Microsoft.Blazor.Rendering
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
-
-        private ComponentState GetRequiredComponentState(IComponent component)
-            => _componentStateByComponent.TryGetValue(component, out var componentState)
-                ? componentState
-                : throw new ArgumentException("The component is not associated with the renderer.");
     }
 }

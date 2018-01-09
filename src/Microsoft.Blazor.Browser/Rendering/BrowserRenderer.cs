@@ -50,7 +50,7 @@ namespace Microsoft.Blazor.Browser.Rendering
                 componentId);
             _rootComponents.Add(component);
 
-            RenderComponent(component);
+            RenderComponent(componentId);
         }
 
         /// <inheritdoc />
