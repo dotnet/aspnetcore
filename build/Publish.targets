@@ -32,29 +32,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetFilesToPublish">
-    <ItemGroup>
-      <!--
-      PublishToAzure that is defined in BuildTools looks for itemgroups named PackagesToPublish and FilesToPublish to publish to MyGet.
-      Ensure that this only contains artifacts we produce (and not mirrored dependencies) since that would result in conflicts.
-      -->
-      <_SharedFxFilesToPublish Include="$(SharedFxOutputPath)*" />
-    </ItemGroup>
-  </Target>
-
-  <!-- For orchestrated build -->
-  <Target Name="GetAzureFilesToPublish"
-    BeforeTargets="PublishToAzure"
-    DependsOnTargets="GetPackagesToPublish;GetFilesToPublish"
-    Condition="'$(PublishToAzureBlob)' == 'true'">
-
-    <ItemGroup>
-      <FilesToPublish Include="@(_SharedFxFilesToPublish)" RelativeBlobPath="$(BlobFileRelativePathBase)Runtime/$(PackageVersion)/%(_SharedFxFilesToPublish.FileName)%(_SharedFxFilesToPublish.Extension)" />
-    </ItemGroup>
-
-    <Message Text="Publishing %(FilesToPublish.Identity)" Importance="High" />
-  </Target>
-
   <Target Name="PushNuGetPackages" DependsOnTargets="GetPackagesToPublish" Condition="'$(PublishToMyget)' == 'true'">
     <Error Text="Cannot publish unsigned files to MyGet. Set SignType to 'real' to ensuring files are signed first."
       Condition=" '$(SignType)' != 'real'" />
