@@ -33,7 +33,7 @@ namespace RazorWebSite
                         $"{nameof(RazorWebSite)}.EmbeddedResources"));
                     options.FileProviders.Add(updateableFileProvider);
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
-                    options.ViewLocationExpanders.Add(new ForwardSlashExpander());
+                    options.ViewLocationExpanders.Add(new BackSlashExpander());
                 })
                 .AddViewOptions(options =>
                 {
