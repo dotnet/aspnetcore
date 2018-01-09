@@ -54,13 +54,23 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [linux-x64-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-linux-x64-version-badge.svg
 [osx-x64-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-osx-x64-version-badge.svg
 
+[win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-rhel.7-x64.rpm
 
-Platform        | Latest (dev branch)
-----------------|---------------------
-Windows (x64)   | ![][win-x64-badge]
-Windows (x86)   | ![][win-x86-badge]
-Linux (x64)     | ![][linux-x64-badge]
-macOS (x64)     | ![][osx-x64-badge]
+Platform              | Latest (dev branch)
+----------------------|---------------------
+Windows (x64)         | ![][win-x64-badge]<br>[Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]
+Windows (x86)         | ![][win-x86-badge]<br>[Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]
+macOS (x64)           | ![][osx-x64-badge]<br>[Archive (tar.gz)][osx-x64-tar]
+Linux (x64)           | ![][linux-x64-badge]<br>[Archive (tar.gz)][linux-x64-tar]
+Debian/Ubuntu (x64)   | ![][linux-x64-badge]<br>[Installer (deb)][debian-x64-deb]
+RedHat/Fedora (x64)   | ![][linux-x64-badge]<br>[Installer (rpm)][debian-x64-deb]
 
 ## Building from source
 

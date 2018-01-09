@@ -53,7 +53,7 @@
 
     <ItemGroup>
       <!-- symbols -->
-      <FilesToPublish Include="$(DependencyAssetsDir)-$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)" Condition=" '%(RuntimeSymbolsArchive.Identity)' != '' ">
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)" Condition=" '%(RuntimeSymbolsArchive.Identity)' != '' ">
         <RelativeBlobPath>$(BlobBasePath)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)</RelativeBlobPath>
       </FilesToPublish>
 
