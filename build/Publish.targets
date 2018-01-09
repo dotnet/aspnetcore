@@ -14,7 +14,7 @@
       GetFilesToPublish;
       CopyToPublishArtifacts;
       PublishToAzureFeed;
-      PublisthToTransportFeed;
+      PublishToTransportFeed;
       $(PublishDependsOn);
     </PublishDependsOn>
 
