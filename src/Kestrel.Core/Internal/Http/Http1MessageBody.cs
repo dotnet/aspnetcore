@@ -230,6 +230,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
             }
 
+            if (upgrade)
+            {
+                if (headers.HeaderTransferEncoding.Count > 0 || (headers.ContentLength.HasValue && headers.ContentLength.Value != 0))
+                {
+                    context.ThrowRequestRejected(RequestRejectionReason.UpgradeRequestCannotHavePayload);
+                }
+
+                return new ForUpgrade(context);
+            }
+
             var transferEncoding = headers.HeaderTransferEncoding;
             if (transferEncoding.Count > 0)
             {
@@ -246,11 +256,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     context.ThrowRequestRejected(RequestRejectionReason.FinalTransferCodingNotChunked, transferEncoding.ToString());
                 }
 
-                if (upgrade)
-                {
-                    context.ThrowRequestRejected(RequestRejectionReason.UpgradeRequestCannotHavePayload);
-                }
-
                 return new ForChunkedEncoding(keepAlive, context);
             }
 
@@ -261,10 +266,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (contentLength == 0)
                 {
                     return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
-                }
-                else if (upgrade)
-                {
-                    context.ThrowRequestRejected(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
                 return new ForContentLength(keepAlive, contentLength, context);
@@ -280,11 +281,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     var requestRejectionReason = httpVersion == HttpVersion.Http11 ? RequestRejectionReason.LengthRequired : RequestRejectionReason.LengthRequiredHttp10;
                     context.ThrowRequestRejected(requestRejectionReason, context.Method);
                 }
-            }
-
-            if (upgrade)
-            {
-                return new ForUpgrade(context);
             }
 
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;

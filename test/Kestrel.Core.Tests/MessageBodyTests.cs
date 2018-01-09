@@ -504,6 +504,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task UpgradeConnectionAcceptsContentLengthZero()
+        {
+            // https://tools.ietf.org/html/rfc7230#section-3.3.2
+            // "A user agent SHOULD NOT send a Content-Length header field when the request message does not contain
+            // a payload body and the method semantics do not anticipate such a body."
+            //  ==> it can actually send that header
+            var headerConnection = "Upgrade, Keep-Alive";
+            using (var input = new TestInput())
+            {
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection, ContentLength = 0 }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                stream.StartAcceptingReads(body);
+
+                input.Add("Hello");
+
+                var buffer = new byte[1024];
+                Assert.Equal(5, await stream.ReadAsync(buffer, 0, buffer.Length));
+                AssertASCII("Hello", new ArraySegment<byte>(buffer, 0, 5));
+
+                input.Fin();
+
+                await body.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task PumpAsyncDoesNotReturnAfterCancelingInput()
         {
             using (var input = new TestInput())
