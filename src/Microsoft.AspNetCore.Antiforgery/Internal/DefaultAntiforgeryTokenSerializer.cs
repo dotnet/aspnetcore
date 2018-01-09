@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }
 
             // if we reached this point, something went wrong deserializing
-            throw new InvalidOperationException(Resources.AntiforgeryToken_DeserializationFailed, innerException);
+            throw new AntiforgeryValidationException(Resources.AntiforgeryToken_DeserializationFailed, innerException);
         }
 
         /* The serialized format of the anti-XSRF token is as follows:

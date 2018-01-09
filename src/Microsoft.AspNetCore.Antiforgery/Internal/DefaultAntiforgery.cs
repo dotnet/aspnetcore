@@ -124,7 +124,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Extract cookie & request tokens
             AntiforgeryToken deserializedCookieToken;
             AntiforgeryToken deserializedRequestToken;
-            DeserializeTokens(httpContext, tokens, out deserializedCookieToken, out deserializedRequestToken);
+            if (!TryDeserializeTokens(httpContext, tokens, out deserializedCookieToken, out deserializedRequestToken))
+            {
+                return false;
+            }
 
             // Validate
             string message;
@@ -197,6 +200,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Extract cookie & request tokens
             AntiforgeryToken deserializedCookieToken;
             AntiforgeryToken deserializedRequestToken;
+
             DeserializeTokens(
                 httpContext,
                 antiforgeryTokenSet,
@@ -428,6 +432,27 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 antiforgeryFeature.NewCookieTokenString,
                 _options.FormFieldName,
                 _options.HeaderName);
+        }
+
+        private bool TryDeserializeTokens(
+            HttpContext httpContext,
+            AntiforgeryTokenSet antiforgeryTokenSet,
+            out AntiforgeryToken cookieToken,
+            out AntiforgeryToken requestToken)
+        {
+            try
+            {
+                DeserializeTokens(httpContext, antiforgeryTokenSet, out cookieToken, out requestToken);
+                return true;
+            }
+            catch (AntiforgeryValidationException ex)
+            {
+                _logger.FailedToDeserialzeTokens(ex);
+
+                cookieToken = null;
+                requestToken = null;
+                return false;
+            }
         }
 
         private void DeserializeTokens(
