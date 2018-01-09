@@ -11,7 +11,8 @@
   </Target>
 
   <PropertyGroup Condition="'$(RazorCompileOnBuild)'=='true'">
-    <PrepareForRunDependsOn>RazorCompile;$(PrepareForRunDependsOn)</PrepareForRunDependsOn>
+    <PrepareForRunDependsOn>RazorCompile;$(PrepareForRunDependsOn);_RazorCopyFilesToOutputDirectory</PrepareForRunDependsOn>
+    <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);_RazorGetCopyToOutputDirectoryItems</GetCopyToOutputDirectoryItemsDependsOn>
   </PropertyGroup>
 
   <!-- 
@@ -141,7 +142,26 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_RazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
+  <Target Name="_RazorAddBuiltProjectOutputGroupOutput" Condition="'$(RazorCompileOnBuild)' == 'true'" BeforeTargets="BuiltProjectOutputGroup">
+    <ItemGroup>
+      <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(Outdir)$(RazorTargetName).dll" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RazorGetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+      <AllItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RazorCopyFilesToOutputDirectory">
 
     <!-- Copy the Razor dll  -->
     <Copy
@@ -166,8 +186,8 @@
 
     <!-- Copy the Razor debug information file (.pdb), if any -->
     <Copy
-      SourceFiles="$(_RazorDebugSymbolsIntermediatePath)"
-      DestinationFiles="@(_DebugSymbolsOutputPath)"
+      SourceFiles="@(_RazorDebugSymbolsIntermediatePath)"
+      DestinationFiles="@(_RazorDebugSymbolsOutputPath)"
       SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"

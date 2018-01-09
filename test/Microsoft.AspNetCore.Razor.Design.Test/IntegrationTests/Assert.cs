@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -153,6 +154,62 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        public static void NuspecContains(MSBuildResult result, string nuspecPath, string expected)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (nuspecPath == null)
+            {
+                throw new ArgumentNullException(nameof(nuspecPath));
+            }
+
+            if (expected == null)
+            {
+                throw new ArgumentNullException(nameof(expected));
+            }
+
+            nuspecPath = Path.Combine(result.Project.DirectoryPath, nuspecPath);
+            FileExists(result, nuspecPath);
+
+            var content = File.ReadAllText(nuspecPath);
+            if (!content.Contains(expected))
+            {
+                throw new NuspecException(result, nuspecPath, content, expected);
+            }
+        }
+
+        public static void NupkgContains(MSBuildResult result, string nupkgPath, string filePath)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (nupkgPath == null)
+            {
+                throw new ArgumentNullException(nameof(nupkgPath));
+            }
+
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            nupkgPath = Path.Combine(result.Project.DirectoryPath, nupkgPath);
+            FileExists(result, nupkgPath);
+
+            var unzipped = Path.Combine(result.Project.DirectoryPath, "nupkg");
+            ZipFile.ExtractToDirectory(nupkgPath, unzipped);
+
+            if (!File.Exists(Path.Combine(unzipped, filePath)))
+            {
+                throw new NupkgFileMissingException(result, nupkgPath, filePath);
+            }
+        }
+
         private abstract class MSBuildXunitException : Xunit.Sdk.XunitException
         {
             protected MSBuildXunitException(MSBuildResult result)
@@ -296,6 +353,52 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             public string FilePath { get; }
 
             protected override string Heading => $"File: '{FilePath}' was found, but should not exist.";
+        }
+
+        private class NuspecException : MSBuildXunitException
+        {
+            public NuspecException(MSBuildResult result, string filePath, string content, string expected)
+                : base(result)
+            {
+                FilePath = filePath;
+                Content = content;
+                Expected = expected;
+            }
+
+            public string Content { get; }
+
+            public string Expected { get; }
+
+            public string FilePath { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    return 
+                        $"nuspec: '{FilePath}' did not contain the expected content." + Environment.NewLine +
+                        Environment.NewLine +
+                        $"expected: {Expected}" + Environment.NewLine +
+                        Environment.NewLine +
+                        $"actual: {Content}";
+                }
+            }
+        }
+
+        private class NupkgFileMissingException : MSBuildXunitException
+        {
+            public NupkgFileMissingException(MSBuildResult result, string nupkgPath, string filePath)
+                : base(result)
+            {
+                NupkgPath = nupkgPath;
+                FilePath = filePath;
+            }
+
+            public string FilePath { get; }
+
+            public string NupkgPath { get; }
+
+            protected override string Heading => $"File: '{FilePath}' was not found was not found in {NupkgPath}.";
         }
     }
 }

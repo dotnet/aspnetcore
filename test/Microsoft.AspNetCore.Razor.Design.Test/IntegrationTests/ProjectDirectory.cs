@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public bool PreserveWorkingDirectory { get; set; }
 #endif
 
-        public static ProjectDirectory Create(string projectName)
+        public static ProjectDirectory Create(string projectName, string[] additionalProjects)
         {
             var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
@@ -38,21 +38,26 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new InvalidOperationException("Could not find solution root.");
                 }
 
-                var projectRoot = Path.Combine(solutionRoot, "test", "testapps", projectName);
-                if (!Directory.Exists(projectRoot))
-                {
-                    throw new InvalidOperationException($"Could not find project at '{projectRoot}'");
-                }
-
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
 
-                CopyDirectory(new DirectoryInfo(projectRoot), new DirectoryInfo(destinationPath));
+                foreach (var project in new string[] { projectName, }.Concat(additionalProjects))
+                {
+                    var projectRoot = Path.Combine(solutionRoot, "test", "testapps", project);
+                    if (!Directory.Exists(projectRoot))
+                    {
+                        throw new InvalidOperationException($"Could not find project at '{projectRoot}'");
+                    }
 
-                CreateDirectoryProps(projectRoot, binariesRoot, destinationPath);
-                CreateDirectoryTargets(destinationPath);
+                    var projectDestination = Path.Combine(destinationPath, project);
+                    Directory.CreateDirectory(projectDestination);
+                    CopyDirectory(new DirectoryInfo(projectRoot), new DirectoryInfo(projectDestination));
+                    CreateDirectoryProps(projectRoot, binariesRoot, destinationPath);
+                    CreateDirectoryTargets(destinationPath);
+                }
+                
                 CopyGlobalJson(solutionRoot, destinationPath);
 
-                return new ProjectDirectory(destinationPath);
+                return new ProjectDirectory(destinationPath, Path.Combine(destinationPath, projectName));
             }
             catch
             {
@@ -127,22 +132,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        private ProjectDirectory(string directoryPath)
+        private ProjectDirectory(string solutionPath, string directoryPath)
         {
+            SolutionPath = solutionPath;
             DirectoryPath = directoryPath;
         }
 
         public string DirectoryPath { get; }
 
+        public string SolutionPath { get; }
+
         public void Dispose()
         {
             if (PreserveWorkingDirectory)
             {
-                Console.WriteLine($"Skipping deletion of working directory {DirectoryPath}");
+                Console.WriteLine($"Skipping deletion of working directory {SolutionPath}");
             }
             else
             {
-                CleanupDirectory(DirectoryPath);
+                CleanupDirectory(SolutionPath);
             }
         }
 

@@ -7,6 +7,7 @@
     <_RazorDebugSymbolsIntermediatePath 
       Condition="'$(DebugSymbols)'=='true' and '$(DebugType)'!='' and '$(DebugType)'!='none' and '$(DebugType)'!='embedded'" 
       Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
+    <_RazorDebugSymbolsOutputPath Include="@(_RazorDebugSymbolsIntermediatePath->'$(OutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
 
   <!--

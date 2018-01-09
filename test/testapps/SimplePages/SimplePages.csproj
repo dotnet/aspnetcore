@@ -4,9 +4,9 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">
-    <!-- In test scenarios $(OriginalProjectRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="$(OriginalProjectRoot)\..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj"/>
-    <ProjectReference Include="$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'!=''">
