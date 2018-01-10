@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using MsgPack;
 using MsgPack.Serialization;
@@ -969,7 +970,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal("Second and Third", invocation.Arguments[0]);
 
                 // Check that first client only got the completion message
-                var hubMessage= await firstClient.ReadAsync().OrTimeout();
+                var hubMessage = await firstClient.ReadAsync().OrTimeout();
                 Assert.IsType<CompletionMessage>(hubMessage);
                 Assert.Null(firstClient.TryRead());
 
@@ -1338,7 +1339,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
 
-                await client.Connected.OrTimeout();
+                // Wait for a connection, or for the endpoint to fail.
+                await client.Connected.OrThrowIfOtherFails(endPointLifetime).OrTimeout();
 
                 var messages = await client.StreamAsync(method, 4).OrTimeout();
 
@@ -1470,13 +1472,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
-                services.AddSignalR(o =>
-                {
-                    o.JsonSerializerSettings = new JsonSerializerSettings
+                services
+                    .AddSignalR()
+                    .AddJsonProtocol(o =>
                     {
-                        ContractResolver = new DefaultContractResolver()
-                    };
-                });
+                        o.PayloadSerializerSettings = new JsonSerializerSettings
+                        {
+                            ContractResolver = new DefaultContractResolver()
+                        };
+                    });
             });
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
@@ -1532,20 +1536,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task HubOptionsCanUseCustomMessagePackSettings()
         {
-            var serializationContext = MessagePackHubProtocol.CreateDefaultSerializationContext();
-            serializationContext.SerializationMethod = SerializationMethod.Array;
-
             var serviceProvider = HubEndPointTestUtils.CreateServiceProvider(services =>
             {
-                services.AddSignalR(options =>
-                {
-                    options.MessagePackSerializationContext = serializationContext;
-                });
+                services.AddSignalR()
+                    .AddMessagePackProtocol(options =>
+                    {
+                        options.SerializationContext.SerializationMethod = SerializationMethod.Array;
+                    });
             });
 
             var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
 
-            using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(serializationContext)))
+            var msgPackOptions = serviceProvider.GetRequiredService<IOptions<MessagePackHubProtocolOptions>>();
+            using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(msgPackOptions)))
             {
                 var transportFeature = new Mock<IConnectionTransportFeature>();
                 transportFeature.SetupGet(f => f.TransportCapabilities).Returns(TransferMode.Binary);
@@ -1633,7 +1636,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
 
-                await client.Connected.OrTimeout();
+                await client.Connected.OrThrowIfOtherFails(endPointLifetime).OrTimeout();
 
                 await client.SendInvocationAsync(nameof(MethodHub.SendAnonymousObject)).OrTimeout();
 

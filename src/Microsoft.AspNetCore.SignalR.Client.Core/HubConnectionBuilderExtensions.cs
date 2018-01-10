@@ -1,11 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
-using MsgPack.Serialization;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -22,29 +21,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
         }
 
-        public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder, JsonSerializerSettings serializerSettings)
+        public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder, JsonHubProtocolOptions options)
         {
-            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(JsonSerializer.Create(serializerSettings)));
-        }
-
-        public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder, JsonSerializer jsonSerializer)
-        {
-            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(jsonSerializer));
-        }
-
-        public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder)
-        {
-            return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
-        }
-
-        public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder, SerializationContext serializationContext)
-        {
-            if (serializationContext == null)
-            {
-                throw new ArgumentNullException(nameof(serializationContext));
-            }
-
-            return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol(serializationContext));
+            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(Options.Create(options)));
         }
 
         public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)

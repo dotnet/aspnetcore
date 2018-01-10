@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task StreamCompletesWhenCompletionMessageIsReceived()
         {
             var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
             try
             {
                 await hubConnection.StartAsync();

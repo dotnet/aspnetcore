@@ -12,7 +12,6 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Core;
-using Microsoft.AspNetCore.SignalR.Core.Internal;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;

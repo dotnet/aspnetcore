@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
@@ -23,35 +24,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const string ArgumentsPropertyName = "arguments";
         private const string PayloadPropertyName = "payload";
 
+        public static readonly string ProtocolName = "json";
+
         // ONLY to be used for application payloads (args, return values, etc.)
-        private JsonSerializer _payloadSerializer;
+        public JsonSerializer PayloadSerializer { get; }
 
-        /// <summary>
-        /// Creates an instance of the <see cref="JsonHubProtocol"/> using the default <see cref="JsonSerializer"/>
-        /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
-        /// NOT be changed using this serializer.
-        /// </summary>
-        public JsonHubProtocol()
-            : this(JsonSerializer.Create(CreateDefaultSerializerSettings()))
-        { }
-
-        /// <summary>
-        /// Creates an instance of the <see cref="JsonHubProtocol"/> using the specified <see cref="JsonSerializer"/>
-        /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
-        /// NOT be changed using this serializer.
-        /// </summary>
-        /// <param name="payloadSerializer">The <see cref="JsonSerializer"/> to use to serialize application payloads (arguments, results, etc.).</param>
-        public JsonHubProtocol(JsonSerializer payloadSerializer)
+        public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
         {
-            if (payloadSerializer == null)
-            {
-                throw new ArgumentNullException(nameof(payloadSerializer));
-            }
-
-            _payloadSerializer = payloadSerializer;
         }
 
-        public string Name => "json";
+        public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        {
+            PayloadSerializer = JsonSerializer.Create(options.Value.PayloadSerializerSettings);
+        }
+
+        public string Name => ProtocolName;
 
         public ProtocolType Type => ProtocolType.Text;
 
@@ -167,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             else if (message.HasResult)
             {
                 writer.WritePropertyName(ResultPropertyName);
-                _payloadSerializer.Serialize(writer, message.Result);
+                PayloadSerializer.Serialize(writer, message.Result);
             }
             writer.WriteEndObject();
         }
@@ -184,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             writer.WriteStartObject();
             WriteHubInvocationMessageCommon(message, writer, HubProtocolConstants.StreamItemMessageType);
             writer.WritePropertyName(ItemPropertyName);
-            _payloadSerializer.Serialize(writer, message.Item);
+            PayloadSerializer.Serialize(writer, message.Item);
             writer.WriteEndObject();
         }
 
@@ -218,7 +205,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             writer.WriteStartArray();
             foreach (var argument in arguments)
             {
-                _payloadSerializer.Serialize(writer, argument);
+                PayloadSerializer.Serialize(writer, argument);
             }
             writer.WriteEndArray();
         }
@@ -299,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 for (var i = 0; i < paramTypes.Length; i++)
                 {
                     var paramType = paramTypes[i];
-                    arguments[i] = args[i].ToObject(paramType, _payloadSerializer);
+                    arguments[i] = args[i].ToObject(paramType, PayloadSerializer);
                 }
 
                 return arguments;
@@ -316,7 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var result = JsonUtils.GetRequiredProperty<JToken>(json, ItemPropertyName);
 
             var returnType = binder.GetReturnType(invocationId);
-            return new StreamItemMessage(invocationId, result?.ToObject(returnType, _payloadSerializer));
+            return new StreamItemMessage(invocationId, result?.ToObject(returnType, PayloadSerializer));
         }
 
         private CompletionMessage BindCompletionMessage(JObject json, IInvocationBinder binder)
@@ -336,7 +323,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
 
             var returnType = binder.GetReturnType(invocationId);
-            var payload = resultProp.Value?.ToObject(returnType, _payloadSerializer);
+            var payload = resultProp.Value?.ToObject(returnType, PayloadSerializer);
             return new CompletionMessage(invocationId, error, result: payload, hasResult: true);
         }
 
@@ -346,7 +333,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new CancelInvocationMessage(invocationId);
         }
 
-        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        internal static JsonSerializerSettings CreateDefaultSerializerSettings()
         {
             return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         }

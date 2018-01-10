@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
+using Microsoft.Extensions.Options;
 using MsgPack;
 using MsgPack.Serialization;
 
@@ -17,19 +18,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        private readonly SerializationContext _serializationContext;
+        public static readonly string ProtocolName = "messagepack";
 
-        public string Name => "messagepack";
+        public SerializationContext SerializationContext { get; }
+
+        public string Name => ProtocolName;
 
         public ProtocolType Type => ProtocolType.Binary;
 
         public MessagePackHubProtocol()
-            : this(CreateDefaultSerializationContext())
+            : this(Options.Create(new MessagePackHubProtocolOptions()))
         { }
 
-        public MessagePackHubProtocol(SerializationContext serializationContext)
+        public MessagePackHubProtocol(IOptions<MessagePackHubProtocolOptions> options)
         {
-            _serializationContext = serializationContext;
+            SerializationContext = options.Value.SerializationContext;
         }
 
         public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
@@ -236,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 packer.PackString(invocationMessage.InvocationId);
             }
             packer.PackString(invocationMessage.Target);
-            packer.PackObject(invocationMessage.Arguments, _serializationContext);
+            packer.PackObject(invocationMessage.Arguments, SerializationContext);
         }
 
         private void WriteStreamInvocationMessage(StreamInvocationMessage streamInvocationMessage, Packer packer)
@@ -245,7 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.Pack(HubProtocolConstants.StreamInvocationMessageType);
             packer.PackString(streamInvocationMessage.InvocationId);
             packer.PackString(streamInvocationMessage.Target);
-            packer.PackObject(streamInvocationMessage.Arguments, _serializationContext);
+            packer.PackObject(streamInvocationMessage.Arguments, SerializationContext);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage streamItemMessage, Packer packer)
@@ -253,7 +256,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.PackArrayHeader(3);
             packer.Pack(HubProtocolConstants.StreamItemMessageType);
             packer.PackString(streamItemMessage.InvocationId);
-            packer.PackObject(streamItemMessage.Item, _serializationContext);
+            packer.PackObject(streamItemMessage.Item, SerializationContext);
         }
 
         private void WriteCompletionMessage(CompletionMessage completionMessage, Packer packer)
@@ -274,7 +277,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     packer.PackString(completionMessage.Error);
                     break;
                 case NonVoidResult:
-                    packer.PackObject(completionMessage.Result, _serializationContext);
+                    packer.PackObject(completionMessage.Result, SerializationContext);
                     break;
             }
         }
@@ -395,7 +398,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             throw new FormatException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", msgPackException);
         }
 
-        public static SerializationContext CreateDefaultSerializationContext()
+        internal static SerializationContext CreateDefaultSerializationContext()
         {
             // serializes objects (here: arguments and results) as maps so that property names are preserved
             var serializationContext = new SerializationContext { SerializationMethod = SerializationMethod.Map };

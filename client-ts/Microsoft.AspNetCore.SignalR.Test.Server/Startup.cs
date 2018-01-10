@@ -23,11 +23,13 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSockets();
-            services.AddSignalR(options => {
-                // we are running the same tests with JSON and MsgPack protocols and having
-                // consistent casing makes it cleaner to verify results
-                options.JsonSerializerSettings.ContractResolver = new DefaultContractResolver();
-            });
+            services.AddSignalR()
+                .AddJsonProtocol(options =>
+                {
+                    // we are running the same tests with JSON and MsgPack protocols and having
+                    // consistent casing makes it cleaner to verify results
+                    options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
+                });
 
             services.AddAuthorization(options =>
             {

@@ -88,6 +88,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtClientSample", "samples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Tests.Utils", "test\Microsoft.AspNetCore.SignalR.Tests.Utils\Microsoft.AspNetCore.SignalR.Tests.Utils.csproj", "{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Protocols.MsgPack", "src\Microsoft.AspNetCore.SignalR.Protocols.MsgPack\Microsoft.AspNetCore.SignalR.Protocols.MsgPack.csproj", "{55DB4B6F-12E5-4A27-97F4-E97E135470FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.MsgPack", "src\Microsoft.AspNetCore.SignalR.MsgPack\Microsoft.AspNetCore.SignalR.MsgPack.csproj", "{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.SignalR.Client.MsgPack", "src\Microsoft.AspNetCore.SignalR.Client.MsgPack\Microsoft.AspNetCore.SignalR.Client.MsgPack.csproj", "{4DBF918E-BD37-4309-B448-BA68C935944D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +212,18 @@ Global
 		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{55DB4B6F-12E5-4A27-97F4-E97E135470FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55DB4B6F-12E5-4A27-97F4-E97E135470FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55DB4B6F-12E5-4A27-97F4-E97E135470FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55DB4B6F-12E5-4A27-97F4-E97E135470FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DBF918E-BD37-4309-B448-BA68C935944D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DBF918E-BD37-4309-B448-BA68C935944D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DBF918E-BD37-4309-B448-BA68C935944D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DBF918E-BD37-4309-B448-BA68C935944D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -239,6 +257,9 @@ Global
 		{6A7491D3-3C97-49BD-A71C-433AED657F30} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{1A953296-E869-4DE2-A693-FD5FCDE27057} = {C4BC9889-B49F-41B6-806B-F84941B2549B}
 		{0A0A6135-EA24-4307-95C2-CE1B7E164A5E} = {6A35B453-52EC-48AF-89CA-D4A69800F131}
+		{55DB4B6F-12E5-4A27-97F4-E97E135470FF} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{FDDB4E1F-2FD2-49E8-B0FF-874B0931369A} = {DA69F624-5398-4884-87E4-B816698CDE65}
+		{4DBF918E-BD37-4309-B448-BA68C935944D} = {DA69F624-5398-4884-87E4-B816698CDE65}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}

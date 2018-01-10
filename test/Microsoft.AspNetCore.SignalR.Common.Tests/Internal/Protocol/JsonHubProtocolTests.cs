@@ -7,6 +7,7 @@ using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -67,13 +68,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             expectedOutput = Frame(expectedOutput);
 
-            var jsonSerializer = new JsonSerializer
+            var protocolOptions = new JsonHubProtocolOptions
             {
-                NullValueHandling = nullValueHandling,
-                ContractResolver = camelCase ? new CamelCasePropertyNamesContractResolver() : new DefaultContractResolver()
+                PayloadSerializerSettings = new JsonSerializerSettings()
+                {
+                    NullValueHandling = nullValueHandling,
+                    ContractResolver = camelCase ? new CamelCasePropertyNamesContractResolver() : new DefaultContractResolver()
+                }
             };
 
-            var protocol = new JsonHubProtocol(jsonSerializer);
+            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
 
             using (var ms = new MemoryStream())
             {
@@ -90,14 +94,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             input = Frame(input);
 
-            var jsonSerializer = new JsonSerializer
+            var protocolOptions = new JsonHubProtocolOptions
             {
-                NullValueHandling = nullValueHandling,
-                ContractResolver = camelCase ? new CamelCasePropertyNamesContractResolver() : new DefaultContractResolver()
+                PayloadSerializerSettings = new JsonSerializerSettings
+                {
+                    NullValueHandling = nullValueHandling,
+                    ContractResolver = camelCase ? new CamelCasePropertyNamesContractResolver() : new DefaultContractResolver()
+                }
             };
 
             var binder = new TestBinder(expectedMessage);
-            var protocol = new JsonHubProtocol(jsonSerializer);
+            var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
             protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
 
             Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);

@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task ConnectionNotClosedOnCallbackArgumentCountMismatch()
         {
             var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
             var receiveTcs = new TaskCompletionSource<int>();
 
             try

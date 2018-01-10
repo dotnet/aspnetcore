@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.SignalR.Core.Internal
+namespace Microsoft.AspNetCore.SignalR.Internal
 {
     internal static class SignalRCoreLoggerExtensions
     {
@@ -76,6 +76,13 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
 
         private static readonly Action<ILogger, Exception> _transportBufferFull =
             LoggerMessage.Define(LogLevel.Debug, new EventId(4, nameof(TransportBufferFull)), "Unable to send Ping message to client, the transport buffer is full.");
+
+        // Category: DefaultHubProtocolResolver
+        private static readonly Action<ILogger, string, Type, Exception> _registeredSignalRProtocol =
+            LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(0, nameof(RegisteredSignalRProtocol)), "Registered SignalR Protocol: {ProtocolName}, implemented by {ImplementationType}.");
+
+        private static readonly Action<ILogger, string, Exception> _foundImplementationForProtocol =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(FoundImplementationForProtocol)), "Found protocol implementation for requested protocol: {ProtocolName}.");
 
         public static void UsingHubProtocol(this ILogger logger, string hubProtocol)
         {
@@ -185,6 +192,16 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         public static void TransportBufferFull(this ILogger logger)
         {
             _transportBufferFull(logger, null);
+        }
+
+        public static void RegisteredSignalRProtocol(this ILogger logger, string protocolName, Type implementationType)
+        {
+            _registeredSignalRProtocol(logger, protocolName, implementationType, null);
+        }
+
+        public static void FoundImplementationForProtocol(this ILogger logger, string protocolName)
+        {
+            _foundImplementationForProtocol(logger, protocolName, null);
         }
     }
 }
