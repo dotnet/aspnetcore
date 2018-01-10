@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor.Language;
@@ -14,6 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageActionDescriptorChangeProviderTest
     {
+        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
+
         [Fact]
         public void GetChangeToken_WatchesAllCshtmlFilesUnderFileSystemRoot()
         {
@@ -25,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions());
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
@@ -49,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = rootDirectory;
 
@@ -73,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions
             {
                 AllowAreas = true,
@@ -121,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
@@ -145,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
@@ -173,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor));
+                new FileProviderRazorProject(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions { AllowAreas = false });
 

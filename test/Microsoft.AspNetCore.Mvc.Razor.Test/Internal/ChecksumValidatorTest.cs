@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Moq;
@@ -14,7 +15,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public ChecksumValidatorTest()
         {
             FileProvider = new TestFileProvider();
-            Project = new FileProviderRazorProject(Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == FileProvider));
+            Project = new FileProviderRazorProject(
+                Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == FileProvider),
+                Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
         }
 
         public RazorProject Project { get; }

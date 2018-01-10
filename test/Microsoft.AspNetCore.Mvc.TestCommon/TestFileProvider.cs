@@ -20,6 +20,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly Dictionary<string, TestFileChangeToken> _fileTriggers =
             new Dictionary<string, TestFileChangeToken>(StringComparer.Ordinal);
 
+        public TestFileProvider() : this(string.Empty)
+        {
+        }
+
+        public TestFileProvider(string root)
+        {
+            Root = root;
+        }
+
+        public string Root { get; }
+
         public virtual IDirectoryContents GetDirectoryContents(string subpath)
         {
             if (_directoryContentsLookup.TryGetValue(subpath, out var value))
@@ -35,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var fileInfo = new TestFileInfo
             {
                 Content = contents,
-                PhysicalPath = path,
+                PhysicalPath = Path.Combine(Root, path),
                 Name = Path.GetFileName(path),
                 LastModified = DateTime.UtcNow,
             };

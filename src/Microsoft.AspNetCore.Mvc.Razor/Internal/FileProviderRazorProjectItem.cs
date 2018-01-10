@@ -9,11 +9,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class FileProviderRazorProjectItem : RazorProjectItem
     {
-        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string path)
+        public FileProviderRazorProjectItem(IFileInfo fileInfo, string basePath, string filePath, string relativePhysicalPath)
         {
             FileInfo = fileInfo;
             BasePath = basePath;
-            FilePath = path;
+            FilePath = filePath;
+            RelativePhysicalPath = relativePhysicalPath;
         }
 
         public IFileInfo FileInfo { get; }
@@ -25,6 +26,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         public override bool Exists => FileInfo.Exists;
 
         public override string PhysicalPath => FileInfo.PhysicalPath;
+
+        public override string RelativePhysicalPath { get; }
 
         public override Stream Read()
         {

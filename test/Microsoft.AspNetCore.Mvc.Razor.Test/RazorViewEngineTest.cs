@@ -935,7 +935,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             var fileProvider = new TestFileProvider();
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
-            var razorProject = new FileProviderRazorProject(accessor);
+            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>());
             var viewEngine = CreateViewEngine(pageFactory.Object, razorProject: razorProject);
             var context = GetActionContext(_controllerTestContext);
 
@@ -1386,7 +1386,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 new HtmlTestEncoder(),
                 GetOptionsAccessor(expanders: null),
                 new FileProviderRazorProject(
-                    Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider())),
+                    Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider()),
+                    Mock.Of<IHostingEnvironment>()),
                 loggerFactory,
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
 
@@ -1974,7 +1975,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             if (razorProject == null)
             {
                 var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider());
-                razorProject = new FileProviderRazorProject(accessor);
+                razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>());
             }
             return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders), razorProject);
         }
@@ -2080,7 +2081,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                       pageFactory,
                       optionsAccessor,
                       new FileProviderRazorProject(
-                          Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider())))
+                          Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider()),
+                          Mock.Of<IHostingEnvironment>()))
             {
             }
 

@@ -4,9 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -205,16 +202,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private static IOptions<RazorPagesOptions> GetRazorPagesOptions()
         {
             return Options.Create(new RazorPagesOptions());
-        }
-
-        private static RazorProjectItem GetProjectItem(string basePath, string path, string content)
-        {
-            var testFileInfo = new TestFileInfo
-            {
-                Content = content,
-            };
-
-            return new FileProviderRazorProjectItem(testFileInfo, basePath, path);
         }
 
         private class TestPageRouteModelProvider : IPageRouteModelProvider

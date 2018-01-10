@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -28,6 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class PageInvokerProviderTest
     {
+        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
+
         [Fact]
         public void OnProvidersExecuting_WithEmptyModel_PopulatesCacheEntry()
         {
@@ -190,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/_ViewStart.cshtml", "content2");
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var defaultRazorProject = new FileProviderRazorProject(accessor);
+            var defaultRazorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -347,7 +350,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/Pages/Level1/Level2/_ViewStart.cshtml", "page content");
             fileProvider.AddFile("/Pages/Level1/Level3/_ViewStart.cshtml", "page content");
 
-            var razorProject = new TestRazorProject(fileProvider);
+            var razorProject = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
             mock
@@ -413,7 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // No files
             var fileProvider = new TestFileProvider();
-            var razorProject = new TestRazorProject(fileProvider);
+            var razorProject = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,

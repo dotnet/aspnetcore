@@ -3,17 +3,21 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class RazorProjectPageRouteModelProviderTest
     {
+        private readonly IHostingEnvironment _hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
+
         [Fact]
         public void OnProvidersExecuting_ReturnsPagesWithPageDirective()
         {
@@ -25,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
@@ -67,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var areasDir = fileProvider.AddDirectoryContent("/Areas", new[] { productsDir });
             var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
@@ -151,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pagesDir = fileProvider.AddDirectoryContent("/Pages", new[] { file4 });
             var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir, pagesDir });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = false });
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
@@ -185,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var areasDir = fileProvider.AddDirectoryContent("/Areas", new IFileInfo[] { productsDir, nonConformingFileUnderAreasDirectory });
             var rootDir = fileProvider.AddDirectoryContent("/", new IFileInfo[] { areasDir, rootFile });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions
             {
@@ -247,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { dir2, file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
@@ -285,7 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var file = fileProvider.AddFile("/Index.cshtml", "@page \"/custom-route\"");
             fileProvider.AddDirectoryContent("/", new[] { file });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
@@ -311,7 +315,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
@@ -349,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var rootFile = fileProvider.AddFile("/Index.cshtml", "@page");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { rootFile, dir1, dir2 });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/Pages";
@@ -378,7 +382,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider);
+            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";

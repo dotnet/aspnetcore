@@ -821,7 +821,8 @@ this should fail";
 
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
 
-            var projectSystem = new FileProviderRazorProject(accessor);
+            var hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
+            var projectSystem = new FileProviderRazorProject(accessor, hostingEnvironment);
             var templateEngine = new RazorTemplateEngine(RazorEngine.Create(), projectSystem)
             {
                 Options =
@@ -832,7 +833,7 @@ this should fail";
             var viewCompiler = new TestRazorViewCompiler(
                 fileProvider,
                 templateEngine,
-                new CSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>()),
+                new CSharpCompiler(referenceManager, hostingEnvironment),
                 compilationCallback,
                 precompiledViews);
             return viewCompiler;

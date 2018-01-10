@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.FileProviders;
 
@@ -13,22 +14,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly IFileProvider _provider;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
-        public FileProviderRazorProject(IRazorViewEngineFileProviderAccessor accessor)
+        public FileProviderRazorProject(IRazorViewEngineFileProviderAccessor accessor, IHostingEnvironment hostingEnviroment)
         {
             if (accessor == null)
             {
                 throw new ArgumentNullException(nameof(accessor));
             }
 
+            if (hostingEnviroment == null)
+            {
+                throw new ArgumentNullException(nameof(hostingEnviroment));
+            }
+
             _provider = accessor.FileProvider;
+            _hostingEnvironment = hostingEnviroment;
         }
 
         public override RazorProjectItem GetItem(string path)
         {
             path = NormalizeAndEnsureValidPath(path);
             var fileInfo = _provider.GetFileInfo(path);
-            return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, path: path);
+
+            string relativePhysicalPath = null;
+            if (fileInfo != null && fileInfo.Exists)
+            {
+                var absoluteBasePath = _hostingEnvironment.ContentRootPath;
+                relativePhysicalPath = fileInfo?.PhysicalPath?.Substring(absoluteBasePath.Length + 1); // Include leading separator
+                relativePhysicalPath = relativePhysicalPath ?? path; // Use the incoming path if the file is not directly accessible
+            }
+
+            return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, filePath: path, relativePhysicalPath: relativePhysicalPath);
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
@@ -55,7 +72,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     }
                     else if (string.Equals(RazorFileExtension, Path.GetExtension(file.Name), StringComparison.OrdinalIgnoreCase))
                     {
-                        yield return new FileProviderRazorProjectItem(file, basePath, prefix + "/" + file.Name);
+                        var filePath = prefix + "/" + file.Name;
+                        var absoluteBasePath = _hostingEnvironment.ContentRootPath;
+                        var relativePhysicalPath = file.PhysicalPath?.Substring(absoluteBasePath.Length + 1); // Include leading separator
+                        relativePhysicalPath = relativePhysicalPath ?? filePath; // Use the incoming path if the file is not directly accessible
+
+                        yield return new FileProviderRazorProjectItem(file, basePath, filePath: filePath, relativePhysicalPath: relativePhysicalPath);
                     }
                 }
             }

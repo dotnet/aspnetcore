@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -26,7 +27,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public CompiledPageRouteModelProviderTest()
         {
             FileProvider = new TestFileProvider();
-            Project = new FileProviderRazorProject(Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == FileProvider));
+            Project = new FileProviderRazorProject(
+                Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == FileProvider),
+                Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
             TemplateEngine = new RazorTemplateEngine(RazorEngine.Create(), Project);
 
             PagesOptions = new RazorPagesOptions();
