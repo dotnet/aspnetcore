@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyModel;
 namespace Microsoft.AspNetCore.Mvc.ApplicationParts
 {
     /// <summary>
-    /// An <see cref="ApplicationPart"/> backed by an <see cref="Assembly"/>.
+    /// An <see cref="ApplicationPart"/> backed by an <see cref="System.Reflection.Assembly"/>.
     /// </summary>
     public class AssemblyPart :
         ApplicationPart,
@@ -20,15 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         /// <summary>
         /// Initializes a new <see cref="AssemblyPart"/> instance.
         /// </summary>
-        /// <param name="assembly"></param>
+        /// <param name="assembly">The backing <see cref="System.Reflection.Assembly"/>.</param>
         public AssemblyPart(Assembly assembly)
         {
-            if (assembly == null)
-            {
-                throw new ArgumentNullException(nameof(assembly));
-            }
-
-            Assembly = assembly;
+            Assembly = assembly ?? throw new ArgumentNullException(nameof(assembly));
         }
 
         /// <summary>

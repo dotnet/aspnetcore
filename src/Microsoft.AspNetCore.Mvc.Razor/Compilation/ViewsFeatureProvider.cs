@@ -27,15 +27,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <inheritdoc />
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
         {
+            var knownIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var descriptors = new List<CompiledViewDescriptor>();
             foreach (var assemblyPart in parts.OfType<AssemblyPart>())
             {
                 var attributes = GetViewAttributes(assemblyPart);
                 var items = LoadItems(assemblyPart);
 
                 var merged = Merge(items, attributes);
-                foreach (var entry in merged)
+                foreach (var item in merged)
                 {
-                    feature.ViewDescriptors.Add(new CompiledViewDescriptor(entry.item, entry.attribute));
+                    var descriptor = new CompiledViewDescriptor(item.item, item.attribute);
+                    // We iterate through ApplicationPart instances appear in precendence order.
+                    // If a view path appears in multiple views, we'll use the order to break ties.
+                    if (knownIdentifiers.Add(descriptor.RelativePath))
+                    {
+                        feature.ViewDescriptors.Add(descriptor);
+                    }
                 }
             }
         }

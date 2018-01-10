@@ -19,10 +19,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             new List<IApplicationFeatureProvider>();
 
         /// <summary>
-        /// Gets the list of <see cref="ApplicationPart"/>s.
+        /// Gets the list of <see cref="ApplicationPart"/> instances.
+        /// <para>
+        /// Instances in this collection are stored in precedence order. An <see cref="ApplicationPart"/> that appears
+        /// earlier in the list has a higher precendence.
+        /// An <see cref="IApplicationFeatureProvider"/> may choose to use this an interface as a way to resolve conflicts when
+        /// multiple <see cref="ApplicationPart"/> instances resolve equivalent feature values.
+        /// </para>
         /// </summary>
-        public IList<ApplicationPart> ApplicationParts { get; } =
-            new List<ApplicationPart>();
+        public IList<ApplicationPart> ApplicationParts { get; } = new List<ApplicationPart>();
 
         /// <summary>
         /// Populates the given <paramref name="feature"/> using the list of

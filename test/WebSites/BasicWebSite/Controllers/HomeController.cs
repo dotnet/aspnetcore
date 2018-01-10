@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BasicWebSite.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Newtonsoft.Json.Serialization;
 
 namespace BasicWebSite.Controllers
@@ -119,6 +121,17 @@ namespace BasicWebSite.Controllers
         public IActionResult Product(Product product)
         {
             return RedirectToAction();
+        }
+
+        [HttpGet]
+        public IActionResult GetAssemblyPartData([FromServices] ApplicationPartManager applicationPartManager)
+        {
+            // Ensures that the entry assembly part is marked correctly.
+            var assemblyPartMetadata = applicationPartManager.ApplicationParts
+                .Select(part => part.Name)
+                .ToArray();
+
+            return Ok(assemblyPartMetadata);
         }
     }
 }

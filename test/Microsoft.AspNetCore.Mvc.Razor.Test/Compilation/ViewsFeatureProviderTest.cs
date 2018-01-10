@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         {
             // Arrange
             var partManager = new ApplicationPartManager();
-            partManager.ApplicationParts.Add(new AssemblyPart(typeof(ViewsFeatureProviderTest).GetTypeInfo().Assembly));
+            partManager.ApplicationParts.Add(new AssemblyPart(typeof(ViewsFeatureProviderTest).Assembly));
             partManager.FeatureProviders.Add(new ViewsFeatureProvider());
             var feature = new ViewsFeature();
 
@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         public void PopulateFeature_ReturnsViewsFromAllAvailableApplicationParts()
         {
             // Arrange
-            var part1 = new AssemblyPart(typeof(object).GetTypeInfo().Assembly);
-            var part2 = new AssemblyPart(GetType().GetTypeInfo().Assembly);
+            var part1 = new AssemblyPart(typeof(object).Assembly);
+            var part2 = new AssemblyPart(GetType().Assembly);
 
             var items = new Dictionary<AssemblyPart, IReadOnlyList<RazorCompiledItem>>
             {
@@ -142,6 +142,39 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         }
 
         [Fact]
+        public void PopulateFeature_PrefersViewsFromPartsWithHigherPrecedence()
+        {
+            // Arrange
+            var part1 = new AssemblyPart(typeof(ViewsFeatureProvider).Assembly);
+            var item1 = new TestRazorCompiledItem(typeof(StringBuilder), "mvc.1.0.view", "/Areas/Admin/Views/Shared/_Layout.cshtml", new object[] { });
+
+            var part2 = new AssemblyPart(GetType().Assembly);
+            var item2 = new TestRazorCompiledItem(typeof(string), "mvc.1.0.view", "/Areas/Admin/Views/Shared/_Layout.cshtml", new object[] { });
+            var item3 = new TestRazorCompiledItem(typeof(string), "mvc.1.0.view", "/Areas/Admin/Views/Shared/_Partial.cshtml", new object[] { });
+
+            var items = new Dictionary<AssemblyPart, IReadOnlyList<RazorCompiledItem>>
+            {
+                { part1, new[] { item1 } },
+                { part2, new[] { item2, item3, } },
+            };
+
+            var featureProvider = new TestableViewsFeatureProvider(items, attributes: new Dictionary<AssemblyPart, IEnumerable<RazorViewAttribute>>());
+            var partManager = new ApplicationPartManager();
+            partManager.ApplicationParts.Add(part1);
+            partManager.ApplicationParts.Add(part2);
+            partManager.FeatureProviders.Add(featureProvider);
+            var feature = new ViewsFeature();
+
+            // Act
+            partManager.PopulateFeature(feature);
+
+            // Assert
+            Assert.Collection(feature.ViewDescriptors.OrderBy(f => f.RelativePath, StringComparer.Ordinal),
+                view => Assert.Same(item1, view.Item),
+                view => Assert.Same(item3, view.Item));
+        }
+
+        [Fact]
         public void PopulateFeature_ReturnsEmptySequenceIfNoDynamicAssemblyPartHasViewAssembly()
         {
             // Arrange
@@ -159,7 +192,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             // Assert
             Assert.Empty(feature.ViewDescriptors);
         }
-
 
         [Fact]
         public void PopulateFeature_DoesNotFail_IfAssemblyHasEmptyLocation()
@@ -212,7 +244,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
             protected override IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
             {
-                return _attributes[assemblyPart];
+                if (_attributes.TryGetValue(assemblyPart, out var attributes))
+                {
+                    return attributes;
+                }
+
+                return Enumerable.Empty<RazorViewAttribute>();
             }
 
             protected override IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
@@ -225,7 +262,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         {
             public override string Location => string.Empty;
 
-            public override string FullName => typeof(ViewsFeatureProviderTest).GetTypeInfo().Assembly.FullName;
+            public override string FullName => typeof(ViewsFeatureProviderTest).Assembly.FullName;
 
             public override IEnumerable<TypeInfo> DefinedTypes
             {
