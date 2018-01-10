@@ -15,7 +15,6 @@
       CopyToPublishArtifacts;
       PublishToAzureFeed;
       PublishToTransportFeed;
-      $(PublishDependsOn);
     </PublishDependsOn>
 
     <!-- Settings for pushing to the transport feed -->
