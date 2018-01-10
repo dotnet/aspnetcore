@@ -52,6 +52,7 @@
     <PackNuspec NuspecPath="$(MSBuildThisFileDirectory)..\nuget\AspNetCore.nuspec"
       DestinationFolder="$(BuildDir)"
       Properties="version=$(PackageVersion);Configuration=$(Configuration)"
+      Overwrite="true"
       BasePath="$(RepositoryRoot)" />
 
     <ItemGroup>
