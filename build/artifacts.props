@@ -58,8 +58,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" Metapackage="false" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="ship" Metapackage="true"  />
-    <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher" Category="ship" Metapackage="true"  />
-    <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher.Abstractions" Category="ship" Metapackage="true"  />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="ship" Metapackage="true" />
@@ -145,7 +143,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Abstractions" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Common.Http" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Http" Category="ship" Metapackage="true" />
-    
+
     <!-- SignalR Client and SignalR MsgPack Protocol support are not part of the meta-package -->
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
@@ -153,7 +151,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MsgPack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.MsgPack" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.MsgPack" Category="ship" />
-    
+
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaTemplates" Category="ship" />
