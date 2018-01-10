@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -23,12 +23,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
 
-        public TreeRouterTest()
-        {
-            BinderFactory = new RoutePatternBinderFactory(new UrlTestEncoder(), new DefaultObjectPoolProvider());
-        }
-
-        public RoutePatternBinderFactory BinderFactory { get; }
+        private static UrlEncoder Encoder = UrlTestEncoder.Default;
+        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
+            new UriBuilderContextPooledObjectPolicy(Encoder));
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -1822,8 +1819,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             Assert.Empty(context.RouteData.Routers);
 
-            var router = Assert.Single(nestedRouters);
-            Assert.Equal(next.Object.GetType(), router.GetType());
+            Assert.Single(nestedRouters);
+            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
         }
 
         [Fact]
@@ -1864,8 +1861,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             Assert.Empty(context.RouteData.Routers);
 
-            var router = Assert.Single(nestedRouters);
-            Assert.Equal(next.Object.GetType(), router.GetType());
+            Assert.Single(nestedRouters);
+            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
         }
 
         [Fact]
@@ -1992,10 +1989,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private static TreeRouteBuilder CreateBuilder()
         {
+            var objectPoolProvider = new DefaultObjectPoolProvider();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default);
+            var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
+
             var constraintResolver = CreateConstraintResolver();
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                new RoutePatternBinderFactory(UrlTestEncoder.Default, new DefaultObjectPoolProvider()),
+                UrlEncoder.Default,
+                objectPool,
                 constraintResolver);
             return builder;
         }

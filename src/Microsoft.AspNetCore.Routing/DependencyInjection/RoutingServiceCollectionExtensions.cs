@@ -3,11 +3,11 @@
 
 using System;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -28,12 +28,14 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            // Routing shares lots of infrastructure with the dispatcher.
-            services.AddDispatcher();
-            services.TryAddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
-
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
+            services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
+            {
+                var provider = s.GetRequiredService<ObjectPoolProvider>();
+                var encoder = s.GetRequiredService<UrlEncoder>();
+                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
+            });
 
             // The TreeRouteBuilder is a builder for creating routes, it should stay transient because it's
             // stateful.

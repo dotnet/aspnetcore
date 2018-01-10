@@ -2,16 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Routing.Performance
 {
@@ -26,11 +30,12 @@ namespace Microsoft.AspNetCore.Routing.Performance
         public RoutingBenchmark()
         {
             var handler = new RouteHandler((next) => Task.FromResult<object>(null));
-
+ 
             var treeBuilder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                new RoutePatternBinderFactory(UrlEncoder.Default, new DefaultObjectPoolProvider()),
-                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
+                UrlEncoder.Default,
+                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default)),
+                new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(new OptionsFactory<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>(), Enumerable.Empty<IPostConfigureOptions<RouteOptions>>()))));
 
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets"), "default", 0);
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets/{id}"), "default", 0);

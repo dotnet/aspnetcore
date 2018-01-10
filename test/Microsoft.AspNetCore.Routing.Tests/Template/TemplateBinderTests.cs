@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Dispatcher;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -16,12 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
     public class TemplateBinderTests
     {
-        public TemplateBinderTests()
-        {
-            BinderFactory = new RoutePatternBinderFactory(new UrlTestEncoder(), new DefaultObjectPoolProvider());
-        }
-
-        public RoutePatternBinderFactory BinderFactory { get; }
+        private readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         public static TheoryData EmptyAndNullDefaultValues =>
             new TheoryData<string, RouteValueDictionary, RouteValueDictionary, string>
@@ -121,7 +116,12 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(BinderFactory.Create(template, defaults));
+            var encoder = new UrlTestEncoder();
+            var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues: null, values: values);
@@ -266,7 +266,12 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             string expected)
         {
             // Arrange
-            var binder = new TemplateBinder(BinderFactory.Create(template, defaults));
+            var encoder = new UrlTestEncoder();
+            var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues: ambientValues, values: values);
@@ -691,8 +696,12 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             // Arrange
             var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
-            var binder = new TemplateBinder(BinderFactory.Create(template));
-
+            var encoder = new UrlTestEncoder();
+            var binder = new TemplateBinder(
+                new UrlTestEncoder(),
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults: null);
             var ambientValues = new RouteValueDictionary();
             var routeValues = new RouteValueDictionary(new { controller = "Test", action = "Index" });
 
@@ -1109,7 +1118,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
 #endif
 
-        private void RunTest(
+        private static void RunTest(
             string template,
             RouteValueDictionary defaults,
             RouteValueDictionary ambientValues,
@@ -1118,8 +1127,13 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             UrlEncoder encoder = null)
         {
             // Arrange
-            var binderFactory = encoder == null ? BinderFactory : new RoutePatternBinderFactory(encoder, new DefaultObjectPoolProvider());
-            var binder = new TemplateBinder(binderFactory.Create(template, defaults ?? new RouteValueDictionary()));
+            encoder = encoder ?? new UrlTestEncoder();
+
+            var binder = new TemplateBinder(
+                encoder,
+                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy(encoder)),
+                TemplateParser.Parse(template),
+                defaults);
 
             // Act & Assert
             var result = binder.GetValues(ambientValues, values);
@@ -1168,7 +1182,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             }
         }
 
-        private void RunTest(
+        private static void RunTest(
             string template,
             object defaults,
             object ambientValues,

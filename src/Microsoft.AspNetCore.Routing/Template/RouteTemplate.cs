@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.AspNetCore.Dispatcher.Patterns;
-using Other = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePattern;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -14,25 +12,6 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class RouteTemplate
     {
         private const string SeparatorString = "/";
-
-        public RouteTemplate(Other other)
-        {
-            TemplateText = other.RawText;
-            Segments = new List<TemplateSegment>(other.PathSegments.Select(p => new TemplateSegment(p)));
-            Parameters = new List<TemplatePart>();
-            for (var i = 0; i < Segments.Count; i++)
-            {
-                var segment = Segments[i];
-                for (var j = 0; j < segment.Parts.Count; j++)
-                {
-                    var part = segment.Parts[j];
-                    if (part.IsParameter)
-                    {
-                        Parameters.Add(part);
-                    }
-                }
-            }
-        }
 
         public RouteTemplate(string template, List<TemplateSegment> segments)
         {
@@ -98,51 +77,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Converts the <see cref="RouteTemplate"/> to the equivalent 
-        /// <see cref="RoutePattern"/>
-        /// </summary>
-        /// <returns>A <see cref="RoutePattern"/>.</returns>
-        public Other ToRoutePattern()
-        {
-            var builder = RoutePatternBuilder.Create(TemplateText);
-
-            for (var i = 0; i < Segments.Count; i++)
-            {
-                var segment = Segments[i];
-
-                var parts = new List<RoutePatternPart>();
-                for (var j = 0; j < segment.Parts.Count; j++)
-                {
-                    var part = segment.Parts[j];
-                    if (part.IsLiteral && part.IsOptionalSeperator)
-                    {
-                        parts.Add(RoutePatternPart.CreateSeparator(part.Text));
-                    }
-                    else if (part.IsLiteral)
-                    {
-                        parts.Add(RoutePatternPart.CreateLiteral(part.Text));
-                    }
-                    else
-                    {
-                        var kind = part.IsCatchAll ?
-                            RoutePatternParameterKind.CatchAll :
-                            part.IsOptional ?
-                                RoutePatternParameterKind.Optional :
-                                RoutePatternParameterKind.Standard;
-
-                        var constraints = part.InlineConstraints.Select(c => ConstraintReference.Create(c.Constraint)).ToArray();
-
-                        parts.Add(RoutePatternPart.CreateParameter(part.Name, part.DefaultValue, kind, constraints));
-                    }
-                }
-
-                builder.AddPathSegment(parts.ToArray());
-            }
-
-            return builder.Build();
         }
     }
 }

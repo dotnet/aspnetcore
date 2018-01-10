@@ -13,9 +13,6 @@ Microsoft.AspNetCore.Routing.RouteData</Description>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(MicrosoftAspNetCoreHttpAbstractionsPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Dispatcher.Abstractions\Microsoft.AspNetCore.Dispatcher.Abstractions.csproj" />
+    <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

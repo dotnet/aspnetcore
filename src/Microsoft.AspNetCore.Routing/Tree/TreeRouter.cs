@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Dispatcher;
-using Microsoft.AspNetCore.Dispatcher.Internal;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Tree
 {
@@ -29,10 +31,22 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
 
+        /// <summary>
+        /// Creates a new <see cref="TreeRouter"/>.
+        /// </summary>
+        /// <param name="trees">The list of <see cref="UrlMatchingTree"/> that contains the route entries.</param>
+        /// <param name="linkGenerationEntries">The set of <see cref="OutboundRouteEntry"/>.</param>
+        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
+        /// <param name="objectPool">The <see cref="ObjectPool{T}"/>.</param>
+        /// <param name="routeLogger">The <see cref="ILogger"/> instance.</param>
+        /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
+        /// in <see cref="RouteConstraintMatcher"/>.</param>
+        /// <param name="version">The version of this route.</param>
         public TreeRouter(
             UrlMatchingTree[] trees,
             IEnumerable<OutboundRouteEntry> linkGenerationEntries,
-            RoutePatternBinderFactory binderFactory,
+            UrlEncoder urlEncoder,
+            ObjectPool<UriBuildingContext> objectPool,
             ILogger routeLogger,
             ILogger constraintLogger,
             int version)
@@ -47,9 +61,14 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 throw new ArgumentNullException(nameof(linkGenerationEntries));
             }
 
-            if (binderFactory == null)
+            if (urlEncoder == null)
             {
-                throw new ArgumentNullException(nameof(binderFactory));
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (objectPool == null)
+            {
+                throw new ArgumentNullException(nameof(objectPool));
             }
 
             if (routeLogger == null)
@@ -72,7 +91,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             foreach (var entry in linkGenerationEntries)
             {
-                var binder = new TemplateBinder(binderFactory.Create(entry.RouteTemplate.ToRoutePattern(), entry.Defaults));
+
+                var binder = new TemplateBinder(urlEncoder, objectPool, entry.RouteTemplate, entry.Defaults);
                 var outboundMatch = new OutboundMatch() { Entry = entry, TemplateBinder = binder };
                 outboundMatches.Add(outboundMatch);
 
@@ -213,9 +233,112 @@ namespace Microsoft.AspNetCore.Routing.Tree
             }
         }
 
+        private struct TreeEnumerator : IEnumerator<UrlMatchingNode>
+        {
+            private readonly Stack<UrlMatchingNode> _stack;
+            private readonly PathTokenizer _tokenizer;
+
+            public TreeEnumerator(UrlMatchingNode root, PathTokenizer tokenizer)
+            {
+                _stack = new Stack<UrlMatchingNode>();
+                _tokenizer = tokenizer;
+                Current = null;
+
+                _stack.Push(root);
+            }
+
+            public UrlMatchingNode Current { get; private set; }
+
+            object IEnumerator.Current => Current;
+
+            public void Dispose()
+            {
+            }
+
+            public bool MoveNext()
+            {
+                if (_stack == null)
+                {
+                    return false;
+                }
+
+                while (_stack.Count > 0)
+                {
+                    var next = _stack.Pop();
+
+                    // In case of wild card segment, the request path segment length can be greater
+                    // Example:
+                    // Template:    a/{*path}
+                    // Request Url: a/b/c/d
+                    if (next.IsCatchAll && next.Matches.Count > 0)
+                    {
+                        Current = next;
+                        return true;
+                    }
+                    // Next template has the same length as the url we are trying to match
+                    // The only possible matching segments are either our current matches or
+                    // any catch-all segment after this segment in which the catch all is empty.
+                    else if (next.Depth == _tokenizer.Count)
+                    {
+                        if (next.Matches.Count > 0)
+                        {
+                            Current = next;
+                            return true;
+                        }
+                        else
+                        {
+                            // We can stop looking as any other child node from this node will be
+                            // either a literal, a constrained parameter or a parameter.
+                            // (Catch alls and constrained catch alls will show up as candidate matches).
+                            continue;
+                        }
+                    }
+
+                    if (next.CatchAlls != null)
+                    {
+                        _stack.Push(next.CatchAlls);
+                    }
+
+                    if (next.ConstrainedCatchAlls != null)
+                    {
+                        _stack.Push(next.ConstrainedCatchAlls);
+                    }
+
+                    if (next.Parameters != null)
+                    {
+                        _stack.Push(next.Parameters);
+                    }
+
+                    if (next.ConstrainedParameters != null)
+                    {
+                        _stack.Push(next.ConstrainedParameters);
+                    }
+
+                    if (next.Literals.Count > 0)
+                    {
+                        UrlMatchingNode node;
+                        Debug.Assert(next.Depth < _tokenizer.Count);
+                        if (next.Literals.TryGetValue(_tokenizer[next.Depth].Value, out node))
+                        {
+                            _stack.Push(node);
+                        }
+                    }
+                }
+
+                return false;
+            }
+
+            public void Reset()
+            {
+                _stack.Clear();
+                Current = null;
+            }
+        }
+
         private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
         {
-            if (_namedEntries.TryGetValue(context.RouteName, out var match))
+            OutboundMatch match;
+            if (_namedEntries.TryGetValue(context.RouteName, out match))
             {
                 var path = GenerateVirtualPath(context, match.Entry, match.TemplateBinder);
                 if (path != null)

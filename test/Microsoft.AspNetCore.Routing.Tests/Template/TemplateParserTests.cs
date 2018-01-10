@@ -5,6 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests
@@ -525,8 +528,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
         [Theory]
         [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
-        [InlineData("{p1?}{p2}", "p1", "{p2}")]
-        [InlineData("{p1?}{p2?}", "p1", "{p2?}")]
+        [InlineData("{p1?}{p2}", "p1", "p2")]
+        [InlineData("{p1?}{p2?}", "p1", "p2")]
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
@@ -765,16 +768,13 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 "Parameter name: routeTemplate");
         }
 
-        [Theory]
-        [InlineData("/foo")]
-        [InlineData("~/foo")]
-        public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate)
+        [Fact]
+        public void InvalidTemplate_CannotStartWithSlash()
         {
-            // Arrange & Act
-            var pattern = TemplateParser.Parse(routeTemplate);
-
-            // Assert
-            Assert.Equal(routeTemplate, pattern.TemplateText);
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse("/foo"),
+                "The route template cannot start with a '/' or '~' character." + Environment.NewLine +
+                "Parameter name: routeTemplate");
         }
 
         [Fact]
@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("~foo"),
-                "The route template cannot start with a '~' character unless followed by a '/'." + Environment.NewLine +
+                "The route template cannot start with a '/' or '~' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 

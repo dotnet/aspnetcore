@@ -591,7 +591,6 @@ namespace Microsoft.AspNetCore.Routing
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
-            services.AddDispatcher();
             if (options != null)
             {
                 services.Configure(options);
@@ -614,7 +613,6 @@ namespace Microsoft.AspNetCore.Routing
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddOptions();
             services.AddRouting();
-            services.AddDispatcher();
             if (options != null)
             {
                 services.Configure<RouteOptions>(options);

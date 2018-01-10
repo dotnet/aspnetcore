@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Dispatcher;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -243,10 +243,15 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private static TreeRouteBuilder CreateBuilder()
         {
+            var objectPoolProvider = new DefaultObjectPoolProvider();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default);
+            var objectPool = objectPoolProvider.Create(objectPolicy);
+
             var constraintResolver = GetInlineConstraintResolver();
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                new RoutePatternBinderFactory(UrlEncoder.Default, new DefaultObjectPoolProvider()),
+                UrlEncoder.Default,
+                objectPool,
                 constraintResolver);
             return builder;
         }

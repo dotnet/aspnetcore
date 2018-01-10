@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
@@ -242,8 +241,9 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (_binder == null)
             {
-                var binderFactory = context.RequestServices.GetRequiredService<RoutePatternBinderFactory>();
-                _binder = new TemplateBinder(binderFactory.Create(ParsedTemplate.ToRoutePattern(), Defaults));
+                var urlEncoder = context.RequestServices.GetRequiredService<UrlEncoder>();
+                var pool = context.RequestServices.GetRequiredService<ObjectPool<UriBuildingContext>>();
+                _binder = new TemplateBinder(urlEncoder, pool, ParsedTemplate, Defaults);
             }
         }
 

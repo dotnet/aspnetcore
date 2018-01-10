@@ -1487,7 +1487,6 @@ namespace Microsoft.AspNetCore.Routing
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddRouting();
-            services.AddDispatcher();
 
             var context = new DefaultHttpContext
             {

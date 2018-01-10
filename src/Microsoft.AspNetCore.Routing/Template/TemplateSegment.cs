@@ -4,22 +4,12 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Other = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternPathSegment;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplateSegment
     {
-        public TemplateSegment()
-        {
-        }
-
-        public TemplateSegment(Other other)
-        {
-            Parts = new List<TemplatePart>(other.Parts.Select(s => new TemplatePart(s)));
-        }
-
         public bool IsSimple => Parts.Count == 1;
 
         public List<TemplatePart> Parts { get; } = new List<TemplatePart>();
