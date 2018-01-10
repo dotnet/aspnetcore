@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.ComponentModel;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,6 +62,16 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <see cref="JsonOutputFormatter"/> has been used will have no effect.
         /// </remarks>
         protected JsonSerializerSettings SerializerSettings { get; }
+
+        /// <summary>
+        /// Gets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
+        /// </summary>
+        /// <remarks>
+        /// Any modifications to the <see cref="JsonSerializerSettings"/> object after this
+        /// <see cref="JsonOutputFormatter"/> has been used will have no effect.
+        /// </remarks>
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public JsonSerializerSettings PublicSerializerSettings => SerializerSettings;
 
         /// <summary>
         /// Writes the given <paramref name="value"/> as JSON using the given

@@ -245,12 +245,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonHelper_RendersJson_WithCamelCaseNames()
         {
             // Arrange
-            var json = "{\"id\":9000,\"fullName\":\"John <b>Smith</b>\"}";
-            var expectedBody = string.Format(
-                @"<script type=""text/javascript"">
-    var json = {0};
-</script>",
-                json);
+            var expectedBody =
+@"<script type=""text/javascript"">
+    var json = {""id"":9000,""fullName"":""John \u003cb\u003eSmith\u003c/b\u003e""};
+</script>";
 
             // Act
             var response = await Client.GetAsync("Home/JsonHelperInView");

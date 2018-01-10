@@ -46,7 +46,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public IHtmlContent Serialize(object value)
         {
-            return SerializeInternal(_jsonOutputFormatter, value);
+            var settings = ShallowCopy(_jsonOutputFormatter.PublicSerializerSettings);
+            settings.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
+
+            return Serialize(value, settings);
         }
 
         /// <inheritdoc />
@@ -68,6 +71,43 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             jsonOutputFormatter.WriteObject(stringWriter, value);
 
             return new HtmlString(stringWriter.ToString());
+        }
+
+        private static JsonSerializerSettings ShallowCopy(JsonSerializerSettings settings)
+        {
+            var copiedSettings = new JsonSerializerSettings
+            {
+                FloatParseHandling = settings.FloatParseHandling,
+                FloatFormatHandling = settings.FloatFormatHandling,
+                DateParseHandling = settings.DateParseHandling,
+                DateTimeZoneHandling = settings.DateTimeZoneHandling,
+                DateFormatHandling = settings.DateFormatHandling,
+                Formatting = settings.Formatting,
+                MaxDepth = settings.MaxDepth,
+                DateFormatString = settings.DateFormatString,
+                Context = settings.Context,
+                Error = settings.Error,
+                SerializationBinder = settings.SerializationBinder,
+                TraceWriter = settings.TraceWriter,
+                Culture = settings.Culture,
+                ReferenceResolverProvider = settings.ReferenceResolverProvider,
+                EqualityComparer = settings.EqualityComparer,
+                ContractResolver = settings.ContractResolver,
+                ConstructorHandling = settings.ConstructorHandling,
+                TypeNameAssemblyFormatHandling = settings.TypeNameAssemblyFormatHandling,
+                MetadataPropertyHandling = settings.MetadataPropertyHandling,
+                TypeNameHandling = settings.TypeNameHandling,
+                PreserveReferencesHandling = settings.PreserveReferencesHandling,
+                Converters = settings.Converters,
+                DefaultValueHandling = settings.DefaultValueHandling,
+                NullValueHandling = settings.NullValueHandling,
+                ObjectCreationHandling = settings.ObjectCreationHandling,
+                MissingMemberHandling = settings.MissingMemberHandling,
+                ReferenceLoopHandling = settings.ReferenceLoopHandling,
+                CheckAdditionalContent = settings.CheckAdditionalContent,
+            };
+
+            return copiedSettings;
         }
     }
 }
