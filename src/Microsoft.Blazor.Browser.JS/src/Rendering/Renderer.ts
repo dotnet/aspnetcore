@@ -1,6 +1,7 @@
 ﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
+import { renderComponentArgs, RenderComponentArgsPointer } from './RenderComponentArgs';
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
@@ -24,14 +25,14 @@ export function attachComponentToElement(browserRendererId: number, elementSelec
   browserRenderers[browserRendererId][componentId] = element;
 }
 
-export function renderRenderTree(renderComponentArgs: Pointer) {
-  const browserRendererId = platform.readInt32Field(renderComponentArgs, 0);
+export function renderRenderTree(args: RenderComponentArgsPointer) {
+  const browserRendererId = renderComponentArgs.browserRendererId(args);
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
 
-  const componentId = platform.readInt32Field(renderComponentArgs, 4);
+  const componentId = renderComponentArgs.componentId(args);
   const element = browserRenderer[componentId];
   if (!element) {
     throw new Error(`No element is currently associated with component ${componentId}`);
@@ -39,8 +40,8 @@ export function renderRenderTree(renderComponentArgs: Pointer) {
 
   clearElement(element);
 
-  const tree = platform.readObjectField(renderComponentArgs, 8) as System_Array;
-  const treeLength = platform.readInt32Field(renderComponentArgs, 12);
+  const tree = renderComponentArgs.renderTree(args);
+  const treeLength = renderComponentArgs.renderTreeLength(args);
   insertNodeRange(browserRendererId, componentId, element, tree, 0, treeLength - 1);
 }
 
