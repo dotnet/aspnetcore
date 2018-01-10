@@ -1,5 +1,5 @@
 ﻿import { platform } from './Environment'
-import { registerFunction } from './RegisteredFunction';
+import { registerFunction } from './Interop/RegisteredFunction';
 
 if (typeof window !== 'undefined') {
   // When the library is loaded in a browser via a <script> element, make the

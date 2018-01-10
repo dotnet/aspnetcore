@@ -1,5 +1,5 @@
-﻿import { invokeWithJsonMarshalling } from './RegisteredFunction';
-import { attachComponentToElement, renderRenderTree } from './Rendering/Renderer';
+﻿import { invokeWithJsonMarshalling } from './InvokeWithJsonMarshalling';
+import { attachComponentToElement, renderRenderTree } from '../Rendering/Renderer';
 
 /**
  * The definitive list of internal functions invokable from .NET code.

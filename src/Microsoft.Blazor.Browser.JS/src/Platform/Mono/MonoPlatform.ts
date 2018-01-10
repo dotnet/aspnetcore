@@ -1,6 +1,6 @@
 ﻿import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getAssemblyNameFromUrl } from '../DotNet';
-import { getRegisteredFunction } from '../../RegisteredFunction';
+import { getRegisteredFunction } from '../../Interop/RegisteredFunction';
 
 let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
