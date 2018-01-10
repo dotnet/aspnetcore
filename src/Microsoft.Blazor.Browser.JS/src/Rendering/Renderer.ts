@@ -173,7 +173,7 @@ function insertText(intoDomElement: Element, textNode: RenderTreeNodePointer) {
 }
 
 function clearElement(element: Element) {
-  let childNode: Node;
+  let childNode: Node | null;
   while (childNode = element.firstChild) {
     element.removeChild(childNode);
   }

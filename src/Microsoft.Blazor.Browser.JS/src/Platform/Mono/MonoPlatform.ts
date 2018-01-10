@@ -86,10 +86,6 @@ export const monoPlatform: Platform = {
     //FIXME this is wastefull, we could remove the temp malloc by going the UTF16 route
     //FIXME this is unsafe, cuz raw objects could be GC'd.
 
-    if (!managedString) {
-      return null;
-    }
-
     const utf8 = mono_string_get_utf8(managedString);
     const res = Module.UTF8ToString(utf8);
     Module._free(utf8 as any);
@@ -141,7 +137,7 @@ function addScriptTagsToDocument() {
   document.write(`<script defer src="${monoRuntimeScriptUrl}"></script>`);
 }
 
-function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason: any) => void) {
+function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
 
   module.print = line => console.log(`WASM: ${line}`);
@@ -163,7 +159,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
 
     Module.FS_createPath('/', 'appBinDir', true, true);
     loadAssemblyUrls.forEach(url =>
-      FS.createPreloadedFile('appBinDir', `${getAssemblyNameFromUrl(url)}.dll`, url, true, false, null, <any>onError));
+      FS.createPreloadedFile('appBinDir', `${getAssemblyNameFromUrl(url)}.dll`, url, true, false, undefined, onError));
   });
 
   module.postRun.push(() => {
