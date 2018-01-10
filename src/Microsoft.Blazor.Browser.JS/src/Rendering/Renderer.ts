@@ -25,13 +25,13 @@ export function attachComponentToElement(browserRendererId: number, elementSelec
 }
 
 export function renderRenderTree(renderComponentArgs: Pointer) {
-  const browserRendererId = platform.readHeapInt32(renderComponentArgs, 0);
+  const browserRendererId = platform.readInt32Field(renderComponentArgs, 0);
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
 
-  const componentId = platform.readHeapInt32(renderComponentArgs, 4);
+  const componentId = platform.readInt32Field(renderComponentArgs, 4);
   const element = browserRenderer[componentId];
   if (!element) {
     throw new Error(`No element is currently associated with component ${componentId}`);
@@ -39,8 +39,8 @@ export function renderRenderTree(renderComponentArgs: Pointer) {
 
   clearElement(element);
 
-  const tree = platform.readHeapObject(renderComponentArgs, 8) as System_Array;
-  const treeLength = platform.readHeapInt32(renderComponentArgs, 12);
+  const tree = platform.readObjectField(renderComponentArgs, 8) as System_Array;
+  const treeLength = platform.readInt32Field(renderComponentArgs, 12);
   insertNodeRange(browserRendererId, componentId, element, tree, 0, treeLength - 1);
 }
 
@@ -97,7 +97,7 @@ function insertComponent(browserRendererId: number, intoDomElement: Element, nod
 }
 
 function insertElement(browserRendererId: number, componentId: number, intoDomElement: Element, tree: System_Array, elementNode: RenderTreeNodePointer, elementNodeIndex: number) {
-  const tagName = renderTreeNode.elementName(elementNode);
+  const tagName = renderTreeNode.elementName(elementNode)!;
   const newDomElement = document.createElement(tagName);
   intoDomElement.appendChild(newDomElement);
 
@@ -117,7 +117,7 @@ function insertElement(browserRendererId: number, componentId: number, intoDomEl
 }
 
 function applyAttribute(browserRendererId: number, componentId: number, toDomElement: Element, attributeNode: RenderTreeNodePointer, attributeNodeIndex: number) {
-  const attributeName = renderTreeNode.attributeName(attributeNode);
+  const attributeName = renderTreeNode.attributeName(attributeNode)!;
 
   switch (attributeName) {
     case 'onclick':
@@ -136,7 +136,7 @@ function applyAttribute(browserRendererId: number, componentId: number, toDomEle
       // Treat as a regular string-valued attribute
       toDomElement.setAttribute(
         attributeName,
-        renderTreeNode.attributeValue(attributeNode)
+        renderTreeNode.attributeValue(attributeNode)!
       );
       break;
   }
@@ -163,7 +163,7 @@ function raiseEvent(browserRendererId: number, componentId: number, renderTreeNo
 }
 
 function insertText(intoDomElement: Element, textNode: RenderTreeNodePointer) {
-  const textContent = renderTreeNode.textContent(textNode);
+  const textContent = renderTreeNode.textContent(textNode)!;
   const newDomTextNode = document.createTextNode(textContent);
   intoDomElement.appendChild(newDomTextNode);
 }

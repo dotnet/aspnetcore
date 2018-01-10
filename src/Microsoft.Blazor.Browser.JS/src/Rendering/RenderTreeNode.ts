@@ -12,15 +12,15 @@ export function getTreeNodePtr(renderTreeEntries: System_Array, index: number): 
 
 export const renderTreeNode = {
   // The properties and memory layout must be kept in sync with the .NET equivalent in RenderTreeNode.cs
-  nodeType: (node: RenderTreeNodePointer) => _readInt32Property(node, 0) as NodeType,
-  elementName: (node: RenderTreeNodePointer) => _readStringProperty(node, 4),
-  descendantsEndIndex: (node: RenderTreeNodePointer) => _readInt32Property(node, 8) as NodeType,
-  textContent: (node: RenderTreeNodePointer) => _readStringProperty(node, 12),
-  attributeName: (node: RenderTreeNodePointer) => _readStringProperty(node, 16),
-  attributeValue: (node: RenderTreeNodePointer) => _readStringProperty(node, 20),
-  attributeEventHandlerValue: (node: RenderTreeNodePointer) => _readObjectProperty(node, 24),
-  componentId: (node: RenderTreeNodePointer) => _readInt32Property(node, 28),
-  component: (node: RenderTreeNodePointer) => _readObjectProperty(node, 32),
+  nodeType: (node: RenderTreeNodePointer) => platform.readInt32Field(node, 0) as NodeType,
+  elementName: (node: RenderTreeNodePointer) => platform.readStringField(node, 4),
+  descendantsEndIndex: (node: RenderTreeNodePointer) => platform.readInt32Field(node, 8) as NodeType,
+  textContent: (node: RenderTreeNodePointer) => platform.readStringField(node, 12),
+  attributeName: (node: RenderTreeNodePointer) => platform.readStringField(node, 16),
+  attributeValue: (node: RenderTreeNodePointer) => platform.readStringField(node, 20),
+  attributeEventHandlerValue: (node: RenderTreeNodePointer) => platform.readObjectField(node, 24),
+  componentId: (node: RenderTreeNodePointer) => platform.readInt32Field(node, 28),
+  component: (node: RenderTreeNodePointer) => platform.readObjectField(node, 32),
 };
 
 export enum NodeType {
@@ -29,19 +29,6 @@ export enum NodeType {
   text = 2,
   attribute = 3,
   component = 4,
-}
-
-function _readInt32Property(baseAddress: Pointer, offsetBytes: number) {
-  return platform.readHeapInt32(baseAddress, offsetBytes);
-}
-
-function _readObjectProperty(baseAddress: Pointer, offsetBytes: number) {
-  return platform.readHeapObject(baseAddress, offsetBytes);
-}
-
-function _readStringProperty(baseAddress: Pointer, offsetBytes: number) {
-  var managedString = platform.readHeapObject(baseAddress, offsetBytes) as System_String;
-  return platform.toJavaScriptString(managedString);
 }
 
 // Nominal type to ensure only valid pointers are passed to the renderTreeNode functions.

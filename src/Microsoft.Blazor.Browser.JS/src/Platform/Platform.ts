@@ -11,10 +11,10 @@
   getArrayLength(array: System_Array): number;
   getArrayEntryPtr(array: System_Array, index: number, itemSize: number): Pointer;
 
-  getHeapObjectFieldsPtr(heapObject: System_Object): Pointer;
-
-  readHeapInt32(address: Pointer, offset?: number): number;
-  readHeapObject(address: Pointer, offset?: number): System_Object;
+  getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer;
+  readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
+  readObjectField(baseAddress: Pointer, fieldOffset?: number): System_Object;
+  readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
 }
 
 // We don't actually instantiate any of these at runtime. For perf it's preferable to

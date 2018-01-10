@@ -107,17 +107,22 @@ export const monoPlatform: Platform = {
     return address as any as Pointer;
   },
 
-  getHeapObjectFieldsPtr: function getHeapObjectFieldsPtr(heapObject: System_Object): Pointer {
+  getObjectFieldsBaseAddress: function getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer {
     // The first two int32 values are internal Mono data
-    return (heapObject as any as number + 8) as any as Pointer;
+    return (referenceTypedObject as any as number + 8) as any as Pointer;
   },
 
-  readHeapInt32: function readHeapInt32(address: Pointer, offset?: number): number {
-    return Module.getValue((address as any as number) + (offset || 0), 'i32');
+  readInt32Field: function readHeapInt32(baseAddress: Pointer, fieldOffset?: number): number {
+    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
   },
 
-  readHeapObject: function readHeapObject(address: Pointer, offset?: number): System_Object {
-    return monoPlatform.readHeapInt32(address, offset) as any as System_Object;
+  readObjectField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): System_Object {
+    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as System_Object;
+  },
+
+  readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): string | null {
+    const fieldValue = Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
+    return fieldValue === 0 ? null : monoPlatform.toJavaScriptString(fieldValue as any as System_String);
   },
 };
 
