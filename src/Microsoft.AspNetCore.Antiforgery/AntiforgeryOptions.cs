@@ -21,6 +21,9 @@ namespace Microsoft.AspNetCore.Antiforgery
             SameSite = SameSiteMode.Strict,
             HttpOnly = true,
 
+            // Check the comment on CookieBuilder for more details
+            IsEssential = true,
+
             // Some browsers do not allow non-secure endpoints to set cookies with a 'secure' flag or overwrite cookies
             // whose 'secure' flag is set (http://httpwg.org/http-extensions/draft-ietf-httpbis-cookie-alone.html).
             // Since mixing secure and non-secure endpoints is a common scenario in applications, we are relaxing the
@@ -45,6 +48,10 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// <para>
         /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Strict"/>.
         /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+        /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>true</c>. The cookie used by the antiforgery system
+        /// is part of a security system that is necessary when using cookie-based authentication. It should be
+        /// considered required for the application to function.
+        /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.None"/>.
         /// </para>
         /// </remarks>
         public CookieBuilder Cookie
