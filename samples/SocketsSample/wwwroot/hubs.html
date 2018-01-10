@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -24,10 +24,9 @@
         <div class="input-append">
             <input type="text" id="message-text" placeholder="Type a message, name or group" />
             <input type="button" id="broadcast" class="btn" value="Broadcast" />
-            <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (All Except Me)" />
+            <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (Others)" />
             <input type="button" id="join" class="btn" value="Enter Name" />
-            <input type="button" id="join-group" class="btn" value="Join Group" />
-            <input type="button" id="leave-group" class="btn" value="Leave Group" />
+
         </div>
     </form>
 
@@ -35,16 +34,20 @@
     <form class="form-inline">
         <div class="input-append">
             <input type="text" id="me-message-text" placeholder="Type a message" />
-            <input type="button" id="send" class="btn" value="Send to me" />
+            <input type="button" id="send" class="btn" value="Send to Me" />
         </div>
     </form>
 
-    <h4>Private Message</h4>
+    <h4>Group Actions</h4>
     <form class="form-inline">
         <div class="input-prepend input-append">
-            <input type="text" name="private-message" id="private-message-text" placeholder="Type a message" />
-            <input type="text" name="user" id="target" placeholder="Type a group name" />
-            <input type="button" id="groupmsg" class="btn" value="Send to group" />
+            <input type="text" name="group-message" id="group-message-text" placeholder="Type a message" />
+            <input type="text" name="group-name" id="group-name" placeholder="Type a group name" />
+            <input type="button" id="groupmsg" class="btn" value="Send to Group" />
+            <input type="button" id="others-groupmsg" class="btn" value="Send to Others in Group" />
+            <input type="button" id="join-group" class="btn" value="Join Group" />
+            <input type="button" id="leave-group" class="btn" value="Leave Group" />
+
         </div>
     </form>
 
@@ -144,24 +147,35 @@
     });
 
     click('join-group', function (event) {
-        let groupName = getText('message-text');
+        let groupName = getText('group-name');
         invoke(connection, 'JoinGroup', groupName);
     });
 
     click('leave-group', function (event) {
-        let groupName = getText('message-text');
+        let groupName = getText('group-name');
         invoke(connection, 'LeaveGroup', groupName);
     });
 
     click('groupmsg', function (event) {
-        let groupName = getText('target');
-        let message = getText('private-message-text');
+        let groupName = getText('group-name');
+        let message = getText('group-message-text');
         invoke(connection, 'SendToGroup', groupName, message);
+    });
+
+    click('others-groupmsg', function (event) {
+        let groupName = getText('group-name');
+        let message = getText('group-message-text');
+        invoke(connection, 'SendToOthersInGroup', groupName, message);
     });
 
     click('send', function (event) {
         let data = getText('me-message-text');
         invoke(connection, 'Echo', data);
+    });
+
+    click('broadcast-exceptme', function (event) {
+        let data = getText('message-text');
+        invoke(connection, 'SendToOthers', data);
     });
 
 </script>

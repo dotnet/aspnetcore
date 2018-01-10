@@ -17,7 +17,7 @@ namespace SocketsSample.Hubs
 
         public override async Task OnDisconnectedAsync(Exception ex)
         {
-            await Clients.All.InvokeAsync("Send", $"{Context.ConnectionId} left");
+            await Clients.Others.InvokeAsync("Send", $"{Context.ConnectionId} left");
         }
 
         public Task Send(string message)
@@ -25,9 +25,19 @@ namespace SocketsSample.Hubs
             return Clients.All.InvokeAsync("Send", $"{Context.ConnectionId}: {message}");
         }
 
+        public Task SendToOthers(string message)
+        {
+            return Clients.Others.InvokeAsync("Send", $"{Context.ConnectionId}: {message}");
+        }
+
         public Task SendToGroup(string groupName, string message)
         {
             return Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId}@{groupName}: {message}");
+        }
+
+        public Task SendToOthersInGroup(string groupName, string message)
+        {
+            return Clients.OthersInGroup(groupName).InvokeAsync("Send", $"{Context.ConnectionId}@{groupName}: {message}");
         }
 
         public async Task JoinGroup(string groupName)
@@ -39,14 +49,14 @@ namespace SocketsSample.Hubs
 
         public async Task LeaveGroup(string groupName)
         {
-            await Groups.RemoveAsync(Context.ConnectionId, groupName);
-
             await Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId} left {groupName}");
+
+            await Groups.RemoveAsync(Context.ConnectionId, groupName);
         }
 
         public Task Echo(string message)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("Send", $"{Context.ConnectionId}: {message}");
+            return Clients.Caller.InvokeAsync("Send", $"{Context.ConnectionId}: {message}");
         }
     }
 }
