@@ -70,7 +70,7 @@ Windows (x86)         | ![][win-x86-badge]<br>[Installer (exe)][win-x86-exe]<br>
 macOS (x64)           | ![][osx-x64-badge]<br>[Archive (tar.gz)][osx-x64-tar]
 Linux (x64)           | ![][linux-x64-badge]<br>[Archive (tar.gz)][linux-x64-tar]
 Debian/Ubuntu (x64)   | ![][linux-x64-badge]<br>[Installer (deb)][debian-x64-deb]
-RedHat/Fedora (x64)   | ![][linux-x64-badge]<br>[Installer (rpm)][debian-x64-deb]
+RedHat/Fedora (x64)   | ![][linux-x64-badge]<br>[Installer (rpm)][redhat-x64-rpm]
 
 ## Building from source
 
