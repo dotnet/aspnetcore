@@ -14,6 +14,7 @@
     <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
+    <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
     <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
 
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
@@ -25,6 +26,7 @@
     <SignedAllMetapackagePath>$(IntermediateDir)SignedAllMetapackage\</SignedAllMetapackagePath>
     <UnsignedVSIXWithSignedBinariesPath>$(IntermediateDir)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
     <UnsignedBinariesPath>$(IntermediateDir)FilesToSign\</UnsignedBinariesPath>
+    <UnsignedMPacksPath>$(IntermediateDir)UnsignedMPacks\</UnsignedMPacksPath>
   </PropertyGroup>
 
   <!-- Properties for code sign -->

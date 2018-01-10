@@ -53,6 +53,8 @@
         $(UnsignedSharedFxPath)**\stackexchange*.dll" />
 
       <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
+
+      <MPackBinaries Include="$(UnsignedMPacksPath)**\*.dll" />
     </ItemGroup>
 
 
@@ -66,7 +68,8 @@
         @(OobPackageBinaries);
         @(SymbolsPackageBinaries);
         @(VSIXBinaries);
-        @(OobArchiveBinaries);" />
+        @(OobArchiveBinaries);
+        @(MPackBinaries);" />
 
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -126,6 +129,36 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath);Extension=.nupkg"
       Condition="'@(SymbolsNuSpec)'!=''" />
+  </Target>
+
+  <!-- Repacks MPacks with their signed binaries -->
+  <Target Name="RepackMPacks">
+    <MakeDir Directories="$(SignedMPacksOutputPath)" />
+
+    <ItemGroup>
+      <MPackDirectories Include="$([System.IO.Directory]::GetDirectories(&quot;$(UnsignedMPacksPath)&quot;))" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Properties="MPackDirectory=%(MPackDirectories.Identity);"
+      Targets="_RepackMPack"/>
+  </Target>
+
+  <Target Name="_RepackMPack">
+    <PropertyGroup>
+      <MPackName>$([System.IO.Path]::GetFileName($(MPackDirectory)))</MPackName>
+      <OutputFile>$(SignedMPacksOutputPath)$(MPackName).mpack</OutputFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Files Include="$(MPackDirectory)\*" />
+    </ItemGroup>
+
+    <ZipArchive
+      File="$(OutputFile)"
+      SourceFiles="@(Files)"
+      WorkingDirectory="$(MPackDirectory)" />
   </Target>
 
   <!-- Repacks and signs VSIXes -->
