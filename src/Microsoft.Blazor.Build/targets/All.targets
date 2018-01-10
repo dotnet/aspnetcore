@@ -3,6 +3,8 @@
     <BlazorBuildExe>dotnet $(MSBuildThisFileDirectory)..\tools\Microsoft.Blazor.Build.dll</BlazorBuildExe>
   </PropertyGroup>
 
+  <Import Project="RazorCompilation.targets" />
+  
   <Target Name="GenerateBlazorMetadataFile" BeforeTargets="GetCopyToOutputDirectoryItems">
     <PropertyGroup>
       <BlazorMetadataFileName>$(AssemblyName).blazor.config</BlazorMetadataFileName>

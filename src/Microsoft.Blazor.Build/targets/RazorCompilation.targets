@@ -1,0 +1,29 @@
+﻿<Project>
+
+  <!-- Temporarily, the Razor 'compile' process just produces a set of empty classes. This is to
+       show it's possible to codegen the classes both during regular builds and at design time so
+       that the Razor components can be referenced with intellisense from .cs files. -->
+  
+  <Target Name="BlazorCompileRazorComponents" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <BlazorRazorComponents Include="**\*.cshtml" />
+    </ItemGroup>
+    <PropertyGroup>
+      <BlazorComponentsNamespace>BlazorComponents</BlazorComponentsNamespace>
+      <IsDesignTimeBuild Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">true</IsDesignTimeBuild>
+      <GeneratedFilePath>$(IntermediateOutputPath)BlazorRazorComponents.g.cs</GeneratedFilePath>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(GeneratedFilePath)" Overwrite="true" Lines="namespace $(BlazorComponentsNamespace) {;@(BlazorRazorComponents->'public class %(Filename) {}');}" />
+    <ItemGroup>
+      <Compile Include="$(GeneratedFilePath)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <!-- Instruct VS to re-run the target when input files change. Other IDEs may not honor this
+         and therefore developers may need to rebuild after changing cshtml files. -->
+    <Compile Update="**\*.cshtml">
+      <Generator>MSBuild:BlazorCompileRazorComponents</Generator>
+    </Compile>
+  </ItemGroup>
+</Project>
