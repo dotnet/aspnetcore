@@ -363,9 +363,6 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Redis" Version="0.3.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNetCore.DataProtection" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
@@ -375,12 +372,8 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.AspNetCore.Http.Features" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Http" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.HttpOverrides" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Identity" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Localization" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Owin" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Razor.Language" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
@@ -394,33 +387,13 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.AspNetCore.Routing" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Server.HttpSys" Version="2.0.2" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.Session" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.TestHost" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Razor" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Design.Specification.Tests" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Core" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Identity.Stores" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Localization" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Net.Http.Headers" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
@@ -432,10 +405,6 @@ not building again in this patch.
 <!--
 <PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
 <PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
-<PackageArtifact Include="Microsoft.DotNet.Web.Client.ItemTemplates" Category="shipoob" />
-<PackageArtifact Include="Microsoft.DotNet.Web.ItemTemplates" Category="shipoob" />
-<PackageArtifact Include="Microsoft.DotNet.Web.ProjectTemplates.2.0" Category="shipoob" />
-<PackageArtifact Include="Microsoft.DotNet.Web.Spa.ProjectTemplates" Category="shipoob" />
 <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
 <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
   -->

@@ -1,3 +1,5 @@
+#!/usr/bin/env pwsh
+
 <#
 .SYNOPSIS
     Updates the version.props file in repos to a newer patch version
@@ -40,10 +42,12 @@ function BumpPatch([System.Xml.XmlNode]$node) {
     }
     [version] $version = $node.InnerText
     $node.InnerText = "{0}.{1}.{2}" -f $version.Major, $version.Minor, ($version.Build + 1)
+    Write-Host "Changing $version to $($node.InnerText)"
 }
 
 foreach ($repo in $Repos) {
     $path = "$PSScriptRoot/../modules/$repo/version.props"
+    Write-Host -ForegroundColor Magenta "Updating $repo"
     if (-not (Test-Path $path)) {
         Write-Warning "$path does not exist"
         continue

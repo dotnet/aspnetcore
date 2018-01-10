@@ -7,7 +7,12 @@
 
   <ItemGroup>
     <!-- Repos being patched -->
+    <Repository Include="Diagnostics" />
+    <Repository Include="EntityFrameworkCore" />
+    <Repository Include="Identity" />
     <Repository Include="JavaScriptServices" />
+    <Repository Include="KestrelHttpServer" />
+    <Repository Include="MetaPackages" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
     <Repository Include="Scaffolding" />
@@ -27,22 +32,17 @@
     <ShippedRepository Include="CORS" />
     <ShippedRepository Include="DataProtection" />
     <ShippedRepository Include="DependencyInjection" />
-    <ShippedRepository Include="Diagnostics" />
     <ShippedRepository Include="DotNetTools" />
-    <ShippedRepository Include="EntityFrameworkCore" />
     <ShippedRepository Include="EventNotification" />
     <ShippedRepository Include="FileSystem" />
     <ShippedRepository Include="Hosting" />
     <ShippedRepository Include="HtmlAbstractions" />
     <ShippedRepository Include="HttpAbstractions" />
     <ShippedRepository Include="HttpSysServer" />
-    <ShippedRepository Include="Identity" />
     <ShippedRepository Include="IISIntegration" />
     <ShippedRepository Include="JsonPatch" />
-    <ShippedRepository Include="KestrelHttpServer" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="MetaPackages" />
     <ShippedRepository Include="Microsoft.Data.Sqlite" />
     <ShippedRepository Include="Options" />
     <ShippedRepository Include="Proxy" />
