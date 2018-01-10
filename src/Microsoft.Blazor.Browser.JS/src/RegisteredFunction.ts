@@ -1,12 +1,14 @@
 ﻿import { System_String } from './Platform/Platform';
 import { platform } from './Environment';
+import { internalRegisteredFunctions } from './InternalRegisteredFunction';
 
-const registeredFunctions: { [identifier: string]: Function } = {};
-
-// Code in Mono 'driver.c' looks for the registered functions here
-window['__blazorRegisteredFunctions'] = registeredFunctions;
+const registeredFunctions: { [identifier: string]: Function | undefined } = {};
 
 export function registerFunction(identifier: string, implementation: Function) {
+  if (internalRegisteredFunctions.hasOwnProperty(identifier)) {
+    throw new Error(`The function identifier '${identifier}' is reserved and cannot be registered.`);
+  }
+
   if (registeredFunctions.hasOwnProperty(identifier)) {
     throw new Error(`A function with the identifier '${identifier}' has already been registered.`);
   }
@@ -14,13 +16,19 @@ export function registerFunction(identifier: string, implementation: Function) {
   registeredFunctions[identifier] = implementation;
 }
 
-// Handle the JSON-marshalled RegisteredFunction.Invoke calls
-registerFunction('__blazor_InvokeJson', (identifier: System_String, ...argsJson: System_String[]) => {
-  const identifierJsString = platform.toJavaScriptString(identifier);
-  if (!(registeredFunctions && registeredFunctions.hasOwnProperty(identifierJsString))) {
-    throw new Error(`Could not find registered function with name "${identifierJsString}".`);
+export function getRegisteredFunction(identifier: string): Function {
+  // By prioritising the internal ones, we ensure you can't override them
+  const result = internalRegisteredFunctions[identifier] || registeredFunctions[identifier];
+  if (result) {
+    return result;
+  } else {
+    throw new Error(`Could not find registered function with name '${identifier}'.`);
   }
-  const funcInstance = registeredFunctions[identifierJsString];
+}
+
+export function invokeWithJsonMarshalling(identifier: System_String, ...argsJson: System_String[]) {
+  const identifierJsString = platform.toJavaScriptString(identifier);
+  const funcInstance = getRegisteredFunction(identifierJsString);
   const args = argsJson.map(json => JSON.parse(platform.toJavaScriptString(json)));
   const result = funcInstance.apply(null, args);
   if (result !== null && result !== undefined) {
@@ -29,4 +37,4 @@ registerFunction('__blazor_InvokeJson', (identifier: System_String, ...argsJson:
   } else {
     return null;
   }
-});
+}

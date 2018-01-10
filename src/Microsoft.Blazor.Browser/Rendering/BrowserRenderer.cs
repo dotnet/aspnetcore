@@ -48,7 +48,7 @@ namespace Microsoft.Blazor.Browser.Rendering
         {
             var componentId = AssignComponentId(component);
             RegisteredFunction.InvokeUnmarshalled<int, string, int, object>(
-                "_blazorAttachComponentToElement",
+                "attachComponentToElement",
                 _browserRendererId,
                 domElementSelector,
                 componentId);
@@ -71,7 +71,7 @@ namespace Microsoft.Blazor.Browser.Rendering
             ArraySegment<RenderTreeNode> renderTree)
         {
             RegisteredFunction.InvokeUnmarshalled<RenderComponentArgs, object>(
-                "_blazorRender",
+                "renderRenderTree",
                 new RenderComponentArgs
                 {
                     BrowserRendererId = _browserRendererId,

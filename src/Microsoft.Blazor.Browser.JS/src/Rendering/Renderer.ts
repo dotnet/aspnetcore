@@ -1,5 +1,4 @@
-﻿import { registerFunction } from '../RegisteredFunction';
-import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
+﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
 let raiseEventMethod: MethodHandle;
@@ -14,10 +13,7 @@ type ComponentIdToParentElement = { [componentId: number]: Element };
 type BrowserRendererRegistry = { [browserRendererId: number]: ComponentIdToParentElement };
 const browserRenderers: BrowserRendererRegistry = {};
 
-registerFunction('_blazorAttachComponentToElement', attachComponentToElement);
-registerFunction('_blazorRender', renderRenderTree);
-
-function attachComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
+export function attachComponentToElement(browserRendererId: number, elementSelector: System_String, componentId: number) {
   const elementSelectorJs = platform.toJavaScriptString(elementSelector);
   const element = document.querySelector(elementSelectorJs);
   if (!element) {
@@ -28,7 +24,7 @@ function attachComponentToElement(browserRendererId: number, elementSelector: Sy
   browserRenderers[browserRendererId][componentId] = element;
 }
 
-function renderRenderTree(renderComponentArgs: Pointer) {
+export function renderRenderTree(renderComponentArgs: Pointer) {
   const browserRendererId = platform.readHeapInt32(renderComponentArgs, 0);
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {

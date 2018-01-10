@@ -1,5 +1,6 @@
 ﻿import { MethodHandle, System_Object, System_String, System_Array, Pointer, Platform } from '../Platform';
 import { getAssemblyNameFromUrl } from '../DotNet';
+import { getRegisteredFunction } from '../../RegisteredFunction';
 
 let assembly_load: (assemblyName: string) => number;
 let find_class: (assemblyHandle: number, namespace: string, className: string) => number;
@@ -119,6 +120,10 @@ export const monoPlatform: Platform = {
     return monoPlatform.readHeapInt32(address, offset) as any as System_Object;
   },
 };
+
+// Bypass normal type checking to add this extra function. It's only intended to be called from
+// the JS code in Mono's driver.c. It's never intended to be called from TypeScript.
+(monoPlatform as any).monoGetRegisteredFunction = getRegisteredFunction;
 
 function addScriptTagsToDocument() {
   // Load either the wasm or asm.js version of the Mono runtime
