@@ -1233,6 +1233,16 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore.InjectedPa
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         }
 
+        [Fact]
+        public async Task Page_CanOverrideRouteTemplate()
+        {
+            // Arrange & Act
+            var content = await Client.GetStringAsync("like-totally-custom");
+
+            // Assert
+            Assert.Equal("<p>Hey, it's Mr. totally custom here!</p>", content.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

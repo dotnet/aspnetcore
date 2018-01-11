@@ -479,23 +479,40 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void OnProvidersExecuting_ThrowsIfRouteTemplateHasOverridePattern()
+        public void OnProvidersExecuting_AllowsRouteTemplatesWithOverridePattern()
         {
             // Arrange
             var descriptors = new[]
             {
-                CreateVersion_2_0_Descriptor("/Pages/Index.cshtml"),
+                CreateVersion_2_0_Descriptor("/Pages/Index.cshtml", "~/some-other-prefix"),
                 CreateVersion_2_0_Descriptor("/Pages/Home.cshtml", "/some-prefix"),
             };
 
             var provider = CreateProvider(descriptors: descriptors);
             var context = new PageRouteModelProviderContext();
 
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
-            Assert.Equal(
-                "The route for the page at '/Pages/Home.cshtml' cannot start with / or ~/. Pages do not support overriding the file path of the page.",
-                exception.Message);
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(
+                context.RouteModels,
+                result =>
+                {
+                    Assert.Equal("/Pages/Index.cshtml", result.RelativePath);
+                    Assert.Equal("/Index", result.ViewEnginePath);
+                    Assert.Collection(
+                        result.Selectors,
+                        selector => Assert.Equal("some-other-prefix", selector.AttributeRouteModel.Template));
+                },
+                result =>
+                {
+                    Assert.Equal("/Pages/Home.cshtml", result.RelativePath);
+                    Assert.Equal("/Home", result.ViewEnginePath);
+                    Assert.Collection(
+                        result.Selectors,
+                        selector => Assert.Equal("some-prefix", selector.AttributeRouteModel.Template));
+                });
         }
 
         private TestCompiledPageRouteModelProvider CreateProvider(

@@ -68,6 +68,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void CreateRouteModel_DoesNotAddMultipleSelectorsWhenRouteTemplateIsAbsolute()
+        {
+            // Arrange
+            var relativePath = "/Pages/Users/Profile/Index.cshtml";
+            var options = new RazorPagesOptions();
+            var routeModelFactory = new PageRouteModelFactory(options, NullLogger.Instance);
+
+            // Act
+            var routeModel = routeModelFactory.CreateRouteModel(relativePath, "/my-override");
+
+            // Assert
+            Assert.Equal(relativePath, routeModel.RelativePath);
+            Assert.Equal("/Users/Profile/Index", routeModel.ViewEnginePath);
+
+            Assert.Collection(
+                routeModel.Selectors,
+                selector => Assert.Equal("my-override", selector.AttributeRouteModel.Template));
+
+            Assert.Collection(
+                routeModel.RouteValues,
+                kvp =>
+                {
+                    Assert.Equal("page", kvp.Key);
+                    Assert.Equal("/Users/Profile/Index", kvp.Value);
+                });
+        }
+
+        [Fact]
         public void CreateAreaRouteModel_AddsSelector()
         {
             // Arrange

@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void OnProvidersExecuting_ThrowsIfRouteTemplateHasOverridePattern()
+        public void OnProvidersExecuting_AllowsRouteTemplateWithOverridePattern()
         {
             // Arrange
             var fileProvider = new TestFileProvider();
@@ -296,10 +296,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
-            Assert.Equal("The route for the page at '/Index.cshtml' cannot start with / or ~/. Pages do not support overriding the file path of the page.",
-                ex.Message);
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(
+                context.RouteModels,
+                model =>
+                {
+                    Assert.Equal("/Index.cshtml", model.RelativePath);
+                    Assert.Equal("/Index", model.ViewEnginePath);
+                    Assert.Collection(
+                        model.Selectors,
+                        selector => Assert.Equal("custom-route", selector.AttributeRouteModel.Template));
+                });
         }
 
         [Fact]
