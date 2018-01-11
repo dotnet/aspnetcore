@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
@@ -26,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             if (prop == null)
             {
-                throw new FormatException($"Missing required property '{property}'.");
+                throw new InvalidDataException($"Missing required property '{property}'.");
             }
 
             return GetValue<T>(property, expectedType, prop);
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             if (expectedType != JTokenType.None && prop.Type != expectedType)
             {
-                throw new FormatException($"Expected '{property}' to be of type {expectedType}.");
+                throw new InvalidDataException($"Expected '{property}' to be of type {expectedType}.");
             }
             return prop.Value<T>();
         }

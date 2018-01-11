@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
                     if (token == null || token.Type != JTokenType.Object)
                     {
-                        throw new FormatException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
+                        throw new InvalidDataException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
                     }
 
                     var json = (JObject)token;
@@ -102,12 +102,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                         case HubProtocolConstants.PingMessageType:
                             return PingMessage.Instance;
                         default:
-                            throw new FormatException($"Unknown message type: {type}");
+                            throw new InvalidDataException($"Unknown message type: {type}");
                     }
                 }
                 catch (JsonReaderException jrex)
                 {
-                    throw new FormatException("Error reading JSON.", jrex);
+                    throw new InvalidDataException("Error reading JSON.", jrex);
                 }
             }
         }
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var arguments = new object[args.Count];
             if (paramTypes.Length != arguments.Length)
             {
-                throw new FormatException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Length}.");
+                throw new InvalidDataException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Length}.");
             }
 
             try
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
             catch (Exception ex)
             {
-                throw new FormatException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+                throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
             }
         }
 
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
             if (error != null && resultProp != null)
             {
-                throw new FormatException("The 'error' and 'result' properties are mutually exclusive.");
+                throw new InvalidDataException("The 'error' and 'result' properties are mutually exclusive.");
             }
 
             if (resultProp == null)

@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var message = Encoding.UTF8.GetBytes(payload);
 
-            var exception = Assert.Throws<FormatException>(() =>
+            var exception = Assert.Throws<InvalidDataException>(() =>
                 Assert.True(NegotiationProtocol.TryParseMessage(message, out var deserializedMessage)));
 
             Assert.Equal(expectedMessage, exception.Message);

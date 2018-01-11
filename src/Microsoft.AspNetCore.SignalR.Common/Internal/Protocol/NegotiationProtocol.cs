@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             if (!TextMessageParser.TryParseMessage(ref input, out var payload))
             {
-                throw new FormatException("Unable to parse payload as a negotiation message.");
+                throw new InvalidDataException("Unable to parse payload as a negotiation message.");
             }
 
             using (var memoryStream = new MemoryStream(payload.ToArray()))
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     var token = JToken.ReadFrom(reader);
                     if (token == null || token.Type != JTokenType.Object)
                     {
-                        throw new FormatException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
+                        throw new InvalidDataException($"Unexpected JSON Token Type '{token?.Type}'. Expected a JSON Object.");
                     }
 
                     var negotiationJObject = (JObject)token;
