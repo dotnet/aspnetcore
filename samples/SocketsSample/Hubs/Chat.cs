@@ -30,6 +30,11 @@ namespace SocketsSample.Hubs
             return Clients.Others.InvokeAsync("Send", $"{Context.ConnectionId}: {message}");
         }
 
+        public Task SendToConnection(string connectionId, string message)
+        {
+            return Clients.Client(connectionId).InvokeAsync("Send", $"Private message from {Context.ConnectionId}: {message}");
+        }
+
         public Task SendToGroup(string groupName, string message)
         {
             return Clients.Group(groupName).InvokeAsync("Send", $"{Context.ConnectionId}@{groupName}: {message}");

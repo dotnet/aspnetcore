@@ -25,8 +25,15 @@
             <input type="text" id="message-text" placeholder="Type a message, name or group" />
             <input type="button" id="broadcast" class="btn" value="Broadcast" />
             <input type="button" id="broadcast-exceptme" class="btn" value="Broadcast (Others)" />
-            <input type="button" id="join" class="btn" value="Enter Name" />
+        </div>
+    </form>
 
+    <h4>To Connection</h4>
+    <form class="form-inline">
+        <div class="input-prepend input-append">
+            <input type="text" name="connection-message" id="connection-message-text" placeholder="Type a message" />
+            <input type="text" name="connection-id" id="connection-id" placeholder="Type a connection id" />
+            <input type="button" id="connection-send" class="btn" value="Send to Connection" />
         </div>
     </form>
 
@@ -176,6 +183,12 @@
     click('broadcast-exceptme', function (event) {
         let data = getText('message-text');
         invoke(connection, 'SendToOthers', data);
+    });
+
+    click('connection-send', function (event) {
+        let data = getText('connection-message-text');
+        let id = getText('connection-id');
+        invoke(connection, 'SendToConnection', id, data);
     });
 
 </script>
