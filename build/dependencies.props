@@ -43,7 +43,7 @@
 
   <!-- .NET Core patch feed -->
   <PropertyGroup>
-    <DotNetCorePatchFeed Condition="'$(DotNetCorePatchFeed)' == ''">https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCorePatchFeed>
+    <DotNetCorePatchFeed Condition="'$(DotNetCorePatchFeed)' == ''">https://api.nuget.org/v3/index.json</DotNetCorePatchFeed>
   </PropertyGroup>
 
   <ItemGroup>
@@ -248,6 +248,10 @@
       <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandardImplicitPackageVersion</VariableName>
       <TargetFramework>netstandard2.0</TargetFramework>
+    </ExternalDependency>
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>NETStandardLibrary20PackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
       <!-- We have a dependency on NS.Library from the .NET Framework tfm in aspnet/EventNotification. -->
