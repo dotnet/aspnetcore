@@ -5,15 +5,12 @@
        that the Razor components can be referenced with intellisense from .cs files. -->
   
   <Target Name="BlazorCompileRazorComponents" BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <BlazorRazorComponents Include="**\*.cshtml" />
-    </ItemGroup>
     <PropertyGroup>
       <BlazorComponentsNamespace>BlazorComponents</BlazorComponentsNamespace>
       <IsDesignTimeBuild Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">true</IsDesignTimeBuild>
       <GeneratedFilePath>$(IntermediateOutputPath)BlazorRazorComponents.g.cs</GeneratedFilePath>
     </PropertyGroup>
-    <WriteLinesToFile File="$(GeneratedFilePath)" Overwrite="true" Lines="namespace $(BlazorComponentsNamespace) {;@(BlazorRazorComponents->'public class %(Filename) {}');}" />
+    <Exec Command="$(BlazorBuildExe) buildrazor --source $(ProjectDir) --output $(GeneratedFilePath)" />
     <ItemGroup>
       <Compile Include="$(GeneratedFilePath)" />
     </ItemGroup>
