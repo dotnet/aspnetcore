@@ -1,0 +1,21 @@
+init:
+  - git config --global core.autocrlf true
+branches:
+  only:
+    - master
+    - /^release\/.*/
+    - dev
+    - /^(.*\/)?ci-.*$/
+install:
+  # Set depth to 50 because the commit we need may not be at the tip of the branch configured in .gitmodules
+  - git submodule update --init --depth=50 --recursive
+build_script:
+  - ps: .\build.ps1 /t:ComputeGraph
+clone_depth: 1
+environment:
+  global:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
+test: off
+deploy: off
+os: Visual Studio 2017
