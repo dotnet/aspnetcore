@@ -413,8 +413,6 @@ not building again in this patch.
   <ItemGroup>
     <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Data.Sqlite" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>

@@ -13,6 +13,7 @@
     <Repository Include="JavaScriptServices" />
     <Repository Include="KestrelHttpServer" />
     <Repository Include="MetaPackages" />
+    <Repository Include="Microsoft.Data.Sqlite" />
     <Repository Include="Mvc" />
     <Repository Include="MvcPrecompilation" />
     <Repository Include="Scaffolding" />
@@ -43,7 +44,6 @@
     <ShippedRepository Include="JsonPatch" />
     <ShippedRepository Include="Localization" />
     <ShippedRepository Include="Logging" />
-    <ShippedRepository Include="Microsoft.Data.Sqlite" />
     <ShippedRepository Include="Options" />
     <ShippedRepository Include="Proxy" />
     <ShippedRepository Include="Razor" />
