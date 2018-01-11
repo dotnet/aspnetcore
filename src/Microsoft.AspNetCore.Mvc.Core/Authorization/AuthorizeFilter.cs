@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 _mvcOptions = context.HttpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
             }
 
-            if (_mvcOptions.CombineAuthorizeFilters)
+            if (_mvcOptions.AllowCombiningAuthorizeFilters)
             {
                 if (!context.IsEffectivePolicy<AuthorizeFilter>(this))
                 {

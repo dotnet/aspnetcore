@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite
 {
-    public class StartupWithGlobalAuthorizeAndCombineAuthorizeFilters
+    public class StartupWithGlobalAuthorizeAndAllowCombiningAuthorizeFilters
     {
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -17,7 +17,7 @@ namespace SecurityWebSite
             // Add framework services.
             services.AddMvc(o =>
             {
-                o.CombineAuthorizeFilters = true;
+                o.AllowCombiningAuthorizeFilters = true;
                 o.Filters.Add(new AuthorizeFilter());
             });
 

@@ -81,11 +81,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have value <c>false</c> if not explicitly configured.
+        /// this setting will have value <c>false</c> unless explicitly configured.
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have value <c>true</c> if not explicitly configured.
+        /// higher then this setting will have value <c>true</c> unless explicitly configured.
         /// </para>
         /// </remarks>
         public bool AllowAreas

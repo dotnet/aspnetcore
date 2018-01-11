@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         // See CompatibilitySwitch.cs for guide on how to implement these.
+        private readonly CompatibilitySwitch<bool> _allowCombiningAuthorizeFilters;
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
         private readonly ICompatibilitySwitch[] _switches;
@@ -44,11 +46,13 @@ namespace Microsoft.AspNetCore.Mvc
             ModelValidatorProviders = new List<IModelValidatorProvider>();
             ValueProviderFactories = new List<IValueProviderFactory>();
 
+            _allowCombiningAuthorizeFilters = new CompatibilitySwitch<bool>(nameof(AllowCombiningAuthorizeFilters));
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
             
             _switches = new ICompatibilitySwitch[]
             {
+                _allowCombiningAuthorizeFilters, 
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
             };
@@ -65,6 +69,44 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see cref="ModelStateDictionary"/> if the incoming request body is empty.
         /// </example>
         public bool AllowEmptyInputInBodyModelBinding { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if policies on instances of <see cref="AuthorizeFilter" />
+        /// will be combined into a single effective policy. The default value of the property is <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Authorization policies are designed such that multiple authorization policies applied to an endpoint
+        /// should be combined and executed a single policy. The <see cref="AuthorizeFilter"/> (commonly applied
+        /// by <see cref="AuthorizeAttribute"/>) can be applied globally, to controllers, and to actions - which
+        /// specifies multiple authorization policies for an action. In all ASP.NET Core releases prior to 2.1
+        /// these multiple policies would not combine as intended. This compatibility switch configures whether the
+        /// old (unintended) behavior or the new combining behavior will be used when multiple authorization policies
+        /// are applied.
+        /// </para>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have the value <c>false</c> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowCombiningAuthorizeFilters
+        {
+            get => _allowCombiningAuthorizeFilters.Value;
+            set => _allowCombiningAuthorizeFilters.Value = value;
+        }
 
         /// <summary>
         /// Gets a Dictionary of CacheProfile Names, <see cref="CacheProfile"/> which are pre-defined settings for
@@ -105,13 +147,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <see cref="InputFormatterExceptionPolicy.AllExceptions"/> if 
-        /// not explicitly configured.
+        /// this setting will have the value <see cref="InputFormatterExceptionPolicy.AllExceptions"/> unless
+        /// explicitly configured.
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
         /// higher then this setting will have the value
-        /// <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/> if not explicitly configured.
+        /// <see cref="InputFormatterExceptionPolicy.MalformedInputExceptions"/> unless explicitly configured.
         /// </para>
         /// </remarks>
         public InputFormatterExceptionPolicy InputFormatterExceptionPolicy
@@ -141,11 +183,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
-        /// this setting will have the value <c>false</c> if not explicitly configured.
+        /// this setting will have the value <c>false</c> unless explicitly configured.
         /// </para>
         /// <para>
         /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
-        /// higher then this setting will have the value <c>true</c> if not explicitly configured.
+        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
         /// </para>
         /// </remarks>
         public bool SuppressBindingUndefinedValueToEnumType
@@ -242,13 +284,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the default value for the Permanent property of <see cref="RequireHttpsAttribute"/>.
         /// </summary>
         public bool RequireHttpsPermanent { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value that determines if policies on instances of <see cref="AuthorizeFilter" />
-        /// will be combined into a single effective policy. This was always to be the intended behavior, 
-        /// but was not the case.
-        /// </summary>
-        public bool CombineAuthorizeFilters { get; set;}
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
         {

@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
+            Assert.False(mvcOptions.AllowCombiningAuthorizeFilters);
             Assert.False(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.AllExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.False(jsonOptions.AllowInputFormatterExceptionMessages);
@@ -55,6 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
+            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);
@@ -77,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTest
             var razorPagesOptions = services.GetRequiredService<IOptions<RazorPagesOptions>>().Value;
 
             // Assert
+            Assert.True(mvcOptions.AllowCombiningAuthorizeFilters);
             Assert.True(mvcOptions.SuppressBindingUndefinedValueToEnumType);
             Assert.Equal(InputFormatterExceptionPolicy.MalformedInputExceptions, mvcOptions.InputFormatterExceptionPolicy);
             Assert.True(jsonOptions.AllowInputFormatterExceptionMessages);

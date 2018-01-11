@@ -11,9 +11,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class CombineAuthorizeTests : IClassFixture<MvcTestFixture<StartupWithGlobalAuthorizeAndCombineAuthorizeFilters>>
+    public class CombineAuthorizeTests : IClassFixture<MvcTestFixture<StartupWithGlobalAuthorizeAndAllowCombiningAuthorizeFilters>>
     {
-        public CombineAuthorizeTests(MvcTestFixture<StartupWithGlobalAuthorizeAndCombineAuthorizeFilters> fixture)
+        public CombineAuthorizeTests(MvcTestFixture<StartupWithGlobalAuthorizeAndAllowCombiningAuthorizeFilters> fixture)
         {
             Client = fixture.Client;
         }
