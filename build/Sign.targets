@@ -7,6 +7,7 @@
       RebuildPackages;
       RebuildVSIXes;
       RebuildSharedFxs;
+      RepackMPacks;
     </SignDependsOn>
   </PropertyGroup>
 
