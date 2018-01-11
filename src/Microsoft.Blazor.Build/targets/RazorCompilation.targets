@@ -1,9 +1,4 @@
-﻿<Project>
-
-  <!-- Temporarily, the Razor 'compile' process just produces a set of empty classes. This is to
-       show it's possible to codegen the classes both during regular builds and at design time so
-       that the Razor components can be referenced with intellisense from .cs files. -->
-  
+﻿<Project>  
   <Target Name="BlazorCompileRazorComponents" BeforeTargets="CoreCompile">
     <PropertyGroup>
       <BlazorComponentsNamespace>BlazorComponents</BlazorComponentsNamespace>
