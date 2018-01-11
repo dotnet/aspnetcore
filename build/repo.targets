@@ -154,6 +154,14 @@
      DependsOnTargets="_PrepareRepositories;GeneratePropsFiles;ComputeGraph;_BuildRepositories" />
 
   <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePropsFiles">
+    <ItemGroup>
+      <_UndeclaredPackageArtifact Include="%(ArtifactInfo.PackageId)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+      <_UndeclaredPackageArtifact Remove="@(PackageArtifact)" />
+    </ItemGroup>
+
+    <Error Text="Undeclared package artifacts. Add these to artifacts.props:%0A  - @(_UndeclaredPackageArtifact, '%0A  - ')"
+      Condition=" @(_UndeclaredPackageArtifact->Count()) != 0 " />
+
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
@@ -179,8 +187,17 @@
   </Target>
 
   <Target Name="VerifyPackageArtifactConfig">
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
+           Condition="'%(PackageArtifact.Category)' == '' " />
+
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as Metapackage='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.Metapackage)' == 'true' " />
+
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMA='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMA)' == 'true' " />
+
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMATools='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMATools)' == 'true' " />
   </Target>
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
