@@ -15,6 +15,7 @@
         "Microsoft.Net.Component.4.6.TargetingPack",
         "Microsoft.Net.Component.4.5.2.TargetingPack",
         "Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Win81",
+        "Microsoft.VisualStudio.Component.Azure.Storage.Emulator",
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.Windows10SDK.15063.Desktop",
         "Microsoft.VisualStudio.Workload.ManagedDesktop",
