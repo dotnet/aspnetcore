@@ -4,7 +4,6 @@
 using Microsoft.Blazor.Browser.Rendering;
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.RenderTree;
-using System;
 
 namespace StandaloneApp
 {
