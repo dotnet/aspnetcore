@@ -58,6 +58,8 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" Metapackage="false" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="ship" Metapackage="true"  />
+    <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher" Category="ship" Metapackage="true"  />
+    <PackageArtifact Include="Microsoft.AspNetCore.Dispatcher.Abstractions" Category="ship" Metapackage="true"  />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="ship" Metapackage="true" />
@@ -123,6 +125,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Routing" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.Abstractions" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Routing.UrlMatchingTree.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.HttpSys" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IIS" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.IISIntegration" Category="ship" Metapackage="true" />
@@ -134,23 +137,17 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Category="ship" Metapackage="true"  />
     <PackageArtifact Include="Microsoft.AspNetCore.Session" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Abstractions" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Common.Http" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Http" Category="ship" Metapackage="true" />
-
-    <!-- SignalR Client and SignalR MsgPack Protocol support are not part of the meta-package -->
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Client.Http" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Protocols.MsgPack" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.MsgPack" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.MsgPack" Category="ship" />
-
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Common" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Redis" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Client.Http" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Common.Http" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Sockets.Http" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaServices.Extensions" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SpaTemplates" Category="ship" />
