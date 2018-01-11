@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -59,7 +59,7 @@
     <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
     <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
-    <SystemBuffersPrimitivesPackageVersion>0.1.0-e180104-2</SystemBuffersPrimitivesPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview1-26102-01</SystemBuffersPackageVersion>
     <SystemIOPipelinesExtensionsPackageVersion>0.1.0-e180104-2</SystemIOPipelinesExtensionsPackageVersion>
     <SystemIOPipelinesPackageVersion>0.1.0-e180104-2</SystemIOPipelinesPackageVersion>
     <SystemMemoryPackageVersion>4.5.0-preview1-26102-01</SystemMemoryPackageVersion>
