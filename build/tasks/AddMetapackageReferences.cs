@@ -46,9 +46,18 @@ namespace RepoTasks
             foreach (var package in metapackageArtifacts)
             {
                 var packageName = package.ItemSpec;
-                var packageVersion = buildArtifacts
-                    .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                    .PackageInfo.Version.ToString();
+                string packageVersion;
+                try
+                {
+                    packageVersion = buildArtifacts
+                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
+                        .PackageInfo.Version.ToString();
+                }
+                catch (InvalidOperationException)
+                {
+                    Log.LogError($"Missing Package: {packageName} from build artifacts");
+                    throw;
+                }
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: [{packageVersion}]");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
