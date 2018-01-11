@@ -1,0 +1,17 @@
+<StoreArtifacts>
+  <Package Id="microsoft.aspnetcore.mvc" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.abstractions" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.apiexplorer" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.core" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.cors" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.dataannotations" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.formatters.json" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.formatters.xml" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.localization" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.razor" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.razorpages" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.taghelpers" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.mvc.viewfeatures" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.nodeservices" Version="2.0.2" />
+  <Package Id="microsoft.aspnetcore.spaservices" Version="2.0.2" />
+</StoreArtifacts>

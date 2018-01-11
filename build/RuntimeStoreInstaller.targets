@@ -22,7 +22,7 @@
     <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
-    <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.3-125/Build.RS.</RuntimeStore20LinkPrefix>
+    <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/$(PreviousRuntimeStoreArchiveVersion)/Build.RS.</RuntimeStore20LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
     <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
