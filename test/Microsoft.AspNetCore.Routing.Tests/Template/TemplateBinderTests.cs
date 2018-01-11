@@ -692,6 +692,28 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
+        public void GetUrlWithLeadingTildeSlash()
+        {
+            RunTest(
+                "~/foo",
+                null,
+                null,
+                new RouteValueDictionary(new { }),
+                "/UrlEncode[[foo]]");
+        }
+
+        [Fact]
+        public void GetUrlWithLeadingSlash()
+        {
+            RunTest(
+                "/foo",
+                null,
+                null,
+                new RouteValueDictionary(new { }),
+                "/UrlEncode[[foo]]");
+        }
+
+        [Fact]
         public void TemplateBinder_KeepsExplicitlySuppliedRouteValues_OnFailedRouetMatch()
         {
             // Arrange
@@ -721,7 +743,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
 #if ROUTE_COLLECTION
 
-                [Fact]
+        [Fact]
         public void GetUrlShouldValidateOnlyAcceptedParametersAndUserDefaultValuesForInvalidatedParameters()
         {
             // Arrange
@@ -755,7 +777,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             Assert.Equal<string>("/app1/UrlConstraints/Validation.mvc/Input5/MissmatchedValidateParameters2/valid1", vpd.VirtualPath);
         }
 
-               [Fact]
+        [Fact]
         public void GetUrlWithRouteThatHasExtensionWithSubsequentDefaultValueIncludesExtensionButNotDefaultValue()
         {
             // Arrange

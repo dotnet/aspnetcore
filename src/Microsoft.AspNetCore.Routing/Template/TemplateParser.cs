@@ -25,12 +25,9 @@ namespace Microsoft.AspNetCore.Routing.Template
                 routeTemplate = String.Empty;
             }
 
-            if (IsInvalidRouteTemplate(routeTemplate))
-            {
-                throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, nameof(routeTemplate));
-            }
+            var trimmedRouteTemplate = TrimPrefix(routeTemplate);
 
-            var context = new TemplateParserContext(routeTemplate);
+            var context = new TemplateParserContext(trimmedRouteTemplate);
             var segments = new List<TemplateSegment>();
 
             while (context.Next())
@@ -59,6 +56,23 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 throw new ArgumentException(context.Error, nameof(routeTemplate));
             }
+        }
+
+        private static string TrimPrefix(string routeTemplate)
+        {
+            if (routeTemplate.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return routeTemplate.Substring(2);
+            }
+            else if (routeTemplate.StartsWith("/", StringComparison.Ordinal))
+            {
+                return routeTemplate.Substring(1);
+            }
+            else if (routeTemplate.StartsWith("~", StringComparison.Ordinal))
+            {
+                throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, nameof(routeTemplate));
+            }
+            return routeTemplate;
         }
 
         private static bool ParseSegment(TemplateParserContext context, List<TemplateSegment> segments)
