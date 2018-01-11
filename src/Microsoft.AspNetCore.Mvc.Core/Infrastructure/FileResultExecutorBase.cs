@@ -64,20 +64,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var response = context.HttpContext.Response;
             SetLastModifiedAndEtagHeaders(response, lastModified, etag);
 
-            var serveBody = !HttpMethods.IsHead(request.Method);
-
             // Short circuit if the preconditional headers process to 304 (NotModified) or 412 (PreconditionFailed)
             if (preconditionState == PreconditionState.NotModified)
             {
-                serveBody = false;
                 response.StatusCode = StatusCodes.Status304NotModified;
-                return (range: null, rangeLength: 0, serveBody);
+                return (range: null, rangeLength: 0, serveBody: false);
             }
             else if (preconditionState == PreconditionState.PreconditionFailed)
             {
-                serveBody = false;
                 response.StatusCode = StatusCodes.Status412PreconditionFailed;
-                return (range: null, rangeLength: 0, serveBody);
+                return (range: null, rangeLength: 0, serveBody: false);
             }
 
             if (fileLength.HasValue)
@@ -86,10 +82,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 // the length of the entire file. 
                 // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
                 // range processing (see method SetContentLength).
-                if (serveBody)
-                {
-                    response.ContentLength = fileLength.Value;
-                }
+
+                response.ContentLength = fileLength.Value;
 
                 // Handle range request
                 if (enableRangeProcessing)
@@ -111,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
             }
 
-            return (range: null, rangeLength: 0, serveBody);
+            return (range: null, rangeLength: 0, serveBody: !HttpMethods.IsHead(request.Method));
         }
 
         private static void SetContentType(ActionContext context, FileResult result)
@@ -295,6 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         {
             var response = context.HttpContext.Response;
             var httpResponseHeaders = response.GetTypedHeaders();
+            var serveBody = !HttpMethods.IsHead(context.HttpContext.Request.Method);
 
             // Range may be null for empty range header, invalid ranges, parsing errors, multiple ranges 
             // and when the file length is zero.
@@ -306,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             if (!isRangeRequest)
             {
-                return (range: null, rangeLength: 0, serveBody: true);
+                return (range: null, rangeLength: 0, serveBody);
             }
 
             // Requested range is not satisfiable
@@ -330,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             // Overwrite the Content-Length header for valid range requests with the range length.
             var rangeLength = SetContentLength(response, range);
 
-            return (range, rangeLength, serveBody: true);
+            return (range, rangeLength, serveBody);
         }
 
         private static long SetContentLength(HttpResponse response, RangeItemHeaderValue range)
