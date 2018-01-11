@@ -105,7 +105,7 @@
     <ExternalDependency Include="System.Text.Encoding.CodePages" Version="$(SystemTextEncodingCodePagesPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Text.Encodings.Web" Version="$(SystemTextEncodingsWebPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.AccessControl" Version="$(SystemThreadingAccessControlPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" Source="$(DotNetCoreFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
