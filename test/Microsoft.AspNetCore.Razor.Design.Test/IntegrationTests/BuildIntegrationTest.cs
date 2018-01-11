@@ -43,6 +43,21 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Build_SimpleMvc_NoopsWithNoFiles()
+        {
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
+
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Build_ErrorInGeneratedCode_ReportsMSBuildError()
         {
             // Introducing a C# semantic error

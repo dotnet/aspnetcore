@@ -133,10 +133,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             directoryPath = Path.Combine(result.Project.DirectoryPath, directoryPath);
 
-            var files = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
-            if (files.Length != expected)
+            if (Directory.Exists(directoryPath))
             {
-                throw new FileCountException(result, expected, directoryPath, searchPattern, files);
+                var files = Directory.GetFiles(directoryPath, searchPattern, SearchOption.AllDirectories);
+                if (files.Length != expected)
+                {
+                    throw new FileCountException(result, expected, directoryPath, searchPattern, files);
+                }
+            }
+            else if (expected > 0)
+            {
+                // directory doesn't exist, that's OK if we expected to find nothing.
+                throw new FileCountException(result, expected, directoryPath, searchPattern, Array.Empty<string>());
             }
         }
 

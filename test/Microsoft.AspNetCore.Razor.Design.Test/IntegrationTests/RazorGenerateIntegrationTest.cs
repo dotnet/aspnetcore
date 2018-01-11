@@ -178,5 +178,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileDoesNotExist(result, generatedFile);
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_Noops_WithNoFiles()
+        {
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildPassed(result);
+
+            // We shouldn't need to look for tag helpers
+            Assert.FileDoesNotExist(result, Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.input.cache"));
+            Assert.FileDoesNotExist(result, Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache"));
+
+            // We shouldn't need to hash the files
+            Assert.FileDoesNotExist(result, Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorCoreGenerate.cache"));
+            
+            Assert.FileCountEquals(result, 0, RazorIntermediateOutputPath, "*.cs");
+        }
     }
 }

@@ -10,7 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="**\*.cshtml"/>
+    <Content Include="**\*.cshtml">
+      <Pack>false</Pack>
+    </Content>
   </ItemGroup>
   
   <ItemGroup Condition="'$(BinariesRoot)'!=''">

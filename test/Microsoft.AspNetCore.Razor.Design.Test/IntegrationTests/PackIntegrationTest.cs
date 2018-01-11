@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         [Fact]
         [InitializeTestProject("ClassLibrary")]
-        public async Task Pack_Wortks_IncludesRazorAssembly()
+        public async Task Pack_Works_IncludesRazorAssembly()
         {
             var result = await DotnetMSBuild("Pack", "/p:RazorCompileOnBuild=true");
 

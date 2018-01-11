@@ -11,8 +11,8 @@
     Use these properties to attach behavior to the corresponding target.
   -->
   <PropertyGroup>
-    <RazorGenerateDependsOn>_RazorResolveTagHelpers;RazorCoreGenerate</RazorGenerateDependsOn>
-    <RazorCompileDependsOn>_RazorResolveTagHelpers;RazorCoreGenerate;RazorCoreCompile</RazorCompileDependsOn>
+    <RazorGenerateDependsOn>RazorResolveGenerateInputs;RazorCoreGenerate</RazorGenerateDependsOn>
+    <RazorCompileDependsOn>RazorGenerate;RazorCoreCompile</RazorCompileDependsOn>
   </PropertyGroup>
 
   <!--
