@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.HttpsPolicy.Tests
@@ -279,6 +277,63 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
             var response = await client.SendAsync(request);
 
             Assert.Equal("https://localhost:5050/", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task NoServerAddressFeature_DoesNotThrow_DefaultsTo443()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpsRedirection(options =>
+                    {
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseHttpsRedirection();
+                    app.Run(context =>
+                    {
+                        return context.Response.WriteAsync("Hello world");
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            var response = await client.SendAsync(request);
+
+            Assert.Equal("https://localhost/", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task SetNullAddressFeature_DoesNotThrow()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpsRedirection(options =>
+                    {
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.UseHttpsRedirection();
+                    app.Run(context =>
+                    {
+                        return context.Response.WriteAsync("Hello world");
+                    });
+                });
+
+            var featureCollection = new FeatureCollection();
+            featureCollection.Set<IServerAddressesFeature>(null);
+            var server = new TestServer(builder, featureCollection);
+
+            var client = server.CreateClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, "");
+            var response = await client.SendAsync(request);
+
+            Assert.Equal("https://localhost/", response.Headers.Location.ToString());
         }
     }
 }

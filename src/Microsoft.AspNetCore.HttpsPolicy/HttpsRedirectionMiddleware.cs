@@ -26,22 +26,34 @@ namespace Microsoft.AspNetCore.HttpsPolicy
         /// Initializes the HttpsRedirectionMiddleware
         /// </summary>
         /// <param name="next"></param>
-        /// <param name="serverAddressesFeature">The</param>
         /// <param name="options"></param>
         /// <param name="config"></param>
-        public HttpsRedirectionMiddleware(RequestDelegate next, IServerAddressesFeature serverAddressesFeature, IOptions<HttpsRedirectionOptions> options, IConfiguration config)
+        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config)
+
         {
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            _config = config ?? throw new ArgumentException(nameof(config));
-            _next = next ?? throw new ArgumentNullException(nameof(next));
-            _serverAddressesFeature = serverAddressesFeature ?? throw new ArgumentNullException(nameof(serverAddressesFeature));
-
             var httpsRedirectionOptions = options.Value;
             _httpsPort = httpsRedirectionOptions.HttpsPort;
             _statusCode = httpsRedirectionOptions.RedirectStatusCode;
+        }
+
+        /// <summary>
+        /// Initializes the HttpsRedirectionMiddleware
+        /// </summary>
+        /// <param name="next"></param>
+        /// <param name="options"></param>
+        /// <param name="config"></param>
+        /// <param name="serverAddressesFeature">The</param>
+        public HttpsRedirectionMiddleware(RequestDelegate next, IOptions<HttpsRedirectionOptions> options, IConfiguration config, IServerAddressesFeature serverAddressesFeature)
+            : this(next, options, config)
+        {
+            _serverAddressesFeature = serverAddressesFeature ?? throw new ArgumentNullException(nameof(serverAddressesFeature));
         }
 
         /// <summary>
@@ -98,7 +110,13 @@ namespace Microsoft.AspNetCore.HttpsPolicy
             if (_httpsPort.HasValue)
             {
                 return;
-            } 
+            }
+
+            if (_serverAddressesFeature == null)
+            {
+                _httpsPort = 443;
+                return;
+            }
 
             int? httpsPort = null;
             foreach (var address in _serverAddressesFeature.Addresses)
