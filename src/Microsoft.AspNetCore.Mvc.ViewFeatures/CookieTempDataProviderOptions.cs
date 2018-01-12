@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.Mvc
         {
             Name = CookieTempDataProvider.CookieName,
             HttpOnly = true,
-            SameSite = SameSiteMode.Strict,
+
+            // Check the comment on CookieBuilder below for more details
+            SameSite = SameSiteMode.Lax,
 
             // This cookie has been marked as non-essential because a user could use the SessionStateTempDataProvider,
             // which is more common in production scenarios. Check the comment on CookieBuilder below
@@ -36,7 +38,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// Determines the settings used to create the cookie in <see cref="CookieTempDataProvider"/>.
         /// </para>
         /// <para>
-        /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Strict"/>.
+        /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>. Setting this to
+        /// <see cref="SameSiteMode.Strict"/> may cause browsers to not send back the cookie to the server in an
+        /// OAuth login flow.
         /// <see cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest" />.
         /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
         /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>, This property is only considered when a
