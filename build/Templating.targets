@@ -14,16 +14,11 @@
         IsFinalBuild=$(IsFinalBuild);
         SkipAspNetCoreRuntimeInstall=true;
       </TemplateProjProperties>
-      <TemplateProjTargets>CleanArtifacts;Restore;Compile;Package</TemplateProjTargets>
-      <TemplateProjTargets Condition="'$(SkipTests)' != 'true'">
-        $(TemplateProjTargets);
-        Test;
-      </TemplateProjTargets>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="$(TemplateProjTargets)"
-             Properties="$(TemplateProjProperties)" />
+             Targets="CleanArtifacts;Build"
+             Properties="$(TemplateProjProperties);SkipTests=true" />
 
     <ItemGroup>
       <TemplateArtifacts Include="$(TemplatingProjectRoot)artifacts\build\*" />

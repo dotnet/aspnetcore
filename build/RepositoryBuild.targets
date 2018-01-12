@@ -1,5 +1,15 @@
 <Project>
-  <Target Name="_BuildRepositories" DependsOnTargets="GeneratePropsFiles">
+
+  <PropertyGroup>
+    <!-- Experimental flag to run assemblies AND repos tests in parallel...if you dare. -->
+    <TestReposInParallel>false</TestReposInParallel>
+
+    <_NoBuildRepos>$(NoBuild)</_NoBuildRepos>
+    <_BuildScriptToExecute Condition="'$(OS)'!='Windows_NT'">build.sh</_BuildScriptToExecute>
+    <_BuildScriptToExecute Condition="'$(OS)'=='Windows_NT'">build.cmd</_BuildScriptToExecute>
+  </PropertyGroup>
+
+  <Target Name="GetRepoBatches" DependsOnTargets="GeneratePropsFiles;ComputeGraph">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
         <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
@@ -10,33 +20,52 @@
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
+  </Target>
 
-    <PropertyGroup>
-      <BatchBuilds Condition="$(BuildInParallel) AND '$(SkipTests)'=='true'">true</BatchBuilds>
-      <BatchBuilds Condition="'$(BatchBuilds)'==''">false</BatchBuilds>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <PinnedArtifactInfo Include="@(ArtifactInfo)" Condition="'$(BuildGraphOf)' == ''" />
-    </ItemGroup>
-
-    <!-- If we are building a sub-graph, we need to re-examine the list of artifacts that will actual build. -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)"
-             Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=$(SubmoduleRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
-             Condition="'$(BuildGraphOf)' != ''">
-      <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
-    </MSBuild>
-
+  <Target Name="_BuildRepositories" DependsOnTargets="GetRepoBatches">
     <MSBuild
       Projects="@(BatchedRepository)"
-      BuildInParallel="$(BatchBuilds)"
+      BuildInParallel="true"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
       Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
+
+    <PropertyGroup>
+      <_NoBuildRepos>true</_NoBuildRepos>
+    </PropertyGroup>
   </Target>
 
-  <Target Name="_BuildRepository">
+  <Target Name="_TestRepositories" DependsOnTargets="GetRepoBatches">
+    <!--
+      Use the task to sort instead of batching (i.e. using %(BatchedRepository.BuildGroup))
+      When batching, StopOnFirstFailure doesn't help because the MSBuild task would be invoked multiple times
+      instead of invoking once with many projects.
+    -->
+    <RepoTasks.OrderBy Items="@(BatchedRepository)" Key="BuildGroup">
+      <Output TaskParameter="Items" ItemName="_BatchedTestRepo" />
+    </RepoTasks.OrderBy>
+
+    <MSBuild
+      Projects="@(_BatchedTestRepo)"
+      BuildInParallel="$(TestProjectsInParallel)"
+      StopOnFirstFailure="false"
+      Targets="_TestRepository"
+      Properties="BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration);_NoBuildRepos=$(_NoBuildRepos)"
+      ContinueOnError="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_RepoTestResults" />
+    </MSBuild>
+
+    <Warning Text="No test results were found from running repos." Condition="@(_RepoTestResults->Count()) == 0"/>
+    <Message Text="Tests passed for the following repos:%0A - @(_RepoTestResults->WithMetadataValue('Success', 'true'), '%0A - ')"
+      Importance="High"
+      Condition="@(_RepoTestResults->WithMetadataValue('Success', 'true')->Count()) != 0 " />
+    <Error Text="Tests failed for the following repos:%0A - @(_RepoTestResults->WithMetadataValue('Success', 'false'), '%0A - ')"
+      Condition="@(_RepoTestResults->WithMetadataValue('Success', 'false')->Count()) != 0 " />
+  </Target>
+
+  <!-- Inner build context -->
+
+  <Target Name="GetRepoBuildProps">
     <PropertyGroup>
       <!-- Should reduce allowable package feeds to only nuget.org. -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
@@ -47,14 +76,15 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
+    </PropertyGroup>
+  </Target>
 
-      <BuildArguments>/t:CleanArtifacts $(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
+  <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps">
+    <PropertyGroup>
+      <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
       <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
       <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>
-
-      <_BuildScriptToExecute Condition="'$(OS)'!='Windows_NT'">build.sh</_BuildScriptToExecute>
-      <_BuildScriptToExecute Condition="'$(OS)'=='Windows_NT'">build.cmd</_BuildScriptToExecute>
     </PropertyGroup>
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
@@ -82,6 +112,36 @@
        DestinationFolder="$(ArtifactsDir)msbuild\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
+  </Target>
+
+  <Target Name="_TestRepository" DependsOnTargets="GetRepoBuildProps" Returns="@(RepositoryTestResult)">
+    <PropertyGroup>
+      <BuildArguments>/t:Test /p:NoBuild=$(_NoBuildRepos) $(RepositoryBuildArguments)</BuildArguments>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RepositoryTestResult Include="$(RepositoryToBuild)" Success="false" />
+    </ItemGroup>
+
+    <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
+
+    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
+    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
+    <Copy SourceFiles="$(RepositoryRoot)korebuild-lock.txt" DestinationFolder="$(BuildRepositoryRoot)" />
+
+    <Exec
+      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
+      IgnoreStandardErrorWarningFormat="true"
+      WorkingDirectory="$(RepositoryRoot)"
+      IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
+    </Exec>
+
+    <ItemGroup>
+      <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0'" />
+    </ItemGroup>
+
+    <Message Text="============ Done testing $(RepositoryToBuild) ============" Importance="High" />
   </Target>
 
 </Project>
