@@ -41,6 +41,10 @@ export interface NegotiationMessage {
     readonly protocol: string;
 }
 
+export interface CancelInvocation extends HubMessage {
+    readonly invocationId: string;
+}
+
 export const enum ProtocolType {
     Text = 1,
     Binary

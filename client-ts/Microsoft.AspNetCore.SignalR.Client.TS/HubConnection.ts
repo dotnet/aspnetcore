@@ -6,7 +6,7 @@ import { IConnection } from "./IConnection"
 import { HttpConnection } from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage, CancelInvocation } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -167,7 +167,14 @@ export class HubConnection {
     stream<T>(methodName: string, ...args: any[]): Observable<T> {
         let invocationDescriptor = this.createStreamInvocation(methodName, args);
 
-        let subject = new Subject<T>();
+        let subject = new Subject<T>(() => {
+            let cancelInvocation: CancelInvocation = this.createCancelInvocation(invocationDescriptor.invocationId);
+            let message: any = this.protocol.writeMessage(cancelInvocation);
+
+            this.callbacks.delete(invocationDescriptor.invocationId);
+
+            return this.connection.send(message);
+        });
 
         this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: HubMessage, error?: Error) => {
             if (error) {
@@ -280,7 +287,7 @@ export class HubConnection {
 
     private createInvocation(methodName: string, args: any[], nonblocking: boolean): InvocationMessage {
         if (nonblocking) {
-            return <InvocationMessage>{
+            return {
                 type: MessageType.Invocation,
                 target: methodName,
                 arguments: args,
@@ -290,7 +297,7 @@ export class HubConnection {
             let id = this.id;
             this.id++;
 
-            return <InvocationMessage>{
+            return {
                 type: MessageType.Invocation,
                 invocationId: id.toString(),
                 target: methodName,
@@ -303,11 +310,18 @@ export class HubConnection {
         let id = this.id;
         this.id++;
 
-        return <StreamInvocationMessage>{
+        return {
             type: MessageType.StreamInvocation,
             invocationId: id.toString(),
             target: methodName,
             arguments: args,
+        };
+    }
+
+    private createCancelInvocation(id: string): CancelInvocation {
+        return {
+            type: MessageType.CancelInvocation,
+            invocationId: id,
         };
     }
 }

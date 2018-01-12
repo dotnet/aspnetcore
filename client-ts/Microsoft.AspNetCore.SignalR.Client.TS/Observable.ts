@@ -10,16 +10,38 @@ export interface Observer<T> {
     complete?: () => void;
 }
 
+export class Subscription<T> {
+    subject: Subject<T>;
+    observer: Observer<T>;
+
+    constructor(subject: Subject<T>, observer: Observer<T>) {
+        this.subject = subject;
+        this.observer = observer;
+    }
+
+    public dispose(): void {
+        let index: number = this.subject.observers.indexOf(this.observer);
+        if (index > -1) {
+            this.subject.observers.splice(index, 1);
+        }
+
+        if (this.subject.observers.length === 0) {
+            this.subject.cancelCallback().catch((_) => { });
+        }
+    }
+}
+
 export interface Observable<T> {
-    // TODO: Return a Subscription so the caller can unsubscribe? IDisposable in System.IObservable
-    subscribe(observer: Observer<T>): void;
+    subscribe(observer: Observer<T>): Subscription<T>;
 }
 
 export class Subject<T> implements Observable<T> {
     observers: Observer<T>[];
+    cancelCallback: () => Promise<void>;
 
-    constructor() {
+    constructor(cancelCallback: () => Promise<void>) {
         this.observers = [];
+        this.cancelCallback = cancelCallback;
     }
 
     public next(item: T): void {
@@ -44,7 +66,8 @@ export class Subject<T> implements Observable<T> {
         }
     }
 
-    public subscribe(observer: Observer<T>): void {
+    public subscribe(observer: Observer<T>): Subscription<T> {
         this.observers.push(observer);
+        return new Subscription(this, observer);
     }
 }

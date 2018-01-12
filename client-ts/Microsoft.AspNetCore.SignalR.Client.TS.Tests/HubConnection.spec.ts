@@ -387,6 +387,31 @@ describe("HubConnection", () => {
             // Expectation is connection.receive will not to throw
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
         });
+
+        it("can be canceled", () => {
+            let connection = new TestConnection();
+
+            let hubConnection = new HubConnection(connection, { logger: null });
+            let observer = new TestObserver();
+            let subscription = hubConnection.stream("testMethod")
+                .subscribe(observer);
+
+            connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
+            expect(observer.itemsReceived).toEqual([1]);
+
+            subscription.dispose();
+
+            connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 2 });
+            // Observer should no longer receive messages
+            expect(observer.itemsReceived).toEqual([1]);
+
+            // Verify the cancel is sent
+            expect(connection.sentData.length).toBe(2);
+            expect(JSON.parse(connection.sentData[1])).toEqual({
+                type: MessageType.CancelInvocation,
+                invocationId: connection.lastInvocationId
+            });
+        });
     });
 
     describe("onClose", () => {
