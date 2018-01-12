@@ -33,11 +33,11 @@ namespace Microsoft.Blazor.Mono.Test
             Assert.Collection(MonoStaticFileProvider.BclFiles.GetDirectoryContents("/"),
                 item => Assert.Equal("/bcl", item.PhysicalPath));
 
-            Assert.Collection(MonoStaticFileProvider.BclFiles.GetDirectoryContents("/bcl").OrderBy(i => i.Name),
-                item => Assert.Equal("/bcl/Facades", item.PhysicalPath),
-                item => Assert.Equal("/bcl/mscorlib.dll", item.PhysicalPath),
-                item => Assert.Equal("/bcl/System.Core.dll", item.PhysicalPath),
-                item => Assert.Equal("/bcl/System.dll", item.PhysicalPath));
+            // Not an exhaustive list. The full list is long.
+            var actualBclRootFiles = MonoStaticFileProvider.BclFiles.GetDirectoryContents("/bcl");
+            Assert.Contains(actualBclRootFiles, item => item.PhysicalPath == "/bcl/mscorlib.dll");
+            Assert.Contains(actualBclRootFiles, item => item.PhysicalPath == "/bcl/System.Core.dll");
+            Assert.Contains(actualBclRootFiles, item => item.PhysicalPath == "/bcl/System.dll");
 
             // Not an exhaustive list. The full list is long.
             var actualFacades = MonoStaticFileProvider.BclFiles.GetDirectoryContents("/bcl/Facades");

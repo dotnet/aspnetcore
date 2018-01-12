@@ -34,10 +34,12 @@ namespace Microsoft.Blazor.Server.Test
                 new ReferencedAssemblyResolver(MonoStaticFileProvider.BclFiles, string.Empty));
             var contents = provider.GetDirectoryContents("").OrderBy(i => i.Name).ToList();
             Assert.Collection(contents,
+                item => { Assert.Equal("/Mono.Security.dll", item.PhysicalPath); },
                 item => { Assert.Equal("/mscorlib.dll", item.PhysicalPath); },
                 item => { Assert.Equal("/System.Core.dll", item.PhysicalPath); },
                 item => { Assert.Equal("/System.dll", item.PhysicalPath); },
-                item => { Assert.Equal("/System.Linq.Expressions.dll", item.PhysicalPath); });
+                item => { Assert.Equal("/System.Linq.Expressions.dll", item.PhysicalPath); },
+                item => { Assert.Equal("/System.Xml.dll", item.PhysicalPath); });
         }
 
         [Fact]
@@ -70,19 +72,32 @@ namespace Microsoft.Blazor.Server.Test
                  */
                 "/Microsoft.Blazor.Browser.dll",
                 "/Microsoft.Blazor.dll",
+                "/Mono.Security.dll",
                 "/mscorlib.dll",
                 "/netstandard.dll",
                 "/StandaloneApp.dll",
+                "/System.ComponentModel.Composition.dll",
                 "/System.Core.dll",
+                "/System.Data.dll",
                 "/System.Diagnostics.StackTrace.dll",
                 "/System.dll",
+                "/System.Drawing.dll",
                 "/System.Globalization.Extensions.dll",
+                "/System.IO.Compression.dll",
+                "/System.IO.Compression.FileSystem.dll",
+                "/System.Net.Http.dll",
+                "/System.Numerics.dll",
                 "/System.Runtime.dll",
-                "/System.Runtime.InteropServices.RuntimeInformation.dll",
+                "/System.Runtime.Serialization.dll",
                 "/System.Runtime.Serialization.Primitives.dll",
                 "/System.Runtime.Serialization.Xml.dll",
                 "/System.Security.Cryptography.Algorithms.dll",
                 "/System.Security.SecureString.dll",
+                "/System.ServiceModel.Internals.dll",
+                "/System.Transactions.dll",
+                "/System.Web.Services.dll",
+                "/System.Xml.dll",
+                "/System.Xml.Linq.dll",
                 "/System.Xml.XPath.XDocument.dll",
             };
 
