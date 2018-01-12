@@ -145,6 +145,11 @@
                 "packageTypes": [
                     "DotnetTool"
                 ]
+            },
+            "dotnet-watch": {
+                "packageTypes": [
+                    "DotnetTool"
+                ]
             }
         }
     }
