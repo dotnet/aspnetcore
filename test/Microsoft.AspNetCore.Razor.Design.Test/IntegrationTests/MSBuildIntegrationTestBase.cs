@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected string OutputPath => Path.Combine("bin", Configuration, TargetFramework);
 
+        protected string PublishOutputPath => Path.Combine(OutputPath, "publish");
+
         // Used by the test framework to set the project that we're working with
         internal static ProjectDirectory Project
         {

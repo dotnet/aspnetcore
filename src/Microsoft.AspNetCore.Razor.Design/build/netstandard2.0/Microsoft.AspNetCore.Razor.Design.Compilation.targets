@@ -1,12 +1,19 @@
 <Project>
+  <PropertyGroup>
+    <!-- Similar to https://github.com/Microsoft/msbuild/blob/908cc9ccd4961441628f68e37a148183a87bb067/src/Tasks/Microsoft.Common.CurrentVersion.targets#L146-L153 -->
+    <_RazorDebugSymbolsProduced>false</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugSymbols)'=='true'">true</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='none'">false</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='pdbonly'">true</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='full'">true</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='portable'">true</_RazorDebugSymbolsProduced>
+    <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='embedded'">false</_RazorDebugSymbolsProduced>
+  </PropertyGroup>
+
   <ItemGroup>
     <!-- Used to creating the final compiled Razor dll -->
     <RazorIntermediateAssembly Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
-
-    <!-- Similar to https://github.com/Microsoft/msbuild/blob/908cc9ccd4961441628f68e37a148183a87bb067/src/Tasks/Microsoft.Common.CurrentVersion.targets#L146-L153 -->
-    <_RazorDebugSymbolsIntermediatePath 
-      Condition="'$(DebugSymbols)'=='true' and '$(DebugType)'!='' and '$(DebugType)'!='none' and '$(DebugType)'!='embedded'" 
-      Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
+    <_RazorDebugSymbolsIntermediatePath Condition="'$(_RazorDebugSymbolsProduced)'=='true'" Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
     <_RazorDebugSymbolsOutputPath Include="@(_RazorDebugSymbolsIntermediatePath->'$(OutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
 

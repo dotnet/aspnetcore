@@ -50,6 +50,11 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    This target will only be called when we have some .cshtml files that are going to participate in code generation.
+
+    This is part of the chain of targets that are called once we've actually committed to generating code.
+  -->
   <Target 
     Name="_ResolveRazorCoreGenerateInputs" 
     DependsOnTargets="RazorResolveGenerateInputs"
@@ -156,6 +161,20 @@
     </ItemGroup>
   </Target>
 
+  <!-- 
+    This target is called after PrepareForPublish when RazorCompileOnBuild=true so that we can hook into publish.
+    This target just hooks up other targets since Publish and PrepareForPublish don't have a DependsOnTargets
+    property we can use. 
+  -->
+  <Target 
+    Name="_RazorPrepareForPublish"
+    AfterTargets="PrepareForPublish"
+    DependsOnTargets="RazorCompile">
+  </Target>
+
+  <!--
+    This target adds the Razor assembly to the BuiltProjectOutputGroupOutput - which is used as input to the Pack target.
+  -->
   <Target 
     Name="_RazorAddBuiltProjectOutputGroupOutput"
     DependsOnTargets="RazorResolveGenerateInputs"
@@ -167,11 +186,20 @@
     
   </Target>
 
+  <!--
+    Called as part of GetCopyToOutputDirectoryItems - this target populates the list of items that get
+    copied to the output directory when building as a project reference.
+  -->
   <Target 
-    Name="_RazorGetCopyToOutputDirectoryItems" 
-    DependsOnTargets="RazorResolveGenerateInputs">
+    Name="_RazorGetCopyToOutputDirectoryItems"
+    DependsOnTargets="RazorCompile"
+    Condition="'$(RazorCompileOnBuild)'=='true'">
 
-    <ItemGroup Condition="'@(RazorGenerate)'!= '' and '$(RazorCompileOnBuild)' == 'true'">
+    <!-- 
+      This condition needs to be inside the target because it the itemgroup will be populated after the target's
+      condition is evaluated.
+    -->
+    <ItemGroup Condition="'@(RazorGenerate)'!=''">
       <AllItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
         <TargetPath>%(Filename)%(Extension)</TargetPath>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -184,6 +212,40 @@
 
   </Target>
 
+  <!--
+    Called as part of GetCopyToPublishDirectoryItems - this target populates the list of items that get
+    copied to the publish directory when publishing as a project reference.
+
+    The dependency on RazorCompile is needed because this will be called during publish on each P2P
+    reference without calling RazorCompile for the P2P references.
+  -->
+  <Target
+    Name="_RazorGetCopyToPublishDirectoryItems"
+    BeforeTargets="GetCopyToPublishDirectoryItems"
+    DependsOnTargets="RazorCompile"
+    Condition="'$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true'">
+
+    <!-- 
+      This condition needs to be inside the target because it the itemgroup will be populated after the target's
+      condition is evaluated.
+    -->
+    <ItemGroup Condition="'@(RazorGenerate)'!=''">
+      <AllPublishItemsFullPathWithTargetPath Include="@(RazorIntermediateAssembly->'%(FullPath)')">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </AllPublishItemsFullPathWithTargetPath>
+      <AllPublishItemsFullPathWithTargetPath Include="@(_RazorDebugSymbolsIntermediatePath->'%(FullPath)')">
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </AllPublishItemsFullPathWithTargetPath>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    Called as part of CopyFilesToOutputDirectory - this target is called when building the project to copy
+    files to the output directory.
+  -->
   <Target Name="_RazorCopyFilesToOutputDirectory">
 
     <!-- Copy the Razor dll  -->
@@ -222,6 +284,25 @@
       <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
     </Copy>
     
+  </Target>
+
+  <!--
+    Called after ComputeFilesToPublish - this target is called when publishing the project to get a list of
+    files to the output directory.
+  -->
+  <Target
+    Name="_RazorComputeFilesToPublish"
+    AfterTargets="ComputeFilesToPublish">
+
+    <ItemGroup Condition="'@(RazorGenerate)'!='' and ('$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true')">
+      <ResolvedFileToPublish Include="@(RazorIntermediateAssembly)" Condition="'$(CopyBuildOutputToPublishDirectory)'=='true'">
+        <RelativePath>@(RazorIntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
+      </ResolvedFileToPublish>
+      <ResolvedFileToPublish Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="'$(CopyOutputSymbolsToPublishDirectory)'=='true'">
+        <RelativePath>@(_RazorDebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
   </Target>
 
 </Project>

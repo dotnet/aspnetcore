@@ -58,6 +58,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Build_SimpleMvc_NoopsWithRazorCompileOnPublish()
+        {
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnPublish=true");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Build_ErrorInGeneratedCode_ReportsMSBuildError()
         {
             // Introducing a C# semantic error
@@ -139,10 +152,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
 
             Assert.BuildPassed(result);
+
             Assert.FileExists(result, OutputPath, "AppWithP2PReference.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.pdb");
             Assert.FileExists(result, OutputPath, "AppWithP2PReference.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "AppWithP2PReference.PrecompiledViews.pdb");
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.pdb");
             Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.pdb");
         }
     }
 }
