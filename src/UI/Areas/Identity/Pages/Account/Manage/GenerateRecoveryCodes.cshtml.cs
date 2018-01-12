@@ -23,9 +23,26 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             _logger = logger;
         }
 
+        [TempData]
         public string[] RecoveryCodes { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
+        {
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (!user.TwoFactorEnabled)
+            {
+                throw new InvalidOperationException($"Cannot generate recovery codes for user with ID '{user.Id}' because they do not have 2FA enabled.");
+            }
+
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -43,7 +60,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
 
             _logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", user.Id);
 
-            return Page();
+            return RedirectToPage("./ShowRecoveryCodes");
         }
     }
 }

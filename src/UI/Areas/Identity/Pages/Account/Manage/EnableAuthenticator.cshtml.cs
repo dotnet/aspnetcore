@@ -3,6 +3,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -33,6 +34,9 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
         public string SharedKey { get; set; }
 
         public string AuthenticatorUri { get; set; }
+
+        [TempData]
+        public string[] RecoveryCodes { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; }
@@ -88,7 +92,10 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", user.Id);
-            return RedirectToPage("./GenerateRecoveryCodes");
+
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            RecoveryCodes = recoveryCodes.ToArray();
+            return RedirectToPage("./ShowRecoveryCodes");
         }
 
         private async Task LoadSharedKeyAndQrCodeUriAsync(IdentityUser user)
