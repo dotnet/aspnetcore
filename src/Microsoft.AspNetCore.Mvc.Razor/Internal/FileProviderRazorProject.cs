@@ -37,15 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             path = NormalizeAndEnsureValidPath(path);
             var fileInfo = _provider.GetFileInfo(path);
 
-            string relativePhysicalPath = null;
-            if (fileInfo != null && fileInfo.Exists)
-            {
-                var absoluteBasePath = _hostingEnvironment.ContentRootPath;
-                relativePhysicalPath = fileInfo?.PhysicalPath?.Substring(absoluteBasePath.Length + 1); // Include leading separator
-                relativePhysicalPath = relativePhysicalPath ?? path; // Use the incoming path if the file is not directly accessible
-            }
-
-            return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, filePath: path, relativePhysicalPath: relativePhysicalPath);
+            return new FileProviderRazorProjectItem(fileInfo, basePath: string.Empty, filePath: path, root: _hostingEnvironment.ContentRootPath);
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string path)
@@ -58,11 +50,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             if (directory.Exists)
             {
-                foreach (var file in directory)
+                foreach (var fileInfo in directory)
                 {
-                    if (file.IsDirectory)
+                    if (fileInfo.IsDirectory)
                     {
-                        var relativePath = prefix + "/" + file.Name;
+                        var relativePath = prefix + "/" + fileInfo.Name;
                         var subDirectory = _provider.GetDirectoryContents(JoinPath(basePath, relativePath));
                         var children = EnumerateFiles(subDirectory, basePath, relativePath);
                         foreach (var child in children)
@@ -70,14 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                             yield return child;
                         }
                     }
-                    else if (string.Equals(RazorFileExtension, Path.GetExtension(file.Name), StringComparison.OrdinalIgnoreCase))
+                    else if (string.Equals(RazorFileExtension, Path.GetExtension(fileInfo.Name), StringComparison.OrdinalIgnoreCase))
                     {
-                        var filePath = prefix + "/" + file.Name;
-                        var absoluteBasePath = _hostingEnvironment.ContentRootPath;
-                        var relativePhysicalPath = file.PhysicalPath?.Substring(absoluteBasePath.Length + 1); // Include leading separator
-                        relativePhysicalPath = relativePhysicalPath ?? filePath; // Use the incoming path if the file is not directly accessible
+                        var filePath = prefix + "/" + fileInfo.Name;
 
-                        yield return new FileProviderRazorProjectItem(file, basePath, filePath: filePath, relativePhysicalPath: relativePhysicalPath);
+                        yield return new FileProviderRazorProjectItem(fileInfo, basePath, filePath: filePath, root: _hostingEnvironment.ContentRootPath);
                     }
                 }
             }

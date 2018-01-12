@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider("BasePath");
-            var file1 = fileProvider.AddFile("File1.txt", "content");
-            var file2 = fileProvider.AddFile("File2.js", "content");
+            var file1 = fileProvider.AddFile("/File1.txt", "content");
+            var file2 = fileProvider.AddFile("/File2.js", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2 });
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider("BasePath");
-            var file1 = fileProvider.AddFile("File1.cshtml", "content");
-            var file2 = fileProvider.AddFile("File2.js", "content");
-            var file3 = fileProvider.AddFile("File3.cshtml", "content");
+            var file1 = fileProvider.AddFile("/File1.cshtml", "content");
+            var file2 = fileProvider.AddFile("/File2.js", "content");
+            var file3 = fileProvider.AddFile("/File3.cshtml", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2, file3 });
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
@@ -84,9 +84,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             };
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { directory1, file1, directory2 });
 
-            var file2 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File2.cshtml"), "content");
-            var file3 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File3.cshtml"), "content");
-            var file4 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File4.txt"), "content");
+            var file2 = fileProvider.AddFile("/Level1-Dir1/File2.cshtml", "content");
+            var file3 = fileProvider.AddFile("/Level1-Dir1/File3.cshtml", "content");
+            var file4 = fileProvider.AddFile("/Level1-Dir1/File4.txt", "content");
             var directory3 = new TestDirectoryFileInfo
             {
                 Name = "Level2-Dir1"
@@ -144,16 +144,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 Name = "Level1-Dir1",
             };
-            var file1 = fileProvider.AddFile(Path.Combine("BasePath", "File1.cshtml"), "content");
+            var file1 = fileProvider.AddFile("/File1.cshtml", "content");
             var directory2 = new TestDirectoryFileInfo
             {
                 Name = "Level1-Dir2",
             };
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { directory1, file1, directory2 });
 
-            var file2 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File2.cshtml"), "content");
-            var file3 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File3.cshtml"), "content");
-            var file4 = fileProvider.AddFile(Path.Combine("Level1-Dir1", "File4.txt"), "content");
+            var file2 = fileProvider.AddFile("/Level1-Dir1/File2.cshtml", "content");
+            var file3 = fileProvider.AddFile("/Level1-Dir1/File3.cshtml", "content");
+            var file4 = fileProvider.AddFile("/Level1-Dir1/File4.txt", "content");
             var directory3 = new TestDirectoryFileInfo
             {
                 Name = "Level2-Dir1"
@@ -188,13 +188,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 });
         }
 
-        [Fact(Skip = "Need to follow-up https://github.com/aspnet/Mvc/pull/7228")]
+        [Fact]
         public void GetItem_ReturnsFileFromDisk()
         {
             var fileProvider = new TestFileProvider("BasePath");
-            var file1 = fileProvider.AddFile("File1.cshtml", "content");
-            var file2 = fileProvider.AddFile("File2.js", "content");
-            var file3 = fileProvider.AddFile("File3.cshtml", "content");
+            var file1 = fileProvider.AddFile("/File1.cshtml", "content");
+            var file2 = fileProvider.AddFile("/File2.js", "content");
+            var file3 = fileProvider.AddFile("/File3.cshtml", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2, file3 });
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
@@ -213,11 +213,35 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         [Fact]
+        public void GetItem_PhysicalPathDoesNotStartWithContentRoot_ReturnsNull()
+        {
+            var fileProvider = new TestFileProvider("BasePath2");
+            var file1 = fileProvider.AddFile("/File1.cshtml", "content");
+            var file2 = fileProvider.AddFile("/File2.js", "content");
+            var file3 = fileProvider.AddFile("/File3.cshtml", "content");
+            fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2, file3 });
+
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+
+            // Act
+            var item = razorProject.GetItem("/File3.cshtml");
+
+            // Assert
+            Assert.True(item.Exists);
+            Assert.Equal("/File3.cshtml", item.FilePath);
+            Assert.Equal(string.Empty, item.BasePath);
+            Assert.Equal(Path.Combine("BasePath2", "File3.cshtml"), item.PhysicalPath);
+            Assert.Null(item.RelativePhysicalPath);
+        }
+
+        [Fact]
         public void GetItem_ReturnsNotFoundResult()
         {
             // Arrange
             var fileProvider = new TestFileProvider("BasePath");
-            var file = fileProvider.AddFile("SomeFile.cshtml", "content");
+            var file = fileProvider.AddFile("/SomeFile.cshtml", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file });
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 

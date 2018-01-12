@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var fileInfo = new TestFileInfo
             {
                 Content = contents,
-                PhysicalPath = Path.Combine(Root, path),
+                PhysicalPath = Path.Combine(Root, NormalizeAndEnsureValidPhysicalPath(path)),
                 Name = Path.GetFileName(path),
                 LastModified = DateTime.UtcNow,
             };
@@ -107,6 +107,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public TestFileChangeToken GetChangeToken(string filter)
         {
             return _fileTriggers[filter];
+        }
+
+        private static string NormalizeAndEnsureValidPhysicalPath(string filePath)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                return filePath;
+            }
+
+            filePath = filePath.Replace('/', Path.DirectorySeparatorChar);
+
+            if (filePath[0] == Path.DirectorySeparatorChar)
+            {
+                filePath = filePath.Substring(1);
+            }
+
+            return filePath;
         }
 
         private class NotFoundFileInfo : IFileInfo

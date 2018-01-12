@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
-            Assert.Equal(viewPath, failure.SourceFilePath);
+            Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), failure.SourceFilePath);
             Assert.Collection(failure.Messages,
                 message => Assert.StartsWith(
                     @"Unterminated string literal.",
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 compilationResult.CompilationFailures,
                 failure =>
                 {
-                    Assert.Equal(viewPath, failure.SourceFilePath);
+                    Assert.Equal(Path.Combine("Views", "Home", "Index.cshtml"), failure.SourceFilePath);
                     Assert.Collection(failure.Messages,
                         message =>
                         {
