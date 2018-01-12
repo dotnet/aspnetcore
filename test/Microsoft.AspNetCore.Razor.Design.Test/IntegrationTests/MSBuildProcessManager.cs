@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             TimeSpan? timeout = null,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
-            timeout = timeout ?? TimeSpan.FromSeconds(30);
+            timeout = timeout ?? TimeSpan.FromSeconds(60);
 
             var processStartInfo = new ProcessStartInfo()
             {

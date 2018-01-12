@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                         continue;
                     }
 
-                    if (location != null && match.Groups["location"].Value != location)
+                    if (location != null && match.Groups["location"].Value.Trim() != location)
                     {
                         continue;
                     }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            throw new BuildErrorMissingException(result, errorCode);
+            throw new BuildErrorMissingException(result, errorCode, location);
         }
 
         public static void BuildFailed(MSBuildResult result)
@@ -248,15 +248,26 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         private class BuildErrorMissingException : MSBuildXunitException
         {
-            public BuildErrorMissingException(MSBuildResult result, string errorCode)
+            public BuildErrorMissingException(MSBuildResult result, string errorCode, string location)
                 : base(result)
             {
                 ErrorCode = errorCode;
+                Location = location;
             }
 
             public string ErrorCode { get; }
 
-            protected override string Heading => $"Error code '{ErrorCode}' was not found.";
+            public string Location { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    return
+                        $"Error code '{ErrorCode}' was not found." + Environment.NewLine +
+                        $"Looking for '{Location ?? ".*"}: error {ErrorCode}: .*'";
+                }
+            }
         }
 
 
