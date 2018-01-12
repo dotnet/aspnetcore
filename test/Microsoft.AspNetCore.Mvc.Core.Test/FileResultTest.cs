@@ -252,10 +252,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [InlineData("\"Etag\"", "\"NotEtag\"", "\"Etag\"")]
-        [InlineData("\"Etag\"", null, null)]
-        [InlineData(null, "\"NotEtag\"", "\"Etag\"")]
-        public void GetPreconditionState_ShouldProcess(string ifMatch, string ifNoneMatch, string ifRange)
+        [InlineData("\"Etag\"", "\"NotEtag\"", true, "\"Etag\"")]
+        [InlineData("\"Etag\"", "\"NotEtag\"", false, "\"Etag\"")]
+        [InlineData("\"Etag\"", null, false, null)]
+        [InlineData(null, "\"NotEtag\"", true, "\"Etag\"")]
+        [InlineData(null, "\"NotEtag\"", false, "\"Etag\"")]
+        public void GetPreconditionState_ShouldProcess(string ifMatch, string ifNoneMatch, bool isWeak, string ifRange)
         {
             // Arrange
             var actionContext = new ActionContext();
@@ -272,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             httpRequestHeaders.IfNoneMatch = ifNoneMatch == null ? null : new[]
             {
-                new EntityTagHeaderValue(ifNoneMatch),
+                new EntityTagHeaderValue(ifNoneMatch, isWeak),
             };
             httpRequestHeaders.IfRange = ifRange == null ? null : new RangeConditionHeaderValue(ifRange);
             httpRequestHeaders.IfUnmodifiedSince = lastModified;
@@ -291,10 +293,12 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [InlineData("\"NotEtag\"", null)]
-        [InlineData("\"Etag\"", "\"Etag\"")]
-        [InlineData(null, null)]
-        public void GetPreconditionState_ShouldNotProcess_PreconditionFailed(string ifMatch, string ifNoneMatch)
+        [InlineData("\"NotEtag\"", null, true)]
+        [InlineData("\"NotEtag\"", null, false)]
+        [InlineData("\"Etag\"", "\"Etag\"", true)]
+        [InlineData("\"Etag\"", "\"Etag\"", false)]
+        [InlineData(null, null, false)]
+        public void GetPreconditionState_ShouldNotProcess_PreconditionFailed(string ifMatch, string ifNoneMatch, bool isWeak)
         {
             // Arrange
             var actionContext = new ActionContext();
@@ -310,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             httpRequestHeaders.IfNoneMatch = ifNoneMatch == null ? null : new[]
             {
-                new EntityTagHeaderValue(ifNoneMatch),
+                new EntityTagHeaderValue(ifNoneMatch, isWeak),
             };
             httpRequestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
             httpRequestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(2);
@@ -328,9 +332,10 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData(null, null)]
-        public void GetPreconditionState_ShouldNotProcess_NotModified(string ifMatch, string ifNoneMatch)
+        [InlineData(null, "\"Etag\"", true)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData(null, null, false)]
+        public void GetPreconditionState_ShouldNotProcess_NotModified(string ifMatch, string ifNoneMatch, bool isWeak)
         {
             // Arrange
             var actionContext = new ActionContext();
@@ -347,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             httpRequestHeaders.IfNoneMatch = ifNoneMatch == null ? null : new[]
             {
-                new EntityTagHeaderValue(ifNoneMatch),
+                new EntityTagHeaderValue(ifNoneMatch, isWeak),
             };
             httpRequestHeaders.IfModifiedSince = lastModified;
             actionContext.HttpContext = httpContext;

@@ -195,6 +195,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (etag != null)
             {
                 ifMatchState = GetEtagMatchState(
+                    useStrongComparison: true,
                     etagHeader: ifMatch,
                     etag: etag,
                     matchFoundState: PreconditionState.ShouldProcess,
@@ -211,6 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             if (etag != null)
             {
                 ifNoneMatchState = GetEtagMatchState(
+                    useStrongComparison: false,
                     etagHeader: ifNoneMatch,
                     etag: etag,
                     matchFoundState: PreconditionState.NotModified,
@@ -245,6 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
         private static PreconditionState GetEtagMatchState(
+            bool useStrongComparison,
             IList<EntityTagHeaderValue> etagHeader,
             EntityTagHeaderValue etag,
             PreconditionState matchFoundState,
@@ -255,7 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var state = matchNotFoundState;
                 foreach (var entityTag in etagHeader)
                 {
-                    if (entityTag.Equals(EntityTagHeaderValue.Any) || entityTag.Compare(etag, useStrongComparison: true))
+                    if (entityTag.Equals(EntityTagHeaderValue.Any) || entityTag.Compare(etag, useStrongComparison))
                     {
                         state = matchFoundState;
                         break;
