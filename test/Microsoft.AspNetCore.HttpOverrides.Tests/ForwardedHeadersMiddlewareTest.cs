@@ -252,6 +252,146 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("testhost", context.Request.Host.ToString());
         }
 
+        public static TheoryData<string> HostHeaderData
+        {
+            get
+            {
+                return new TheoryData<string>() {
+                    "z",
+                    "1",
+                    "y:1",
+                    "1:1",
+                    "[ABCdef]",
+                    "[abcDEF]:0",
+                    "[abcdef:127.2355.1246.114]:0",
+                    "[::1]:80",
+                    "127.0.0.1:80",
+                    "900.900.900.900:9523547852",
+                    "foo",
+                    "foo:234",
+                    "foo.bar.baz",
+                    "foo.BAR.baz:46245",
+                    "foo.ba-ar.baz:46245",
+                    "-foo:1234",
+                    "xn--c1yn36f:134",
+                    "-",
+                    "_",
+                    "~",
+                    "!",
+                    "$",
+                    "'",
+                    "(",
+                    ")",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostHeaderData))]
+        public async Task XForwardedHostAllowsValidCharacters(string host)
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal(host, context.Request.Host.ToString());
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Host"] = host;
+            });
+            Assert.True(assertsExecuted);
+        }
+
+        public static TheoryData<string> HostHeaderInvalidData
+        {
+            get
+            {
+                // see https://tools.ietf.org/html/rfc7230#section-5.4
+                var data = new TheoryData<string>() {
+                    "", // Empty
+                    "[]", // Too short
+                    "[::]", // Too short
+                    "[ghijkl]", // Non-hex
+                    "[afd:adf:123", // Incomplete
+                    "[afd:adf]123", // Missing :
+                    "[afd:adf]:", // Missing port digits
+                    "[afd adf]", // Space
+                    "[ad-314]", // dash
+                    ":1234", // Missing host
+                    "a:b:c", // Missing []
+                    "::1", // Missing []
+                    "::", // Missing everything
+                    "abcd:1abcd", // Letters in port
+                    "abcd:1.2", // Dot in port
+                    "1.2.3.4:", // Missing port digits
+                    "1.2 .4", // Space
+                };
+
+                // These aren't allowed anywhere in the host header
+                var invalid = "\"#%*+/;<=>?@[]\\^`{}|";
+                foreach (var ch in invalid)
+                {
+                    data.Add(ch.ToString());
+                }
+
+                invalid = "!\"#$%&'()*+,/;<=>?@[]\\^_`{}|~-";
+                foreach (var ch in invalid)
+                {
+                    data.Add("[abd" + ch + "]:1234");
+                }
+
+                invalid = "!\"#$%&'()*+/;<=>?@[]\\^_`{}|~:abcABC-.";
+                foreach (var ch in invalid)
+                {
+                    data.Add("a.b.c:" + ch);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostHeaderInvalidData))]
+        public async Task XForwardedHostFailsForInvalidCharacters(string host)
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedHost
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.NotEqual(host, context.Request.Host.Value);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Host"] = host;
+            });
+            Assert.True(assertsExecuted);
+        }
+
         [Theory]
         [InlineData(0, "h1", "http")]
         [InlineData(1, "", "http")]
@@ -279,6 +419,100 @@ namespace Microsoft.AspNetCore.HttpOverrides
             });
 
             Assert.Equal(expected, context.Request.Scheme);
+        }
+
+        public static TheoryData<string> ProtoHeaderData
+        {
+            get
+            {
+                // ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+                return new TheoryData<string>() {
+                    "z",
+                    "Z",
+                    "1",
+                    "y+",
+                    "1-",
+                    "a.",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ProtoHeaderData))]
+        public async Task XForwardedProtoAcceptsValidProtocols(string scheme)
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedProto
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal(scheme, context.Request.Scheme);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = scheme;
+            });
+            Assert.True(assertsExecuted);
+        }
+
+        public static TheoryData<string> ProtoHeaderInvalidData
+        {
+            get
+            {
+                // ALPHA *( ALPHA / DIGIT / "+" / "-" / "." )
+                var data = new TheoryData<string>() {
+                    "a b", // Space
+                };
+
+                // These aren't allowed anywhere in the scheme header
+                var invalid = "!\"#$%&'()*/:;<=>?@[]\\^_`{}|~";
+                foreach (var ch in invalid)
+                {
+                    data.Add(ch.ToString());
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ProtoHeaderInvalidData))]
+        public async Task XForwardedProtoRejectsInvalidProtocols(string scheme)
+        {
+            var assertsExecuted = false;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedProto,
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal("http", context.Request.Scheme);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = scheme;
+            });
+            Assert.True(assertsExecuted);
         }
 
         [Theory]

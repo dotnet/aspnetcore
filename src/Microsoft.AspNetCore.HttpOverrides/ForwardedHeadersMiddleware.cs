@@ -2,24 +2,62 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
     public class ForwardedHeadersMiddleware
     {
+        private static readonly bool[] HostCharValidity = new bool[127];
+        private static readonly bool[] SchemeCharValidity = new bool[123];
+
         private readonly ForwardedHeadersOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
+
+        static ForwardedHeadersMiddleware()
+        {
+            // RFC 3986 scheme = ALPHA * (ALPHA / DIGIT / "+" / "-" / ".")
+            SchemeCharValidity['+'] = true;
+            SchemeCharValidity['-'] = true;
+            SchemeCharValidity['.'] = true;
+
+            // Host Matches Http.Sys and Kestrel
+            // Host Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
+            HostCharValidity['!'] = true;
+            HostCharValidity['$'] = true;
+            HostCharValidity['&'] = true;
+            HostCharValidity['\''] = true;
+            HostCharValidity['('] = true;
+            HostCharValidity[')'] = true;
+            HostCharValidity['-'] = true;
+            HostCharValidity['.'] = true;
+            HostCharValidity['_'] = true;
+            HostCharValidity['~'] = true;
+            for (var ch = '0'; ch <= '9'; ch++)
+            {
+                SchemeCharValidity[ch] = true;
+                HostCharValidity[ch] = true;
+            }
+            for (var ch = 'A'; ch <= 'Z'; ch++)
+            {
+                SchemeCharValidity[ch] = true;
+                HostCharValidity[ch] = true;
+            }
+            for (var ch = 'a'; ch <= 'z'; ch++)
+            {
+                SchemeCharValidity[ch] = true;
+                HostCharValidity[ch] = true;
+            }
+        }
 
         public ForwardedHeadersMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<ForwardedHeadersOptions> options)
         {
@@ -179,7 +217,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
                 if (checkProto)
                 {
-                    if (!string.IsNullOrEmpty(set.Scheme))
+                    if (!string.IsNullOrEmpty(set.Scheme) && TryValidateScheme(set.Scheme))
                     {
                         applyChanges = true;
                         currentValues.Scheme = set.Scheme;
@@ -193,7 +231,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
                 if (checkHost)
                 {
-                    if (!string.IsNullOrEmpty(set.Host))
+                    if (!string.IsNullOrEmpty(set.Host) && TryValidateHost(set.Host))
                     {
                         applyChanges = true;
                         currentValues.Host = set.Host;
@@ -287,6 +325,125 @@ namespace Microsoft.AspNetCore.HttpOverrides
             public IPEndPoint RemoteIpAndPort;
             public string Host;
             public string Scheme;
+        }
+
+        // Empty was checked for by the caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryValidateScheme(string scheme)
+        {
+            for (var i = 0; i < scheme.Length; i++)
+            {
+                if (!IsValidSchemeChar(scheme[i]))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsValidSchemeChar(char ch)
+        {
+            return ch < SchemeCharValidity.Length && SchemeCharValidity[ch];
+        }
+
+        // Empty was checked for by the caller
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryValidateHost(string host)
+        {
+            if (host[0] == '[')
+            {
+                return TryValidateIPv6Host(host);
+            }
+
+            if (host[0] == ':')
+            {
+                // Only a port
+                return false;
+            }
+
+            var i = 0;
+            for (; i < host.Length; i++)
+            {
+                if (!IsValidHostChar(host[i]))
+                {
+                    break;
+                }
+            }
+            return TryValidateHostPort(host, i);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsValidHostChar(char ch)
+        {
+            return ch < HostCharValidity.Length && HostCharValidity[ch];
+        }
+
+        // The lead '[' was already checked
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryValidateIPv6Host(string hostText)
+        {
+            for (var i = 1; i < hostText.Length; i++)
+            {
+                var ch = hostText[i];
+                if (ch == ']')
+                {
+                    // [::1] is the shortest valid IPv6 host
+                    if (i < 4)
+                    {
+                        return false;
+                    }
+                    return TryValidateHostPort(hostText, i + 1);
+                }
+
+                if (!IsHex(ch) && ch != ':' && ch != '.')
+                {
+                    return false;
+                }
+            }
+
+            // Must contain a ']'
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryValidateHostPort(string hostText, int offset)
+        {
+            if (offset == hostText.Length)
+            {
+                // No port
+                return true;
+            }
+
+            if (hostText[offset] != ':' || hostText.Length == offset + 1)
+            {
+                // Must have at least one number after the colon if present.
+                return false;
+            }
+
+            for (var i = offset + 1; i < hostText.Length; i++)
+            {
+                if (!IsNumeric(hostText[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsNumeric(char ch)
+        {
+            return '0' <= ch && ch <= '9';
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsHex(char ch)
+        {
+            return IsNumeric(ch)
+                || ('a' <= ch && ch <= 'f')
+                || ('A' <= ch && ch <= 'F');
         }
     }
 }
