@@ -127,7 +127,12 @@
     // functions, and for invoking them with automatic argument/result marshalling.
     // But since this project is trying to test low-level Mono runtime capabilities,
     // we implement our own marshalling here.
-    window.__blazorRegisteredFunctions = {
+    window.Blazor = {
+      platform: {
+        monoGetRegisteredFunction: function (name) { return blazorRegisteredFunctions[name]; }
+      }
+    };
+    var blazorRegisteredFunctions = {
       evaluateJsExpression: function (dotNetStringExpression) {
         var result = eval(dotnetStringToJavaScriptString(dotNetStringExpression));
         return result === null || result === undefined
