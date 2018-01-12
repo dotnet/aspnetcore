@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Equal("c:\\myapp\\filePath.cshtml", document.FilePath);
-            Assert.Null(document.RelativePath);
+            Assert.Equal("filePath.cshtml", document.RelativePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Equal("filePath.cshtml", document.FilePath);
-            Assert.Null(document.RelativePath);
+            Assert.Equal("filePath.cshtml", document.RelativePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 
@@ -175,6 +175,37 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("filePath.cshtml", document.RelativePath);
             Assert.Equal(content, ReadContent(document));
             Assert.Same(Encoding.UTF32, Assert.IsType<StringSourceDocument>(document).Encoding);
+        }
+
+        [Fact]
+        public void ReadFrom_WithProjectItem_FallbackToFilePath_WhenRelativePhysicalPathIsNull()
+        {
+            // Arrange
+            var filePath = "filePath.cshtml";
+            var projectItem = new TestRazorProjectItem(filePath, relativePhysicalPath: null);
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(projectItem);
+
+            // Assert
+            Assert.Equal(filePath, document.FilePath);
+            Assert.Equal(filePath, document.RelativePath);
+        }
+
+        [Fact]
+        public void ReadFrom_WithProjectItem_UsesRelativePhysicalPath()
+        {
+            // Arrange
+            var filePath = "filePath.cshtml";
+            var relativePhysicalPath = "relative-path.cshtml";
+            var projectItem = new TestRazorProjectItem(filePath, relativePhysicalPath: relativePhysicalPath);
+
+            // Act
+            var document = RazorSourceDocument.ReadFrom(projectItem);
+
+            // Assert
+            Assert.Equal(relativePhysicalPath, document.FilePath);
+            Assert.Equal(relativePhysicalPath, document.RelativePath);
         }
 
         private static string ReadContent(RazorSourceDocument razorSourceDocument)

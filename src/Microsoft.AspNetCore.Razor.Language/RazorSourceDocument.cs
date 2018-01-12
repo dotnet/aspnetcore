@@ -196,7 +196,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             using (var stream = projectItem.Read())
             {
                 // Autodetect the encoding.
-                return new StreamSourceDocument(stream, null, new RazorSourceDocumentProperties(filePath, projectItem.RelativePhysicalPath));
+                var relativePath = projectItem.RelativePhysicalPath ?? projectItem.FilePath;
+                return new StreamSourceDocument(stream, null, new RazorSourceDocumentProperties(filePath, relativePath));
             }
         }
 
