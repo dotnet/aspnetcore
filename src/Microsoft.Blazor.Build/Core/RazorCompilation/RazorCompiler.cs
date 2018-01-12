@@ -27,8 +27,13 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
         /// <param name="verboseOutput">If not null, additional information will be written to this <see cref="TextWriter"/>.</param>
         /// <returns>A collection of <see cref="RazorCompilerDiagnostic"/> instances representing any warnings or errors that were encountered.</returns>
         public ICollection<RazorCompilerDiagnostic> CompileFiles(IEnumerable<string> inputPaths, string outputNamespace, TextWriter resultOutput, TextWriter verboseOutput)
-            => inputPaths.SelectMany(
-                path => CompileSingleFile(path, outputNamespace, resultOutput, verboseOutput)).ToList();
+            => inputPaths.SelectMany(path =>
+            {
+                using (var reader = File.OpenText(path))
+                {
+                    return CompileSingleFile(path, reader, outputNamespace, resultOutput, verboseOutput);
+                }
+            }).ToList();
 
         /// <summary>
         /// Writes C# source code representing a Blazor component defined by a Razor file.
@@ -38,7 +43,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
         /// <param name="resultOutput">A <see cref="TextWriter"/> to which C# source code will be written.</param>
         /// <param name="verboseOutput">If not null, additional information will be written to this <see cref="TextWriter"/>.</param>
         /// <returns>An enumerable of <see cref="RazorCompilerDiagnostic"/> instances representing any warnings or errors that were encountered.</returns>
-        public IEnumerable<RazorCompilerDiagnostic> CompileSingleFile(string inputFilePath, string outputNamespace, TextWriter resultOutput, TextWriter verboseOutput)
+        public IEnumerable<RazorCompilerDiagnostic> CompileSingleFile(string inputFilePath, TextReader inputFileReader, string outputNamespace, TextWriter resultOutput, TextWriter verboseOutput)
         {
             if (resultOutput == null)
             {
