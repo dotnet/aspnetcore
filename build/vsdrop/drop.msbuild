@@ -9,7 +9,7 @@
 
     <Target Name="GetManifests">
         <ItemGroup>
-            <VsmanProjectsToBuild Include="Microsoft.VisualStudio.RazorExtension.vsmanproj">
+            <VsmanProjectsToBuild Include="$(VsixName).vsmanproj">
                 <OutputPath>$(SignedVsixPath)</OutputPath>
                 <ManifestSrc>$(SignedVsixPath)</ManifestSrc>
             </VsmanProjectsToBuild>
@@ -17,8 +17,8 @@
     </Target>
 
     <Target Name="BuildAndPublishManifest">
-        <Delete Files="$(SignedVsixPath)\Microsoft.VisualStudio.RazorExtension.vsmand;$(SignedVsixPath)\Microsoft.VisualStudio.RazorExtension.vsman" />
-        
+        <Delete Files="$(SignedVsixPath)\$(VsixName).vsmand;$(SignedVsixPath)\$(VsixName).vsman" />
+
         <CallTarget Targets="VSSetupRestorePackages" />
         <CallTarget Targets="BuildManifests" />
         <CallTarget Targets="PublishToVSDrop" />

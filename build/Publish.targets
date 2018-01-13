@@ -9,14 +9,15 @@
       Condition="'$(VisualStudioMSBuildx86Path)'==''" />
 
     <ItemGroup>
-      <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
+      <SignedVSIX Include="$(SignedVSIXPath)*.vsix" />
 
       <MSBuildExeArgs Include="
         $(MSBuildThisFileDirectory)vsdrop\drop.msbuild;
         /t:BuildAndPublishManifest;
+        /p:VsixName=%(SignedVSIX.FileName);
         /p:SignedVsixPath=$(SignedVSIXPath);
         /p:RepositoryRoot=$(RepositoryRoot);
-        /p:ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
+        /p:ManifestRepositoryName=AspNetCore/%(SignedVSIX.FileName);
         /p:ManifestBuildBranch=$(BuildBranch);
         /p:ManifestBuildNumber=$(BuildNumber)" />
     </ItemGroup>
