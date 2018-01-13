@@ -204,7 +204,7 @@
     <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" />
 
     <Copy
-      SourceFiles="@(VSIXToSign);$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
+      SourceFiles="@(VSIXToSign);$(CoherenceDestinationDir)build\%(VSIXManifest.VSIXName).json"
       DestinationFolder="$(SignedVSIXPath)" />
   </Target>
 
