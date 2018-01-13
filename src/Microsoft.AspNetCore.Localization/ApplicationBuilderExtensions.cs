@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (cultures.Length == 0)
             {
-                throw new ArgumentException(nameof(cultures));
+                throw new ArgumentException($"The {cultures} cannot be null.", nameof(cultures));
             }
 
             var options = new RequestLocalizationOptions()

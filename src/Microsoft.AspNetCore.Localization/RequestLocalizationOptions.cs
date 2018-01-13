@@ -110,7 +110,6 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         public IList<IRequestCultureProvider> RequestCultureProviders { get; set; }
 
-        
         /// <summary>
         /// Adds the set of the supported cultures by the application.
         /// </summary>
@@ -147,7 +146,7 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         /// <summary>
-        /// Set the default culture to be used by the application when a supported culture could not be determined by
+        /// Set the default culture which is used by the application when a supported culture could not be determined by
         /// one of the configured <see cref="IRequestCultureProvider"/>s.
         /// </summary>
         /// <param name="defaultCulture">The default culture to be set.</param>
