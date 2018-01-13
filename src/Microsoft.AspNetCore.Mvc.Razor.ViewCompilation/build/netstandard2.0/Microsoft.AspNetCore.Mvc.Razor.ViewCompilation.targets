@@ -1,5 +1,15 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="_ResolveInputArguments">
+
+  <!--
+    Reports compatibility errors between these targets and the Razor SDK that were discovered during
+    the evaluation phase.
+  -->
+  <Target Name="_ReportRazorSdkCompatibilityError" Condition="'@(_RazorSdkCompatibilityError)'!=''" BeforeTargets="RazorResolveGenerateInputs">
+    <Error Text="@(_RazorSdkCompatibilityError)"/>
+  </Target>
+
+  <Target Name="_ResolveInputArguments" DependsOnTargets="_ReportRazorSdkCompatibilityError">
+
     <PropertyGroup>
       <MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</MvcRazorOutputPath>
       <_MvcRazorOutputFullPath Condition="'$(_MvcRazorOutputFullPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))$(AssemblyName).PrecompiledViews.dll</_MvcRazorOutputFullPath>
@@ -13,6 +23,7 @@
     <ItemGroup Condition="'@(MvcRazorFilesToCompile)' == ''">
       <MvcRazorFilesToCompile Include="@(Content)" Condition="'%(Extension)'=='.cshtml'" />
     </ItemGroup>
+
   </Target>
 
   <Target
@@ -159,6 +170,7 @@
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
+    DependsOnTargets="_ReportRazorSdkCompatibilityError"
     Condition="'$(MvcRazorCompileOnPublish)'=='true'">
 
     <PropertyGroup>

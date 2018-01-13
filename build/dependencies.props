@@ -8,6 +8,7 @@
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorPagesPackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreMvcRazorPagesPackageVersion>
+    <MicrosoftAspNetCoreRazorDesignPackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreRazorDesignPackageVersion>
     <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreRazorRuntimePackageVersion>
     <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-28072</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-28072</MicrosoftAspNetCoreServerKestrelPackageVersion>

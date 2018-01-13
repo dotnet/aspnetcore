@@ -1,0 +1,95 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Either precompilation or Razor SDK should be allowed to run, but not both. We make the decision here about which one
+    wins based on whether the project file has set any properties/items that we care about.
+    
+    We expect these targets to always be imported before the Razor SDK targets so we can make the decision in the least
+    breaking way.
+    
+    There are a few important cases.
+    
+      1.  The project doesn't customize anything. We expect that this is the most common case, and would be the default
+          for applications created in 2.0. The desired outcome is that compilation happens on publish using Razor SDK.
+          We can accomplish this without any special handling in this file, it's the default.
+      
+      2.  The application has explicitly enabled both MvcPrecompilation and Razor SDK. This should result in an error.
+      
+      3.  The project explicitly turned on MvcPrecompilation. The desired outcome is that compilation happens
+          on publish using MvcPrecompilation.
+      
+      4.  The project explicitly turned off MvcPrecompilation. This happens because MvcPrecompilation wasn't a great fit
+          for all scenarios. The desired outcome is that neither Razor SDK nor MvcPrecompilation runs.
+          
+      5.  The project customized some settings from MvcPrecompilation. There are a few of cases here, and the challenge
+          is dealing with evaluation order (both items and properties). The desired outcome is that compilation happens
+          on publish using MvcPrecompilation.
+          
+          5a. If the application just used the properties, we can turn off Razor SDK during evaluation. 
+          
+          5b. If the application adds files to MvcRazorFilesToCompile we can't detect this early enough to disable the
+              the Razor SDK due to evaluation (items vs properties). We have to report an error in this case.
+          
+          5c. If the application explicitly enables Razor SDK, this should result in an error.
+
+    There's no supported case where we used both systems, and there's no case where we need to provide a warning about
+    compatibility or migration.
+  -->
+  <PropertyGroup>
+    <_MvcPrecompilationExplicitlyEnabled Condition="'$(MvcRazorCompileOnPublish)'=='true'">true</_MvcPrecompilationExplicitlyEnabled>
+    <_MvcPrecompilationExplicitlyDisabled Condition="'$(MvcRazorCompileOnPublish)'=='false'">true</_MvcPrecompilationExplicitlyDisabled>
+    <_RazorSdkExplicitlyEnabled Condition="'$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true'">true</_RazorSdkExplicitlyEnabled>
+    <_RazorSdkExplicitlyDisabled Condition="'$(RazorCompileOnBuild)'=='false' and '$(RazorCompileOnPublish)'=='false'">true</_RazorSdkExplicitlyDisabled>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(_MvcPrecompilationExplicitlyEnabled)'=='true' and '$(_RazorSdkExplicitlyEnabled)'=='true'">
+    <!-- 
+      This is case 2, both sets of targets are explicitly enabled. Report an error because we don't support what the
+      project is asking for.
+    -->
+    <_RazorSdkCompatibilityError Include="Using the Razor SDK (RazorCompileOnBuild or RazorCompileOnPublish) and MvcPrecompilation (MvcRazorCompileOnPublish) together is not supported'."/>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(_MvcPrecompilationExplicitlyEnabled)'=='true' and '$(_RazorSdkExplicitlyEnabled)'!='true'">
+    <!-- 
+      This is case 3, we should use MvcPrecompilation and ignore the Razor SDK.
+    -->
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_MvcPrecompilationExplicitlyDisabled)'=='true' and '$(_RazorSdkExplicitlyEnabled)'!='true'">
+    <!-- 
+      This is case 4, we should ignore the Razor SDK to be as compatible as possible with the 2.0 expectations.
+    -->
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_MvcPrecompilationExplicitlyEnabled)'!='true' and ('$(MvcRazorOutputPath)'!='' or '$(MvcRazorContentRoot)'!='' or '$(MvcRazorExcludeViewFilesFromPublish)'!='' or '$(MvcRazorExcludeRefAssembliesFromPublish)'!='')">
+    <!-- 
+      If we get here we know that the project file has set some of the MvcPrecompilation properties (case 5).
+      
+      Unfortunately we can't detect if the project has added anything to MvcRazorFilesToCompile at this point, so we can't
+      skip the Razor SDK targets.
+    -->
+    <_MvcPrecompilationImplicitlyEnabled>true</_MvcPrecompilationImplicitlyEnabled>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(_MvcPrecompilationImplicitlyEnabled)'=='true' and '$(_RazorSdkExplicitlyEnabled)'!='true'">
+    <!--
+      This is case 5a, the project file sets MvcPrecompilation setttings, and we can safely turn off the Razor SDK.
+    -->
+    <RazorCompileOnPublish>false</RazorCompileOnPublish>
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'@(MvcRazorFilesToCompile)'!='' and '$(_MvcPrecompilationExplicitlyDisabled)'!='true' and '$(_RazorSdkExplicitlyDisabled)'!='true'">
+    <!-- 
+      This is case 5b or 5b, the project file has modified the MvcPrecompilation items but hasn't turned the Razor SDK. 
+      We can't disable the Razor SDK at this point, it's too late in the evaluation pass.
+    -->
+    <_RazorSdkCompatibilityError Include="Using the Razor SDK (RazorCompileOnBuild or RazorCompileOnPublish) and MvcRazorFilesToCompile together is not supported. To disable the Razor SDK targets, and use MvcPrecompilation set the property 'MvcRazorCompileOnPublish' to 'true' in the project file. To use the Razor SDK instead, replace 'MvcRazorFilesToCompile' with 'RazorGenerate'"/>
+  </ItemGroup>
+
+</Project>
+
