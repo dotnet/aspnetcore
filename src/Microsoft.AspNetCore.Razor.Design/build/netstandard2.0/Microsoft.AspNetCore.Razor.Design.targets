@@ -114,6 +114,7 @@
       Debug="$(_RazorDebugTagHelperTask)"
       DebugTool="$(_RazorDebugTagHelperTool)"
       ToolAssembly="$(_RazorTagHelperToolAssembly)"
+      ServerAssembly="$(_RazorBuildServerAssembly)"
       Assemblies="@(RazorReferencePath)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
       <Output

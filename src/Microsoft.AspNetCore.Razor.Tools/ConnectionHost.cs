@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CommandLine;
 
-namespace Microsoft.AspNetCore.Razor.TagHelperTool
+namespace Microsoft.AspNetCore.Razor.Tools
 {
     // Heavily influenced by:
     // https://github.com/dotnet/roslyn/blob/14aed138a01c448143b9acf0fe77a662e3dfe2f4/src/Compilers/Server/VBCSCompiler/NamedPipeClientConnection.cs#L17

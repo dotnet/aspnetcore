@@ -16,7 +16,7 @@ using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.VisualStudio.LanguageServices.Razor;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Razor.TagHelperTool
+namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class DiscoverCommand : CommandBase
     {

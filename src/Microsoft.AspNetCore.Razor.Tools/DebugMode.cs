@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Razor.TagHelperTool
+namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal static class DebugMode
     {

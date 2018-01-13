@@ -62,6 +62,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
             }
 
+            if (TryExecuteOnServer(out var result))
+            {
+                return result;
+            }
+
             return base.Execute();
         }
 
@@ -75,6 +80,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             {
                 base.LogToolCommand(message);
             }
+        }
+
+        protected virtual bool TryExecuteOnServer(out bool result)
+        {
+            result = false;
+            return false;
         }
     }
 }

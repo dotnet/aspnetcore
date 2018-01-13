@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Razor.TagHelperTool
+namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class Application : CommandLineApplication
     {

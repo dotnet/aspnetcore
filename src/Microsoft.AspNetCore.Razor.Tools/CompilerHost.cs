@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Microsoft.CodeAnalysis.CommandLine;
 
-namespace Microsoft.AspNetCore.Razor.TagHelperTool
+namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal abstract class CompilerHost
     {

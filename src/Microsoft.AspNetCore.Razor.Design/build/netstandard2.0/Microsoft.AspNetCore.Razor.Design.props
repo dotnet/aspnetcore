@@ -29,9 +29,10 @@
     
     <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
     <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</TaskFolder>
-    <TaskAssembly>$(_RazorMSBuildRoot)\tasks\$(TaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</TaskAssembly>
+    
+    <_RazorTaskAssembly Condition="'$(_RazorTaskAssembly)'==''">$(_RazorMSBuildRoot)\tasks\$(TaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
   </PropertyGroup>
 
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(TaskAssembly)" />
-  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(TaskAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(_RazorTaskAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(_RazorTaskAssembly)" />
 </Project>
