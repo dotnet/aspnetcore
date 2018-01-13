@@ -1,4 +1,11 @@
 ﻿<Project>
+
+  <!--
+    This is a hook to import a set of targets before the Razor targets. By default this is used by MvcPrecompilation
+    so that we can interop between the 2.0 feature set and the 2.1+ features.
+  -->
+  <Import Project="$(CustomBeforeRazorSdkTargets)" Condition="'$(CustomBeforeRazorSdkTargets)' != '' and Exists('$(CustomBeforeRazorSdkTargets)')"/>
+
   <!-- 
     Targets supporting Razor MSBuild integration
   -->
@@ -324,5 +331,10 @@
     </ItemGroup>
 
   </Target>
+
+  <!--
+    This is a hook to import a set of targets after the Razor targets. By default this is unused.
+  -->
+  <Import Project="$(CustomAfterRazorSdkTargets)" Condition="'$(CustomAfterRazorSdkTargets)' != '' and Exists('$(CustomAfterRazorSdkTargets)')"/>
 
 </Project>
