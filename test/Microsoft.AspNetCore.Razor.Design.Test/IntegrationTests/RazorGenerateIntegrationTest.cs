@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -58,7 +59,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "aspnet/Razor#1888")]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorGenerate_BuildsIncrementally()
         {
