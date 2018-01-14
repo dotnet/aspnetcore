@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Build.Core.RazorCompilation;
+using Microsoft.Blazor.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
@@ -95,10 +96,17 @@ namespace Microsoft.Blazor.Build.Test
             {
                 CSharpSyntaxTree.ParseText(csharpResult.Code)
             };
-            var references = new[]
+            var referenceAssembliesContainingTypes = new[]
             {
-                MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location)
+                typeof(System.Runtime.AssemblyTargetedPatchBandAttribute), // System.Runtime
+                typeof(BlazorComponent)
             };
+            var references = referenceAssembliesContainingTypes
+                .SelectMany(type => type.Assembly.GetReferencedAssemblies().Concat(new[] { type.Assembly.GetName() }))
+                .Distinct()
+                .Select(Assembly.Load)
+                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
+                .ToList();
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
             var assemblyName = "TestAssembly" + Guid.NewGuid().ToString("N");
             var compilation = CSharpCompilation.Create(assemblyName,
@@ -126,12 +134,12 @@ namespace Microsoft.Blazor.Build.Test
             using (var resultWriter = new StreamWriter(resultStream))
             using (var verboseLogStream = new MemoryStream())
             using (var verboseWriter = new StreamWriter(verboseLogStream))
-            using (var inputReader = new StringReader(cshtmlContent))
+            using (var inputContents = new MemoryStream(Encoding.UTF8.GetBytes(cshtmlContent)))
             {
                 var diagnostics = new RazorCompiler().CompileSingleFile(
                     cshtmlRootPath,
                     cshtmlRelativePath,
-                    inputReader,
+                    inputContents,
                     outputNamespace,
                     resultWriter,
                     verboseWriter);

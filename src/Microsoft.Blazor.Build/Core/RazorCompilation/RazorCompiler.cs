@@ -1,6 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Blazor.Build.Core.RazorCompilation.Engine;
+using Microsoft.Blazor.Components;
+using Microsoft.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -35,7 +39,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
             TextWriter verboseOutput)
             => inputPaths.SelectMany(path =>
             {
-                using (var reader = File.OpenText(path))
+                using (var reader = File.OpenRead(path))
                 {
                     return CompileSingleFile(inputRootPath, path, reader, baseNamespace, resultOutput, verboseOutput);
                 }
@@ -53,14 +57,14 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
         public IEnumerable<RazorCompilerDiagnostic> CompileSingleFile(
             string inputRootPath,
             string inputFilePath,
-            TextReader inputFileReader,
+            Stream inputFileContents,
             string baseNamespace,
             TextWriter resultOutput,
             TextWriter verboseOutput)
         {
-            if (inputFileReader == null)
+            if (inputFileContents == null)
             {
-                throw new ArgumentNullException(nameof(inputFileReader));
+                throw new ArgumentNullException(nameof(inputFileContents));
             }
 
             if (resultOutput == null)
@@ -86,12 +90,20 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
                     ? baseNamespace
                     : $"{baseNamespace}.{itemNamespace}";
 
-                resultOutput.WriteLine($"namespace {combinedNamespace} {{");
-                resultOutput.WriteLine($"public class {itemClassName}");
-                resultOutput.WriteLine("{");
-                resultOutput.WriteLine("}");
-                resultOutput.WriteLine("}");
-                resultOutput.WriteLine();
+                var engine = new BlazorRazorEngine();
+
+                var sourceDoc = RazorSourceDocument.ReadFrom(inputFileContents, inputFilePath);
+                var codeDoc = RazorCodeDocument.Create(sourceDoc);
+                codeDoc.Items[BlazorCodeDocItems.Namespace] = combinedNamespace;
+                codeDoc.Items[BlazorCodeDocItems.ClassName] = itemClassName;
+                engine.Process(codeDoc);
+                var csharpDocument = codeDoc.GetCSharpDocument();
+                var generatedCode = csharpDocument.GeneratedCode;
+                generatedCode = generatedCode.Replace(
+                    "public async override global::System.Threading.Tasks.Task ExecuteAsync()",
+                    $"public override void {nameof(BlazorComponent.BuildRenderTree)}({typeof(RenderTreeBuilder).FullName} builder)");
+
+                resultOutput.WriteLine(generatedCode);
 
                 return Enumerable.Empty<RazorCompilerDiagnostic>();
             }
