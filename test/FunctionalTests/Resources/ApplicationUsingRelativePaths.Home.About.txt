@@ -2,7 +2,7 @@
 <html>
 <body>
     
-AspNetCore._Views_Home_Index_cshtml, ApplicationUsingRelativePaths.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ApplicationUsingRelativePaths.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 Hello from Index!
 </body>
 </html>

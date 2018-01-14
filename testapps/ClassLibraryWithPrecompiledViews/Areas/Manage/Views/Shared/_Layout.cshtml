@@ -1,7 +1,7 @@
 ﻿<!DOCTYPE html>
 <html>
     <body>
-        @GetType().AssemblyQualifiedName
+        @GetType().Assembly.FullName
         @RenderBody()
         @RenderSection("TestSection")
     </body>

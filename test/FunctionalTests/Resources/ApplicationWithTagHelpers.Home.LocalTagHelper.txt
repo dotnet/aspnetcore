@@ -8,7 +8,7 @@
 <body>
     <div class="container body-content">
         
-AspNetCore._Views_Home_LocalTagHelper_cshtml, ApplicationWithTagHelpers.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+ApplicationWithTagHelpers.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 <test href="/Home/About">TestTagHelper content.</test>
 
 
@@ -20,6 +20,6 @@ AspNetCore._Views_Home_LocalTagHelper_cshtml, ApplicationWithTagHelpers.Precompi
         </footer>
     </div>
     
-    AspNetCore._Views_Shared__Layout_cshtml, ApplicationWithTagHelpers.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+    ApplicationWithTagHelpers.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
 </body>
 </html>

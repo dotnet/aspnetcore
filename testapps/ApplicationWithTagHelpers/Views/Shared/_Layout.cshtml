@@ -16,6 +16,6 @@
         </footer>
     </div>
     @RenderSection("scripts", required: false)
-    @GetType().AssemblyQualifiedName
+    @GetType().Assembly.FullName
 </body>
 </html>

@@ -1,2 +1,2 @@
 
-AspNetCore._Views_Home_Index_cshtml, NewAssemblyName.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
+NewAssemblyName.PrecompiledViews, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
