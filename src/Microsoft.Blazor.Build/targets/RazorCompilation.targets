@@ -1,11 +1,11 @@
 ﻿<Project>  
   <Target Name="BlazorCompileRazorComponents" BeforeTargets="CoreCompile">
     <PropertyGroup>
-      <BlazorComponentsNamespace>BlazorComponents</BlazorComponentsNamespace>
+      <BlazorComponentsNamespace>$(RootNamespace)</BlazorComponentsNamespace>
       <IsDesignTimeBuild Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">true</IsDesignTimeBuild>
       <GeneratedFilePath>$(IntermediateOutputPath)BlazorRazorComponents.g.cs</GeneratedFilePath>
     </PropertyGroup>
-    <Exec Command="$(BlazorBuildExe) buildrazor --source $(ProjectDir) --output $(GeneratedFilePath)" />
+    <Exec Command="$(BlazorBuildExe) buildrazor --source $(ProjectDir) --namespace $(BlazorComponentsNamespace) --output $(GeneratedFilePath)" />
     <ItemGroup>
       <Compile Include="$(GeneratedFilePath)" />
     </ItemGroup>

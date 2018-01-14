@@ -25,13 +25,16 @@ namespace Microsoft.Blazor.Build.Cli.Commands
             var outputFilePath = command.Option("--output",
                 "The location where the resulting C# source file should be written",
                 CommandOptionType.SingleValue);
+            var baseNamespace = command.Option("--namespace",
+                "The base namespace for the generated C# classes.",
+                CommandOptionType.SingleValue);
             var verboseFlag = command.Option("--verbose",
                 "Indicates that verbose console output should written",
                 CommandOptionType.NoValue);
 
             command.OnExecute(() =>
             {
-                if (!VerifyRequiredOptionsProvided(sourceDirPath, outputFilePath))
+                if (!VerifyRequiredOptionsProvided(sourceDirPath, outputFilePath, baseNamespace))
                 {
                     return 1;
                 }
@@ -49,7 +52,7 @@ namespace Microsoft.Blazor.Build.Cli.Commands
                     var diagnostics = new RazorCompiler().CompileFiles(
                         sourceDirPathValue,
                         inputRazorFilePaths,
-                        "Blazor", // TODO: Add required option for namespace
+                        baseNamespace.Value(),
                         outputWriter,
                         verboseFlag.HasValue() ? Console.Out : null);
 
