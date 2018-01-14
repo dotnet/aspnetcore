@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
         [Fact]
@@ -43,6 +47,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
         [Fact]
@@ -105,6 +113,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.pdb");
             Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_IncludeCshtmlAndRefAssemblies_CopiesFiles()
+        {
+            var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnPublish=true /p:CopyRazorGenerateFilesToPublishDirectory=true /p:CopyRefAssembliesToPublishDirectory=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileExists(result, PublishOutputPath, "refs", "mscorlib.dll");
+            Assert.FileCountEquals(result, 8, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
         [Fact]

@@ -31,6 +31,22 @@
     
     <!-- File name (without extension) of the assembly produced by Razor -->
     <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName).PrecompiledViews</RazorTargetName>
+
+    <!-- 
+      Set to true to copy RazorGenerate items to the publish directory (.cshtml) files.
+
+      Typically Razor files are not needed for a published application if they participate in compilation at build-time
+      or publish-time. By default, the Razor SDK will suppress the copying of RazorGenerate items to the publish directory.
+    -->
+    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'==''">false</CopyRazorGenerateFilesToPublishDirectory>
+
+    <!-- 
+      Set to true to copy reference assembly items to the publish directory (.cshtml) files.
+
+      Typically reference assemblies are not needed for a published application if Razor compilation occurs at build-time
+      or publish-time. By default, the Razor SDK will suppress the copying of reference assemblies to the publish directory.
+    -->
+    <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
   </PropertyGroup>
 
   <ItemGroup>
@@ -314,20 +330,40 @@
   </Target>
 
   <!--
-    Called after ComputeFilesToPublish - this target is called when publishing the project to get a list of
-    files to the output directory.
+    Called after ComputeFilesToPublish and ComputeRefAssembliesToPublish but before CopyFilesToPublishDirectory - this target is called when 
+    publishing the project to get a list of files to the output directory.
   -->
   <Target
     Name="_RazorComputeFilesToPublish"
-    AfterTargets="ComputeFilesToPublish">
+    AfterTargets="ComputeRefAssembliesToPublish"
+    Condition="'@(RazorGenerate)'!='' and ('$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true')">
 
-    <ItemGroup Condition="'@(RazorGenerate)'!='' and ('$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true')">
+    <!-- If we generated an assembly/pdb then include those -->
+    <ItemGroup>
       <ResolvedFileToPublish Include="@(RazorIntermediateAssembly)" Condition="'$(CopyBuildOutputToPublishDirectory)'=='true'">
         <RelativePath>@(RazorIntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
       </ResolvedFileToPublish>
       <ResolvedFileToPublish Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="'$(CopyOutputSymbolsToPublishDirectory)'=='true'">
         <RelativePath>@(_RazorDebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
       </ResolvedFileToPublish>
+    </ItemGroup>
+
+    <!--
+      RazorGenerate items are usually populated from the '.cshtml' files in @(Content). These are published by default
+      so all we need to do is exclude them. 
+    -->
+    <ItemGroup Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'=='false'">
+      <ResolvedFileToPublish Remove="%(RazorGenerate.FullPath)"/>
+    </ItemGroup>
+
+    <!--
+      The ref assemblies are published whenever PreserveCompilationContext is true, which we expect to be true for
+      most usages of Razor. There's no setting that excludes just the ref assemblies, so we do it ourselves. 
+    -->
+    <ItemGroup Condition="'$(CopyRefAssembliesToPublishDirectory)'=='false'">
+      <ResolvedFileToPublish 
+        Remove="%(ResolvedFileToPublish.Identity)"
+        Condition="'%(ResolvedFileToPublish.RelativePath)'=='$(RefAssembliesFolderName)\%(Filename)%(Extension)'"/>
     </ItemGroup>
 
   </Target>
