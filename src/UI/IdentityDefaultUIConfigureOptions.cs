@@ -14,10 +14,10 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Identity.UI
 {
     internal class IdentityDefaultUIConfigureOptions :
-        IConfigureOptions<RazorPagesOptions>,
-        IConfigureOptions<RazorViewEngineOptions>,
-        IConfigureOptions<StaticFileOptions>,
-        IConfigureNamedOptions<CookieAuthenticationOptions>
+        IPostConfigureOptions<RazorPagesOptions>,
+        IPostConfigureOptions<RazorViewEngineOptions>,
+        IPostConfigureOptions<StaticFileOptions>,
+        IPostConfigureOptions<CookieAuthenticationOptions>
     {
         public IdentityDefaultUIConfigureOptions(IHostingEnvironment environment)
         {
@@ -26,13 +26,27 @@ namespace Microsoft.AspNetCore.Identity.UI
 
         public IHostingEnvironment Environment { get; }
 
-        public void Configure(RazorPagesOptions options) => options.AllowAreas = true;
-
-        public void Configure(RazorViewEngineOptions options) => 
-            options.FileProviders.Add(new ManifestEmbeddedFileProvider(GetType().Assembly));
-
-        public void Configure(StaticFileOptions options)
+        public void PostConfigure(string name, RazorPagesOptions options)
         {
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            options = options ?? throw new ArgumentNullException(nameof(options));
+
+            options.AllowAreas = true;
+        }
+
+        public void PostConfigure(string name, RazorViewEngineOptions options)
+        {
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            options = options ?? throw new ArgumentNullException(nameof(options));
+
+            options.FileProviders.Add(new ManifestEmbeddedFileProvider(GetType().Assembly));
+        }
+
+        public void PostConfigure(string name, StaticFileOptions options)
+        {
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            options = options ?? throw new ArgumentNullException(nameof(options));
+
             // Basic initialization in case the options weren't initialized by any other component
             options.ContentTypeProvider = options.ContentTypeProvider ?? new FileExtensionContentTypeProvider();
             if (options.FileProvider == null && Environment.WebRootFileProvider == null)
@@ -47,12 +61,10 @@ namespace Microsoft.AspNetCore.Identity.UI
             options.FileProvider = new CompositeFileProvider(options.FileProvider, filesProvider);
         }
 
-        public void Configure(string name, CookieAuthenticationOptions options)
+        public void PostConfigure(string name, CookieAuthenticationOptions options)
         {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
+            name = name ?? throw new ArgumentNullException(nameof(name));
+            options = options ?? throw new ArgumentNullException(nameof(options));
 
             if (string.Equals(IdentityConstants.ApplicationScheme, name, StringComparison.Ordinal))
             {
@@ -61,7 +73,5 @@ namespace Microsoft.AspNetCore.Identity.UI
                 options.AccessDeniedPath = "/Identity/Account/AccessDenied";
             }
         }
-
-        public void Configure(CookieAuthenticationOptions options) => Configure(Options.DefaultName, options);
     }
 }
