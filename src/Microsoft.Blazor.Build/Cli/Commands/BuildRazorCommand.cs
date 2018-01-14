@@ -47,6 +47,7 @@ namespace Microsoft.Blazor.Build.Cli.Commands
                 using (var outputWriter = new StreamWriter(outputFilePath.Value()))
                 {
                     var diagnostics = new RazorCompiler().CompileFiles(
+                        sourceDirPathValue,
                         inputRazorFilePaths,
                         "Blazor", // TODO: Add required option for namespace
                         outputWriter,

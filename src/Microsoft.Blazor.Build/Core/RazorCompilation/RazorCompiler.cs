@@ -21,42 +21,73 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
         /// <summary>
         /// Writes C# source code representing Blazor components defined by Razor files.
         /// </summary>
-        /// <param name="inputPaths">Paths to the input files.</param>
-        /// <param name="outputNamespace">The namespace for the generated classes.</param>
+        /// <param name="inputRootPath">Path to a directory containing input files.</param>
+        /// <param name="inputPaths">Paths to the input files relative to <paramref name="inputRootPath"/>. The generated namespaces will be based on these relative paths.</param>
+        /// <param name="baseNamespace">The base namespace for the generated classes.</param>
         /// <param name="resultOutput">A <see cref="TextWriter"/> to which C# source code will be written.</param>
         /// <param name="verboseOutput">If not null, additional information will be written to this <see cref="TextWriter"/>.</param>
         /// <returns>A collection of <see cref="RazorCompilerDiagnostic"/> instances representing any warnings or errors that were encountered.</returns>
-        public ICollection<RazorCompilerDiagnostic> CompileFiles(IEnumerable<string> inputPaths, string outputNamespace, TextWriter resultOutput, TextWriter verboseOutput)
+        public ICollection<RazorCompilerDiagnostic> CompileFiles(
+            string inputRootPath,
+            IEnumerable<string> inputPaths,
+            string baseNamespace,
+            TextWriter resultOutput,
+            TextWriter verboseOutput)
             => inputPaths.SelectMany(path =>
             {
                 using (var reader = File.OpenText(path))
                 {
-                    return CompileSingleFile(path, reader, outputNamespace, resultOutput, verboseOutput);
+                    return CompileSingleFile(inputRootPath, path, reader, baseNamespace, resultOutput, verboseOutput);
                 }
             }).ToList();
 
         /// <summary>
         /// Writes C# source code representing a Blazor component defined by a Razor file.
         /// </summary>
-        /// <param name="inputPaths">The path to the input file.</param>
-        /// <param name="outputNamespace">The namespace for the generated class.</param>
+        /// <param name="inputRootPath">Path to a directory containing input files.</param>
+        /// <param name="inputPaths">Paths to the input files relative to <paramref name="inputRootPath"/>. The generated namespaces will be based on these relative paths.</param>
+        /// <param name="baseNamespace">The base namespace for the generated class.</param>
         /// <param name="resultOutput">A <see cref="TextWriter"/> to which C# source code will be written.</param>
         /// <param name="verboseOutput">If not null, additional information will be written to this <see cref="TextWriter"/>.</param>
         /// <returns>An enumerable of <see cref="RazorCompilerDiagnostic"/> instances representing any warnings or errors that were encountered.</returns>
-        public IEnumerable<RazorCompilerDiagnostic> CompileSingleFile(string inputFilePath, TextReader inputFileReader, string outputNamespace, TextWriter resultOutput, TextWriter verboseOutput)
+        public IEnumerable<RazorCompilerDiagnostic> CompileSingleFile(
+            string inputRootPath,
+            string inputFilePath,
+            TextReader inputFileReader,
+            string baseNamespace,
+            TextWriter resultOutput,
+            TextWriter verboseOutput)
         {
+            if (inputFileReader == null)
+            {
+                throw new ArgumentNullException(nameof(inputFileReader));
+            }
+
             if (resultOutput == null)
             {
                 throw new ArgumentNullException(nameof(resultOutput));
             }
 
+            if (string.IsNullOrEmpty(inputRootPath))
+            {
+                throw new ArgumentException("Cannot be null or empty.", nameof(inputRootPath));
+            }
+
+            if (string.IsNullOrEmpty(baseNamespace))
+            {
+                throw new ArgumentException("Cannot be null or empty.", nameof(baseNamespace));
+            }
+
             try
             {
                 verboseOutput?.WriteLine($"Compiling {inputFilePath}...");
-                var className = GetClassName(inputFilePath);
+                var (itemNamespace, itemClassName) = GetNamespaceAndClassName(inputRootPath, inputFilePath);
+                var combinedNamespace = string.IsNullOrEmpty(itemNamespace)
+                    ? baseNamespace
+                    : $"{baseNamespace}.{itemNamespace}";
 
-                resultOutput.WriteLine($"namespace {outputNamespace} {{");
-                resultOutput.WriteLine($"public class {className}");
+                resultOutput.WriteLine($"namespace {combinedNamespace} {{");
+                resultOutput.WriteLine($"public class {itemClassName}");
                 resultOutput.WriteLine("{");
                 resultOutput.WriteLine("}");
                 resultOutput.WriteLine("}");
@@ -82,15 +113,32 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
             }
         }
 
-        private static string GetClassName(string inputFilePath)
+        private static (string, string) GetNamespaceAndClassName(string inputRootPath, string inputFilePath)
         {
-            var basename = Path.GetFileNameWithoutExtension(inputFilePath);
-            if (!ClassNameRegex.IsMatch(basename))
+            // First represent inputFilePath as a path relative to inputRootPath. Not using Path.GetRelativePath
+            // because it doesn't handle cases like inputFilePath="\\something.cs".
+            var inputFilePathAbsolute = Path.GetFullPath(Path.Combine(inputRootPath, inputFilePath));
+            var inputRootPathWithTrailingSeparator = inputRootPath.EndsWith(Path.DirectorySeparatorChar)
+                ? inputRootPath
+                : (inputRootPath + Path.DirectorySeparatorChar);
+            var inputFilePathRelative = inputFilePathAbsolute.StartsWith(inputRootPathWithTrailingSeparator)
+                ? inputFilePathAbsolute.Substring(inputRootPathWithTrailingSeparator.Length)
+                : throw new RazorCompilerException($"File is not within source root directory: '{inputFilePath}'");
+
+            // Use the set of directory names in the relative path as namespace
+            var inputDirname = Path.GetDirectoryName(inputFilePathRelative);
+            var resultNamespace = inputDirname
+                .Replace(Path.DirectorySeparatorChar, '.')
+                .Replace(" ", string.Empty);
+
+            // Use the filename as class name
+            var inputBasename = Path.GetFileNameWithoutExtension(inputFilePathRelative);
+            if (!ClassNameRegex.IsMatch(inputBasename))
             {
-                throw new RazorCompilerException($"Invalid name '{basename}'. The name must be valid for a C# class name.");
+                throw new RazorCompilerException($"Invalid name '{inputBasename}'. The name must be valid for a C# class name.");
             }
 
-            return basename;
+            return (resultNamespace, inputBasename);
         }
     }
 }

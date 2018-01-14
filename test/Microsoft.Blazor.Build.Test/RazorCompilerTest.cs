@@ -21,7 +21,8 @@ namespace Microsoft.Blazor.Build.Test
         {
             // Arrange/Act
             var result = CompileToCSharp(
-                "x:\\dir\\subdir\\Filename with spaces.cshtml",
+                "x:\\dir\\subdir",
+                "Filename with spaces.cshtml",
                 "ignored code",
                 "ignored namespace");
 
@@ -34,28 +35,55 @@ namespace Microsoft.Blazor.Build.Test
                 });
         }
 
-        [Fact]
-        public void CreatesClassWithCorrectNameAndNamespace()
+        [Theory]
+        [InlineData("\\unrelated.cs")]
+        [InlineData("..\\outsideroot.cs")]
+        public void RejectsFilenameOutsideRoot(string filename)
         {
             // Arrange/Act
+            var result = CompileToCSharp(
+                "x:\\dir\\subdir",
+                filename,
+                "ignored code",
+                "ignored namespace");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                item =>
+                {
+                    Assert.Equal(RazorCompilerDiagnostic.DiagnosticType.Error, item.Type);
+                    Assert.StartsWith($"File is not within source root directory: '{filename}'", item.Message);
+                });
+        }
+
+        [Theory]
+        [InlineData("ItemAtRoot.cs", "Test.Base", "ItemAtRoot")]
+        [InlineData(".\\ItemAtRoot.cs", "Test.Base", "ItemAtRoot")]
+        [InlineData("x:\\dir\\subdir\\ItemAtRoot.cs", "Test.Base", "ItemAtRoot")]
+        [InlineData("Dir1\\MyFile.cs", "Test.Base.Dir1", "MyFile")]
+        [InlineData("Dir1\\Dir2\\MyFile.cs", "Test.Base.Dir1.Dir2", "MyFile")]
+        public void CreatesClassWithCorrectNameAndNamespace(string relativePath, string expectedNamespace, string expectedClassName)
+        {
+            // Arrange/Acts
             var result = CompileToAssembly(
-                "x:\\dir\\subdir\\Filename.cshtml",
+                "x:\\dir\\subdir",
+                relativePath,
                 "{* No code *}",
-                "MyCompany.MyNamespace");
+                "Test.Base");
 
             // Assert
             Assert.Empty(result.Diagnostics);
             Assert.Collection(result.Assembly.GetTypes(),
                 type =>
                 {
-                    Assert.Equal("Filename", type.Name);
-                    Assert.Equal("MyCompany.MyNamespace", type.Namespace);
+                    Assert.Equal(expectedNamespace, type.Namespace);
+                    Assert.Equal(expectedClassName, type.Name);
                 });
         }
 
-        private static CompileToAssemblyResult CompileToAssembly(string cshtmlFilename, string cshtmlContent, string outputNamespace)
+        private static CompileToAssemblyResult CompileToAssembly(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent, string outputNamespace)
         {
-            var csharpResult = CompileToCSharp(cshtmlFilename, cshtmlContent, outputNamespace);
+            var csharpResult = CompileToCSharp(cshtmlRootPath, cshtmlRelativePath, cshtmlContent, outputNamespace);
             if (csharpResult.Diagnostics.Any())
             {
                 var diagnosticsLog = string.Join(Environment.NewLine,
@@ -82,16 +110,17 @@ namespace Microsoft.Blazor.Build.Test
             {
                 compilation.Emit(peStream);
 
+                var diagnostics = compilation.GetDiagnostics();
                 return new CompileToAssemblyResult
                 {
-                    Diagnostics = compilation.GetDiagnostics(),
+                    Diagnostics = diagnostics,
                     VerboseLog = csharpResult.VerboseLog,
-                    Assembly = Assembly.Load(peStream.ToArray())
+                    Assembly = diagnostics.Any() ? null : Assembly.Load(peStream.ToArray())
                 };
             }
         }
 
-        private static CompileToCSharpResult CompileToCSharp(string cshtmlFilename, string cshtmlContent, string outputNamespace)
+        private static CompileToCSharpResult CompileToCSharp(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent, string outputNamespace)
         {
             using (var resultStream = new MemoryStream())
             using (var resultWriter = new StreamWriter(resultStream))
@@ -100,7 +129,8 @@ namespace Microsoft.Blazor.Build.Test
             using (var inputReader = new StringReader(cshtmlContent))
             {
                 var diagnostics = new RazorCompiler().CompileSingleFile(
-                    cshtmlFilename,
+                    cshtmlRootPath,
+                    cshtmlRelativePath,
                     inputReader,
                     outputNamespace,
                     resultWriter,
