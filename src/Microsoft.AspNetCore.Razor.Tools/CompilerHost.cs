@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CommandLine;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -25,7 +27,23 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     return new RejectedBuildResponse();
                 }
 
-                return null;
+                var app = new Application(cancellationToken);
+                var commandArgs = parsed.args.ToArray();
+
+                CommandBase command = null;
+                if (request.Command == RequestCommand.RazorGenerate)
+                {
+                    command = new GenerateCommand(app);
+                }
+                else if (request.Command == RequestCommand.RazorTagHelper)
+                {
+                    command = new DiscoverCommand(app);
+                }
+
+                var exitCode = command?.Execute(commandArgs) ?? 0;
+                var output = command?.Out.ToString() ?? string.Empty;
+
+                return new CompletedBuildResponse(exitCode, utf8output: false, output: output);
             }
 
             private bool TryParseArguments(BuildRequest request, out (string workingDirectory, string tempDirectory, string[] args) parsed)
@@ -33,14 +51,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 string workingDirectory = null;
                 string tempDirectory = null;
 
-                // The parsed arguments will contain 'string.Empty' in place of the arguments that we don't want to pass
-                // to the compiler.
                 var args = new List<string>(request.Arguments.Count);
 
                 for (var i = 0; i < request.Arguments.Count; i++)
                 {
-                    args[i] = string.Empty;
-
                     var argument = request.Arguments[i];
                     if (argument.ArgumentId == BuildProtocolConstants.ArgumentId.CurrentDirectory)
                     {
@@ -52,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                     else if (argument.ArgumentId == BuildProtocolConstants.ArgumentId.CommandLineArgument)
                     {
-                        args[i] = argument.Value;
+                        args.Add(argument.Value);
                     }
                 }
 

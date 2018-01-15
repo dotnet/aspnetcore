@@ -15,5 +15,30 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
+    
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\BuildServerConnection.cs">
+      <Link>Shared\BuildServerConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\NativeMethods.cs">
+      <Link>Shared\NativeMethods.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\CompilerServerLogger.cs">
+      <Link>Shared\CompilerServerLogger.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\PlatformInformation.cs">
+      <Link>Shared\PlatformInformation.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\BuildProtocol.cs">
+      <Link>Shared\BuildProtocol.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\CommandLineUtilities.cs">
+      <Link>Shared\CommandLineUtilities.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\PipeName.cs">
+      <Link>Shared\PipeName.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\MutexName.cs">
+      <Link>Shared\MutexName.cs</Link>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -39,13 +39,13 @@ namespace Microsoft.CodeAnalysis.CommandLine
     internal class BuildRequest
     {
         public readonly uint ProtocolVersion;
-        public readonly RequestLanguage Language;
+        public readonly RequestCommand Command;
         public readonly ReadOnlyCollection<Argument> Arguments;
 
-        public BuildRequest(uint protocolVersion, RequestLanguage language, IEnumerable<Argument> arguments)
+        public BuildRequest(uint protocolVersion, RequestCommand command, IEnumerable<Argument> arguments)
         {
             ProtocolVersion = protocolVersion;
-            Language = language;
+            Command = command;
             Arguments = new ReadOnlyCollection<Argument>(arguments.ToList());
 
             if (Arguments.Count > ushort.MaxValue)
@@ -80,7 +80,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
         }
 
         public static BuildRequest Create(
-            RequestLanguage language,
+            RequestCommand command,
             string workingDirectory,
             string tempDirectory,
             IList<string> args,
@@ -115,13 +115,13 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 requestArgs.Add(new Argument(ArgumentId.CommandLineArgument, i, arg));
             }
 
-            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, language, requestArgs);
+            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, command, requestArgs);
         }
 
         public static BuildRequest CreateShutdown()
         {
             var requestArgs = new[] { new Argument(ArgumentId.Shutdown, argumentIndex: 0, value: "") };
-            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, RequestLanguage.CSharpCompile, requestArgs);
+            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, RequestCommand.None, requestArgs);
         }
 
         public bool IsShutdownRequest()
@@ -163,7 +163,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
             using (var reader = new BinaryReader(new MemoryStream(requestBuffer), Encoding.Unicode))
             {
                 var protocolVersion = reader.ReadUInt32();
-                var language = (RequestLanguage)reader.ReadUInt32();
+                var command = (RequestCommand)reader.ReadUInt32();
                 uint argumentCount = reader.ReadUInt32();
 
                 var argumentsBuilder = new List<Argument>((int)argumentCount);
@@ -175,7 +175,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 }
 
                 return new BuildRequest(protocolVersion,
-                                        language,
+                                        command,
                                         argumentsBuilder);
             }
         }
@@ -191,7 +191,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 // Format the request.
                 Log("Formatting request");
                 writer.Write(ProtocolVersion);
-                writer.Write((uint)Language);
+                writer.Write((uint)Command);
                 writer.Write(Arguments.Count);
                 foreach (Argument arg in Arguments)
                 {
@@ -506,10 +506,11 @@ namespace Microsoft.CodeAnalysis.CommandLine
 
     // The id numbers below are just random. It's useful to use id numbers
     // that won't occur accidentally for debugging.
-    internal enum RequestLanguage
+    internal enum RequestCommand
     {
-        CSharpCompile = 0x44532521,
-        VisualBasicCompile = 0x44532522,
+        None = 0x44532621,
+        RazorTagHelper = 0x44532622,
+        RazorGenerate = 0x44532623,
     }
 
     /// <summary>

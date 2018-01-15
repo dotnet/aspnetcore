@@ -5,6 +5,7 @@
 using System.IO;
 using System.Text;
 using Microsoft.Build.Framework;
+using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -17,7 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public string TagHelperManifest { get; set; }
 
-        public string ServerAssembly { get; set; }
+        public string ProjectRoot { get; set; }
+
+        internal override RequestCommand Command => RequestCommand.RazorTagHelper;
 
         protected override bool SkipTaskExecution()
         {
@@ -42,6 +45,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine("-o");
             builder.AppendLine(TagHelperManifest);
+
+            builder.AppendLine("-p");
+            builder.AppendLine(ProjectRoot);
 
             return builder.ToString();
         }

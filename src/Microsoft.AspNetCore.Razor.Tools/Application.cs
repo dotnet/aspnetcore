@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             Commands.Add(new DiscoverCommand(this));
             Commands.Add(new ServerCommand(this));
+            Commands.Add(new ShutdownCommand(this));
         }
 
         public CancellationToken CancellationToken { get; }

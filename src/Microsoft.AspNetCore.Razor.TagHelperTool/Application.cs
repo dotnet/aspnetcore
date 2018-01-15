@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Razor.TagHelperTool
 
             HelpOption("-?|-h|--help");
 
-            TagHelperManifest = Option("-o", "output file", CommandOptionType.SingleValue);
             Assemblies = Argument("assemblies", "assemblies to search for tag helpers", multipleValues: true);
+            TagHelperManifest = Option("-o", "output file", CommandOptionType.SingleValue);
+            ProjectRoot = Option("-p", "project root directory", CommandOptionType.SingleValue);
 
             new RunCommand().Configure(this);
         }
@@ -29,6 +30,8 @@ namespace Microsoft.AspNetCore.Razor.TagHelperTool
         public CommandArgument Assemblies { get; }
 
         public CommandOption TagHelperManifest { get; }
+
+        public CommandOption ProjectRoot { get; }
 
         public new int Execute(params string[] args)
         {

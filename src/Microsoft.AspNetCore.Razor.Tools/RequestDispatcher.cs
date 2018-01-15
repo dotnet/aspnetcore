@@ -446,10 +446,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 {
                     CompilerServerLogger.Log("Begin processing request");
 
-
-                    // TODO: this is where we actually process the request.
-                    // Take a look at BuildProtocolUtil
-                    var response = (BuildResponse)null;
+                    var response = _compilerHost.Execute(buildRequest, cancellationToken);
 
                     CompilerServerLogger.Log("End processing request");
                     return response;

@@ -1,7 +1,7 @@
 <Project>
 
   <!-- Using explicit SDK imports here because the default way conflicts with the AfterBuild target -->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
@@ -28,21 +28,22 @@
   <ItemGroup>
 
     <!-- These are just normal MSBuild files that we want to include in the package -->
-    <Content Include="build\**\*.props" PackagePath="build\"/>
-    <Content Include="build\**\*.targets" PackagePath="build\"/>
-    <Content Include="buildMultiTargeting\*.props" PackagePath="buildMultiTargeting\"/>
-    <Content Include="buildMultiTargeting\*.targets" PackagePath="buildMultiTargeting\"/>
+    <Content Include="build\**\*.props" PackagePath="build\" />
+    <Content Include="build\**\*.targets" PackagePath="build\" />
+    <Content Include="buildMultiTargeting\*.props" PackagePath="buildMultiTargeting\" />
+    <Content Include="buildMultiTargeting\*.targets" PackagePath="buildMultiTargeting\" />
   </ItemGroup>
 
   <!-- This is the tasks project that needs to be included in the package. -->
   <ItemGroup>
-    <TaskProject Include="..\Microsoft.AspNetCore.Razor.Tasks\Microsoft.AspNetCore.Razor.Tasks.csproj"/>
+    <TaskProject Include="..\Microsoft.AspNetCore.Razor.Tasks\Microsoft.AspNetCore.Razor.Tasks.csproj" />
   </ItemGroup>
 
   <!-- These are tools that need to be included in the package. -->
   <ItemGroup>
-    <ToolProject Include="..\Microsoft.AspNetCore.Razor.GenerateTool\Microsoft.AspNetCore.Razor.GenerateTool.csproj"/>
-    <ToolProject Include="..\Microsoft.AspNetCore.Razor.TagHelperTool\Microsoft.AspNetCore.Razor.TagHelperTool.csproj"/>
+    <ToolProject Include="..\Microsoft.AspNetCore.Razor.GenerateTool\Microsoft.AspNetCore.Razor.GenerateTool.csproj" />
+    <ToolProject Include="..\Microsoft.AspNetCore.Razor.TagHelperTool\Microsoft.AspNetCore.Razor.TagHelperTool.csproj" />
+    <ToolProject Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
   </ItemGroup>
 
   <!-- Using explicit SDK imports here because the default way conflicts with the AfterBuild target -->
@@ -63,47 +64,38 @@
 
       First, build the project, then copy it to the ouput directory, then add it as packable content.
     -->
-    <MSBuild Projects="@(TaskProject)"/>
+    <MSBuild Projects="@(TaskProject)" />
 
-    <MSBuild
-      Projects="@(TaskProject)"
-      Properties="TargetFramework=net46"
-      Targets="GetTargetPath">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNet46"/>
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=net46" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNet46" />
     </MSBuild>
 
-    <MSBuild
-      Projects="@(TaskProject)"
-      Properties="TargetFramework=netstandard2.0"
-      Targets="GetTargetPath">
-      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNetStandard"/>
+    <MSBuild Projects="@(TaskProject)" Properties="TargetFramework=netstandard2.0" Targets="GetTargetPath">
+      <Output TaskParameter="TargetOutputs" ItemName="TaskAssemblyNetStandard" />
     </MSBuild>
 
     <Copy SourceFiles="@(TaskAssemblyNet46)" DestinationFolder="$(OutputPath)\tasks\net46\">
-      <Output TaskParameter="CopiedFiles" ItemName="FileWrites"/>
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
     <Copy SourceFiles="@(TaskAssemblyNetStandard)" DestinationFolder="$(OutputPath)\tasks\netstandard2.0\">
-      <Output TaskParameter="CopiedFiles" ItemName="FileWrites"/>
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
     <ItemGroup>
-      <None Include="@(TaskAssemblyNet46)" PackagePath="tasks\net46\" Pack="true"/>
-      <None Include="@(TaskAssemblyNetStandard)" PackagePath="tasks\netstandard2.0\" Pack="true"/>
+      <None Include="@(TaskAssemblyNet46)" PackagePath="tasks\net46\" Pack="true" />
+      <None Include="@(TaskAssemblyNetStandard)" PackagePath="tasks\netstandard2.0\" Pack="true" />
     </ItemGroup>
 
-    <Error Text="TaskAssemblyNet46 is empty. This is a bug" Condition="'@(TaskAssemblyNet46)'==''"/>
-    <Error Text="TaskAssemblyNetStandard is empty. This is a bug" Condition="'@(TaskAssemblyNetStandard)'==''"/>
+    <Error Text="TaskAssemblyNet46 is empty. This is a bug" Condition="'@(TaskAssemblyNet46)'==''" />
+    <Error Text="TaskAssemblyNetStandard is empty. This is a bug" Condition="'@(TaskAssemblyNetStandard)'==''" />
 
     <!--
       Next we need to build the netcoreapp2.0 tools. In this case we need to do a publish, because we need
       all of the output to put in the package. 
     -->
-    <RemoveDir Directories="tools\"/>
-    <MSBuild Projects="@(ToolProject)"/>
-    <MSBuild
-      Projects="@(ToolProject)"
-      Properties="PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)tools\"
-      Targets="Publish"/>
+    <RemoveDir Directories="tools\" />
+    <MSBuild Projects="@(ToolProject)" />
+    <MSBuild Projects="@(ToolProject)" Properties="PublishDir=$(MSBuildProjectDirectory)\$(OutputPath)tools\" Targets="Publish" />
 
     <ItemGroup>
       <_RazorTool Include="$(OutputPath)tools\**\*" Exclude="$(OutputPath)tools\**\*.xml;$(OutputPath)tools\**\*.pdb" />
@@ -116,6 +108,6 @@
       </None>
     </ItemGroup>
 
-    <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''"/>
+    <Error Text="_RazorTool is empty. This is a bug" Condition="'@(_RazorTool)'==''" />
   </Target>
 </Project>

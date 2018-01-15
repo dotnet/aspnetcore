@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 return null;
             }
 
-            return $"{userName}.{isAdmin}.{baseName}";
+            return $"{userName}.{(isAdmin ? 'T' : 'F')}.{baseName}";
         }
         
         private static string ComputeBaseName(string baseDirectory)
@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(baseDirectory));
                 return Convert.ToBase64String(bytes)
+                    .Substring(0, 25) // We only have ~50 total characters on Mac, so strip that down
                     .Replace("/", "_")
                     .Replace("=", string.Empty);
             }

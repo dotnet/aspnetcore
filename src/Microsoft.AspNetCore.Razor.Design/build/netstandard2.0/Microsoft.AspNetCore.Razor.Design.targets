@@ -56,8 +56,9 @@
 
     <!-- Default to on if MvcRazorCompileOnPublish isn't set for some reason -->
     <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">true</RazorCompileOnPublish>
+    
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
-
 
   <!--
     Properties that configure Razor SDK, but need to be defined in targets due to evaluation order.
@@ -121,14 +122,14 @@
   </ItemGroup>
 
   <!--
-    These are the targets that generate code using Razor, separated for the main file for ease of maintenance.
+    These are the targets that generate code using Razor, separated from the main file for ease of maintenance.
 
     Most targets related to Razor code generation are defined there.
   -->
   <Import Project="Microsoft.AspNetCore.Razor.Design.CodeGeneration.targets" />
 
   <!-- 
-    These are the targets that actually do compilation using CSC, separated for the main file for ease of maintenance.
+    These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
 
     RazorCoreCompile should be defined there.
   -->

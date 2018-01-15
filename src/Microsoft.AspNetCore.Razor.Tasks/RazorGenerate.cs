@@ -3,6 +3,7 @@
 
 using System.Text;
 using Microsoft.Build.Framework;
+using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         [Required]
         public string TagHelperManifest { get; set; }
+
+        internal override RequestCommand Command => RequestCommand.RazorGenerate;
 
         protected override string GenerateResponseFileCommands()
         {

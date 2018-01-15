@@ -8,12 +8,10 @@ using System.IO;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.AccessControl;
-using System.Security.Cryptography;
-using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Win32.SafeHandles;
 using Roslyn.Utilities;
 using static Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger;
@@ -56,8 +54,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
 
     internal sealed class BuildServerConnection
     {
-        internal const string ServerNameDesktop = "VBCSCompiler.exe";
-        internal const string ServerNameCoreClr = "VBCSCompiler.dll";
+        internal const string ServerNameCoreClr = "rzc.dll";
 
         // Spend up to 1s connecting to existing process (existing processes should be always responsive).
         internal const int TimeOutMsExistingProcess = 1000;
@@ -65,8 +62,29 @@ namespace Microsoft.CodeAnalysis.CommandLine
         // Spend up to 20s connecting to a new process, to allow time for it to start.
         internal const int TimeOutMsNewProcess = 20000;
 
+        public static Task<BuildResponse> RunServerCompilation(
+            RequestCommand command,
+            List<string> arguments,
+            BuildPathsAlt buildPaths,
+            string keepAlive,
+            CancellationToken cancellationToken)
+        {
+            var pipeName = PipeName.ComputeDefault();
+
+            return RunServerCompilationCore(
+                command,
+                arguments,
+                buildPaths,
+                pipeName: pipeName,
+                keepAlive: keepAlive,
+                libEnvVariable: null,
+                timeoutOverride: null,
+                tryCreateServerFunc: TryCreateServerCore,
+                cancellationToken: cancellationToken);
+        }
+
         internal static async Task<BuildResponse> RunServerCompilationCore(
-            RequestLanguage language,
+            RequestCommand language,
             List<string> arguments,
             BuildPathsAlt buildPaths,
             string pipeName,
@@ -89,7 +107,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
             var clientDir = buildPaths.ClientDirectory;
             var timeoutNewProcess = timeoutOverride ?? TimeOutMsNewProcess;
             var timeoutExistingProcess = timeoutOverride ?? TimeOutMsExistingProcess;
-            var clientMutexName = GetClientMutexName(pipeName);
+            var clientMutexName = MutexName.GetClientMutexName(pipeName);
             Task<NamedPipeClientStream> pipeTask = null;
             using (var clientMutex = new Mutex(initiallyOwned: true,
                                                name: clientMutexName,
@@ -115,8 +133,8 @@ namespace Microsoft.CodeAnalysis.CommandLine
                     }
 
                     // Check for an already running server
-                    var serverMutexName = GetServerMutexName(pipeName);
-                    bool wasServerRunning = true;
+                    var serverMutexName = MutexName.GetServerMutexName(pipeName);
+                    bool wasServerRunning = WasServerMutexOpen(serverMutexName);
                     var timeout = wasServerRunning ? timeoutExistingProcess : timeoutNewProcess;
 
                     if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName))
@@ -150,6 +168,18 @@ namespace Microsoft.CodeAnalysis.CommandLine
             }
 
             return new RejectedBuildResponse();
+        }
+
+        internal static bool WasServerMutexOpen(string mutexName)
+        {
+            Mutex mutex;
+            var open = Mutex.TryOpenExisting(mutexName, out mutex);
+            if (open)
+            {
+                mutex.Dispose();
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -312,31 +342,17 @@ namespace Microsoft.CodeAnalysis.CommandLine
 
         internal static bool TryCreateServerCore(string clientDir, string pipeName)
         {
-            bool isRunningOnCoreClr = true;
             string expectedPath;
             string processArguments;
-            if (isRunningOnCoreClr)
-            {
-                // The server should be in the same directory as the client
-                var expectedCompilerPath = Path.Combine(clientDir, ServerNameCoreClr);
-                expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-                processArguments = $@"""{expectedCompilerPath}"" ""-pipename:{pipeName}""";
 
-                if (!File.Exists(expectedCompilerPath))
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                // The server should be in the same directory as the client
-                expectedPath = Path.Combine(clientDir, ServerNameDesktop);
-                processArguments = $@"""-pipename:{pipeName}""";
+            // The server should be in the same directory as the client
+            var expectedCompilerPath = Path.Combine(clientDir, ServerNameCoreClr);
+            expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+            processArguments = $@"""{expectedCompilerPath}"" server -p {pipeName}";
 
-                if (!File.Exists(expectedPath))
-                {
-                    return false;
-                }
+            if (!File.Exists(expectedCompilerPath))
+            {
+                return false;
             }
 
             if (PlatformInformation.IsWindows)
@@ -455,17 +471,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
             return myID == peerID;
         }
 #endif
-
-
-        internal static string GetServerMutexName(string pipeName)
-        {
-            return $"{pipeName}.server";
-        }
-
-        internal static string GetClientMutexName(string pipeName)
-        {
-            return $"{pipeName}.client";
-        }
 
         /// <summary>
         /// Gets the value of the temporary path for the current environment assuming the working directory
