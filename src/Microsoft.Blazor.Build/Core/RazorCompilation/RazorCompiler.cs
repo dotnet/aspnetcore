@@ -90,6 +90,11 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation
                     ? baseNamespace
                     : $"{baseNamespace}.{itemNamespace}";
 
+                // TODO: Pass through info about whether this is a design-time build, and if so,
+                // just emit enough of a stub class that intellisense will show the correct type
+                // name and any public members. Don't need to actually emit all the RenderTreeBuilder
+                // invocations.
+
                 var engine = new BlazorRazorEngine();
 
                 var sourceDoc = RazorSourceDocument.ReadFrom(inputFileContents, inputFilePath);

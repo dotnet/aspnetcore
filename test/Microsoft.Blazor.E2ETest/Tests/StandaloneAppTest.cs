@@ -3,6 +3,9 @@
 
 using Microsoft.Blazor.E2ETest.Infrastructure;
 using Microsoft.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System;
 using Xunit;
 
 namespace Microsoft.Blazor.E2ETest.Tests
@@ -13,13 +16,27 @@ namespace Microsoft.Blazor.E2ETest.Tests
         public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
+            Navigate("/", noReload: true);
+            WaitUntilLoaded();
         }
 
         [Fact]
         public void HasTitle()
         {
-            Navigate("/");
             Assert.Equal("Blazor standalone", Browser.Title);
+        }
+
+        [Fact]
+        public void HasBodyText()
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Equal("Hello, world!", bodyText);
+        }
+
+        private void WaitUntilLoaded()
+        {
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
+                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
         }
     }
 }
