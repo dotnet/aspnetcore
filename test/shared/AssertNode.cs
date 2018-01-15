@@ -5,9 +5,9 @@ using Microsoft.Blazor.Components;
 using Microsoft.Blazor.RenderTree;
 using Xunit;
 
-namespace Microsoft.Blazor.Test
+namespace Microsoft.Blazor.Test.Shared
 {
-    public static class AssertNode
+    internal static class AssertNode
     {
         public static void Text(RenderTreeNode node, string textContent)
         {

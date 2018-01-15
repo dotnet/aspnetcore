@@ -15,6 +15,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Blazor\Microsoft.Blazor.csproj" />
+  
+    <!-- Shared sources -->
+    <Compile Include="..\shared\AssertNode.cs" />
   </ItemGroup>
 
 </Project>

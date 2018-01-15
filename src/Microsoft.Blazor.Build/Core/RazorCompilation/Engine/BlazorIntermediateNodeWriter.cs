@@ -3,6 +3,10 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.Blazor.RenderTree;
+using System;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 {
@@ -11,6 +15,8 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
     /// </summary>
     internal class BlazorIntermediateNodeWriter : IntermediateNodeWriter
     {
+        private const string builderVarName = "builder";
+
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
             throw new System.NotImplementedException(nameof(BeginWriterScope));
@@ -23,7 +29,34 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteCSharpCode));
+            var isWhitespaceStatement = true;
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                var token = node.Children[i] as IntermediateToken;
+                if (token == null || !string.IsNullOrWhiteSpace(token.Content))
+                {
+                    isWhitespaceStatement = false;
+                    break;
+                }
+            }
+
+            if (isWhitespaceStatement)
+            {
+                return;
+            }
+
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
+                {
+                    context.CodeWriter.Write(token.Content);
+                }
+                else
+                {
+                    // There may be something else inside the statement like an extension node.
+                    context.RenderNode(node.Children[i]);
+                }
+            }
         }
 
         public override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
@@ -33,7 +66,26 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteCSharpExpression));
+            // Render as text node. Later, we'll need to add different handling for expressions
+            // that appear inside elements, e.g., <a href="@url">
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}");
+
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
+                {
+                    context.CodeWriter.Write(token.Content);
+                }
+                else
+                {
+                    // There may be something else inside the expression like a Template or another extension node.
+                    throw new NotImplementedException("Unsupported: CSharpExpression with child node that isn't a CSharp node");
+                }
+            }
+
+            context.CodeWriter
+                .WriteEndMethodInvocation();
         }
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
@@ -53,12 +105,26 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
-            context.CodeWriter.Write("/* HTML content */");
+            context.CodeWriter
+                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                .WriteStringLiteral(GetContent(node))
+                .WriteEndMethodInvocation();
         }
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
         {
             throw new System.NotImplementedException(nameof(WriteUsingDirective));
+        }
+
+        private static string GetContent(HtmlContentIntermediateNode node)
+        {
+            var builder = new StringBuilder();
+            var htmlTokens = node.Children.OfType<IntermediateToken>().Where(t => t.IsHtml);
+            foreach (var htmlToken in htmlTokens)
+            {
+                builder.Append(htmlToken.Content);
+            }
+            return builder.ToString();
         }
     }
 }

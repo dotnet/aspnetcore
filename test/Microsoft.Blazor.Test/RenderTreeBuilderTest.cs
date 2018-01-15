@@ -4,6 +4,7 @@
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.Rendering;
 using Microsoft.Blazor.RenderTree;
+using Microsoft.Blazor.Test.Shared;
 using System;
 using System.Linq;
 using Xunit;

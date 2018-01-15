@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.Blazor.Components;
 using System.Linq;
 
@@ -21,6 +22,8 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
             _engine = RazorEngine.Create(configure =>
             {
+                FunctionsDirective.Register(configure);
+
                 configure.SetBaseType(typeof(BlazorComponent).FullName);
 
                 configure.Phases.Remove(

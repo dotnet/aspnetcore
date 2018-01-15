@@ -3,6 +3,9 @@
 
 using Microsoft.Blazor.Build.Core.RazorCompilation;
 using Microsoft.Blazor.Components;
+using Microsoft.Blazor.Rendering;
+using Microsoft.Blazor.RenderTree;
+using Microsoft.Blazor.Test.Shared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using System;
@@ -65,7 +68,7 @@ namespace Microsoft.Blazor.Build.Test
         [InlineData("Dir1\\Dir2\\MyFile.cs", "Test.Base.Dir1.Dir2", "MyFile")]
         public void CreatesClassWithCorrectNameAndNamespace(string relativePath, string expectedNamespace, string expectedClassName)
         {
-            // Arrange/Acts
+            // Arrange/Act
             var result = CompileToAssembly(
                 "x:\\dir\\subdir",
                 relativePath,
@@ -80,6 +83,63 @@ namespace Microsoft.Blazor.Build.Test
                     Assert.Equal(expectedNamespace, type.Namespace);
                     Assert.Equal(expectedClassName, type.Name);
                 });
+        }
+
+        [Fact]
+        public void CanRenderPlainText()
+        {
+            // Arrange
+            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
+
+            // Arrange/Act
+            var component = CompileToComponent("Some plain text");
+            component.BuildRenderTree(treeBuilder);
+
+            // Assert
+            Assert.Collection(treeBuilder.GetNodes(),
+                node => AssertNode.Text(node, "Some plain text"));
+        }
+
+        [Fact]
+        public void CanUseCSharpFunctionsBlock()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(@"
+                @foreach(var item in items) {
+                    @item
+                }
+                @functions {
+                    string[] items = new[] { ""First"", ""Second"", ""Third"" };
+                }
+            ");
+
+            // Assert
+            var nodes = GetRenderTree(component).Where(NotWhitespace);
+            Assert.Collection(nodes,
+                node => AssertNode.Text(node, "First"),
+                node => AssertNode.Text(node, "Second"),
+                node => AssertNode.Text(node, "Third"));
+        }
+
+        private static bool NotWhitespace(RenderTreeNode node)
+            => node.NodeType != RenderTreeNodeType.Text
+            || !string.IsNullOrWhiteSpace(node.TextContent);
+
+        private static ArraySegment<RenderTreeNode> GetRenderTree(IComponent component)
+        {
+            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
+            component.BuildRenderTree(treeBuilder);
+            return treeBuilder.GetNodes();
+        }
+
+        private static IComponent CompileToComponent(string cshtmlSource)
+        {
+            var testComponentTypeName = "TestComponent";
+            var testComponentNamespace = "Test";
+            var assemblyResult = CompileToAssembly("c:\\ignored", $"{testComponentTypeName}.cshtml", cshtmlSource, testComponentNamespace);
+            Assert.Empty(assemblyResult.Diagnostics);
+            var testComponentType = assemblyResult.Assembly.GetType($"{testComponentNamespace}.{testComponentTypeName}");
+            return (IComponent)Activator.CreateInstance(testComponentType);
         }
 
         private static CompileToAssemblyResult CompileToAssembly(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent, string outputNamespace)
@@ -167,6 +227,12 @@ namespace Microsoft.Blazor.Build.Test
             public Assembly Assembly { get; set; }
             public string VerboseLog { get; set; }
             public IEnumerable<Diagnostic> Diagnostics { get; set; }
+        }
+
+        private class TestRenderer : Renderer
+        {
+            protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+                => throw new NotImplementedException();
         }
     }
 }
