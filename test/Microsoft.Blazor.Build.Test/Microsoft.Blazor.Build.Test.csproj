@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AngleSharp" Version="0.9.9.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.6.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="xunit" Version="2.3.1" />
@@ -20,6 +19,11 @@
 
     <!-- Shared sources -->
     <Compile Include="..\shared\AssertNode.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj" ReferenceOutputAssembly="false" />
+    <Reference Include="AngleSharp" HintPath="..\..\src\anglesharp\AngleSharpBuilder\dist\AngleSharp.dll" />
   </ItemGroup>
 
 </Project>

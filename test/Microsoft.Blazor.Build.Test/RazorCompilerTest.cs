@@ -121,6 +121,19 @@ namespace Microsoft.Blazor.Build.Test
                 node => AssertNode.Text(node, "Third"));
         }
 
+        [Fact]
+        public void CanRenderElements()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("<myelem>Hello</myelem>");
+
+            // Assert
+            var nodes = GetRenderTree(component).Where(NotWhitespace);
+            Assert.Collection(nodes,
+                node => AssertNode.Element(node, "myelem", 1),
+                node => AssertNode.Text(node, "Hello"));
+        }
+
         private static bool NotWhitespace(RenderTreeNode node)
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);

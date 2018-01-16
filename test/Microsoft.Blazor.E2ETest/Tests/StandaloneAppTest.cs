@@ -27,10 +27,9 @@ namespace Microsoft.Blazor.E2ETest.Tests
         }
 
         [Fact]
-        public void HasBodyText()
+        public void HasHeading()
         {
-            var bodyText = Browser.FindElement(By.TagName("body")).Text;
-            Assert.Equal("Hello, world!", bodyText);
+            Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
         }
 
         private void WaitUntilLoaded()

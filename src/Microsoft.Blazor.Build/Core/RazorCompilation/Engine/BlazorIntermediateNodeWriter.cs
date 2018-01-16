@@ -1,6 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using AngleSharp;
+using AngleSharp.Html;
+using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.Blazor.RenderTree;
@@ -105,10 +108,44 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
-            context.CodeWriter
-                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
-                .WriteStringLiteral(GetContent(node))
-                .WriteEndMethodInvocation();
+            var originalHtmlContent = GetContent(node);
+            var tokenizer = new HtmlTokenizer(
+                new TextSource(originalHtmlContent),
+                HtmlEntityService.Resolver);
+
+            HtmlToken nextToken;
+            while ((nextToken = tokenizer.Get()).Type != HtmlTokenType.EndOfFile)
+            {
+                switch (nextToken.Type)
+                {
+                    case HtmlTokenType.Character:
+                        // Text node
+                        context.CodeWriter
+                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                            .WriteStringLiteral(nextToken.Data)
+                            .WriteEndMethodInvocation();
+                        break;
+
+                    case HtmlTokenType.StartTag:
+                        var nextTag = nextToken.AsTag();
+                        context.CodeWriter
+                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                            .WriteStringLiteral(nextTag.Data)
+                            .WriteEndMethodInvocation();
+                        break;
+
+                    case HtmlTokenType.EndTag:
+                        context.CodeWriter
+                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.CloseElement)}")
+                            .WriteEndMethodInvocation();
+                        break;
+
+                    default:
+                        throw new InvalidCastException($"Unsupported token type: {nextToken.Type.ToString()}");
+                }
+            }
+
+            
         }
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
