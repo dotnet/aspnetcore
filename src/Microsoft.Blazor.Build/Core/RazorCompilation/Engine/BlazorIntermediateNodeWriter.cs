@@ -29,7 +29,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 StringComparer.OrdinalIgnoreCase);
 
         private string _unconsumedHtml;
-        private string _currentAttributeName;
+        private IList<object> _currentAttributeValues;
         private IDictionary<string, object> _currentElementAttributes = new Dictionary<string, object>();
 
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
@@ -105,24 +105,40 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            if (string.IsNullOrEmpty(_currentAttributeName))
+            if (_currentAttributeValues == null)
             {
-                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeName)} was null or empty.");
+                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
             }
 
-            _currentElementAttributes[_currentAttributeName] = node.Children.Single();
+            // In cases like "somestring @variable", Razor tokenizes it as:
+            //  [0] HtmlContent="somestring"
+            //  [1] CsharpContent="variable" Prefix=" "
+            // ... so to avoid losing whitespace, convert the prefix to a further token in the list
+            if (!string.IsNullOrEmpty(node.Prefix))
+            {
+                _currentAttributeValues.Add(node.Prefix);
+            }
+
+            _currentAttributeValues.Add((IntermediateToken)node.Children.Single());
         }
 
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
-            _currentAttributeName = node.AttributeName;
+            _currentAttributeValues = new List<object>();
             context.RenderChildren(node);
-            _currentAttributeName = null;
+            _currentElementAttributes[node.AttributeName] = _currentAttributeValues;
+            _currentAttributeValues = null;
         }
 
         public override void WriteHtmlAttributeValue(CodeRenderingContext context, HtmlAttributeValueIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteHtmlAttributeValue));
+            if (_currentAttributeValues == null)
+            {
+                throw new InvalidOperationException($"Invoked {nameof(WriteHtmlAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
+            }
+
+            var stringContent = ((IntermediateToken)node.Children.Single()).Content;
+            _currentAttributeValues.Add(node.Prefix + stringContent);
         }
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
@@ -208,35 +224,11 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         private static void WriteAttribute(CodeWriter codeWriter, string key, object value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
             codeWriter
                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
-
-            switch (value)
-            {
-                case IntermediateToken intermediateToken:
-                    {
-                        if (!intermediateToken.IsCSharp)
-                        {
-                            throw new ArgumentException($"Not yet supported: IntermediateToken where IsCSharp==false");
-                        }
-
-                        codeWriter.Write(intermediateToken.Content);
-                        break;
-                    }
-                case string valueString:
-                    codeWriter.WriteStringLiteral(valueString);
-                    break;
-                default:
-                    throw new ArgumentException($"Unsupported attribute value type: {value.GetType().FullName}");
-            }
-
+            WriteAttributeValue(codeWriter, value);
             codeWriter.WriteEndMethodInvocation();
         }
 
@@ -254,6 +246,53 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 builder.Append(htmlToken.Content);
             }
             return builder.ToString();
+        }
+
+        private static void WriteAttributeValue(CodeWriter writer, object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            switch (value)
+            {
+                case string valueString:
+                    writer.WriteStringLiteral(valueString);
+                    break;
+                case IntermediateToken token:
+                    {
+                        if (token.IsCSharp)
+                        {
+                            writer.Write(token.Content);
+                        }
+                        else
+                        {
+                            writer.WriteStringLiteral(token.Content);
+                        }
+                        break;
+                    }
+                case IEnumerable<object> concatenatedValues:
+                    {
+                        var first = true;
+                        foreach (var concatenatedValue in concatenatedValues)
+                        {
+                            if (first)
+                            {
+                                first = false;
+                            }
+                            else
+                            {
+                                writer.Write(" + ");
+                            }
+
+                            WriteAttributeValue(writer, concatenatedValue);
+                        }
+                        break;
+                    }
+                default:
+                    throw new ArgumentException($"Unsupported attribute value type: {value.GetType().FullName}");
+            }
         }
     }
 }

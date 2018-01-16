@@ -184,6 +184,34 @@ namespace Microsoft.Blazor.Build.Test
                 node => AssertNode.Attribute(node, "attr", "My string"));
         }
 
+        [Fact]
+        public void SupportsAttributesWithNonStringExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = 123; }"
+                + "<elem attr=@myValue />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+                node => AssertNode.Element(node, "elem", 1),
+                node => AssertNode.Attribute(node, "attr", "123"));
+        }
+
+        [Fact]
+        public void SupportsAttributesWithInterpolatedStringExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"world\"; var myNum=123; }"
+                + "<elem attr=\"Hello, @myValue.ToUpperInvariant()    with number @(myNum*2)!\" />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+                node => AssertNode.Element(node, "elem", 1),
+                node => AssertNode.Attribute(node, "attr", "Hello, WORLD    with number 246!"));
+        }
+
         private static bool NotWhitespace(RenderTreeNode node)
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);

@@ -153,7 +153,7 @@ namespace Microsoft.Blazor.Test
             // Act
             builder.OpenElement("myelement");                       //  0: <myelement
             builder.AddAttribute("attribute1", "value 1");          //  1:     attribute1="value 1"
-            builder.AddAttribute("attribute2", "value 2");          //  2:     attribute2="value 2">
+            builder.AddAttribute("attribute2", 123);                //  2:     attribute2=intExpression123>
             builder.OpenElement("child");                           //  3:   <child
             builder.AddAttribute("childevent", eventHandler);       //  4:       childevent=eventHandler>
             builder.AddText("some text");                           //  5:     some text
@@ -164,7 +164,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(builder.GetNodes(),
                 node => AssertNode.Element(node, "myelement", 5),
                 node => AssertNode.Attribute(node, "attribute1", "value 1"),
-                node => AssertNode.Attribute(node, "attribute2", "value 2"),
+                node => AssertNode.Attribute(node, "attribute2", "123"),
                 node => AssertNode.Element(node, "child", 5),
                 node => AssertNode.Attribute(node, "childevent", eventHandler),
                 node => AssertNode.Text(node, "some text"));

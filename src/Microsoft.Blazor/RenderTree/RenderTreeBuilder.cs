@@ -84,6 +84,18 @@ namespace Microsoft.Blazor.RenderTree
         }
 
         /// <summary>
+        /// Appends a node representing a string-valued attribute.
+        /// The attribute is associated with the most recently added element.
+        /// </summary>
+        /// <param name="name">The name of the attribute.</param>
+        /// <param name="value">The value of the attribute.</param>
+        public void AddAttribute(string name, object value)
+        {
+            AssertCanAddAttribute();
+            Append(RenderTreeNode.Attribute(name, value.ToString()));
+        }
+
+        /// <summary>
         /// Appends a node representing a child component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
