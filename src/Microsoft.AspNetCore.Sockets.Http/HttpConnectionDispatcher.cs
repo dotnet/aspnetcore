@@ -55,6 +55,7 @@ namespace Microsoft.AspNetCore.Sockets
                 }
                 else
                 {
+                    context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 }
             }
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.Sockets
                 }
                 else
                 {
+                    context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 }
             }
@@ -167,6 +169,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                         // The connection was disposed
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        context.Response.ContentType = "plain/text";
                         return;
                     }
 
@@ -414,6 +417,8 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
+            context.Response.ContentType = "text/plain";
+
             var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
             if (transport == TransportType.WebSockets)
             {
@@ -447,6 +452,7 @@ namespace Microsoft.AspNetCore.Sockets
         {
             if ((supportedTransports & transportType) == 0)
             {
+                context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
                 _logger.TransportNotSupported(connection.ConnectionId, transportType);
                 await context.Response.WriteAsync($"{transportType} transport not supported by this end point type");
@@ -461,6 +467,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
             else if (transport != transportType)
             {
+                context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 _logger.CannotChangeTransport(connection.ConnectionId, transport.Value, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
@@ -495,6 +502,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 // There's no connection ID: bad request
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("Connection ID required");
                 return null;
             }
@@ -503,6 +511,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 // No connection with that ID: Not Found
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
+                context.Response.ContentType = "text/plain";
                 await context.Response.WriteAsync("No Connection with that ID");
                 return null;
             }

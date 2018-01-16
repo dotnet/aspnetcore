@@ -35,11 +35,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 {
                     await _application.Completion;
                     _logger.LongPolling204(_connectionId, context.TraceIdentifier);
+                    context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
                 }
-
-                // REVIEW: What should the content type be?
 
                 var contentLength = 0;
                 var buffers = new List<byte[]>();
@@ -54,6 +53,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 }
 
                 context.Response.ContentLength = contentLength;
+                context.Response.ContentType = "application/octet-stream";
 
                 foreach (var buffer in buffers)
                 {
@@ -80,12 +80,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     _logger.PollTimedOut(_connectionId, context.TraceIdentifier);
 
                     context.Response.ContentLength = 0;
+                    context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status200OK;
                 }
                 else
                 {
                     // Case 3
                     _logger.LongPolling204(_connectionId, context.TraceIdentifier);
+                    context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                 }
             }
