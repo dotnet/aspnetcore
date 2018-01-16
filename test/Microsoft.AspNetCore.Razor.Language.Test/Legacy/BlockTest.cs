@@ -9,6 +9,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class BlockTest
     {
         [Fact]
+        public void ChildChanged_NotifiesParent()
+        {
+            // Arrange
+            var spanBuilder = new SpanBuilder(SourceLocation.Zero);
+            spanBuilder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            var span = spanBuilder.Build();
+            var blockBuilder = new BlockBuilder()
+            {
+                Type = BlockKindInternal.Markup,
+            };
+            blockBuilder.Children.Add(span);
+            var childBlock = blockBuilder.Build();
+            blockBuilder = new BlockBuilder()
+            {
+                Type = BlockKindInternal.Markup,
+            };
+            blockBuilder.Children.Add(childBlock);
+            var parentBlock = blockBuilder.Build();
+            var originalBlockLength = parentBlock.Length;
+            spanBuilder = new SpanBuilder(SourceLocation.Zero);
+            spanBuilder.Accept(new HtmlSymbol("hi", HtmlSymbolType.Text));
+            span.ReplaceWith(spanBuilder);
+            
+            // Wire up parents now so we can re-trigger ChildChanged to cause cache refresh.
+            span.Parent = childBlock;
+            childBlock.Parent = parentBlock;
+
+            // Act
+            childBlock.ChildChanged();
+
+            // Assert
+            Assert.Equal(5, originalBlockLength);
+            Assert.Equal(2, parentBlock.Length);
+        }
+
+        [Fact]
         public void ConstructorWithBlockBuilderSetsParent()
         {
             // Arrange

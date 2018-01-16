@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private static readonly int TypeHashCode = typeof(Span).GetHashCode();
         private string _content;
+        private int? _length;
         private SourceLocation _start;
 
         public Span(SpanBuilder builder)
@@ -32,7 +33,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public override bool IsBlock => false;
 
-        public override int Length => Content.Length;
+        public override int Length
+        {
+            get
+            {
+                if (_length == null)
+                {
+                    var length = 0;
+                    if (_content == null)
+                    {
+                        for (var i = 0; i < Symbols.Count; i++)
+                        {
+                            length += Symbols[i].Content.Length;
+                        }
+                    }
+                    else
+                    {
+                        length = _content.Length;
+                    }
+
+                    _length = length;
+                }
+
+                return _length.Value;
+            }
+        }
 
         public override SourceLocation Start => _start;
 
@@ -79,6 +104,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ChunkGenerator = builder.ChunkGenerator ?? SpanChunkGenerator.Null;
             _start = builder.Start;
             _content = null;
+            _length = null;
+
+            Parent?.ChildChanged();
 
             // Since we took references to the values in SpanBuilder, clear its references out
             builder.Reset();

@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class Block : SyntaxTreeNode
     {
+        private int? _length;
+
         public Block(BlockBuilder source)
             : this(source.Type, source.Children, source.ChunkGenerator)
         {
@@ -58,7 +60,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        public override int Length => Children.Sum(child => child.Length);
+        public override int Length
+        {
+            get
+            {
+                if (_length == null)
+                {
+                    var length = 0;
+                    for (var i = 0; i < Children.Count; i++)
+                    {
+                        length += Children[i].Length;
+                    }
+
+                    _length = length;
+                }
+
+                return _length.Value;
+            }
+        }
+
 
         public virtual IEnumerable<Span> Flatten()
         {
@@ -212,6 +232,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public override void Accept(ParserVisitor visitor)
         {
             visitor.VisitBlock(this);
+        }
+
+        internal void ChildChanged()
+        {
+            // A node in our graph has changed. We'll need to recompute our length the next time we're asked for it.
+            _length = null;
+
+            Parent?.ChildChanged();
         }
 
         private class EquivalenceComparer : IEqualityComparer<SyntaxTreeNode>
