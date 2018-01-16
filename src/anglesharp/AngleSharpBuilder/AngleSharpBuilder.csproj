@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="0.9.9.1" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
+  </ItemGroup>
+
+  <Target Name="GenerateDist" AfterTargets="Build">
+    <Exec WorkingDirectory="$(MSBuildThisFileDirectory)" Command="dotnet $(OutDir)$(AssemblyName).dll" />
+  </Target>
+
+</Project>

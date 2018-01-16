@@ -31,4 +31,9 @@
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj" ReferenceOutputAssembly="false" />
+    <Reference Include="AngleSharp" HintPath="..\anglesharp\AngleSharpBuilder\dist\AngleSharp.dll" />
+  </ItemGroup>
+
 </Project>

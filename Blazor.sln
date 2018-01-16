@@ -54,11 +54,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Browser.JS
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Browser", "src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj", "{4874AFF4-335D-4037-8858-BBBB987C124B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Blazor.Test", "test\Microsoft.Blazor.Test\Microsoft.Blazor.Test.csproj", "{8FD8636E-AFA5-434D-8857-06D02686741A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Test", "test\Microsoft.Blazor.Test\Microsoft.Blazor.Test.csproj", "{8FD8636E-AFA5-434D-8857-06D02686741A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testapps", "testapps", "{4AE0D35B-D97A-44D0-8392-C9240377DCCE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicTestApp", "test\testapps\BasicTestApp\BasicTestApp.csproj", "{2838CB6F-D2C7-4C0A-A994-C72E56F16984}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "test\testapps\BasicTestApp\BasicTestApp.csproj", "{2838CB6F-D2C7-4C0A-A994-C72E56F16984}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "anglesharp", "anglesharp", "{4E3BD19A-6159-4548-A88F-700443E6D934}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngleSharpBuilder", "src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj", "{36706AC2-C851-4038-B161-9C1E44B668C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -146,6 +150,10 @@ Global
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984}.Release|Any CPU.Build.0 = Release|Any CPU
+		{36706AC2-C851-4038-B161-9C1E44B668C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36706AC2-C851-4038-B161-9C1E44B668C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36706AC2-C851-4038-B161-9C1E44B668C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36706AC2-C851-4038-B161-9C1E44B668C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -175,6 +183,8 @@ Global
 		{8FD8636E-AFA5-434D-8857-06D02686741A} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
 		{4AE0D35B-D97A-44D0-8392-C9240377DCCE} = {ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984} = {4AE0D35B-D97A-44D0-8392-C9240377DCCE}
+		{4E3BD19A-6159-4548-A88F-700443E6D934} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
+		{36706AC2-C851-4038-B161-9C1E44B668C8} = {4E3BD19A-6159-4548-A88F-700443E6D934}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}
