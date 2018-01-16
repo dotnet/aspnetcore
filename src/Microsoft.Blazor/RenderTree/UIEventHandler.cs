@@ -6,5 +6,5 @@ namespace Microsoft.Blazor.RenderTree
     /// <summary>
     /// Handles an event raised for a <see cref="RenderTreeNode"/>.
     /// </summary>
-    public delegate void UIEventHandler(UIEventArgs eventInfo);
+    public delegate void UIEventHandler(UIEventArgs eventArgs);
 }

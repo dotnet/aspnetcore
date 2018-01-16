@@ -1,0 +1,12 @@
+﻿<h1>Counter</h1>
+<p>Current count: @currentCount.ToString()</p>
+<button onclick=@OnButtonClicked>Click me</button>
+
+@functions {
+    int currentCount = 0;
+
+    void OnButtonClicked(Microsoft.Blazor.RenderTree.UIEventArgs eventArgs)
+    {
+        currentCount++;
+    }
+}

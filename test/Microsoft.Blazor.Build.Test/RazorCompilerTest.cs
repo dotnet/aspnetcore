@@ -179,7 +179,7 @@ namespace Microsoft.Blazor.Build.Test
                 + "<elem attr=@myValue />");
 
             // Assert
-            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+            Assert.Collection(GetRenderTree(component),
                 node => AssertNode.Element(node, "elem", 1),
                 node => AssertNode.Attribute(node, "attr", "My string"));
         }
@@ -193,7 +193,7 @@ namespace Microsoft.Blazor.Build.Test
                 + "<elem attr=@myValue />");
 
             // Assert
-            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+            Assert.Collection(GetRenderTree(component),
                 node => AssertNode.Element(node, "elem", 1),
                 node => AssertNode.Attribute(node, "attr", "123"));
         }
@@ -207,9 +207,29 @@ namespace Microsoft.Blazor.Build.Test
                 + "<elem attr=\"Hello, @myValue.ToUpperInvariant()    with number @(myNum*2)!\" />");
 
             // Assert
-            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+            Assert.Collection(GetRenderTree(component),
                 node => AssertNode.Element(node, "elem", 1),
                 node => AssertNode.Attribute(node, "attr", "Hello, WORLD    with number 246!"));
+        }
+
+        [Fact]
+        public void SupportsAttributesWithEventHandlerValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "<elem attr=@MyHandleEvent />"
+                + @"@functions {
+                        void MyHandleEvent(Microsoft.Blazor.RenderTree.UIEventArgs eventArgs) {}
+                    }");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                node => AssertNode.Element(node, "elem", 1),
+                node =>
+                {
+                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
+                    Assert.NotNull(node.AttributeEventHandlerValue);
+                });
         }
 
         private static bool NotWhitespace(RenderTreeNode node)
