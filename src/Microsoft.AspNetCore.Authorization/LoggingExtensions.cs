@@ -7,29 +7,25 @@ namespace Microsoft.Extensions.Logging
 {
     internal static class LoggingExtensions
     {
-        private static Action<ILogger, string, Exception> _userAuthorizationFailed;
-        private static Action<ILogger, string, Exception> _userAuthorizationSucceeded;
+        private static Action<ILogger, Exception> _userAuthorizationFailed;
+        private static Action<ILogger, Exception> _userAuthorizationSucceeded;
 
         static LoggingExtensions()
         {
-            _userAuthorizationSucceeded = LoggerMessage.Define<string>(
+            _userAuthorizationSucceeded = LoggerMessage.Define(
                 eventId: 1,
                 logLevel: LogLevel.Information,
-                formatString: "Authorization was successful for user: {UserName}.");
-            _userAuthorizationFailed = LoggerMessage.Define<string>(
+                formatString: "Authorization was successful.");
+            _userAuthorizationFailed = LoggerMessage.Define(
                 eventId: 2,
                 logLevel: LogLevel.Information,
-                formatString: "Authorization failed for user: {UserName}.");
+                formatString: "Authorization failed.");
         }
 
-        public static void UserAuthorizationSucceeded(this ILogger logger, string userName)
-        {
-            _userAuthorizationSucceeded(logger, userName, null);
-        }
+        public static void UserAuthorizationSucceeded(this ILogger logger)
+            => _userAuthorizationSucceeded(logger, null);
 
-        public static void UserAuthorizationFailed(this ILogger logger, string userName)
-        {
-            _userAuthorizationFailed(logger, userName, null);
-        }
+        public static void UserAuthorizationFailed(this ILogger logger)
+            => _userAuthorizationFailed(logger, null);
     }
 }

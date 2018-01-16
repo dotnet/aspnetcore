@@ -98,35 +98,13 @@ namespace Microsoft.AspNetCore.Authorization
             var result = _evaluator.Evaluate(authContext);
             if (result.Succeeded)
             {
-                _logger.UserAuthorizationSucceeded(GetUserNameForLogging(user));
+                _logger.UserAuthorizationSucceeded();
             }
             else
             {
-                _logger.UserAuthorizationFailed(GetUserNameForLogging(user));
+                _logger.UserAuthorizationFailed();
             }
             return result;
-        }
-
-        private string GetUserNameForLogging(ClaimsPrincipal user)
-        {
-            var identity = user?.Identity;
-            if (identity != null)
-            {
-                var name = identity.Name;
-                if (name != null)
-                {
-                    return name;
-                }
-                return GetClaimValue(identity, "sub")
-                    ?? GetClaimValue(identity, ClaimTypes.Name)
-                    ?? GetClaimValue(identity, ClaimTypes.NameIdentifier);
-            }
-            return null;
-        }
-
-        private static string GetClaimValue(IIdentity identity, string claimsType)
-        {
-            return (identity as ClaimsIdentity)?.FindFirst(claimsType)?.Value;
         }
 
         /// <summary>

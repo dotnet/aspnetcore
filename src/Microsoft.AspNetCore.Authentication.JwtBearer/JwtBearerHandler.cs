@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
                         catch (Exception ex)
                         {
-                            Logger.TokenValidationFailed(token, ex);
+                            Logger.TokenValidationFailed(ex);
 
                             // Refresh the configuration for exceptions that may be caused by key rollovers. The user can also request a refresh in the event.
                             if (Options.RefreshOnIssuerKeyNotFound && Options.ConfigurationManager != null
