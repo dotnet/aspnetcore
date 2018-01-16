@@ -5,6 +5,8 @@
         <WorkingDirectory>$(RepositoryRoot)obj\vsdrop\</WorkingDirectory>
         <DropSource>$(SignedVsixPath)</DropSource>
         <VSDropTxt>$(SignedVsixPath)\vsdrop.$(VsixName).txt</VSDropTxt>
+        <VSManOutputFileName>$(VsixName).vsman</VSManOutputFileName>
+        <VSManOutputPath>$(SignedVsixPath)$(VSManOutputFileName)</VSManOutputPath>
     </PropertyGroup>
 
     <Target Name="GetManifests">
@@ -17,7 +19,7 @@
     </Target>
 
     <Target Name="BuildAndPublishManifest">
-        <Delete Files="$(SignedVsixPath)\$(VsixName).vsmand;$(SignedVsixPath)\$(VsixName).vsman" />
+        <Delete Files="$(SignedVsixPath)\$(VsixName).vsmand;$(VSManOutputPath)" />
 
         <CallTarget Targets="VSSetupRestorePackages" />
         <CallTarget Targets="BuildManifests" />

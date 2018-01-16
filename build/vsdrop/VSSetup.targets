@@ -43,11 +43,8 @@
             Condition="'$(InvokePublishToVSDropCore)'=='false'"
             Importance="High" />
 
-        <ItemGroup>
-            <DropManifests Include="$(DropSource)\*.vsman" />
-        </ItemGroup>
 
-        <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="@(DropManifests->'$(ManifestPublishUrl)%(Filename)%(Extension)')" />
+        <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="" />
     </Target>
 
     <Target Name="PublishToVSDropCore" DependsOnTargets="GetDropCmdLine">

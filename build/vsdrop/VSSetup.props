@@ -44,6 +44,7 @@
 
     <PropertyGroup>
         <ManifestPublishUrl>https://vsdrop.corp.microsoft.com/file/v1/Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber);</ManifestPublishUrl>
+        <VSManPublishUrl>$(ManifestPublishUrl)$(VSManOutputFileName)</VSManPublishUrl>
     </PropertyGroup>
 
     <PropertyGroup>
