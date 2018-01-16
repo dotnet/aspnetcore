@@ -1,6 +1,6 @@
 <Project>
 
-  <!-- Inserts the Razor VSIX to the VS drop share -->
+  <!-- Builds and uploads VSIX packages manifests to VS drop share -->
   <Target Name="RunVSDrop" DependsOnTargets="GetToolsets" Condition="'$(PublishToVSDrop)' == 'true'">
     <Error Text="Cannot publish unsigned files to VS drops. Set SignType to 'real' to ensuring files are signed first."
       Condition=" '$(SignType)' != 'real'" />
@@ -10,19 +10,29 @@
 
     <ItemGroup>
       <SignedVSIX Include="$(SignedVSIXPath)*.vsix" />
+    </ItemGroup>
 
+    <MSBuild Projects="$(MSBuildThisFileFullPath)"
+      Targets="_PublishVsixToVsDrop"
+      Properties="VisualStudioMSBuildx86Path=$(VisualStudioMSBuildx86Path);SignedVSIXFileName=%(SignedVSIX.FileName)" />
+  </Target>
+
+  <Target Name="_PublishVsixToVsDrop">
+    <ItemGroup>
+      <MSBuildExeArgs Remove="@(MSBuildExeArgs)" />
       <MSBuildExeArgs Include="
         $(MSBuildThisFileDirectory)vsdrop\drop.msbuild;
         /t:BuildAndPublishManifest;
-        /p:VsixName=%(SignedVSIX.FileName);
+        /p:VsixName=$(SignedVsixFileName);
         /p:SignedVsixPath=$(SignedVSIXPath);
         /p:RepositoryRoot=$(RepositoryRoot);
-        /p:ManifestRepositoryName=AspNetCore/%(SignedVSIX.FileName);
+        /p:ManifestRepositoryName=AspNetCore/$(SignedVsixFileName);
         /p:ManifestBuildBranch=$(BuildBranch);
         /p:ManifestBuildNumber=$(BuildNumber)" />
     </ItemGroup>
 
-    <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" Condition="Exists($(RazorVSIXFullPath))" />
+    <Message Text="Publishing VSIX $(SignedVsixFileName) to VS Drops" Importance="high" />
+    <Run FileName="$(VisualStudioMSBuildx86Path)" Arguments="@(MSBuildExeArgs)" />
   </Target>
 
   <Target Name="GetPackagesToPublish">
