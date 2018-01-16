@@ -244,7 +244,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteUsingDirective));
+            context.CodeWriter.WriteUsing(node.Content, endLine: true);
         }
 
         private static string GetContent(HtmlContentIntermediateNode node)

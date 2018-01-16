@@ -286,6 +286,23 @@ namespace Microsoft.Blazor.Build.Test
                 });
         }
 
+        [Fact]
+        public void SupportsUsingStatements()
+        {
+            // Arrange
+            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
+
+            // Arrange/Act
+            var component = CompileToComponent(@"
+                @using System.Collections.Generic
+                @(typeof(List<string>).FullName)");
+            component.BuildRenderTree(treeBuilder);
+
+            // Assert
+            Assert.Collection(treeBuilder.GetNodes().Where(NotWhitespace),
+                node => AssertNode.Text(node, typeof(List<string>).FullName));
+        }
+
         private static bool NotWhitespace(RenderTreeNode node)
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);

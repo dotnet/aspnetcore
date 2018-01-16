@@ -1,0 +1,18 @@
+﻿@using System.Collections.Generic
+@using Microsoft.Blazor.RenderTree
+Type here: <input onkeypress=@OnKeyPressed />
+<ul>
+    @foreach (var key in keysPressed)
+    {
+        <li>@key</li>
+    }
+</ul>
+
+@functions {
+    List<string> keysPressed = new List<string>();
+
+    void OnKeyPressed(UIEventArgs eventArgs)
+    {
+        keysPressed.Add(((UIKeyboardEventArgs)eventArgs).Key);
+    }
+}
