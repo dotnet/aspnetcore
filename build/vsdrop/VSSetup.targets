@@ -44,7 +44,7 @@
             Importance="High" />
 
 
-        <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="" />
+        <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="$([MSBuild]::Escape($(VSManPublishUrl)))" />
     </Target>
 
     <Target Name="PublishToVSDropCore" DependsOnTargets="GetDropCmdLine">

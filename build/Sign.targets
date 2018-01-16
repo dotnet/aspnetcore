@@ -193,9 +193,9 @@
       <_SignProject Project="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
           Certificate=$(VSIXCodeSignCertificate);
-          JobName=RazorVSIX;
+          JobName=AspNetCoreVSIX;
           LocalBuild=$(LocalBuild);
-          Description=Signing Razor VSIX;
+          Description=Signing AspNetCore VSIX;
           Files=@(VSIXToSign)
         </AdditionalProperties>
       </_SignProject>
