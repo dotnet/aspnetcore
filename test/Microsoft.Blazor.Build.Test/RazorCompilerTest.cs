@@ -101,6 +101,25 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsCSharpExpressions()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(@"
+                @(""Hello"")
+                @((object)null)
+                @(123)
+                @(new object())
+            ");
+
+            // Assert
+            var nodes = GetRenderTree(component).Where(NotWhitespace);
+            Assert.Collection(nodes,
+                node => AssertNode.Text(node, "Hello"),
+                node => AssertNode.Text(node, "123"),
+                node => AssertNode.Text(node, new object().ToString()));
+        }
+
+        [Fact]
         public void SupportsCSharpFunctionsBlock()
         {
             // Arrange/Act

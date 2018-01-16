@@ -60,6 +60,13 @@ namespace Microsoft.Blazor.RenderTree
             => Append(RenderTreeNode.Text(textContent));
 
         /// <summary>
+        /// Appends a node representing text content.
+        /// </summary>
+        /// <param name="textContent">Content for the new text node.</param>
+        public void AddText(object textContent)
+            => AddText(textContent?.ToString());
+
+        /// <summary>
         /// Appends a node representing a string-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>

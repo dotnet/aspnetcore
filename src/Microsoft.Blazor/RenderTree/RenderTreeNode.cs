@@ -77,7 +77,7 @@ namespace Microsoft.Blazor.RenderTree
         internal static RenderTreeNode Text(string textContent) => new RenderTreeNode
         {
             NodeType = RenderTreeNodeType.Text,
-            TextContent = textContent,
+            TextContent = textContent ?? string.Empty,
         };
 
         internal static RenderTreeNode Attribute(string name, string value) => new RenderTreeNode

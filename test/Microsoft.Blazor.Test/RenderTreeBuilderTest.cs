@@ -40,9 +40,11 @@ namespace Microsoft.Blazor.Test
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
+            var nullString = (string)null;
 
             // Act
             builder.AddText("First item");
+            builder.AddText(nullString);
             builder.AddText("Second item");
 
             // Assert
@@ -50,7 +52,27 @@ namespace Microsoft.Blazor.Test
             Assert.Equal(0, nodes.Offset);
             Assert.Collection(nodes,
                 node => AssertNode.Text(node, "First item"),
+                node => AssertNode.Text(node, string.Empty),
                 node => AssertNode.Text(node, "Second item"));
+        }
+
+        [Fact]
+        public void CanAddNonStringValueAsText()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var nullObject = (object)null;
+
+            // Act
+            builder.AddText(1234);
+            builder.AddText(nullObject);
+
+            // Assert
+            var nodes = builder.GetNodes();
+            Assert.Equal(0, nodes.Offset);
+            Assert.Collection(nodes,
+                node => AssertNode.Text(node, "1234"),
+                node => AssertNode.Text(node, string.Empty));
         }
 
         [Fact]
