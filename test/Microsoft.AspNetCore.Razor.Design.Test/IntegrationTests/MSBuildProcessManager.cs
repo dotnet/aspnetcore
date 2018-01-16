@@ -48,11 +48,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true,
             };
-
-            var completionSource = new TaskCompletionSource<MSBuildResult>();
+            
             var output = new StringBuilder();
-
-            process.Exited += Process_Exited;
+            
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
 
@@ -80,13 +78,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new TimeoutException($"command '${process.StartInfo.FileName} {process.StartInfo.Arguments}' timed out after {timeout}.");
             });
 
-            return Task.WhenAny<MSBuildResult>(completionSource.Task, timeoutTask).Unwrap();
-
-            void Process_Exited(object sender, EventArgs e)
+            var waitTask = Task.Run(() =>
             {
+                // We need to use two WaitForExit calls to ensure that all of the output/events are processed. Previously
+                // this code used Process.Exited, which could result in us missing some output due to the ordering of
+                // events.
+                //
+                // See the remarks here: https://msdn.microsoft.com/en-us/library/ty0d8k56(v=vs.110).aspx
+                if (!process.WaitForExit(Int32.MaxValue))
+                {
+                    // unreachable - the timeoutTask will kill the process before this happens.
+                    throw new TimeoutException();
+                }
+
+                process.WaitForExit();
                 var result = new MSBuildResult(project, process.StartInfo.FileName, process.StartInfo.Arguments, process.ExitCode, output.ToString());
-                completionSource.SetResult(result);
-            }
+                return result;
+            });
+
+            return Task.WhenAny<MSBuildResult>(waitTask, timeoutTask).Unwrap();
 
             void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
             {
