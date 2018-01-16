@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.Blazor.RenderTree;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -19,6 +20,13 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
     internal class BlazorIntermediateNodeWriter : IntermediateNodeWriter
     {
         private const string builderVarName = "builder";
+
+        // Per the HTML spec, the following elements are inherently self-closing
+        // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
+        private static HashSet<string> htmlVoidElementsLookup
+            = new HashSet<string>(
+                new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
+                StringComparer.OrdinalIgnoreCase);
 
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
@@ -119,26 +127,37 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 switch (nextToken.Type)
                 {
                     case HtmlTokenType.Character:
-                        // Text node
-                        context.CodeWriter
-                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
-                            .WriteStringLiteral(nextToken.Data)
-                            .WriteEndMethodInvocation();
-                        break;
+                        {
+                            // Text node
+                            context.CodeWriter
+                                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                                .WriteStringLiteral(nextToken.Data)
+                                .WriteEndMethodInvocation();
+                            break;
+                        }
 
                     case HtmlTokenType.StartTag:
-                        var nextTag = nextToken.AsTag();
-                        context.CodeWriter
-                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
-                            .WriteStringLiteral(nextTag.Data)
-                            .WriteEndMethodInvocation();
-                        break;
-
                     case HtmlTokenType.EndTag:
-                        context.CodeWriter
-                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.CloseElement)}")
-                            .WriteEndMethodInvocation();
-                        break;
+                        {
+                            var nextTag = nextToken.AsTag();
+                            if (nextToken.Type == HtmlTokenType.StartTag)
+                            {
+                                context.CodeWriter
+                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                                    .WriteStringLiteral(nextTag.Data)
+                                    .WriteEndMethodInvocation();
+                            }
+
+                            if (nextToken.Type == HtmlTokenType.EndTag
+                                || nextTag.IsSelfClosing
+                                || htmlVoidElementsLookup.Contains(nextTag.Data))
+                            {
+                                context.CodeWriter
+                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.CloseElement)}")
+                                    .WriteEndMethodInvocation();
+                            }
+                            break;
+                        }
 
                     default:
                         throw new InvalidCastException($"Unsupported token type: {nextToken.Type.ToString()}");

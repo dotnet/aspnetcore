@@ -128,10 +128,33 @@ namespace Microsoft.Blazor.Build.Test
             var component = CompileToComponent("<myelem>Hello</myelem>");
 
             // Assert
-            var nodes = GetRenderTree(component).Where(NotWhitespace);
-            Assert.Collection(nodes,
+            Assert.Collection(GetRenderTree(component),
                 node => AssertNode.Element(node, "myelem", 1),
                 node => AssertNode.Text(node, "Hello"));
+        }
+
+        [Fact]
+        public void CanRenderSelfClosingElements()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("Some text so elem isn't at position 0 <myelem />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                node => AssertNode.Text(node, "Some text so elem isn't at position 0 "),
+                node => AssertNode.Element(node, "myelem", 1));
+        }
+
+        [Fact]
+        public void CanRenderVoidHtmlElements()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("Some text so elem isn't at position 0 <img>");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component),
+                node => AssertNode.Text(node, "Some text so elem isn't at position 0 "),
+                node => AssertNode.Element(node, "img", 1));
         }
 
         private static bool NotWhitespace(RenderTreeNode node)
