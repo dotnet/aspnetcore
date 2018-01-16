@@ -28,6 +28,10 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
                 StringComparer.OrdinalIgnoreCase);
 
+        private string _unconsumedHtml;
+        private string _currentAttributeName;
+        private IDictionary<string, object> _currentElementAttributes = new Dictionary<string, object>();
+
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
             throw new System.NotImplementedException(nameof(BeginWriterScope));
@@ -101,12 +105,19 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteCSharpExpressionAttributeValue));
+            if (string.IsNullOrEmpty(_currentAttributeName))
+            {
+                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeName)} was null or empty.");
+            }
+
+            _currentElementAttributes[_currentAttributeName] = node.Children.Single();
         }
 
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteHtmlAttribute));
+            _currentAttributeName = node.AttributeName;
+            context.RenderChildren(node);
+            _currentAttributeName = null;
         }
 
         public override void WriteHtmlAttributeValue(CodeRenderingContext context, HtmlAttributeValueIntermediateNode node)
@@ -117,9 +128,16 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
             var originalHtmlContent = GetContent(node);
+            if (_unconsumedHtml != null)
+            {
+                originalHtmlContent = _unconsumedHtml + originalHtmlContent;
+                _unconsumedHtml = null;
+            }
+
             var tokenizer = new HtmlTokenizer(
                 new TextSource(originalHtmlContent),
                 HtmlEntityService.Resolver);
+            var codeWriter = context.CodeWriter;
 
             HtmlToken nextToken;
             while ((nextToken = tokenizer.Get()).Type != HtmlTokenType.EndOfFile)
@@ -129,7 +147,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                     case HtmlTokenType.Character:
                         {
                             // Text node
-                            context.CodeWriter
+                            codeWriter
                                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
                                 .WriteStringLiteral(nextToken.Data)
                                 .WriteEndMethodInvocation();
@@ -142,7 +160,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                             var nextTag = nextToken.AsTag();
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
-                                context.CodeWriter
+                                codeWriter
                                     .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
                                     .WriteStringLiteral(nextTag.Data)
                                     .WriteEndMethodInvocation();
@@ -150,19 +168,23 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
                             foreach (var attribute in nextTag.Attributes)
                             {
-                                context.CodeWriter
-                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
-                                    .WriteStringLiteral(attribute.Key)
-                                    .WriteParameterSeparator()
-                                    .WriteStringLiteral(attribute.Value)
-                                    .WriteEndMethodInvocation();
+                                WriteAttribute(codeWriter, attribute.Key, attribute.Value);
+                            }
+
+                            if (_currentElementAttributes.Count > 0)
+                            {
+                                foreach (var pair in _currentElementAttributes)
+                                {
+                                    WriteAttribute(codeWriter, pair.Key, pair.Value);
+                                }
+                                _currentElementAttributes.Clear();
                             }
 
                             if (nextToken.Type == HtmlTokenType.EndTag
                                 || nextTag.IsSelfClosing
                                 || htmlVoidElementsLookup.Contains(nextTag.Data))
                             {
-                                context.CodeWriter
+                                codeWriter
                                     .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.CloseElement)}")
                                     .WriteEndMethodInvocation();
                             }
@@ -174,7 +196,48 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 }
             }
 
-            
+            // If we got an EOF in the middle of an HTML element, it's probably because we're
+            // about to receive some attribute name/value pairs. Store the unused HTML content
+            // so we can prepend it to the part that comes after the attributes to make
+            // complete valid markup.
+            if (originalHtmlContent.Length > nextToken.Position.Position)
+            {
+                _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
+            }
+        }
+
+        private static void WriteAttribute(CodeWriter codeWriter, string key, object value)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            codeWriter
+                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                .WriteStringLiteral(key)
+                .WriteParameterSeparator();
+
+            switch (value)
+            {
+                case IntermediateToken intermediateToken:
+                    {
+                        if (!intermediateToken.IsCSharp)
+                        {
+                            throw new ArgumentException($"Not yet supported: IntermediateToken where IsCSharp==false");
+                        }
+
+                        codeWriter.Write(intermediateToken.Content);
+                        break;
+                    }
+                case string valueString:
+                    codeWriter.WriteStringLiteral(valueString);
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported attribute value type: {value.GetType().FullName}");
+            }
+
+            codeWriter.WriteEndMethodInvocation();
         }
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)

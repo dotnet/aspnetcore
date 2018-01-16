@@ -86,7 +86,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanRenderPlainText()
+        public void SupportsPlainText()
         {
             // Arrange
             var treeBuilder = new RenderTreeBuilder(new TestRenderer());
@@ -101,7 +101,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanUseCSharpFunctionsBlock()
+        public void SupportsCSharpFunctionsBlock()
         {
             // Arrange/Act
             var component = CompileToComponent(@"
@@ -122,7 +122,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanRenderElements()
+        public void SupportsElements()
         {
             // Arrange/Act
             var component = CompileToComponent("<myelem>Hello</myelem>");
@@ -134,7 +134,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanRenderSelfClosingElements()
+        public void SupportsSelfClosingElements()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <myelem />");
@@ -146,7 +146,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanRenderVoidHtmlElements()
+        public void SupportsVoidHtmlElements()
         {
             // Arrange/Act
             var component = CompileToComponent("Some text so elem isn't at position 0 <img>");
@@ -158,7 +158,7 @@ namespace Microsoft.Blazor.Build.Test
         }
 
         [Fact]
-        public void CanRenderAttributes()
+        public void SupportsAttributesWithLiteralValues()
         {
             // Arrange/Act
             var component = CompileToComponent("<elem attrib-one=\"Value 1\" a2='v2' />");
@@ -168,6 +168,20 @@ namespace Microsoft.Blazor.Build.Test
                 node => AssertNode.Element(node, "elem", 2),
                 node => AssertNode.Attribute(node, "attrib-one", "Value 1"),
                 node => AssertNode.Attribute(node, "a2", "v2"));
+        }
+
+        [Fact]
+        public void SupportsAttributesWithStringExpressionValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                "@{ var myValue = \"My string\"; }"
+                + "<elem attr=@myValue />");
+
+            // Assert
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+                node => AssertNode.Element(node, "elem", 1),
+                node => AssertNode.Attribute(node, "attr", "My string"));
         }
 
         private static bool NotWhitespace(RenderTreeNode node)
