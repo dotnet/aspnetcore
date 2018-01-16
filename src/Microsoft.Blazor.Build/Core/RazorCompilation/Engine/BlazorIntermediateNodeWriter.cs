@@ -31,6 +31,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
         private string _unconsumedHtml;
         private IList<object> _currentAttributeValues;
         private IDictionary<string, object> _currentElementAttributes = new Dictionary<string, object>();
+        private IList<IntermediateToken> _currentElementAttributeTokens = new List<IntermediateToken>();
 
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
@@ -91,8 +92,19 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
         {
-            // Render as text node. Later, we'll need to add different handling for expressions
-            // that appear inside elements, e.g., <a href="@url">
+            // To support syntax like <elem @completeAttributePair /> (which in turn supports syntax
+            // like <elem @OnSomeEvent(Handler) />), check whether we are currently in the middle of
+            // writing an element. If so, treat this C# expression as something that should evaluate
+            // as a RenderTreeNode of type Attribute.
+            if (_unconsumedHtml != null)
+            {
+                var token = (IntermediateToken)node.Children.Single();
+                _currentElementAttributeTokens.Add(token);
+                return;
+            }
+
+            // Since we're not in the middle of writing an element, this must evaluate as some
+            // text to display
             context.CodeWriter
                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}");
 
@@ -204,6 +216,18 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                                     WriteAttribute(codeWriter, pair.Key, pair.Value);
                                 }
                                 _currentElementAttributes.Clear();
+                            }
+
+                            if (_currentElementAttributeTokens.Count > 0)
+                            {
+                                foreach (var token in _currentElementAttributeTokens)
+                                {
+                                    codeWriter
+                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                                        .Write(token.Content)
+                                        .WriteEndMethodInvocation();
+                                }
+                                _currentElementAttributeTokens.Clear();
                             }
 
                             if (nextToken.Type == HtmlTokenType.EndTag

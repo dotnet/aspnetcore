@@ -34,5 +34,13 @@ namespace Microsoft.Blazor.Components
         /// <returns>Always throws an exception.</returns>
         public virtual Task ExecuteAsync()
             => throw new NotImplementedException($"Blazor components do not implement {nameof(ExecuteAsync)}.");
+
+        /// <summary>
+        /// Handles click events by invoking <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="handler">The handler to be invoked when the event occurs.</param>
+        /// <returns>A <see cref="RenderTreeNode"/> that represents the event handler.</returns>
+        protected RenderTreeNode onclick(Action handler)
+            => RenderTreeNode.Attribute("onclick", _ => handler());
     }
 }

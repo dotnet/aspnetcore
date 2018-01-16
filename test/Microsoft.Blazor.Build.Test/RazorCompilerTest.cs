@@ -303,6 +303,35 @@ namespace Microsoft.Blazor.Build.Test
                 node => AssertNode.Text(node, typeof(List<string>).FullName));
         }
 
+        [Fact]
+        public void SupportsAttributeNodesEvaluatedInline()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<elem @onclick(MyHandler) />
+                @functions {
+                    public bool DidInvokeCode { get; set; } = false;
+                    void MyHandler()
+                    {
+                        DidInvokeCode = true;
+                    }
+                }");
+            var didInvokeCodeProperty = component.GetType().GetProperty("DidInvokeCode");
+
+            // Assert
+            Assert.False((bool)didInvokeCodeProperty.GetValue(component));
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+                node => AssertNode.Element(node, "elem", 1),
+                node =>
+                {
+                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
+                    Assert.NotNull(node.AttributeEventHandlerValue);
+
+                    node.AttributeEventHandlerValue(null);
+                    Assert.True((bool)didInvokeCodeProperty.GetValue(component));
+                });
+        }
+
         private static bool NotWhitespace(RenderTreeNode node)
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);
