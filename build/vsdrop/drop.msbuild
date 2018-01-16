@@ -4,7 +4,7 @@
         <NuGetExe>\\aspnetci\share\tools\1ES\NuGet.Exe</NuGetExe>
         <WorkingDirectory>$(RepositoryRoot)obj\vsdrop\</WorkingDirectory>
         <DropSource>$(SignedVsixPath)</DropSource>
-        <VSDropTxt>$(SignedVsixPath)\vsdrop.txt</VSDropTxt>
+        <VSDropTxt>$(SignedVsixPath)\vsdrop.$(VsixName).txt</VSDropTxt>
     </PropertyGroup>
 
     <Target Name="GetManifests">
