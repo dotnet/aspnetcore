@@ -53,7 +53,7 @@ namespace Company.WebApplication1
                     sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")));
   #endif
 
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            services.AddIdentity<IdentityUser, IdentityRole>(options => options.Stores.MaxLengthForKeys = 128)
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
