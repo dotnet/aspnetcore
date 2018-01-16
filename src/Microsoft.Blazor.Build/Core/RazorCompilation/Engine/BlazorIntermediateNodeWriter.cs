@@ -148,6 +148,16 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                                     .WriteEndMethodInvocation();
                             }
 
+                            foreach (var attribute in nextTag.Attributes)
+                            {
+                                context.CodeWriter
+                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                                    .WriteStringLiteral(attribute.Key)
+                                    .WriteParameterSeparator()
+                                    .WriteStringLiteral(attribute.Value)
+                                    .WriteEndMethodInvocation();
+                            }
+
                             if (nextToken.Type == HtmlTokenType.EndTag
                                 || nextTag.IsSelfClosing
                                 || htmlVoidElementsLookup.Contains(nextTag.Data))
