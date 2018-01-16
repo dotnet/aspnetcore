@@ -17,6 +17,24 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- For testing the testing infrastructure only -->
+    <WebApplicationFactoryContentRootAttribute
+      Include="BasicWebSite"
+      AssemblyName="BasicWebsite"
+      ContentRootPath="../../../../WebSites/BasicWebSite"
+      ContentRootTest="BasicWebSite.csproj"
+      Priority="-1" />
+    <!-- For testing the testing infrastructure only. This attribute is
+     incorrect by design to ensure that the infrastructure falls back. -->
+    <WebApplicationFactoryContentRootAttribute
+      Include="FiltersWebSite"
+      AssemblyName="FiltersWebSite"
+      ContentRootPath="/../WebSites/FiltersWebSite"
+      ContentRootTest="Incorrect.csproj"
+      Priority="-1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
     <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
     <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />

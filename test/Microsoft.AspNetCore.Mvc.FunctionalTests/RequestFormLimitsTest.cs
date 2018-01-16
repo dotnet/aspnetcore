@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -14,8 +16,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public RequestFormLimitsTest(MvcTestFixture<BasicWebSite.StartupRequestLimitSize> fixture)
         {
-            Client = fixture.Client;
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = factory.CreateDefaultClient();
         }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<BasicWebSite.StartupRequestLimitSize>();
 
         public HttpClient Client { get; }
 
@@ -66,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = await response.Content.ReadAsStringAsync();
             Assert.Equal(expected, result);
         }
-        
+
         [Fact]
         public async Task OverrideControllerLevelLimits_UsingDefaultLimits()
         {

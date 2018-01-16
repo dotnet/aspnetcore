@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -13,8 +15,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
     {
         public RazorPageModelTest(MvcTestFixture<RazorPagesWebSite.Startup> fixture)
         {
-            Client = fixture.Client;
+            var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
+            Client = factory.CreateDefaultClient();
         }
+
+        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
+            builder.UseStartup<RazorPagesWebSite.Startup>();
 
         public HttpClient Client { get; }
 
