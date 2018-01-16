@@ -236,18 +236,53 @@ namespace Microsoft.Blazor.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(
-                "<elem attr=@MyHandleEvent />"
-                + @"@functions {
-                        void MyHandleEvent(Microsoft.Blazor.RenderTree.UIEventArgs eventArgs) {}
-                    }");
+                @"<elem attr=@MyHandleEvent />
+                @functions {
+                    public bool HandlerWasCalled { get; set; } = false;
+
+                    void MyHandleEvent(Microsoft.Blazor.RenderTree.UIEventArgs eventArgs)
+                    {
+                        HandlerWasCalled = true;
+                    }
+                }");
+            var handlerWasCalledProperty = component.GetType().GetProperty("HandlerWasCalled");
 
             // Assert
-            Assert.Collection(GetRenderTree(component),
+            Assert.False((bool)handlerWasCalledProperty.GetValue(component));
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
                 node => AssertNode.Element(node, "elem", 1),
                 node =>
                 {
                     Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
                     Assert.NotNull(node.AttributeEventHandlerValue);
+
+                    node.AttributeEventHandlerValue(null);
+                    Assert.True((bool)handlerWasCalledProperty.GetValue(component));
+                });
+        }
+
+        [Fact]
+        public void SupportsAttributesWithCSharpCodeBlockValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<elem attr=@{ DidInvokeCode = true; } />
+                @functions {
+                    public bool DidInvokeCode { get; set; } = false;
+                }");
+            var didInvokeCodeProperty = component.GetType().GetProperty("DidInvokeCode");
+
+            // Assert
+            Assert.False((bool)didInvokeCodeProperty.GetValue(component));
+            Assert.Collection(GetRenderTree(component).Where(NotWhitespace),
+                node => AssertNode.Element(node, "elem", 1),
+                node =>
+                {
+                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
+                    Assert.NotNull(node.AttributeEventHandlerValue);
+
+                    node.AttributeEventHandlerValue(null);
+                    Assert.True((bool)didInvokeCodeProperty.GetValue(component));
                 });
         }
 

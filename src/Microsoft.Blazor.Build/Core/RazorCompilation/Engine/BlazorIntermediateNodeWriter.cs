@@ -76,7 +76,17 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
         {
-            throw new System.NotImplementedException(nameof(WriteCSharpCodeAttributeValue));
+            if (_currentAttributeValues == null)
+            {
+                throw new InvalidOperationException($"Invoked {nameof(WriteCSharpCodeAttributeValue)} while {nameof(_currentAttributeValues)} was null.");
+            }
+
+            // For attributes like "onsomeevent=@{ /* some C# code */ }", we treat it as if you
+            // wrote "onsomeevent=@(_ => { /* some C# code */ })" because then it works as an
+            // event handler and is a reasonable syntax for that.
+            var innerCSharp = (IntermediateToken)node.Children.Single();
+            innerCSharp.Content = $"_ => {{ {innerCSharp.Content} }}";
+            _currentAttributeValues.Add(innerCSharp);
         }
 
         public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
