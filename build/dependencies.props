@@ -3,28 +3,29 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15651</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-27965</MicrosoftAspNetCoreTestingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15675</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-28099</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-28099</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-28099</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
-    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsConfigurationJsonPackageVersion>
-    <MicrosoftExtensionsConfigurationPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsConfigurationPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsOptionsPackageVersion>
-    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview1-27965</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsConfigurationPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftExtensionsWebEncodersSourcesPackageVersion>2.1.0-preview1-28099</MicrosoftExtensionsWebEncodersSourcesPackageVersion>
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26016-05</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26115-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-26016-05</MicrosoftWin32RegistryPackageVersion>
+    <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-26112-01</MicrosoftWin32RegistryPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
-    <SystemSecurityCryptographyXmlPackageVersion>4.5.0-preview1-26016-05</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>4.5.0-preview1-26112-01</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview1-26112-01</SystemSecurityPrincipalWindowsPackageVersion>
     <WindowsAzureStoragePackageVersion>8.1.4</WindowsAzureStoragePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.3.1</XunitRunnerVisualStudioPackageVersion>

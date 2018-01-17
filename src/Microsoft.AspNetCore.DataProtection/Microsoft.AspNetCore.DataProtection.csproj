@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="$(MicrosoftWin32RegistryPackageVersion)" />
     <PackageReference Include="System.Security.Cryptography.Xml" Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
   </ItemGroup>
 
 </Project>
