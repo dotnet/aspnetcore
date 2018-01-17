@@ -202,7 +202,6 @@
     <ClInclude Include="Inc\applicationinfo.h" />
     <ClInclude Include="Inc\appoffline.h" />
     <ClInclude Include="inc\globalmodule.h" />
-    <ClInclude Include="Inc\resource.h" />
     <ClInclude Include="Inc\applicationmanager.h" />
     <ClInclude Include="Inc\filewatcher.h" />
     <ClInclude Include="Inc\proxymodule.h" />

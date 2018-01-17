@@ -55,11 +55,11 @@
 #include "..\CommonLib\aspnetcoreconfig.h"
 #include "..\CommonLib\utility.h"
 #include "..\CommonLib\application.h"
+#include "..\CommonLib\resources.h"
 #include "aspnetcore_event.h"
 #include "aspnetcore_msg.h"
 #include "disconnectcontext.h"
 #include "sttimer.h"
-#include "resource.h"
 #include ".\inprocess\InProcessHandler.h"
 #include ".\inprocess\inprocessapplication.h"
 #include ".\outofprocess\responseheaderhash.h"
@@ -88,8 +88,6 @@ template<typename T> inline T min(T a, T b)
 }
 #endif
 
-#define ASPNETCORE_EVENT_PROVIDER L"IIS AspNetCore Module"
-#define ASPNETCORE_IISEXPRESS_EVENT_PROVIDER L"IIS Express AspNetCore Module"
 
 inline bool IsSpace(char ch)
 {
@@ -117,3 +115,4 @@ extern DWORD      g_OptionalWinHttpFlags;
 extern SRWLOCK    g_srwLockRH;
 extern HINTERNET  g_hWinhttpSession;
 extern DWORD      g_dwTlsIndex;
+extern HANDLE     g_hEventLog;

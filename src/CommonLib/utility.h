@@ -111,6 +111,15 @@ public:
         PCWSTR pszFilePath
     );
 
+    static
+    VOID
+    LogEvent(
+        _In_ HANDLE  hEventLog,
+        _In_ WORD    dwEventInfoType,
+        _In_ DWORD   dwEventId,
+        _In_ LPCWSTR pstrMsg
+   );
+
 private:
 
     UTILITY() {}

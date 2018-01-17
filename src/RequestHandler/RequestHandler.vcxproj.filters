@@ -41,7 +41,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precomp.hxx" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include=".\inprocess\inprocessapplication.h">
       <Filter>InProcess</Filter>
     </ClInclude>
@@ -80,7 +79,6 @@
     </ClInclude>
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="sttimer.h" />
-    <ClInclude Include="aspnetcore_msg.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="RequestHandler.rc" />
@@ -101,8 +99,5 @@
     <Filter Include="OutOfProcess">
       <UniqueIdentifier>{5568209f-269e-4d0a-bbb7-ba14f874ccb7}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="aspnetcore_msg.mc" />
   </ItemGroup>
 </Project>

@@ -6,6 +6,7 @@
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
+HANDLE              g_hEventLog = NULL;
 BOOL                g_fRecycleProcessCalled = FALSE;
 PCWSTR              g_pszModuleName = NULL;
 HINSTANCE           g_hModule;
@@ -25,6 +26,11 @@ VOID
 StaticCleanup()
 {
     APPLICATION_MANAGER::Cleanup();
+    if (g_hEventLog != NULL)
+    {
+        DeregisterEventSource(g_hEventLog);
+        g_hEventLog = NULL;
+    }
 }
 
 BOOL WINAPI DllMain(HMODULE hModule,
@@ -100,6 +106,15 @@ HRESULT
     g_pszModuleName = pModuleInfo->GetName();
     g_pHttpServer = pHttpServer;
 
+    if (g_pHttpServer->IsCommandLineLaunch())
+    {
+        g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
+    }
+    else
+    {
+        g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
+    }
+
     // check whether the feature is disabled due to security reason
     if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
         L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
@@ -127,6 +142,17 @@ HRESULT
     if (fDisableANCM)
     {
         // Logging
+        STACK_STRU(strEventMsg, 256);
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_MODULE_DISABLED_MSG)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                              EVENTLOG_WARNING_TYPE,
+                              ASPNETCORE_EVENT_MODULE_DISABLED,
+                              strEventMsg.QueryStr());
+        }
+        // this will return 500 error to client
+        // as we did not register the module
         goto Finished;
     }
 

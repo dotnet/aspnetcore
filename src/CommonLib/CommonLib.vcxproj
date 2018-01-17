@@ -177,6 +177,7 @@
     <ClInclude Include="fx_ver.h" />
     <ClInclude Include="hostfxr_utility.h" />
     <ClInclude Include="requesthandler.h" />
+    <ClInclude Include="resources.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utility.h" />
   </ItemGroup>
@@ -198,6 +199,23 @@
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">
       <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="aspnetcore_msg.mc">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">mc %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling Event Messages ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mc %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compiling Event Messages ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">mc %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Compiling Event Messages ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mc %(FullPath)</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compiling Event Messages ...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(Filename).rc;%(Filename).h;MSG0409.bin</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

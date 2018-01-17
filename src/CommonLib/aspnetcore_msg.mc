@@ -98,6 +98,18 @@ Language=English
 %1
 .
 
+Messageid=1012
+SymbolicName=ASPNETCORE_EVENT_RECYCLE_APPOFFLINE
+Language=English
+%1
+.
+
+Messageid=1013
+SymbolicName=ASPNETCORE_EVENT_MODULE_DISABLED
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

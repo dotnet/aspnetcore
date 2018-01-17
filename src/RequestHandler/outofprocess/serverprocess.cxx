@@ -857,19 +857,12 @@ SERVER_PROCESS::StartProcess(
     HRESULT                 hr = S_OK;
     PROCESS_INFORMATION     processInformation = {0};
     STARTUPINFOW            startupInfo = {0};
-//    BOOL                    fDonePrepareCommandLine = FALSE;
     DWORD                   dwRetryCount = 2; // should we allow customer to config it
     DWORD                   dwCreationFlags = 0;
-
-//    STACK_STRU(             strEventMsg, 256);
-//    STRU                    strFullProcessPath;
-//    STRU                    struRelativePath;
-//    STRU                    struApplicationId;
-//
-//    LPCWSTR                 apsz[1];
+    STACK_STRU(             strEventMsg, 256);
     MULTISZ                 mszNewEnvironment;
     ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
-//
+
     GetStartupInfoW(&startupInfo);
 
     //
@@ -945,13 +938,13 @@ SERVER_PROCESS::StartProcess(
         {
             hr = HRESULT_FROM_WIN32(GetLastError());
             // don't the check return code as we already in error report
-            /*strEventMsg.SafeSnwprintf(
+            strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
                 m_struAppFullPath.QueryStr(),
-                m_pszRootApplicationPath.QueryStr(),
-                struCommandLine.QueryStr(),
+                m_struPhysicalPath.QueryStr(),
+                m_struCommandLine.QueryStr(),
                 hr,
-                0);*/
+                dwRetryCount);
             goto Finished;
         }
 
@@ -987,42 +980,17 @@ SERVER_PROCESS::StartProcess(
         // Backend process starts successfully. Set retry counter to 0
         dwRetryCount = 0;
 
-        //
-        //    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-        //            ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
-        //            m_struAppFullPath.QueryStr(),
-        //            m_dwProcessId,
-        //            m_dwPort)))
-        //    {
-        //        apsz[0] = strEventMsg.QueryStr();
-        //
-        //        //
-        //        // not checking return code because if ReportEvent
-        //        // fails, we cannot do anything.
-        //        //
-        //        if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-        //        {
-        //            ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-        //                EVENTLOG_INFORMATION_TYPE,
-        //                0,
-        //                ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
-        //                NULL,
-        //                1,
-        //                0,
-        //                apsz,
-        //                NULL);
-        //        }
-        //
-        //        // FREB log
-                //if (ANCMEvents::ANCM_START_APPLICATION_SUCCESS::IsEnabled(context->GetTraceContext()))
-                //{
-                //    ANCMEvents::ANCM_START_APPLICATION_SUCCESS::RaiseEvent(
-                //        context->GetTraceContext(),
-                //        NULL,
-                //        apsz[0]);
-                //}
-        //    }
-        //
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_PROCESS_START_SUCCESS_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_dwProcessId,
+                m_dwPort)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
+                strEventMsg.QueryStr());
+        }
 
     Finished:
         if (processInformation.hThread != NULL)
@@ -1037,57 +1005,29 @@ SERVER_PROCESS::StartProcess(
             delete pHashTable;
             pHashTable = NULL;
         }
-    }
 
-//    if (FAILED(hr))
-//    {
-//        if (strEventMsg.IsEmpty())
-//        {
-//            if (!fDonePrepareCommandLine)
-//            {
-//                strEventMsg.SafeSnwprintf(
-//                    m_struAppFullPath.QueryStr(),
-//                    ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
-//                    hr);
-//            }
-//            else
-//            {
-//                strEventMsg.SafeSnwprintf(
-//                    ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
-//                    m_struAppFullPath.QueryStr(),
-//                    m_pszRootApplicationPath.QueryStr(),
-//                    struCommandLine.QueryStr(),
-//                    hr);
-//            }
-//        }
-//
-//        apsz[0] = strEventMsg.QueryStr();
-//
-//        // not checking return code because if ReportEvent
-//        // fails, we cannot do anything.
-//        //
-//        if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-//        {
-//            ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-//                EVENTLOG_ERROR_TYPE,
-//                0,
-//                ASPNETCORE_EVENT_PROCESS_START_ERROR,
-//                NULL,
-//                1,
-//                0,
-//                apsz,
-//                NULL);
-//        }
-//
-//        // FREB log
-//        if (ANCMEvents::ANCM_START_APPLICATION_FAIL::IsEnabled(context->GetTraceContext()))
-//        {
-//            ANCMEvents::ANCM_START_APPLICATION_FAIL::RaiseEvent(
-//                context->GetTraceContext(),
-//                NULL,
-//                strEventMsg.QueryStr());
-//        }
-//    }
+        if (FAILED(hr))
+        {
+            if (strEventMsg.IsEmpty())
+            {
+                strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
+                    m_struAppFullPath.QueryStr(),
+                    m_struPhysicalPath.QueryStr(),
+                    m_struCommandLine.QueryStr(),
+                    hr,
+                    dwRetryCount);
+            }
+
+            if (!strEventMsg.IsEmpty())
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_ERROR_TYPE,
+                    ASPNETCORE_EVENT_PROCESS_START_ERROR,
+                    strEventMsg.QueryStr());
+            }
+        }
+    }
 
     if (FAILED(hr) || m_fReady == FALSE)
     {
@@ -1121,7 +1061,6 @@ SERVER_PROCESS::StartProcess(
         }
 
         StopProcess();
-
         StopAllProcessesInJobObject();
     }
     return hr;
@@ -1165,8 +1104,6 @@ SERVER_PROCESS::SetupStdHandles(
     SECURITY_ATTRIBUTES     saAttr = { 0 };
 
     STRU                    struPath;
-    //STRU                    strEventMsg;
-    //LPCWSTR                 apsz[1];
 
     DBG_ASSERT(pStartupInfo);
 
@@ -1258,30 +1195,17 @@ Finished:
         if (m_fStdoutLogEnabled)
         {
             // Log the error
-            //if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-            //    ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
-            //    m_struFullLogFile.QueryStr(),
-            //    HRESULT_FROM_GETLASTERROR())))
-            //{
-            //    apsz[0] = strEventMsg.QueryStr();
-
-            //    //
-            //    // not checking return code because if ReportEvent
-            //    // fails, we cannot do anything.
-            //    //
-            //    /*if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-            //    {
-            //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-            //            EVENTLOG_WARNING_TYPE,
-            //            0,
-            //            ASPNETCORE_EVENT_CONFIG_ERROR,
-            //            NULL,
-            //            1,
-            //            0,
-            //            apsz,
-            //            NULL);
-            //    }*/
-            //}
+            STRU              strEventMsg;
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
+                m_struFullLogFile.QueryStr(),
+                hr)))
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_WARNING_TYPE,
+                    ASPNETCORE_EVENT_CONFIG_ERROR,
+                    strEventMsg.QueryStr());
+            }
         }
     }
     return hr;
@@ -2077,9 +2001,7 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     STRU       strUrl;
     DWORD      dwStatusCode = 0;
     DWORD      dwSize = sizeof(dwStatusCode);
-
-    //LPCWSTR   apsz[1];
-    //STACK_STRU(strEventMsg, 256);
+    STACK_STRU(strEventMsg, 256);
 
     hSession = WinHttpOpen(L"",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
@@ -2182,25 +2104,16 @@ SERVER_PROCESS::SendShutdownHttpMessage( VOID )
     }
 
     // log
-    /*if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
         ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST_MSG,
         m_dwProcessId,
         dwStatusCode)))
     {
-        apsz[0] = strEventMsg.QueryStr();
-        if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-        {
-            ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                EVENTLOG_INFORMATION_TYPE,
-                0,
-                ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
-                NULL,
-                1,
-                0,
-                apsz,
-                NULL);
-        }
-    }*/
+        UTILITY::LogEvent(g_hEventLog,
+            EVENTLOG_INFORMATION_TYPE,
+            ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
+            strEventMsg.QueryStr());
+    }
 
 Finished:
     if (hRequest)
@@ -2291,8 +2204,7 @@ SERVER_PROCESS::TerminateBackendProcess(
     VOID
 )
 {
-    //LPCWSTR   apsz[1];
-    //STACK_STRU(strEventMsg, 256);
+    STACK_STRU(strEventMsg, 256);
 
     if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
     {
@@ -2316,23 +2228,14 @@ SERVER_PROCESS::TerminateBackendProcess(
         }
 
         // log a warning for ungraceful shutdown
-        /*if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
             m_dwProcessId)))
         {
-            apsz[0] = strEventMsg.QueryStr();
-            if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-            {
-                ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                    EVENTLOG_WARNING_TYPE,
-                    0,
-                    ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
-                    NULL,
-                    1,
-                    0,
-                    apsz,
-                    NULL);
-            }
-        }*/
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_WARNING_TYPE,
+                ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
+                strEventMsg.QueryStr());
+        }
     }
 }

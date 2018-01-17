@@ -135,9 +135,21 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         // recycle the application
         if (m_pApplication != NULL)
         {
+            STACK_STRU(strEventMsg, 256);
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
+                m_pApplication->QueryConfig()->QueryApplicationPath()->QueryStr())))
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                                  EVENTLOG_INFORMATION_TYPE,
+                                  ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
+                                  strEventMsg.QueryStr());
+            }
+
             m_pApplication->ShutDown();
             m_pApplication->DereferenceApplication();
             m_pApplication = NULL;
+
         }
     }
 }

@@ -343,33 +343,17 @@ Finished:
     }
     if (FAILED(hr) && m_pConfig->QueryStdoutLogEnabled())
     {
-        //todo log an warning
-        //STRU                    strEventMsg;
-        //LPCWSTR                 apsz[1];
-
-        //if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-        //    ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
-        //    m_struLogFilePath.QueryStr(),
-        //    HRESULT_FROM_GETLASTERROR())))
-        //{
-        //    apsz[0] = strEventMsg.QueryStr();
-        //    //
-        //    // not checking return code because if ReportEvent
-        //    // fails, we cannot do anything.
-        //    //
-        //    if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-        //    {
-        //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-        //            EVENTLOG_WARNING_TYPE,
-        //            0,
-        //            ASPNETCORE_EVENT_CONFIG_ERROR,
-        //            NULL,
-        //            1,
-        //            0,
-        //            apsz,
-        //            NULL);
-        //    }
-        //}
+        STRU                    strEventMsg;
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
+            m_struLogFilePath.QueryStr(),
+            hr)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_WARNING_TYPE,
+                ASPNETCORE_EVENT_CONFIG_ERROR,
+                strEventMsg.QueryStr());
+        }
     }
 }
 
@@ -384,8 +368,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     DWORD      dwTimeout;
     DWORD      dwResult;
     BOOL       fLocked = FALSE;
-    //PCWSTR     apsz[1];
-    //STACK_STRU(strEventMsg, 256);
 
     if (m_fManagedAppLoaded || m_fLoadManagedAppError)
     {
@@ -481,36 +463,22 @@ Finished:
 
     if (FAILED(hr))
     {
+        STACK_STRU(strEventMsg, 256);
         // Question: in case of application loading failure, should we allow retry on 
         // following request or block the activation at all
         m_fLoadManagedAppError = TRUE; // m_hThread != NULL ?
 
-        // TODO
-        //if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-        //    ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
-        //    m_pConfiguration->QueryApplicationPath()->QueryStr(),
-        //    m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
-        //    hr)))
-        //{
-        //    apsz[0] = strEventMsg.QueryStr();
-
-        //    //
-        //    // not checking return code because if ReportEvent
-        //    // fails, we cannot do anything.
-        //    //
-        //    if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-        //    {
-        //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-        //            EVENTLOG_ERROR_TYPE,
-        //            0,
-        //            ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
-        //            NULL,
-        //            1,
-        //            0,
-        //            apsz,
-        //            NULL);
-        //    }
-        //}
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
+            m_pConfig->QueryApplicationPath()->QueryStr(),
+            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            hr)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_LOAD_CLR_FALIURE,
+                strEventMsg.QueryStr());
+        }
     }
 
     if (fLocked)
@@ -583,37 +551,22 @@ Finished:
     //
     if (!m_fRecycleProcessCalled)
     {
-        //STRU                    strEventMsg;
-        //LPCWSTR                 apsz[1];
-        //if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-        //    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
-        //    m_pConfig->QueryApplicationPath()->QueryStr(),
-        //    m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-        //    m_ProcessExitCode
-        //)))
-        //{
-        //    apsz[0] = strEventMsg.QueryStr();
-
-        //    //
-        //    // not checking return code because if ReportEvent
-        //    // fails, we cannot do anything.
-        //    //
-        //    if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-        //    {
-        //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-        //            EVENTLOG_ERROR_TYPE,
-        //            0,
-        //            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-        //            NULL,
-        //            1,
-        //            0,
-        //            apsz,
-        //            NULL);
-        //    }
-        //    // error. the thread exits after application started
-        //    // Question: should we shutdown current worker process or keep the application in failure state?
-        //    // for now, we reccylce to keep the same behavior as that of out-of-process
-        //}
+        STRU                    strEventMsg;
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
+                m_pConfig->QueryApplicationPath()->QueryStr(),
+                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                m_ProcessExitCode)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+                strEventMsg.QueryStr());
+        }
+       
+        // error. the thread exits after application started
+        // Question: should we shutdown current worker process or keep the application in failure state?
+        // for now, we reccylce to keep the same behavior as that of out-of-process
         if (m_fManagedAppLoaded)
         {
             Recycle();

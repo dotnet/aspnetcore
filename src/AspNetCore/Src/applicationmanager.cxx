@@ -19,7 +19,6 @@ APPLICATION_MANAGER::GetApplicationInfo(
     BOOL                   fMixedHostingModelError = FALSE;
     BOOL                   fDuplicatedInProcessApp = FALSE;
     PCWSTR                 pszApplicationId = NULL;
-    LPCWSTR                apsz[1];
     STACK_STRU ( strEventMsg, 256 );
 
     *ppApplicationInfo = NULL;
@@ -153,42 +152,24 @@ Finished:
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
                 pszApplicationId)))
             {
-                /*apsz[0] = strEventMsg.QueryStr();
-                if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-                {
-                    ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                        EVENTLOG_ERROR_TYPE,
-                        0,
-                        ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
-                        NULL,
-                        1,
-                        0,
-                        apsz,
-                        NULL);
-                }*/
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_ERROR_TYPE,
+                    ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
+                    strEventMsg.QueryStr());
             }
         }
         else if (fMixedHostingModelError)
         {
-            //if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-            //    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
-            //    pszApplicationId,
-            //    pConfig->QueryHostingModelStr())))
-            //{
-            //    apsz[0] = strEventMsg.QueryStr();
-            //    /*if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-            //    {
-            //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-            //            EVENTLOG_ERROR_TYPE,
-            //            0,
-            //            ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
-            //            NULL,
-            //            1,
-            //            0,
-            //            apsz,
-            //            NULL);
-            //    }*/
-            //}
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
+                pszApplicationId,
+                pConfig->QueryHostingModel())))
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_ERROR_TYPE,
+                    ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
+                    strEventMsg.QueryStr());
+            }
         }
         else
         {
@@ -197,19 +178,10 @@ Finished:
                 pszApplicationId,
                 hr)))
             {
-                apsz[0] = strEventMsg.QueryStr();
-                /*if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-                {
-                    ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                        EVENTLOG_ERROR_TYPE,
-                        0,
-                        ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
-                        NULL,
-                        1,
-                        0,
-                        apsz,
-                        NULL);
-                }*/
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_ERROR_TYPE,
+                    ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
+                    strEventMsg.QueryStr());
             }
         }
     }

@@ -6,6 +6,7 @@
 BOOL                g_fNsiApiNotSupported = FALSE;
 BOOL                g_fWebSocketSupported = FALSE;
 BOOL                g_fEnableReferenceCountTracing = FALSE;
+BOOL                g_fGlobalInitialize = FALSE;
 BOOL                g_fOutOfProcessInitialize = FALSE;
 BOOL                g_fOutOfProcessInitializeError = FALSE;
 BOOL                g_fWinHttpNonBlockingCallbackAvailable = FALSE;
@@ -17,87 +18,117 @@ SRWLOCK             g_srwLockRH;
 HINTERNET           g_hWinhttpSession = NULL;
 IHttpServer *       g_pHttpServer = NULL;
 HINSTANCE           g_hWinHttpModule;
+HANDLE              g_hEventLog = NULL;
 
 
 VOID
 InitializeGlobalConfiguration(
-    VOID
+    IHttpServer * pServer
 )
 {
     HKEY hKey;
-
-    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-        L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
-        0,
-        KEY_READ,
-        &hKey) == NO_ERROR)
-    {
-        DWORD dwType;
-        DWORD dwData;
-        DWORD cbData;
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"OptionalWinHttpFlags",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            g_OptionalWinHttpFlags = dwData;
-        }
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"EnableReferenceCountTracing",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD) && (dwData == 1 || dwData == 0))
-        {
-            g_fEnableReferenceCountTracing = !!dwData;
-        }
-
-        cbData = sizeof(dwData);
-        if ((RegQueryValueEx(hKey,
-            L"DebugFlags",
-            NULL,
-            &dwType,
-            (LPBYTE)&dwData,
-            &cbData) == NO_ERROR) &&
-            (dwType == REG_DWORD))
-        {
-            g_dwAspNetCoreDebugFlags = dwData;
-        }
-
-        RegCloseKey(hKey);
-    }
-
+    BOOL fLocked = FALSE;
     DWORD dwSize = 0;
-    DWORD dwResult = GetExtendedTcpTable(NULL,
-        &dwSize,
-        FALSE,
-        AF_INET,
-        TCP_TABLE_OWNER_PID_LISTENER,
-        0);
-    if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+    DWORD dwResult = 0;
+
+    if (!g_fGlobalInitialize)
     {
-        g_fNsiApiNotSupported = TRUE;
+        AcquireSRWLockExclusive(&g_srwLockRH);
+        fLocked = TRUE;
+
+        if (g_fGlobalInitialize)
+        {
+            // Done by another thread
+            goto Finished;
+        }
+
+        g_pHttpServer = pServer;
+        if (pServer->IsCommandLineLaunch())
+        {
+            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_IISEXPRESS_EVENT_PROVIDER);
+        }
+        else
+        {
+            g_hEventLog = RegisterEventSource(NULL, ASPNETCORE_EVENT_PROVIDER);
+        }
+
+        if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+            L"SOFTWARE\\Microsoft\\IIS Extensions\\IIS AspNetCore Module\\Parameters",
+            0,
+            KEY_READ,
+            &hKey) == NO_ERROR)
+        {
+            DWORD dwType;
+            DWORD dwData;
+            DWORD cbData;
+
+            cbData = sizeof(dwData);
+            if ((RegQueryValueEx(hKey,
+                L"OptionalWinHttpFlags",
+                NULL,
+                &dwType,
+                (LPBYTE)&dwData,
+                &cbData) == NO_ERROR) &&
+                (dwType == REG_DWORD))
+            {
+                g_OptionalWinHttpFlags = dwData;
+            }
+
+            cbData = sizeof(dwData);
+            if ((RegQueryValueEx(hKey,
+                L"EnableReferenceCountTracing",
+                NULL,
+                &dwType,
+                (LPBYTE)&dwData,
+                &cbData) == NO_ERROR) &&
+                (dwType == REG_DWORD) && (dwData == 1 || dwData == 0))
+            {
+                g_fEnableReferenceCountTracing = !!dwData;
+            }
+
+            cbData = sizeof(dwData);
+            if ((RegQueryValueEx(hKey,
+                L"DebugFlags",
+                NULL,
+                &dwType,
+                (LPBYTE)&dwData,
+                &cbData) == NO_ERROR) &&
+                (dwType == REG_DWORD))
+            {
+                g_dwAspNetCoreDebugFlags = dwData;
+            }
+            RegCloseKey(hKey);
+        }
+
+        dwResult = GetExtendedTcpTable(NULL,
+            &dwSize,
+            FALSE,
+            AF_INET,
+            TCP_TABLE_OWNER_PID_LISTENER,
+            0);
+        if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+        {
+            g_fNsiApiNotSupported = TRUE;
+        }
+
+        // WebSocket is supported on Win8 and above only
+        // todo: test on win7
+        g_fWebSocketSupported = IsWindows8OrGreater();
+
+        g_fGlobalInitialize = TRUE;
     }
-
-    // WebSocket is supported on Win8 and above only
-    // todo: test on win7
-    g_fWebSocketSupported = IsWindows8OrGreater();
-
+Finished:
+    if (fLocked)
+    {
+        ReleaseSRWLockExclusive(&g_srwLockRH);
+    }
 }
 
 //
 // Global initialization routine for OutOfProcess
 //
 HRESULT
-EnsureOutOfProcessInitializtion( IHttpServer* pServer)
+EnsureOutOfProcessInitializtion()
 {
 
     DBG_ASSERT(pServer);
@@ -105,13 +136,12 @@ EnsureOutOfProcessInitializtion( IHttpServer* pServer)
     HRESULT hr = S_OK;
     BOOL    fLocked = FALSE;
 
-    g_pHttpServer = pServer;
-
     if (g_fOutOfProcessInitializeError)
     {
         hr = E_NOT_VALID_STATE;
         goto Finished;
     }
+
     if (!g_fOutOfProcessInitialize)
     {
         AcquireSRWLockExclusive(&g_srwLockRH);
@@ -127,9 +157,6 @@ EnsureOutOfProcessInitializtion( IHttpServer* pServer)
             // Done by another thread
             goto Finished;
         }
-
-        // Initialze some global variables here
-        InitializeGlobalConfiguration();
 
         g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
 
@@ -197,7 +224,6 @@ EnsureOutOfProcessInitializtion( IHttpServer* pServer)
             goto Finished;
         }
 
-
         hr = FORWARDING_HANDLER::StaticInitialize(g_fEnableReferenceCountTracing);
         if (FAILED(hr))
         {
@@ -235,8 +261,6 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     case DLL_PROCESS_ATTACH:
         DisableThreadLibraryCalls(hModule);
         InitializeSRWLock(&g_srwLockRH);
-        // Initialze some global variables here
-        InitializeGlobalConfiguration();
         break;
     default:
         break;
@@ -255,7 +279,8 @@ CreateApplication(
     HRESULT      hr = S_OK;
     APPLICATION *pApplication = NULL;
 
-    //REQUEST_HANDLER::StaticInitialize(pServer);
+    // Initialze some global variables here
+    InitializeGlobalConfiguration(pServer);
 
     if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
@@ -268,7 +293,7 @@ CreateApplication(
     }
     else if (pConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
     {
-        hr = EnsureOutOfProcessInitializtion(pServer);
+        hr = EnsureOutOfProcessInitializtion();
         if (FAILED(hr))
         {
             goto Finished;

@@ -599,3 +599,31 @@ UTILITY::CheckIfFileExists(
 
     return fFileExists;
 }
+
+VOID
+UTILITY::LogEvent(
+    _In_ HANDLE  hEventLog,
+    _In_ WORD    dwEventInfoType,
+    _In_ DWORD   dwEventId,
+    _In_ LPCWSTR pstrMsg
+)
+{
+    if (hEventLog != NULL)
+    {
+        ReportEventW(hEventLog,
+            dwEventInfoType,
+            0,        // wCategory
+            dwEventId,
+            NULL,     // lpUserSid
+            1,        // wNumStrings
+            0,        // dwDataSize,
+            &pstrMsg,
+            NULL      // lpRawData
+        );
+    }
+
+    if (dwEventInfoType == EVENTLOG_ERROR_TYPE)
+    {
+        fwprintf(stderr, L"ERROR: %s\n", pstrMsg);
+    }
+}

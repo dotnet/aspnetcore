@@ -110,7 +110,6 @@ PROCESS_MANAGER::GetProcess(
     HRESULT          hr = S_OK;
     BOOL             fSharedLock = FALSE;
     BOOL             fExclusiveLock = FALSE;
-    //PCWSTR           apsz[1];
     STACK_STRU(strEventMsg, 256);
     DWORD            dwProcessIndex = 0;
     SERVER_PROCESS  *pSelectedServerProcess = NULL;
@@ -192,30 +191,15 @@ PROCESS_MANAGER::GetProcess(
             //
             // rapid fails per minute exceeded, do not create new process.
             //
-
-            //if( SUCCEEDED( strEventMsg.SafeSnwprintf(
-            //    ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG,
-            //    pConfig->QueryRapidFailsPerMinute() ) ) )
-            //{
-            //    apsz[0] = strEventMsg.QueryStr();
-
-            //    //
-            //    // not checking return code because if ReportEvent
-            //    // fails, we cannot do anything.
-            //    //
-            //    if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-            //    {
-            //        ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-            //            EVENTLOG_INFORMATION_TYPE,
-            //            0,
-            //            ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED,
-            //            NULL,
-            //            1,
-            //            0,
-            //            apsz,
-            //            NULL);
-            //    }
-            //}
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED_MSG,
+                pConfig->QueryRapidFailsPerMinute())))
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_INFORMATION_TYPE,
+                    ASPNETCORE_EVENT_RAPID_FAIL_COUNT_EXCEEDED,
+                    strEventMsg.QueryStr());
+            }
 
             hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
             goto Finished;
