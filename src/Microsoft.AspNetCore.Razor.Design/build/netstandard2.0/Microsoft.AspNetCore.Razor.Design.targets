@@ -45,6 +45,13 @@
     Default values for properties that affect Razor MSBuild behavior. 
   -->
   <PropertyGroup>
+    <!--
+      Razor also attaches itself by default to some of the standard .NET targets. Uses these properties to
+      configure this behaviour.
+    -->
+    <RazorCompileOnBuild Condition="'$(RazorCompileOnBuild)'==''">false</RazorCompileOnBuild>
+    <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">true</RazorCompileOnPublish>
+
     <!-- Output directory used for generated files -->
     <RazorGenerateOutputPath Condition="'$(RazorGenerateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateOutputPath>
     

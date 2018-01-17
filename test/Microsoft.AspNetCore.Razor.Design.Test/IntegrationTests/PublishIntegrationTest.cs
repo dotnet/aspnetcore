@@ -11,6 +11,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_RazorCompileOnPublish_IsDefault()
+        {
+            var result = await DotnetMSBuild("Publish");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Publish_WithRazorCompileOnBuild_PublishesAssembly()
         {
             var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnBuild=true");

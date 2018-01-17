@@ -8,8 +8,8 @@
     configure this behaviour.
   -->
   <PropertyGroup>
-    <RazorCompileOnBuild Condition="'$(RazorCompileOnBuild)'==''">false</RazorCompileOnBuild>
-    <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">false</RazorCompileOnPublish>
+    <RazorGenerateDependsOn>RazorResolveGenerateInputs;RazorCoreGenerate</RazorGenerateDependsOn>
+    <RazorCompileDependsOn>RazorGenerate;RazorCoreCompile</RazorCompileDependsOn>
   </PropertyGroup>
 
   <PropertyGroup>
