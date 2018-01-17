@@ -2,7 +2,7 @@
 @model EnableAuthenticatorModel
 @{
     ViewData["Title"] = "Configure authenticator app";
-    ViewData["ActivePage"] = "TwoFactorAuthentication";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
 }
 
 <h4>@ViewData["Title"]</h4>
@@ -49,5 +49,5 @@
 </div>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <partial name="_ValidationScriptsPartial" />
 }
