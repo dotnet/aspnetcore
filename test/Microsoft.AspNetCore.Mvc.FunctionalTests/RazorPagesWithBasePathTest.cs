@@ -370,5 +370,26 @@ Hello from /Pages/Shared/";
             // Assert
             Assert.Equal(expected, response.Trim());
         }
+
+        [Fact]
+        public async Task AuthorizeFolderConvention_CanBeAppliedToAreaPages()
+        {
+            // Act
+            var response = await Client.GetAsync("/Accounts/RequiresAuth");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FAccounts%2FRequiresAuth", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
+        public async Task AllowAnonymouseToPageConvention_CanBeAppliedToAreaPages()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/Accounts/RequiresAuth/AllowAnonymous");
+
+            // Assert
+            Assert.Equal("Hello from AllowAnonymous", response.Trim());
+        }
     }
 }

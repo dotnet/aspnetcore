@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             foreach (var selector in model.Selectors)
             {
-                var descriptor = new PageActionDescriptor()
+                var descriptor = new PageActionDescriptor
                 {
-                    AttributeRouteInfo = new AttributeRouteInfo()
+                    AttributeRouteInfo = new AttributeRouteInfo
                     {
                         Name = selector.AttributeRouteModel.Name,
                         Order = selector.AttributeRouteModel.Order ?? 0,
@@ -88,6 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Properties = new Dictionary<object, object>(model.Properties),
                     RelativePath = model.RelativePath,
                     ViewEnginePath = model.ViewEnginePath,
+                    AreaName = model.AreaName,
                 };
 
                 foreach (var kvp in model.RouteValues)

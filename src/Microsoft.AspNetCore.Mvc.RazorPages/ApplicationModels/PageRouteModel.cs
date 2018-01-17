@@ -21,9 +21,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <param name="relativePath">The application relative path of the page.</param>
         /// <param name="viewEnginePath">The path relative to the base path for page discovery.</param>
         public PageRouteModel(string relativePath, string viewEnginePath)
+            : this(relativePath, viewEnginePath, areaName: null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="PageRouteModel"/>.
+        /// </summary>
+        /// <param name="relativePath">The application relative path of the page.</param>
+        /// <param name="viewEnginePath">The path relative to the base path for page discovery.</param>
+        /// <param name="areaName">The area name.</param>
+        public PageRouteModel(string relativePath, string viewEnginePath, string areaName)
         {
             RelativePath = relativePath ?? throw new ArgumentNullException(nameof(relativePath));
             ViewEnginePath = viewEnginePath ?? throw new ArgumentNullException(nameof(viewEnginePath));
+            AreaName = areaName;
 
             Properties = new Dictionary<object, object>();
             Selectors = new List<SelectorModel>();
@@ -43,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
             RelativePath = other.RelativePath;
             ViewEnginePath = other.ViewEnginePath;
+            AreaName = other.AreaName;
 
             Properties = new Dictionary<object, object>(other.Properties);
             Selectors = new List<SelectorModel>(other.Selectors.Select(m => new SelectorModel(m)));
@@ -56,11 +69,21 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         /// <summary>
         /// Gets the path relative to the base path for page discovery.
+        /// <para>
+        /// This value is the path of the file without extension, relative to the pages root directory.
+        /// e.g. the <see cref="ViewEnginePath"/> for the file /Pages/Catalog/Antiques.cshtml is <c>/Catalog/Antiques</c>
+        /// </para>
+        /// <para>
+        /// In an area, this value is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the <see cref="ViewEnginePath"/>  for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
         /// </summary>
-        /// <remarks>
-        /// For area pages, this path is calculated relative to the <see cref="RazorPagesOptions.RootDirectory"/> of the specific area.
-        /// </remarks>
         public string ViewEnginePath { get; }
+
+        /// <summary>
+        /// Gets the area name. Will be <c>null</c> for non-area pages.
+        /// </summary>
+        public string AreaName { get; }
 
         /// <summary>
         /// Stores arbitrary metadata properties associated with the <see cref="PageRouteModel"/>.
@@ -79,7 +102,14 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// <remarks>
         /// <para>
         /// The value of <see cref="ViewEnginePath"/> is considered an implicit route value corresponding
-        /// to the key <c>page</c>. These entries will be implicitly added to <see cref="ActionDescriptor.RouteValues"/>
+        /// to the key <c>page</c>.
+        /// </para>
+        /// <para>
+        /// The value of <see cref="AreaName"/> is considered an implicit route value corresponding
+        /// to the key <c>area</c> when <see cref="AreaName"/> is not <c>null</c>.
+        /// </para>
+        /// <para>
+        /// These entries will be implicitly added to <see cref="ActionDescriptor.RouteValues"/>
         /// when the action descriptor is created, but will not be visible in <see cref="RouteValues"/>.
         /// </para>
         /// </remarks>

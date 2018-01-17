@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Equal(relativePath, routeModel.RelativePath);
             Assert.Equal("/Users/Profile", routeModel.ViewEnginePath);
+            Assert.Null(routeModel.AreaName);
 
             Assert.Collection(
                 routeModel.Selectors,
@@ -109,6 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Equal(relativePath, routeModel.RelativePath);
             Assert.Equal("/Users/Profile", routeModel.ViewEnginePath);
+            Assert.Equal("TestArea", routeModel.AreaName);
 
             Assert.Collection(
                 routeModel.Selectors,
@@ -142,6 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Equal(relativePath, routeModel.RelativePath);
             Assert.Equal("/Users/Profile/Index", routeModel.ViewEnginePath);
+            Assert.Equal("TestArea", routeModel.AreaName);
 
             Assert.Collection(
                 routeModel.Selectors,

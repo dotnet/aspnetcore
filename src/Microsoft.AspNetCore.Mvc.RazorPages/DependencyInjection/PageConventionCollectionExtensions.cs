@@ -83,6 +83,44 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Adds a <see cref="AllowAnonymousFilter"/> to the page with the specified name located in the specified area.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="pageName">
+        /// The page name e.g. <c>/Users/List</c>
+        /// <para>
+        /// The page name is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the page name for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
+        /// </param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AllowAnonymousToAreaPage(
+            this PageConventionCollection conventions,
+            string areaName,
+            string pageName)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            if (string.IsNullOrEmpty(pageName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
+            }
+
+            var anonymousFilter = new AllowAnonymousFilter();
+            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model => model.Filters.Add(anonymousFilter));
+            return conventions;
+        }
+
+        /// <summary>
         /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
@@ -102,6 +140,44 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var anonymousFilter = new AllowAnonymousFilter();
             conventions.AddFolderApplicationModelConvention(folderPath, model => model.Filters.Add(anonymousFilter));
+            return conventions;
+        }
+
+        /// <summary>
+        /// Adds a <see cref="AllowAnonymousFilter"/> to all pages under the specified area folder.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="folderPath">
+        /// The folder path e.g. <c>/Manage/</c>
+        /// <para>
+        /// The folder path is the path of the folder, relative to the pages root directory for the specified area.
+        /// e.g. the folder path for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage</c>.
+        /// </para>
+        ///.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AllowAnonymousToAreaFolder(
+            this PageConventionCollection conventions,
+            string areaName,
+            string folderPath)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
+            }
+
+            var anonymousFilter = new AllowAnonymousFilter();
+            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model => model.Filters.Add(anonymousFilter));
             return conventions;
         }
 
@@ -139,6 +215,62 @@ namespace Microsoft.Extensions.DependencyInjection
             AuthorizePage(conventions, pageName, policy: string.Empty);
 
         /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> with default policy to the page with the specified name.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="pageName">
+        /// The page name e.g. <c>/Users/List</c>
+        /// <para>
+        /// The page name is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the page name for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
+        /// </param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AuthorizeAreaPage(this PageConventionCollection conventions, string areaName, string pageName)
+            => AuthorizeAreaPage(conventions, areaName, pageName, policy: string.Empty);
+
+        /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to the page with the specified name.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="pageName">
+        /// The page name e.g. <c>/Users/List</c>
+        /// <para>
+        /// The page name is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the page name for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
+        /// </param>
+        /// <param name="policy">The authorization policy.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AuthorizeAreaPage(
+            this PageConventionCollection conventions,
+            string areaName,
+            string pageName,
+            string policy)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            if (string.IsNullOrEmpty(pageName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
+            }
+
+            var authorizeFilter = new AuthorizeFilter(policy);
+            conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model => model.Filters.Add(authorizeFilter));
+            return conventions;
+        }
+
+        /// <summary>
         /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified folder.
         /// </summary>
         /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
@@ -172,6 +304,62 @@ namespace Microsoft.Extensions.DependencyInjection
             AuthorizeFolder(conventions, folderPath, policy: string.Empty);
 
         /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> with the default policy to all pages under the specified folder.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="folderPath">
+        /// The folder path e.g. <c>/Manage/</c>
+        /// <para>
+        /// The folder path is the path of the folder, relative to the pages root directory for the specified area.
+        /// e.g. the folder path for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage</c>.
+        /// </para>
+        /// </param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AuthorizeAreaFolder(this PageConventionCollection conventions, string areaName, string folderPath)
+            => AuthorizeAreaFolder(conventions, areaName, folderPath, policy: string.Empty);
+
+        /// <summary>
+        /// Adds a <see cref="AuthorizeFilter"/> with the specified policy to all pages under the specified folder.
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/> to configure.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="folderPath">
+        /// The folder path e.g. <c>/Manage/</c>
+        /// <para>
+        /// The folder path is the path of the folder, relative to the pages root directory for the specified area.
+        /// e.g. the folder path for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage</c>.
+        /// </para>
+        /// </param>
+        /// <param name="policy">The authorization policy.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AuthorizeAreaFolder(
+            this PageConventionCollection conventions,
+            string areaName,
+            string folderPath,
+            string policy)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
+            }
+
+            var authorizeFilter = new AuthorizeFilter(policy);
+            conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model => model.Filters.Add(authorizeFilter));
+            return conventions;
+        }
+
+        /// <summary>
         /// Adds the specified <paramref name="route"/> to the page at the specified <paramref name="pageName"/>.
         /// <para>
         /// The page can be routed via <paramref name="route"/> in addition to the default set of path based routes.
@@ -199,7 +387,64 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(route));
             }
 
-            conventions.AddPageRouteModelConvention(pageName, model =>
+            conventions.AddPageRouteModelConvention(pageName, AddPageRouteThunk(route));
+
+            return conventions;
+        }
+
+        /// <summary>
+        /// Adds the specified <paramref name="route"/> to the page at the specified <paramref name="pageName"/> located in the specified
+        /// area.
+        /// <para>
+        /// The page can be routed via <paramref name="route"/> in addition to the default set of path based routes.
+        /// All links generated for this page will use the specified route.
+        /// </para>
+        /// </summary>
+        /// <param name="conventions">The <see cref="PageConventionCollection"/>.</param>
+        /// <param name="areaName">The area name.</param>
+        /// <param name="pageName">
+        /// The page name e.g. <c>/Users/List</c>
+        /// <para>
+        /// The page name is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the page name for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
+        /// </param>
+        /// <param name="route">The route to associate with the page.</param>
+        /// <returns>The <see cref="PageConventionCollection"/>.</returns>
+        public static PageConventionCollection AddAreaPageRoute(
+            this PageConventionCollection conventions,
+            string areaName,
+            string pageName,
+            string route)
+        {
+            if (conventions == null)
+            {
+                throw new ArgumentNullException(nameof(conventions));
+            }
+
+            if (string.IsNullOrEmpty(areaName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(areaName));
+            }
+
+            if (string.IsNullOrEmpty(pageName))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
+            }
+
+            if (route == null)
+            {
+                throw new ArgumentNullException(nameof(route));
+            }
+
+            conventions.AddAreaPageRouteModelConvention(areaName, pageName, AddPageRouteThunk(route));
+
+            return conventions;
+        }
+
+        private static Action<PageRouteModel> AddPageRouteThunk(string route)
+        {
+            return model =>
             {
                 // Use the route specified in MapPageRoute for outbound routing.
                 foreach (var selector in model.Selectors)
@@ -214,9 +459,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         Template = route,
                     }
                 });
-            });
-
-            return conventions;
+            };
         }
     }
 }

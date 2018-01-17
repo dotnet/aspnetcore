@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 return null;
             }
 
-            var routeModel = new PageRouteModel(relativePath, areaResult.viewEnginePath);
+            var routeModel = new PageRouteModel(relativePath, areaResult.viewEnginePath, areaResult.areaName);
 
             var routePrefix = CreateAreaRoute(areaResult.areaName, areaResult.viewEnginePath);
             PopulateRouteModel(routeModel, routePrefix, routeTemplate);

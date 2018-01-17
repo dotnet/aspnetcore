@@ -23,8 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <param name="other">The <see cref="PageActionDescriptor"/> to copy from.</param>
         public PageActionDescriptor(PageActionDescriptor other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             RelativePath = other.RelativePath;
             ViewEnginePath = other.ViewEnginePath;
+            AreaName = other.AreaName;
         }
 
         /// <summary>
@@ -34,8 +40,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Gets or sets the path relative to the base path for page discovery.
+        /// <para>
+        /// This value is the path of the file without extension, relative to the pages root directory.
+        /// e.g. the <see cref="ViewEnginePath"/> for the file /Pages/Catalog/Antiques.cshtml is <c>/Catalog/Antiques</c>
+        /// </para>
+        /// <para>
+        /// In an area, this value is the path of the file without extension, relative to the pages root directory for the specified area.
+        /// e.g. the <see cref="ViewEnginePath"/>  for the file Areas/Identity/Pages/Manage/Accounts.cshtml, is <c>/Manage/Accounts</c>.
+        /// </para>
         /// </summary>
         public string ViewEnginePath { get; set; }
+
+        /// <summary>
+        /// Gets or sets the area name for this page.
+        /// This value will be <c>null</c> for non-area pages.
+        /// </summary>
+        public string AreaName { get; set; }
 
         /// <inheritdoc />
         public override string DisplayName
