@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             return dictionary.Values;
         }
 
-        protected virtual IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
+        internal virtual IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
         {
             if (assemblyPart == null)
             {
                 throw new ArgumentNullException(nameof(assemblyPart));
             }
 
-            var viewAssembly = GetViewAssembly(assemblyPart);
+            var viewAssembly = assemblyPart.Assembly;
             if (viewAssembly != null)
             {
                 var loader = new RazorCompiledItemLoader();
@@ -107,6 +107,29 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <param name="assemblyPart">The <see cref="AssemblyPart"/>.</param>
         /// <returns>The sequence of <see cref="RazorViewAttribute"/> instances.</returns>
         protected virtual IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
+        {
+            // We check if the method was overriden by a subclass and preserve the old behavior in that case.
+            if (GetViewAttributesOverriden())
+            {
+                return GetViewAttributesLegacy(assemblyPart);
+            }
+            else
+            {
+                // It is safe to call this method for additional assembly parts even if there is a feature provider
+                // present on the pipeline that overrides getviewattributes as dependent parts are later in the list
+                // of application parts.
+                return GetViewAttributesFromCurrentAssembly(assemblyPart);
+            }
+
+            bool GetViewAttributesOverriden()
+            {
+                const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Instance;
+                return GetType() != typeof(ViewsFeatureProvider) &&
+                    GetType().GetMethod(nameof(GetViewAttributes), bindingFlags).DeclaringType != typeof(ViewsFeatureProvider);
+            }
+        }
+
+        private IEnumerable<RazorViewAttribute> GetViewAttributesLegacy(AssemblyPart assemblyPart)
         {
             if (assemblyPart == null)
             {
@@ -148,6 +171,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             }
 
             return null;
+        }
+
+        private static IEnumerable<RazorViewAttribute> GetViewAttributesFromCurrentAssembly(AssemblyPart assemblyPart)
+        {
+            if (assemblyPart == null)
+            {
+                throw new ArgumentNullException(nameof(assemblyPart));
+            }
+
+            var featureAssembly = assemblyPart.Assembly;
+            if (featureAssembly != null)
+            {
+                return featureAssembly.GetCustomAttributes<RazorViewAttribute>();
+            }
+
+            return Enumerable.Empty<RazorViewAttribute>();
         }
     }
 }

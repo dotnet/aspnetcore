@@ -9,6 +9,7 @@ using System.Reflection.Emit;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Razor.Hosting;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
@@ -194,10 +195,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         }
 
         [Fact]
-        public void PopulateFeature_DoesNotFail_IfAssemblyHasEmptyLocation()
+        public void PopulateFeature_ReadsAttributesFromTheCurrentAssembly()
         {
             // Arrange
-            var assembly = new AssemblyWithEmptyLocation();
+            var item1 = new RazorCompiledItemAttribute(typeof(string), "mvc.1.0.view", "view");
+            var assembly = new AssemblyWithEmptyLocation(
+                new RazorViewAttribute[] { new RazorViewAttribute("view", typeof(string)) },
+                new RazorCompiledItemAttribute[] { item1 });
+
             var partManager = new ApplicationPartManager();
             partManager.ApplicationParts.Add(new AssemblyPart(assembly));
             partManager.FeatureProviders.Add(new ViewsFeatureProvider());
@@ -207,7 +212,53 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             partManager.PopulateFeature(feature);
 
             // Assert
+            var descriptor = Assert.Single(feature.ViewDescriptors);
+            Assert.Equal(typeof(string), descriptor.Item.Type);
+            Assert.Equal("mvc.1.0.view", descriptor.Item.Kind);
+            Assert.Equal("view", descriptor.Item.Identifier);
+        }
+
+        [Fact]
+        public void PopulateFeature_LegacyBehaviorDoesNotFail_IfAssemblyHasEmptyLocation()
+        {
+            // Arrange
+            var assembly = new AssemblyWithEmptyLocation();
+            var partManager = new ApplicationPartManager();
+            partManager.ApplicationParts.Add(new AssemblyPart(assembly));
+            partManager.FeatureProviders.Add(new OverrideViewsFeatureProvider());
+            var feature = new ViewsFeature();
+
+            // Act
+            partManager.PopulateFeature(feature);
+
+            // Assert
             Assert.Empty(feature.ViewDescriptors);
+        }
+
+        [Fact]
+        public void PopulateFeature_PreservesOldBehavior_IfGetViewAttributesWasOverriden()
+        {
+            // Arrange
+            var assembly = new AssemblyWithEmptyLocation(
+                new RazorViewAttribute[] { new RazorViewAttribute("view", typeof(string)) },
+                new RazorCompiledItemAttribute[] { });
+
+            var partManager = new ApplicationPartManager();
+            partManager.ApplicationParts.Add(new AssemblyPart(assembly));
+            partManager.FeatureProviders.Add(new OverrideViewsFeatureProvider());
+            var feature = new ViewsFeature();
+
+            // Act
+            partManager.PopulateFeature(feature);
+
+            // Assert
+            Assert.Empty(feature.ViewDescriptors);
+        }
+
+        internal class OverrideViewsFeatureProvider : ViewsFeatureProvider
+        {
+            protected override IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
+                => base.GetViewAttributes(assemblyPart);
         }
 
         private class TestRazorCompiledItem : RazorCompiledItem
@@ -252,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
                 return Enumerable.Empty<RazorViewAttribute>();
             }
 
-            protected override IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
+            internal override IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
             {
                 return _items[assemblyPart];
             }
@@ -260,9 +311,37 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 
         private class AssemblyWithEmptyLocation : Assembly
         {
+            private readonly RazorViewAttribute[] _razorViewAttributes;
+            private readonly RazorCompiledItemAttribute[] _razorCompiledItemAttributes;
+
+            public AssemblyWithEmptyLocation()
+                : this(Array.Empty<RazorViewAttribute>(), Array.Empty<RazorCompiledItemAttribute>())
+            {
+            }
+
+            public AssemblyWithEmptyLocation(
+                RazorViewAttribute[] razorViewAttributes,
+                RazorCompiledItemAttribute[] razorCompiledItemAttributes)
+            {
+                _razorViewAttributes = razorViewAttributes;
+                _razorCompiledItemAttributes = razorCompiledItemAttributes;
+            }
+
             public override string Location => string.Empty;
 
             public override string FullName => typeof(ViewsFeatureProviderTest).Assembly.FullName;
+
+            public override object[] GetCustomAttributes(Type attributeType, bool inherit)
+            {
+                if (attributeType == typeof(RazorViewAttribute))
+                {
+                    return _razorViewAttributes;
+                }
+                else
+                {
+                    return _razorCompiledItemAttributes;
+                }
+            }
 
             public override IEnumerable<TypeInfo> DefinedTypes
             {

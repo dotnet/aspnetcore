@@ -87,11 +87,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return manager;
                 }
 
-                // Parts appear in the ApplicationParts collection in precedence order. The part that represents the
-                // current application appears first, followed by all other parts sorted by name.
-                var parts = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(entryAssemblyName)
-                    .OrderBy(part => string.Equals(entryAssemblyName, part.Name, StringComparison.Ordinal) ? 0 : 1)
-                    .ThenBy(part => part.Name, StringComparer.Ordinal);
+                var parts = DefaultAssemblyPartDiscoveryProvider.DiscoverAssemblyParts(entryAssemblyName);
                 foreach (var part in parts)
                 {
                     manager.ApplicationParts.Add(part);
