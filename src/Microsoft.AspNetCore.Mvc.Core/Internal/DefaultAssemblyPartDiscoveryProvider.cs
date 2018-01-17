@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         internal static HashSet<string> ReferenceAssemblies { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
+            "Microsoft.AspNetCore.All",
             "Microsoft.AspNetCore.Mvc",
             "Microsoft.AspNetCore.Mvc.Abstractions",
             "Microsoft.AspNetCore.Mvc.ApiExplorer",

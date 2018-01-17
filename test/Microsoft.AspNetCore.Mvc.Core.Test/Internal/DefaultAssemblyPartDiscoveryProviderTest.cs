@@ -245,6 +245,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 // The following assemblies are not reachable from Microsoft.AspNetCore.Mvc
                 "Microsoft.AspNetCore.Mvc.Formatters.Xml",
+                "Microsoft.AspnetCore.All",
             };
 
             var dependencyContextLibraries = DependencyContext.Load(CurrentAssembly)
