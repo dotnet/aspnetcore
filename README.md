@@ -18,7 +18,7 @@ The repository contains command-line tools for the .NET Core CLI. Follow the lin
 ## How to Install
 
 :warning: These instructions currently require a prerelease version of the [.NET Core SDK](https://github.com/dotnet/cli).
-For stable, released versions of the tools, see [these instructions](https://github.com/aspnet/DotNetTools/tree/release/2.0.0#how-to-install).
+For stable, released versions of the tools, see [these instructions](https://github.com/aspnet/DotNetTools/tree/release/2.0#how-to-install).
 
 Install tools using the .NET Core command-line.
 
