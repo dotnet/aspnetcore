@@ -13,14 +13,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private readonly IHeartbeatHandler[] _callbacks;
         private readonly ISystemClock _systemClock;
+        private readonly IDebugger _debugger;
         private readonly IKestrelTrace _trace;
         private Timer _timer;
         private int _executingOnHeartbeat;
 
-        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IKestrelTrace trace)
+        public Heartbeat(IHeartbeatHandler[] callbacks, ISystemClock systemClock, IDebugger debugger, IKestrelTrace trace)
         {
             _callbacks = callbacks;
             _systemClock = systemClock;
+            _debugger = debugger;
             _trace = trace;
         }
 
@@ -59,7 +61,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
             else
             {
-                _trace.HeartbeatSlow(Interval, now);
+                if (!_debugger.IsAttached)
+                {
+                    _trace.HeartbeatSlow(Interval, now);
+                }
             }
         }
 

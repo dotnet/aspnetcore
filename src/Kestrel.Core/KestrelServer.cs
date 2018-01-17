@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -47,7 +48,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var httpHeartbeatManager = new HttpHeartbeatManager(serviceContext.ConnectionManager);
             _heartbeat = new Heartbeat(
                 new IHeartbeatHandler[] { serviceContext.DateHeaderValueManager, httpHeartbeatManager },
-                serviceContext.SystemClock, Trace);
+                serviceContext.SystemClock,
+                DebuggerWrapper.Singleton,
+                Trace);
 
             Features = new FeatureCollection();
             _serverAddresses = new ServerAddressesFeature();

@@ -26,14 +26,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
+            var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
             var traceMre = new ManualResetEventSlim();
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
+            debugger.Setup(d => d.IsAttached).Returns(false);
             kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace.Object))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
             {
                 Task.Run(() => heartbeat.OnHeartbeat());
                 Task.Run(() => heartbeat.OnHeartbeat());
@@ -47,6 +49,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void BlockedHeartbeatIsNotLoggedAsErrorIfDebuggerAttached()
+        {
+            var systemClock = new MockSystemClock();
+            var heartbeatHandler = new Mock<IHeartbeatHandler>();
+            var debugger = new Mock<IDebugger>();
+            var kestrelTrace = new Mock<IKestrelTrace>();
+            var handlerMre = new ManualResetEventSlim();
+            var traceMre = new ManualResetEventSlim();
+
+            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
+            debugger.Setup(d => d.IsAttached).Returns(true);
+            kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
+
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
+            {
+                Task.Run(() => heartbeat.OnHeartbeat());
+                Task.Run(() => heartbeat.OnHeartbeat());
+                Assert.False(traceMre.Wait(TimeSpan.FromSeconds(10)));
+            }
+
+            handlerMre.Set();
+
+            heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
+            kestrelTrace.Verify(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow), Times.Never());
+        }
+
+        [Fact]
         public void ExceptionFromHeartbeatHandlerIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
@@ -56,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Throws(ex);
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, kestrelTrace))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, kestrelTrace))
             {
                 heartbeat.OnHeartbeat();
             }

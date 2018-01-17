@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
             var testKestrelTrace = new TestKestrelTrace();
 
-            using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace))
+            using (var heartbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
                 systemClock.UtcNow = future;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var mockHeartbeatHandler = new Mock<IHeartbeatHandler>();
 
-            using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, testKestrelTrace))
+            using (var heartbeat = new Heartbeat(new[] { dateHeaderValueManager, mockHeartbeatHandler.Object }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {
                 heartbeat.OnHeartbeat();
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var dateHeaderValueManager = new DateHeaderValueManager(systemClock);
             var testKestrelTrace = new TestKestrelTrace();
 
-            using (var heatbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, testKestrelTrace))
+            using (var heatbeat = new Heartbeat(new IHeartbeatHandler[] { dateHeaderValueManager }, systemClock, DebuggerWrapper.Singleton, testKestrelTrace))
             {
                 heatbeat.OnHeartbeat();
                 Assert.Equal(now.ToString(Rfc1123DateFormat), dateHeaderValueManager.GetDateHeaderValues().String);
