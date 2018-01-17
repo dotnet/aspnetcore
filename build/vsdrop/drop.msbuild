@@ -3,23 +3,24 @@
     <PropertyGroup>
         <NuGetExe>\\aspnetci\share\tools\1ES\NuGet.Exe</NuGetExe>
         <WorkingDirectory>$(RepositoryRoot)obj\vsdrop\</WorkingDirectory>
-        <DropSource>$(SignedVsixPath)</DropSource>
-        <VSDropTxt>$(SignedVsixPath)\vsdrop.$(VsixName).txt</VSDropTxt>
+        <OutputPath>$(SignedVsixPath)\$(VsixName)\</OutputPath>
+        <VSDropTxt>$(OutputPath)vsdrop.txt</VSDropTxt>
         <VSManOutputFileName>$(VsixName).vsman</VSManOutputFileName>
-        <VSManOutputPath>$(SignedVsixPath)$(VSManOutputFileName)</VSManOutputPath>
+        <VSManOutputPath>$(OutputPath)$(VSManOutputFileName)</VSManOutputPath>
     </PropertyGroup>
 
     <Target Name="GetManifests">
         <ItemGroup>
             <VsmanProjectsToBuild Include="$(VsixName).vsmanproj">
-                <OutputPath>$(SignedVsixPath)</OutputPath>
-                <ManifestSrc>$(SignedVsixPath)</ManifestSrc>
+                <OutputPath>$(OutputPath)</OutputPath>
+                <ManifestSrc>$(OutputPath)</ManifestSrc>
             </VsmanProjectsToBuild>
         </ItemGroup>
     </Target>
 
     <Target Name="BuildAndPublishManifest">
-        <Delete Files="$(SignedVsixPath)\$(VsixName).vsmand;$(VSManOutputPath)" />
+        <RemoveDir Directories="$(OutputPath)" />
+        <MakeDir Directories="$(OutputPath)" />
 
         <CallTarget Targets="VSSetupRestorePackages" />
         <CallTarget Targets="BuildManifests" />

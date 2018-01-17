@@ -43,7 +43,6 @@
             Condition="'$(InvokePublishToVSDropCore)'=='false'"
             Importance="High" />
 
-
         <WriteLinesToFile File="$(VSDropTxt)" Overwrite="true" Lines="$([MSBuild]::Escape($(VSManPublishUrl)))" />
     </Target>
 
@@ -57,13 +56,13 @@
 
     <Target Name="GetDropCmdLine">
         <!-- Properties that will depend on each build configuration. We can only build the commandlines onces these are defined -->
-        <Error Text="DropSource property undefined" Condition="'$(DropSource)' == ''" />
+        <Error Text="OutputPath property undefined" Condition="'$(OutputPath)' == ''" />
 
         <PropertyGroup>
             <DropName>Products/$(ManifestTeamProject)/$(ManifestRepositoryName)/$(ManifestBuildBranch)/$(ManifestBuildNumber)</DropName>
 
             <DropParamName>-n &quot;$(DropName)&quot;</DropParamName>
-            <DropParamSource>-d &quot;$(DropSource)&quot;</DropParamSource>
+            <DropParamSource>-d &quot;$(OutputPath.TrimEnd('\'))&quot;</DropParamSource>
 
             <DropListCmd>$(DropExe) List $(DropParamService) $(DropParamAuth) $(DropParamTimeout) -b -p &quot;$(DropName)&quot;</DropListCmd>
 

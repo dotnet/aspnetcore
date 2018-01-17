@@ -9,7 +9,7 @@
       Condition="'$(VisualStudioMSBuildx86Path)'==''" />
 
     <ItemGroup>
-      <SignedVSIX Include="$(SignedVSIXPath)*.vsix" />
+      <SignedVSIX Include="$(SignedVSIXPath)*\**.vsix" />
     </ItemGroup>
 
     <MSBuild

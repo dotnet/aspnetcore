@@ -203,9 +203,11 @@
 
     <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" />
 
+    <MakeDir Directories="$(SignedVSIXPath)%(VSIXManifest.VSIXName)\" />
+
     <Copy
       SourceFiles="@(VSIXToSign);$(DepsDirectory)build\%(VSIXManifest.VSIXName).json"
-      DestinationFolder="$(SignedVSIXPath)" />
+      DestinationFolder="$(SignedVSIXPath)%(VSIXManifest.VSIXName)\" />
   </Target>
 
   <Target Name="SubmitCodeSign">
