@@ -77,8 +77,14 @@
     <Copy SourceFiles="$(LanguageServiceOutputPath)\%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
     <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackIntermediateOutputPath)" />
 
-    <!-- We cannot use the ZipArchive task due to how it functions in CoreCLR. The archive it generates is unreadable by Visual Studio for Mac. -->
-    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$(MPackIntermediateOutputPath)', '$(MPackOutputPath)') } &quot;" />
+    <ItemGroup>
+      <MPackFiles Include="$(MPackIntermediateOutputPath)\*" />
+    </ItemGroup>
+
+    <ZipArchive
+      File="$(MPackOutputPath)"
+      SourceFiles="@(MPackFiles)"
+      WorkingDirectory="$(MPackIntermediateOutputPath)" />
   </Target>
 
 </Project>
