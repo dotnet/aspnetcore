@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -44,12 +45,21 @@ namespace Microsoft.AspNetCore.Testing
             if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
 #endif
             {
-                Console.WriteLine($"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}");
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+
+                Console.WriteLine(log);
 
                 if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
                 {
-                    throw new Exception("Unexpected critical error.", exception);
+                    throw new Exception($"Unexpected critical error. {log}", exception);
                 }
+            }
+
+            // Fail tests where not all the connections close during server shutdown.
+            if (eventId.Id == 21 && eventId.Name == nameof(KestrelTrace.NotAllConnectionsAborted))
+            {
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                throw new Exception($"Shutdown failure. {log}");
             }
 
             Messages.Enqueue(new LogMessage

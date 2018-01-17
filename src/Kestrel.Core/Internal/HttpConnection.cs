@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class HttpConnection : ITimeoutControl, IConnectionTimeoutFeature, IRequestProcessor
+    public class HttpConnection : ITimeoutControl, IConnectionTimeoutFeature
     {
         private static readonly ReadOnlyMemory<byte> Http2Id = new[] { (byte)'h', (byte)'2' };
 
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private IPipeConnection _adaptedTransport;
 
         private readonly object _protocolSelectionLock = new object();
+        private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
         private IRequestProcessor _requestProcessor;
         private Http1Connection _http1Connection;
 
@@ -54,7 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public HttpConnection(HttpConnectionContext context)
         {
             _context = context;
-            _requestProcessor = this;
         }
 
         // For testing
@@ -140,19 +140,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 lock (_protocolSelectionLock)
                 {
                     // Ensure that the connection hasn't already been stopped.
-                    if (_requestProcessor == this)
+                    if (_protocolSelectionState == ProtocolSelectionState.Initializing)
                     {
                         switch (SelectProtocol())
                         {
                             case HttpProtocols.Http1:
                                 // _http1Connection must be initialized before adding the connection to the connection manager
                                 requestProcessor = _http1Connection = CreateHttp1Connection(_adaptedTransport, application);
+                                _protocolSelectionState = ProtocolSelectionState.Selected;
                                 break;
                             case HttpProtocols.Http2:
                                 // _http2Connection must be initialized before yielding control to the transport thread,
                                 // to prevent a race condition where _http2Connection.Abort() is called just as
                                 // _http2Connection is about to be initialized.
                                 requestProcessor = CreateHttp2Connection(_adaptedTransport, application);
+                                _protocolSelectionState = ProtocolSelectionState.Selected;
                                 break;
                             case HttpProtocols.None:
                                 // An error was already logged in SelectProtocol(), but we should close the connection.
@@ -197,6 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         internal void Initialize(IPipeConnection transport, IPipeConnection application)
         {
             _requestProcessor = _http1Connection = CreateHttp1Connection(transport, application);
+            _protocolSelectionState = ProtocolSelectionState.Selected;
         }
 
         private Http1Connection CreateHttp1Connection(IPipeConnection transport, IPipeConnection application)
@@ -241,8 +244,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             lock (_protocolSelectionLock)
             {
-                _requestProcessor?.StopProcessingNextRequest();
-                _requestProcessor = null;
+                switch (_protocolSelectionState)
+                {
+                    case ProtocolSelectionState.Initializing:
+                        CloseUninitializedConnection();
+                        _protocolSelectionState = ProtocolSelectionState.Stopped;
+                        break;
+                    case ProtocolSelectionState.Selected:
+                        _requestProcessor.StopProcessingNextRequest();
+                        _protocolSelectionState = ProtocolSelectionState.Stopping;
+                        break;
+                    case ProtocolSelectionState.Stopping:
+                    case ProtocolSelectionState.Stopped:
+                        break;
+                }
             }
 
             return _lifetimeTask;
@@ -252,8 +267,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             lock (_protocolSelectionLock)
             {
-                _requestProcessor?.Abort(ex);
-                _requestProcessor = null;
+                switch (_protocolSelectionState)
+                {
+                    case ProtocolSelectionState.Initializing:
+                        CloseUninitializedConnection();
+                        break;
+                    case ProtocolSelectionState.Selected:
+                    case ProtocolSelectionState.Stopping:
+                        _requestProcessor.Abort(ex);
+                        break;
+                    case ProtocolSelectionState.Stopped:
+                        break;
+                }
+
+                _protocolSelectionState = ProtocolSelectionState.Stopped;
             }
         }
 
@@ -261,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             Abort(ex);
 
-            return _lifetimeTask;
+            return _socketClosedTcs.Task;
         }
 
         private async Task<Stream> ApplyConnectionAdaptersAsync()
@@ -582,20 +609,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _adaptedTransport.Output.Complete();
         }
 
-        // These IStoppableConnection methods only get called if the server shuts down during initialization.
-        Task IRequestProcessor.ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        private enum ProtocolSelectionState
         {
-            throw new NotSupportedException();
-        }
-
-        void IRequestProcessor.StopProcessingNextRequest()
-        {
-            CloseUninitializedConnection();
-        }
-
-        void IRequestProcessor.Abort(Exception ex)
-        {
-            CloseUninitializedConnection();
+            Initializing,
+            Selected,
+            Stopping,
+            Stopped
         }
     }
 }
