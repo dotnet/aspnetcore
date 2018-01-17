@@ -4,18 +4,6 @@
   -->
 
   <!--
-    Razor defines two primary targets:
-      'RazorGenerate' - which updates generated code
-      'RazorCompile' - compiles an assembly from generated code
-
-    Use these properties to attach behavior to the corresponding target.
-  -->
-  <PropertyGroup>
-    <RazorGenerateDependsOn>RazorResolveGenerateInputs;RazorCoreGenerate</RazorGenerateDependsOn>
-    <RazorCompileDependsOn>RazorGenerate;RazorCoreCompile</RazorCompileDependsOn>
-  </PropertyGroup>
-
-  <!--
     Razor also attaches itself by default to some of the standard .NET targets. Uses these properties to
     configure this behaviour.
   -->

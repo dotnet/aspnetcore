@@ -1,0 +1,126 @@
+<Project>
+  <!--
+    Targets used for Razor SDK code generation. Support for the RazorCoreGenerate target.
+  -->
+
+  <!-- 
+    Consider these properties to be private to this targets file. The main Razor SDK should define all of the properties
+    that we use to pass data back and forth. 
+  -->
+  <PropertyGroup>
+    <!-- Used for tag helper discovery -->
+    <_RazorTagHelperInputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.input.cache</_RazorTagHelperInputCache>
+    <_RazorTagHelperOutputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.output.cache</_RazorTagHelperOutputCache>
+    
+    <!-- Used to locate our tools -->
+    <_RazorGenerateToolAssembly>$(_RazorMSBuildRoot)tools\Microsoft.AspNetCore.Razor.GenerateTool.dll</_RazorGenerateToolAssembly>
+    <_RazorTagHelperToolAssembly>$(_RazorMSBuildRoot)tools\Microsoft.AspNetCore.Razor.TagHelperTool.dll</_RazorTagHelperToolAssembly>
+
+    <!-- Used to hash file inputs for RazorGenerate -->
+    <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
+    <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
+  </PropertyGroup>
+
+  <!--
+    This target will only be called when we have some .cshtml files that are going to participate in code generation.
+
+    This is part of the chain of targets that are called once we've actually committed to generating code.
+  -->
+  <Target 
+    Name="_HashRazorGenerateInputs" 
+    AfterTargets="ResolveRazorGenerateInputs"
+    Condition="'@(RazorGenerate)'!=''">
+
+    <Hash ItemsToHash="@(RazorGenerate)">
+      <Output TaskParameter="HashResult" PropertyName="_RazorGenerateInputsHash" />
+    </Hash>
+
+    <MakeDir
+      Directories="$(IntermediateOutputPath)"
+      Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <WriteLinesToFile
+      Lines="$(_RazorGenerateInputsHash)"
+      File="$(_RazorGenerateInputsHashFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_RazorGenerateInputsHashFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="ResolveTagHelperRazorGenerateInputs"
+    DependsOnTargets="Compile"
+    Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
+    Outputs="$(_RazorTagHelperInputCache)"
+    Condition="'@(RazorGenerate)'!=''">
+
+    <!-- 
+      We're manipulating our output directly here because we want to separate the actual up-to-date check
+      of RazorCoreGenerate from the output of this target. Many times the set of tag helpers doesn't change
+      so we don't need to regenerate the code.
+      -->
+    <Touch
+      Files="$(_RazorTagHelperInputCache)"
+      AlwaysCreate="true">
+      <Output
+        TaskParameter="TouchedFiles"
+        ItemName="FileWrites" />
+    </Touch>
+
+    <RazorTagHelper
+      Debug="$(_RazorDebugTagHelperTask)"
+      DebugTool="$(_RazorDebugTagHelperTool)"
+      ToolAssembly="$(_RazorTagHelperToolAssembly)"
+      ServerAssembly="$(_RazorBuildServerAssembly)"
+      Assemblies="@(RazorReferencePath)"
+      TagHelperManifest="$(_RazorTagHelperOutputCache)">
+      <Output
+        TaskParameter="TagHelperManifest"
+        ItemName="FileWrites"/>
+    </RazorTagHelper>
+  </Target>
+
+  <Target Name="_ResolveRazorGenerateOutputs" AfterTargets="PrepareForRazorGenerate">
+    <ItemGroup>
+      <_RazorGenerateOutput Include="%(RazorGenerate.GeneratedOutput)" Condition="'%(RazorGenerate.GeneratedOutput)'!=''"/>    
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="RazorCoreGenerate"
+    Inputs="$(MSBuildAllProjects);$(_RazorGenerateInputsHashFile);$(_RazorTagHelperOutputCache);@(RazorGenerate)"
+    Outputs="@(_RazorGenerateOutput)"
+    Condition="'@(RazorGenerate)'!= ''">
+
+    <RemoveDir
+      Directories="$(RazorGenerateOutputPath)"
+      Condition = "Exists('$(RazorGenerateOutputPath)')"/>
+
+    <MakeDir
+      Directories="%(_RazorGenerateOutput.RelativeDir)"
+      Condition="!Exists('%(_RazorGenerateOutput.RelativeDir)')" />
+
+    <RazorGenerate
+      Debug="$(_RazorDebugGenerateCodeTask)"
+      DebugTool="$(_RazorDebugGenerateCodeTool)"
+      ToolAssembly="$(_RazorGenerateToolAssembly)"
+      Sources="@(RazorGenerate)"
+      ProjectRoot="$(MSBuildProjectDirectory)"
+      TagHelperManifest="$(_RazorTagHelperOutputCache)"
+      OutputPath="$(RazorGenerateOutputPath)" />
+
+    <ItemGroup>
+      <FileWrites Include="@(_RazorGenerateOutput)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ResolveGeneratedRazorCompileInputs" BeforeTargets="ResolveRazorCompileInputs">
+    <ItemGroup>
+      <RazorCompile Include="@(_RazorGenerateOutput)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

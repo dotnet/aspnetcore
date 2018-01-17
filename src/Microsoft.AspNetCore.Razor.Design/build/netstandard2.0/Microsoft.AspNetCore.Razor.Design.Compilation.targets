@@ -11,7 +11,7 @@
   embedded files and resources, these are already present in the application's assembly.
 
   Changes:
-    Name="RazorCoreCompile" and DependsOnTarget="RazorCoreGenerate"
+    Name="RazorCoreCompile"
     
     Replace @(Compile) with @(RazorCompile)
     Replace @(_DebugSymbolsIntermediatePath) with @(_RazorDebugSymbolsIntermediatePath)
@@ -47,7 +47,6 @@
           Outputs="@(RazorIntermediateAssembly);
                    @(_RazorDebugSymbolsIntermediatePath);
                    $(NonExistentFile)"
-          DependsOnTargets="RazorCoreGenerate"
           Condition="'@(RazorCompile)'!=''">
     <!-- These two compiler warnings are raised when a reference is bound to a different version
              than specified in the assembly reference version number.  MSBuild raises the same warning in this case,
