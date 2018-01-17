@@ -3,7 +3,7 @@
     <PropertyGroup>
         <NuGetExe>\\aspnetci\share\tools\1ES\NuGet.Exe</NuGetExe>
         <WorkingDirectory>$(RepositoryRoot)obj\vsdrop\</WorkingDirectory>
-        <OutputPath>$(SignedVsixPath)\$(VsixName)\</OutputPath>
+        <OutputPath>$(SignedVsixPath)$(VsixName)\</OutputPath>
         <VSDropTxt>$(OutputPath)vsdrop.txt</VSDropTxt>
         <VSManOutputFileName>$(VsixName).vsman</VSManOutputFileName>
         <VSManOutputPath>$(OutputPath)$(VSManOutputFileName)</VSManOutputPath>
@@ -19,7 +19,7 @@
     </Target>
 
     <Target Name="BuildAndPublishManifest">
-        <RemoveDir Directories="$(OutputPath)" />
+        <Delete Files="$(OutputPath)$(VsixName).vsmand;$(VSManOutputPath)" />
         <MakeDir Directories="$(OutputPath)" />
 
         <CallTarget Targets="VSSetupRestorePackages" />
