@@ -13,6 +13,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Used by the Web SDK to know if the Razor SDK is present. This needs to live in a nuget package (not in the SDK)
+      so that it only shows up in supported versions.
+    -->
+    <IsRazorCompilerReferenced>true</IsRazorCompilerReferenced>
+
     <!-- Override this to hijack the tasks and targets. Used by tests. -->
     <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
     
