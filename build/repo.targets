@@ -48,6 +48,10 @@
         Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(MicrosoftNETCoreApp21PackageVersion)" />
 
       <_CleanupFiles
+        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\'))"
+        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)" />
+
+      <_CleanupFiles
         Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)host\fxr'))"
         Exclude="$(SiteExtensionWorkingDirectory)host\fxr\$(MicrosoftNETCoreApp21PackageVersion)" />
 
@@ -59,7 +63,8 @@
     <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
     <RemoveDir Directories="@(_CleanupFiles)" />
 
-    <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFolder="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates" />
+    <!-- Workaround for nuget filtering out .nupkg files by default -->
+    <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates\%(BundledTemplate.Identity).%(Version).nupkg_" />
     <Copy SourceFiles="$(ArtifactDependencyLocation)\nuGetPackagesArchive-$(PackageVersion).lzma" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
 
     <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
