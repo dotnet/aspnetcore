@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Blazor.Components;
+using System;
 
 namespace Microsoft.Blazor.RenderTree
 {
@@ -58,6 +59,12 @@ namespace Microsoft.Blazor.RenderTree
 
         /// <summary>
         /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
+        /// gets the type of the child component.
+        /// </summary>
+        public Type ComponentType { get; private set; }
+
+        /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
         /// gets the child component instance identifier.
         /// </summary>
         public int ComponentId { get; private set; }
@@ -94,16 +101,21 @@ namespace Microsoft.Blazor.RenderTree
             AttributeEventHandlerValue = value
         };
 
-        internal static RenderTreeNode ChildComponent(int componentId, IComponent component) => new RenderTreeNode
+        internal static RenderTreeNode ChildComponent<T>() where T: IComponent => new RenderTreeNode
         {
             NodeType = RenderTreeNodeType.Component,
-            ComponentId = componentId,
-            Component = component
+            ComponentType = typeof(T)
         };
 
         internal void CloseElement(int descendantsEndIndex)
         {
             ElementDescendantsEndIndex = descendantsEndIndex;
+        }
+
+        internal void SetChildComponentInstance(int componentId, IComponent component)
+        {
+            ComponentId = componentId;
+            Component = component;
         }
     }
 }

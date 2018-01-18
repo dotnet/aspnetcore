@@ -43,7 +43,25 @@ namespace Microsoft.Blazor.Rendering
             _component.BuildRenderTree(_renderTreeBuilder);
 
             var renderTree = _renderTreeBuilder.GetNodes();
+            EnsureChildComponentsInstantiated(renderTree);
             _renderer.UpdateDisplay(_componentId, renderTree);
+        }
+
+        private void EnsureChildComponentsInstantiated(ArraySegment<RenderTreeNode> renderTree)
+        {
+            var array = renderTree.Array;
+            var offsetPlusCount = renderTree.Offset + renderTree.Count;
+            for (var i = renderTree.Offset; i < offsetPlusCount; i++)
+            {
+                if (array[i].NodeType == RenderTreeNodeType.Component
+                    && array[i].Component == null)
+                {
+                    var instance = (IComponent)Activator.CreateInstance(array[i].ComponentType);
+                    array[i].SetChildComponentInstance(
+                        _renderer.AssignComponentId(instance),
+                        instance);
+                }
+            }
         }
 
         /// <summary>

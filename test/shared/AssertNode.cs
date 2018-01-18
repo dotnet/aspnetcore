@@ -44,13 +44,7 @@ namespace Microsoft.Blazor.Test.Shared
         public static void Component<T>(RenderTreeNode node) where T : IComponent
         {
             Assert.Equal(RenderTreeNodeType.Component, node.NodeType);
-
-            // Currently, we instantiate child components during the tree building phase.
-            // Later this will change so it happens during the tree diffing phase, so this
-            // logic will need to change. It will need to verify that we're tracking the
-            // information needed to instantiate the component.
-            Assert.NotNull(node.Component);
-            Assert.IsType<T>(node.Component);
+            Assert.Equal(typeof(T), node.ComponentType);
         }
     }
 }

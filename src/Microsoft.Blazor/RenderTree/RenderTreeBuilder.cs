@@ -124,16 +124,7 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         public void AddComponent<TComponent>() where TComponent: IComponent
-        {
-            // Later, instead of instantiating the child component here, we'll instead
-            // store a descriptor of the component (type, parameters) on the attributes
-            // of the appended nodes. Then after the tree is diffed against the
-            // previous tree, we'll either instantiate a new component or reuse the
-            // existing instance (and notify it about changes to parameters).
-            var instance = Activator.CreateInstance<TComponent>();
-            var instanceId = _renderer.AssignComponentId(instance);
-            Append(RenderTreeNode.ChildComponent(instanceId, instance));
-        }
+            => Append(RenderTreeNode.ChildComponent<TComponent>());
 
         private void AssertCanAddAttribute()
         {
