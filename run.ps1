@@ -26,8 +26,14 @@ The base url where build tools can be downloaded. Overrides the value from the c
 .PARAMETER Update
 Updates KoreBuild to the latest version even if a lock file is present.
 
+.PARAMETER Reinstall
+Re-installs KoreBuild
+
 .PARAMETER ConfigFile
 The path to the configuration file that stores values. Defaults to korebuild.json.
+
+.PARAMETER ToolsSourceSuffix
+The Suffix to append to the end of the ToolsSource. Useful for query strings in blob stores.
 
 .PARAMETER Arguments
 Arguments to be passed to the command
@@ -51,7 +57,7 @@ Example config file:
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
-    [Parameter(Mandatory=$true, Position = 0)]
+    [Parameter(Mandatory = $true, Position = 0)]
     [string]$Command,
     [string]$Path = $PSScriptRoot,
     [Alias('c')]
@@ -62,7 +68,9 @@ param(
     [string]$ToolsSource,
     [Alias('u')]
     [switch]$Update,
-    [string]$ConfigFile,
+    [switch]$Reinstall,
+    [string]$ToolsSourceSuffix,
+    [string]$ConfigFile = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$Arguments
 )
@@ -79,7 +87,7 @@ function Get-KoreBuild {
     $lockFile = Join-Path $Path 'korebuild-lock.txt'
 
     if (!(Test-Path $lockFile) -or $Update) {
-        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile
+        Get-RemoteFile "$ToolsSource/korebuild/channels/$Channel/latest.txt" $lockFile $ToolsSourceSuffix
     }
 
     $version = Get-Content $lockFile | Where-Object { $_ -like 'version:*' } | Select-Object -first 1
@@ -89,6 +97,10 @@ function Get-KoreBuild {
     $version = $version.TrimStart('version:').Trim()
     $korebuildPath = Join-Paths $DotNetHome ('buildtools', 'korebuild', $version)
 
+    if ($Reinstall -and (Test-Path $korebuildPath)) {
+        Remove-Item -Force -Recurse $korebuildPath
+    }
+
     if (!(Test-Path $korebuildPath)) {
         Write-Host -ForegroundColor Magenta "Downloading KoreBuild $version"
         New-Item -ItemType Directory -Path $korebuildPath | Out-Null
@@ -96,7 +108,7 @@ function Get-KoreBuild {
 
         try {
             $tmpfile = Join-Path ([IO.Path]::GetTempPath()) "KoreBuild-$([guid]::NewGuid()).zip"
-            Get-RemoteFile $remotePath $tmpfile
+            Get-RemoteFile $remotePath $tmpfile $ToolsSourceSuffix
             if (Get-Command -Name 'Expand-Archive' -ErrorAction Ignore) {
                 # Use built-in commands where possible as they are cross-plat compatible
                 Expand-Archive -Path $tmpfile -DestinationPath $korebuildPath
@@ -124,7 +136,7 @@ function Join-Paths([string]$path, [string[]]$childPaths) {
     return $path
 }
 
-function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
+function Get-RemoteFile([string]$RemotePath, [string]$LocalPath, [string]$RemoteSuffix) {
     if ($RemotePath -notlike 'http*') {
         Copy-Item $RemotePath $LocalPath
         return
@@ -134,7 +146,7 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
     while ($retries -gt 0) {
         $retries -= 1
         try {
-            Invoke-WebRequest -UseBasicParsing -Uri $RemotePath -OutFile $LocalPath
+            Invoke-WebRequest -UseBasicParsing -Uri $($RemotePath + $RemoteSuffix) -OutFile $LocalPath
             return
         }
         catch {
@@ -161,7 +173,8 @@ if (Test-Path $ConfigFile) {
             if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
             if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
         }
-    } catch {
+    }
+    catch {
         Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
         Write-Warning $Error[0]
     }
