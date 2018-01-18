@@ -93,6 +93,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_NoopsWith_RazorCompileOnPublishFalse()
+        {
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
+
+            var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnPublish=false");
+
+            Assert.BuildPassed(result);
+
+            // Everything we do should noop - including building the app. 
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Publish_SkipsCopyingBinariesToOutputDirectory_IfCopyBuildOutputToOutputDirectory_IsUnset()
         {
             var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnBuild=true /p:CopyBuildOutputToPublishDirectory=false");

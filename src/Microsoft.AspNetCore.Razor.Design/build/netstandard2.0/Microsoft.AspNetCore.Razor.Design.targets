@@ -162,14 +162,15 @@
   </Target>
 
   <!--
-    This target is called after PrepareForPublish when RazorCompileOnBuild=true so that we can hook into publish.
+    This target is called after PrepareForPublish when RazorCompileOnPublish=true so that we can hook into publish.
     This target just hooks up other targets since Publish and PrepareForPublish don't have a DependsOnTargets
     property we can use. 
   -->
   <Target 
     Name="_RazorPrepareForPublish"
     AfterTargets="PrepareForPublish"
-    DependsOnTargets="RazorCompile">
+    DependsOnTargets="RazorCompile"
+    Condition="'$(RazorCompileOnPublish)'=='true'">
   </Target>
 
   <!--
