@@ -13,6 +13,7 @@
 #include <vector>
 #include <shellapi.h>
 #include <sstream>
+#include "Shlwapi.h"
 #include "..\IISLib\hashtable.h"
 #include "..\IISLib\stringu.h"
 #include "..\IISLib\stringa.h"

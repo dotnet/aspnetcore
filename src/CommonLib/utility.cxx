@@ -384,7 +384,7 @@ UTILITY::ConvertPathToFullPath(
     LPWSTR pszFullPath = NULL;
 
     // if relative path, prefix with root path and then convert to absolute path.
-    if ( pszPath[0] == L'.' )
+    if ( PathIsRelative(pszPath) )
     {
         hr = strFileFullPath.Copy(pszRootPath);
         if(FAILED(hr))

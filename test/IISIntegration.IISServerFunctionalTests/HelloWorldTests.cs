@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
         }
 
-        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        [Fact(Skip = "See https://github.com/aspnet/IISIntegration/issues/515")]
         public Task HelloWorld_InProcess_IISExpress_CoreClr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
@@ -42,7 +42,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

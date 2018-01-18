@@ -46,7 +46,13 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = "netcoreapp2.0",
-                    ApplicationType = applicationType
+                    ApplicationType = applicationType,
+                    Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

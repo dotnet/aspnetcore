@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{04B1EDB6-E967-4D25-89B9-E6F8304038CD}"
 	ProjectSection(SolutionItems) = preProject
@@ -53,7 +54,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CommonLib", "src\CommonLib\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RequestHandler", "src\RequestHandler\RequestHandler.vcxproj", "{D57EA297-6DC2-4BC0-8C91-334863327863}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Server.IIS", "src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj", "{46A8612B-418B-4D70-B3A7-A21DD0627473}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "src\Microsoft.AspNetCore.Server.IIS\Microsoft.AspNetCore.Server.IIS.csproj", "{46A8612B-418B-4D70-B3A7-A21DD0627473}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -202,16 +203,16 @@ Global
 		{D57EA297-6DC2-4BC0-8C91-334863327863}.Release|x86.Build.0 = Release|Win32
 		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x64.ActiveCfg = Debug|x64
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x64.Build.0 = Debug|x64
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x86.ActiveCfg = Debug|x86
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x86.Build.0 = Debug|x86
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x64.Build.0 = Debug|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Debug|x86.Build.0 = Debug|Any CPU
 		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x64.ActiveCfg = Release|x64
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x64.Build.0 = Release|x64
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x86.ActiveCfg = Release|x86
-		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x86.Build.0 = Release|x86
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x64.ActiveCfg = Release|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x64.Build.0 = Release|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x86.ActiveCfg = Release|Any CPU
+		{46A8612B-418B-4D70-B3A7-A21DD0627473}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
