@@ -83,9 +83,9 @@
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition="'@(MvcRazorFilesToCompile)'!='' and '$(_MvcPrecompilationExplicitlyDisabled)'!='true' and '$(_RazorSdkExplicitlyDisabled)'!='true'">
+  <ItemGroup Condition="'@(MvcRazorFilesToCompile)'!='' and ('$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true')">
     <!-- 
-      This is case 5b or 5b, the project file has modified the MvcPrecompilation items but hasn't turned the Razor SDK. 
+      This is case 5b or 5b, the project file has modified the MvcPrecompilation items but hasn't turned the Razor SDK off. 
       We can't disable the Razor SDK at this point, it's too late in the evaluation pass.
     -->
     <_RazorSdkCompatibilityError Include="Using the Razor SDK (RazorCompileOnBuild or RazorCompileOnPublish) and MvcRazorFilesToCompile together is not supported. To disable the Razor SDK targets, and use MvcPrecompilation set the property 'MvcRazorCompileOnPublish' to 'true' in the project file. To use the Razor SDK instead, replace 'MvcRazorFilesToCompile' with 'RazorGenerate'"/>
