@@ -13,8 +13,8 @@
  * Then this file can be removed entirely.
  */
 
+using Microsoft.Blazor.Components;
 using System;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -24,13 +24,7 @@ namespace Microsoft.AspNetCore.Mvc
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
-    public class RazorPage<T> {
-
-        // This needs to be defined otherwise the VS tooling complains that there's no ExecuteAsync method to override.
-        public virtual Task ExecuteAsync()
-            => throw new NotImplementedException($"Blazor components do not implement {nameof(ExecuteAsync)}.");
-
-    }
+    public class RazorPage<T>: BlazorComponent { }
 
     namespace Internal
     {
