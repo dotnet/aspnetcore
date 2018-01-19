@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         public Task EchoGroup(string group, string message)
         {
-            return Clients.Group(group).InvokeAsync("Echo", message);
+            return Clients.Group(group).SendAsync("Echo", message);
         }
 
         public Task AddSelfToGroup(string group)

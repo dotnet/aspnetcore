@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         }
 
         [Benchmark]
-        public Task InvokeAsyncAll()
+        public Task SendAsyncAll()
         {
-            return _hubContext.Clients.All.InvokeAsync("Method");
+            return _hubContext.Clients.All.SendAsync("Method");
         }
     }
 }

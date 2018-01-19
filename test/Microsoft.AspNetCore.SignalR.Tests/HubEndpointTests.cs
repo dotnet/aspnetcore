@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
             var context = serviceProvider.GetRequiredService<IHubContext<SimpleHub>>();
-            await context.Clients.All.InvokeAsync("Send", "test");
+            await context.Clients.All.SendAsync("Send", "test");
         }
 
         [Fact]

@@ -146,20 +146,20 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(tasks);
         }
 
-        public override Task InvokeAllAsync(string methodName, object[] args)
+        public override Task SendAllAsync(string methodName, object[] args)
         {
             var message = new RedisInvocationMessage(target: methodName, arguments: args);
 
             return PublishAsync(_channelNamePrefix, message);
         }
 
-        public override Task InvokeAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
         {
             var message = new RedisInvocationMessage(target: methodName, excludedIds: excludedIds, arguments: args);
             return PublishAsync(_channelNamePrefix + ".AllExcept", message);
         }
 
-        public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
+        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args)
         {
             if (connectionId == null)
             {
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channelNamePrefix + "." + connectionId, message);
         }
 
-        public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
+        public override Task SendGroupAsync(string groupName, string methodName, object[] args)
         {
             if (groupName == null)
             {
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
         }
 
-        public override Task InvokeGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
         {
             if (groupName == null)
             {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
         }
 
-        public override Task InvokeUserAsync(string userId, string methodName, object[] args)
+        public override Task SendUserAsync(string userId, string methodName, object[] args)
         {
             var message = new RedisInvocationMessage(methodName, args);
 
@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             });
         }
 
-        public override Task InvokeConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
         {
             if (connectionIds == null)
             {
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(publishTasks);
         }
 
-        public override Task InvokeGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
         {
             if (groupNames == null)
             {
@@ -621,7 +621,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(publishTasks);
         }
 
-        public override Task InvokeUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
         {
             if (userIds.Count > 0)
             {

@@ -12,6 +12,6 @@ namespace JwtSample
     public class Broadcaster : Hub
     {
         public Task Broadcast(string sender, string message) =>
-            Clients.All.InvokeAsync("Message", sender, message);
+            Clients.All.SendAsync("Message", sender, message);
     }
 }

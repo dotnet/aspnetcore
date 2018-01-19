@@ -19,22 +19,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task ClientSendMethod(string userId, string message)
         {
-            return Clients.User(userId).InvokeAsync("Send", message);
+            return Clients.User(userId).SendAsync("Send", message);
         }
 
         public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
         {
-            return Clients.Users(userIds).InvokeAsync("Send", message);
+            return Clients.Users(userIds).SendAsync("Send", message);
         }
 
         public Task ConnectionSendMethod(string connectionId, string message)
         {
-            return Clients.Client(connectionId).InvokeAsync("Send", message);
+            return Clients.Client(connectionId).SendAsync("Send", message);
         }
 
         public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
-            return Clients.Clients(connectionIds).InvokeAsync("Send", message);
+            return Clients.Clients(connectionIds).SendAsync("Send", message);
         }
 
         public Task GroupAddMethod(string groupName)
@@ -44,37 +44,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task GroupSendMethod(string groupName, string message)
         {
-            return Clients.Group(groupName).InvokeAsync("Send", message);
+            return Clients.Group(groupName).SendAsync("Send", message);
         }
 
         public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedIds)
         {
-            return Clients.GroupExcept(groupName, excludedIds).InvokeAsync("Send", message);
+            return Clients.GroupExcept(groupName, excludedIds).SendAsync("Send", message);
         }
 
         public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
         {
-            return Clients.Groups(groupNames).InvokeAsync("Send", message);
+            return Clients.Groups(groupNames).SendAsync("Send", message);
         }
 
         public Task SendToOthersInGroup(string groupName, string message)
         {
-            return Clients.OthersInGroup(groupName).InvokeAsync("Send", message);
+            return Clients.OthersInGroup(groupName).SendAsync("Send", message);
         }
 
         public Task BroadcastMethod(string message)
         {
-            return Clients.All.InvokeAsync("Broadcast", message);
+            return Clients.All.SendAsync("Broadcast", message);
         }
 
         public Task BroadcastItem()
         {
-            return Clients.All.InvokeAsync("Broadcast", new Result { Message = "test", paramName = "param" });
+            return Clients.All.SendAsync("Broadcast", new Result { Message = "test", paramName = "param" });
         }
 
         public Task SendArray()
         {
-            return Clients.All.InvokeAsync("Array", new int[] { 1, 2, 3 });
+            return Clients.All.SendAsync("Array", new int[] { 1, 2, 3 });
         }
 
         public Task<int> TaskValueMethod()
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendAnonymousObject()
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("Send", new { });
+            return Clients.Client(Context.ConnectionId).SendAsync("Send", new { });
         }
 
         public override Task OnDisconnectedAsync(Exception e)
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
         {
-            return Clients.AllExcept(excludedIds).InvokeAsync("Send", message);
+            return Clients.AllExcept(excludedIds).SendAsync("Send", message);
         }
 
         public bool HasHttpContext()
@@ -148,12 +148,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
 
         public Task SendToOthers(string message)
         {
-            return Clients.Others.InvokeAsync("Send", message);
+            return Clients.Others.SendAsync("Send", message);
         }
 
         public Task SendToCaller(string message)
         {
-            return Clients.Caller.InvokeAsync("Send", message);
+            return Clients.Caller.SendAsync("Send", message);
         }
     }
 
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
     {
         public override async Task OnConnectedAsync()
         {
-            await Clients.All.InvokeAsync("Send", $"{Context.ConnectionId} joined");
+            await Clients.All.SendAsync("Send", $"{Context.ConnectionId} joined");
             await base.OnConnectedAsync();
         }
     }

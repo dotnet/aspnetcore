@@ -60,12 +60,12 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task InvokeAllAsync(string methodName, object[] args)
+        public override Task SendAllAsync(string methodName, object[] args)
         {
-            return InvokeAllWhere(methodName, args, c => true);
+            return SendAllWhere(methodName, args, c => true);
         }
 
-        private Task InvokeAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
+        private Task SendAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
         {
             var count = _connections.Count;
             if (count == 0)
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.WhenAll(tasks);
         }
 
-        public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
+        public override Task SendConnectionAsync(string connectionId, string methodName, object[] args)
         {
             if (connectionId == null)
             {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR
             return connection.WriteAsync(message);
         }
 
-        public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
+        public override Task SendGroupAsync(string groupName, string methodName, object[] args)
         {
             if (groupName == null)
             {
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task InvokeGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
+        public override Task SendGroupsAsync(IReadOnlyList<string> groupNames, string methodName, object[] args)
         {
             // Each task represents the list of tasks for each of the writes within a group
             var tasks = new List<Task>();
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.WhenAll(tasks);
         }
 
-        public override Task InvokeGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendGroupExceptAsync(string groupName, string methodName, object[] args, IReadOnlyList<string> excludedIds)
         {
             if (groupName == null)
             {
@@ -174,9 +174,9 @@ namespace Microsoft.AspNetCore.SignalR
             return new InvocationMessage(target: methodName, argumentBindingException: null, arguments: args);
         }
 
-        public override Task InvokeUserAsync(string userId, string methodName, object[] args)
+        public override Task SendUserAsync(string userId, string methodName, object[] args)
         {
-            return InvokeAllWhere(methodName, args, connection =>
+            return SendAllWhere(methodName, args, connection =>
                 string.Equals(connection.UserIdentifier, userId, StringComparison.Ordinal));
         }
 
@@ -193,25 +193,25 @@ namespace Microsoft.AspNetCore.SignalR
             return Task.CompletedTask;
         }
 
-        public override Task InvokeAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        public override Task SendAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
         {
-            return InvokeAllWhere(methodName, args, connection =>
+            return SendAllWhere(methodName, args, connection =>
             {
                 return !excludedIds.Contains(connection.ConnectionId);
             });
         }
 
-        public override Task InvokeConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
+        public override Task SendConnectionsAsync(IReadOnlyList<string> connectionIds, string methodName, object[] args)
         {
-            return InvokeAllWhere(methodName, args, connection =>
+            return SendAllWhere(methodName, args, connection =>
             {
                 return connectionIds.Contains(connection.ConnectionId);
             });
         }
 
-        public override Task InvokeUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
+        public override Task SendUsersAsync(IReadOnlyList<string> userIds, string methodName, object[] args)
         {
-            return InvokeAllWhere(methodName, args, connection =>
+            return SendAllWhere(methodName, args, connection =>
             {
                 return userIds.Contains(connection.UserIdentifier);
             });

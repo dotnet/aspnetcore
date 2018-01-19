@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.OnConnectedAsync(connection2).OrTimeout();
 
-                await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client1);
                 await AssertMessageAsync(client2);
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.OnDisconnectedAsync(connection2).OrTimeout();
 
-                await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client1);
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.AddGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
 
-                await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client1);
                 Assert.Null(client2.TryRead());
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.AddGroupAsync(connection2.ConnectionId, "gunit").OrTimeout();
 
                 var excludedIds = new List<string>{ client2.Connection.ConnectionId };
-                await manager.InvokeGroupExceptAsync("gunit", "Hello", new object[] { "World" }, excludedIds).OrTimeout();
+                await manager.SendGroupExceptAsync("gunit", "Hello", new object[] { "World" }, excludedIds).OrTimeout();
 
                 await AssertMessageAsync(client1);
                 Assert.Null(client2.TryRead());
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                await manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
             {
                 Factory = t => new TestConnectionMultiplexer()
             }));
-            await manager.InvokeConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
+            await manager.SendConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
         }
 
         [Fact]
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager1.OnConnectedAsync(connection1).OrTimeout();
                 await manager2.OnConnectedAsync(connection2).OrTimeout();
 
-                await manager1.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager1.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client1);
                 await AssertMessageAsync(client2);
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.OnDisconnectedAsync(connection2).OrTimeout();
 
-                await manager2.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client1);
 
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager1.OnConnectedAsync(connection).OrTimeout();
 
-                await manager2.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client);
             }
@@ -280,7 +280,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager1.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client);
             }
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.OnDisconnectedAsync(connection).OrTimeout();
 
-                await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
                 Assert.Null(client.TryRead());
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager2.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -400,7 +400,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
                 await manager.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -431,7 +431,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager1.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
                 await manager2.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -461,13 +461,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager1.AddGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await AssertMessageAsync(client);
 
                 await manager2.RemoveGroupAsync(connection.ConnectionId, "name").OrTimeout();
 
-                await manager2.InvokeGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
+                await manager2.SendGroupAsync("name", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
                 Assert.Null(client.TryRead());
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager1.OnConnectedAsync(connection).OrTimeout();
                 await manager2.OnConnectedAsync(connection).OrTimeout();
 
-                await manager1.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager1.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -527,7 +527,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 // This doesn't throw because there is no connection.ConnectionId on this server so it has to publish to redis.
                 // And once that happens there is no way to know if the invocation was successful or not.
-                await manager1.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager1.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
             }
         }
 
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                var exception = await Assert.ThrowsAsync<Exception>(() => manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
+                var exception = await Assert.ThrowsAsync<Exception>(() => manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
                 Assert.Equal("Message", exception.Message);
             }
         }
@@ -577,13 +577,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
                 await manager.OnConnectedAsync(connection2).OrTimeout();
                 await manager.AddGroupAsync(connection2.ConnectionId, "group");
 
-                await manager.InvokeGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
                 // connection1 will throw when receiving a group message, we are making sure other connections
                 // are not affected by another connection throwing
                 await AssertMessageAsync(client2);
 
                 // Repeat to check that group can still be sent to
-                await manager.InvokeGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("group", "Hello", new object[] { "World" }).OrTimeout();
                 await AssertMessageAsync(client2);
             }
         }

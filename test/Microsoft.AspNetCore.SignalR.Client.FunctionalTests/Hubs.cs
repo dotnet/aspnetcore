@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public async Task CallEcho(string message)
         {
-            await Clients.Client(Context.ConnectionId).InvokeAsync("Echo", message);
+            await Clients.Client(Context.ConnectionId).SendAsync("Echo", message);
         }
 
         public async Task CallHandlerThatDoesntExist()
         {
-            await Clients.Client(Context.ConnectionId).InvokeAsync("NoClientHandler");
+            await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
         }
 
         public IEnumerable<string> GetHeaderValues(string[] headerNames)

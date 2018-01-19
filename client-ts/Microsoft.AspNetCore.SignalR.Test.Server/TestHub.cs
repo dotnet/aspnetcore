@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
 
         public Task InvokeWithString(string message)
         {
-            return Clients.Client(Context.Connection.ConnectionId).InvokeAsync("Message", message);
+            return Clients.Client(Context.Connection.ConnectionId).SendAsync("Message", message);
         }
 
         public Task SendCustomObject(CustomObject customObject)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("CustomObject", customObject);
+            return Clients.Client(Context.ConnectionId).SendAsync("CustomObject", customObject);
         }
 
         public IObservable<string> Stream()

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await manager.OnConnectedAsync(connection1).OrTimeout();
                 await manager.OnConnectedAsync(connection2).OrTimeout();
 
-                await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await connection1.DisposeAsync().OrTimeout();
                 await connection2.DisposeAsync().OrTimeout();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.OnDisconnectedAsync(connection2).OrTimeout();
 
-                await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 await connection1.DisposeAsync().OrTimeout();
                 await connection2.DisposeAsync().OrTimeout();
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.AddGroupAsync(connection1.ConnectionId, "gunit").OrTimeout();
 
-                await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection1.DisposeAsync().OrTimeout();
                 await connection2.DisposeAsync().OrTimeout();
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                await manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
+                await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 await connection.DisposeAsync().OrTimeout();
 
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 
-                var exception = await Assert.ThrowsAsync<Exception>(() => manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
+                var exception = await Assert.ThrowsAsync<Exception>(() => manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout());
                 Assert.Equal("Message", exception.Message);
             }
         }
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task InvokeConnectionAsyncOnNonExistentConnectionNoops()
         {
             var manager = new DefaultHubLifetimeManager<MyHub>();
-            await manager.InvokeConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
+            await manager.SendConnectionAsync("NotARealConnectionId", "Hello", new object[] { "World" }).OrTimeout();
         }
 
         [Fact]
