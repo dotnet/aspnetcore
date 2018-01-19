@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -45,6 +48,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
 
             // Act
             hostBuilder.Build();
+        }
+
+        [Fact]
+        public void LibuvIsTheDefaultTransport()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel()
+                .Configure(app => { });
+
+            Assert.IsType<LibuvTransportFactory>(hostBuilder.Build().Services.GetService<ITransportFactory>());
+        }
+
+        [Fact]
+        public void LibuvTransportCanBeManuallySelectedIndependentOfOrder()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel()
+                .UseLibuv()
+                .Configure(app => { });
+
+            Assert.IsType<LibuvTransportFactory>(hostBuilder.Build().Services.GetService<ITransportFactory>());
+
+            var hostBuilderReversed = new WebHostBuilder()
+                .UseLibuv()
+                .UseKestrel()
+                .Configure(app => { });
+
+            Assert.IsType<LibuvTransportFactory>(hostBuilderReversed.Build().Services.GetService<ITransportFactory>());
+        }
+
+        [Fact]
+        public void SocketsTransportCanBeManuallySelectedIndependentOfOrder()
+        {
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel()
+                .UseSockets()
+                .Configure(app => { });
+
+            Assert.IsType<SocketTransportFactory>(hostBuilder.Build().Services.GetService<ITransportFactory>());
+
+            var hostBuilderReversed = new WebHostBuilder()
+                .UseSockets()
+                .UseKestrel()
+                .Configure(app => { });
+
+            Assert.IsType<SocketTransportFactory>(hostBuilderReversed.Build().Services.GetService<ITransportFactory>());
         }
     }
 }
