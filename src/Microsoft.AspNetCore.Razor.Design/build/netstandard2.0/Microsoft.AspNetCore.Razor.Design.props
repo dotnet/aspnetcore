@@ -1,4 +1,4 @@
-﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
+﻿<Project TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
   <!-- 
     Properties and tasks supporting Razor MSBuild integration
   -->
@@ -22,10 +22,10 @@
     <!-- Override this to hijack the tasks and targets. Used by tests. -->
     <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
     
-    <TaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
-    <TaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</TaskFolder>
+    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' == 'Core' ">netstandard2.0</TaskFolder>
+    <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</TaskFolder>
     
-    <_RazorTaskAssembly Condition="'$(_RazorTaskAssembly)'==''">$(_RazorMSBuildRoot)\tasks\$(TaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
+    <_RazorTaskAssembly Condition="'$(_RazorTaskAssembly)'==''">$(_RazorMSBuildRoot)\tasks\$(_RazorTaskAssembly)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(_RazorTaskAssembly)" />
