@@ -50,32 +50,6 @@ IN_PROCESS_APPLICATION::Recycle(
         HANDLE   handle = NULL;
         WIN32_FIND_DATA fileData;
 
-        if (m_pStdFile != NULL)
-        {
-            fflush(stdout);
-            fflush(stderr);
-            fclose(m_pStdFile);
-        }
-
-        if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-        {
-            m_Timer.CancelTimer();
-            CloseHandle(m_hLogFileHandle);
-            m_hLogFileHandle = INVALID_HANDLE_VALUE;
-        }
-
-        // delete empty log file, if logging is not enabled
-        handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
-        if (handle != INVALID_HANDLE_VALUE &&
-                fileData.nFileSizeHigh &&
-                fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
-        {
-            FindClose(handle);
-            // no need to check whether the deletion succeeds
-            // as nothing can be done
-            DeleteFile(m_struLogFilePath.QueryStr());
-        }
-
         AcquireSRWLockExclusive(&m_srwLock);
 
         if (!m_pHttpServer->IsCommandLineLaunch() &&
@@ -116,6 +90,33 @@ IN_PROCESS_APPLICATION::Recycle(
         s_Application = NULL;
 
         ReleaseSRWLockExclusive(&m_srwLock);
+
+        if (m_pStdFile != NULL)
+        {
+            fflush(stdout);
+            fflush(stderr);
+            fclose(m_pStdFile);
+        }
+
+        if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
+        {
+            m_Timer.CancelTimer();
+            CloseHandle(m_hLogFileHandle);
+            m_hLogFileHandle = INVALID_HANDLE_VALUE;
+        }
+
+        // delete empty log file, if logging is not enabled
+        handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
+        if (handle != INVALID_HANDLE_VALUE &&
+            fileData.nFileSizeHigh == 0 &&
+            fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
+        {
+            FindClose(handle);
+            // no need to check whether the deletion succeeds
+            // as nothing can be done
+            DeleteFile(m_struLogFilePath.QueryStr());
+        }
+
         if (m_pHttpServer && m_pHttpServer->IsCommandLineLaunch())
         {
             // IISExpress scenario
