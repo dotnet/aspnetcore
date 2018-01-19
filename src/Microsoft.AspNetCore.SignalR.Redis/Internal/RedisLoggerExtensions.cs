@@ -12,37 +12,37 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
     {
         // Category: RedisHubLifetimeManager<THub>
         private static readonly Action<ILogger, string, Exception> _connectingToEndpoints =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(0, nameof(ConnectingToEndpoints)), "Connecting to Redis endpoints: {endpoints}.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, nameof(ConnectingToEndpoints)), "Connecting to Redis endpoints: {endpoints}.");
 
         private static readonly Action<ILogger, Exception> _connected =
-            LoggerMessage.Define(LogLevel.Information, new EventId(1, nameof(Connected)), "Connected to Redis.");
+            LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(Connected)), "Connected to Redis.");
 
         private static readonly Action<ILogger, string, Exception> _subscribing =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(2, nameof(Subscribing)), "Subscribing to channel: {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, nameof(Subscribing)), "Subscribing to channel: {channel}.");
 
         private static readonly Action<ILogger, string, Exception> _receivedFromChannel =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, nameof(ReceivedFromChannel)), "Received message from Redis channel {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, nameof(ReceivedFromChannel)), "Received message from Redis channel {channel}.");
 
         private static readonly Action<ILogger, string, Exception> _publishToChannel =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(4, nameof(PublishToChannel)), "Publishing message to Redis channel {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, nameof(PublishToChannel)), "Publishing message to Redis channel {channel}.");
 
         private static readonly Action<ILogger, string, Exception> _unsubscribe =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, nameof(Unsubscribe)), "Unsubscribing from channel: {channel}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(6, nameof(Unsubscribe)), "Unsubscribing from channel: {channel}.");
 
         private static readonly Action<ILogger, Exception> _notConnected =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(6, nameof(Connected)), "Not connected to Redis.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(7, nameof(Connected)), "Not connected to Redis.");
 
         private static readonly Action<ILogger, Exception> _connectionRestored =
-            LoggerMessage.Define(LogLevel.Information, new EventId(7, nameof(ConnectionRestored)), "Connection to Redis restored.");
+            LoggerMessage.Define(LogLevel.Information, new EventId(8, nameof(ConnectionRestored)), "Connection to Redis restored.");
 
         private static readonly Action<ILogger, Exception> _connectionFailed =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(8, nameof(ConnectionFailed)), "Connection to Redis failed.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(9, nameof(ConnectionFailed)), "Connection to Redis failed.");
 
         private static readonly Action<ILogger, Exception> _failedWritingMessage =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(9, nameof(FailedWritingMessage)), "Failed writing message.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(10, nameof(FailedWritingMessage)), "Failed writing message.");
 
         private static readonly Action<ILogger, Exception> _internalMessageFailed =
-            LoggerMessage.Define(LogLevel.Warning, new EventId(10, nameof(InternalMessageFailed)), "Error processing message for internal server message.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(11, nameof(InternalMessageFailed)), "Error processing message for internal server message.");
 
         public static void ConnectingToEndpoints(this ILogger logger, EndPointCollection endpoints)
         {
