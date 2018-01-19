@@ -6,6 +6,13 @@
     <SkipBillOfMaterials>true</SkipBillOfMaterials>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Explicitly require the 2.0.x version of shared runtime used by universe -->
+    <DotNetCoreRuntime Include="$(MicrosoftNETCoreApp20PackageVersion)"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+  </ItemGroup>
+
   <Import Project="artifacts.props" />
   <Import Project="submodules.props" />
 </Project>

@@ -22,7 +22,7 @@
 
     <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;PrepareOutputPath</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
-    <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
+    <RestoreDependsOn>$(RestoreDependsOn);InstallDotNet;RestoreExternalDependencies</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
     <PackageDependsOn>$(PackageDependsOn);BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
