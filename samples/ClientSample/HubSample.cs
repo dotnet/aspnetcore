@@ -92,10 +92,10 @@ namespace ClientSample
             // Keep trying to until we can start
             while (true)
             {
-
                 try
                 {
                     await connection.StartAsync();
+                    return;
                 }
                 catch (Exception)
                 {
