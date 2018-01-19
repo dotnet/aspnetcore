@@ -3,13 +3,11 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Abstractions;
@@ -354,13 +352,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private void EnsureHostHeaderExists()
+        internal void EnsureHostHeaderExists()
         {
-            if (_httpVersion == Http.HttpVersion.Http10)
-            {
-                return;
-            }
-
             // https://tools.ietf.org/html/rfc7230#section-5.4
             // A server MUST respond with a 400 (Bad Request) status code to any
             // HTTP/1.1 request message that lacks a Host header field and to any
@@ -368,8 +361,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Host header field with an invalid field-value.
 
             var host = HttpRequestHeaders.HeaderHost;
+            var hostText = host.ToString();
             if (host.Count <= 0)
             {
+                if (_httpVersion == Http.HttpVersion.Http10)
+                {
+                    return;
+                }
                 BadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
             }
             else if (host.Count > 1)
@@ -380,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (!host.Equals(RawTarget))
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, in host);
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
                 }
             }
             else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
@@ -392,12 +390,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // System.Uri doesn't not tell us if the port was in the original string or not.
                 // When IsDefaultPort = true, we will allow Host: with or without the default port
-                var authorityAndPort = _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port;
-                if ((host != _absoluteRequestTarget.Authority || !_absoluteRequestTarget.IsDefaultPort)
-                    && host != authorityAndPort)
+                if (host != _absoluteRequestTarget.Authority)
                 {
-                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, in host);
+                    if (!_absoluteRequestTarget.IsDefaultPort
+                        || host != _absoluteRequestTarget.Authority + ":" + _absoluteRequestTarget.Port.ToString(CultureInfo.InvariantCulture))
+                    {
+                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+                    }
                 }
+            }
+
+            if (!HttpUtilities.IsValidHostHeader(hostText))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
             }
         }
 

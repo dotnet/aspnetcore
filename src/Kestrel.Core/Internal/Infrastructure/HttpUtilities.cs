@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public static partial class HttpUtilities
     {
+        private static readonly bool[] HostCharValidity = new bool[127];
+
         public const string Http10Version = "HTTP/1.0";
         public const string Http11Version = "HTTP/1.1";
         public const string Http2Version = "HTTP/2";
@@ -28,6 +30,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         private const ulong _http10VersionLong = 3471766442030158920; // GetAsciiStringAsLong("HTTP/1.0"); const results in better codegen
         private const ulong _http11VersionLong = 3543824036068086856; // GetAsciiStringAsLong("HTTP/1.1"); const results in better codegen
+
+        // Only called from the static constructor
+        private static void InitializeHostCharValidity()
+        {
+            // Matches Http.Sys
+            // Matches RFC 3986 except "*" / "+" / "," / ";" / "=" and "%" HEXDIG HEXDIG which are not allowed by Http.Sys
+            HostCharValidity['!'] = true;
+            HostCharValidity['$'] = true;
+            HostCharValidity['&'] = true;
+            HostCharValidity['\''] = true;
+            HostCharValidity['('] = true;
+            HostCharValidity[')'] = true;
+            HostCharValidity['-'] = true;
+            HostCharValidity['.'] = true;
+            HostCharValidity['_'] = true;
+            HostCharValidity['~'] = true;
+            for (var ch = '0'; ch <= '9'; ch++)
+            {
+                HostCharValidity[ch] = true;
+            }
+            for (var ch = 'A'; ch <= 'Z'; ch++)
+            {
+                HostCharValidity[ch] = true;
+            }
+            for (var ch = 'a'; ch <= 'z'; ch++)
+            {
+                HostCharValidity[ch] = true;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SetKnownMethod(ulong mask, ulong knownMethodUlong, HttpMethod knownMethod, int length)
@@ -393,6 +424,108 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 default:
                     return null;
             }
+        }
+
+        public static bool IsValidHostHeader(string hostText)
+        {
+            // The spec allows empty values
+            if (string.IsNullOrEmpty(hostText))
+            {
+                return true;
+            }
+
+            if (hostText[0] == '[')
+            {
+                return IsValidIPv6Host(hostText);
+            }
+
+            if (hostText[0] == ':')
+            {
+                // Only a port
+                return false;
+            }
+
+            var i = 0;
+            for (; i < hostText.Length; i++)
+            {
+                if (!IsValidHostChar(hostText[i]))
+                {
+                    break;
+                }
+            }
+            return IsValidHostPort(hostText, i);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsValidHostChar(char ch)
+        {
+            return ch < HostCharValidity.Length && HostCharValidity[ch];
+        }
+
+        // The lead '[' was already checked
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsValidIPv6Host(string hostText)
+        {
+            for (var i = 1; i < hostText.Length; i++)
+            {
+                var ch = hostText[i];
+                if (ch == ']')
+                {
+                    // [::1] is the shortest valid IPv6 host
+                    if (i < 4)
+                    {
+                        return false;
+                    }
+                    return IsValidHostPort(hostText, i + 1);
+                }
+
+                if (!IsHex(ch) && ch != ':' && ch != '.')
+                {
+                    return false;
+                }
+            }
+
+            // Must contain a ']'
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsValidHostPort(string hostText, int offset)
+        {
+            if (offset == hostText.Length)
+            {
+                return true;
+            }
+
+            if (hostText[offset] != ':' || hostText.Length == offset + 1)
+            {
+                // Must have at least one number after the colon if present.
+                return false;
+            }
+
+            for (var i = offset + 1; i < hostText.Length; i++)
+            {
+                if (!IsNumeric(hostText[i]))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsNumeric(char ch)
+        {
+            return '0' <= ch && ch <= '9';
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsHex(char ch)
+        {
+            return IsNumeric(ch)
+                || ('a' <= ch && ch <= 'f')
+                || ('A' <= ch && ch <= 'F');
         }
     }
 }

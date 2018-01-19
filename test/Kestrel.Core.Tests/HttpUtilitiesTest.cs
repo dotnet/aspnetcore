@@ -131,5 +131,100 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(knownString1, expected);
             Assert.Same(knownString1, knownString2);
         }
+
+        public static TheoryData<string> HostHeaderData
+        {
+            get
+            {
+                return new TheoryData<string>() {
+                    "z",
+                    "1",
+                    "y:1",
+                    "1:1",
+                    "[ABCdef]",
+                    "[abcDEF]:0",
+                    "[abcdef:127.2355.1246.114]:0",
+                    "[::1]:80",
+                    "127.0.0.1:80",
+                    "900.900.900.900:9523547852",
+                    "foo",
+                    "foo:234",
+                    "foo.bar.baz",
+                    "foo.BAR.baz:46245",
+                    "foo.ba-ar.baz:46245",
+                    "-foo:1234",
+                    "xn--asdfaf:134",
+                    "-",
+                    "_",
+                    "~",
+                    "!",
+                    "$",
+                    "'",
+                    "(",
+                    ")",
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostHeaderData))]
+        public void ValidHostHeadersParsed(string host)
+        {
+            Assert.True(HttpUtilities.IsValidHostHeader(host));
+        }
+
+        public static TheoryData<string> HostHeaderInvalidData
+        {
+            get
+            {
+                // see https://tools.ietf.org/html/rfc7230#section-5.4
+                var data = new TheoryData<string>() {
+                    "[]", // Too short
+                    "[::]", // Too short
+                    "[ghijkl]", // Non-hex
+                    "[afd:adf:123", // Incomplete
+                    "[afd:adf]123", // Missing :
+                    "[afd:adf]:", // Missing port digits
+                    "[afd adf]", // Space
+                    "[ad-314]", // dash
+                    ":1234", // Missing host
+                    "a:b:c", // Missing []
+                    "::1", // Missing []
+                    "::", // Missing everything
+                    "abcd:1abcd", // Letters in port
+                    "abcd:1.2", // Dot in port
+                    "1.2.3.4:", // Missing port digits
+                    "1.2 .4", // Space
+                };
+
+                // These aren't allowed anywhere in the host header
+                var invalid = "\"#%*+,/;<=>?@[]\\^`{}|";
+                foreach (var ch in invalid)
+                {
+                    data.Add(ch.ToString());
+                }
+
+                invalid = "!\"#$%&'()*+,/;<=>?@[]\\^_`{}|~-";
+                foreach (var ch in invalid)
+                {
+                    data.Add("[abd" + ch + "]:1234");
+                }
+
+                invalid = "!\"#$%&'()*+,/;<=>?@[]\\^_`{}|~:abcABC-.";
+                foreach (var ch in invalid)
+                {
+                    data.Add("a.b.c:" + ch);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostHeaderInvalidData))]
+        public void InvalidHostHeadersRejected(string host)
+        {
+            Assert.False(HttpUtilities.IsValidHostHeader(host));
+        }
     }
 }

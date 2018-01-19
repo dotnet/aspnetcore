@@ -261,6 +261,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     if (_integerDecoder.BeginDecode((byte)(b & ~HuffmanMask), StringLengthPrefix))
                     {
                         OnStringLength(_integerDecoder.Value, nextState: State.HeaderValue);
+                        if (_integerDecoder.Value == 0)
+                        {
+                            ProcessHeaderValue(handler);
+                        }
                     }
                     else
                     {
@@ -272,6 +276,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                     if (_integerDecoder.Decode(b))
                     {
                         OnStringLength(_integerDecoder.Value, nextState: State.HeaderValue);
+                        if (_integerDecoder.Value == 0)
+                        {
+                            ProcessHeaderValue(handler);
+                        }
                     }
 
                     break;
@@ -280,17 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                     if (_stringIndex == _stringLength)
                     {
-                        OnString(nextState: State.Ready);
-
-                        var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
-                        var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
-
-                        handler.OnHeader(headerNameSpan, headerValueSpan);
-
-                        if (_index)
-                        {
-                            _dynamicTable.Insert(headerNameSpan, headerValueSpan);
-                        }
+                        ProcessHeaderValue(handler);
                     }
 
                     break;
@@ -311,6 +309,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 default:
                     // Can't happen
                     throw new HPackDecodingException("The HPACK decoder reached an invalid state.");
+            }
+        }
+
+        private void ProcessHeaderValue(IHttpHeadersHandler handler)
+        {
+            OnString(nextState: State.Ready);
+
+            var headerNameSpan = new Span<byte>(_headerName, 0, _headerNameLength);
+            var headerValueSpan = new Span<byte>(_headerValueOctets, 0, _headerValueLength);
+
+            handler.OnHeader(headerNameSpan, headerValueSpan);
+
+            if (_index)
+            {
+                _dynamicTable.Insert(headerNameSpan, headerValueSpan);
             }
         }
 

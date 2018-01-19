@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -54,12 +56,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // We don't need any of the parameters because we don't implement BeginRead to actually
             // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
 
+            _httpVersion = Http.HttpVersion.Http2;
             var methodText = RequestHeaders[":method"];
             Method = HttpUtilities.GetKnownMethod(methodText);
             _methodText = methodText;
-
-            Scheme = RequestHeaders[":scheme"];
-            _httpVersion = Http.HttpVersion.Http2;
+            if (!string.Equals(RequestHeaders[":scheme"], Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
+            }
 
             var path = RequestHeaders[":path"].ToString();
             var queryIndex = path.IndexOf('?');
@@ -68,7 +72,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             QueryString = queryIndex == -1 ? string.Empty : path.Substring(queryIndex);
             RawTarget = path;
 
-            RequestHeaders["Host"] = RequestHeaders[":authority"];
+            // https://tools.ietf.org/html/rfc7230#section-5.4
+            // A server MUST respond with a 400 (Bad Request) status code to any
+            // HTTP/1.1 request message that lacks a Host header field and to any
+            // request message that contains more than one Host header field or a
+            // Host header field with an invalid field-value.
+
+            var authority = RequestHeaders[":authority"];
+            var host = HttpRequestHeaders.HeaderHost;
+            if (authority.Count > 0)
+            {
+                // https://tools.ietf.org/html/rfc7540#section-8.1.2.3
+                // An intermediary that converts an HTTP/2 request to HTTP/1.1 MUST
+                // create a Host header field if one is not present in a request by
+                // copying the value of the ":authority" pseudo - header field.
+                //
+                // We take this one step further, we don't want mismatched :authority
+                // and Host headers, replace Host if :authority is defined.
+                HttpRequestHeaders.HeaderHost = authority;
+                host = authority;
+            }
+
+            // TODO: OPTIONS * requests?
+            // To ensure that the HTTP / 1.1 request line can be reproduced
+            // accurately, this pseudo - header field MUST be omitted when
+            // translating from an HTTP/ 1.1 request that has a request target in
+            // origin or asterisk form(see[RFC7230], Section 5.3).
+            // https://tools.ietf.org/html/rfc7230#section-5.3
+
+            if (host.Count <= 0)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
+            }
+            else if (host.Count > 1)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
+            }
+
+            var hostText = host.ToString();
+            if (!HttpUtilities.IsValidHostHeader(hostText))
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, hostText);
+            }
 
             endConnection = false;
             return true;

@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(":method", "POST"),
             new KeyValuePair<string, string>(":path", "/"),
             new KeyValuePair<string, string>(":scheme", "http"),
+            new KeyValuePair<string, string>(":authority", "localhost:80"),
         };
 
         private static readonly IEnumerable<KeyValuePair<string, string>> _expectContinueRequestHeaders = new[]
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(":method", "POST"),
             new KeyValuePair<string, string>(":path", "/"),
             new KeyValuePair<string, string>(":authority", "127.0.0.1"),
-            new KeyValuePair<string, string>(":scheme", "https"),
+            new KeyValuePair<string, string>(":scheme", "http"),
             new KeyValuePair<string, string>("expect", "100-continue"),
         };
 
@@ -49,6 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(":method", "GET"),
             new KeyValuePair<string, string>(":path", "/"),
             new KeyValuePair<string, string>(":scheme", "http"),
+            new KeyValuePair<string, string>(":authority", "localhost:80"),
             new KeyValuePair<string, string>("user-agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:54.0) Gecko/20100101 Firefox/54.0"),
             new KeyValuePair<string, string>("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"),
             new KeyValuePair<string, string>("accept-language", "en-US,en;q=0.5"),
@@ -67,6 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(":method", "GET"),
             new KeyValuePair<string, string>(":path", "/"),
             new KeyValuePair<string, string>(":scheme", "http"),
+            new KeyValuePair<string, string>(":authority", "localhost:80"),
             new KeyValuePair<string, string>("a", _largeHeaderValue),
             new KeyValuePair<string, string>("b", _largeHeaderValue),
             new KeyValuePair<string, string>("c", _largeHeaderValue),
@@ -78,6 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             new KeyValuePair<string, string>(":method", "GET"),
             new KeyValuePair<string, string>(":path", "/"),
             new KeyValuePair<string, string>(":scheme", "http"),
+            new KeyValuePair<string, string>(":authority", "localhost:80"),
             new KeyValuePair<string, string>("a", _largeHeaderValue),
             new KeyValuePair<string, string>("b", _largeHeaderValue),
             new KeyValuePair<string, string>("c", _largeHeaderValue),
@@ -110,6 +115,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly object _abortedStreamIdsLock = new object();
 
         private readonly RequestDelegate _noopApplication;
+        private readonly RequestDelegate _echoHost;
         private readonly RequestDelegate _readHeadersApplication;
         private readonly RequestDelegate _readTrailersApplication;
         private readonly RequestDelegate _bufferingApplication;
@@ -133,6 +139,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _pair = DuplexPipe.CreateConnectionPair(inlineSchedulingPipeOptions, inlineSchedulingPipeOptions);
 
             _noopApplication = context => Task.CompletedTask;
+
+            _echoHost = context =>
+            {
+                context.Response.Headers[HeaderNames.Host] = context.Request.Headers[HeaderNames.Host];
+
+                return Task.CompletedTask;
+            };
 
             _readHeadersApplication = context =>
             {
@@ -1176,6 +1189,311 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 withStreamId: 1);
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_InvalidAuthority_400Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", "local=host:80"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+            
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders["content-length"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_MissingAuthority_400Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders["content-length"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_TwoHosts_400Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>("Host", "host1"),
+                new KeyValuePair<string, string>("Host", "host2"),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders["content-length"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_EmptyAuthority_200Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", ""),
+            };
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders["content-length"]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_EmptyAuthorityOverridesHost_200Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", ""),
+                new KeyValuePair<string, string>("Host", "abc"),
+            };
+            await InitializeConnectionAsync(_echoHost);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 62,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(4, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+            Assert.Equal("", _decodedHeaders[HeaderNames.Host]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_AuthorityOverridesHost_200Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", "def"),
+                new KeyValuePair<string, string>("Host", "abc"),
+            };
+            await InitializeConnectionAsync(_echoHost);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 65,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(4, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+            Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_MissingAuthorityFallsBackToHost_200Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>("Host", "abc"),
+            };
+            await InitializeConnectionAsync(_echoHost);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 65,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(4, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+            Assert.Equal("abc", _decodedHeaders[HeaderNames.Host]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_AuthorityOverridesInvalidHost_200Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", "def"),
+                new KeyValuePair<string, string>("Host", "a=bc"),
+            };
+            await InitializeConnectionAsync(_echoHost);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 65,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(4, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("200", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
+            Assert.Equal("def", _decodedHeaders[HeaderNames.Host]);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_InvalidAuthorityWithValidHost_400Status()
+        {
+            var headers = new[]
+            {
+                new KeyValuePair<string, string>(":method", "GET"),
+                new KeyValuePair<string, string>(":path", "/"),
+                new KeyValuePair<string, string>(":scheme", "http"),
+                new KeyValuePair<string, string>(":authority", "d=ef"),
+                new KeyValuePair<string, string>("Host", "abc"),
+            };
+            await InitializeConnectionAsync(_echoHost);
+
+            await StartStreamAsync(1, headers, endStream: true);
+
+            var headersFrame = await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _hpackDecoder.Decode(headersFrame.HeadersPayload, endHeaders: false, handler: this);
+
+            Assert.Equal(3, _decodedHeaders.Count);
+            Assert.Contains("date", _decodedHeaders.Keys, StringComparer.OrdinalIgnoreCase);
+            Assert.Equal("400", _decodedHeaders[":status"]);
+            Assert.Equal("0", _decodedHeaders[HeaderNames.ContentLength]);
         }
 
         [Fact]

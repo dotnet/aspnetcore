@@ -133,6 +133,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        public Task BadRequestFor10BadHostHeaderFormat()
+        {
+            return TestBadRequest(
+                $"GET / HTTP/1.0\r\nHost: a=b\r\n\r\n",
+                "400 Bad Request",
+                CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"));
+        }
+
+        [Fact]
+        public Task BadRequestFor11BadHostHeaderFormat()
+        {
+            return TestBadRequest(
+                $"GET / HTTP/1.1\r\nHost: a=b\r\n\r\n",
+                "400 Bad Request",
+                CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"));
+        }
+
+        [Fact]
         public async Task BadRequestLogsAreNotHigherThanInformation()
         {
             var sink = new TestSink();

@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {{
 {4}
             FillKnownMethodsGaps();
+            InitializeHostCharValidity();
 {5}
         }}
 

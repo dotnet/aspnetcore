@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -811,6 +812,55 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
 
             mockMessageBody.Verify(body => body.ConsumeAsync(), Times.Once);
+        }
+
+        [Fact]
+        public void Http10HostHeaderNotRequired()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.0";
+            _http1Connection.EnsureHostHeaderExists();
+        }
+
+        [Fact]
+        public void Http10HostHeaderAllowed()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.0";
+            _http1Connection.RequestHeaders[HeaderNames.Host] = "localhost:5000";
+            _http1Connection.EnsureHostHeaderExists();
+        }
+
+        [Fact]
+        public void Http11EmptyHostHeaderAccepted()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.1";
+            _http1Connection.RequestHeaders[HeaderNames.Host] = "";
+            _http1Connection.EnsureHostHeaderExists();
+        }
+
+        [Fact]
+        public void Http11ValidHostHeadersAccepted()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.1";
+            _http1Connection.RequestHeaders[HeaderNames.Host] = "localhost:5000";
+            _http1Connection.EnsureHostHeaderExists();
+        }
+
+        [Fact]
+        public void BadRequestFor10BadHostHeaderFormat()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.0";
+            _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
+            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
+        }
+
+        [Fact]
+        public void BadRequestFor11BadHostHeaderFormat()
+        {
+            _http1Connection.HttpVersion = "HTTP/1.1";
+            _http1Connection.RequestHeaders[HeaderNames.Host] = "a=b";
+            var ex = Assert.Throws<BadHttpRequestException>(() => _http1Connection.EnsureHostHeaderExists());
+            Assert.Equal(CoreStrings.FormatBadRequest_InvalidHostHeader_Detail("a=b"), ex.Message);
         }
 
         private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)
