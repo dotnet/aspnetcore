@@ -2,11 +2,11 @@
 
   <PropertyGroup>
 
-    <!-- The Web SDK turns this on my default. Setting it back to empty to simulate the 2.1 default -->
-    <MvcRazorCompileOnPublish></MvcRazorCompileOnPublish>
-
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
     
+    <!-- Workaround until we get a new SDK build -->
+    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
+
     <!-- This will become the default for 2.1 soon -->
     <RazorCompileOnPublish>true</RazorCompileOnPublish>
 

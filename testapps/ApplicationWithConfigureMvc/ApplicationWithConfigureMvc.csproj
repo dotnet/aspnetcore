@@ -2,8 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
-    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
     <DefineConstants>$(DefineConstants);TEST123</DefineConstants>
+
+    <!-- Workaround until we get a new SDK build -->
+    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">PrecompilationTool</ResolvedRazorCompileToolset>
+    <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 
   <ItemGroup>

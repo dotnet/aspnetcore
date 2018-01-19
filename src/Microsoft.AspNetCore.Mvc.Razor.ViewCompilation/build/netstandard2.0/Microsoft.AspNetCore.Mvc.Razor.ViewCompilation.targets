@@ -166,12 +166,12 @@
      Name="_MvcRazorPrecompileOnPublish"
      DependsOnTargets="MvcRazorPrecompile"
      AfterTargets="PrepareForPublish"
-     Condition="'$(MvcRazorCompileOnPublish)'=='true'" />
+     Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'and '$(MvcRazorCompileOnPublish)'=='true'" />
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
     DependsOnTargets="_ReportRazorSdkCompatibilityError"
-    Condition="'$(MvcRazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'and '$(MvcRazorCompileOnPublish)'=='true'">
 
     <PropertyGroup>
       <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>
