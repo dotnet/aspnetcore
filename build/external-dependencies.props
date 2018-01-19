@@ -342,6 +342,7 @@
       <NoWarn>KRB2004</NoWarn>
       <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
     </ExternalDependency>
+    <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" Source="$(DefaultNuGetFeed)" />

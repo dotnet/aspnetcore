@@ -3,6 +3,7 @@
     <BenchmarkDotNetPackageVersion>0.10.11</BenchmarkDotNetPackageVersion>
     <Benchmarks_11_SystemDataSqlClientPackageVersion>4.3.1</Benchmarks_11_SystemDataSqlClientPackageVersion>
     <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
+    <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
