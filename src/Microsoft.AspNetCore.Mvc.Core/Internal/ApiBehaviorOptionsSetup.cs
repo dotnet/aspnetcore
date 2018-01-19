@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -29,16 +30,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 var errorDetails = _errorDescriptionFactory.CreateErrorDescription(
                     context.ActionDescriptor, 
-                    new ValidationProblemDetails(context.ModelState));
+                    context.ModelState);
 
-                return new BadRequestObjectResult(errorDetails)
-                {
-                    ContentTypes =
-                    {
-                        "application/problem+json",
-                        "application/problem+xml",
-                    },
-                };
+                var result = (errorDetails is ModelStateDictionary modelState) ?
+                    new BadRequestObjectResult(modelState) :
+                    new BadRequestObjectResult(errorDetails);
+
+                result.ContentTypes.Add("application/problem+json");
+                result.ContentTypes.Add("application/problem+json");
+
+                return result;
             }
         }
     }

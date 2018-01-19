@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             => string.Format(CultureInfo.CurrentCulture, GetString("EnumerableWrapperProvider_InvalidSourceEnumerableOfT"), p0);
 
         /// <summary>
-        /// An error occured while deserializing input data.
+        /// An error occurred while deserializing input data.
         /// </summary>
         internal static string ErrorDeserializingInputData
         {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         /// <summary>
-        /// An error occured while deserializing input data.
+        /// An error occurred while deserializing input data.
         /// </summary>
         internal static string FormatErrorDeserializingInputData()
             => GetString("ErrorDeserializingInputData");

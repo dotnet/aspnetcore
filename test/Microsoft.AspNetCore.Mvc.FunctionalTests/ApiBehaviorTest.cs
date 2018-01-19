@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -32,14 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 State = "WA",
                 Zip = "Invalid",
             };
-            var expected = new ValidationProblemDetails
-            {
-                Errors =
-                {
-                    ["Zip"] = new[] { @"The field Zip must match the regular expression '\d{5}'."  },
-                    ["Name"] = new[] { "The field Name must be a string with a minimum length of 5 and a maximum length of 30." },
-                },
-            };
             var contactString = JsonConvert.SerializeObject(contactModel);
 
             // Act
@@ -48,12 +41,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
-            var actual = JsonConvert.DeserializeObject<ValidationProblemDetails>(await response.Content.ReadAsStringAsync());
-            Assert.Equal(expected.Errors.Count, actual.Errors.Count);
-            foreach (var error in expected.Errors)
-            {
-                Assert.Equal(error.Value, actual.Errors[error.Key]);
-            }
+            var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(await response.Content.ReadAsStringAsync());
+            Assert.Collection(
+                actual.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("Name", kvp.Key);
+                    var error = Assert.Single(kvp.Value);
+                    Assert.Equal("The field Name must be a string with a minimum length of 5 and a maximum length of 30.", error);
+                },
+                kvp =>
+                {
+                    Assert.Equal("Zip", kvp.Key);
+                    var error = Assert.Single(kvp.Value);
+                    Assert.Equal("The field Zip must match the regular expression '\\d{5}'.", error);
+                }
+            );
         }
 
         [Fact]

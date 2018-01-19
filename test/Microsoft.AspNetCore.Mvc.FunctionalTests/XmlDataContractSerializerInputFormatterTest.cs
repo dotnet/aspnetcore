@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync();
-            Assert.Contains("An error occured while deserializing input data.", data);
+            Assert.Contains("An error occurred while deserializing input data.", data);
         }
 
         [Fact]

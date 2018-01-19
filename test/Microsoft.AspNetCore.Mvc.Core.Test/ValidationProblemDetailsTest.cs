@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc
             var problemDescription = new ValidationProblemDetails();
 
             // Assert
-            Assert.Equal("One or more validation errors occured.", problemDescription.Title);
+            Assert.Equal("One or more validation errors occurred.", problemDescription.Title);
             Assert.Empty(problemDescription.Errors);
         }
 
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc
             var problemDescription = new ValidationProblemDetails(modelStateDictionary);
 
             // Assert
-            Assert.Equal("One or more validation errors occured.", problemDescription.Title);
+            Assert.Equal("One or more validation errors occurred.", problemDescription.Title);
             Assert.Collection(
                 problemDescription.Errors,
                 item =>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc
             var problemDescription = new ValidationProblemDetails(modelStateDictionary);
 
             // Assert
-            Assert.Equal("One or more validation errors occured.", problemDescription.Title);
+            Assert.Equal("One or more validation errors occurred.", problemDescription.Title);
             Assert.Collection(
                 problemDescription.Errors,
                 item =>

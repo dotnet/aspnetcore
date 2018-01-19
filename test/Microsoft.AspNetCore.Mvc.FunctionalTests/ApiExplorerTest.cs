@@ -1066,85 +1066,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task ProblemDetails_AddsProblemAsDefaultErrorResult()
-        {
-            // Act
-            var body = await Client.GetStringAsync("ApiExplorerApiController/ActionWithoutParameters");
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-            Assert.Collection(
-                description.SupportedResponseTypes,
-                response =>
-                {
-                    Assert.Equal(0, response.StatusCode);
-                    Assert.True(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                });
-        }
-
-        [Fact]
-        public async Task ProblemDetails_AddsProblemAsErrorResultForBadResult_WhenActionHasParameters()
-        {
-            // Act
-            var body = await Client.GetStringAsync("ApiExplorerApiController/ActionWithSomeParameters");
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-            Assert.Collection(
-                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
-                response =>
-                {
-                    Assert.Equal(0, response.StatusCode);
-                    Assert.True(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                },
-                response => Assert.Equal(200, response.StatusCode),
-                response =>
-                {
-                    Assert.Equal(400, response.StatusCode);
-                    Assert.False(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                });
-        }
-
-        [Theory]
-        [InlineData("ApiExplorerApiController/ActionWithIdParameter")]
-        [InlineData("ApiExplorerApiController/ActionWithIdSuffixParameter")]
-        public async Task ProblemDetails_AddsProblemAsErrorResultForNotFoundResult_WhenActionHasAnIdParameters(string url)
-        {
-            // Act
-            var body = await Client.GetStringAsync(url);
-            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
-
-            // Assert
-            var description = Assert.Single(result);
-            Assert.Collection(
-                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
-                response =>
-                {
-                    Assert.Equal(0, response.StatusCode);
-                    Assert.True(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                },
-                response => Assert.Equal(200, response.StatusCode),
-                response =>
-                {
-                    Assert.Equal(400, response.StatusCode);
-                    Assert.False(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                },
-                response =>
-                {
-                    Assert.Equal(404, response.StatusCode);
-                    Assert.False(response.IsDefaultResponse);
-                    AssertProblemDetails(response);
-                });
-        }
-
-        [Fact]
         public async Task ApiBehavior_AddsMultipartFormDataConsumesConstraint_ForActionsWithFormFileParameters()
         {
             // Act
@@ -1155,15 +1076,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var description = Assert.Single(result);
             var requestFormat = Assert.Single(description.SupportedRequestFormats);
             Assert.Equal("multipart/form-data", requestFormat.MediaType);
-        }
-
-        private void AssertProblemDetails(ApiExplorerResponseType response)
-        {
-            Assert.Equal("Microsoft.AspNetCore.Mvc.ProblemDetails", response.ResponseType);
-                Assert.Collection(
-                    GetSortedMediaTypes(response),
-                    mediaType => Assert.Equal("application/problem+json", mediaType),
-                    mediaType => Assert.Equal("application/problem+xml", mediaType));
         }
 
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)

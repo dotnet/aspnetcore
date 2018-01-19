@@ -1327,7 +1327,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0);
 
         /// <summary>
-        /// One or more validation errors occured.
+        /// One or more validation errors occurred.
         /// </summary>
         internal static string ValidationProblemDescription_Title
         {
@@ -1335,7 +1335,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// One or more validation errors occured.
+        /// One or more validation errors occurred.
         /// </summary>
         internal static string FormatValidationProblemDescription_Title()
             => GetString("ValidationProblemDescription_Title");

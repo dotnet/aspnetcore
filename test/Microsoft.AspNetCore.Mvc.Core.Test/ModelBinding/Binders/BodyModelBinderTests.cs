@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
             var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
-            Assert.Equal("An error occured while deserializing input data.", errorMessage);
+            Assert.Equal("An error occurred while deserializing input data.", errorMessage);
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             var entry = Assert.Single(bindingContext.ModelState);
             Assert.Equal(string.Empty, entry.Key);
             var errorMessage = Assert.Single(entry.Value.Errors).ErrorMessage;
-            Assert.Equal("An error occured while deserializing input data.", errorMessage);
+            Assert.Equal("An error occurred while deserializing input data.", errorMessage);
             Assert.Null(entry.Value.Errors[0].Exception);
         }
 

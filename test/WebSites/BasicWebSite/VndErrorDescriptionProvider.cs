@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -20,18 +21,18 @@ namespace BasicWebSite
         public void OnProvidersExecuting(ErrorDescriptionContext context)
         {
             if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute) &&
-                context.Result is ValidationProblemDetails problemDetails)
+                context.Result is ModelStateDictionary dictionary)
             {
                 var vndErrors = new List<VndError>();
-                foreach (var item in problemDetails.Errors)
+                foreach (var item in dictionary)
                 {
-                    foreach (var message in item.Value)
+                    foreach (var modelError in item.Value.Errors)
                     {
                         vndErrors.Add(new VndError
                         {
-                            LogRef = problemDetails.Title,
+                            LogRef = modelError.ErrorMessage,
                             Path = item.Key,
-                            Message = message,
+                            Message = modelError.ErrorMessage,
                         });
                     }
                 }

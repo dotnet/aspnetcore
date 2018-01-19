@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Delegate invoked on actions annotated with <see cref="ApiControllerAttribute"/> to convert invalid
         /// <see cref="ModelStateDictionary"/> into an <see cref="IActionResult"/>
         /// <para>
-        /// By default, the delegate produces a <see cref="BadRequestObjectResult"/> using <see cref="ProblemDetails"/>
-        /// as the problem format.
+        /// By default, the delegate produces a <see cref="BadRequestObjectResult"/> that wraps a serialized form
+        /// of <see cref="ModelStateDictionary"/>.
         /// </para>
         /// </summary>
         public Func<ActionContext, IActionResult> InvalidModelStateResponseFactory
