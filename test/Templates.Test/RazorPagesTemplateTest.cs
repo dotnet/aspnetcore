@@ -14,7 +14,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_NoAuth_Works_NetFramework()
             => RazorPagesTemplate_NoAuthImpl("net461");
 
@@ -47,7 +48,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void RazorPagesTemplate_IndividualAuth_Works_NetFramework()
             => RazorPagesTemplate_IndividualAuthImpl("net461");
 

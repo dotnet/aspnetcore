@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
 #endif
@@ -42,32 +43,33 @@ namespace Company.WebApplication1
         {
 #if (IndividualLocalAuth)
             services.AddDbContext<IdentityDbContext>(options =>
-  #if (UseLocalDB)
+    #if (UseLocalDB)
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection"),
                     sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
                 ));
-  #else
+    #else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")));
-  #endif
-
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
+                ));
+    #endif
+            
             services.AddIdentity<IdentityUser, IdentityRole>(options => options.Stores.MaxLengthForKeys = 128)
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
-#elseif (OrganizationalAuth || IndividualB2CAuth)
+#elif (OrganizationalAuth || IndividualB2CAuth)
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
     #if (OrganizationalAuth)
-            .AddAzureAd(options => Configuration.Bind("AzureAd", options))
-    #elseif (IndividualB2CAuth)
-            .AddAzureAdB2C(options => Configuration.Bind("AzureAdB2C", options))
+                .AddAzureAd(options => Configuration.Bind("AzureAd", options))
+    #elif (IndividualB2CAuth)
+                .AddAzureAdB2C(options => Configuration.Bind("AzureAdB2C", options))
     #endif
             .AddCookie();
 
@@ -78,7 +80,7 @@ namespace Company.WebApplication1
                 options.CheckConsentNeeded = context => true;
             });
 
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

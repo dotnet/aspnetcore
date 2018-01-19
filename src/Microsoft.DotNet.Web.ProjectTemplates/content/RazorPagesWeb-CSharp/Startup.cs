@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 #endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
@@ -65,24 +66,24 @@ namespace Company.WebApplication1
     #else
                 options.UseSqlite(
                     Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")));
+                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
+                ));
     #endif
-
             services.AddIdentity<IdentityUser, IdentityRole>(options => options.Stores.MaxLengthForKeys = 128)
                 .AddEntityFrameworkStores<IdentityDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
-#elseif (OrganizationalAuth || IndividualB2CAuth)
+#elif (OrganizationalAuth || IndividualB2CAuth)
             services.AddAuthentication(sharedOptions =>
             {
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
     #if (OrganizationalAuth)
-            .AddAzureAd(options => Configuration.Bind("AzureAd", options))
-    #elseif (IndividualB2CAuth)
-            .AddAzureAdB2C(options => Configuration.Bind("AzureAdB2C", options))
+                .AddAzureAd(options => Configuration.Bind("AzureAd", options))
+    #elif (IndividualB2CAuth)
+                .AddAzureAdB2C(options => Configuration.Bind("AzureAdB2C", options))
     #endif
             .AddCookie();
 
@@ -93,9 +94,10 @@ namespace Company.WebApplication1
                 {
                     options.Conventions.AuthorizeFolder("/Account/Manage");
                     options.Conventions.AuthorizePage("/Account/Logout");
-                });
+                })
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
-#elseif (OrganizationalAuth)
+#elif (OrganizationalAuth)
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
@@ -106,9 +108,10 @@ namespace Company.WebApplication1
             .AddRazorPagesOptions(options =>
             {
                 options.Conventions.AllowAnonymousToFolder("/Account");
-            });
+            })
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 #else
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 #endif
         }
 

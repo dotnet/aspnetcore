@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth || IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -35,12 +36,12 @@ namespace Company.WebApplication1
             })
     #if (IndividualB2CAuth)
             .AddAzureAdB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
-    #elseif (OrganizationalAuth)
+    #elif (OrganizationalAuth)
             .AddAzureAdBearer(options => Configuration.Bind("AzureAd", options));
     #endif
 
 #endif
-            services.AddMvc();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
