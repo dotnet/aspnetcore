@@ -11,6 +11,13 @@
                     }
                 }
             },
+            "Microsoft.AspNetCore.App": {
+                "Exclusions": {
+                    "PACKAGE_DEPENDENCY_VERSION_UPPER_BOUND": {
+                        "Microsoft.AspNetCore.App": "The metapackage should require exact versions"
+                    }
+                }
+            },
             "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
                 "exclusions": {
                     "BUILD_ITEMS_FRAMEWORK": {
