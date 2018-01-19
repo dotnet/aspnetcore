@@ -47,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.3-servicing-26117-02" Source="$(DotNetCorePatchFeed)"/>
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.3-servicing-26117-02" Source="$(DotNetCorePatchFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" Source="$(DotNetCorePatchFeed)" Mirror="true">
       <NoWarn>KRB2004</NoWarn>
       <VariableName>RuntimeFrameworkVersion</VariableName>
