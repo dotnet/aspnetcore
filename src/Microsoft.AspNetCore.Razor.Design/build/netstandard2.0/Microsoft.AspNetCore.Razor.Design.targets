@@ -124,11 +124,6 @@
   <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
   </Target>
 
-  <PropertyGroup Condition="'$(RazorCompileOnBuild)'=='true'">
-    <PrepareForRunDependsOn>RazorCompile;$(PrepareForRunDependsOn);_RazorCopyFilesToOutputDirectory</PrepareForRunDependsOn>
-    <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);_RazorGetCopyToOutputDirectoryItems</GetCopyToOutputDirectoryItemsDependsOn>
-  </PropertyGroup>
-
   <!--
     Gathers input source files for code generation. This is a separate target so that we can avoid
     lots of work when there are no inputs for code generation.
@@ -193,6 +188,7 @@
   -->
   <Target 
     Name="_RazorGetCopyToOutputDirectoryItems"
+    BeforeTargets="GetCopyToOutputDirectoryItems"
     DependsOnTargets="RazorCompile"
     Condition="'$(RazorCompileOnBuild)'=='true'">
 
@@ -247,7 +243,11 @@
     Called as part of CopyFilesToOutputDirectory - this target is called when building the project to copy
     files to the output directory.
   -->
-  <Target Name="_RazorCopyFilesToOutputDirectory">
+  <Target 
+    Name="_RazorCopyFilesToOutputDirectory" 
+    DependsOnTargets="RazorCompile"
+    AfterTargets="CopyFilesToOutputDirectory"
+    Condition="'$(RazorCompileOnBuild)'=='true'">
 
     <!-- Copy the Razor dll  -->
     <Copy
