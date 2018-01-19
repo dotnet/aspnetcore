@@ -1,5 +1,4 @@
-<Project>
-  <Import Project="..\version.props" />
+﻿<Project>
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>

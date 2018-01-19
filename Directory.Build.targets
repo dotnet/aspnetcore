@@ -1,4 +1,6 @@
 ﻿<Project>
-  <Import Project="build\sources.props" />
-  <Import Project="build\dependencies.props" />
+  <PropertyGroup>
+    <NETStandardImplicitPackageVersion Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(NETStandardLibrary20PackageVersion)</NETStandardImplicitPackageVersion>
+    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
+  </PropertyGroup>
 </Project>
