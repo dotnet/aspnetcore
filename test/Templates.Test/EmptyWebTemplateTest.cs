@@ -14,7 +14,8 @@ namespace Templates.Test
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EmptyWebTemplate_Works_NetFramework()
             => EmptyWebTemplateImpl("net461");
 

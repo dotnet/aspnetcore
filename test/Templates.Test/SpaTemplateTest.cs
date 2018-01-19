@@ -16,7 +16,8 @@ namespace Templates.Test
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         // Just use 'angular' as representative for .NET 4.6.1 coverage, as
         // the client-side code isn't affected by the .NET runtime choice
         [InlineData("angular")]
