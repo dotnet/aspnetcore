@@ -39,7 +39,7 @@ autobahnreports/
 site.min.css
 .idea/
 .vscode/
-signalr-client/
 dist/
 global.json
 BenchmarkDotNet.Artifacts/
+.rpt2_cache/

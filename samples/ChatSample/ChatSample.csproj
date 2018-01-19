@@ -10,7 +10,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
-    <ProjectReference Include="..\..\client-ts\Microsoft.AspNetCore.SignalR.Client.TS\Microsoft.AspNetCore.SignalR.Client.TS.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +39,11 @@
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\signalr-client.js" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
+    <ItemGroup>
+      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr\dist\browser\*" />
+      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr-protocol-msgpack\dist\browser\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
   </Target>
 
   <Target Name="BowerInstall" BeforeTargets="PrepareForPublish">

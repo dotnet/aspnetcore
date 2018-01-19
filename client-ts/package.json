@@ -1,47 +1,24 @@
 {
-  "name": "@aspnet/signalr-client",
-  "version": "1.0.0-preview1-t000",
-  "description": "ASP.NET Core SignalR",
-  "main": "dist/src/index.js",
-  "typings": "dist/src/index.d.ts",
-  "directories": {
-    "test": "test"
-  },
+  "name": "client-ts",
+  "version": "0.0.0",
+  "description": "Common dev-time dependencies for SignalR NPM packages. NOT FOR PUBLISHING",
+  "main": "index.js",
   "scripts": {
-    "gulp": "gulp",
-    "pretest": "tsc -p Microsoft.AspNetCore.SignalR.Client.TS.Tests",
-    "test": "jasmine JASMINE_CONFIG_PATH=Microsoft.AspNetCore.SignalR.Client.TS.Tests/jasmine.json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aspnet/SignalR.git"
+    "build": "cd ./signalr && npm run build && cd ../signalr-protocol-msgpack && npm run build",
+    "test": "cd ./signalr && npm run test && cd ../signalr-protocol-msgpack && npm run test"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/aspnet/SignalR/issues"
-  },
-  "homepage": "https://github.com/aspnet/SignalR#readme",
   "devDependencies": {
-    "@types/msgpack5": "^3.4.0",
-    "babel-minify": "^0.2.0",
-    "babel-plugin-transform-runtime": "^6.23.0",
-    "babel-preset-es2015": "^6.24.1",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.1",
-    "buffer": "^5.0.7",
-    "del": "^2.2.2",
-    "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.0",
-    "gulp-rename": "^1.2.2",
-    "gulp-typescript": "^3.1.3",
+    "@types/jasmine": "^2.8.3",
+    "@types/node": "^8.5.2",
     "jasmine": "^2.8.0",
-    "lodash": "^4.17.4",
-    "typescript": "^2.0.10",
-    "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
-  },
-  "dependencies": {
-    "msgpack5": "^3.6.0"
+    "rimraf": "^2.6.2",
+    "rollup": "^0.53.4",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.2",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "typescript": "^2.6.2",
+    "uglify-js": "^3.3.5"
   }
 }

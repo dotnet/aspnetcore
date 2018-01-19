@@ -10,7 +10,7 @@
     </div>
 </body>
 </html>
-<script type="text/javascript" src="lib/signalr-client/signalr-client.js"></script>
+<script type="text/javascript" src="lib/signalr-client/signalr.js"></script>
 <script>
 
     function createLog(clientId) {
@@ -68,7 +68,7 @@
             .then(function () {
                 var options = {
                     transport: transportType,
-                    jwtBearer: function () { return tokens[clientId]; }
+                    accessToken: function () { return tokens[clientId]; }
                 };
 
                 connection = new signalR.HubConnection('/broadcast', options);

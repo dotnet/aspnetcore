@@ -1,0 +1,19 @@
+{
+  "name": "functionaltests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "es6-promise": "^4.2.2"
+  },
+  "scripts": {
+    "clean": "node ../node_modules/rimraf/bin.js ./wwwroot/dist",
+    "build": "npm run build:tsc && npm run build:rollup",
+    "build:tsc": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json",
+    "build:rollup": "node ../node_modules/rollup/bin/rollup -c"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

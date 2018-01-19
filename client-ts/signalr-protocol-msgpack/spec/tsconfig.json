@@ -1,0 +1,18 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "moduleResolution": "node",
+        "outDir": "./obj",
+        "lib": [ "es2015", "dom" ],
+        "baseUrl": ".",
+        "paths": {
+            "@aspnet/signalr": [ "../../signalr/src/index" ]
+        }
+    },
+    "include": [
+        "./**/*",
+        "../../typings/**/*"
+    ]
+}

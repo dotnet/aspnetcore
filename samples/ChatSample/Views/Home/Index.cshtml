@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Chat";
 }
 
@@ -14,7 +14,7 @@
         <input type="submit" id="send" value="Send" class="send" />
     </form>
 </div>
-<script src="lib/signalr-client/signalr-client.js"></script>
+<script src="lib/signalr-client/signalr.js"></script>
 <script>
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);

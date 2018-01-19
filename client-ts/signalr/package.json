@@ -1,0 +1,40 @@
+{
+  "name": "@aspnet/signalr",
+  "version": "1.0.0-preview1-t000",
+  "description": "ASP.NET Core SignalR Client",
+  "main": "./dist/cjs/index.js",
+  "browser": "./dist/browser/signalr.js",
+  "module": "./dist/esm/index.js",
+  "typings": "./dist/esm/index.d.ts",
+  "umd_name": "signalR",
+  "directories": {
+    "test": "spec"
+  },
+  "scripts": {
+    "clean": "node ../node_modules/rimraf/bin.js ./dist ./.rpt2_cache",
+    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build:esm": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm --target ES2015 -d && node ./build/process-dts.js",
+    "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs --target ES5",
+    "build:browser": "node ../node_modules/rollup/bin/rollup -c",
+    "build:uglify": "node ../node_modules/uglify-js/bin/uglifyjs --source-map \"url='signalr.min.js.map',content='./dist/browser/signalr.js.map'\" --comments -o ./dist/browser/signalr.min.js ./dist/browser/signalr.js",
+    "pretest": "node ../node_modules/rimraf/bin.js ./spec/obj && tsc --project ./spec/tsconfig.json",
+    "test": "node ../node_modules/jasmine/bin/jasmine.js ./spec/obj/spec/**/*.spec.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aspnet/SignalR.git"
+  },
+  "author": "Microsoft",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/aspnet/SignalR/issues"
+  },
+  "homepage": "https://github.com/aspnet/SignalR#readme",
+  "files": [
+    "dist/**/*",
+    "src/**/*"
+  ],
+  "devDependencies": {
+    "es6-promise": "^4.2.2"
+  }
+}

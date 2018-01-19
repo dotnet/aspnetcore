@@ -1,0 +1,15 @@
+{
+    "extends": "../tsconfig-base.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@aspnet/signalr": [
+                "../signalr"
+            ]
+        }
+    },
+    "include": [
+        "./src/**/*",
+        "../typings/**/*"
+    ]
+}

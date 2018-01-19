@@ -1,0 +1,14 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "module": "commonjs",
+        "target": "es5",
+        "moduleResolution": "node",
+        "outDir": "./obj",
+        "lib": [ "es2015", "dom" ]
+    },
+    "include": [
+        "./**/*",
+        "../../typings/**/*"
+    ]
+}

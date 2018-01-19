@@ -1,0 +1,103 @@
+<html>
+    <head>
+        <title>Test Page</title>
+        <style>
+            .test-success {
+                color: green;
+            }
+            .test-failed {
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Test Page</h1>
+        <p>This page validates that the UMD builds of the signalr-client and signalr-protocol-msgpack modules are available in the global scope when in a browser.</p>
+        <h2>Test Results</h2>
+        <ul id="results-list">
+        </ul>
+        <script src="./signalr-protocol-msgpack/node_modules/msgpack5/dist/msgpack5.js"></script>
+        <script type="text/javascript">
+            function getParameterByName(name, url) {
+                if (!url) {
+                    url = window.location.href;
+                }
+                name = name.replace(/[\[\]]/g, "\\$&");
+                var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                    results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, " "));
+            }
+
+            function importSignalR() {
+                var minified = getParameterByName('min') === 'true' ? '.min' : '';
+                document.write('<script type="text/javascript" src="./signalr/dist/browser/signalr' + minified + '.js"><\/script>');
+                document.write('<script type="text/javascript" src="./signalr-protocol-msgpack/dist/browser/signalr-protocol-msgpack' + minified + '.js"><\/script>');
+            }
+
+            var resultsList = document.getElementById("results-list");
+            // Run tests
+            function test(name, impl) {
+                var result = ""
+                var success = false;
+                try {
+                    impl();
+                    result = "success";
+                    success = true;
+                } catch(e) {
+                    console.error(e);
+                    result = "error: " + e;
+                    success = false;
+                }
+
+                var cssClass = success ? "test-success": "test-failed";
+                resultsList.innerHTML += "<li class=\"" + cssClass + "\">" + name + ": " + result + "</li>";
+            }
+
+            test("Promise may not be available before the polyfill", function() {
+                if(!Promise) {
+                    throw "Promise is falsey: " + Promise;
+                }
+            });
+
+            test("Buffer is not available before the polyfill", function() {
+                if(typeof Buffer !== "undefined") {
+                    throw "Buffer is truthy: " + Buffer;
+                }
+            });
+
+            importSignalR();
+        </script>
+
+        <script>
+            test("Promise is available after the polyfill", function() {
+                if(!Promise) {
+                    throw "Promise is falsey: " + Promise;
+                }
+            });
+
+            test("Buffer is not available after the polyfill", function() {
+                if(typeof Buffer !== "undefined") {
+                    throw "Buffer is truthy: " + Buffer;
+                }
+            });
+
+            test("signalR is available", function() {
+                if(!window.signalR){
+                    throw "window.signalR is falsey: " + window.signalR;
+                }
+            });
+            test("msgpack5 is available", function() {
+                if(!window.msgpack5){
+                    throw "window.msgpack5 is falsey: " + window.msgpack5;
+                }
+            });
+            test("signalR.protocols.msgpack.MessagePackHubProtocol is available", function() {
+                if(!window.signalR.protocols.msgpack.MessagePackHubProtocol){
+                    throw "signalR.protocols.msgpack is falsey: " + signalR.protocols.msgpack.MessagePackHubProtocol;
+                }
+            });
+        </script>
+    </body>
+</html>

@@ -1,0 +1,17 @@
+{
+    "compileOnSave": false,
+    "compilerOptions": {
+        "module": "es2015",
+        "target": "es2016",
+        "sourceMap": true,
+        "moduleResolution": "node",
+        "inlineSources": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "removeComments": false,
+        "noImplicitAny": true,
+        "suppressImplicitAnyIndexErrors": true,
+        "noEmitOnError": true,
+        "lib": [ "es2016", "dom" ]
+    }
+}
