@@ -26,11 +26,12 @@
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.0.1</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.0.0</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
     <MicrosoftExtensionsSecretManagerToolsPackageVersion>2.0.0</MicrosoftExtensionsSecretManagerToolsPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.5</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.0.1</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.0.1</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.0.1</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.3</MicrosoftNETCoreApp20PackageVersion>
+    <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.6.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
