@@ -64,3 +64,25 @@ function Get-Submodules {
 
     return $submodules
 }
+
+function SaveXml([xml]$xml, [string]$path) {
+    Write-Verbose "Saving to $path"
+    $ErrorActionPreference = 'stop'
+
+    $settings = New-Object System.XML.XmlWriterSettings
+    $settings.OmitXmlDeclaration = $true
+    $settings.Encoding = New-Object System.Text.UTF8Encoding( $true )
+    $writer = [System.XML.XMLTextWriter]::Create($path, $settings)
+    $xml.Save($writer)
+    $writer.Close()
+}
+
+function LoadXml([string]$path) {
+    Write-Verbose "Reading to $path"
+
+    $ErrorActionPreference = 'stop'
+    $obj = new-object xml
+    $obj.PreserveWhitespace = $true
+    $obj.Load($path)
+    return $obj
+}

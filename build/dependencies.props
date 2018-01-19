@@ -245,25 +245,7 @@
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandardImplicitPackageVersion</VariableName>
-      <TargetFramework>netstandard2.0</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
-      <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandardLibrary20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
-      <!-- We have a dependency on NS.Library from the .NET Framework tfm in aspnet/EventNotification. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandardLibraryPackageVersion</VariableName>
-      <TargetFramework>net461</TargetFramework>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="2.0.1" Source="$(DefaultNuGetFeed)">
-      <!-- We have a dependency on NS.Library from a few .NET Framework packages in aspnet/Razor. -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandardLibraryPackageVersion</VariableName>
-      <TargetFramework>net46</TargetFramework>
     </ExternalDependency>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)" Private="true">
@@ -337,141 +319,13 @@ not building again in this patch.
 
   <!-- Shipped dependencies from previous builds -->
 
-  <!-- 2.0.1 -->
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.Antiforgery" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true" HostingStartup="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Core" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Facebook" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Google" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OAuth" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication.Twitter" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authentication" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authorization.Policy" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Authorization" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true" HostingStartup="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServices.SiteExtension" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.CookiePolicy" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Cors" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.Internal" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.AzureStorage" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.Redis" Version="0.3.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection.SystemWeb" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.DataProtection" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting.WindowsServices" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Hosting" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Extensions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Http.Features" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Http" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.HttpOverrides" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Localization.Routing" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Localization" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Owin" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Language" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.Runtime" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCaching" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.ResponseCompression" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Rewrite" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.HttpSys" Version="2.0.2" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Session" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.TestHost" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.WebSockets" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Razor" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Hosting.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Localization.Abstractions" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Localization" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Net.Http.Headers" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Owin.Security.Interop" Version="2.0.1" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.1" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-  </ItemGroup>
-
-<!-- Shipoob packages from the previous build -->
-<!--
-<PackageArtifact Include="Microsoft.CodeAnalysis.Razor.Workspaces" Category="shipoob" />
-<PackageArtifact Include="Microsoft.CodeAnalysis.Remote.Razor" Category="shipoob" />
-<PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
-<PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
-  -->
-
   <!-- 2.0.0 -->
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Options" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
     <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" RuntimeStore="true"/>
-    <ExternalDependency Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-    <ExternalDependency Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-  </ItemGroup>
-
-  <!-- Non-shipped dependencies from previous builds -->
-  <PropertyGroup>
-    <AspNetCoreOct2017Patch>https://dotnet.myget.org/F/aspnet-2-0-2-october2017-patch-public/api/v3/index.json</AspNetCoreOct2017Patch>
-  </PropertyGroup>
-
-  <!-- 2.0.1 -->
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.Certificates.Configuration.Sources" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.RangeHelper.Sources" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Routing.DecisionTree.Sources" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="0.4.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
-    <ExternalDependency Include="RazorPageGenerator" Version="2.0.1-rtm-207" Source="$(AspNetCoreOct2017Patch)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -479,13 +333,11 @@ not building again in this patch.
   </PropertyGroup>
   <!-- 2.0.0 -->
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.Process.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
