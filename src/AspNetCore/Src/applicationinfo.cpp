@@ -168,6 +168,14 @@ APPLICATION_INFO::EnsureApplicationCreated()
         goto Finished;
     }
 
+    if ( m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS )
+    {
+        if ( FAILED( hr = HOSTFXR_UTILITY::GetHostFxrParameters( m_pConfiguration ) ) )
+        {
+            goto Finished;
+        }
+    }
+
     hr = FindRequestHandlerAssembly();
     if (FAILED(hr))
     {
@@ -230,8 +238,7 @@ APPLICATION_INFO::FindRequestHandlerAssembly()
             goto Finished;
         }
 
-        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(m_pConfiguration)) ||
-            FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
+        if (FAILED(hr = FindNativeAssemblyFromHostfxr(&struFileName)))
         {
             // TODO eventually make this fail for in process loading.
             hr = FindNativeAssemblyFromGlobalLocation(&struFileName);
