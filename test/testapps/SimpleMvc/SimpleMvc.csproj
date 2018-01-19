@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <!-- Workaround until we get a new SDK build -->
+    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">

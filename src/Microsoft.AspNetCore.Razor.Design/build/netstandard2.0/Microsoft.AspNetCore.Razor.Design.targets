@@ -165,7 +165,7 @@
     Name="_RazorPrepareForPublish"
     AfterTargets="PrepareForPublish"
     DependsOnTargets="RazorCompile"
-    Condition="'$(RazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
   </Target>
 
   <!--
@@ -174,9 +174,10 @@
   <Target 
     Name="_RazorAddBuiltProjectOutputGroupOutput"
     DependsOnTargets="ResolveRazorGenerateInputs"
-    BeforeTargets="BuiltProjectOutputGroup">
+    BeforeTargets="BuiltProjectOutputGroup"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
-    <ItemGroup Condition="'@(RazorGenerate)'!= '' and '$(RazorCompileOnBuild)' == 'true'">
+    <ItemGroup Condition="'@(RazorGenerate)'!= ''">
       <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(Outdir)$(RazorTargetName).dll" />
     </ItemGroup>
     
@@ -190,7 +191,7 @@
     Name="_RazorGetCopyToOutputDirectoryItems"
     BeforeTargets="GetCopyToOutputDirectoryItems"
     DependsOnTargets="RazorCompile"
-    Condition="'$(RazorCompileOnBuild)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
     <!-- 
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
@@ -220,7 +221,7 @@
     Name="_RazorGetCopyToPublishDirectoryItems"
     BeforeTargets="GetCopyToPublishDirectoryItems"
     DependsOnTargets="RazorCompile"
-    Condition="'$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
 
     <!-- 
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
@@ -247,7 +248,7 @@
     Name="_RazorCopyFilesToOutputDirectory" 
     DependsOnTargets="RazorCompile"
     AfterTargets="CopyFilesToOutputDirectory"
-    Condition="'$(RazorCompileOnBuild)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
     <!-- Copy the Razor dll  -->
     <Copy
@@ -294,7 +295,7 @@
   <Target
     Name="_RazorComputeFilesToPublish"
     AfterTargets="ComputeRefAssembliesToPublish"
-    Condition="'@(RazorGenerate)'!='' and ('$(RazorCompileOnBuild)'=='true' or '$(RazorCompileOnPublish)'=='true')">
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true' and '@(RazorGenerate)'!=''">
 
     <!-- If we generated an assembly/pdb then include those -->
     <ItemGroup>
