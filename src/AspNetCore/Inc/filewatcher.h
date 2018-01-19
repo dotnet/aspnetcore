@@ -54,6 +54,7 @@ public:
 private:
     HANDLE               m_hCompletionPort;
     HANDLE               m_hChangeNotificationThread;
+    volatile   BOOL      m_fThreadExit;
 };
 
 class FILE_WATCHER_ENTRY
