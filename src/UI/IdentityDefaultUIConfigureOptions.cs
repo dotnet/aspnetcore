@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Identity.UI
         IPostConfigureOptions<StaticFileOptions>,
         IPostConfigureOptions<CookieAuthenticationOptions>
     {
+        private const string IdentityUIDefaultAreaName = "Identity";
+
         public IdentityDefaultUIConfigureOptions(IHostingEnvironment environment)
         {
             Environment = environment;
@@ -30,6 +33,8 @@ namespace Microsoft.AspNetCore.Identity.UI
             options = options ?? throw new ArgumentNullException(nameof(options));
 
             options.AllowAreas = true;
+            options.Conventions.AuthorizeAreaFolder(IdentityUIDefaultAreaName, "/Account/Manage");
+            options.Conventions.AuthorizeAreaPage(IdentityUIDefaultAreaName, "/Account/Logout");
         }
 
         public void PostConfigure(string name, StaticFileOptions options)
@@ -58,9 +63,9 @@ namespace Microsoft.AspNetCore.Identity.UI
 
             if (string.Equals(IdentityConstants.ApplicationScheme, name, StringComparison.Ordinal))
             {
-                options.LoginPath = "/Identity/Account/Login";
-                options.LogoutPath = "/Identity/Account/Logout";
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+                options.LoginPath = $"/{IdentityUIDefaultAreaName}/Account/Login";
+                options.LogoutPath = $"/{IdentityUIDefaultAreaName}/Account/Logout";
+                options.AccessDeniedPath = $"/{IdentityUIDefaultAreaName}/Account/AccessDenied";
             }
         }
     }
