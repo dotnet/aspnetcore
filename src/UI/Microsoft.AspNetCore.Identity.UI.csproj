@@ -2,31 +2,47 @@
   
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
+    <PrecompiledDescription>Precompiled views assembly for the ASP.NET Core Identity UI package.</PrecompiledDescription>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnetcore;identity;membership;razorpages</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <ResolvedRazorCompileToolset>RazorSdk</ResolvedRazorCompileToolset>
+    <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
   </PropertyGroup>
-  
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
-    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
-  </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Areas/**/*.cshtml" />
+    <Content Include="Areas/**/*.cshtml" />
     <EmbeddedResource Include="wwwroot/**/*" />
     <EmbeddedResource Remove="wwwroot/**/.bower.json" />
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
     <None Remove="wwwroot/**/.bower.json" />
     <None Remove="wwwroot/**/LICENSE*" />
   </ItemGroup>
+    
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Identity\Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReference Include="..\Stores\Microsoft.Extensions.Identity.Stores.csproj" />
   </ItemGroup>
+  
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Identity.UI.props" />
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_parameter1>Microsoft.AspNetCore.Mvc.AdditionalReference</_parameter1>
+      <_parameter2>$(RazorTargetName).dll,false</_parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Identity.UI.targets" />
     
 </Project>

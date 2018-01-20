@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
@@ -15,7 +14,6 @@ namespace Microsoft.AspNetCore.Identity.UI
 {
     internal class IdentityDefaultUIConfigureOptions :
         IPostConfigureOptions<RazorPagesOptions>,
-        IPostConfigureOptions<RazorViewEngineOptions>,
         IPostConfigureOptions<StaticFileOptions>,
         IPostConfigureOptions<CookieAuthenticationOptions>
     {
@@ -32,14 +30,6 @@ namespace Microsoft.AspNetCore.Identity.UI
             options = options ?? throw new ArgumentNullException(nameof(options));
 
             options.AllowAreas = true;
-        }
-
-        public void PostConfigure(string name, RazorViewEngineOptions options)
-        {
-            name = name ?? throw new ArgumentNullException(nameof(name));
-            options = options ?? throw new ArgumentNullException(nameof(options));
-
-            options.FileProviders.Add(new ManifestEmbeddedFileProvider(GetType().Assembly));
         }
 
         public void PostConfigure(string name, StaticFileOptions options)
