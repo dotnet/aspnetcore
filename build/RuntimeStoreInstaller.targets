@@ -19,7 +19,8 @@
     <HostingDebConfigFile>$(_PackagingDir)hosting_debian_config.json</HostingDebConfigFile>
 
     <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet</PublicCoreFeedPrefix>
-    <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
+    <CoreFeedPrefix Condition="'$(CoreFeedPrefix)' == '' AND '$(DotNetAssetRootUrl)'!=''">$(DotNetAssetRootUrl)</CoreFeedPrefix>
+    <CoreFeedPrefix Condition="'$(CoreFeedPrefix)' == '' AND '$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
     <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/$(PreviousRuntimeStoreArchiveVersion)/Build.RS.</RuntimeStore20LinkPrefix>
@@ -67,11 +68,11 @@
     <!-- Download dotnet installers -->
     <MakeDir Directories="$(_InstallerSource)" />
     <!--
-      Note: KOREBUILD_DOTNET_FEED_CREDENTIAL is intentionally NOT an MSBuild variable.
+      Note: DotNetAssetRootAccessTokenSuffix is intentionally NOT an MSBuild variable.
       MSBuild doesn't to the substitution correctly because the string contains %,
       so we'll let bash do it instead.
     -->
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$DotNetAssetRootAccessTokenSuffix&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
     <Exec Command="curl --fail -sSL &quot;$(RuntimeStore20LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
   </Target>
 
@@ -435,7 +436,7 @@
       -e 'KOREBUILD_DOTNET_FEED_UNCACHED=$(KOREBUILD_DOTNET_FEED_UNCACHED)'
       -e &quot;KOREBUILD_DOTNET_FEED_CREDENTIAL=$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot;
       docker-image-$(Image)
-      ./build.sh /t:RunDebTool"
+      ./build.sh /t:RunDebTool '/p:DotNetAssetRootUrl=$(DotNetAssetRootUrl)' '/p:DotNetAssetRootAccessTokenSuffix=$(DotNetAssetRootAccessTokenSuffix)'"
       ContinueOnError="WarnAndContinue" />
 
     <!-- Copy Runtime Store and Hosting Bundle packages to output -->
