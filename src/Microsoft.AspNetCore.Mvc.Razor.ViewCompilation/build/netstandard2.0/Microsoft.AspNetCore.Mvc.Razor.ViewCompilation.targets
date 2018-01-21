@@ -1,14 +1,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
-  <!--
-    Reports compatibility errors between these targets and the Razor SDK that were discovered during
-    the evaluation phase.
-  -->
-  <Target Name="_ReportRazorSdkCompatibilityError" Condition="'@(_RazorSdkCompatibilityError)'!=''" BeforeTargets="RazorResolveGenerateInputs">
-    <Error Text="@(_RazorSdkCompatibilityError)"/>
-  </Target>
 
-  <Target Name="_ResolveInputArguments" DependsOnTargets="_ReportRazorSdkCompatibilityError">
+  <Target Name="_ResolveInputArguments">
 
     <PropertyGroup>
       <MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</MvcRazorOutputPath>
@@ -170,7 +163,6 @@
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
-    DependsOnTargets="_ReportRazorSdkCompatibilityError"
     Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'and '$(MvcRazorCompileOnPublish)'=='true'">
 
     <PropertyGroup>

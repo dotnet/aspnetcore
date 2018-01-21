@@ -39,4 +39,5 @@ node_modules
 *.orig
 BuildInfo.generated.cs
 msbuild.log
+msbuild.binlog
 global.json

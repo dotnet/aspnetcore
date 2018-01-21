@@ -14,7 +14,4 @@
     <SignAssembly>false</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">false</PublicSign>
   </PropertyGroup>
-
-    <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.props"/>
-
 </Project>
