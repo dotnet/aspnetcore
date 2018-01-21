@@ -7,22 +7,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class Disable2faModel : PageModel
+    [IdentityDefaultUI(typeof(Disable2faModel<>))]
+    public abstract class Disable2faModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class Disable2faModel<TUser> : Disable2faModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
         private readonly ILogger<Disable2faModel> _logger;
 
         public Disable2faModel(
-            UserManager<IdentityUser> userManager,
+            UserManager<TUser> userManager,
             ILogger<Disable2faModel> logger)
         {
             _userManager = userManager;
             _logger = logger;
         }
 
-        public async Task<IActionResult> OnGet()
+        public override async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -38,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

@@ -7,21 +7,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class ResetAuthenticatorModel : PageModel
+    [IdentityDefaultUI(typeof(ResetAuthenticatorModel<>))]
+    public abstract class ResetAuthenticatorModel : PageModel
     {
-        UserManager<IdentityUser> _userManager;
+        public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TUser : IdentityUser
+    {
+        UserManager<TUser> _userManager;
         ILogger<ResetAuthenticatorModel> _logger;
 
         public ResetAuthenticatorModel(
-            UserManager<IdentityUser> userManager,
+            UserManager<TUser> userManager,
             ILogger<ResetAuthenticatorModel> logger)
         {
             _userManager = userManager;
             _logger = logger;
         }
-        public async Task<IActionResult> OnGet()
+
+        public override async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -32,7 +41,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

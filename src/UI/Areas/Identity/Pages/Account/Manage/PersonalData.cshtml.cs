@@ -1,27 +1,34 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class PersonalDataModel : PageModel
+    [IdentityDefaultUI(typeof(PersonalDataModel<>))]
+    public abstract class PersonalDataModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
+    }
+
+    internal class PersonalDataModel<TUser> : PersonalDataModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
         private readonly ILogger<PersonalDataModel> _logger;
 
         public PersonalDataModel(
-            UserManager<IdentityUser> userManager,
+            UserManager<TUser> userManager,
             ILogger<PersonalDataModel> logger)
         {
             _userManager = userManager;
             _logger = logger;
         }
 
-        public async Task<IActionResult> OnGet()
+        public override async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

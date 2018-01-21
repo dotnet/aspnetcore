@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
     public static class ManageNavPages
     {

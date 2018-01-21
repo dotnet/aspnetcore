@@ -7,24 +7,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class TwoFactorAuthenticationModel : PageModel
+    [IdentityDefaultUI(typeof(TwoFactorAuthenticationModel<>))]
+    public abstract class TwoFactorAuthenticationModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<TwoFactorAuthenticationModel> _logger;
-
-        public TwoFactorAuthenticationModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            ILogger<TwoFactorAuthenticationModel> logger)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
         public bool HasAuthenticator { get; set; }
 
         public int RecoveryCodesLeft { get; set; }
@@ -32,7 +19,24 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
         [BindProperty]
         public bool Is2faEnabled { get; set; }
 
-        public async Task<IActionResult> OnGet()
+        public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
+    }
+
+    internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly ILogger<TwoFactorAuthenticationModel> _logger;
+
+        public TwoFactorAuthenticationModel(
+            UserManager<TUser> userManager, SignInManager<TUser> signInManager, ILogger<TwoFactorAuthenticationModel> logger)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
+        }
+
+        public override async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

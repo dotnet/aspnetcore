@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,19 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
-    public class LoginModel : PageModel
+    [IdentityDefaultUI(typeof(LoginModel<>))]
+    public abstract class LoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<LoginModel> _logger;
-
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
-        {
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -47,7 +40,23 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             public bool RememberMe { get; set; }
         }
 
-        public async Task OnGetAsync(string returnUrl = null)
+        public virtual Task OnGetAsync(string returnUrl = null) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
+    }
+
+    internal class LoginModel<TUser> : LoginModel where TUser : IdentityUser
+    {
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly ILogger<LoginModel> _logger;
+
+        public LoginModel(SignInManager<TUser> signInManager, ILogger<LoginModel> logger)
+        {
+            _signInManager = signInManager;
+            _logger = logger;
+        }
+
+        public override async Task OnGetAsync(string returnUrl = null)
         {
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
@@ -64,7 +73,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             ReturnUrl = returnUrl;
         }
 
-        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        public override async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
 
