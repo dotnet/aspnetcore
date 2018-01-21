@@ -22,18 +22,18 @@ namespace HostedInAspNet.Client
     {
         public void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenElement("h1");
-            builder.AddText("Hello from RenderTree");
+            builder.OpenElement(0, "h1");
+            builder.AddText(1, "Hello from RenderTree");
             builder.CloseElement();
 
-            builder.OpenElement("ul");
+            builder.OpenElement(2, "ul");
 
-            builder.OpenElement("li");
-            builder.AddText("First item");
+            builder.OpenElement(3, "li");
+            builder.AddText(4, "First item");
             builder.CloseElement();
 
-            builder.OpenElement("li");
-            builder.AddText("Second item");
+            builder.OpenElement(5, "li");
+            builder.AddText(6, "Second item");
             builder.CloseElement();
 
             builder.CloseElement();

@@ -43,9 +43,9 @@ namespace Microsoft.Blazor.Test
             var nullString = (string)null;
 
             // Act
-            builder.AddText("First item");
-            builder.AddText(nullString);
-            builder.AddText("Second item");
+            builder.AddText(0, "First item");
+            builder.AddText(0, nullString);
+            builder.AddText(0, "Second item");
 
             // Assert
             var nodes = builder.GetNodes();
@@ -64,8 +64,8 @@ namespace Microsoft.Blazor.Test
             var nullObject = (object)null;
 
             // Act
-            builder.AddText(1234);
-            builder.AddText(nullObject);
+            builder.AddText(0, 1234);
+            builder.AddText(0, nullObject);
 
             // Assert
             var nodes = builder.GetNodes();
@@ -82,7 +82,7 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.OpenElement("my element");
+            builder.OpenElement(0, "my element");
 
             // Assert
             var node = builder.GetNodes().Single();
@@ -96,8 +96,8 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.AddText("some node so that the element isn't at position zero");
-            builder.OpenElement("my element");
+            builder.AddText(0, "some node so that the element isn't at position zero");
+            builder.OpenElement(0, "my element");
             builder.CloseElement();
 
             // Assert
@@ -113,11 +113,11 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.OpenElement("my element");
-            builder.AddText("child 1");
-            builder.AddText("child 2");
+            builder.OpenElement(0, "my element");
+            builder.AddText(0, "child 1");
+            builder.AddText(0, "child 2");
             builder.CloseElement();
-            builder.AddText("unrelated item");
+            builder.AddText(0, "unrelated item");
 
             // Assert
             var nodes = builder.GetNodes();
@@ -132,22 +132,22 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.AddText("standalone text 1");   //  0: standalone text 1
-            builder.OpenElement("root");            //  1: <root>
-            builder.AddText("root text 1");         //  2:     root text 1
-            builder.AddText("root text 2");         //  3:     root text 2
-            builder.OpenElement("child");           //  4:     <child>
-            builder.AddText("child text");          //  5:         child text
-            builder.OpenElement("grandchild");      //  6:         <grandchild>
-            builder.AddText("grandchild text 1");   //  7:             grandchild text 1
-            builder.AddText("grandchild text 2");   //  8:             grandchild text 2
-            builder.CloseElement();                 //             </grandchild>
-            builder.CloseElement();                 //         </child>
-            builder.AddText("root text 3");         //  9:     root text 3
-            builder.OpenElement("child 2");         // 10:     <child 2>
-            builder.CloseElement();                 //         </child 2>
-            builder.CloseElement();                 //      </root>
-            builder.AddText("standalone text 2");   // 11:  standalone text 2
+            builder.AddText(0, "standalone text 1");   //  0: standalone text 1
+            builder.OpenElement(0, "root");            //  1: <root>
+            builder.AddText(0, "root text 1");         //  2:     root text 1
+            builder.AddText(0, "root text 2");         //  3:     root text 2
+            builder.OpenElement(0, "child");           //  4:     <child>
+            builder.AddText(0, "child text");          //  5:         child text
+            builder.OpenElement(0, "grandchild");      //  6:         <grandchild>
+            builder.AddText(0, "grandchild text 1");   //  7:             grandchild text 1
+            builder.AddText(0, "grandchild text 2");   //  8:             grandchild text 2
+            builder.CloseElement();                    //             </grandchild>
+            builder.CloseElement();                    //         </child>
+            builder.AddText(0, "root text 3");         //  9:     root text 3
+            builder.OpenElement(0, "child 2");         // 10:     <child 2>
+            builder.CloseElement();                    //         </child 2>
+            builder.CloseElement();                    //      </root>
+            builder.AddText(0, "standalone text 2");   // 11:  standalone text 2
 
             // Assert
             Assert.Collection(builder.GetNodes(),
@@ -173,12 +173,12 @@ namespace Microsoft.Blazor.Test
             UIEventHandler eventHandler = eventInfo => { };
 
             // Act
-            builder.OpenElement("myelement");                       //  0: <myelement
+            builder.OpenElement(0, "myelement");                    //  0: <myelement
             builder.AddAttribute("attribute1", "value 1");          //  1:     attribute1="value 1"
             builder.AddAttribute("attribute2", 123);                //  2:     attribute2=intExpression123>
-            builder.OpenElement("child");                           //  3:   <child
+            builder.OpenElement(0, "child");                        //  3:   <child
             builder.AddAttribute("childevent", eventHandler);       //  4:       childevent=eventHandler>
-            builder.AddText("some text");                           //  5:     some text
+            builder.AddText(0, "some text");                        //  5:     some text
             builder.CloseElement();                                 //       </child>
             builder.CloseElement();                                 //     </myelement>
 
@@ -227,8 +227,8 @@ namespace Microsoft.Blazor.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.OpenElement("some element");
-                builder.AddText("hello");
+                builder.OpenElement(0, "some element");
+                builder.AddText(1, "hello");
                 builder.AddAttribute("name", "value");
             });
         }
@@ -242,8 +242,8 @@ namespace Microsoft.Blazor.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.OpenElement("some element");
-                builder.AddText("hello");
+                builder.OpenElement(0, "some element");
+                builder.AddText(1, "hello");
                 builder.AddAttribute("name", eventInfo => { });
             });
         }
@@ -255,11 +255,11 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.OpenElement("parent");                      //  0: <parent>
-            builder.AddComponent<TestComponent>();              //  1:     <testcomponent
+            builder.OpenElement(0, "parent");                   //  0: <parent>
+            builder.AddComponent<TestComponent>(1);             //  1:     <testcomponent
             builder.AddAttribute("child1attribute1", "A");      //  2:       child1attribute1="A"
             builder.AddAttribute("child1attribute2", "B");      //  3:       child1attribute2="B" />
-            builder.AddComponent<TestComponent>();              //  4:     <testcomponent
+            builder.AddComponent<TestComponent>(2);             //  4:     <testcomponent
             builder.AddAttribute("child2attribute", "C");       //  5:       child2attribute="C" />
             builder.CloseElement();                             //     </parent>
 
@@ -280,9 +280,9 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.AddText("some text");
-            builder.OpenElement("elem");
-            builder.AddText("more text");
+            builder.AddText(0, "some text");
+            builder.OpenElement(1, "elem");
+            builder.AddText(2, "more text");
             builder.CloseElement();
             builder.Clear();
 

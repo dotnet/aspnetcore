@@ -10,11 +10,11 @@ namespace BasicTestApp
     {
         public void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenElement("fieldset");
-            builder.OpenElement("legend");
-            builder.AddText("Parent component");
+            builder.OpenElement(0, "fieldset");
+            builder.OpenElement(1, "legend");
+            builder.AddText(2, "Parent component");
             builder.CloseElement();
-            builder.AddComponent<ChildComponent>();
+            builder.AddComponent<ChildComponent>(3);
             builder.CloseElement();
         }
 
@@ -22,7 +22,7 @@ namespace BasicTestApp
         {
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.AddText("Child component");
+                builder.AddText(0, "Child component");
             }
         }
     }

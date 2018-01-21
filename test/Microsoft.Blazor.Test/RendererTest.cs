@@ -21,8 +21,8 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var component = new TestComponent(builder =>
             {
-                builder.OpenElement("my element");
-                builder.AddText("some text");
+                builder.OpenElement(0, "my element");
+                builder.AddText(1, "some text");
                 builder.CloseElement();
             });
 
@@ -43,8 +43,8 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var component = new TestComponent(builder =>
             {
-                builder.AddText("Hello");
-                builder.AddComponent<MessageComponent>();
+                builder.AddText(0, "Hello");
+                builder.AddComponent<MessageComponent>(1);
             });
 
             // Act/Assert
@@ -94,7 +94,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponent<MessageComponent>();
+                builder.AddComponent<MessageComponent>(0);
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);
@@ -152,7 +152,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponent<EventComponent>();
+                builder.AddComponent<EventComponent>(0);
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);
@@ -350,7 +350,7 @@ namespace Microsoft.Blazor.Test
 
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.AddText(Message);
+                builder.AddText(0, Message);
             }
         }
 
@@ -360,7 +360,7 @@ namespace Microsoft.Blazor.Test
 
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.OpenElement("some element");
+                builder.OpenElement(0, "some element");
                 builder.AddAttribute("some event", Handler);
                 builder.CloseElement();
             }

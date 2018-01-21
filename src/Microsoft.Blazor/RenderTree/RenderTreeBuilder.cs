@@ -35,11 +35,12 @@ namespace Microsoft.Blazor.RenderTree
         /// also call <see cref="CloseElement"/> immediately after appending the
         /// new element's child nodes.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="elementName">A value representing the type of the element.</param>
-        public void OpenElement(string elementName)
+        public void OpenElement(int sequence, string elementName)
         {
             _openElementIndices.Push(_entriesInUse);
-            Append(RenderTreeNode.Element(elementName));
+            Append(RenderTreeNode.Element(sequence, elementName));
         }
 
         /// <summary>
@@ -55,16 +56,18 @@ namespace Microsoft.Blazor.RenderTree
         /// <summary>
         /// Appends a node representing text content.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text node.</param>
-        public void AddText(string textContent)
-            => Append(RenderTreeNode.Text(textContent));
+        public void AddText(int sequence, string textContent)
+            => Append(RenderTreeNode.Text(sequence, textContent));
 
         /// <summary>
         /// Appends a node representing text content.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text node.</param>
-        public void AddText(object textContent)
-            => AddText(textContent?.ToString());
+        public void AddText(int sequence, object textContent)
+            => AddText(sequence, textContent?.ToString());
 
         /// <summary>
         /// Appends a node representing a string-valued attribute.
@@ -123,8 +126,9 @@ namespace Microsoft.Blazor.RenderTree
         /// Appends a node representing a child component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
-        public void AddComponent<TComponent>() where TComponent: IComponent
-            => Append(RenderTreeNode.ChildComponent<TComponent>());
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        public void AddComponent<TComponent>(int sequence) where TComponent: IComponent
+            => Append(RenderTreeNode.ChildComponent<TComponent>(sequence));
 
         private void AssertCanAddAttribute()
         {

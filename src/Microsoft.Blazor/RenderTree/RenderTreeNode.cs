@@ -16,6 +16,15 @@ namespace Microsoft.Blazor.RenderTree
     public struct RenderTreeNode
     {
         /// <summary>
+        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
+        /// <see cref="RenderTreeNodeType.Text"/>, or <see cref="RenderTreeNodeType.Component"/>,
+        /// gets the sequence number of the node. Sequence numbers indicate the relative source
+        /// positions of the instructions that inserted the nodes. Sequence numbers are only
+        /// comparable within the same sequence (typically, the same source method).
+        /// </summary>
+        public int Sequence { get; private set; }
+
+        /// <summary>
         /// Describes the type of this node.
         /// </summary>
         public RenderTreeNodeType NodeType { get; private set; }
@@ -75,14 +84,16 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         public IComponent Component { get; private set; }
 
-        internal static RenderTreeNode Element(string elementName) => new RenderTreeNode
+        internal static RenderTreeNode Element(int sequence, string elementName) => new RenderTreeNode
         {
+            Sequence = sequence,
             NodeType = RenderTreeNodeType.Element,
             ElementName = elementName,
         };
 
-        internal static RenderTreeNode Text(string textContent) => new RenderTreeNode
+        internal static RenderTreeNode Text(int sequence, string textContent) => new RenderTreeNode
         {
+            Sequence = sequence,
             NodeType = RenderTreeNodeType.Text,
             TextContent = textContent ?? string.Empty,
         };
@@ -101,8 +112,9 @@ namespace Microsoft.Blazor.RenderTree
             AttributeEventHandlerValue = value
         };
 
-        internal static RenderTreeNode ChildComponent<T>() where T: IComponent => new RenderTreeNode
+        internal static RenderTreeNode ChildComponent<T>(int sequence) where T: IComponent => new RenderTreeNode
         {
+            Sequence = sequence,
             NodeType = RenderTreeNodeType.Component,
             ComponentType = typeof(T)
         };

@@ -32,6 +32,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
         private IList<object> _currentAttributeValues;
         private IDictionary<string, object> _currentElementAttributes = new Dictionary<string, object>();
         private IList<IntermediateToken> _currentElementAttributeTokens = new List<IntermediateToken>();
+        private int _sourceSequence = 0;
 
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
@@ -106,7 +107,9 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
             context.CodeWriter
-                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}");
+                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                .Write((_sourceSequence++).ToString())
+                .WriteParameterSeparator();
 
             for (var i = 0; i < node.Children.Count; i++)
             {
@@ -187,6 +190,8 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                             // Text node
                             codeWriter
                                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                                .Write((_sourceSequence++).ToString())
+                                .WriteParameterSeparator()
                                 .WriteStringLiteral(nextToken.Data)
                                 .WriteEndMethodInvocation();
                             break;
@@ -200,6 +205,8 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                             {
                                 codeWriter
                                     .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                                    .Write((_sourceSequence++).ToString())
+                                    .WriteParameterSeparator()
                                     .WriteStringLiteral(nextTag.Data)
                                     .WriteEndMethodInvocation();
                             }
