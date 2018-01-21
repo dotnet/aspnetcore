@@ -56,7 +56,8 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "Data/**"
+            "Data/**",
+            "Areas/**"
           ]
         },
         {
