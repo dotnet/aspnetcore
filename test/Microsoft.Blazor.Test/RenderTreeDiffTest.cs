@@ -512,6 +512,47 @@ namespace Microsoft.Blazor.Test
                 entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
         }
 
+        [Fact]
+        public void DiffsElementsHierarchically()
+        {
+            // Arrange
+            var oldTree = new RenderTreeBuilder(new FakeRenderer());
+            var newTree = new RenderTreeBuilder(new FakeRenderer());
+            var diff = new RenderTreeDiff();
+            oldTree.OpenElement(10, "root");
+            oldTree.OpenElement(11, "child");
+            oldTree.OpenElement(12, "grandchild");
+            oldTree.AddText(13, "grandchild old text");
+            oldTree.CloseElement();
+            oldTree.CloseElement();
+            oldTree.CloseElement();
+
+            newTree.OpenElement(10, "root");
+            newTree.OpenElement(11, "child");
+            newTree.OpenElement(12, "grandchild");
+            newTree.AddText(13, "grandchild new text");
+            newTree.CloseElement();
+            newTree.CloseElement();
+            newTree.CloseElement();
+
+            // Act
+            var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
+
+            // Assert
+            Assert.Collection(result,
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry =>
+                {
+                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(3, entry.NewTreeIndex);
+                },
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type));
+        }
+
         private class FakeRenderer : Renderer
         {
             internal protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)

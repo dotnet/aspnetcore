@@ -187,13 +187,32 @@ namespace Microsoft.Blazor.RenderTree
                         var newElementName = newTree[newNodeIndex].ElementName;
                         if (string.Equals(oldElementName, newElementName, StringComparison.Ordinal))
                         {
-                            // Recurse into the element. This covers diffing the attributes as well as
-                            // the descendants.
-                            AppendDiffEntriesForRange(
-                                oldTree, oldNodeIndex + 1, oldTree[oldNodeIndex].ElementDescendantsEndIndex + 1,
-                                newTree, newNodeIndex + 1, newTree[newNodeIndex].ElementDescendantsEndIndex + 1);
+                            var oldNodeAttributesEndIndexExcl = GetAttributesEndIndexExclusive(oldTree, oldNodeIndex);
+                            var newNodeAttributesEndIndexExcl = GetAttributesEndIndexExclusive(newTree, newNodeIndex);
 
-                            Append(RenderTreeDiffEntry.Continue());
+                            // Diff the attributes
+                            AppendDiffEntriesForRange(
+                                oldTree, oldNodeIndex + 1, oldNodeAttributesEndIndexExcl,
+                                newTree, newNodeIndex + 1, newNodeAttributesEndIndexExcl);
+
+                            // Diff the children
+                            var oldNodeChildrenEndIndexExcl = oldTree[oldNodeIndex].ElementDescendantsEndIndex + 1;
+                            var newNodeChildrenEndIndexExcl = newTree[newNodeIndex].ElementDescendantsEndIndex + 1;
+                            var hasChildrenToProcess =
+                                oldNodeChildrenEndIndexExcl > oldNodeAttributesEndIndexExcl ||
+                                newNodeChildrenEndIndexExcl > newNodeAttributesEndIndexExcl;
+                            if (hasChildrenToProcess)
+                            {
+                                Append(RenderTreeDiffEntry.StepIn());
+                                AppendDiffEntriesForRange(
+                                    oldTree, oldNodeAttributesEndIndexExcl, oldNodeChildrenEndIndexExcl,
+                                    newTree, newNodeAttributesEndIndexExcl, newNodeChildrenEndIndexExcl);
+                                Append(RenderTreeDiffEntry.StepOut());
+                            }
+                            else
+                            {
+                                Append(RenderTreeDiffEntry.Continue());
+                            }
                         }
                         else
                         {
@@ -254,6 +273,21 @@ namespace Microsoft.Blazor.RenderTree
                 default:
                     throw new NotImplementedException($"Encountered unsupported node type during diffing: {newTree[newNodeIndex].NodeType}");
             }
+        }
+
+        private int GetAttributesEndIndexExclusive(RenderTreeNode[] tree, int rootIndex)
+        {
+            var descendantsEndIndex = tree[rootIndex].ElementDescendantsEndIndex;
+            var index = rootIndex + 1;
+            for (; index <= descendantsEndIndex; index++)
+            {
+                if (tree[index].NodeType != RenderTreeNodeType.Attribute)
+                {
+                    break;
+                }
+            }
+
+            return index;
         }
 
         private void Append(RenderTreeDiffEntry entry)

@@ -45,5 +45,15 @@ namespace Microsoft.Blazor.RenderTree
             Type = RenderTreeDiffEntryType.RemoveAttribute,
             RemovedAttributeName = name
         };
+
+        internal static RenderTreeDiffEntry StepIn() => new RenderTreeDiffEntry
+        {
+            Type = RenderTreeDiffEntryType.StepIn
+        };
+
+        internal static RenderTreeDiffEntry StepOut() => new RenderTreeDiffEntry
+        {
+            Type = RenderTreeDiffEntryType.StepOut
+        };
     }
 }

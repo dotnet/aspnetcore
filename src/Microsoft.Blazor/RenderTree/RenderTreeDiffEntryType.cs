@@ -11,5 +11,7 @@ namespace Microsoft.Blazor.RenderTree
         SetAttribute = 4,
         RemoveAttribute = 5,
         UpdateText = 6,
+        StepIn = 7,
+        StepOut = 8,
     }
 }
