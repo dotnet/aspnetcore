@@ -73,45 +73,49 @@ namespace Microsoft.Blazor.RenderTree
         /// Appends a node representing a string-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(string name, string value)
+        public void AddAttribute(int sequence, string name, string value)
         {
             AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(name, value));
+            Append(RenderTreeNode.Attribute(sequence, name, value));
         }
 
         /// <summary>
         /// Appends a node representing an <see cref="UIEventArgs"/>-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(string name, UIEventHandler value)
+        public void AddAttribute(int sequence, string name, UIEventHandler value)
         {
             AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(name, value));
+            Append(RenderTreeNode.Attribute(sequence, name, value));
         }
 
         /// <summary>
         /// Appends a node representing a string-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(string name, object value)
+        public void AddAttribute(int sequence, string name, object value)
         {
             AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(name, value.ToString()));
+            Append(RenderTreeNode.Attribute(sequence, name, value.ToString()));
         }
 
         /// <summary>
         /// Appends a node representing an attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(RenderTreeNode node)
+        public void AddAttribute(int sequence, RenderTreeNode node)
         {
             if (node.NodeType != RenderTreeNodeType.Attribute)
             {
@@ -119,6 +123,7 @@ namespace Microsoft.Blazor.RenderTree
             }
 
             AssertCanAddAttribute();
+            node.SetSequence(sequence);
             Append(node);
         }
 

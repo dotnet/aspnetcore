@@ -361,7 +361,7 @@ namespace Microsoft.Blazor.Test
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "some element");
-                builder.AddAttribute("some event", Handler);
+                builder.AddAttribute(1, "some event", Handler);
                 builder.CloseElement();
             }
         }

@@ -1,12 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+
 namespace Microsoft.Blazor.RenderTree
 {
     internal struct RenderTreeDiffEntry
     {
         public RenderTreeDiffEntryType Type { get; private set; }
         public int NewTreeIndex { get; private set; }
+        public string RemovedAttributeName { get; private set; }
 
         public static RenderTreeDiffEntry Continue() => new RenderTreeDiffEntry
         {
@@ -28,6 +32,18 @@ namespace Microsoft.Blazor.RenderTree
         {
             Type = RenderTreeDiffEntryType.UpdateText,
             NewTreeIndex = newTreeIndex
+        };
+
+        internal static RenderTreeDiffEntry SetAttribute(int newNodeIndex) => new RenderTreeDiffEntry
+        {
+            Type = RenderTreeDiffEntryType.SetAttribute,
+            NewTreeIndex = newNodeIndex
+        };
+
+        internal static RenderTreeDiffEntry RemoveAttribute(string name) => new RenderTreeDiffEntry
+        {
+            Type = RenderTreeDiffEntryType.RemoveAttribute,
+            RemovedAttributeName = name
         };
     }
 }

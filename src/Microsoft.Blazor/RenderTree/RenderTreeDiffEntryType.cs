@@ -8,7 +8,8 @@ namespace Microsoft.Blazor.RenderTree
         Continue = 1,
         PrependNode = 2,
         RemoveNode = 3,
-        UpdateAttribute = 4,
-        UpdateText = 5,
+        SetAttribute = 4,
+        RemoveAttribute = 5,
+        UpdateText = 6,
     }
 }

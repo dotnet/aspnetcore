@@ -33,8 +33,8 @@ namespace Microsoft.Blazor.RenderTree
             RenderTreeNode[] oldTree, int oldStartIndex, int oldEndIndexExcl,
             RenderTreeNode[] newTree, int newStartIndex, int newEndIndexExcl)
         {
-            var hasMoreOld = oldEndIndexExcl > 0;
-            var hasMoreNew = newEndIndexExcl > 0;
+            var hasMoreOld = oldEndIndexExcl > oldStartIndex;
+            var hasMoreNew = newEndIndexExcl > newStartIndex;
             var prevOldSeq = -1;
             var prevNewSeq = -1;
             while (hasMoreOld || hasMoreNew)
@@ -119,15 +119,32 @@ namespace Microsoft.Blazor.RenderTree
 
                     if (treatAsInsert)
                     {
-                        Append(RenderTreeDiffEntry.PrependNode(newStartIndex));
-                        newStartIndex = NextSiblingIndex(newTree, newStartIndex);
+                        if (newTree[newStartIndex].NodeType == RenderTreeNodeType.Attribute)
+                        {
+                            Append(RenderTreeDiffEntry.SetAttribute(newStartIndex));
+                            newStartIndex++;
+                        }
+                        else
+                        {
+                            Append(RenderTreeDiffEntry.PrependNode(newStartIndex));
+                            newStartIndex = NextSiblingIndex(newTree, newStartIndex);
+                        }
+
                         hasMoreNew = newEndIndexExcl > newStartIndex;
                         prevNewSeq = newSeq;
                     }
                     else
                     {
-                        Append(RenderTreeDiffEntry.RemoveNode());
-                        oldStartIndex = NextSiblingIndex(oldTree, oldStartIndex);
+                        if (oldTree[oldStartIndex].NodeType == RenderTreeNodeType.Attribute)
+                        {
+                            Append(RenderTreeDiffEntry.RemoveAttribute(oldTree[oldStartIndex].AttributeName));
+                            oldStartIndex++;
+                        }
+                        else
+                        {
+                            Append(RenderTreeDiffEntry.RemoveNode());
+                            oldStartIndex = NextSiblingIndex(oldTree, oldStartIndex);
+                        }
                         hasMoreOld = oldEndIndexExcl > oldStartIndex;
                         prevOldSeq = oldSeq;
                     }
@@ -170,8 +187,12 @@ namespace Microsoft.Blazor.RenderTree
                         var newElementName = newTree[newNodeIndex].ElementName;
                         if (string.Equals(oldElementName, newElementName, StringComparison.Ordinal))
                         {
-                            // TODO: Compare attributes
-                            // TODO: Then, recurse into children
+                            // Recurse into the element. This covers diffing the attributes as well as
+                            // the descendants.
+                            AppendDiffEntriesForRange(
+                                oldTree, oldNodeIndex + 1, oldTree[oldNodeIndex].ElementDescendantsEndIndex + 1,
+                                newTree, newNodeIndex + 1, newTree[newNodeIndex].ElementDescendantsEndIndex + 1);
+
                             Append(RenderTreeDiffEntry.Continue());
                         }
                         else
@@ -205,8 +226,33 @@ namespace Microsoft.Blazor.RenderTree
                         break;
                     }
 
+                case RenderTreeNodeType.Attribute:
+                    {
+                        var oldName = oldTree[oldNodeIndex].AttributeName;
+                        var newName = newTree[newNodeIndex].AttributeName;
+                        if (string.Equals(oldName, newName, StringComparison.Ordinal))
+                        {
+                            var changed =
+                                !string.Equals(oldTree[oldNodeIndex].AttributeValue, newTree[newNodeIndex].AttributeValue, StringComparison.Ordinal)
+                                || oldTree[oldNodeIndex].AttributeEventHandlerValue != newTree[newNodeIndex].AttributeEventHandlerValue;
+                            if (changed)
+                            {
+                                Append(RenderTreeDiffEntry.SetAttribute(newNodeIndex));
+                            }
+                        }
+                        else
+                        {
+                            // Since this code path is never reachable for Razor components (because you
+                            // can't have two different attribute names from the same source sequence), we
+                            // could consider removing the 'name equality' check entirely for perf
+                            Append(RenderTreeDiffEntry.SetAttribute(newNodeIndex));
+                            Append(RenderTreeDiffEntry.RemoveAttribute(oldName));
+                        }
+                        break;
+                    }
+
                 default:
-                    throw new NotImplementedException($"Not yet implemented: diffing for nodes of type {newTree[newNodeIndex].NodeType}");
+                    throw new NotImplementedException($"Encountered unsupported node type during diffing: {newTree[newNodeIndex].NodeType}");
             }
         }
 

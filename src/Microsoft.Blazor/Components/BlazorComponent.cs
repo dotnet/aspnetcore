@@ -41,6 +41,7 @@ namespace Microsoft.Blazor.Components
         /// <param name="handler">The handler to be invoked when the event occurs.</param>
         /// <returns>A <see cref="RenderTreeNode"/> that represents the event handler.</returns>
         protected RenderTreeNode onclick(Action handler)
-            => RenderTreeNode.Attribute("onclick", _ => handler());
+            // Note that the 'sequence' value is updated later when inserted into the tree
+            => RenderTreeNode.Attribute(0, "onclick", _ => handler());
     }
 }

@@ -30,9 +30,21 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         private string _unconsumedHtml;
         private IList<object> _currentAttributeValues;
-        private IDictionary<string, object> _currentElementAttributes = new Dictionary<string, object>();
-        private IList<IntermediateToken> _currentElementAttributeTokens = new List<IntermediateToken>();
+        private IDictionary<string, PendingAttribute> _currentElementAttributes = new Dictionary<string, PendingAttribute>();
+        private IList<PendingAttributeToken> _currentElementAttributeTokens = new List<PendingAttributeToken>();
         private int _sourceSequence = 0;
+
+        private struct PendingAttribute
+        {
+            public int SourceSequence;
+            public object AttributeValue;
+        }
+
+        private struct PendingAttributeToken
+        {
+            public int SourceSequence;
+            public IntermediateToken AttributeValue;
+        }
 
         public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
@@ -100,7 +112,11 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
             if (_unconsumedHtml != null)
             {
                 var token = (IntermediateToken)node.Children.Single();
-                _currentElementAttributeTokens.Add(token);
+                _currentElementAttributeTokens.Add(new PendingAttributeToken
+                {
+                    SourceSequence = _sourceSequence++,
+                    AttributeValue = token
+                });
                 return;
             }
 
@@ -149,9 +165,14 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
+            var attributeSourceSequence = _sourceSequence++;
             _currentAttributeValues = new List<object>();
             context.RenderChildren(node);
-            _currentElementAttributes[node.AttributeName] = _currentAttributeValues;
+            _currentElementAttributes[node.AttributeName] = new PendingAttribute
+            {
+                SourceSequence = attributeSourceSequence,
+                AttributeValue = _currentAttributeValues
+            };
             _currentAttributeValues = null;
         }
 
@@ -213,14 +234,14 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
 
                             foreach (var attribute in nextTag.Attributes)
                             {
-                                WriteAttribute(codeWriter, attribute.Key, attribute.Value);
+                                WriteAttribute(codeWriter, _sourceSequence++, attribute.Key, attribute.Value);
                             }
 
                             if (_currentElementAttributes.Count > 0)
                             {
                                 foreach (var pair in _currentElementAttributes)
                                 {
-                                    WriteAttribute(codeWriter, pair.Key, pair.Value);
+                                    WriteAttribute(codeWriter, pair.Value.SourceSequence, pair.Key, pair.Value.AttributeValue);
                                 }
                                 _currentElementAttributes.Clear();
                             }
@@ -231,7 +252,9 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                                 {
                                     codeWriter
                                         .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
-                                        .Write(token.Content)
+                                        .Write(token.SourceSequence.ToString())
+                                        .WriteParameterSeparator()
+                                        .Write(token.AttributeValue.Content)
                                         .WriteEndMethodInvocation();
                                 }
                                 _currentElementAttributeTokens.Clear();
@@ -263,10 +286,12 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
             }
         }
 
-        private static void WriteAttribute(CodeWriter codeWriter, string key, object value)
+        private static void WriteAttribute(CodeWriter codeWriter, int sourceSequence, string key, object value)
         {
             codeWriter
                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                .Write(sourceSequence.ToString())
+                .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
             WriteAttributeValue(codeWriter, value);

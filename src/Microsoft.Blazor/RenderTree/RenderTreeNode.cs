@@ -16,9 +16,7 @@ namespace Microsoft.Blazor.RenderTree
     public struct RenderTreeNode
     {
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
-        /// <see cref="RenderTreeNodeType.Text"/>, or <see cref="RenderTreeNodeType.Component"/>,
-        /// gets the sequence number of the node. Sequence numbers indicate the relative source
+        /// Gets the sequence number of the node. Sequence numbers indicate the relative source
         /// positions of the instructions that inserted the nodes. Sequence numbers are only
         /// comparable within the same sequence (typically, the same source method).
         /// </summary>
@@ -98,15 +96,17 @@ namespace Microsoft.Blazor.RenderTree
             TextContent = textContent ?? string.Empty,
         };
 
-        internal static RenderTreeNode Attribute(string name, string value) => new RenderTreeNode
+        internal static RenderTreeNode Attribute(int sequence, string name, string value) => new RenderTreeNode
         {
+            Sequence = sequence,
             NodeType = RenderTreeNodeType.Attribute,
             AttributeName = name,
             AttributeValue = value
         };
 
-        internal static RenderTreeNode Attribute(string name, UIEventHandler value) => new RenderTreeNode
+        internal static RenderTreeNode Attribute(int sequence, string name, UIEventHandler value) => new RenderTreeNode
         {
+            Sequence = sequence,
             NodeType = RenderTreeNodeType.Attribute,
             AttributeName = name,
             AttributeEventHandlerValue = value
@@ -128,6 +128,14 @@ namespace Microsoft.Blazor.RenderTree
         {
             ComponentId = componentId;
             Component = component;
+        }
+
+        internal void SetSequence(int sequence)
+        {
+            // This is only used when appending attribute nodes, because helpers such as @onclick
+            // need to construct the attribute node in a context where they don't know the sequence
+            // number, so we assign it later
+            Sequence = sequence;
         }
     }
 }

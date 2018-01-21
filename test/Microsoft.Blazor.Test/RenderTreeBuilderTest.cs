@@ -174,10 +174,10 @@ namespace Microsoft.Blazor.Test
 
             // Act
             builder.OpenElement(0, "myelement");                    //  0: <myelement
-            builder.AddAttribute("attribute1", "value 1");          //  1:     attribute1="value 1"
-            builder.AddAttribute("attribute2", 123);                //  2:     attribute2=intExpression123>
+            builder.AddAttribute(0, "attribute1", "value 1");       //  1:     attribute1="value 1"
+            builder.AddAttribute(0, "attribute2", 123);             //  2:     attribute2=intExpression123>
             builder.OpenElement(0, "child");                        //  3:   <child
-            builder.AddAttribute("childevent", eventHandler);       //  4:       childevent=eventHandler>
+            builder.AddAttribute(0, "childevent", eventHandler);    //  4:       childevent=eventHandler>
             builder.AddText(0, "some text");                        //  5:     some text
             builder.CloseElement();                                 //       </child>
             builder.CloseElement();                                 //     </myelement>
@@ -201,7 +201,7 @@ namespace Microsoft.Blazor.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute("name", "value");
+                builder.AddAttribute(0, "name", "value");
             });
         }
 
@@ -214,7 +214,7 @@ namespace Microsoft.Blazor.Test
             // Act/Assert
             Assert.Throws<InvalidOperationException>(() =>
             {
-                builder.AddAttribute("name", eventInfo => { });
+                builder.AddAttribute(0, "name", eventInfo => { });
             });
         }
 
@@ -229,7 +229,7 @@ namespace Microsoft.Blazor.Test
             {
                 builder.OpenElement(0, "some element");
                 builder.AddText(1, "hello");
-                builder.AddAttribute("name", "value");
+                builder.AddAttribute(2, "name", "value");
             });
         }
 
@@ -244,7 +244,7 @@ namespace Microsoft.Blazor.Test
             {
                 builder.OpenElement(0, "some element");
                 builder.AddText(1, "hello");
-                builder.AddAttribute("name", eventInfo => { });
+                builder.AddAttribute(2, "name", eventInfo => { });
             });
         }
 
@@ -255,13 +255,13 @@ namespace Microsoft.Blazor.Test
             var builder = new RenderTreeBuilder(new TestRenderer());
 
             // Act
-            builder.OpenElement(0, "parent");                   //  0: <parent>
-            builder.AddComponent<TestComponent>(1);             //  1:     <testcomponent
-            builder.AddAttribute("child1attribute1", "A");      //  2:       child1attribute1="A"
-            builder.AddAttribute("child1attribute2", "B");      //  3:       child1attribute2="B" />
-            builder.AddComponent<TestComponent>(2);             //  4:     <testcomponent
-            builder.AddAttribute("child2attribute", "C");       //  5:       child2attribute="C" />
-            builder.CloseElement();                             //     </parent>
+            builder.OpenElement(10, "parent");                   //  0: <parent>
+            builder.AddComponent<TestComponent>(11);             //  1:     <testcomponent
+            builder.AddAttribute(12, "child1attribute1", "A");   //  2:       child1attribute1="A"
+            builder.AddAttribute(13, "child1attribute2", "B");   //  3:       child1attribute2="B" />
+            builder.AddComponent<TestComponent>(14);             //  4:     <testcomponent
+            builder.AddAttribute(15, "child2attribute", "C");    //  5:       child2attribute="C" />
+            builder.CloseElement();                              //     </parent>
 
             // Assert
             Assert.Collection(builder.GetNodes(),
