@@ -306,7 +306,7 @@ namespace Microsoft.Blazor.Test
             public new void RenderComponent(int componentId)
                 => base.RenderComponent(componentId);
 
-            protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+            internal protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
             {
             }
         }
@@ -325,7 +325,7 @@ namespace Microsoft.Blazor.Test
             public new void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs args)
                 => base.DispatchEvent(componentId, renderTreeIndex, args);
 
-            protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+            internal protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
             {
                 RenderTreesByComponentId[componentId] = renderTree;
             }
