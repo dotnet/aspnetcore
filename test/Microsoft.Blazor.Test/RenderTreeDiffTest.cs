@@ -213,6 +213,64 @@ namespace Microsoft.Blazor.Test
         }
 
         [Fact]
+        public void RecognizesLeadingLoopBlockItemsBeingAdded()
+        {
+            // Arrange
+            var oldTree = new RenderTreeBuilder(new FakeRenderer());
+            var newTree = new RenderTreeBuilder(new FakeRenderer());
+            var diff = new RenderTreeDiff();
+            oldTree.AddText(2, "x");
+            oldTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
+            newTree.AddText(2, "x");
+            newTree.AddText(0, "x");
+            newTree.AddText(1, "x");
+            newTree.AddText(2, "x");
+
+            // Act
+            var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
+
+            // Assert
+            Assert.Collection(result,
+                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry =>
+                {
+                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(1, entry.NewTreeIndex);
+                },
+                entry =>
+                {
+                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(2, entry.NewTreeIndex);
+                },
+                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+        }
+
+        [Fact]
+        public void RecognizesLeadingLoopBlockItemsBeingRemoved()
+        {
+            // Arrange
+            var oldTree = new RenderTreeBuilder(new FakeRenderer());
+            var newTree = new RenderTreeBuilder(new FakeRenderer());
+            var diff = new RenderTreeDiff();
+            oldTree.AddText(2, "x");
+            oldTree.AddText(0, "x");
+            oldTree.AddText(1, "x");
+            oldTree.AddText(2, "x");
+            newTree.AddText(2, "x");
+            newTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
+
+            // Act
+            var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
+
+            // Assert
+            Assert.Collection(result,
+                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+        }
+
+        [Fact]
         public void HandlesAdjacentItemsBeingRemovedAndInsertedAtOnce()
         {
             // Arrange

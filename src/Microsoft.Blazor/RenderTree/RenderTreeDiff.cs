@@ -63,12 +63,20 @@ namespace Microsoft.Blazor.RenderTree
                         // preordered merge join (picking from whichever side brings us closer to being
                         // back in sync)
                         treatAsInsert = newSeq < oldSeq;
+
+                        if (oldLoopedBack)
+                        {
+                            // If both old and new have now looped back, we must reset their 'looped back'
+                            // tracker so we can treat them as proceeding through the same loop block
+                            prevOldSeq = prevNewSeq = -1;
+                        }
                     }
                     else if (oldLoopedBack)
                     {
                         // Old sequence looped back but new one didn't
                         // The new sequence either has some extra trailing elements in the current loop block
                         // which we should insert, or omits some old trailing loop blocks which we should delete
+                        // TODO: Find a way of not recomputing this next flag on every iteration
                         var newLoopsBackLater = false;
                         for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
                         {
@@ -91,6 +99,7 @@ namespace Microsoft.Blazor.RenderTree
                         // The old sequence either has some extra trailing elements in the current loop block
                         // which we should delete, or the new sequence has extra trailing loop blocks which we
                         // should insert
+                        // TODO: Find a way of not recomputing this next flag on every iteration
                         var oldLoopsBackLater = false;
                         for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
                         {
