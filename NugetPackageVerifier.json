@@ -82,9 +82,7 @@
             "Microsoft.AspNetCore.Identity.UI": {
                 "Exclusions": {
                     "DOC_MISSING": {
-                        "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.dll": "This is a library with packaged UI"
-                    },
-                    "DOC_MISSING": {
+                        "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.dll": "This is a library with packaged UI",
                         "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.PrecompiledViews.dll": "This assembly contains precompiled views for the default Identity UI package"
                     }                    
                 }
