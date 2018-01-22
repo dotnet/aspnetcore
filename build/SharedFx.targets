@@ -71,7 +71,7 @@
     <MSBuild
       Projects="@(_MetapackageBuilderProject)"
       Targets="_BuildMetapackage"
-      BuildInParallel="$(BuildInParallel)" />
+      BuildInParallel="false" />
   </Target>
 
   <Target Name="DefineSharedFxPrerequisites">
