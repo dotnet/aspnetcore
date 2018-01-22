@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private readonly ILogger<DefaultAntiforgery> _logger;
 
         public DefaultAntiforgery(
-            IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
-            IAntiforgeryTokenGenerator tokenGenerator,
-            IAntiforgeryTokenSerializer tokenSerializer,
-            IAntiforgeryTokenStore tokenStore,
-            ILoggerFactory loggerFactory)
+                    IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
+                    IAntiforgeryTokenGenerator tokenGenerator,
+                    IAntiforgeryTokenSerializer tokenSerializer,
+                    IAntiforgeryTokenStore tokenStore,
+                    ILoggerFactory loggerFactory)
         {
             _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
@@ -374,13 +374,28 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         protected virtual void SetDoNotCacheHeaders(HttpContext httpContext)
         {
-            // Since antifogery token generation is not very obvious to the end users (ex: MVC's form tag generates them
-            // by default), log a warning to let users know of the change in behavior to any cache headers they might
-            // have set explicitly.
-            LogCacheHeaderOverrideWarning(httpContext.Response);
+            bool cacheHeadersChanged = SetHeaderIfNotSet(httpContext, HeaderNames.CacheControl, "no-cache, no-store");
+            cacheHeadersChanged |= SetHeaderIfNotSet(httpContext, HeaderNames.Pragma, "no-cache");
 
-            httpContext.Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
-            httpContext.Response.Headers[HeaderNames.Pragma] = "no-cache";
+            if (cacheHeadersChanged)
+            {
+                // Since antifogery token generation is not very obvious to the end users (ex: MVC's form tag generates them
+                // by default), log a warning to let users know of the change in behavior to any cache headers they might
+                // have set explicitly.
+                LogCacheHeaderOverrideWarning(httpContext.Response);
+            }
+        }
+
+        private static bool SetHeaderIfNotSet(HttpContext context, string headerName, string value)
+        {
+            if (!context.Response.Headers.ContainsKey(headerName))
+            {
+                context.Response.Headers[headerName] = value;
+
+                return true;
+            }
+
+            return false;
         }
 
         private void LogCacheHeaderOverrideWarning(HttpResponse response)
