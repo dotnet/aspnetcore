@@ -9,7 +9,7 @@ namespace Microsoft.Blazor.RenderTree
     {
         private const int MinBufferLength = 10;
         private RenderTreeDiffEntry[] _entries = new RenderTreeDiffEntry[10];
-        private int _entriesInUse = 0;
+        private int _entriesInUse;
 
         public ArraySegment<RenderTreeDiffEntry> ComputeDifference(
             ArraySegment<RenderTreeNode> oldTree,
@@ -17,6 +17,7 @@ namespace Microsoft.Blazor.RenderTree
         {
             _entriesInUse = 0;
             AppendDiffEntriesForRange(oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count);
+            TrimTrailingContinueNodes();
 
             // If the previous usage of the buffer showed that we have allocated
             // much more space than needed, free up the excess memory
@@ -292,12 +293,33 @@ namespace Microsoft.Blazor.RenderTree
 
         private void Append(RenderTreeDiffEntry entry)
         {
+            if (entry.Type == RenderTreeDiffEntryType.StepOut)
+            {
+                TrimTrailingContinueNodes();
+
+                // If the preceding node is now a StepIn, then we can coalesce the StepIn+StepOut
+                // down to a single Continue
+                if (_entriesInUse > 0 && _entries[_entriesInUse - 1].Type == RenderTreeDiffEntryType.StepIn)
+                {
+                    _entriesInUse--;
+                    entry = RenderTreeDiffEntry.Continue();
+                }
+            }
+
             if (_entriesInUse == _entries.Length)
             {
                 Array.Resize(ref _entries, _entries.Length * 2);
             }
 
             _entries[_entriesInUse++] = entry;
+        }
+
+        private void TrimTrailingContinueNodes()
+        {
+            while (_entriesInUse > 0 && _entries[_entriesInUse - 1].Type == RenderTreeDiffEntryType.Continue)
+            {
+                _entriesInUse--;
+            }
         }
     }
 }

@@ -28,8 +28,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+            Assert.Empty(result);
         }
 
         public static IEnumerable<object[]> RecognizesEquivalentNodesAsSameCases()
@@ -69,8 +68,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -92,8 +90,7 @@ namespace Microsoft.Blazor.Test
             // Assert
             Assert.Collection(result,
                 entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -117,8 +114,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -150,8 +146,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -241,8 +236,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -266,8 +260,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -387,8 +380,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -415,8 +407,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.RemoveAttribute, entry.Type);
                     Assert.Equal("will be removed", entry.RemovedAttributeName);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -444,8 +435,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -476,8 +466,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -508,8 +497,7 @@ namespace Microsoft.Blazor.Test
                 {
                     Assert.Equal(RenderTreeDiffEntryType.RemoveAttribute, entry.Type);
                     Assert.Equal("oldname", entry.RemovedAttributeName);
-                },
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type));
+                });
         }
 
         [Fact]
@@ -551,6 +539,74 @@ namespace Microsoft.Blazor.Test
                 entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
                 entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
                 entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type));
+        }
+
+        [Fact]
+        public void SkipsUnmodifiedSubtrees()
+        {
+            // Arrange
+            var oldTree = new RenderTreeBuilder(new FakeRenderer());
+            var newTree = new RenderTreeBuilder(new FakeRenderer());
+            var diff = new RenderTreeDiff();
+            oldTree.OpenElement(10, "root");
+            oldTree.AddText(11, "Text that will change");
+            oldTree.OpenElement(12, "Subtree that will not change");
+            oldTree.OpenElement(13, "Another");
+            oldTree.AddText(14, "Text that will not change");
+            oldTree.CloseElement();
+            oldTree.CloseElement();
+            oldTree.CloseElement();
+
+            newTree.OpenElement(10, "root");
+            newTree.AddText(11, "Text that has changed");
+            newTree.OpenElement(12, "Subtree that will not change");
+            newTree.OpenElement(13, "Another");
+            newTree.AddText(14, "Text that will not change");
+            newTree.CloseElement();
+            newTree.CloseElement();
+            newTree.CloseElement();
+
+            // Act
+            var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
+
+            // Assert
+            Assert.Collection(result,
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry =>
+                {
+                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(1, entry.NewTreeIndex);
+                },
+                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type));
+        }
+
+        [Fact]
+        public void SkipsUnmodifiedTrailingSiblings()
+        {
+            // Arrange
+            var oldTree = new RenderTreeBuilder(new FakeRenderer());
+            var newTree = new RenderTreeBuilder(new FakeRenderer());
+            var diff = new RenderTreeDiff();
+            oldTree.AddText(10, "text1");
+            oldTree.AddText(11, "text2");
+            oldTree.AddText(12, "text3");
+            oldTree.AddText(13, "text4");
+            newTree.AddText(10, "text1");
+            newTree.AddText(11, "text2modified");
+            newTree.AddText(12, "text3");
+            newTree.AddText(13, "text4");
+
+            // Act
+            var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
+
+            // Assert
+            Assert.Collection(result,
+                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry =>
+                {
+                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(1, entry.NewTreeIndex);
+                });
         }
 
         private class FakeRenderer : Renderer
