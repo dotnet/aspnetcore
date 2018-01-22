@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.Blazor.Test
 {
-    public class RenderTreeDiffTest
+    public class RenderTreeDiffComputerTest
     {
         [Theory]
         [MemberData(nameof(RecognizesEquivalentNodesAsSameCases))]
@@ -20,7 +20,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             appendAction(oldTree);
             appendAction(newTree);
 
@@ -51,7 +51,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "text0");
             oldTree.AddText(2, "text2");
             newTree.AddText(0, "text0");
@@ -63,10 +63,10 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
@@ -77,7 +77,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "text0");
             oldTree.AddText(1, "text1");
             oldTree.AddText(2, "text2");
@@ -89,8 +89,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "x"); // Loop start
             oldTree.AddText(1, "x"); // Will be removed
             oldTree.AddText(2, "x"); // Will be removed
@@ -112,9 +112,9 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "x"); // Loop start
             oldTree.AddText(0, "x"); // Loop start
             newTree.AddText(0, "x"); // Loop start
@@ -136,15 +136,15 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -155,7 +155,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "x");
             oldTree.AddText(1, "x");
             oldTree.AddText(0, "x"); // Will be removed
@@ -168,10 +168,10 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -180,7 +180,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "x");
             oldTree.AddText(1, "x");
             newTree.AddText(0, "x");
@@ -193,16 +193,16 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(3, entry.NewTreeIndex);
                 });
         }
@@ -213,7 +213,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(2, "x");
             oldTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
             newTree.AddText(2, "x");
@@ -226,15 +226,15 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -245,7 +245,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(2, "x");
             oldTree.AddText(0, "x");
             oldTree.AddText(1, "x");
@@ -258,9 +258,9 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -269,7 +269,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(0, "text");
             newTree.AddText(1, "text");
 
@@ -278,8 +278,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.PrependNode, entry.Type));
         }
 
         [Fact]
@@ -288,7 +288,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(123, "old text");
             newTree.AddText(123, "new text");
 
@@ -299,7 +299,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
                     Assert.Equal(0, entry.NewTreeIndex);
                 });
         }
@@ -314,7 +314,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(123, "old element");
             oldTree.CloseElement();
             newTree.OpenElement(123, "new element");
@@ -327,10 +327,10 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(0, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -339,7 +339,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddComponent<FakeComponent>(123);
             newTree.AddComponent<FakeComponent2>(123);
 
@@ -350,10 +350,10 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.PrependNode, entry.Type);
+                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
                     Assert.Equal(0, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeDiffEntryType.RemoveNode, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
 
         [Fact]
@@ -362,7 +362,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "existing", "existing value");
             oldTree.CloseElement();
@@ -378,7 +378,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -389,7 +389,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "will be removed", "will be removed value");
             oldTree.AddAttribute(2, "will survive", "surviving value");
@@ -405,7 +405,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.RemoveAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.RemoveAttribute, entry.Type);
                     Assert.Equal("will be removed", entry.RemovedAttributeName);
                 });
         }
@@ -416,7 +416,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "will remain", "will remain value");
             oldTree.AddAttribute(2, "will change", "will change value");
@@ -433,7 +433,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -444,7 +444,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             UIEventHandler retainedHandler = _ => { };
             UIEventHandler removedHandler = _ => { };
             UIEventHandler addedHandler = _ => { };
@@ -464,7 +464,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -475,7 +475,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(0, "My element");
             oldTree.AddAttribute(1, "oldname", "same value");
             oldTree.CloseElement();
@@ -490,12 +490,12 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.SetAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.RemoveAttribute, entry.Type);
+                    Assert.Equal(RenderTreeEditType.RemoveAttribute, entry.Type);
                     Assert.Equal("oldname", entry.RemovedAttributeName);
                 });
         }
@@ -506,7 +506,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(10, "root");
             oldTree.OpenElement(11, "child");
             oldTree.OpenElement(12, "grandchild");
@@ -528,17 +528,17 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
                     Assert.Equal(3, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type),
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type));
         }
 
         [Fact]
@@ -547,7 +547,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.OpenElement(10, "root");
             oldTree.AddText(11, "Text that will change");
             oldTree.OpenElement(12, "Subtree that will not change");
@@ -571,13 +571,13 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepIn, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeDiffEntryType.StepOut, entry.Type));
+                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type));
         }
 
         [Fact]
@@ -586,7 +586,7 @@ namespace Microsoft.Blazor.Test
             // Arrange
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
-            var diff = new RenderTreeDiff();
+            var diff = new RenderTreeDiffComputer();
             oldTree.AddText(10, "text1");
             oldTree.AddText(11, "text2");
             oldTree.AddText(12, "text3");
@@ -601,10 +601,10 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result,
-                entry => Assert.Equal(RenderTreeDiffEntryType.Continue, entry.Type),
+                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeDiffEntryType.UpdateText, entry.Type);
+                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
                     Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
