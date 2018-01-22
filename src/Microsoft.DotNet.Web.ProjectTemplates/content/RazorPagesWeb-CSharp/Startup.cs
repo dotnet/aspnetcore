@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 #endif
 #if (OrganizationalAuth || IndividualAuth)
 using Microsoft.AspNetCore.Http;
@@ -26,6 +25,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
+using Company.WebApplication1.Data;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,20 +57,16 @@ namespace Company.WebApplication1
             });
 
 #if (IndividualLocalAuth)
-            services.AddDbContext<IdentityDbContext>(options =>
-    #if (UseLocalDB)
+            services.AddDbContext<ApplicationDbContext>(options =>
+#if (UseLocalDB)
                 options.UseSqlServer(
-                    Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
-                ));
-    #else
+                    Configuration.GetConnectionString("DefaultConnection")));
+#else
                 options.UseSqlite(
-                    Configuration.GetConnectionString("DefaultConnection"),
-                    sqlOptions => sqlOptions.MigrationsAssembly("Company.WebApplication1")
-                ));
-    #endif
+                    Configuration.GetConnectionString("DefaultConnection")));
+#endif
             services.AddIdentity<IdentityUser, IdentityRole>(options => options.Stores.MaxLengthForKeys = 128)
-                .AddEntityFrameworkStores<IdentityDbContext>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 
@@ -80,24 +76,15 @@ namespace Company.WebApplication1
                 sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
-    #if (OrganizationalAuth)
+#if (OrganizationalAuth)
                 .AddAzureAd(options => Configuration.Bind("AzureAd", options))
-    #elif (IndividualB2CAuth)
+#elif (IndividualB2CAuth)
                 .AddAzureAdB2C(options => Configuration.Bind("AzureAdB2C", options))
-    #endif
+#endif
             .AddCookie();
 
 #endif
-#if (IndividualLocalAuth)
-            services.AddMvc()
-                .AddRazorPagesOptions(options =>
-                {
-                    options.Conventions.AuthorizeFolder("/Account/Manage");
-                    options.Conventions.AuthorizePage("/Account/Logout");
-                })
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-#elif (OrganizationalAuth)
+#if (OrganizationalAuth)
             services.AddMvc(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
