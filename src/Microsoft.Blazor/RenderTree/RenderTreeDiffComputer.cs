@@ -11,7 +11,7 @@ namespace Microsoft.Blazor.RenderTree
         private RenderTreeEdit[] _entries = new RenderTreeEdit[10];
         private int _entriesInUse;
 
-        public ArraySegment<RenderTreeEdit> ComputeDifference(
+        public RenderTreeDiff ComputeDifference(
             ArraySegment<RenderTreeNode> oldTree,
             ArraySegment<RenderTreeNode> newTree)
         {
@@ -27,7 +27,9 @@ namespace Microsoft.Blazor.RenderTree
                 Array.Resize(ref _entries, shrinkToLength);
             }
 
-            return new ArraySegment<RenderTreeEdit>(_entries, 0, _entriesInUse);
+            return new RenderTreeDiff(
+                new ArraySegment<RenderTreeEdit>(_entries, 0, _entriesInUse),
+                newTree);
         }
 
         private void AppendDiffEntriesForRange(

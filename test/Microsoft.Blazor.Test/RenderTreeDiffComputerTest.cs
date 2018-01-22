@@ -28,7 +28,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Empty(result);
+            Assert.Empty(result.Edits);
         }
 
         public static IEnumerable<object[]> RecognizesEquivalentNodesAsSameCases()
@@ -62,7 +62,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
         }
@@ -111,7 +111,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
@@ -135,7 +135,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
@@ -167,7 +167,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
@@ -192,7 +192,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
@@ -225,7 +225,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
@@ -257,7 +257,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
@@ -277,7 +277,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.PrependNode, entry.Type));
         }
@@ -296,7 +296,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
@@ -324,7 +324,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
@@ -347,7 +347,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
@@ -375,7 +375,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
@@ -402,7 +402,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.RemoveAttribute, entry.Type);
@@ -430,7 +430,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
@@ -461,7 +461,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
@@ -487,7 +487,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry =>
                 {
                     Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
@@ -527,7 +527,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
                 entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
@@ -570,7 +570,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
                 entry =>
                 {
@@ -600,7 +600,7 @@ namespace Microsoft.Blazor.Test
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
 
             // Assert
-            Assert.Collection(result,
+            Assert.Collection(result.Edits,
                 entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
@@ -611,7 +611,7 @@ namespace Microsoft.Blazor.Test
 
         private class FakeRenderer : Renderer
         {
-            internal protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+            internal protected override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
                 => throw new NotImplementedException();
         }
 

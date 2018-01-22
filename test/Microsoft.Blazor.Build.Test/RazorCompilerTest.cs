@@ -442,7 +442,7 @@ namespace Microsoft.Blazor.Build.Test
 
         private class TestRenderer : Renderer
         {
-            protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+            protected override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
                 => throw new NotImplementedException();
         }
     }

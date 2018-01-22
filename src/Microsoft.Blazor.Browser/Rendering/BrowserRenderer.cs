@@ -68,7 +68,7 @@ namespace Microsoft.Blazor.Browser.Rendering
         /// <inheritdoc />
         protected override void UpdateDisplay(
             int componentId,
-            ArraySegment<RenderTreeNode> renderTree)
+            RenderTreeDiff renderTreeDiff)
         {
             RegisteredFunction.InvokeUnmarshalled<RenderComponentArgs, object>(
                 "renderRenderTree",
@@ -76,8 +76,8 @@ namespace Microsoft.Blazor.Browser.Rendering
                 {
                     BrowserRendererId = _browserRendererId,
                     ComponentId = componentId,
-                    RenderTree = renderTree.Array,
-                    RenderTreeLength = renderTree.Count
+                    RenderTree = renderTreeDiff.CurrentState.Array,
+                    RenderTreeLength = renderTreeDiff.CurrentState.Count
                 });
         }
 

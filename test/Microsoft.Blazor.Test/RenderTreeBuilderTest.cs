@@ -298,7 +298,7 @@ namespace Microsoft.Blazor.Test
 
         private class TestRenderer : Renderer
         {
-            internal protected override void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree)
+            protected internal override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
                 => throw new NotImplementedException();
         }
     }

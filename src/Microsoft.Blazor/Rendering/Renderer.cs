@@ -47,8 +47,9 @@ namespace Microsoft.Blazor.Rendering
         /// at the location corresponding to the <paramref name="componentId"/>.
         /// </summary>
         /// <param name="componentId">The identifier for the updated <see cref="IComponent"/>.</param>
-        /// <param name="renderTree">The updated render tree to be displayed.</param>
-        internal protected abstract void UpdateDisplay(int componentId, ArraySegment<RenderTreeNode> renderTree);
+        /// <param name="renderTreeDiff">The changes to the render tree since the component was last rendered.</param>
+        internal protected abstract void UpdateDisplay(
+            int componentId, RenderTreeDiff renderTreeDiff);
 
         /// <summary>
         /// Updates the rendered state of the specified <see cref="IComponent"/>.

@@ -6,19 +6,28 @@ using System;
 namespace Microsoft.Blazor.RenderTree
 {
     /// <summary>
-    /// Describes changes to a component's render tree between successive renders.
+    /// Describes changes to a component's render tree between successive renders,
+    /// as well as the resulting state.
     /// </summary>
     public struct RenderTreeDiff
     {
         /// <summary>
-        /// Describes the render tree changes as a sequence of edit operations.
+        /// Gets the changes to the render tree since a previous state.
         /// </summary>
-        public RenderTreeEdit[] Entries { get; private set; }
+        public ArraySegment<RenderTreeEdit> Edits { get; private set; }
 
         /// <summary>
-        /// An array of <see cref="RenderTreeNode"/> structures that may be referred to
-        /// by entries in the <see cref="Entries"/> property.
+        /// Gets the latest render tree. That is, the result of applying the <see cref="Edits"/>
+        /// to the previous state.
         /// </summary>
-        public ArraySegment<RenderTreeNode> ReferenceTree { get; private set; }
+        public ArraySegment<RenderTreeNode> CurrentState { get; private set; }
+
+        internal RenderTreeDiff(
+            ArraySegment<RenderTreeEdit> entries,
+            ArraySegment<RenderTreeNode> referenceTree)
+        {
+            Edits = entries;
+            CurrentState = referenceTree;
+        }
     }
 }

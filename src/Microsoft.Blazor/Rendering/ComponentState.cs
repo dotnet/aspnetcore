@@ -17,7 +17,9 @@ namespace Microsoft.Blazor.Rendering
         private readonly int _componentId; // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
         private readonly IComponent _component;
         private readonly Renderer _renderer;
-        private readonly RenderTreeBuilder _renderTreeBuilder;
+        private readonly RenderTreeDiffComputer _diffComputer;
+        private RenderTreeBuilder _renderTreeBuilderCurrent;
+        private RenderTreeBuilder _renderTreeBuilderPrevious;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentState"/>.
@@ -30,7 +32,9 @@ namespace Microsoft.Blazor.Rendering
             _componentId = componentId;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            _renderTreeBuilder = new RenderTreeBuilder(renderer);
+            _diffComputer = new RenderTreeDiffComputer();
+            _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
+            _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
 
         /// <summary>
@@ -39,12 +43,16 @@ namespace Microsoft.Blazor.Rendering
         /// </summary>
         public void Render()
         {
-            _renderTreeBuilder.Clear();
-            _component.BuildRenderTree(_renderTreeBuilder);
+            // Swap the old and new tree builders
+            (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 
-            var renderTree = _renderTreeBuilder.GetNodes();
-            EnsureChildComponentsInstantiated(renderTree);
-            _renderer.UpdateDisplay(_componentId, renderTree);
+            _renderTreeBuilderCurrent.Clear();
+            _component.BuildRenderTree(_renderTreeBuilderCurrent);
+            var diff = _diffComputer.ComputeDifference(
+                _renderTreeBuilderPrevious.GetNodes(),
+                _renderTreeBuilderCurrent.GetNodes());
+            EnsureChildComponentsInstantiated(diff.CurrentState); // TODO: Move this into the diff phase
+            _renderer.UpdateDisplay(_componentId, diff);
         }
 
         private void EnsureChildComponentsInstantiated(ArraySegment<RenderTreeNode> renderTree)
@@ -76,7 +84,7 @@ namespace Microsoft.Blazor.Rendering
                 throw new ArgumentNullException(nameof(eventArgs));
             }
 
-            var nodes = _renderTreeBuilder.GetNodes();
+            var nodes = _renderTreeBuilderCurrent.GetNodes();
             var eventHandler = nodes.Array[renderTreeIndex].AttributeEventHandlerValue;
             if (eventHandler == null)
             {
