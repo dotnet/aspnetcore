@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private readonly ILogger<DefaultAntiforgery> _logger;
 
         public DefaultAntiforgery(
-                    IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
-                    IAntiforgeryTokenGenerator tokenGenerator,
-                    IAntiforgeryTokenSerializer tokenSerializer,
-                    IAntiforgeryTokenStore tokenStore,
-                    ILoggerFactory loggerFactory)
+            IOptions<AntiforgeryOptions> antiforgeryOptionsAccessor,
+            IAntiforgeryTokenGenerator tokenGenerator,
+            IAntiforgeryTokenSerializer tokenSerializer,
+            IAntiforgeryTokenStore tokenStore,
+            ILoggerFactory loggerFactory)
         {
             _options = antiforgeryOptionsAccessor.Value;
             _tokenGenerator = tokenGenerator;
