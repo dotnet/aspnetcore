@@ -1,6 +1,7 @@
 ﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
+import { getRenderTreeEditPtr, renderTreeEdit, EditType, RenderTreeEditPointer } from './RenderTreeEdit';
 import { renderComponentArgs, RenderComponentArgsPointer } from './RenderComponentArgs';
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
@@ -40,6 +41,8 @@ export function renderRenderTree(args: RenderComponentArgsPointer) {
 
   clearElement(element);
 
+  const edits = renderComponentArgs.renderTreeEdits(args);
+  const editsLength = renderComponentArgs.renderTreeEditsLength(args);
   const tree = renderComponentArgs.renderTree(args);
   const treeLength = renderComponentArgs.renderTreeLength(args);
   insertNodeRange(browserRendererId, componentId, element, tree, 0, treeLength - 1);

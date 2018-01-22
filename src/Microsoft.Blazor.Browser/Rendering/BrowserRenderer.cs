@@ -76,6 +76,8 @@ namespace Microsoft.Blazor.Browser.Rendering
                 {
                     BrowserRendererId = _browserRendererId,
                     ComponentId = componentId,
+                    RenderTreeEdits = renderTreeDiff.Edits.Array,
+                    RenderTreeEditsLength = renderTreeDiff.Edits.Count,
                     RenderTree = renderTreeDiff.CurrentState.Array,
                     RenderTreeLength = renderTreeDiff.CurrentState.Count
                 });
@@ -84,10 +86,14 @@ namespace Microsoft.Blazor.Browser.Rendering
         // Encapsulates the data we pass to the JS rendering function
         private struct RenderComponentArgs
         {
+            // Important: If you edit this struct, keep it in sync with RenderComponentArgs.ts
+
             public int BrowserRendererId;
             public int ComponentId;
+            public RenderTreeEdit[] RenderTreeEdits;
+            public int RenderTreeEditsLength;
             public RenderTreeNode[] RenderTree;
-            public int RenderTreeLength;
+            public int RenderTreeLength; // TODO: Should be possible to remove this field once the JS code works entirely from the edits
         }
     }
 }
