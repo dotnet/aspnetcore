@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     var ms = new MemoryStream();
                     while (_application.TryRead(out var buffer))
                     {
-                        _logger.SSEWritingMessage(_connectionId, buffer.Length);
+                        _logger.SSEWritingMessage(buffer.Length);
 
                         ServerSentEventsMessageFormatter.WriteMessage(buffer, ms);
                     }

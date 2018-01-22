@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -32,16 +33,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(7, nameof(HubMethodNotAuthorized)), "Failed to invoke '{hubMethod}' because user is unauthorized.");
 
         private static readonly Action<ILogger, string, string, Exception> _streamingResult =
-            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(8, nameof(StreamingResult)), "{invocationId}: Streaming result of type '{resultType}'.");
+            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(8, nameof(StreamingResult)), "InvocationId {invocationId}: Streaming result of type '{resultType}'.");
 
         private static readonly Action<ILogger, string, string, Exception> _sendingResult =
-            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, nameof(SendingResult)), "{invocationId}: Sending result of type '{resultType}'.");
+            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, nameof(SendingResult)), "InvocationId {invocationId}: Sending result of type '{resultType}'.");
 
         private static readonly Action<ILogger, string, Exception> _failedInvokingHubMethod =
             LoggerMessage.Define<string>(LogLevel.Error, new EventId(10, nameof(FailedInvokingHubMethod)), "Failed to invoke hub method '{hubMethod}'.");
 
-        private static readonly Action<ILogger, string, Exception> _hubMethodBound =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(11, nameof(HubMethodBound)), "Hub method '{hubMethod}' is bound.");
+        private static readonly Action<ILogger, string, string, Exception> _hubMethodBound =
+            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(11, nameof(HubMethodBound)), "'{hubName}' hub method '{hubMethod}' is bound.");
 
         private static readonly Action<ILogger, string, Exception> _cancelStream =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(12, nameof(CancelStream)), "Canceling stream for invocation {invocationId}.");
@@ -129,14 +130,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _hubMethodNotAuthorized(logger, hubMethod, null);
         }
 
-        public static void StreamingResult(this ILogger logger, string invocationId, string resultType)
+        public static void StreamingResult(this ILogger logger, string invocationId, ObjectMethodExecutor objectMethodExecutor)
         {
-            _streamingResult(logger, invocationId, resultType, null);
+            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            _streamingResult(logger, invocationId, resultType.FullName, null);
         }
 
-        public static void SendingResult(this ILogger logger, string invocationId, string resultType)
+        public static void SendingResult(this ILogger logger, string invocationId, ObjectMethodExecutor objectMethodExecutor)
         {
-            _sendingResult(logger, invocationId, resultType, null);
+            var resultType = objectMethodExecutor.AsyncResultType == null ? objectMethodExecutor.MethodReturnType : objectMethodExecutor.AsyncResultType;
+            _sendingResult(logger, invocationId, resultType.FullName, null);
         }
 
         public static void FailedInvokingHubMethod(this ILogger logger, string hubMethod, Exception exception)
@@ -144,9 +147,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _failedInvokingHubMethod(logger, hubMethod, exception);
         }
 
-        public static void HubMethodBound(this ILogger logger, string hubMethod)
+        public static void HubMethodBound(this ILogger logger, string hubName, string hubMethod)
         {
-            _hubMethodBound(logger, hubMethod, null);
+            _hubMethodBound(logger, hubName, hubMethod, null);
         }
 
         public static void CancelStream(this ILogger logger, string invocationId)

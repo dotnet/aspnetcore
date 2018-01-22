@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
-                    TransferMode.Binary, connectionId: string.Empty, connection: Mock.Of<IConnection>()).OrTimeout();
+                    TransferMode.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
             }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
-                    TransferMode.Binary, connectionId: string.Empty, connection: Mock.Of<IConnection>());
+                    TransferMode.Binary, connection: Mock.Of<IConnection>());
                 connectionToTransport.Writer.TryComplete();
                 await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
             }
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, transferMode, connectionId: string.Empty, connection: Mock.Of<IConnection>());
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, transferMode, connection: Mock.Of<IConnection>());
 
                 var sendTcs = new TaskCompletionSource<object>();
                 connectionToTransport.Writer.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.Null(webSocketsTransport.Mode);
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
-                    transferMode, connectionId: string.Empty, connection: Mock.Of<IConnection>()).OrTimeout();
+                    transferMode, connection: Mock.Of<IConnection>()).OrTimeout();
                 Assert.Equal(transferMode, webSocketsTransport.Mode);
 
                 await webSocketsTransport.StopAsync().OrTimeout();
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Text | TransferMode.Binary, connectionId: string.Empty, connection: Mock.Of<IConnection>()));
+                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Text | TransferMode.Binary, connection: Mock.Of<IConnection>()));
 
                 Assert.Contains("Invalid transfer mode.", exception.Message);
                 Assert.Equal("requestedTransferMode", exception.ParamName);

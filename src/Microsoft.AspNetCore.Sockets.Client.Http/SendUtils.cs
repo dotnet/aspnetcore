@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
     internal static class SendUtils
     {
         public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient,
-            HttpOptions httpOptions, CancellationTokenSource transportCts, ILogger logger, string connectionId)
+            HttpOptions httpOptions, CancellationTokenSource transportCts, ILogger logger)
         {
-            logger.SendStarted(connectionId);
+            logger.SendStarted();
             IList<SendMessage> messages = null;
             try
             {
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     transportCts.Token.ThrowIfCancellationRequested();
                     if (messages.Count > 0)
                     {
-                        logger.SendingMessages(connectionId, messages.Count, sendUrl);
+                        logger.SendingMessages(messages.Count, sendUrl);
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var response = await httpClient.SendAsync(request, transportCts.Token);
                         response.EnsureSuccessStatusCode();
 
-                        logger.SentSuccessfully(connectionId);
+                        logger.SentSuccessfully();
                         foreach (var message in messages)
                         {
                             message.SendResult?.TrySetResult(null);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                     else
                     {
-                        logger.NoMessages(connectionId);
+                        logger.NoMessages();
                     }
                 }
             }
@@ -84,11 +84,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         message.SendResult?.TrySetCanceled();
                     }
                 }
-                logger.SendCanceled(connectionId);
+                logger.SendCanceled();
             }
             catch (Exception ex)
             {
-                logger.ErrorSending(connectionId, sendUrl, ex);
+                logger.ErrorSending(sendUrl, ex);
                 if (messages != null)
                 {
                     foreach (var message in messages)
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 transportCts.Cancel();
             }
 
-            logger.SendStopped(connectionId);
+            logger.SendStopped();
         }
 
         public static void PrepareHttpRequest(HttpRequestMessage request, HttpOptions httpOptions)

@@ -132,6 +132,8 @@ export class HubConnection {
         this.callbacks.clear();
 
         this.closedCallbacks.forEach(c => c.apply(this, [error]));
+
+        this.cleanupTimeout();
     }
 
     async start(): Promise<void> {
@@ -158,9 +160,7 @@ export class HubConnection {
     }
 
     stop(): Promise<void> {
-        if (this.timeoutHandle) {
-            clearTimeout(this.timeoutHandle);
-        }
+        this.cleanupTimeout();
         return this.connection.stop();
     }
 
@@ -282,6 +282,12 @@ export class HubConnection {
     onclose(callback: ConnectionClosed) {
         if (callback) {
             this.closedCallbacks.push(callback);
+        }
+    }
+
+    private cleanupTimeout(): void {
+        if (this.timeoutHandle) {
+            clearTimeout(this.timeoutHandle);
         }
     }
 

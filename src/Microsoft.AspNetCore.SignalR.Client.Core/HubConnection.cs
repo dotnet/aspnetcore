@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             try
             {
-                _logger.PreparingNonBlockingInvocation(invocationMessage.InvocationId, methodName, args.Length);
+                _logger.PreparingNonBlockingInvocation(methodName, args.Length);
 
                 var payload = _protocolReaderWriter.WriteMessage(invocationMessage);
                 _logger.SendInvocation(invocationMessage.InvocationId);

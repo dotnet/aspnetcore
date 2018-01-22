@@ -104,7 +104,7 @@
         connectButton.disabled = true;
         disconnectButton.disabled = false;
         console.log('http://' + document.location.host + '/' + hubRoute);
-        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logging: logger });
+        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logger: logger });
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
         });

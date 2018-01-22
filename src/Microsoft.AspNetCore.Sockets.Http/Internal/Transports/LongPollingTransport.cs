@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 if (!await _application.WaitToReadAsync(token))
                 {
                     await _application.Completion;
-                    _logger.LongPolling204(_connectionId, context.TraceIdentifier);
+                    _logger.LongPolling204();
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     contentLength += buffer.Length;
                     buffers.Add(buffer);
 
-                    _logger.LongPollingWritingMessage(_connectionId, context.TraceIdentifier, buffer.Length);
+                    _logger.LongPollingWritingMessage(buffer.Length);
                 }
 
                 context.Response.ContentLength = contentLength;
@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 {
                     // Don't count this as cancellation, this is normal as the poll can end due to the browser closing.
                     // The background thread will eventually dispose this connection if it's inactive
-                    _logger.LongPollingDisconnected(_connectionId, context.TraceIdentifier);
+                    _logger.LongPollingDisconnected();
                 }
                 // Case 2
                 else if (_timeoutToken.IsCancellationRequested)
                 {
-                    _logger.PollTimedOut(_connectionId, context.TraceIdentifier);
+                    _logger.PollTimedOut();
 
                     context.Response.ContentLength = 0;
                     context.Response.ContentType = "text/plain";
@@ -86,14 +86,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 else
                 {
                     // Case 3
-                    _logger.LongPolling204(_connectionId, context.TraceIdentifier);
+                    _logger.LongPolling204();
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LongPollingTerminated(_connectionId, context.TraceIdentifier, ex);
+                _logger.LongPollingTerminated(ex);
                 throw;
             }
         }

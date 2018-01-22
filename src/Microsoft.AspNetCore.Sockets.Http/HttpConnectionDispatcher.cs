@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
+                _logger.EstablishedConnection();
 
                 // ServerSentEvents is a text protocol only
                 connection.TransportCapabilities = TransferMode.Text;
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
+                _logger.EstablishedConnection();
 
                 var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Sockets
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
                     {
-                        _logger.EstablishedConnection(connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
+                        _logger.EstablishedConnection();
 
                         connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
 
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                     else
                     {
-                        _logger.ResumingConnection(connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
+                        _logger.ResumingConnection();
                     }
 
                     // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Sockets
             // Get the bytes for the connection id
             var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, options));
 
-            _logger.NegotiationRequest(connection.ConnectionId);
+            _logger.NegotiationRequest();
 
             // Write it out to the response with the right content length
             context.Response.ContentLength = negotiateResponseBuffer.Length;
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Sockets
             var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
             if (transport == TransportType.WebSockets)
             {
-                _logger.PostNotAllowedForWebSockets(connection.ConnectionId);
+                _logger.PostNotAllowedForWebSockets();
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
                 return;
@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Sockets
                 buffer = stream.ToArray();
             }
 
-            _logger.ReceivedBytes(connection.ConnectionId, buffer.Length);
+            _logger.ReceivedBytes(buffer.Length);
             while (!connection.Application.Writer.TryWrite(buffer))
             {
                 if (!await connection.Application.Writer.WaitToWriteAsync())
@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
-                _logger.TransportNotSupported(connection.ConnectionId, transportType);
+                _logger.TransportNotSupported(transportType);
                 await context.Response.WriteAsync($"{transportType} transport not supported by this end point type");
                 return false;
             }
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                _logger.CannotChangeTransport(connection.ConnectionId, transport.Value, transportType);
+                _logger.CannotChangeTransport(transport.Value, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
             }

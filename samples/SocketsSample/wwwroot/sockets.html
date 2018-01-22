@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 
 <head>
@@ -24,7 +24,7 @@
             document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
 
             let url = 'http://' + document.location.host + '/chat';
-            let connection = new signalR.HttpConnection(url, { transport: transportType, logging: new signalR.ConsoleLogger(signalR.LogLevel.Trace) });
+            let connection = new signalR.HttpConnection(url, { transport: transportType, logger: new signalR.ConsoleLogger(signalR.LogLevel.Trace) });
 
             connection.onreceive = function (data) {
                 let child = document.createElement('li');

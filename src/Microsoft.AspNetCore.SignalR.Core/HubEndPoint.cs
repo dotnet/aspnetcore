@@ -306,13 +306,13 @@ namespace Microsoft.AspNetCore.SignalR
                     if (isStreamedInvocation)
                     {
                         var enumerator = GetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, methodExecutor, result, methodExecutor.MethodReturnType);
-                        _logger.StreamingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        _logger.StreamingResult(hubMethodInvocationMessage.InvocationId, methodExecutor);
                         await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator);
                     }
                     // Non-empty/null InvocationId ==> Blocking invocation that needs a response
                     else if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                     {
-                        _logger.SendingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        _logger.SendingResult(hubMethodInvocationMessage.InvocationId, methodExecutor);
                         await SendMessageAsync(connection, CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                     }
                 }
@@ -506,6 +506,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var hubType = typeof(THub);
             var hubTypeInfo = hubType.GetTypeInfo();
+            var hubName = hubType.Name;
 
             foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
@@ -522,7 +523,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
                 _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
 
-                _logger.HubMethodBound(methodName);
+                _logger.HubMethodBound(hubName, methodName);
             }
         }
 

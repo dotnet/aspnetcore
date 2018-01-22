@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Mode = transferMode;
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, string connectionId, IConnection connection)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, IConnection connection)
         {
             Application = application;
             return _startHandler();
