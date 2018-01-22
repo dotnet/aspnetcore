@@ -8,11 +8,16 @@
 
   <Target Name="_BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
     <PropertyGroup>
+      <MetapackageSource>$(_MetapackageSrcRoot)$(MetapackageName)\</MetapackageSource>
       <MetapackageWorkDirectory>$(_WorkRoot)$(MetapackageName)\</MetapackageWorkDirectory>
       <CommonProps>Configuration=$(Configuration);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true</CommonProps>
       <CommonProps>$(CommonProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</CommonProps>
       <CommonProps>$(CommonProps);AppMetapackageVersion=$(PackageVersion)</CommonProps>
     </PropertyGroup>
+
+    <Error
+      Message="Source directory $(MetapackageSource) for $(MetapackageName) does not exist."
+      Condition="!Exists('$(MetapackageSource)')" />
 
     <ItemGroup>
       <MetapackageFiles Include="$(MetapackageSource)**\*" />
@@ -22,8 +27,8 @@
     <RemoveDir Directories="$(MetapackageWorkDirectory)" />
 
     <!-- Move to working dir -->
-    <Copy SourceFiles="@(MetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
-    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+    <Copy SourceFiles="@(MetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)%(RecursiveDir)" />
+    <Copy SourceFiles="$(_MetapackageSrcRoot)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <!-- Add references to project -->
     <RepoTasks.AddMetapackageReferences
@@ -39,18 +44,34 @@
     <MSBuild Projects="$(MetapackageWorkDirectory)$(MetapackageName).csproj" Targets="Pack" Properties="$(CommonProps);PackageOutputPath=$(BuildDir)" />
   </Target>
 
-  <Target Name="BuildMetapackage">
-    <PropertyGroup>
-      <AppMetapackageProps>MetapackageName=Microsoft.AspNetCore.App</AppMetapackageProps>
-      <AppMetapackageProps>$(AppMetapackageProps);MetapackageSource=$(_AppMetapackageDir)</AppMetapackageProps>
-      <AppMetapackageProps>$(AppMetapackageProps);MetapackageReferenceType=AppMetapackage</AppMetapackageProps>
-      <AllMetapackageProps>MetapackageName=Microsoft.AspNetCore.All</AllMetapackageProps>
-      <AllMetapackageProps>$(AllMetapackageProps);MetapackageSource=$(_AllMetapackageDir)</AllMetapackageProps>
-      <AllMetapackageProps>$(AllMetapackageProps);MetapackageReferenceType=AllMetapackage</AllMetapackageProps>
-    </PropertyGroup>
+  <Target Name="BuildMetapackages">
+    <ItemGroup>
+      <_MetapackageBuilderProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          MetapackageName=Microsoft.AspNetCore.App;
+          MetapackageReferenceType=AppMetapackage
+        </AdditionalProperties>
+      </_MetapackageBuilderProject>
 
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildMetapackage" Properties="$(AppMetapackageProps)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildMetapackage" Properties="$(AllMetapackageProps)" />
+      <_MetapackageBuilderProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          MetapackageName=Microsoft.AspNetCore.All;
+          MetapackageReferenceType=AllMetapackage
+        </AdditionalProperties>
+      </_MetapackageBuilderProject>
+
+      <_MetapackageBuilderProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          MetapackageName=Microsoft.AspNetCore.Analyzers;
+          MetapackageReferenceType=Analyzer
+        </AdditionalProperties>
+      </_MetapackageBuilderProject>
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(_MetapackageBuilderProject)"
+      Targets="_BuildMetapackage"
+      BuildInParallel="$(BuildInParallel)" />
   </Target>
 
   <Target Name="DefineSharedFxPrerequisites">
@@ -128,7 +149,7 @@
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
 
-    <Copy SourceFiles="$(_SrcDir)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
+    <Copy SourceFiles="$(_MetapackageSrcRoot)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AppSharedFxProps)" />
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_PrepareForSharedFx" Properties="$(AllSharedFxProps)" />

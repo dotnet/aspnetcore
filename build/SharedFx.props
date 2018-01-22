@@ -4,9 +4,7 @@
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
-    <_SrcDir>$(RepositoryRoot)src\</_SrcDir>
-    <_AllMetapackageDir>$(_SrcDir)Microsoft.AspNetCore.All\</_AllMetapackageDir>
-    <_AppMetapackageDir>$(_SrcDir)Microsoft.AspNetCore.App\</_AppMetapackageDir>
+    <_MetapackageSrcRoot>$(RepositoryRoot)src\</_MetapackageSrcRoot>
     <_TemplatesDir>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDir>
     <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
     <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
