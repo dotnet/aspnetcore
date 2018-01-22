@@ -495,4 +495,7 @@
   <data name="MultipleCertificateSources" xml:space="preserve">
     <value>The endpoint {endpointName} specified multiple certificate sources.</value>
   </data>
+  <data name="Http2NotSupported" xml:space="preserve">
+    <value>HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.</value>
+  </data>
 </root>

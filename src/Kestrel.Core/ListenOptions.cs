@@ -19,13 +19,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IEndPointInformation, IConnectionBuilder
     {
+        internal const string Http2ExperimentSwitch = "Switch.Microsoft.AspNetCore.Server.Kestrel.Experimental.Http2";
+
         private FileHandleType _handleType;
+        private HttpProtocols _protocols = HttpProtocols.Http1;
+        internal bool _isHttp2Supported;
         private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
         {
             Type = ListenType.IPEndPoint;
             IPEndPoint = endPoint;
+            AppContext.TryGetSwitch(Http2ExperimentSwitch, out _isHttp2Supported);
         }
 
         internal ListenOptions(string socketPath)
@@ -122,8 +127,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// The protocols enabled on this endpoint.
         /// </summary>
-        /// <remarks>Defaults to HTTP/1.x only.</remarks>
-        public HttpProtocols Protocols { get; set; } = HttpProtocols.Http1;
+        /// <remarks>Defaults to HTTP/1.x only. HTTP/2 support is experimental, see
+        /// https://go.microsoft.com/fwlink/?linkid=866785 to enable it.</remarks>
+        public HttpProtocols Protocols
+        {
+            get => _protocols;
+            set
+            {
+                if (!_isHttp2Supported && (value == HttpProtocols.Http1AndHttp2 || value == HttpProtocols.Http2))
+                {
+                    throw new NotSupportedException(CoreStrings.Http2NotSupported);
+                }
+                _protocols = value;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="List{IConnectionAdapter}"/> that allows each connection <see cref="System.IO.Stream"/>

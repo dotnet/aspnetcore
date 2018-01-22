@@ -1774,6 +1774,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatMultipleCertificateSources(object endpointName)
             => string.Format(CultureInfo.CurrentCulture, GetString("MultipleCertificateSources", "endpointName"), endpointName);
 
+        /// <summary>
+        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
+        /// </summary>
+        internal static string Http2NotSupported
+        {
+            get => GetString("Http2NotSupported");
+        }
+
+        /// <summary>
+        /// HTTP/2 support is experimental, see https://go.microsoft.com/fwlink/?linkid=866785 to enable it.
+        /// </summary>
+        internal static string FormatHttp2NotSupported()
+            => GetString("Http2NotSupported");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
