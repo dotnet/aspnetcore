@@ -176,14 +176,11 @@ namespace Microsoft.Blazor.RenderTree
                     {
                         var oldText = oldTree[oldNodeIndex].TextContent;
                         var newText = newTree[newNodeIndex].TextContent;
-                        if (string.Equals(oldText, newText, StringComparison.Ordinal))
-                        {
-                            siblingIndex++;
-                        }
-                        else
+                        if (!string.Equals(oldText, newText, StringComparison.Ordinal))
                         {
                             Append(RenderTreeEdit.UpdateText(siblingIndex, newNodeIndex));
                         }
+                        siblingIndex++;
                         break;
                     }
 

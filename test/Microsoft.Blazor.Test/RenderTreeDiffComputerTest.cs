@@ -279,8 +279,10 @@ namespace Microsoft.Blazor.Test
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
             var diff = new RenderTreeDiffComputer();
-            oldTree.AddText(123, "old text");
-            newTree.AddText(123, "new text");
+            oldTree.AddText(123, "old text 1");
+            oldTree.AddText(182, "old text 2");
+            newTree.AddText(123, "new text 1");
+            newTree.AddText(182, "new text 2");
 
             // Act
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());
@@ -291,6 +293,11 @@ namespace Microsoft.Blazor.Test
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
+                },
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
+                    Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
 
