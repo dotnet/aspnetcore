@@ -76,11 +76,47 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_WithMvcRazorCompileOnPublish_PublishesAssembly()
+        {
+            var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "refs"), "*.dll");
+            Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Publish_NoopsWithNoFiles()
         {
             Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
 
             var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnBuild=true");
+
+            Assert.BuildPassed(result);
+
+            // Everything we do should noop - including building the app. 
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_NoopsWithMvcRazorCompileOnPublish_False()
+        {
+            var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=false");
 
             Assert.BuildPassed(result);
 
@@ -158,6 +194,27 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Publish_IncludeCshtmlAndRefAssemblies_CopiesFiles()
         {
             var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnPublish=true /p:CopyRazorGenerateFilesToPublishDirectory=true /p:CopyRefAssembliesToPublishDirectory=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            // By default refs and .cshtml files will not be copied on publish
+            Assert.FileExists(result, PublishOutputPath, "refs", "mscorlib.dll");
+            Assert.FileCountEquals(result, 8, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
+        }
+
+        [Fact] // Tests old MvcPrecompilation behavior that we support for compat.
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_MvcRazorExcludeFilesFromPublish_False_CopiesFiles()
+        {
+            var result = await DotnetMSBuild("Publish", "/p:RazorCompileOnPublish=true /p:MvcRazorExcludeViewFilesFromPublish=false /p:MvcRazorExcludeRefAssembliesFromPublish=false");
 
             Assert.BuildPassed(result);
 

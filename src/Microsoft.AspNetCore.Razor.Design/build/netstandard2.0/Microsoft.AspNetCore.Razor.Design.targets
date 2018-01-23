@@ -6,8 +6,7 @@
   -->
 
   <!--
-    This is a hook to import a set of targets before the Razor targets. By default this is used by MvcPrecompilation
-    so that we can interop between the 2.0 feature set and the 2.1+ features.
+    This is a hook to import a set of targets before the Razor targets. By default this is unused.
   -->
   <Import Project="$(CustomBeforeRazorSdkTargets)" Condition="'$(CustomBeforeRazorSdkTargets)' != '' and Exists('$(CustomBeforeRazorSdkTargets)')"/>
 
@@ -42,45 +41,64 @@
   </PropertyGroup>
 
   <!-- 
-    Default values for properties that affect Razor MSBuild behavior. 
+    Default values for properties that affect Razor targets to the standard build lifecycle.
+  -->
+  <PropertyGroup Condition="'$(RazorCompileOnBuild)'==''">
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RazorCompileOnPublish)'==''">
+    <!-- Always compile on publish by default if we're compiling on build -->
+    <RazorCompileOnPublish Condition="'$(RazorCompileOnBuild)'=='true'">true</RazorCompileOnPublish>
+
+    <!-- Compatibility with the old MVC Precompilation setting -->
+    <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">$(MvcRazorCompileOnPublish)</RazorCompileOnPublish>
+
+    <!-- Default to on if MvcRazorCompileOnPublish isn't set for some reason -->
+    <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">true</RazorCompileOnPublish>
+  </PropertyGroup>
+
+
+  <!--
+    Properties that configure Razor SDK, but need to be defined in targets due to evaluation order.
   -->
   <PropertyGroup>
-    <!--
-      Razor also attaches itself by default to some of the standard .NET targets. Uses these properties to
-      configure this behaviour.
-    -->
-    <RazorCompileOnBuild Condition="'$(RazorCompileOnBuild)'==''">false</RazorCompileOnBuild>
-    <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">true</RazorCompileOnPublish>
-
     <!-- Output directory used for generated files -->
-    <RazorGenerateOutputPath Condition="'$(RazorGenerateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateOutputPath>
+    <RazorGenerateIntermediateOutputPath Condition="'$(RazorGenerateIntermediateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateIntermediateOutputPath>
     
     <!-- File name (without extension) of the assembly produced by Razor -->
     <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName).PrecompiledViews</RazorTargetName>
 
-    <!-- 
-      Set to true to copy RazorGenerate items to the publish directory (.cshtml) files.
+    <!--
+      The compatibility zone - these properties were provided by the MVC Precompilation tool and they
+      map to supported settings in Razor SDK.
 
-      Typically Razor files are not needed for a published application if they participate in compilation at build-time
-      or publish-time. By default, the Razor SDK will suppress the copying of RazorGenerate items to the publish directory.
+      We want to set the defaults for these in the .props file, but we need to process the old settings here
+      in case they were set in the project file. The consequence of this is that the old settings will override
+      the new ones if they are set to conflicting values.
     -->
-    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'==''">false</CopyRazorGenerateFilesToPublishDirectory>
+    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'">false</CopyRazorGenerateFilesToPublishDirectory>
+    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='false'">true</CopyRazorGenerateFilesToPublishDirectory>
+
+    <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">false</CopyRefAssembliesToPublishDirectory>
+    <CopyRefAssembliesToPublishDirectory Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='false'">true</CopyRefAssembliesToPublishDirectory>
 
     <!-- 
-      Set to true to copy reference assembly items to the publish directory (.cshtml) files.
-
-      Typically reference assemblies are not needed for a published application if Razor compilation occurs at build-time
-      or publish-time. By default, the Razor SDK will suppress the copying of reference assemblies to the publish directory.
+      We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
+      
+      This handles a compatibility case with MVC Precompilation.
     -->
-    <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
+    <RazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</RazorOutputPath>
+
+    <!--
+      Configures whether all of the @(RazorGenerate) items will be added as embedded files to the produced assembly.
+
+      When true, everything in @(RazorGenerate) will be added to @(RazorEmbeddedFiles) and passed to CSC.  
+    -->
+    <EmbedRazorGenerateSources Condition="'$(MvcRazorEmbedViewSources)'!=''">$(MvcRazorEmbedViewSources)</EmbedRazorGenerateSources>
+    <EmbedRazorGenerateSources Condition="'$(EmbedRazorGenerateSources)'==''">false</EmbedRazorGenerateSources>
   </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Used to creating the final compiled Razor dll -->
-    <RazorIntermediateAssembly Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
-  </ItemGroup>
-
-  <!-- Implementation details here... -->
   <PropertyGroup>
     <!-- Similar to https://github.com/Microsoft/msbuild/blob/908cc9ccd4961441628f68e37a148183a87bb067/src/Tasks/Microsoft.Common.CurrentVersion.targets#L146-L153 -->
     <_RazorDebugSymbolsProduced>false</_RazorDebugSymbolsProduced>
@@ -92,10 +110,14 @@
     <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='embedded'">false</_RazorDebugSymbolsProduced>
   </PropertyGroup>
 
+  <!--
+    Properties that configure Razor SDK, but need to be defined in targets due to evaluation order.
+  -->
   <ItemGroup>
-    <!-- These are also referenced in .Compilation.targets - don't just casually change these -->
+    <!-- Used to creating the final compiled Razor dll -->
+    <RazorIntermediateAssembly Condition="'$(RazorIntermediateAssembly)'==''" Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
+    <!-- Used in Compilation.targets -->   
     <_RazorDebugSymbolsIntermediatePath Condition="'$(_RazorDebugSymbolsProduced)'=='true'" Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
-    <_RazorDebugSymbolsOutputPath Include="@(_RazorDebugSymbolsIntermediatePath->'$(OutDir)%(Filename)%(Extension)')" />
   </ItemGroup>
 
   <!--
@@ -129,9 +151,25 @@
     lots of work when there are no inputs for code generation.
   -->
   <Target Name="ResolveRazorGenerateInputs">
+    <!--
+      In MVC Precompilation MvcRazorFilesToCompile also had the effect of suppressing the default
+      items for Razor code generation. As with all of these MVC Precompilation back-compat settings,
+      using the old thing, overrides the new thing.
+    -->
+    <PropertyGroup Condition="'@(MvcRazorFilesToCompile)'!=''">
+      <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+    </PropertyGroup>
     <ItemGroup>
-      <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'">
-        <GeneratedOutput>$(RazorGenerateOutputPath)%(RelativeDir)%(Filename).cs</GeneratedOutput>
+      <RazorGenerate Include="@(MvcRazorFilesToCompile)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(EnableDefaultRazorGenerateItems)'=='true'">
+      <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <RazorGenerate Update="@(RazorGenerate)" Condtion="'%(RazorGenerate.GeneratedOutput)'==''">
+        <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)%(RelativeDir)%(Filename).cs</GeneratedOutput>
       </RazorGenerate>
     </ItemGroup>
   </Target>
@@ -177,8 +215,12 @@
     BeforeTargets="BuiltProjectOutputGroup"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
+    <PropertyGroup>
+      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
+    </PropertyGroup>
+
     <ItemGroup Condition="'@(RazorGenerate)'!= ''">
-      <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(Outdir)$(RazorTargetName).dll" />
+      <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(RazorOutputPath)$(RazorTargetName).dll" />
     </ItemGroup>
     
   </Target>
@@ -250,10 +292,14 @@
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
+    <PropertyGroup>
+      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
+    </PropertyGroup>
+
     <!-- Copy the Razor dll  -->
     <Copy
       SourceFiles="@(RazorIntermediateAssembly)"
-      DestinationFolder="$(OutDir)"
+      DestinationFolder="$(RazorOutputPath)"
       SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
@@ -274,7 +320,7 @@
     <!-- Copy the Razor debug information file (.pdb), if any -->
     <Copy
       SourceFiles="@(_RazorDebugSymbolsIntermediatePath)"
-      DestinationFiles="@(_RazorDebugSymbolsOutputPath)"
+      DestinationFolder="$(RazorOutputPath)"
       SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"

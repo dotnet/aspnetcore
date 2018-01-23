@@ -102,6 +102,38 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
+        public async Task Build_RazorOutputPath_SetToNonDefault()
+        {
+            var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
+            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:RazorOutputPath={customOutputPath}");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, customOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, customOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_MvcRazorOutputPath_SetToNonDefault()
+        {
+            var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
+            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:MvcRazorOutputPath={customOutputPath}");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, customOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, customOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
         public async Task Build_SkipsCopyingBinariesToOutputDirectory_IfCopyBuildOutputToOutputDirectory_IsUnset()
         {
             var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:CopyBuildOutputToOutputDirectory=false");

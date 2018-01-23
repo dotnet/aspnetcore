@@ -17,11 +17,13 @@
     Replace @(_DebugSymbolsIntermediatePath) with @(_RazorDebugSymbolsIntermediatePath)
     Replace @(IntermediateAssembly) with @(RazorIntermediateAssembly)
     Replace @(ReferencePathWithRefAssemblies) with @(RazorReferencePath)
+    Remove @(_CoreCompileResourceInputs) with @(_RazorCoreCompileResourceInputs)
 
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
 
     Remove Returns="@(CscCommandLineArgs)"
-    Remove @(_CoreCompileResourceInputs)
+    
+    Remove @(EmbeddedFiles)
     Remove $(ApplicationIcon) $(Win32Resource) $(Win32Manifest)
     Remove @(EmbeddedDocumentation) and @(EmbeddedFiles)
     Remove @(CustomAdditionalCompileInputs) and @(CustomAdditionalCompileOutputs)
@@ -43,7 +45,8 @@
                   @(CompiledLicenseFile);
                   @(LinkResource);
                   $(ResolvedCodeAnalysisRuleSet);
-                  @(AdditionalFiles)"
+                  @(AdditionalFiles);
+                  @(_RazorCoreCompileResourceInputs)"
           Outputs="@(RazorIntermediateAssembly);
                    @(_RazorDebugSymbolsIntermediatePath);
                    $(NonExistentFile)"
@@ -134,7 +137,7 @@
          ProvideCommandLineArgs="$(ProvideCommandLineArgs)"
          References="@(RazorReferencePath)"
          ReportAnalyzer="$(ReportAnalyzer)"
-         Resources="@(CompiledLicenseFile)"
+         Resources="@(_RazorCoreCompileResourceInputs);@(CompiledLicenseFile)"
          ResponseFiles="$(CompilerResponseFile)"
          RuntimeMetadataVersion="$(RuntimeMetadataVersion)"
          SharedCompilationId="$(SharedCompilationId)"

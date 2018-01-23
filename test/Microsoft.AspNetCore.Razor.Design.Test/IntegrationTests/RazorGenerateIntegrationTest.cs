@@ -200,5 +200,52 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             
             Assert.FileCountEquals(result, 0, RazorIntermediateOutputPath, "*.cs");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_MvcRazorFilesToCompile_OverridesDefaultItems()
+        {
+            var content = @"
+<Project>
+  <Import Project=""$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"" />
+  <ItemGroup>
+    <MvcRazorFilesToCompile Include=""Views/Home/About.cshtml"" />
+  </ItemGroup>
+</Project>
+";
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "Directory.Build.props"), content);
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cs");
+            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cs");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_EnableDefaultRazorGenerateItems_False_OverridesDefaultItems()
+        {
+            var content = @"
+<Project>
+  <Import Project=""$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"" />
+  <PropertyGroup>
+    <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <RazorGenerate Include=""Views/Home/About.cshtml"" />
+  </ItemGroup>
+</Project>
+";
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "Directory.Build.props"), content);
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cs");
+            Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cs");
+        }
     }
 }

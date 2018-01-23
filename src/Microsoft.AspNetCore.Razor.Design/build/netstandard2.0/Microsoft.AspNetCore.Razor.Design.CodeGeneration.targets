@@ -96,8 +96,8 @@
     Condition="'@(RazorGenerate)'!= ''">
 
     <RemoveDir
-      Directories="$(RazorGenerateOutputPath)"
-      Condition = "Exists('$(RazorGenerateOutputPath)')"/>
+      Directories="$(RazorGenerateIntermediateOutputPath)"
+      Condition = "Exists('$(RazorGenerateIntermediateOutputPath)')"/>
 
     <MakeDir
       Directories="%(_RazorGenerateOutput.RelativeDir)"
@@ -110,7 +110,7 @@
       Sources="@(RazorGenerate)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)"
-      OutputPath="$(RazorGenerateOutputPath)" />
+      OutputPath="$(RazorGenerateIntermediateOutputPath)" />
 
     <ItemGroup>
       <FileWrites Include="@(_RazorGenerateOutput)" />
@@ -120,6 +120,18 @@
   <Target Name="_ResolveGeneratedRazorCompileInputs" BeforeTargets="ResolveRazorCompileInputs">
     <ItemGroup>
       <RazorCompile Include="@(_RazorGenerateOutput)" />
+      <RazorEmbeddedResource Include="@(RazorGenerate)" Condition="$(EmbedRazorGenerateSources)">
+        <LogicalName>/$([System.String]::Copy('%(Identity)').Replace('\','/'))</LogicalName>
+        <Type>Non-Resx</Type>
+        <WithCulture>false</WithCulture>
+      </RazorEmbeddedResource>
+    </ItemGroup>
+
+    <!-- Similar to _GenerateCompileInputs -->
+    <ItemGroup>
+      <_RazorCoreCompileResourceInputs 
+        Include="@(RazorEmbeddedResource)" 
+        Condition="'%(RazorEmbeddedResource.WithCulture)'=='false' and '%(RazorEmbeddedResource.Type)'=='Non-Resx' " />
     </ItemGroup>
   </Target>
 
