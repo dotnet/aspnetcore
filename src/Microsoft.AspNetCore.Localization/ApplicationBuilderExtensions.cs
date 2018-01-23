@@ -58,6 +58,9 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <param name="optionsAction"></param>
+        /// <remarks>
+        /// This will going to instantiate a new <see cref="RequestLocalizationOptions"/> that doesn't come from the services.
+        /// </remarks>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestLocalization(
             this IApplicationBuilder app,
@@ -105,7 +108,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (cultures.Length == 0)
             {
-                throw new ArgumentException($"The {cultures} cannot be null.", nameof(cultures));
+                throw new ArgumentException("Please provide at least one culture.");
             }
 
             var options = new RequestLocalizationOptions()
