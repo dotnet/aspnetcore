@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
@@ -20,16 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
             LocalizationServiceCollectionExtensions.AddLocalizationServices(collection);
 
             // Assert
-            var services = collection.ToList();
-            Assert.Equal(2, services.Count);
-
-            Assert.Equal(typeof(IStringLocalizerFactory), services[0].ServiceType);
-            Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[0].Lifetime);
-
-            Assert.Equal(typeof(IStringLocalizer<>), services[1].ServiceType);
-            Assert.Equal(typeof(StringLocalizer<>), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
+            AssertContainsSingle(collection, typeof(IStringLocalizerFactory), typeof(ResourceManagerStringLocalizerFactory));
+            AssertContainsSingle(collection, typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
         }
 
         [Fact]
@@ -43,20 +36,33 @@ namespace Microsoft.Extensions.DependencyInjection
                 collection,
                 options => options.ResourcesPath = "Resources");
 
-            // Assert
-            var services = collection.ToList();
-            Assert.Equal(3, services.Count);
+            AssertContainsSingle(collection, typeof(IStringLocalizerFactory), typeof(ResourceManagerStringLocalizerFactory));
+            AssertContainsSingle(collection, typeof(IStringLocalizer<>), typeof(StringLocalizer<>));
+        }
 
-            Assert.Equal(typeof(IStringLocalizerFactory), services[0].ServiceType);
-            Assert.Equal(typeof(ResourceManagerStringLocalizerFactory), services[0].ImplementationType);
-            Assert.Equal(ServiceLifetime.Singleton, services[0].Lifetime);
+        private void AssertContainsSingle(
+            IServiceCollection services,
+            Type serviceType,
+            Type implementationType)
+        {
+            var matches = services
+                .Where(sd =>
+                    sd.ServiceType == serviceType &&
+                    sd.ImplementationType == implementationType)
+                .ToArray();
 
-            Assert.Equal(typeof(IStringLocalizer<>), services[1].ServiceType);
-            Assert.Equal(typeof(StringLocalizer<>), services[1].ImplementationType);
-            Assert.Equal(ServiceLifetime.Transient, services[1].Lifetime);
-
-            Assert.Equal(typeof(IConfigureOptions<LocalizationOptions>), services[2].ServiceType);
-            Assert.Equal(ServiceLifetime.Singleton, services[2].Lifetime);
+            if (matches.Length == 0)
+            {
+                Assert.True(
+                    false,
+                    $"Could not find an instance of {implementationType} registered as {serviceType}");
+            }
+            else if (matches.Length > 1)
+            {
+                Assert.True(
+                    false,
+                    $"Found multiple instances of {implementationType} registered as {serviceType}");
+            }
         }
     }
 }
