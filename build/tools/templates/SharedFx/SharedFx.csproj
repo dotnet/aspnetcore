@@ -22,7 +22,7 @@
   <ItemGroup>
    <PackageReference Include="$(SharedFxPackage)" Version="$(SharedFxPackageVersion)" ExcludeAssets="Build" />
    <PackageReference Include="$(SharedFxDep)" Version="$(SharedFxDepVersion)" Condition="'$(SharedFxDep)' != ''"/>
-   <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)"/>
+   <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)" ExcludeAssets="Native"/>
   </ItemGroup>
 
   <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
