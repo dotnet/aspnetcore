@@ -11,4 +11,12 @@
     -->
     <AspNetCoreModuleHostingModel Condition=" '$(AspNetCoreModuleHostingModel)' == '' AND '$(DisableInProcessHosting)' != 'true' ">InProcess</AspNetCoreModuleHostingModel>
   </PropertyGroup>
+  
+  <!--
+    Capability that enables Visual Studio support for hosting Asp.Net Core applications in the IIS process
+  -->
+  <ItemGroup>
+    <ProjectCapability Include="AspNetInProcessHosting" />
+  </ItemGroup>
+
 </Project>
