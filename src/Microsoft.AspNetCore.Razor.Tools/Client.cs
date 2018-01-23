@@ -12,6 +12,23 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal abstract class Client : IDisposable
     {
+        private static int counter;
+
+        public abstract Stream Stream { get; }
+
+        public abstract string Identifier { get; }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+        }
+
+        public abstract Task WaitForDisconnectAsync(CancellationToken cancellationToken);
+
+        protected virtual void Dispose(bool disposing)
+        {
+        }
+
         // Based on: https://github.com/dotnet/roslyn/blob/14aed138a01c448143b9acf0fe77a662e3dfe2f4/src/Compilers/Shared/BuildServerConnection.cs#L290
         public static async Task<Client> ConnectAsync(string pipeName, TimeSpan? timeout, CancellationToken cancellationToken)
         {
@@ -49,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // We plan to rely on the BCL for this but it's not yet implemented:
                 // See https://github.com/dotnet/corefx/issues/25427 
 
-                return new NamedPipeClient(stream);
+                return new NamedPipeClient(stream, GetNextIdentifier());
             }
             catch (Exception e) when (!(e is TaskCanceledException || e is OperationCanceledException))
             {
@@ -58,24 +75,54 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        public abstract Stream Stream { get; }
-
-        public void Dispose()
+        private static string GetNextIdentifier()
         {
-            Dispose(disposing: true);
+            var id = Interlocked.Increment(ref counter);
+            return "clientconnection-" + id;
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-        }
         private class NamedPipeClient : Client
         {
-            public NamedPipeClient(NamedPipeClientStream stream)
+            public NamedPipeClient(NamedPipeClientStream stream, string identifier)
             {
                 Stream = stream;
+                Identifier = identifier;
             }
 
             public override Stream Stream { get; }
+
+            public override string Identifier { get; }
+
+            public async override Task WaitForDisconnectAsync(CancellationToken cancellationToken)
+            {
+                if (!(Stream is PipeStream pipeStream))
+                {
+                    return;
+                }
+
+                // We have to poll for disconnection by reading, PipeStream.IsConnected isn't reliable unless you
+                // actually do a read - which will cause it to update its state.
+                while (!cancellationToken.IsCancellationRequested && pipeStream.IsConnected)
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+
+                    try
+                    {
+                        CompilerServerLogger.Log($"Before poking pipe {Identifier}.");
+                        await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
+                        CompilerServerLogger.Log($"After poking pipe {Identifier}.");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+                    catch (Exception e)
+                    {
+                        // It is okay for this call to fail.  Errors will be reflected in the
+                        // IsConnected property which will be read on the next iteration.
+                        CompilerServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
+                    }
+                }
+            }
 
             protected override void Dispose(bool disposing)
             {

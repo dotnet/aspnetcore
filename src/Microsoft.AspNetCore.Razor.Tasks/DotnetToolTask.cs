@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -106,37 +107,35 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             _razorServerCts?.Cancel();
         }
 
-        protected virtual bool TryExecuteOnServer(string pathToTool, string responseFileCommands, string commandLineCommands, out int result)
+        protected virtual bool TryExecuteOnServer(
+            string pathToTool,
+            string responseFileCommands,
+            string commandLineCommands,
+            out int result)
         {
             CompilerServerLogger.Log("Server execution started.");
             using (_razorServerCts = new CancellationTokenSource())
             {
                 CompilerServerLogger.Log($"CommandLine = '{commandLineCommands}'");
-                CompilerServerLogger.Log($"BuildResponseFile = '{responseFileCommands}'");
+                CompilerServerLogger.Log($"ServerResponseFile = '{responseFileCommands}'");
 
                 // The server contains the tools for discovering tag helpers and generating Razor code.
                 var clientDir = Path.GetDirectoryName(ToolAssembly);
                 var workingDir = CurrentDirectoryToUse();
-                var tempDir = BuildServerConnection.GetTempPath(workingDir);
-
-                var buildPaths = new BuildPathsAlt(
+                var tempDir = ServerConnection.GetTempPath(workingDir);
+                var serverPaths = new ServerPaths(
                     clientDir,
-                    // MSBuild doesn't need the .NET SDK directory
-                    sdkDir: null,
                     workingDir: workingDir,
                     tempDir: tempDir);
 
-                var responseTask = BuildServerConnection.RunServerCompilation(
-                    GetArguments(responseFileCommands),
-                    buildPaths,
-                    keepAlive: null,
-                    cancellationToken: _razorServerCts.Token);
+                var arguments = GetArguments(responseFileCommands);
 
+                var responseTask = ServerConnection.RunOnServer(arguments, serverPaths, _razorServerCts.Token);
                 responseTask.Wait(_razorServerCts.Token);
 
                 var response = responseTask.Result;
-                if (response.Type == BuildResponse.ResponseType.Completed &&
-                    response is CompletedBuildResponse completedResponse)
+                if (response.Type == ServerResponse.ResponseType.Completed &&
+                    response is CompletedServerResponse completedResponse)
                 {
                     result = completedResponse.ReturnCode;
 
@@ -159,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             // ToolTask has a method for this. But it may return null. Use the process directory
             // if ToolTask didn't override. MSBuild uses the process directory.
-            string workingDirectory = GetWorkingDirectory();
+            var workingDirectory = GetWorkingDirectory();
             if (string.IsNullOrEmpty(workingDirectory))
             {
                 workingDirectory = Directory.GetCurrentDirectory();

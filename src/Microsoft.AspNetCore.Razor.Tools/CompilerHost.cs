@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.CommandLine;
-using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -16,15 +15,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return new DefaultCompilerHost();
         }
 
-        public abstract BuildResponse Execute(BuildRequest request, CancellationToken cancellationToken);
+        public abstract ServerResponse Execute(ServerRequest request, CancellationToken cancellationToken);
 
         private class DefaultCompilerHost : CompilerHost
         {
-            public override BuildResponse Execute(BuildRequest request, CancellationToken cancellationToken)
+            public override ServerResponse Execute(ServerRequest request, CancellationToken cancellationToken)
             {
                 if (!TryParseArguments(request, out var parsed))
                 {
-                    return new RejectedBuildResponse();
+                    return new RejectedServerResponse();
                 }
 
                 var app = new Application(cancellationToken);
@@ -33,10 +32,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var exitCode = app.Execute(commandArgs);
                 var output = app.Out.ToString() ?? string.Empty;
 
-                return new CompletedBuildResponse(exitCode, utf8output: false, output: output);
+                return new CompletedServerResponse(exitCode, utf8output: false, output: output);
             }
 
-            private bool TryParseArguments(BuildRequest request, out (string workingDirectory, string tempDirectory, string[] args) parsed)
+            private bool TryParseArguments(ServerRequest request, out (string workingDirectory, string tempDirectory, string[] args) parsed)
             {
                 string workingDirectory = null;
                 string tempDirectory = null;
@@ -46,15 +45,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 for (var i = 0; i < request.Arguments.Count; i++)
                 {
                     var argument = request.Arguments[i];
-                    if (argument.ArgumentId == BuildProtocolConstants.ArgumentId.CurrentDirectory)
+                    if (argument.Id == RequestArgument.ArgumentId.CurrentDirectory)
                     {
                         workingDirectory = argument.Value;
                     }
-                    else if (argument.ArgumentId == BuildProtocolConstants.ArgumentId.TempDirectory)
+                    else if (argument.Id == RequestArgument.ArgumentId.TempDirectory)
                     {
                         tempDirectory = argument.Value;
                     }
-                    else if (argument.ArgumentId == BuildProtocolConstants.ArgumentId.CommandLineArgument)
+                    else if (argument.Id == RequestArgument.ArgumentId.CommandLineArgument)
                     {
                         args.Add(argument.Value);
                     }

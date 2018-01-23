@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,23 +14,23 @@ namespace Microsoft.AspNetCore.Razor.Tools
     // https://github.com/dotnet/roslyn/blob/14aed138a01c448143b9acf0fe77a662e3dfe2f4/src/Compilers/Server/VBCSCompiler/NamedPipeClientConnection.cs#L17
     internal abstract class ConnectionHost
     {
-        private static int counter;
-
-        private static string GetNextIdentifier()
-        {
-            var id = Interlocked.Increment(ref counter);
-            return "connection-" + id;
-        }
-
         // Size of the buffers to use: 64K
         private const int PipeBufferSize = 0x10000;
+
+        private static int counter;
+
+        public abstract Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken);
 
         public static ConnectionHost Create(string pipeName)
         {
             return new NamedPipeConnectionHost(pipeName);
         }
 
-        public abstract Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken);
+        private static string GetNextIdentifier()
+        {
+            var id = Interlocked.Increment(ref counter);
+            return "connection-" + id;
+        }
 
         private class NamedPipeConnectionHost : ConnectionHost
         {
@@ -76,17 +77,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             public NamedPipeConnection(NamedPipeServerStream stream, string identifier)
             {
-                base.Stream = stream;
+                Stream = stream;
                 Identifier = identifier;
             }
 
-            public new NamedPipeServerStream Stream => (NamedPipeServerStream)base.Stream;
-
             public async override Task WaitForDisconnectAsync(CancellationToken cancellationToken)
             {
+                if (!(Stream is PipeStream pipeStream))
+                {
+                    return;
+                }
+
                 // We have to poll for disconnection by reading, PipeStream.IsConnected isn't reliable unless you
                 // actually do a read - which will cause it to update its state.
-                while (!cancellationToken.IsCancellationRequested && Stream.IsConnected)
+                while (!cancellationToken.IsCancellationRequested && pipeStream.IsConnected)
                 {
                     await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
 
@@ -102,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     catch (Exception e)
                     {
                         // It is okay for this call to fail.  Errors will be reflected in the
-                        // IsConnected property which will be read on the next iteration of the
+                        // IsConnected property which will be read on the next iteration.
                         CompilerServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
                     }
                 }

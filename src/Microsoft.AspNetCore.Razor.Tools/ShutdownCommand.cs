@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tools
@@ -46,10 +45,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 using (var client = await Client.ConnectAsync(Pipe.Value(), timeout: null, cancellationToken: Cancelled))
                 {
-                    var request = BuildRequest.CreateShutdown();
+                    var request = ServerRequest.CreateShutdown();
                     await request.WriteAsync(client.Stream, Cancelled).ConfigureAwait(false);
 
-                    var response = ((ShutdownBuildResponse)await BuildResponse.ReadAsync(client.Stream, Cancelled));
+                    var response = ((ShutdownServerResponse)await ServerResponse.ReadAsync(client.Stream, Cancelled));
 
                     if (Wait.HasValue())
                     {

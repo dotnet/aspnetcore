@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var baseName = ComputeBaseName("Razor:" + AppDomain.CurrentDomain.BaseDirectory);
 
             // Prefix with username and elevation
-            bool isAdmin = false;
+            var isAdmin = false;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
 #if WINDOWS_HACK_LOL

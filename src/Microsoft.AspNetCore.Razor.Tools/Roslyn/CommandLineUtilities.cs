@@ -48,8 +48,7 @@ namespace Roslyn.Utilities
         /// </remarks>
         public static IEnumerable<string> SplitCommandLineIntoArguments(string commandLine, bool removeHashComments)
         {
-            char? unused;
-            return SplitCommandLineIntoArguments(commandLine, removeHashComments, out unused);
+            return SplitCommandLineIntoArguments(commandLine, removeHashComments, out var unused);
         }
 
         public static IEnumerable<string> SplitCommandLineIntoArguments(string commandLine, bool removeHashComments, out char? illegalChar)

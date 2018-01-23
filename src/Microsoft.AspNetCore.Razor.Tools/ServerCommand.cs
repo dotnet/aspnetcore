@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
@@ -13,9 +14,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
             : base(parent, "server")
         {
             Pipe = Option("-p|--pipe", "name of named pipe", CommandOptionType.SingleValue);
+            KeepAlive = Option("-k|--keep-alive", "sets the default idle timeout for the server in seconds", CommandOptionType.SingleValue);
         }
 
         public CommandOption Pipe { get; }
+
+        public CommandOption KeepAlive { get; }
 
         protected override bool ValidateArguments()
         {
@@ -41,10 +45,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 try
                 {
+                    TimeSpan? keepAlive = null;
+                    if (KeepAlive.HasValue())
+                    {
+                        var value = KeepAlive.Value();
+                        if (int.TryParse(value, out var result))
+                        {
+                            // Keep alive times are specified in seconds
+                            keepAlive = TimeSpan.FromSeconds(result);
+                        }
+                    }
+
                     var host = ConnectionHost.Create(Pipe.Value());
                     var compilerHost = CompilerHost.Create();
-                    var dispatcher = RequestDispatcher.Create(host, compilerHost, Cancelled);
-                    dispatcher.Run();
+                    ExecuteServerCore(host, compilerHost, Cancelled, eventBus: null, keepAlive: keepAlive);
                 }
                 finally
                 {
@@ -53,6 +67,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
 
             return Task.FromResult(0);
+        }
+
+        protected virtual void ExecuteServerCore(ConnectionHost host, CompilerHost compilerHost, CancellationToken cancellationToken, EventBus eventBus, TimeSpan? keepAlive)
+        {
+            var dispatcher = RequestDispatcher.Create(host, compilerHost, cancellationToken, eventBus, keepAlive);
+            dispatcher.Run();
         }
     }
 }
