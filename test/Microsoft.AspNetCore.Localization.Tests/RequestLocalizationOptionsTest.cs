@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Xunit;
 
@@ -82,6 +83,48 @@ namespace Microsoft.AspNetCore.Localization
             // Assert
             Assert.Collection(options.SupportedCultures, item => Assert.Equal(explicitCulture, item));
             Assert.Collection(options.SupportedUICultures, item => Assert.Equal(explicitCulture, item));
+        }
+
+        [Fact]
+        public void BuilderAPIs_AddSupportedCultures()
+        {
+            // Arrange
+            var supportedCultures = new[] { "en-US", "ar-YE" };
+
+            // Act
+            var options = new RequestLocalizationOptions()
+                .AddSupportedCultures(supportedCultures);
+
+            // Assert
+            Assert.Collection(options.SupportedCultures, item => Assert.Contains(item.Name, supportedCultures));
+        }
+
+        [Fact]
+        public void BuilderAPIs_AddSupportedUICultures()
+        {
+            // Arrange
+            var supportedUICultures = new[] { "en-US", "ar-YE" };
+
+            // Act
+            var options = new RequestLocalizationOptions()
+                .AddSupportedCultures(supportedUICultures);
+
+            // Assert
+            Assert.Collection(options.SupportedUICultures, item => Assert.Contains(item.Name, supportedUICultures));
+        }
+
+        [Fact]
+        public void BuilderAPIs_SetDefaultCulture()
+        {
+            // Arrange
+            var defaultCulture = "ar-YE";
+
+            // Act
+            var options = new RequestLocalizationOptions()
+                .SetDefaultCulture(defaultCulture);
+
+            // Assert
+            Assert.Equal(defaultCulture, options.DefaultRequestCulture.Culture.Name);
         }
 
         public void Dispose()
