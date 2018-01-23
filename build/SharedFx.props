@@ -17,6 +17,12 @@
     <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
     <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
 
+    <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
+    <LibExtension>.so</LibExtension>
+    <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
+    <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
+    <ExeExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.exe</ExeExtension>
+
     <!-- installers -->
     <SharedFxInstallerName>aspnetcore-runtime</SharedFxInstallerName>
     <!--
@@ -24,9 +30,7 @@
       Subsequent build steps will combine this with Microsoft.NETCore.App and produce final tarballs/zips.
     -->
     <SharedFxIntermediateArchiveBaseName>$(SharedFxInstallerName)-internal</SharedFxIntermediateArchiveBaseName>
-
     <DebConfigInFile>$(_PackagingDir)debian_config.json.in</DebConfigInFile>
-
     <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet/</PublicCoreFeedPrefix>
 
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->

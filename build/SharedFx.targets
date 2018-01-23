@@ -132,13 +132,13 @@
   <Target Name="PrepareForSharedFx" DependsOnTargets="DefineSharedFxPrerequisites;ResolveCommitHash">
     <PropertyGroup>
       <AppSharedFxProps>SharedFxWorkDirectory=$(AppSharedFxWorkDirectory)</AppSharedFxProps>
+      <AppSharedFxProps>$(AppSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
       <AppSharedFxProps>$(AppSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.App</AppSharedFxProps>
-      <AppSharedFxProps>$(AppSharedFxProps);SharedFxBase=Microsoft.NETCore.App</AppSharedFxProps>
-      <AppSharedFxProps>$(AppSharedFxProps);SharedFxBaseVersion=$(MicrosoftNETCoreApp21PackageVersion)</AppSharedFxProps>
       <AllSharedFxProps>SharedFxWorkDirectory=$(AllSharedFxWorkDirectory)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion)</AllSharedFxProps>
       <AllSharedFxProps>$(AllSharedFxProps);SharedFxPackage=Microsoft.AspNetCore.All</AllSharedFxProps>
-      <AllSharedFxProps>$(AllSharedFxProps);SharedFxBase=Microsoft.AspNetCore.App</AllSharedFxProps>
-      <AllSharedFxProps>$(AllSharedFxProps);SharedFxBaseVersion=$(PackageVersion)</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxDep=Microsoft.AspNetCore.App</AllSharedFxProps>
+      <AllSharedFxProps>$(AllSharedFxProps);SharedFxDepVersion=$(PackageVersion)</AllSharedFxProps>
     </PropertyGroup>
 
     <ItemGroup>
@@ -169,6 +169,9 @@
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx" />
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.dll" />
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.pdb" />
+      <ToDelete Include="$(SharedFxPublishDirectory)\apphost$(ExeExtension)" />
+      <ToDelete Include="$(SharedFxPublishDirectory)\$(LibPrefix)hostfxr$(LibExtension)" />
+      <ToDelete Include="$(SharedFxPublishDirectory)\$(LibPrefix)hostpolicy$(LibExtension)" />
     </ItemGroup>
 
     <Delete Files="@(ToDelete)" />
@@ -225,11 +228,6 @@
       <RuntimePackageName>Microsoft.NETCore.App</RuntimePackageName>
       <CrossGenTool>crossgen</CrossGenTool>
       <CrossGenTool Condition="$([MSBuild]::IsOSPlatform('Windows'))">$(CrossGenTool).exe</CrossGenTool>
-
-      <LibPrefix Condition="$([MSBuild]::IsOSPlatform('Linux')) OR $([MSBuild]::IsOSPlatform('OSX'))">lib</LibPrefix>
-      <LibExtension>.so</LibExtension>
-      <LibExtension Condition="$([MSBuild]::IsOSPlatform('Windows'))">.dll</LibExtension>
-      <LibExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.dylib</LibExtension>
     </PropertyGroup>
 
     <!-- Determine runtime location (via .App shared framework) -->

@@ -21,7 +21,8 @@
 
   <ItemGroup>
    <PackageReference Include="$(SharedFxPackage)" Version="$(SharedFxPackageVersion)" ExcludeAssets="Build" />
-   <PackageReference Include="$(SharedFxBase)" Version="$(SharedFxBaseVersion)"/>
+   <PackageReference Include="$(SharedFxDep)" Version="$(SharedFxDepVersion)" Condition="'$(SharedFxDep)' != ''"/>
+   <PackageReference Include="Microsoft.NETCore.App" Version="$(RuntimeFrameworkVersion)"/>
   </ItemGroup>
 
   <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
