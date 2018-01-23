@@ -41,8 +41,6 @@
 
   <!-- These are tools that need to be included in the package. -->
   <ItemGroup>
-    <ToolProject Include="..\Microsoft.AspNetCore.Razor.GenerateTool\Microsoft.AspNetCore.Razor.GenerateTool.csproj" />
-    <ToolProject Include="..\Microsoft.AspNetCore.Razor.TagHelperTool\Microsoft.AspNetCore.Razor.TagHelperTool.csproj" />
     <ToolProject Include="..\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
   </ItemGroup>
 

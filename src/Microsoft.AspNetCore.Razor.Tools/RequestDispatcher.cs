@@ -69,7 +69,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             private CancellationTokenSource _listenCancellationTokenSource;
             private List<Task<ConnectionResult>> _connections = new List<Task<ConnectionResult>>();
 
-
             public DefaultRequestDispatcher(ConnectionHost connectionHost, CompilerHost compilerHost, CancellationToken cancellationToken)
             {
                 _connectionHost = connectionHost;

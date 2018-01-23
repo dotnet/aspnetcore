@@ -30,18 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var app = new Application(cancellationToken);
                 var commandArgs = parsed.args.ToArray();
 
-                CommandBase command = null;
-                if (request.Command == RequestCommand.RazorGenerate)
-                {
-                    command = new GenerateCommand(app);
-                }
-                else if (request.Command == RequestCommand.RazorTagHelper)
-                {
-                    command = new DiscoverCommand(app);
-                }
-
-                var exitCode = command?.Execute(commandArgs) ?? 0;
-                var output = command?.Out.ToString() ?? string.Empty;
+                var exitCode = app.Execute(commandArgs);
+                var output = app.Out.ToString() ?? string.Empty;
 
                 return new CompletedBuildResponse(exitCode, utf8output: false, output: output);
             }

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         protected override Task<int> ExecuteCoreAsync()
         {
             var result = ExecuteCore(
-                projectDirectory: ProjectDirectory.Value() ?? Environment.CurrentDirectory,
+                projectDirectory: ProjectDirectory.Value(),
                 outputDirectory: OutputDirectory.Value(),
                 tagHelperManifest: TagHelperManifest.Value(),
                 sources: Sources.Values.ToArray());
@@ -55,6 +55,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 Error.WriteLine($"{Sources.Name} should have at least one value.");
                 return false;
+            }
+
+            if (string.IsNullOrEmpty(ProjectDirectory.Value()))
+            {
+                ProjectDirectory.Values.Add(Environment.CurrentDirectory);
             }
 
             return true;
@@ -92,7 +97,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                 }
 
-                var outputFilePath = Path.Combine(outputDirectory, Path.ChangeExtension(result.ViewFileInfo.ViewEnginePath.Substring(1), ".cs"));
+                var viewFile = result.ViewFileInfo.ViewEnginePath.Substring(1);
+                var outputFileName = Path.ChangeExtension(viewFile, ".cs");
+
+                var outputFilePath = Path.Combine(outputDirectory, outputFileName);
                 File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
             }
 
@@ -114,7 +122,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 serializer.Converters.Add(new RazorDiagnosticJsonConverter());
                 serializer.Converters.Add(new TagHelperDescriptorJsonConverter());
 
-                return serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+                var descriptors = serializer.Deserialize<IReadOnlyList<TagHelperDescriptor>>(reader);
+                return descriptors;
             }
         }
 

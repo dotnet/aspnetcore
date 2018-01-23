@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -27,9 +26,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public string ToolAssembly { get; set; }
 
-        [Required]
-        public string ServerAssembly { get; set; }
-
         public bool UseServer { get; set; }
 
         protected override string ToolName => "dotnet";
@@ -39,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
 
-        internal abstract RequestCommand Command { get; }
+        internal abstract string Command { get; }
 
         protected override string GenerateFullPathToTool()
         {
@@ -83,7 +79,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
             if (UseServer &&
-                !string.IsNullOrEmpty(ServerAssembly) &&
                 TryExecuteOnServer(pathToTool, responseFileCommands, commandLineCommands, out var result))
             {
                 return result;
@@ -120,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 CompilerServerLogger.Log($"BuildResponseFile = '{responseFileCommands}'");
 
                 // The server contains the tools for discovering tag helpers and generating Razor code.
-                var clientDir = Path.GetDirectoryName(ServerAssembly);
+                var clientDir = Path.GetDirectoryName(ToolAssembly);
                 var workingDir = CurrentDirectoryToUse();
                 var tempDir = BuildServerConnection.GetTempPath(workingDir);
 
@@ -132,7 +127,6 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                     tempDir: tempDir);
 
                 var responseTask = BuildServerConnection.RunServerCompilation(
-                    Command,
                     GetArguments(responseFileCommands),
                     buildPaths,
                     keepAlive: null,

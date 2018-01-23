@@ -63,7 +63,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
         internal const int TimeOutMsNewProcess = 20000;
 
         public static Task<BuildResponse> RunServerCompilation(
-            RequestCommand command,
             List<string> arguments,
             BuildPathsAlt buildPaths,
             string keepAlive,
@@ -72,7 +71,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
             var pipeName = PipeName.ComputeDefault();
 
             return RunServerCompilationCore(
-                command,
                 arguments,
                 buildPaths,
                 pipeName: pipeName,
@@ -84,7 +82,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
         }
 
         internal static async Task<BuildResponse> RunServerCompilationCore(
-            RequestCommand language,
             List<string> arguments,
             BuildPathsAlt buildPaths,
             string pipeName,
@@ -156,12 +153,12 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 var pipe = await pipeTask.ConfigureAwait(false);
                 if (pipe != null)
                 {
-                    var request = BuildRequest.Create(language,
-                                                      buildPaths.WorkingDirectory,
-                                                      buildPaths.TempDirectory,
-                                                      arguments,
-                                                      keepAlive,
-                                                      libEnvVariable);
+                    var request = BuildRequest.Create(
+                        buildPaths.WorkingDirectory,
+                        buildPaths.TempDirectory,
+                        arguments,
+                        keepAlive,
+                        libEnvVariable);
 
                     return await TryCompile(pipe, request, cancellationToken).ConfigureAwait(false);
                 }

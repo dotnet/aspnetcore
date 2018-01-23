@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 projectDirectory: ProjectDirectory.Value(),
                 outputFilePath: TagHelperManifest.Value(),
                 assemblies: Assemblies.Values.ToArray());
+
             return Task.FromResult(result);
         }
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 b.Features.Add(new CompilationTagHelperFeature());
 
                 // TagHelperDescriptorProviders (actually do tag helper discovery)
-                b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider());
+                b.Features.Add(new DefaultTagHelperDescriptorProvider());
                 b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
             });
 

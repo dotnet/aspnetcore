@@ -21,11 +21,14 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         [Required]
         public string TagHelperManifest { get; set; }
 
-        internal override RequestCommand Command => RequestCommand.RazorGenerate;
+        internal override string Command => "generate";
 
         protected override string GenerateResponseFileCommands()
         {
             var builder = new StringBuilder();
+
+            builder.AppendLine(Command);
+
             for (var i = 0; i < Sources.Length; i++)
             {
                 builder.AppendLine(Sources[i]);

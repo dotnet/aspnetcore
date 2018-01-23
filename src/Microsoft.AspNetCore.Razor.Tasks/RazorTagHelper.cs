@@ -5,7 +5,6 @@
 using System.IO;
 using System.Text;
 using Microsoft.Build.Framework;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string ProjectRoot { get; set; }
 
-        internal override RequestCommand Command => RequestCommand.RazorTagHelper;
+        internal override string Command => "discover";
 
         protected override bool SkipTaskExecution()
         {
@@ -38,6 +37,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         protected override string GenerateResponseFileCommands()
         {
             var builder = new StringBuilder();
+
+            builder.AppendLine(Command);
+
             for (var i = 0; i < Assemblies.Length; i++)
             {
                 builder.AppendLine(Assemblies[i]);

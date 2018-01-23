@@ -28,7 +28,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
     ///  Field Name         Type                Size (bytes)
     /// ----------------------------------------------------
     ///  Length             Integer             4
-    ///  Language           RequestLanguage     4
     ///  Argument Count     UInteger            4
     ///  Arguments          Argument[]          Variable
     /// 
@@ -39,13 +38,11 @@ namespace Microsoft.CodeAnalysis.CommandLine
     internal class BuildRequest
     {
         public readonly uint ProtocolVersion;
-        public readonly RequestCommand Command;
         public readonly ReadOnlyCollection<Argument> Arguments;
 
-        public BuildRequest(uint protocolVersion, RequestCommand command, IEnumerable<Argument> arguments)
+        public BuildRequest(uint protocolVersion, IEnumerable<Argument> arguments)
         {
             ProtocolVersion = protocolVersion;
-            Command = command;
             Arguments = new ReadOnlyCollection<Argument>(arguments.ToList());
 
             if (Arguments.Count > ushort.MaxValue)
@@ -80,7 +77,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
         }
 
         public static BuildRequest Create(
-            RequestCommand command,
             string workingDirectory,
             string tempDirectory,
             IList<string> args,
@@ -115,18 +111,22 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 requestArgs.Add(new Argument(ArgumentId.CommandLineArgument, i, arg));
             }
 
-            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, command, requestArgs);
+            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, requestArgs);
         }
 
         public static BuildRequest CreateShutdown()
         {
-            var requestArgs = new[] { new Argument(ArgumentId.Shutdown, argumentIndex: 0, value: "") };
-            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, RequestCommand.None, requestArgs);
+            var requestArgs = new[]
+            {
+                new Argument(ArgumentId.Shutdown, argumentIndex: 0, value: ""),
+                new Argument(ArgumentId.CommandLineArgument, argumentIndex: 1, value: "shutdown"),
+            };
+            return new BuildRequest(BuildProtocolConstants.ProtocolVersion, requestArgs);
         }
 
         public bool IsShutdownRequest()
         {
-            return Arguments.Count == 1 && Arguments[0].ArgumentId == ArgumentId.Shutdown;
+            return Arguments.Count >= 1 && Arguments[0].ArgumentId == ArgumentId.Shutdown;
         }
 
         /// <summary>
@@ -163,7 +163,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
             using (var reader = new BinaryReader(new MemoryStream(requestBuffer), Encoding.Unicode))
             {
                 var protocolVersion = reader.ReadUInt32();
-                var command = (RequestCommand)reader.ReadUInt32();
                 uint argumentCount = reader.ReadUInt32();
 
                 var argumentsBuilder = new List<Argument>((int)argumentCount);
@@ -174,9 +173,7 @@ namespace Microsoft.CodeAnalysis.CommandLine
                     argumentsBuilder.Add(BuildRequest.Argument.ReadFromBinaryReader(reader));
                 }
 
-                return new BuildRequest(protocolVersion,
-                                        command,
-                                        argumentsBuilder);
+                return new BuildRequest(protocolVersion, argumentsBuilder);
             }
         }
 
@@ -191,7 +188,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
                 // Format the request.
                 Log("Formatting request");
                 writer.Write(ProtocolVersion);
-                writer.Write((uint)Command);
                 writer.Write(Arguments.Count);
                 foreach (Argument arg in Arguments)
                 {
@@ -502,15 +498,6 @@ namespace Microsoft.CodeAnalysis.CommandLine
         /// </summary>
         /// <param name="writer"></param>
         protected override void AddResponseBody(BinaryWriter writer) { }
-    }
-
-    // The id numbers below are just random. It's useful to use id numbers
-    // that won't occur accidentally for debugging.
-    internal enum RequestCommand
-    {
-        None = 0x44532621,
-        RazorTagHelper = 0x44532622,
-        RazorGenerate = 0x44532623,
     }
 
     /// <summary>
