@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Localization
                 .AddSupportedCultures(supportedCultures);
 
             // Assert
-            Assert.Collection(options.SupportedCultures, item => Assert.Contains(item.Name, supportedCultures));
+            Assert.Equal(supportedCultures, options.SupportedCultures.Select(c => c.Name));
         }
 
         [Fact]
@@ -107,10 +107,10 @@ namespace Microsoft.AspNetCore.Localization
 
             // Act
             var options = new RequestLocalizationOptions()
-                .AddSupportedCultures(supportedUICultures);
+                .AddSupportedUICultures(supportedUICultures);
 
             // Assert
-            Assert.Collection(options.SupportedUICultures, item => Assert.Contains(item.Name, supportedUICultures));
+            Assert.Equal(supportedUICultures, options.SupportedUICultures.Select(c => c.Name));
         }
 
         [Fact]
