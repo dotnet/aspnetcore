@@ -80,14 +80,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             var context = server._iisContextFactory.CreateHttpContext(pInProcessHandler);
 
-            var task = context.ProcessRequestAsync();
-
-            // This should never fail
-            if (task.IsCompleted)
-            {
-                context.Dispose();
-                return ConvertRequestCompletionResults(task.Result);
-            }
+            var task = Task.Run(() => context.ProcessRequestAsync());
 
             task.ContinueWith((t, state) => CompleteRequest((IISHttpContext)state, t), context);
 
