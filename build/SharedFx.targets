@@ -169,9 +169,6 @@
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx" />
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.dll" />
       <ToDelete Include="$(SharedFxPublishDirectory)\SharedFx.pdb" />
-      <ToDelete Include="$(SharedFxPublishDirectory)\apphost$(ExeExtension)" />
-      <ToDelete Include="$(SharedFxPublishDirectory)\$(LibPrefix)hostfxr$(LibExtension)" />
-      <ToDelete Include="$(SharedFxPublishDirectory)\$(LibPrefix)hostpolicy$(LibExtension)" />
     </ItemGroup>
 
     <Delete Files="@(ToDelete)" />
