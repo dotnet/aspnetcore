@@ -82,6 +82,7 @@
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
     <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Diagnostics.EventLog" Version="$(SystemDiagnosticsEventLogPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="$(SystemIOFileSystemAccessControlPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Packaging" Version="$(SystemIOPackagingPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="$(SystemIOPipesAccessControlPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
@@ -89,6 +90,7 @@
     <ExternalDependency Include="System.Json" Version="$(SystemJsonPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="$(SystemNetHttpWinHttpHandlerPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Net.WebSockets.WebSocketProtocol" Version="$(SystemNetWebSocketsWebSocketProtocolPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Numerics.Vectors" Version="$(SystemNumericsVectorsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Reflection.DispatchProxy" Version="$(SystemReflectionDispatchProxyPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
