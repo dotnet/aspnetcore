@@ -1,6 +1,6 @@
 ﻿import { System_Array, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-const renderTreeEditStructLength = 12;
+const renderTreeEditStructLength = 16;
 
 export function getRenderTreeEditPtr(renderTreeEdits: System_Array, index: number): RenderTreeEditPointer {
   return platform.getArrayEntryPtr(renderTreeEdits, index, renderTreeEditStructLength) as RenderTreeEditPointer;
@@ -9,19 +9,19 @@ export function getRenderTreeEditPtr(renderTreeEdits: System_Array, index: numbe
 export const renderTreeEdit = {
   // The properties and memory layout must be kept in sync with the .NET equivalent in RenderTreeEdit.cs
   type: (edit: RenderTreeEditPointer) => platform.readInt32Field(edit, 0) as EditType,
-  newTreeIndex: (edit: RenderTreeEditPointer) => platform.readInt32Field(edit, 4),
-  removedAttributeName: (edit: RenderTreeEditPointer) => platform.readStringField(edit, 8),
+  siblingIndex: (edit: RenderTreeEditPointer) => platform.readInt32Field(edit, 4),
+  newTreeIndex: (edit: RenderTreeEditPointer) => platform.readInt32Field(edit, 8),
+  removedAttributeName: (edit: RenderTreeEditPointer) => platform.readStringField(edit, 12),
 };
 
 export enum EditType {
-  continue = 1,
-  prependNode = 2,
-  removeNode = 3,
-  setAttribute = 4,
-  removeAttribute = 5,
-  updateText = 6,
-  stepIn = 7,
-  stepOut = 8,
+  prependNode = 1,
+  removeNode = 2,
+  setAttribute = 3,
+  removeAttribute = 4,
+  updateText = 5,
+  stepIn = 6,
+  stepOut = 7,
 }
 
 // Nominal type to ensure only valid pointers are passed to the renderTreeEdit functions.

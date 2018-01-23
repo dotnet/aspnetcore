@@ -16,8 +16,8 @@ namespace Microsoft.Blazor.RenderTree
             ArraySegment<RenderTreeNode> newTree)
         {
             _entriesInUse = 0;
-            AppendDiffEntriesForRange(oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count);
-            TrimTrailingContinueNodes();
+            var siblingIndex = 0;
+            AppendDiffEntriesForRange(oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count, ref siblingIndex);
 
             // If the previous usage of the buffer showed that we have allocated
             // much more space than needed, free up the excess memory
@@ -34,7 +34,8 @@ namespace Microsoft.Blazor.RenderTree
 
         private void AppendDiffEntriesForRange(
             RenderTreeNode[] oldTree, int oldStartIndex, int oldEndIndexExcl,
-            RenderTreeNode[] newTree, int newStartIndex, int newEndIndexExcl)
+            RenderTreeNode[] newTree, int newStartIndex, int newEndIndexExcl,
+            ref int siblingIndex)
         {
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
@@ -47,7 +48,7 @@ namespace Microsoft.Blazor.RenderTree
 
                 if (oldSeq == newSeq)
                 {
-                    AppendDiffEntriesForNodesWithSameSequence(oldTree, oldStartIndex, newTree, newStartIndex);
+                    AppendDiffEntriesForNodesWithSameSequence(oldTree, oldStartIndex, newTree, newStartIndex, ref siblingIndex);
                     oldStartIndex = NextSiblingIndex(oldTree, oldStartIndex);
                     newStartIndex = NextSiblingIndex(newTree, newStartIndex);
                     hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -124,13 +125,14 @@ namespace Microsoft.Blazor.RenderTree
                     {
                         if (newTree[newStartIndex].NodeType == RenderTreeNodeType.Attribute)
                         {
-                            Append(RenderTreeEdit.SetAttribute(newStartIndex));
+                            Append(RenderTreeEdit.SetAttribute(siblingIndex, newStartIndex));
                             newStartIndex++;
                         }
                         else
                         {
-                            Append(RenderTreeEdit.PrependNode(newStartIndex));
+                            Append(RenderTreeEdit.PrependNode(siblingIndex, newStartIndex));
                             newStartIndex = NextSiblingIndex(newTree, newStartIndex);
+                            siblingIndex++;
                         }
 
                         hasMoreNew = newEndIndexExcl > newStartIndex;
@@ -140,12 +142,12 @@ namespace Microsoft.Blazor.RenderTree
                     {
                         if (oldTree[oldStartIndex].NodeType == RenderTreeNodeType.Attribute)
                         {
-                            Append(RenderTreeEdit.RemoveAttribute(oldTree[oldStartIndex].AttributeName));
+                            Append(RenderTreeEdit.RemoveAttribute(siblingIndex, oldTree[oldStartIndex].AttributeName));
                             oldStartIndex++;
                         }
                         else
                         {
-                            Append(RenderTreeEdit.RemoveNode());
+                            Append(RenderTreeEdit.RemoveNode(siblingIndex));
                             oldStartIndex = NextSiblingIndex(oldTree, oldStartIndex);
                         }
                         hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -163,7 +165,8 @@ namespace Microsoft.Blazor.RenderTree
 
         private void AppendDiffEntriesForNodesWithSameSequence(
             RenderTreeNode[] oldTree, int oldNodeIndex,
-            RenderTreeNode[] newTree, int newNodeIndex)
+            RenderTreeNode[] newTree, int newNodeIndex,
+            ref int siblingIndex)
         {
             // We can assume that the old and new nodes are of the same type, because they correspond
             // to the same sequence number (and if not, the behaviour is undefined).
@@ -175,11 +178,11 @@ namespace Microsoft.Blazor.RenderTree
                         var newText = newTree[newNodeIndex].TextContent;
                         if (string.Equals(oldText, newText, StringComparison.Ordinal))
                         {
-                            Append(RenderTreeEdit.Continue());
+                            siblingIndex++;
                         }
                         else
                         {
-                            Append(RenderTreeEdit.UpdateText(newNodeIndex));
+                            Append(RenderTreeEdit.UpdateText(siblingIndex, newNodeIndex));
                         }
                         break;
                     }
@@ -196,7 +199,8 @@ namespace Microsoft.Blazor.RenderTree
                             // Diff the attributes
                             AppendDiffEntriesForRange(
                                 oldTree, oldNodeIndex + 1, oldNodeAttributesEndIndexExcl,
-                                newTree, newNodeIndex + 1, newNodeAttributesEndIndexExcl);
+                                newTree, newNodeIndex + 1, newNodeAttributesEndIndexExcl,
+                                ref siblingIndex);
 
                             // Diff the children
                             var oldNodeChildrenEndIndexExcl = oldTree[oldNodeIndex].ElementDescendantsEndIndex + 1;
@@ -206,22 +210,26 @@ namespace Microsoft.Blazor.RenderTree
                                 newNodeChildrenEndIndexExcl > newNodeAttributesEndIndexExcl;
                             if (hasChildrenToProcess)
                             {
-                                Append(RenderTreeEdit.StepIn());
+                                Append(RenderTreeEdit.StepIn(siblingIndex));
+                                var childSiblingIndex = 0;
                                 AppendDiffEntriesForRange(
                                     oldTree, oldNodeAttributesEndIndexExcl, oldNodeChildrenEndIndexExcl,
-                                    newTree, newNodeAttributesEndIndexExcl, newNodeChildrenEndIndexExcl);
+                                    newTree, newNodeAttributesEndIndexExcl, newNodeChildrenEndIndexExcl,
+                                    ref childSiblingIndex);
                                 Append(RenderTreeEdit.StepOut());
+                                siblingIndex++;
                             }
                             else
                             {
-                                Append(RenderTreeEdit.Continue());
+                                siblingIndex++;
                             }
                         }
                         else
                         {
                             // Elements with different names are treated as completely unrelated
-                            Append(RenderTreeEdit.PrependNode(newNodeIndex));
-                            Append(RenderTreeEdit.RemoveNode());
+                            Append(RenderTreeEdit.PrependNode(siblingIndex, newNodeIndex));
+                            siblingIndex++;
+                            Append(RenderTreeEdit.RemoveNode(siblingIndex));
                         }
                         break;
                     }
@@ -236,14 +244,14 @@ namespace Microsoft.Blazor.RenderTree
                             // instance of any changes
                             // TODO: Also copy the existing child component instance to the new
                             // tree so we can preserve it across multiple updates
-
-                            Append(RenderTreeEdit.Continue());
+                            siblingIndex++;
                         }
                         else
                         {
                             // Child components of different types are treated as completely unrelated
-                            Append(RenderTreeEdit.PrependNode(newNodeIndex));
-                            Append(RenderTreeEdit.RemoveNode());
+                            Append(RenderTreeEdit.PrependNode(siblingIndex, newNodeIndex));
+                            siblingIndex++;
+                            Append(RenderTreeEdit.RemoveNode(siblingIndex));
                         }
                         break;
                     }
@@ -259,7 +267,7 @@ namespace Microsoft.Blazor.RenderTree
                                 || oldTree[oldNodeIndex].AttributeEventHandlerValue != newTree[newNodeIndex].AttributeEventHandlerValue;
                             if (changed)
                             {
-                                Append(RenderTreeEdit.SetAttribute(newNodeIndex));
+                                Append(RenderTreeEdit.SetAttribute(siblingIndex, newNodeIndex));
                             }
                         }
                         else
@@ -267,8 +275,8 @@ namespace Microsoft.Blazor.RenderTree
                             // Since this code path is never reachable for Razor components (because you
                             // can't have two different attribute names from the same source sequence), we
                             // could consider removing the 'name equality' check entirely for perf
-                            Append(RenderTreeEdit.SetAttribute(newNodeIndex));
-                            Append(RenderTreeEdit.RemoveAttribute(oldName));
+                            Append(RenderTreeEdit.SetAttribute(siblingIndex, newNodeIndex));
+                            Append(RenderTreeEdit.RemoveAttribute(siblingIndex, oldName));
                         }
                         break;
                     }
@@ -297,14 +305,11 @@ namespace Microsoft.Blazor.RenderTree
         {
             if (entry.Type == RenderTreeEditType.StepOut)
             {
-                TrimTrailingContinueNodes();
-
-                // If the preceding node is now a StepIn, then we can coalesce the StepIn+StepOut
-                // down to a single Continue
+                // If the preceding node is a StepIn, then the StepOut cancels it out
                 if (_entriesInUse > 0 && _entries[_entriesInUse - 1].Type == RenderTreeEditType.StepIn)
                 {
                     _entriesInUse--;
-                    entry = RenderTreeEdit.Continue();
+                    return;
                 }
             }
 
@@ -314,14 +319,6 @@ namespace Microsoft.Blazor.RenderTree
             }
 
             _entries[_entriesInUse++] = entry;
-        }
-
-        private void TrimTrailingContinueNodes()
-        {
-            while (_entriesInUse > 0 && _entries[_entriesInUse - 1].Type == RenderTreeEditType.Continue)
-            {
-                _entriesInUse--;
-            }
         }
     }
 }

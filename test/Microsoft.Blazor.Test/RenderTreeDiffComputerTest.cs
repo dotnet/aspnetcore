@@ -63,10 +63,9 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
@@ -89,8 +88,7 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
         }
 
         [Fact]
@@ -112,9 +110,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
         }
 
         [Fact]
@@ -136,15 +133,14 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -168,10 +164,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 2),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 2));
         }
 
         [Fact]
@@ -193,16 +187,14 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 3);
                     Assert.Equal(3, entry.NewTreeIndex);
                 });
         }
@@ -226,15 +218,14 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -258,9 +249,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
         }
 
         [Fact]
@@ -278,8 +268,8 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.PrependNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PrependNode, 0));
         }
 
         [Fact]
@@ -299,7 +289,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                 });
         }
@@ -327,10 +317,10 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
         }
 
         [Fact]
@@ -350,10 +340,10 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.PrependNode, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeEditType.RemoveNode, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
         }
 
         [Fact]
@@ -378,7 +368,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -405,7 +395,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.RemoveAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
                     Assert.Equal("will be removed", entry.RemovedAttributeName);
                 });
         }
@@ -433,7 +423,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -464,7 +454,7 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -490,12 +480,12 @@ namespace Microsoft.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.SetAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.RemoveAttribute, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
                     Assert.Equal("oldname", entry.RemovedAttributeName);
                 });
         }
@@ -507,6 +497,7 @@ namespace Microsoft.Blazor.Test
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
             var diff = new RenderTreeDiffComputer();
+            oldTree.AddText(09, "unrelated");
             oldTree.OpenElement(10, "root");
             oldTree.OpenElement(11, "child");
             oldTree.OpenElement(12, "grandchild");
@@ -515,6 +506,7 @@ namespace Microsoft.Blazor.Test
             oldTree.CloseElement();
             oldTree.CloseElement();
 
+            newTree.AddText(09, "unrelated");
             newTree.OpenElement(10, "root");
             newTree.OpenElement(11, "child");
             newTree.OpenElement(12, "grandchild");
@@ -528,17 +520,17 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 0),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
-                    Assert.Equal(3, entry.NewTreeIndex);
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
+                    Assert.Equal(4, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type),
-                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
         }
 
         [Fact]
@@ -571,13 +563,13 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.StepIn, entry.Type),
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 0),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
-                entry => Assert.Equal(RenderTreeEditType.StepOut, entry.Type));
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
         }
 
         [Fact]
@@ -601,10 +593,9 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => Assert.Equal(RenderTreeEditType.Continue, entry.Type),
                 entry =>
                 {
-                    Assert.Equal(RenderTreeEditType.UpdateText, entry.Type);
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
@@ -625,6 +616,15 @@ namespace Microsoft.Blazor.Test
         {
             public void BuildRenderTree(RenderTreeBuilder builder)
                 => throw new NotImplementedException();
+        }
+
+        private static void AssertEdit(
+            RenderTreeEdit edit,
+            RenderTreeEditType type,
+            int siblingIndex)
+        {
+            Assert.Equal(type, edit.Type);
+            Assert.Equal(siblingIndex, edit.SiblingIndex);
         }
     }
 }

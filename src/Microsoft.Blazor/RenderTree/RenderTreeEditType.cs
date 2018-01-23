@@ -9,52 +9,41 @@ namespace Microsoft.Blazor.RenderTree
     public enum RenderTreeEditType: int
     {
         /// <summary>
-        /// Indicates that there are no further operations on the current tree node, and
-        /// so the edit position should move to the next sibling (or if there is no next
-        /// sibling, then to the position where one would be).
+        /// Indicates that a new node should be inserted before the specified tree node.
         /// </summary>
-        Continue = 1,
+        PrependNode = 1,
 
         /// <summary>
-        /// Indicates that a new node should be inserted before the current tree node.
+        /// Indicates that the specified tree node should be removed.
         /// </summary>
-        PrependNode = 2,
+        RemoveNode = 2,
 
         /// <summary>
-        /// Indicates that the current tree node should be removed, and that the edit position
-        /// should then move to the next sibling (or if there is no next sibling, then to the
-        /// position where one would be).
-        /// </summary>
-        RemoveNode = 3,
-
-        /// <summary>
-        /// Indicates that an attribute value should be applied to the current node.
+        /// Indicates that an attribute value should be applied to the specified node.
         /// This may be a change to an existing attribute, or the addition of a new attribute.
         /// </summary>
-        SetAttribute = 4,
+        SetAttribute = 3,
 
         /// <summary>
-        /// Indicates that a named attribute should be removed from the current node.
+        /// Indicates that a named attribute should be removed from the specified node.
         /// </summary>
-        RemoveAttribute = 5,
+        RemoveAttribute = 4,
 
         /// <summary>
-        /// Indicates that the text content of the current node (which must be a text node)
+        /// Indicates that the text content of the specified node (which must be a text node)
         /// should be updated.
         /// </summary>
-        UpdateText = 6,
+        UpdateText = 5,
 
         /// <summary>
-        /// Indicates that the edit position should move inside the current node to its first
-        /// child (or, if there are no children, to a point where a first child would be).
+        /// Indicates that the edit position should move inside the specified node.
         /// </summary>
-        StepIn = 7,
+        StepIn = 6,
 
         /// <summary>
         /// Indicates that there are no further edit operations on the current node, and the
-        /// edit position should move to the next sibling of the parent node (or if it does not
-        /// have a next sibling, then to the position where one would be).
+        /// edit position should move back to the parent node.
         /// </summary>
-        StepOut = 8,
+        StepOut = 7,
     }
 }

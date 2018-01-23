@@ -14,6 +14,11 @@ namespace Microsoft.Blazor.RenderTree
         public RenderTreeEditType Type { get; private set; }
 
         /// <summary>
+        /// Gets the index of the sibling node that the edit relates to.
+        /// </summary>
+        public int SiblingIndex { get; private set; }
+
+        /// <summary>
         /// Gets the index of related data in an associated render tree. For example, if the
         /// <see cref="Type"/> value is <see cref="RenderTreeEditType.PrependNode"/>, gets the
         /// index of the new node data in an associated render tree.
@@ -26,43 +31,44 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         public string RemovedAttributeName { get; private set; }
 
-        internal static RenderTreeEdit Continue() => new RenderTreeEdit
+        internal static RenderTreeEdit RemoveNode(int siblingIndex) => new RenderTreeEdit
         {
-            Type = RenderTreeEditType.Continue
+            Type = RenderTreeEditType.RemoveNode,
+            SiblingIndex = siblingIndex
         };
 
-        internal static RenderTreeEdit RemoveNode() => new RenderTreeEdit
-        {
-            Type = RenderTreeEditType.RemoveNode
-        };
-
-        internal static RenderTreeEdit PrependNode(int newTreeIndex) => new RenderTreeEdit
+        internal static RenderTreeEdit PrependNode(int siblingIndex, int newTreeIndex) => new RenderTreeEdit
         {
             Type = RenderTreeEditType.PrependNode,
+            SiblingIndex = siblingIndex,
             NewTreeIndex = newTreeIndex
         };
 
-        internal static RenderTreeEdit UpdateText(int newTreeIndex) => new RenderTreeEdit
+        internal static RenderTreeEdit UpdateText(int siblingIndex, int newTreeIndex) => new RenderTreeEdit
         {
             Type = RenderTreeEditType.UpdateText,
+            SiblingIndex = siblingIndex,
             NewTreeIndex = newTreeIndex
         };
 
-        internal static RenderTreeEdit SetAttribute(int newNodeIndex) => new RenderTreeEdit
+        internal static RenderTreeEdit SetAttribute(int siblingIndex, int newNodeIndex) => new RenderTreeEdit
         {
             Type = RenderTreeEditType.SetAttribute,
+            SiblingIndex = siblingIndex,
             NewTreeIndex = newNodeIndex
         };
 
-        internal static RenderTreeEdit RemoveAttribute(string name) => new RenderTreeEdit
+        internal static RenderTreeEdit RemoveAttribute(int siblingIndex, string name) => new RenderTreeEdit
         {
             Type = RenderTreeEditType.RemoveAttribute,
+            SiblingIndex = siblingIndex,
             RemovedAttributeName = name
         };
 
-        internal static RenderTreeEdit StepIn() => new RenderTreeEdit
+        internal static RenderTreeEdit StepIn(int siblingIndex) => new RenderTreeEdit
         {
-            Type = RenderTreeEditType.StepIn
+            Type = RenderTreeEditType.StepIn,
+            SiblingIndex = siblingIndex
         };
 
         internal static RenderTreeEdit StepOut() => new RenderTreeEdit

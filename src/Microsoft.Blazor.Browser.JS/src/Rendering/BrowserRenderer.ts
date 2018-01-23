@@ -26,56 +26,58 @@ export class BrowserRenderer {
       throw new Error(`No element is currently associated with component ${componentId}`);
     }
 
-    this.applyEdits(componentId, { parent: element, childIndex: 0 }, edits, editsLength, referenceTree);
+    this.applyEdits(componentId, element, 0, edits, editsLength, referenceTree);
   }
 
-  applyEdits(componentId: number, location: DOMLocation, edits: System_Array, editsLength: number, referenceTree: System_Array) {
+  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array, editsLength: number, referenceTree: System_Array) {
+    const childIndexStack: number[] = []; // TODO: This can be removed. We only (potentially) have nonzero childIndex values at the root, so we only need to track the current depth to determine whether we are at the root
     for (let editIndex = 0; editIndex < editsLength; editIndex++) {
       const edit = getRenderTreeEditPtr(edits, editIndex);
       const editType = renderTreeEdit.type(edit);
       switch (editType) {
-        case EditType.continue: {
-          location.childIndex++;
-          break;
-        }
         case EditType.prependNode: {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
-          this.insertNode(componentId, location, referenceTree, node, nodeIndex);
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          this.insertNode(componentId, parent, childIndex + siblingIndex, referenceTree, node, nodeIndex);
           break;
         }
         case EditType.removeNode: {
-          removeNodeFromDOM(location);
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          removeNodeFromDOM(parent, childIndex + siblingIndex);
           break;
         }
         case EditType.setAttribute: {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
-          const element = location.parent.childNodes[location.childIndex] as HTMLElement;
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          const element = parent.childNodes[childIndex + siblingIndex] as HTMLElement;
           this.applyAttribute(componentId, element, node, nodeIndex);
           break;
         }
         case EditType.removeAttribute: {
-          removeAttributeFromDOM(location, renderTreeEdit.removedAttributeName(edit)!);
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          removeAttributeFromDOM(parent, childIndex + siblingIndex, renderTreeEdit.removedAttributeName(edit)!);
           break;
         }
         case EditType.updateText: {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
-          const domTextNode = location.parent.childNodes[location.childIndex] as Text;
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          const domTextNode = parent.childNodes[childIndex + siblingIndex] as Text;
           domTextNode.textContent = renderTreeNode.textContent(node);
           break;
         }
         case EditType.stepIn: {
-          location.parent = location.parent.childNodes[location.childIndex] as HTMLElement;
-          location.childIndex = 0;
+          childIndexStack.push(childIndex);
+          const siblingIndex = renderTreeEdit.siblingIndex(edit);
+          parent = parent.childNodes[childIndex + siblingIndex] as HTMLElement;
+          childIndex = 0;
           break;
         }
         case EditType.stepOut: {
-          // To avoid the indexOf, consider maintaining a stack of locations
-          const targetElement = location.parent;
-          location.parent = location.parent.parentElement!;
-          location.childIndex = Array.prototype.indexOf.call(location.parent.childNodes, targetElement) + 1;
+          parent = parent.parentElement!;
+          childIndex = childIndexStack.pop()!;
           break;
         }
         default: {
@@ -86,19 +88,19 @@ export class BrowserRenderer {
     }
   }
 
-  insertNode(componentId: number, location: DOMLocation, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
+  insertNode(componentId: number, parent: Element, childIndex: number, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
     const nodeType = renderTreeNode.nodeType(node);
     switch (nodeType) {
       case NodeType.element:
-        this.insertElement(componentId, location, nodes, node, nodeIndex);
+        this.insertElement(componentId, parent, childIndex, nodes, node, nodeIndex);
         break;
       case NodeType.text:
-        this.insertText(location, node);
+        this.insertText(parent, childIndex, node);
         break;
       case NodeType.attribute:
         throw new Error('Attribute nodes should only be present as leading children of element nodes.');
       case NodeType.component:
-        this.insertComponent(location, node);
+        this.insertComponent(parent, childIndex, node);
         break;
       default:
         const unknownType: never = nodeType; // Compile-time verification that the switch was exhaustive
@@ -106,10 +108,10 @@ export class BrowserRenderer {
     }
   }
 
-  insertElement(componentId: number, location: DOMLocation, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
+  insertElement(componentId: number, parent: Element, childIndex: number, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
     const tagName = renderTreeNode.elementName(node)!;
     const newDomElement = document.createElement(tagName);
-    insertNodeIntoDOM(newDomElement, location);
+    insertNodeIntoDOM(newDomElement, parent, childIndex);
 
     // Apply attributes
     const descendantsEndIndex = renderTreeNode.descendantsEndIndex(node);
@@ -120,15 +122,15 @@ export class BrowserRenderer {
       } else {
         // As soon as we see a non-attribute child, all the subsequent child nodes are
         // not attributes, so bail out and insert the remnants recursively
-        this.insertNodeRange(componentId, { parent: newDomElement, childIndex: 0 }, nodes, descendantIndex, descendantsEndIndex);
+        this.insertNodeRange(componentId, newDomElement, 0, nodes, descendantIndex, descendantsEndIndex);
         break;
       }
     }
   }
 
-  insertComponent(location: DOMLocation, node: RenderTreeNodePointer) {
+  insertComponent(parent: Element, childIndex: number, node: RenderTreeNodePointer) {
     const containerElement = document.createElement('blazor-component');
-    insertNodeIntoDOM(containerElement, location);
+    insertNodeIntoDOM(containerElement, parent, childIndex);
 
     const childComponentId = renderTreeNode.componentId(node);
     this.attachComponentToElement(childComponentId, containerElement);
@@ -146,10 +148,10 @@ export class BrowserRenderer {
     ]);
   }
 
-  insertText(location: DOMLocation, textNode: RenderTreeNodePointer) {
+  insertText(parent: Element, childIndex: number, textNode: RenderTreeNodePointer) {
     const textContent = renderTreeNode.textContent(textNode)!;
     const newDomTextNode = document.createTextNode(textContent);
-    insertNodeIntoDOM(newDomTextNode, location);
+    insertNodeIntoDOM(newDomTextNode, parent, childIndex);
   }
 
   applyAttribute(componentId: number, toDomElement: Element, attributeNode: RenderTreeNodePointer, attributeNodeIndex: number) {
@@ -189,10 +191,11 @@ export class BrowserRenderer {
     }
   }
 
-  insertNodeRange(componentId: number, location: DOMLocation, nodes: System_Array, startIndex: number, endIndex: number) {
+  insertNodeRange(componentId: number, parent: Element, childIndex: number, nodes: System_Array, startIndex: number, endIndex: number) {
     for (let index = startIndex; index <= endIndex; index++) {
       const node = getTreeNodePtr(nodes, index);
-      this.insertNode(componentId, location, nodes, node, index);
+      this.insertNode(componentId, parent, childIndex, nodes, node, index);
+      childIndex++;
 
       // Skip over any descendants, since they are already dealt with recursively
       const descendantsEndIndex = renderTreeNode.descendantsEndIndex(node);
@@ -203,28 +206,20 @@ export class BrowserRenderer {
   }
 }
 
-export interface DOMLocation {
-  parent: Element;
-  childIndex: number;
-}
-
-function insertNodeIntoDOM(node: Node, location: DOMLocation) {
-  const parent = location.parent;
-  if (location.childIndex >= parent.childNodes.length) {
+function insertNodeIntoDOM(node: Node, parent: Element, childIndex: number) {
+  if (childIndex >= parent.childNodes.length) {
     parent.appendChild(node);
   } else {
-    parent.insertBefore(node, parent.childNodes[location.childIndex]);
+    parent.insertBefore(node, parent.childNodes[childIndex]);
   }
-  location.childIndex++;
 }
 
-function removeNodeFromDOM(location: DOMLocation) {
-  const parent = location.parent;
-  parent.removeChild(parent.childNodes[location.childIndex]);
+function removeNodeFromDOM(parent: Element, childIndex: number) {
+  parent.removeChild(parent.childNodes[childIndex]);
 }
 
-function removeAttributeFromDOM(location: DOMLocation, attributeName: string) {
-  const element = location.parent.childNodes[location.childIndex] as HTMLElement;
+function removeAttributeFromDOM(parent: Element, childIndex: number, attributeName: string) {
+  const element = parent.childNodes[childIndex] as Element;
   element.removeAttribute(attributeName);
 }
 
