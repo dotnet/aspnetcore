@@ -8,10 +8,11 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
-    [DebuggerDisplay("Name={ControllerName}, Type={ControllerType.Name}")]
+    [DebuggerDisplay("{DisplayName}")]
     public class ControllerModel : ICommonModel, IFilterModel, IApiExplorerModel
     {
         public ControllerModel(
@@ -118,5 +119,15 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public IDictionary<object, object> Properties { get; }
 
         public IList<SelectorModel> Selectors { get; }
+
+        public string DisplayName
+        {
+            get
+            {
+                var controllerType = TypeNameHelper.GetTypeDisplayName(ControllerType);
+                var controllerAssembly = ControllerType.Assembly.GetName().Name;
+                return $"{controllerType} ({controllerAssembly})";
+            }
+        }
     }
 }

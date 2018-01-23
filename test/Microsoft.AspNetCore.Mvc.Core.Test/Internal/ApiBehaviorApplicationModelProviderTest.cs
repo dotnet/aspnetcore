@@ -148,14 +148,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void OnProvidersExecuting_ThrowsIfControllerWithAttribute_HasActionsWithoutAttributeRouting()
         {
             // Arrange
+            var actionName = $"{typeof(ActionsWithoutAttributeRouting).FullName}.{nameof(ActionsWithoutAttributeRouting.Index)} ({typeof(ActionsWithoutAttributeRouting).Assembly.GetName().Name})";
+            var expected = $"Action '{actionName}' does not have an attribute route. Action methods on controllers annotated with ApiControllerAttribute must be attribute routed.";
             var context = GetContext(typeof(ActionsWithoutAttributeRouting));
             var provider = GetProvider();
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
-            Assert.Equal(
-                "Action methods on controllers annotated with ApiControllerAttribute must have an attribute route.",
-                ex.Message);
+            Assert.Equal(expected, ex.Message);
         }
 
         [Fact]

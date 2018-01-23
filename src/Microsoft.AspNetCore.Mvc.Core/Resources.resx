@@ -416,7 +416,7 @@
     <value>One or more validation errors occurred.</value>
   </data>
   <data name="ApiController_AttributeRouteRequired" xml:space="preserve">
-    <value>Action methods on controllers annotated with {0} must have an attribute route.</value>
+    <value>Action '{0}' does not have an attribute route. Action methods on controllers annotated with {1} must be attribute routed.</value>
   </data>
   <data name="VirtualFileResultExecutor_NoFileProviderConfigured" xml:space="preserve">
     <value>No file provider has been configured to process the supplied file.</value>
