@@ -3,15 +3,24 @@
 
 using System;
 using Microsoft.AspNetCore.Mvc.Internal;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public class TestModelBinderFactory : ModelBinderFactory
     {
+        public static TestModelBinderFactory Create(IServiceProvider serviceProvider)
+        {
+            var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
+            return new TestModelBinderFactory(
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                options,
+                serviceProvider);
+        }
+
         public static TestModelBinderFactory Create(params IModelBinderProvider[] providers)
         {
             return Create(null, providers);
@@ -58,14 +67,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         protected TestModelBinderFactory(IModelMetadataProvider metadataProvider, IOptions<MvcOptions> options)
-            : base(metadataProvider, options, GetServices())
+            : this(metadataProvider, options, GetServices(options))
         {
         }
 
-        private static IServiceProvider GetServices()
+        protected TestModelBinderFactory(
+            IModelMetadataProvider metadataProvider,
+            IOptions<MvcOptions> options,
+            IServiceProvider serviceProvider)
+            : base(metadataProvider, options, serviceProvider)
+        {
+        }
+
+        private static IServiceProvider GetServices(IOptions<MvcOptions> options)
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory, NullLoggerFactory>();
+            services.AddSingleton(options);
             return services.BuildServiceProvider();
         }
     }

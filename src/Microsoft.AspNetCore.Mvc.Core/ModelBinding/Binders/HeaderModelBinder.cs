@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -21,11 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         /// <summary>
         /// <para>This constructor is obsolete and will be removed in a future version. The recommended alternative
-        /// is the overload that takes an <see cref="ILoggerFactory"/>.</para>
+        /// is the overload that takes an <see cref="ILoggerFactory"/> and an <see cref="IModelBinder"/>.</para>
         /// <para>Initializes a new instance of <see cref="HeaderModelBinder"/>.</para>
         /// </summary>
         [Obsolete("This constructor is obsolete and will be removed in a future version. The recommended alternative"
-            + " is the overload that takes an " + nameof(ILoggerFactory) + ".")]
+            + " is the overload that takes an " + nameof(ILoggerFactory) + " and an " + nameof(IModelBinder) + ".")]
         public HeaderModelBinder()
             : this(NullLoggerFactory.Instance)
         {
@@ -37,33 +39,115 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public HeaderModelBinder(ILoggerFactory loggerFactory)
         {
+            _logger = loggerFactory.CreateLogger<HeaderModelBinder>();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="HeaderModelBinder"/>.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
+        /// <param name="innerModelBinder">The <see cref="IModelBinder"/> which does the actual
+        /// binding of values.</param>
+        public HeaderModelBinder(ILoggerFactory loggerFactory, IModelBinder innerModelBinder)
+        {
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            if (innerModelBinder == null)
+            {
+                throw new ArgumentNullException(nameof(innerModelBinder));
+            }
+
             _logger = loggerFactory.CreateLogger<HeaderModelBinder>();
+            InnerModelBinder = innerModelBinder;
         }
 
+        // to enable unit testing
+        internal IModelBinder InnerModelBinder { get; }
+
         /// <inheritdoc />
-        public Task BindModelAsync(ModelBindingContext bindingContext)
+        public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
             if (bindingContext == null)
             {
                 throw new ArgumentNullException(nameof(bindingContext));
             }
 
-            var request = bindingContext.HttpContext.Request;
+            _logger.AttemptingToBindModel(bindingContext);
 
             // Property name can be null if the model metadata represents a type (rather than a property or parameter).
             var headerName = bindingContext.FieldName;
 
-            _logger.AttemptingToBindModel(bindingContext);
-
+            // Do not set ModelBindingResult to Failed on not finding the value in the header as we want the inner 
+            // modelbinder to do that. This would give a chance to the inner binder to add more useful information.
+            // For example, SimpleTypeModelBinder adds a model error when binding to let's say an integer and the
+            // model is null.
+            var request = bindingContext.HttpContext.Request;
             if (!request.Headers.ContainsKey(headerName))
             {
                 _logger.FoundNoValueInRequest(bindingContext);
             }
+
+            if (InnerModelBinder == null)
+            {
+                BindWithoutInnerBinder(bindingContext);
+                return;
+            }
+
+            var headerValueProvider = GetHeaderValueProvider(headerName, bindingContext);
+
+            // Capture the top level object here as entering nested scope would make it 'false'.
+            var isTopLevelObject = bindingContext.IsTopLevelObject;
+
+            // Create a new binding scope in order to supply the HeaderValueProvider so that the binders like
+            // SimpleTypeModelBinder can find values from header.
+            ModelBindingResult result;
+            using (bindingContext.EnterNestedScope(
+                    bindingContext.ModelMetadata,
+                    fieldName: bindingContext.FieldName,
+                    modelName: bindingContext.ModelName,
+                    model: bindingContext.Model))
+            {
+                bindingContext.IsTopLevelObject = isTopLevelObject;
+                bindingContext.ValueProvider = headerValueProvider;
+
+                await InnerModelBinder.BindModelAsync(bindingContext);
+                result = bindingContext.Result;
+            }
+
+            bindingContext.Result = result;
+
+            _logger.DoneAttemptingToBindModel(bindingContext);
+        }
+
+        private HeaderValueProvider GetHeaderValueProvider(string headerName, ModelBindingContext bindingContext)
+        {
+            var request = bindingContext.HttpContext.Request;
+
+            // Prevent breaking existing users in scenarios where they are binding to a 'string' property
+            // and expect the whole comma separated string, if any, as a single string and not as a string array.
+            var values = Array.Empty<string>();
+            if (request.Headers.ContainsKey(headerName))
+            {
+                if (bindingContext.ModelMetadata.IsEnumerableType)
+                {
+                    values = request.Headers.GetCommaSeparatedValues(headerName);
+                }
+                else
+                {
+                    values = new[] { (string)request.Headers[headerName] };
+                }
+            }
+
+            return new HeaderValueProvider(values);
+        }
+
+        private void BindWithoutInnerBinder(ModelBindingContext bindingContext)
+        {
+            var headerName = bindingContext.FieldName;
+            var request = bindingContext.HttpContext.Request;
 
             object model;
             if (bindingContext.ModelType == typeof(string))
@@ -101,7 +185,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             _logger.DoneAttemptingToBindModel(bindingContext);
-            return Task.CompletedTask;
         }
 
         private static object GetCompatibleCollection(ModelBindingContext bindingContext, string[] values)
@@ -125,6 +208,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             return collection;
+        }
+
+        private class HeaderValueProvider : IValueProvider
+        {
+            private readonly string[] _values;
+
+            public HeaderValueProvider(string[] values)
+            {
+                Debug.Assert(values != null);
+
+                _values = values;
+            }
+
+            public bool ContainsPrefix(string prefix)
+            {
+                return _values.Length != 0;
+            }
+
+            public ValueProviderResult GetValue(string key)
+            {
+                if (_values.Length == 0)
+                {
+                    return ValueProviderResult.None;
+                }
+                else
+                {
+                    return new ValueProviderResult(_values, CultureInfo.InvariantCulture);
+                }
+            }
         }
     }
 }

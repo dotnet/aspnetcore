@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -31,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_NoData_UsesFullPathAsKeyForModelStateErrors()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -43,7 +44,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             };
 
             // Do not add any headers.
-            var testContext = ModelBindingTestHelper.GetTestContext();
+            var testContext = GetModelBindingTestContext();
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act
@@ -70,7 +72,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_WithPrefix_GetsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -81,8 +82,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var testContext = ModelBindingTestHelper.GetTestContext(
+            var testContext = GetModelBindingTestContext(
                 request => request.Headers.Add("Header", new[] { "someValue" }));
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act
@@ -106,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
             Assert.Equal("someValue", entry.Value.AttemptedValue);
-            Assert.Equal(new string[] { "someValue" }, entry.Value.RawValue);
+            Assert.Equal("someValue", entry.Value.RawValue);
         }
 
         // The scenario is interesting as we to bind the top level model we fallback to empty prefix,
@@ -115,7 +117,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindPropertyFromHeader_WithData_WithEmptyPrefix_GetsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor()
             {
                 Name = "Parameter1",
@@ -123,8 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(Person)
             };
 
-            var testContext = ModelBindingTestHelper.GetTestContext(
+            var testContext = GetModelBindingTestContext(
                 request => request.Headers.Add("Header", new[] { "someValue" }));
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act
@@ -148,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
             Assert.Equal("someValue", entry.Value.AttemptedValue);
-            Assert.Equal(new string[] { "someValue" }, entry.Value.RawValue);
+            Assert.Equal("someValue", entry.Value.RawValue);
         }
 
         private class ListContainer1
@@ -161,7 +163,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindCollectionPropertyFromHeader_WithData_IsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -169,8 +170,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ListContainer1),
             };
 
-            var testContext = ModelBindingTestHelper.GetTestContext(
+            var testContext = GetModelBindingTestContext(
                 request => request.Headers.Add("Header", new[] { "someValue" }));
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act
@@ -195,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelStateEntry.Errors);
             Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
             Assert.Equal("someValue", modelStateEntry.AttemptedValue);
-            Assert.Equal(new[] { "someValue" }, modelStateEntry.RawValue);
+            Assert.Equal("someValue", modelStateEntry.RawValue);
         }
 
         private class ListContainer2
@@ -208,7 +210,6 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindReadOnlyCollectionPropertyFromHeader_WithData_IsBound()
         {
             // Arrange
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -216,8 +217,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = typeof(ListContainer2),
             };
 
-            var testContext = ModelBindingTestHelper.GetTestContext(
+            var testContext = GetModelBindingTestContext(
                 request => request.Headers.Add("Header", new[] { "someValue" }));
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
             var modelState = testContext.ModelState;
 
             // Act
@@ -242,7 +244,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Empty(modelStateEntry.Errors);
             Assert.Equal(ModelValidationState.Valid, modelStateEntry.ValidationState);
             Assert.Equal("someValue", modelStateEntry.AttemptedValue);
-            Assert.Equal(new[] { "someValue" }, modelStateEntry.RawValue);
+            Assert.Equal("someValue", modelStateEntry.RawValue);
         }
 
         [Theory]
@@ -251,20 +253,19 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         public async Task BindParameterFromHeader_WithData_WithPrefix_ModelGetsBound(Type modelType, string value)
         {
             // Arrange
-            object expectedValue;
+            string expectedAttemptedValue;
             object expectedRawValue;
             if (modelType == typeof(string))
             {
-                expectedValue = value;
-                expectedRawValue = new string[] { value };
+                expectedAttemptedValue = value;
+                expectedRawValue = value;
             }
             else
             {
-                expectedValue = value.Split(',').Select(v => v.Trim()).ToArray();
-                expectedRawValue = expectedValue;
+                expectedAttemptedValue = value.Replace(" ", "");
+                expectedRawValue = value.Split(',').Select(v => v.Trim()).ToArray();
             }
 
-            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
             var parameter = new ParameterDescriptor
             {
                 Name = "Parameter1",
@@ -276,8 +277,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 ParameterType = modelType
             };
 
-            Action<HttpRequest> action = r => r.Headers.Add("CustomParameter", new[] { value });
-            var testContext = ModelBindingTestHelper.GetTestContext(action);
+            Action<HttpRequest> action = r => r.Headers.Add("CustomParameter", new[] { expectedAttemptedValue });
+            var testContext = GetModelBindingTestContext(action);
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
 
             // Do not add any headers.
             var httpContext = testContext.HttpContext;
@@ -301,8 +303,221 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("CustomParameter", entry.Key);
             Assert.Empty(entry.Value.Errors);
             Assert.Equal(ModelValidationState.Valid, entry.Value.ValidationState);
-            Assert.Equal(value, entry.Value.AttemptedValue);
+            Assert.Equal(expectedAttemptedValue, entry.Value.AttemptedValue);
             Assert.Equal(expectedRawValue, entry.Value.RawValue);
+        }
+
+        [Fact]
+        public async Task BindPropertyFromHeader_WithPrefix_GetsBound_ForSimpleTypes()
+        {
+            // Arrange
+            var parameter = new ParameterDescriptor()
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo()
+                {
+                    BinderModelName = "prefix",
+                },
+                ParameterType = typeof(Product)
+            };
+
+            var testContext = GetModelBindingTestContext(
+                request =>
+                {
+                    request.Headers.Add("NoCommaString", "someValue");
+                    request.Headers.Add("OneCommaSeparatedString", "one, two, three");
+                    request.Headers.Add("IntProperty", "10");
+                    request.Headers.Add("NullableIntProperty", "300");
+                    request.Headers.Add("ArrayOfString", "first, second");
+                    request.Headers.Add("EnumerableOfDouble", "10.51, 45.44");
+                    request.Headers.Add("ListOfEnum", "Sedan, Coupe");
+                    request.Headers.Add("ListOfOrderWithTypeConverter", "10");
+                });
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder(testContext.HttpContext.RequestServices);
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var product = Assert.IsType<Product>(modelBindingResult.Model);
+            Assert.NotNull(product);
+            Assert.NotNull(product.Manufacturer);
+            Assert.Equal("someValue", product.Manufacturer.NoCommaString);
+            Assert.Equal("one, two, three", product.Manufacturer.OneCommaSeparatedStringProperty);
+            Assert.Equal(10, product.Manufacturer.IntProperty);
+            Assert.Equal(300, product.Manufacturer.NullableIntProperty);
+            Assert.Null(product.Manufacturer.NullableLongProperty);
+            Assert.Equal(new[] { "first", "second" }, product.Manufacturer.ArrayOfString);
+            Assert.Equal(new double[] { 10.51, 45.44 }, product.Manufacturer.EnumerableOfDoubleProperty);
+            Assert.Equal(new CarType[] { CarType.Sedan, CarType.Coupe }, product.Manufacturer.ListOfEnum);
+            var orderWithTypeConverter = Assert.Single(product.Manufacturer.ListOfOrderWithTypeConverterProperty);
+            Assert.Equal(10, orderWithTypeConverter.Id);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+            Assert.Collection(
+                modelState.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.ArrayOfString", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("first,second", entry.AttemptedValue);
+                    Assert.Equal(new[] { "first", "second" }, entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.EnumerableOfDouble", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("10.51,45.44", entry.AttemptedValue);
+                    Assert.Equal(new[] { "10.51", "45.44" }, entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.IntProperty", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("10", entry.AttemptedValue);
+                    Assert.Equal("10", entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.ListOfEnum", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("Sedan,Coupe", entry.AttemptedValue);
+                    Assert.Equal(new[] { "Sedan", "Coupe" }, entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.ListOfOrderWithTypeConverter", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("10", entry.AttemptedValue);
+                    Assert.Equal("10", entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.NoCommaString", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("someValue", entry.AttemptedValue);
+                    Assert.Equal("someValue", entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.NullableIntProperty", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("300", entry.AttemptedValue);
+                    Assert.Equal("300", entry.RawValue);
+                },
+                kvp =>
+                {
+                    Assert.Equal("prefix.Manufacturer.OneCommaSeparatedString", kvp.Key);
+                    var entry = kvp.Value;
+                    Assert.Empty(entry.Errors);
+                    Assert.Equal(ModelValidationState.Valid, entry.ValidationState);
+                    Assert.Equal("one, two, three", entry.AttemptedValue);
+                    Assert.Equal("one, two, three", entry.RawValue);
+                });
+        }
+
+        private ModelBindingTestContext GetModelBindingTestContext(
+            Action<HttpRequest> updateRequest = null,
+            Action<MvcOptions> updateOptions = null)
+        {
+            if (updateOptions == null)
+            {
+                updateOptions = o =>
+                {
+                    o.AllowBindingHeaderValuesToNonStringModelTypes = true;
+                };
+            }
+
+            return ModelBindingTestHelper.GetTestContext(updateRequest, updateOptions);
+        }
+
+        private class Product
+        {
+            public Manufacturer Manufacturer { get; set; }
+        }
+
+        private class Manufacturer
+        {
+            [FromHeader]
+            public string NoCommaString { get; set; }
+
+            [FromHeader(Name = "OneCommaSeparatedString")]
+            public string OneCommaSeparatedStringProperty { get; set; }
+
+            [FromHeader]
+            public int IntProperty { get; set; }
+
+            [FromHeader]
+            public int? NullableIntProperty { get; set; }
+
+            [FromHeader]
+            public long? NullableLongProperty { get; set; }
+
+            [FromHeader]
+            public string[] ArrayOfString { get; set; }
+
+            [FromHeader(Name = "EnumerableOfDouble")]
+            public IEnumerable<double> EnumerableOfDoubleProperty { get; set; }
+
+            [FromHeader]
+            public List<CarType> ListOfEnum { get; set; }
+
+            [FromHeader(Name = "ListOfOrderWithTypeConverter")]
+            public List<OrderWithTypeConverter> ListOfOrderWithTypeConverterProperty { get; set; }
+        }
+
+        private enum CarType
+        {
+            Coupe,
+            Sedan
+        }
+
+        [TypeConverter(typeof(CanConvertFromStringConverter))]
+        private class OrderWithTypeConverter : IEquatable<OrderWithTypeConverter>
+        {
+            public int Id { get; set; }
+
+            public int ItemCount { get; set; }
+
+            public bool Equals(OrderWithTypeConverter other)
+            {
+                return Id == other.Id;
+            }
+        }
+
+        private class CanConvertFromStringConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return sourceType == typeof(string);
+            }
+
+            public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+            {
+                var id = value.ToString();
+                return new OrderWithTypeConverter() { Id = int.Parse(id) };
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         private int _maxModelStateErrors = ModelStateDictionary.DefaultMaxAllowedErrors;
 
         // See CompatibilitySwitch.cs for guide on how to implement these.
+        private readonly CompatibilitySwitch<bool> _allowBindingHeaderValuesToNonStringModelTypes;
         private readonly CompatibilitySwitch<bool> _allowCombiningAuthorizeFilters;
         private readonly CompatibilitySwitch<InputFormatterExceptionPolicy> _inputFormatterExceptionPolicy;
         private readonly CompatibilitySwitch<bool> _suppressBindingUndefinedValueToEnumType;
@@ -47,12 +49,14 @@ namespace Microsoft.AspNetCore.Mvc
             ValueProviderFactories = new List<IValueProviderFactory>();
 
             _allowCombiningAuthorizeFilters = new CompatibilitySwitch<bool>(nameof(AllowCombiningAuthorizeFilters));
+            _allowBindingHeaderValuesToNonStringModelTypes = new CompatibilitySwitch<bool>(nameof(AllowBindingHeaderValuesToNonStringModelTypes));
             _inputFormatterExceptionPolicy = new CompatibilitySwitch<InputFormatterExceptionPolicy>(nameof(InputFormatterExceptionPolicy), InputFormatterExceptionPolicy.AllExceptions);
             _suppressBindingUndefinedValueToEnumType = new CompatibilitySwitch<bool>(nameof(SuppressBindingUndefinedValueToEnumType));
-            
+
             _switches = new ICompatibilitySwitch[]
             {
-                _allowCombiningAuthorizeFilters, 
+                _allowCombiningAuthorizeFilters,
+                _allowBindingHeaderValuesToNonStringModelTypes,
                 _inputFormatterExceptionPolicy,
                 _suppressBindingUndefinedValueToEnumType,
             };
@@ -106,6 +110,38 @@ namespace Microsoft.AspNetCore.Mvc
         {
             get => _allowCombiningAuthorizeFilters.Value;
             set => _allowCombiningAuthorizeFilters.Value = value;
+        }
+
+        /// <summary>
+        /// Gets or sets a value that determines if <see cref="HeaderModelBinder"/> should bind to types other than
+        /// <see cref="String"/> or a collection of <see cref="String"/>. If set to <c>true</c>,
+        /// <see cref="HeaderModelBinder"/> would bind to simple types (like <see cref="String"/>, <see cref="Int32"/>,
+        /// <see cref="Enum"/>, <see cref="Boolean"/> etc.) or a collection of simple types. The default value of the
+        /// property is <c>false</c>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on 
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for 
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take precedence
+        /// over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_0"/> then
+        /// this setting will have the value <c>false</c> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// higher then this setting will have the value <c>true</c> unless explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowBindingHeaderValuesToNonStringModelTypes
+        {
+            get => _allowBindingHeaderValuesToNonStringModelTypes.Value;
+            set => _allowBindingHeaderValuesToNonStringModelTypes.Value = value;
         }
 
         /// <summary>

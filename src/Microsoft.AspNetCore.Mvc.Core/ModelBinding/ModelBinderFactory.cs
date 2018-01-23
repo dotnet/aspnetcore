@@ -252,21 +252,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             private DefaultModelBinderProviderContext(
                 DefaultModelBinderProviderContext parent,
-                ModelMetadata metadata)
+                ModelMetadata metadata,
+                BindingInfo bindingInfo)
             {
                 Metadata = metadata;
 
                 _factory = parent._factory;
                 MetadataProvider = parent.MetadataProvider;
                 Visited = parent.Visited;
-
-                BindingInfo = new BindingInfo()
-                {
-                    BinderModelName = metadata.BinderModelName,
-                    BinderType = metadata.BinderType,
-                    BindingSource = metadata.BindingSource,
-                    PropertyFilterProvider = metadata.PropertyFilterProvider,
-                };
+                BindingInfo = bindingInfo;
             }
 
             public override BindingInfo BindingInfo { get; }
@@ -281,9 +275,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             public override IModelBinder CreateBinder(ModelMetadata metadata)
             {
+                return CreateBinder(
+                    metadata,
+                    new BindingInfo()
+                    {
+                        BinderModelName = metadata.BinderModelName,
+                        BinderType = metadata.BinderType,
+                        BindingSource = metadata.BindingSource,
+                        PropertyFilterProvider = metadata.PropertyFilterProvider,
+                    });
+            }
+
+            public override IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
+            {
                 if (metadata == null)
                 {
                     throw new ArgumentNullException(nameof(metadata));
+                }
+
+                if (bindingInfo == null)
+                {
+                    throw new ArgumentNullException(nameof(bindingInfo));
                 }
 
                 // For non-root nodes we use the ModelMetadata as the cache token. This ensures that all non-root
@@ -291,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 // node there's no opportunity to customize binding info like there is for a parameter.
                 var token = metadata;
 
-                var nestedContext = new DefaultModelBinderProviderContext(this, metadata);
+                var nestedContext = new DefaultModelBinderProviderContext(this, metadata, bindingInfo);
                 return _factory.CreateBinderCoreCached(nestedContext, token);
             }
         }

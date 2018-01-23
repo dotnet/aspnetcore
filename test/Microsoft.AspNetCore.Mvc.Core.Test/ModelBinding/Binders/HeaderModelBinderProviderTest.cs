@@ -4,12 +4,65 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
     public class HeaderModelBinderProviderTest
     {
+        [Theory]
+        [InlineData(typeof(string))]
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(List<string>))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForStringTypes_And_CompatVersion_2_0(
+            Type modelType)
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(
+                modelType,
+                allowBindingHeaderValuesToNonStringModelTypes: false);
+            context.BindingInfo.BindingSource = BindingSource.Header;
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            Assert.IsType<HeaderModelBinder>(result);
+        }
+
+        [Theory]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(int?))]
+        [InlineData(typeof(IEnumerable<int>))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(double?))]
+        [InlineData(typeof(IEnumerable<double>))]
+        [InlineData(typeof(CarEnumType))]
+        [InlineData(typeof(CarEnumType?))]
+        [InlineData(typeof(IEnumerable<CarEnumType>))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsNull_ForNonStringTypes_And_CompatVersion_2_0(
+            Type modelType)
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var context = GetTestModelBinderProviderContext(
+                modelType,
+                allowBindingHeaderValuesToNonStringModelTypes: false);
+            context.BindingInfo.BindingSource = BindingSource.Header;
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
         public static TheoryData<BindingSource> NonHeaderBindingSources
         {
             get
@@ -29,8 +82,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         {
             // Arrange
             var provider = new HeaderModelBinderProvider();
-
-            var context = new TestModelBinderProviderContext(typeof(string));
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(typeof(string));
+            context.OnCreatingBinder(modelMetadata => testBinder);
             context.BindingInfo.BindingSource = source;
 
             // Act
@@ -40,52 +94,91 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(result);
         }
 
-        [Fact]
-        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder()
-        {
-            // Arrange
-            var provider = new HeaderModelBinderProvider();
-
-            var context = new TestModelBinderProviderContext(typeof(string));
-            context.BindingInfo.BindingSource = BindingSource.Header;
-
-            // Act
-            var result = provider.GetBinder(context);
-
-            // Assert
-            Assert.IsType<HeaderModelBinder>(result);
-        }
-
         [Theory]
         [InlineData(typeof(string))]
-        [InlineData(typeof(IEnumerable<string>))]
-        [InlineData(typeof(string[]))]
-        [InlineData(typeof(Collection<string>))]
-        public void Create_WhenModelTypeIsSupportedType_ReturnsBinder(Type modelType)
+        [InlineData(typeof(bool))]
+        [InlineData(typeof(int))]
+        [InlineData(typeof(DateTime))]
+        [InlineData(typeof(double))]
+        [InlineData(typeof(CarEnumType))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForSimpleTypes(Type modelType)
         {
             // Arrange
             var provider = new HeaderModelBinderProvider();
-
-            var context = new TestModelBinderProviderContext(modelType);
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(modelType);
+            context.OnCreatingBinder(modelMetadata => testBinder);
             context.BindingInfo.BindingSource = BindingSource.Header;
 
             // Act
             var result = provider.GetBinder(context);
 
             // Assert
-            Assert.IsType<HeaderModelBinder>(result);
+            var headerModelBinder = Assert.IsType<HeaderModelBinder>(result);
+            Assert.Same(testBinder, headerModelBinder.InnerModelBinder);
         }
 
         [Theory]
-        [InlineData(typeof(Dictionary<int, string>))]
-        [InlineData(typeof(Collection<int>))]
-        [InlineData(typeof(Person))]
-        public void Create_WhenModelTypeIsUnsupportedType_ReturnsNull(Type modelType)
+        [InlineData(typeof(bool?))]
+        [InlineData(typeof(int?))]
+        [InlineData(typeof(DateTime?))]
+        [InlineData(typeof(double?))]
+        [InlineData(typeof(CarEnumType?))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForNullableSimpleTypes(Type modelType)
         {
             // Arrange
             var provider = new HeaderModelBinderProvider();
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(modelType);
+            context.OnCreatingBinder(modelMetadata => testBinder);
+            context.BindingInfo.BindingSource = BindingSource.Header;
 
-            var context = new TestModelBinderProviderContext(modelType);
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var headerModelBinder = Assert.IsType<HeaderModelBinder>(result);
+            Assert.Same(testBinder, headerModelBinder.InnerModelBinder);
+        }
+
+        [Theory]
+        [InlineData(typeof(string[]))]
+        [InlineData(typeof(IEnumerable<bool>))]
+        [InlineData(typeof(List<byte>))]
+        [InlineData(typeof(Collection<short>))]
+        [InlineData(typeof(float[]))]
+        [InlineData(typeof(IEnumerable<decimal>))]
+        [InlineData(typeof(List<double>))]
+        [InlineData(typeof(ICollection<CarEnumType>))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForCollectionOfSimpleTypes(Type modelType)
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(modelType);
+            context.OnCreatingBinder(modelMetadata => testBinder);
+            context.BindingInfo.BindingSource = BindingSource.Header;
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var headerModelBinder = Assert.IsType<HeaderModelBinder>(result);
+            Assert.Same(testBinder, headerModelBinder.InnerModelBinder);
+        }
+
+        [Theory]
+        [InlineData(typeof(CustomerStruct))]
+        [InlineData(typeof(IEnumerable<CustomerStruct>))]
+        [InlineData(typeof(Person))]
+        [InlineData(typeof(IEnumerable<Person>))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsNull_ForNonSimpleModelType(Type modelType)
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(modelType);
+            context.OnCreatingBinder(modelMetadata => testBinder);
             context.BindingInfo.BindingSource = BindingSource.Header;
 
             // Act
@@ -95,11 +188,89 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(result);
         }
 
+        [Theory]
+        [InlineData(typeof(ProductWithTypeConverter))]
+        [InlineData(typeof(IEnumerable<ProductWithTypeConverter>))]
+        [InlineData(typeof(CustomerStructWithTypeConverter))]
+        [InlineData(typeof(IEnumerable<CustomerStructWithTypeConverter>))]
+        public void Create_WhenBindingSourceIsFromHeader_ReturnsBinder_ForNonSimpleModelType_HavingTypeConverter(
+            Type modelType)
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var testBinder = Mock.Of<IModelBinder>();
+            var context = GetTestModelBinderProviderContext(modelType);
+            context.OnCreatingBinder(modelMetadata => testBinder);
+            context.BindingInfo.BindingSource = BindingSource.Header;
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            var headerModelBinder = Assert.IsType<HeaderModelBinder>(result);
+            Assert.Same(testBinder, headerModelBinder.InnerModelBinder);
+        }
+
+        [Fact]
+        public void Create_WhenBindingSourceIsFromHeader_NoInnerBinderAvailable_ReturnsNull()
+        {
+            // Arrange
+            var provider = new HeaderModelBinderProvider();
+            var context = GetTestModelBinderProviderContext(typeof(string));
+            context.OnCreatingBinder(modelMetadata => null);
+            context.BindingInfo.BindingSource = BindingSource.Header;
+
+            // Act
+            var result = provider.GetBinder(context);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        private TestModelBinderProviderContext GetTestModelBinderProviderContext(
+            Type modelType,
+            bool allowBindingHeaderValuesToNonStringModelTypes = true)
+        {
+            var context = new TestModelBinderProviderContext(modelType);
+            var options = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
+            options.AllowBindingHeaderValuesToNonStringModelTypes = allowBindingHeaderValuesToNonStringModelTypes;
+            return context;
+        }
+
+        private enum CarEnumType
+        {
+            Sedan,
+            Coupe
+        }
+
+        private struct CustomerStruct
+        {
+            public string Name { get; set; }
+        }
+
+        [TypeConverter(typeof(CanConvertFromStringConverter))]
+        private struct CustomerStructWithTypeConverter
+        {
+            public string Name { get; set; }
+        }
+
         private class Person
         {
             public string Name { get; set; }
+        }
 
-            public int Age { get; set; }
+        [TypeConverter(typeof(CanConvertFromStringConverter))]
+        private class ProductWithTypeConverter
+        {
+            public string Name { get; set; }
+        }
+
+        private class CanConvertFromStringConverter : TypeConverter
+        {
+            public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            {
+                return sourceType == typeof(string);
+            }
         }
     }
 }

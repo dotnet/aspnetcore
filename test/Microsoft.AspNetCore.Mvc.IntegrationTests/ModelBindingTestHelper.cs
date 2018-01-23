@@ -60,6 +60,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
         }
 
+        public static ParameterBinder GetParameterBinder(IServiceProvider serviceProvider)
+        {
+            var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
+            var options = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
+
+            return new ParameterBinder(
+                metadataProvider,
+                new ModelBinderFactory(metadataProvider, options, serviceProvider),
+                new CompositeModelValidatorProvider(GetModelValidatorProviders(options)),
+                NullLoggerFactory.Instance);
+        }
+
         public static ParameterBinder GetParameterBinder(
             IModelMetadataProvider metadataProvider,
             IModelBinderProvider binderProvider = null,
@@ -77,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             return new ParameterBinder(
                 metadataProvider,
-                GetModelBinderFactory(metadataProvider, options),
+                new ModelBinderFactory(metadataProvider, options, services),
                 new CompositeModelValidatorProvider(GetModelValidatorProviders(options)),
                 NullLoggerFactory.Instance);
         }
@@ -130,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return httpContext;
         }
 
-        private static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
+        public static IServiceProvider GetServices(Action<MvcOptions> updateOptions = null)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddAuthorization();

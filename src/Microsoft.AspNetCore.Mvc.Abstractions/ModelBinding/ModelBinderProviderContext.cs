@@ -18,6 +18,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public abstract IModelBinder CreateBinder(ModelMetadata metadata);
 
         /// <summary>
+        /// Creates an <see cref="IModelBinder"/> for the given <paramref name="metadata"/>
+        /// and <paramref name="bindingInfo"/>.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> for the model.</param>
+        /// <param name="bindingInfo">The <see cref="BindingInfo"/> that should be used
+        /// for creating the binder.</param>
+        /// <returns>An <see cref="IModelBinder"/>.</returns>
+        public virtual IModelBinder CreateBinder(ModelMetadata metadata, BindingInfo bindingInfo)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
         /// Gets the <see cref="BindingInfo"/>.
         /// </summary>
         public abstract BindingInfo BindingInfo { get; }

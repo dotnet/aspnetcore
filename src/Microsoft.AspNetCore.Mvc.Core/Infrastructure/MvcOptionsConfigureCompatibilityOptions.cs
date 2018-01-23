@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 if (Version >= CompatibilityVersion.Version_2_1)
                 {
                     values[nameof(MvcOptions.AllowCombiningAuthorizeFilters)] = true;
+                    values[nameof(MvcOptions.AllowBindingHeaderValuesToNonStringModelTypes)] = true;
                     values[nameof(MvcOptions.InputFormatterExceptionPolicy)] = InputFormatterExceptionPolicy.MalformedInputExceptions;
                     values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
                 }
