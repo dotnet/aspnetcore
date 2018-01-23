@@ -6,7 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.AspNetCore.SpaTemplates.Knockout",
-  "identity": "Microsoft.AspNetCore.SpaTemplates.Knockout.CSharp",
+  "identity": "Microsoft.AspNetCore.SpaTemplates.Knockout.CSharp.2.1",
   "name": "ASP.NET Core with Knockout.js",
   "preferNameDirectory": true,
   "primaryOutputs": [

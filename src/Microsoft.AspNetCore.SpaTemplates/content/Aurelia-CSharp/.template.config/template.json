@@ -6,7 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.AspNetCore.SpaTemplates.Aurelia",
-  "identity": "Microsoft.AspNetCore.SpaTemplates.Aurelia.CSharp",
+  "identity": "Microsoft.AspNetCore.SpaTemplates.Aurelia.CSharp.2.1",
   "name": "ASP.NET Core with Aurelia",
   "preferNameDirectory": true,
   "primaryOutputs": [

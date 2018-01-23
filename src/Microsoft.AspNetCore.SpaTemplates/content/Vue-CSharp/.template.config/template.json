@@ -6,7 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.AspNetCore.SpaTemplates.Vue",
-  "identity": "Microsoft.AspNetCore.SpaTemplates.Vue.CSharp",
+  "identity": "Microsoft.AspNetCore.SpaTemplates.Vue.CSharp.2.1",
   "name": "ASP.NET Core with Vue.js",
   "preferNameDirectory": true,
   "primaryOutputs": [
