@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly string TransportTypeKey = "TransportType";
         public static readonly string HttpMessageHandlerKey = "HttpMessageHandler";
         public static readonly string HeadersKey = "Headers";
-        public static readonly string JwtBearerTokenFactoryKey = "JwtBearerTokenFactory";
+        public static readonly string AccessTokenFactoryKey = "AccessTokenFactory";
         public static readonly string WebSocketOptionsKey = "WebSocketOptions";
 
         public static IHubConnectionBuilder WithUrl(this IHubConnectionBuilder hubConnectionBuilder, string url)
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     HttpMessageHandler = hubConnectionBuilder.GetMessageHandler(),
                     Headers = headers != null ? new ReadOnlyDictionary<string, string>(headers) : null,
-                    JwtBearerTokenFactory = hubConnectionBuilder.GetJwtBearerTokenFactory(),
+                    AccessTokenFactory = hubConnectionBuilder.GetAccessTokenFactory(),
                     WebSocketOptions = hubConnectionBuilder.GetWebSocketOptions(),
                 };
 
@@ -87,14 +87,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static IHubConnectionBuilder WithJwtBearer(this IHubConnectionBuilder hubConnectionBuilder, Func<string> jwtBearerTokenFactory)
+        public static IHubConnectionBuilder WithAccessToken(this IHubConnectionBuilder hubConnectionBuilder, Func<string> accessTokenFactory)
         {
-            if (jwtBearerTokenFactory == null)
+            if (accessTokenFactory == null)
             {
-                throw new ArgumentNullException(nameof(jwtBearerTokenFactory));
+                throw new ArgumentNullException(nameof(accessTokenFactory));
             }
 
-            hubConnectionBuilder.AddSetting(JwtBearerTokenFactoryKey, jwtBearerTokenFactory);
+            hubConnectionBuilder.AddSetting(AccessTokenFactoryKey, accessTokenFactory);
 
             return hubConnectionBuilder;
         }
@@ -137,9 +137,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return null;
         }
 
-        public static Func<string> GetJwtBearerTokenFactory(this IHubConnectionBuilder hubConnectionBuilder)
+        public static Func<string> GetAccessTokenFactory(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            if (hubConnectionBuilder.TryGetSetting<Func<string>>(JwtBearerTokenFactoryKey, out var factory))
+            if (hubConnectionBuilder.TryGetSetting<Func<string>>(AccessTokenFactoryKey, out var factory))
             {
                 return factory;
             }

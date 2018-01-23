@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .WithUrl(_serverFixture.Url + "/authorizedhub")
                     .WithTransport(transportType)
                     .WithLoggerFactory(loggerFactory)
-                    .WithJwtBearer(() => token)
+                    .WithAccessToken(() => token)
                     .Build();
                 try
                 {

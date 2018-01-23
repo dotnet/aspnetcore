@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 }
             }
 
-            if (httpOptions?.JwtBearerTokenFactory != null)
+            if (httpOptions?.AccessTokenFactory != null)
             {
-                _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.JwtBearerTokenFactory()}");
+                _webSocket.Options.SetRequestHeader("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
             }
 
             httpOptions?.WebSocketOptions?.Invoke(_webSocket.Options);

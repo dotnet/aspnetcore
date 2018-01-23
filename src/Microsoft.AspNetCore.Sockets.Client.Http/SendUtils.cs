@@ -119,9 +119,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             request.Headers.UserAgent.Add(Constants.UserAgentHeader);
 
-            if (httpOptions?.JwtBearerTokenFactory != null)
+            if (httpOptions?.AccessTokenFactory != null)
             {
-                request.Headers.Add("Authorization", $"Bearer {httpOptions.JwtBearerTokenFactory()}");
+                request.Headers.Add("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
             }
         }
     }

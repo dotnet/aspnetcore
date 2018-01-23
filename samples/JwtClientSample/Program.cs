@@ -31,7 +31,7 @@ namespace JwtClientSample
             var hubConnection = new HubConnectionBuilder()
                 .WithUrl(ServerUrl + "/broadcast")
                 .WithTransport(transportType)
-                .WithJwtBearer(() => _tokens[userId])
+                .WithAccessToken(() => _tokens[userId])
                 .Build();
 
             var closedTcs = new TaskCompletionSource<object>();
