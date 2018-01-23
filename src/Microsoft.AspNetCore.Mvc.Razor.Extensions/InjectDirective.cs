@@ -24,8 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 builder.Description = Resources.InjectDirective_Description;
             });
 
-        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.AddDirective(Directive);
             builder.Features.Add(new Pass());
             builder.AddTargetExtension(new InjectTargetExtension());
@@ -99,5 +104,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
         }
+
+        #region Obsolete
+        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddDirective(Directive);
+            builder.Features.Add(new Pass());
+            builder.AddTargetExtension(new InjectTargetExtension());
+            return builder;
+        }
+        #endregion
     }
 }

@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 builder.Description = Resources.NamespaceDirective_Description;
             });
 
-        public static void Register(IRazorEngineBuilder builder)
+        public static void Register(RazorProjectEngineBuilder builder)
         {
             if (builder == null)
             {
@@ -186,5 +186,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitDirective(node);
             }
         }
+
+        #region Obsolete
+        public static void Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            builder.AddDirective(Directive);
+            builder.Features.Add(new Pass());
+        }
+        #endregion
     }
 }

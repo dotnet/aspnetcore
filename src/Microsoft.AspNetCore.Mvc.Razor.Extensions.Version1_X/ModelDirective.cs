@@ -21,8 +21,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 builder.Description = Resources.ModelDirective_Description;
             });
 
-        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.AddDirective(Directive);
             builder.Features.Add(new Pass(builder.DesignTime));
             return builder;
@@ -128,5 +133,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 }
             }
         }
+
+        #region Obsolete
+        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddDirective(Directive);
+            builder.Features.Add(new Pass(builder.DesignTime));
+            return builder;
+        }
+        #endregion
     }
 }
