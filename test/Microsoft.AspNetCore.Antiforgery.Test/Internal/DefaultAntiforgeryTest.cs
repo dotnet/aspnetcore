@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -1138,6 +1139,47 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Fact]
+        public void SetCookieTokenAndHeader_DoesNotModifyHeadersAfterResponseHasStarted()
+        {
+            // Arrange
+            var antiforgeryFeature = new AntiforgeryFeature
+            {
+                HaveDeserializedCookieToken = false,
+                HaveGeneratedNewCookieToken = false,
+                HaveStoredNewCookieToken = true,
+                NewCookieToken = new AntiforgeryToken(),
+                NewCookieTokenString = "serialized-cookie-token-from-context",
+                NewRequestToken = new AntiforgeryToken(),
+                NewRequestTokenString = "serialized-form-token-from-context",
+            };
+            var context = CreateMockContext(
+                new AntiforgeryOptions(),
+                useOldCookie: false,
+                isOldCookieValid: false,
+                antiforgeryFeature: antiforgeryFeature);
+            var testTokenSet = new TestTokenSet
+            {
+                OldCookieTokenString = null
+            };
+
+            var nullTokenStore = GetTokenStore(context.HttpContext, testTokenSet, false);
+            var antiforgery = GetAntiforgery(
+                context.HttpContext,
+                tokenGenerator: context.TokenGenerator.Object,
+                tokenStore: nullTokenStore.Object);
+
+            TestResponseFeature testResponse = new TestResponseFeature();
+            context.HttpContext.Features.Set<IHttpResponseFeature>(testResponse);
+            context.HttpContext.Response.Headers["Cache-Control"] = "public";
+            testResponse.StartResponse();
+
+            // Act
+            antiforgery.SetCookieTokenAndHeader(context.HttpContext);
+
+            Assert.Equal("public", context.HttpContext.Response.Headers["Cache-Control"]);
+        }
+
+        [Fact]
         public void GetAndStoreTokens_DoesNotLogWarning_IfNoExistingCacheHeadersPresent()
         {
             // Arrange
@@ -1434,6 +1476,22 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         private class TestOptionsManager : IOptions<AntiforgeryOptions>
         {
             public AntiforgeryOptions Value { get; set; } = new AntiforgeryOptions();
+        }
+
+        private class TestResponseFeature : HttpResponseFeature
+        {
+            private bool _hasStarted = false;
+
+            public override bool HasStarted { get => _hasStarted; }
+
+            public TestResponseFeature()
+            {
+            }
+
+            public void StartResponse()
+            {
+                _hasStarted = true;
+            }
         }
     }
 }

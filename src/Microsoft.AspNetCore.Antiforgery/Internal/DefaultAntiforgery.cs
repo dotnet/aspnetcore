@@ -67,9 +67,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 }
             }
 
-            // Explicitly set the cache headers to 'no-cache'. This could override any user set value but this is fine
-            // as a response with antiforgery token must never be cached.
-            SetDoNotCacheHeaders(httpContext);
+            if (!httpContext.Response.HasStarted)
+            {
+                // Explicitly set the cache headers to 'no-cache'. This could override any user set value but this is fine
+                // as a response with antiforgery token must never be cached.
+                SetDoNotCacheHeaders(httpContext);
+            }
 
             return tokenSet;
         }
@@ -247,7 +250,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 _logger.ReusedCookieToken();
             }
 
-            SetDoNotCacheHeaders(httpContext);
+            if (!httpContext.Response.HasStarted)
+            {
+                SetDoNotCacheHeaders(httpContext);
+            }
         }
 
         private void SaveCookieTokenAndHeader(HttpContext httpContext, string cookieToken)
