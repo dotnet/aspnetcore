@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Builder
 
             if (cultures.Length == 0)
             {
-                throw new ArgumentException("Please provide at least one culture.");
+                throw new ArgumentException(Resources.Exception_CulturesShouldNotBeEmpty);
             }
 
             var options = new RequestLocalizationOptions()
