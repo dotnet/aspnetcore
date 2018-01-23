@@ -1238,7 +1238,6 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var antiforgery = GetAntiforgery(context);
             context.HttpContext.Response.Headers[headerName] = headerValue;
 
-            //context.HttpContext.Features
             // Act
             var tokenSet = antiforgery.GetAndStoreTokens(context.HttpContext);
 
