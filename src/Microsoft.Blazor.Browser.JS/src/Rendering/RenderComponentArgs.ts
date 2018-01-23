@@ -7,8 +7,7 @@ export const renderComponentArgs = {
   componentId: (obj: RenderComponentArgsPointer) => platform.readInt32Field(obj, 4),
   renderTreeEdits: (obj: RenderComponentArgsPointer) => platform.readObjectField(obj, 8) as System_Array,
   renderTreeEditsLength: (obj: RenderComponentArgsPointer) => platform.readInt32Field(obj, 12),
-  renderTree: (obj: RenderComponentArgsPointer) => platform.readObjectField(obj, 16) as System_Array,
-  renderTreeLength: (obj: RenderComponentArgsPointer) => platform.readInt32Field(obj, 20),
+  renderTree: (obj: RenderComponentArgsPointer) => platform.readObjectField(obj, 16) as System_Array
 }
 
 // Nominal type to ensure only valid pointers are passed to the renderComponentArgs functions.

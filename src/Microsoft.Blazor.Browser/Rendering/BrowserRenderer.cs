@@ -78,8 +78,7 @@ namespace Microsoft.Blazor.Browser.Rendering
                     ComponentId = componentId,
                     RenderTreeEdits = renderTreeDiff.Edits.Array,
                     RenderTreeEditsLength = renderTreeDiff.Edits.Count,
-                    RenderTree = renderTreeDiff.CurrentState.Array,
-                    RenderTreeLength = renderTreeDiff.CurrentState.Count
+                    RenderTree = renderTreeDiff.CurrentState.Array
                 });
         }
 
@@ -93,7 +92,6 @@ namespace Microsoft.Blazor.Browser.Rendering
             public RenderTreeEdit[] RenderTreeEdits;
             public int RenderTreeEditsLength;
             public RenderTreeNode[] RenderTree;
-            public int RenderTreeLength; // TODO: Should be possible to remove this field once the JS code works entirely from the edits
         }
     }
 }
