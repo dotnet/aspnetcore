@@ -9,7 +9,7 @@ namespace Microsoft.Blazor.RenderTree
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.
     /// </summary>
-    public class ArrayBuilder<T>
+    internal class ArrayBuilder<T>
     {
         private const int MinCapacity = 10;
         private T[] _items;
