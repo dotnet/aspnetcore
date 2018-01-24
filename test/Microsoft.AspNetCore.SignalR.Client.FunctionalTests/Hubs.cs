@@ -44,6 +44,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             return Context.Connection.GetHttpContext().Request.Cookies[cookieName];
         }
+
+        public object[] GetIHttpConnectionFeatureProperties()
+        {
+            object[] result =
+            {
+                Context.Connection.LocalPort,
+                Context.Connection.RemotePort,
+                Context.Connection.LocalIpAddress.ToString(),
+                Context.Connection.RemoteIpAddress.ToString()
+            };
+
+            return result;
+        }
     }
 
     public class DynamicTestHub : DynamicHub
