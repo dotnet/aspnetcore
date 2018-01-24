@@ -261,9 +261,6 @@
   <data name="TagHelperPrefixDirective_Description" xml:space="preserve">
     <value>Specify a prefix that is required in an element name for it to be included in Tag Helper processing.</value>
   </data>
-  <data name="InvalidRazorLanguageVersion" xml:space="preserve">
-    <value>Provided value for razor language version is unsupported or invalid: '{0}'.</value>
-  </data>
   <data name="AddTagHelperDirective_StringToken_Description" xml:space="preserve">
     <value>Add tag helpers from the specified type name and assembly name. Specify '*' for the type name to include all tag helper types from the specified assembly.</value>
   </data>

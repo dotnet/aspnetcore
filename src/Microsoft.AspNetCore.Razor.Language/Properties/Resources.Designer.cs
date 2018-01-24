@@ -683,20 +683,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             => GetString("TagHelperPrefixDirective_Description");
 
         /// <summary>
-        /// Provided value for razor language version is unsupported or invalid: '{0}'.
-        /// </summary>
-        internal static string InvalidRazorLanguageVersion
-        {
-            get => GetString("InvalidRazorLanguageVersion");
-        }
-
-        /// <summary>
-        /// Provided value for razor language version is unsupported or invalid: '{0}'.
-        /// </summary>
-        internal static string FormatInvalidRazorLanguageVersion(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRazorLanguageVersion"), p0);
-
-        /// <summary>
         /// Add tag helpers from the specified type name and assembly name. Specify '*' for the type name to include all tag helper types from the specified assembly.
         /// </summary>
         internal static string AddTagHelperDirective_StringToken_Description

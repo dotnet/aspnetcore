@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -15,6 +16,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public abstract ProjectExtensibilityConfigurationKind Kind { get; }
 
         public abstract ProjectExtensibilityAssembly RazorAssembly { get; }
+
+        public abstract RazorLanguageVersion LanguageVersion { get; }
 
         public abstract bool Equals(ProjectExtensibilityConfiguration other);
 
