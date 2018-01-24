@@ -6,7 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React.CSharp",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.React.CSharp.2.1",
   "name": "ASP.NET Core with React.js",
   "preferNameDirectory": true,
   "primaryOutputs": [
