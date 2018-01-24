@@ -42,7 +42,7 @@ namespace Microsoft.Blazor.Test
                     builder.AddAttribute(1, "My attribute", "My value");
                     builder.CloseElement();
                 },
-                builder => builder.AddComponent<FakeComponent>(0)
+                builder => builder.AddComponentElement<FakeComponent>(0)
             }.Select(x => new object[] { x });
 
         [Fact]
@@ -337,8 +337,8 @@ namespace Microsoft.Blazor.Test
             var oldTree = new RenderTreeBuilder(new FakeRenderer());
             var newTree = new RenderTreeBuilder(new FakeRenderer());
             var diff = new RenderTreeDiffComputer();
-            oldTree.AddComponent<FakeComponent>(123);
-            newTree.AddComponent<FakeComponent2>(123);
+            oldTree.AddComponentElement<FakeComponent>(123);
+            newTree.AddComponentElement<FakeComponent2>(123);
 
             // Act
             var result = diff.ComputeDifference(oldTree.GetNodes(), newTree.GetNodes());

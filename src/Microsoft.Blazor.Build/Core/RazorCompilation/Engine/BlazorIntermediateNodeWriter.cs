@@ -201,6 +201,10 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                 HtmlEntityService.Resolver);
             var codeWriter = context.CodeWriter;
 
+            // TODO: As an optimization, identify static subtrees (i.e., HTML elements in the Razor source
+            // that contain no C#) and represent them as a new RenderTreeNodeType called StaticElement or
+            // similar. This means you can have arbitrarily deep static subtrees without paying any per-
+            // node cost during rendering or diffing.
             HtmlToken nextToken;
             while ((nextToken = tokenizer.Get()).Type != HtmlTokenType.EndOfFile)
             {
@@ -224,12 +228,23 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                             var nextTag = nextToken.AsTag();
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
-                                codeWriter
-                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
-                                    .Write((_sourceSequence++).ToString())
-                                    .WriteParameterSeparator()
-                                    .WriteStringLiteral(nextTag.Data)
-                                    .WriteEndMethodInvocation();
+                                var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
+                                if (TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName))
+                                {
+                                    codeWriter
+                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddComponentElement)}<{componentTypeName}>")
+                                        .Write((_sourceSequence++).ToString())
+                                        .WriteEndMethodInvocation();
+                                }
+                                else
+                                {
+                                    codeWriter
+                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                                        .Write((_sourceSequence++).ToString())
+                                        .WriteParameterSeparator()
+                                        .WriteStringLiteral(nextTag.Data)
+                                        .WriteEndMethodInvocation();
+                                }
                             }
 
                             foreach (var attribute in nextTag.Attributes)
@@ -283,6 +298,35 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
             if (originalHtmlContent.Length > nextToken.Position.Position)
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
+            }
+        }
+
+        private static string GetTagNameWithOriginalCase(string document, HtmlTagToken tagToken)
+            => document.Substring(tagToken.Position.Position, tagToken.Name.Length);
+
+        private bool TryGetComponentTypeNameFromTagName(string tagName, out string componentTypeName)
+        {
+            // Determine whether 'tagName' represents a Blazor component, and if so, return the
+            // name of the component's .NET type. The type name doesn't have to be fully-qualified,
+            // because it's up to the developer to put in whatever @using statements are required.
+
+            // TODO: Remove this temporary syntax and make the compiler smart enough to infer it
+            // directly. This could either work by having a configurable list of non-component tag names
+            // (which would default to all standard HTML elements, plus anything that contains a '-'
+            // character, since those are mandatory for custom HTML elements and prohibited for .NET
+            // type names), or better, could somehow know what .NET types are in scope at this point
+            // in the compilation and treat everything else as a non-component element.
+
+            const string temporaryPrefix = "c:";
+            if (tagName.StartsWith(temporaryPrefix, StringComparison.Ordinal))
+            {
+                componentTypeName = tagName.Substring(temporaryPrefix.Length);
+                return true;
+            }
+            else
+            {
+                componentTypeName = null;
+                return false;
             }
         }
 

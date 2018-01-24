@@ -14,7 +14,8 @@ namespace BasicTestApp
             builder.OpenElement(1, "legend");
             builder.AddText(2, "Parent component");
             builder.CloseElement();
-            builder.AddComponent<ChildComponent>(3);
+            builder.AddComponentElement<ChildComponent>(3);
+            builder.CloseElement();
             builder.CloseElement();
         }
 

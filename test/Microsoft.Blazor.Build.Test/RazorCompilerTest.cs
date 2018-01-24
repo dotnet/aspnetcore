@@ -332,6 +332,22 @@ namespace Microsoft.Blazor.Build.Test
                 });
         }
 
+        [Fact]
+        public void SupportsChildComponentsViaTemporarySyntax()
+        {
+            // Arrange
+            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
+
+            // Arrange/Act
+            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var component = CompileToComponent($"<c:{testComponentTypeName} />");
+            component.BuildRenderTree(treeBuilder);
+
+            // Assert
+            Assert.Collection(treeBuilder.GetNodes(),
+                node => AssertNode.Component<TestComponent>(node));
+        }
+
         private static bool NotWhitespace(RenderTreeNode node)
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);
@@ -370,7 +386,8 @@ namespace Microsoft.Blazor.Build.Test
             var referenceAssembliesContainingTypes = new[]
             {
                 typeof(System.Runtime.AssemblyTargetedPatchBandAttribute), // System.Runtime
-                typeof(BlazorComponent)
+                typeof(BlazorComponent),
+                typeof(RazorCompilerTest), // Reference this assembly, so that we can refer to test component types
             };
             var references = referenceAssembliesContainingTypes
                 .SelectMany(type => type.Assembly.GetReferencedAssemblies().Concat(new[] { type.Assembly.GetName() }))
@@ -444,6 +461,14 @@ namespace Microsoft.Blazor.Build.Test
         {
             protected override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
                 => throw new NotImplementedException();
+        }
+
+        public class TestComponent : IComponent
+        {
+            public void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddText(0, $"Hello from {nameof(TestComponent)}");
+            }
         }
     }
 }

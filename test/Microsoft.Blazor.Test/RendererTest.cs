@@ -44,7 +44,7 @@ namespace Microsoft.Blazor.Test
             var component = new TestComponent(builder =>
             {
                 builder.AddText(0, "Hello");
-                builder.AddComponent<MessageComponent>(1);
+                builder.AddComponentElement<MessageComponent>(1);
             });
 
             // Act/Assert
@@ -94,7 +94,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponent<MessageComponent>(0);
+                builder.AddComponentElement<MessageComponent>(0);
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);
@@ -152,7 +152,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponent<EventComponent>(0);
+                builder.AddComponentElement<EventComponent>(0);
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);

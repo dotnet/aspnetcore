@@ -130,8 +130,18 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void AddComponent<TComponent>(int sequence) where TComponent: IComponent
-            => Append(RenderTreeNode.ChildComponent<TComponent>(sequence));
+        public void AddComponentElement<TComponent>(int sequence) where TComponent : IComponent
+        {
+            // Currently, child components can't have further grandchildren of their own, so it would
+            // technically be possible to skip their CloseElement calls and not track them in _openElementIndices.
+            // However at some point we might want to have the grandchildren nodes available at runtime
+            // (rather than being parsed as attributes at compile time) so that we could have APIs for
+            // components to query the complete hierarchy of transcluded nodes instead of forcing the
+            // transcluded subtree to be in a particular shape such as representing key/value pairs.
+            // So it's more flexible if we track open/close nodes for components explicitly.
+            _openElementIndices.Push(_entries.Count);
+            Append(RenderTreeNode.ChildComponent<TComponent>(sequence));
+        }
 
         private void AssertCanAddAttribute()
         {
