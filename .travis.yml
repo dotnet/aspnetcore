@@ -21,7 +21,7 @@ addons:
 branches:
   only:
     - master
-    - release
+    - /release\/.*/
     - dev
     - /^(.*\/)?ci-.*$/
 install:

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.WebSockets;
 using Microsoft.AspNetCore.WebSockets.Internal;
 
@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             return new WebSocketPair(
                 serverStream,
                 clientStream,
-                clientSocket: WebSocketFactory.CreateClientWebSocket(clientStream, null, TimeSpan.FromMinutes(2), 1024),
-                serverSocket: WebSocketFactory.CreateServerWebSocket(serverStream, null, TimeSpan.FromMinutes(2), 1024));
+                clientSocket: WebSocketProtocol.CreateFromStream(clientStream, isServer: false, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2)),
+                serverSocket: WebSocketProtocol.CreateFromStream(serverStream, isServer: true, subProtocol: null, keepAliveInterval: TimeSpan.FromMinutes(2)));
         }
     }
 }
