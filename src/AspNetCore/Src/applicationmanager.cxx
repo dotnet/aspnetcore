@@ -235,7 +235,14 @@ APPLICATION_MANAGER::ShutDown()
 
         // clean up the hash table so that the application will be informed on shutdown
         m_pApplicationInfoHash->Clear();
+
         ReleaseSRWLockExclusive(&m_srwLock);
     }
 
+    // stop filewatcher monitoring thread
+    if (m_pFileWatcher != NULL)
+    {
+        delete  m_pFileWatcher;
+        m_pFileWatcher = NULL;
+    }
 }
