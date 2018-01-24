@@ -48,7 +48,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var builder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
-                    options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.Protocols = serverProtocols);
+                    options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                    {
+                        listenOptions._isHttp2Supported = true;
+                        listenOptions.Protocols = serverProtocols;
+                    });
                 })
                 .Configure(app => app.Run(context => Task.CompletedTask));
 
@@ -75,7 +79,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             var builder = TransportSelector.GetWebHostBuilder()
                 .ConfigureLogging(loggingBuilder => loggingBuilder.AddProvider(loggerProvider.Object))
-                .UseKestrel(options => options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.Protocols = serverProtocols))
+                .UseKestrel(options => options.Listen(IPAddress.Loopback, 0, listenOptions =>
+                {
+                    listenOptions._isHttp2Supported = true;
+                    listenOptions.Protocols = serverProtocols;
+                }))
                 .Configure(app => app.Run(context => Task.CompletedTask));
 
             using (var host = builder.Build())

@@ -1,4 +1,4 @@
-using System.Globalization;
+using System;
 using System.IO;
 using System.Net;
 using Microsoft.AspNetCore.Hosting;
@@ -13,6 +13,8 @@ namespace Http2SampleApp
     {
         public static void Main(string[] args)
         {
+            AppContext.SetSwitch("Switch.Microsoft.AspNetCore.Server.Kestrel.Experimental.Http2", isEnabled: true);
+
             var hostBuilder = new WebHostBuilder()
                 .ConfigureLogging((_, factory) =>
                 {
