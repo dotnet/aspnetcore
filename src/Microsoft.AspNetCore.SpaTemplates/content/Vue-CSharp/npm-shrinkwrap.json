@@ -1097,9 +1097,9 @@
       "dev": true
     },
     "jquery": {
-      "version": "3.2.1",
-      "from": "jquery@>=3.1.1 <4.0.0",
-      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.2.1.tgz",
+      "version": "3.3.1",
+      "from": "jquery@3.3.1",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.3.1.tgz",
       "dev": true
     },
     "js-base64": {
