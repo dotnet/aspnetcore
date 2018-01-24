@@ -127,14 +127,21 @@ export class BrowserRenderer {
   }
 
   insertComponent(parent: Element, childIndex: number, node: RenderTreeNodePointer) {
-    // TODO: If we can statically detect that a given component will always produce a single
-    // top-level element, then we don't need to wrap it in a further element. That would help
-    // with cases where you want to have a component outputting a <tr> and then embed it
-    // directly in a <tbody> without breaking CSS selectors like "tbody > tr". But we do need
-    // all child components to be contained in a single element (and not produce a range of
-    // arbitrarily many top-level nodes) because if each child contributes a varying number of
-    // nodes to the parent, then the parent can't directly look up child nodes by their
-    // SiblingIndex values in the render tree diff.
+    // Currently, to support O(1) lookups from render tree nodes to DOM nodes, we rely on
+    // each child component existing as a single top-level element in the DOM. To guarantee
+    // that, we wrap child components in these 'blazor-component' wrappers.
+    // To improve on this in the future:
+    // - If we can statically detect that a given component always produces a single top-level
+    //   element anyway, then don't wrap it in a further nonstandard element
+    // - If we really want to support child components producing multiple top-level nodes and
+    //   not being wrapped in a container at all, then every time a component is refreshed in
+    //   the DOM, we could update an array on the parent element that specifies how many DOM
+    //   nodes correspond to each of its render tree nodes. Then when that parent wants to
+    //   locate the first DOM node for a render tree node, it can sum all the node counts for
+    //   all the preceding render trees nodes. It's O(N), but where N is the number of siblings
+    //   (counting child components as a single item), so N will rarely if ever be large.
+    //   We could even keep track of whether all the child components happen to have exactly 1
+    //   top level node, and in that case, there's no need to sum as we can do direct lookups.
     const containerElement = document.createElement('blazor-component');
     insertNodeIntoDOM(containerElement, parent, childIndex);
 
