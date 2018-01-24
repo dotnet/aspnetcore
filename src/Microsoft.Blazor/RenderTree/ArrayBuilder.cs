@@ -45,8 +45,8 @@ namespace Microsoft.Blazor.RenderTree
         /// Appends a new item, automatically resizing the underlying array if necessary.
         /// </summary>
         /// <param name="item">The item to append.</param>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Append(T item)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] // Just like System.Collections.Generic.List<T>
+        public void Append(in T item)
         {
             if (_itemsInUse == _items.Length)
             {

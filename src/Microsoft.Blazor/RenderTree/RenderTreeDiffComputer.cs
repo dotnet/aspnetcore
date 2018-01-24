@@ -286,7 +286,7 @@ namespace Microsoft.Blazor.RenderTree
             return index;
         }
 
-        private void Append(RenderTreeEdit entry)
+        private void Append(in RenderTreeEdit entry)
         {
             if (entry.Type == RenderTreeEditType.StepOut)
             {

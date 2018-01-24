@@ -159,7 +159,7 @@ namespace Microsoft.Blazor.RenderTree
         public ArrayRange<RenderTreeNode> GetNodes() =>
             _entries.ToRange();
 
-        private void Append(RenderTreeNode node)
+        private void Append(in RenderTreeNode node)
         {
             _entries.Append(node);
 
