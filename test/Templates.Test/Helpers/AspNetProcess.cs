@@ -74,15 +74,24 @@ namespace Templates.Test.Helpers
             {
                 var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
                 _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
+                _listeningUri = GetListeningUri(output);
             }
             else
             {
                 var exeFullPath = publish
                     ? Path.Combine(workingDirectory, $"{projectName}.exe")
                     : Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
-                _process = ProcessEx.Run(output, workingDirectory, exeFullPath, envVars: envVars);
+                using (new AddFirewallExclusion(exeFullPath))
+                {
+                    _process = ProcessEx.Run(output, workingDirectory, exeFullPath, envVars: envVars);
+                    _listeningUri = GetListeningUri(output);
+                }
             }
 
+        }
+
+        private Uri GetListeningUri(ITestOutputHelper output)
+        {
             // Wait until the app is accepting HTTP requests
             output.WriteLine("Waiting until ASP.NET application is accepting connections...");
             var listeningMessage = _process
@@ -99,8 +108,7 @@ namespace Templates.Test.Helpers
                 listeningUrlString.Substring(listeningUrlString.LastIndexOf(':'));
 
             output.WriteLine("Sending requests to " + listeningUrlString);
-
-            _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
+            return new Uri(listeningUrlString, UriKind.Absolute);
         }
 
         public void AssertOk(string requestUrl)
