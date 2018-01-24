@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.8.0" />
+    <PackageReference Include="xunit" Version="2.3.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\samples\HostedInAspNet.Client\HostedInAspNet.Client.csproj" />
+    <ProjectReference Include="..\..\samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj" />
+    <ProjectReference Include="..\..\samples\MonoSanityClient\MonoSanityClient.csproj" />
+    <ProjectReference Include="..\..\samples\MonoSanity\MonoSanity.csproj" />
+    <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.DevHost\Microsoft.AspNetCore.Blazor.DevHost.csproj" />
+    <ProjectReference Include="..\testapps\BasicTestApp\BasicTestApp.csproj" />
+  </ItemGroup>
+
+</Project>

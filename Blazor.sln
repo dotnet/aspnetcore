@@ -12,23 +12,23 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mono", "mono", "{7B5CAAB1-A
 		src\mono\mono.targets = src\mono\mono.targets
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono", "src\Microsoft.Blazor.Mono\Microsoft.Blazor.Mono.csproj", "{39FEC72D-AF52-47A3-B63D-7BF0E4335248}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Mono", "src\Microsoft.AspNetCore.Blazor.Mono\Microsoft.AspNetCore.Blazor.Mono.csproj", "{39FEC72D-AF52-47A3-B63D-7BF0E4335248}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanity", "samples\MonoSanity\MonoSanity.csproj", "{7C53BB6B-5906-4753-B507-C9FCC2F7E5B7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Server", "src\Microsoft.Blazor.Server\Microsoft.Blazor.Server.csproj", "{5A694793-3257-4D37-BB74-4A41B3894685}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Server", "src\Microsoft.AspNetCore.Blazor.Server\Microsoft.AspNetCore.Blazor.Server.csproj", "{5A694793-3257-4D37-BB74-4A41B3894685}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{ADA3AE29-F6DE-49F6-8C7C-B321508CAE8E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Mono.Test", "test\Microsoft.Blazor.Mono.Test\Microsoft.Blazor.Mono.Test.csproj", "{118484D3-3993-45CE-97C1-6F28A517529B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Mono.Test", "test\Microsoft.AspNetCore.Blazor.Mono.Test\Microsoft.AspNetCore.Blazor.Mono.Test.csproj", "{118484D3-3993-45CE-97C1-6F28A517529B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.E2ETest", "test\Microsoft.Blazor.E2ETest\Microsoft.Blazor.E2ETest.csproj", "{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.E2ETest", "test\Microsoft.AspNetCore.Blazor.E2ETest\Microsoft.AspNetCore.Blazor.E2ETest.csproj", "{5BC2A10D-B6CA-43AE-B73C-2A41AE1039F9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonoSanityClient", "samples\MonoSanityClient\MonoSanityClient.csproj", "{06AAAE9E-96DE-4574-97DA-9C4C7D9FE990}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.DevHost", "src\Microsoft.Blazor.DevHost\Microsoft.Blazor.DevHost.csproj", "{EE690312-2353-4DD0-9250-EE5EDAC6D4F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.DevHost", "src\Microsoft.AspNetCore.Blazor.DevHost\Microsoft.AspNetCore.Blazor.DevHost.csproj", "{EE690312-2353-4DD0-9250-EE5EDAC6D4F7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.BuildTools", "src\Microsoft.Blazor.BuildTools\Microsoft.Blazor.BuildTools.csproj", "{BB34336F-E68E-4411-9805-CAAA919F5EA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.BuildTools", "src\Microsoft.AspNetCore.Blazor.BuildTools\Microsoft.AspNetCore.Blazor.BuildTools.csproj", "{BB34336F-E68E-4411-9805-CAAA919F5EA1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostedInAspNet", "HostedInAspNet", "{4D367450-96E9-4C8C-8B56-EED8ADE3A20D}"
 EndProject
@@ -36,25 +36,25 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Client", "sa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostedInAspNet.Server", "samples\HostedInAspNet.Server\HostedInAspNet.Server.csproj", "{F8996835-41F7-4663-91DF-3B5652ADC37D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor", "src\Microsoft.Blazor\Microsoft.Blazor.csproj", "{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor", "src\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj", "{7FD8C650-74B3-4153-AEA1-00F4F6AF393D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StandaloneApp", "samples\StandaloneApp\StandaloneApp.csproj", "{B241434A-1642-44CC-AE9A-2012B5C5BD02}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MonoSanity", "MonoSanity", "{2A076721-6081-4517-8329-B9E5110D6DAC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Common", "src\Microsoft.Blazor.Common\Microsoft.Blazor.Common.csproj", "{21EF76A4-63CC-455D-907C-F86C9E442CEC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Common", "src\Microsoft.AspNetCore.Blazor.Common\Microsoft.AspNetCore.Blazor.Common.csproj", "{21EF76A4-63CC-455D-907C-F86C9E442CEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Common.Test", "test\Microsoft.Blazor.Common.Test\Microsoft.Blazor.Common.Test.csproj", "{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Common.Test", "test\Microsoft.AspNetCore.Blazor.Common.Test\Microsoft.AspNetCore.Blazor.Common.Test.csproj", "{7F0BF3EA-6985-49F6-8070-0BBA41448BB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Build.Test", "test\Microsoft.Blazor.Build.Test\Microsoft.Blazor.Build.Test.csproj", "{709C7EBE-EB93-4F6D-9491-D714B0D2E898}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build.Test", "test\Microsoft.AspNetCore.Blazor.Build.Test\Microsoft.AspNetCore.Blazor.Build.Test.csproj", "{709C7EBE-EB93-4F6D-9491-D714B0D2E898}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Build", "src\Microsoft.Blazor.Build\Microsoft.Blazor.Build.csproj", "{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build", "src\Microsoft.AspNetCore.Blazor.Build\Microsoft.AspNetCore.Blazor.Build.csproj", "{8B3D0F1C-0E38-4E6D-BFF1-C4FDA0CD9815}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Browser.JS", "src\Microsoft.Blazor.Browser.JS\Microsoft.Blazor.Browser.JS.csproj", "{8A19B1CE-9B62-4440-93B3-152DDBB39D0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Browser.JS", "src\Microsoft.AspNetCore.Blazor.Browser.JS\Microsoft.AspNetCore.Blazor.Browser.JS.csproj", "{8A19B1CE-9B62-4440-93B3-152DDBB39D0A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Browser", "src\Microsoft.Blazor.Browser\Microsoft.Blazor.Browser.csproj", "{4874AFF4-335D-4037-8858-BBBB987C124B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Browser", "src\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj", "{4874AFF4-335D-4037-8858-BBBB987C124B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Blazor.Test", "test\Microsoft.Blazor.Test\Microsoft.Blazor.Test.csproj", "{8FD8636E-AFA5-434D-8857-06D02686741A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Test", "test\Microsoft.AspNetCore.Blazor.Test\Microsoft.AspNetCore.Blazor.Test.csproj", "{8FD8636E-AFA5-434D-8857-06D02686741A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testapps", "testapps", "{4AE0D35B-D97A-44D0-8392-C9240377DCCE}"
 EndProject

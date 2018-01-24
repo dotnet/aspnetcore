@@ -4,12 +4,12 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
 
-  <!-- Local alternative to <PackageReference Include="Microsoft.Blazor.Build" /> -->
-  <Import Project="..\..\src\Microsoft.Blazor.Build\ReferenceFromSource.props" />
+  <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
+  <Import Project="..\..\src\Microsoft.AspNetCore.Blazor.Build\ReferenceFromSource.props" />
 
   <ItemGroup>
     <!-- Share the WebAssembly.Runtime.cs source here so we get access to the same interop externs -->
-    <Compile Include="..\..\src\Microsoft.Blazor.Browser\Interop\WebAssembly.Runtime.cs" />
+    <Compile Include="..\..\src\Microsoft.AspNetCore.Blazor.Browser\Interop\WebAssembly.Runtime.cs" />
   </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@ namespace AngleSharpBuilder
      * AngleSharp does not expose HtmlTokenizer publicly.
      * 
      * For now, we work around this by building a custom version of AngleSharp.dll that
-     * specifies [InternalsVisibleTo("Microsoft.Blazor.Build")]. Longer term we can ask
+     * specifies [InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Build")]. Longer term we can ask
      * AngleSharp to expose HtmlTokenizer as a public API, and if that's not viable, possibly
      * replace AngleSharp with a different library for HTML tokenization.
      */
@@ -28,7 +28,7 @@ namespace AngleSharpBuilder
             var angleSharpAssembly = Assembly.GetAssembly(typeof(HtmlParser));
             WriteWithInternalsVisibleTo(
                 angleSharpAssembly,
-                "Microsoft.Blazor.Build",
+                "Microsoft.AspNetCore.Blazor.Build",
                 outputDir);
         }
 
