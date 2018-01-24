@@ -400,6 +400,11 @@ namespace Microsoft.AspNetCore.SignalR
                     await SendMessageAsync(connection, new StreamItemMessage(invocationId, enumerator.Current));
                 }
             }
+            catch (ChannelClosedException ex)
+            {
+                // If the channel closes from an exception in the streaming method, grab the innerException for the error from the streaming method
+                error = ex.InnerException == null ? ex.Message : ex.InnerException.Message;
+            }
             catch (Exception ex)
             {
                 // If the streaming method was canceled we don't want to send a HubException message - this is not an error case

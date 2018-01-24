@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -531,6 +532,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
         public ChannelReader<string> BlockingStream()
         {
             return Channel.CreateUnbounded<string>().Reader;
+        }
+
+        public IObservable<int> ThrowStream()
+        {
+            return Observable.Throw<int>(new Exception("Exception from observable"));
         }
 
         private class CountingObservable : IObservable<string>

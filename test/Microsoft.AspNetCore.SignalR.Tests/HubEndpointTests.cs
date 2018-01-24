@@ -1386,6 +1386,31 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task ReceiveCorrectErrorFromStreamThrowing()
+        {
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var messages = await client.StreamAsync(nameof(StreamingHub.ThrowStream));
+
+                Assert.Equal(1, messages.Count);
+                var completion = messages[0] as CompletionMessage;
+                Assert.NotNull(completion);
+                Assert.Equal("Exception from observable", completion.Error);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
         public static IEnumerable<object[]> StreamingMethodAndHubProtocols
         {
             get
