@@ -1,33 +1,50 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public enum RazorLanguageVersion
+    public sealed class RazorLanguageVersion : IEquatable<RazorLanguageVersion>
     {
-        Version1_0 = 1,
+        public static readonly RazorLanguageVersion Version_1_0 = new RazorLanguageVersion(1, 0);
 
-        Version1_1 = 2,
+        public static readonly RazorLanguageVersion Version_1_1 = new RazorLanguageVersion(1, 1);
 
-        Version2_0 = 3,
+        public static readonly RazorLanguageVersion Version_2_0 = new RazorLanguageVersion(2, 0);
 
-        Version2_1 = 4,
-    }
+        public static readonly RazorLanguageVersion Version_2_1 = new RazorLanguageVersion(2, 1);
 
-    internal static class RazorLanguageVersionExtensions
-    {
-        internal static bool IsValid(this RazorLanguageVersion version)
+        public static readonly RazorLanguageVersion Latest = Version_2_1;
+
+        // Don't want anyone else constructing language versions.
+        private RazorLanguageVersion(int major, int minor)
         {
-            switch (version)
+            Major = major;
+            Minor = minor;
+        }
+
+        public int Major { get; }
+
+        public int Minor { get; }
+
+        public bool Equals(RazorLanguageVersion other)
+        {
+            if (other == null)
             {
-                case RazorLanguageVersion.Version1_0:
-                case RazorLanguageVersion.Version1_1:
-                case RazorLanguageVersion.Version2_0:
-                case RazorLanguageVersion.Version2_1:
-                    return true;
+                return false;
             }
 
-            return false;
+            // We're the only one who can create RazorLanguageVersions so reference equality is sufficient.
+            return ReferenceEquals(this, other);
         }
+
+        public override int GetHashCode()
+        {
+            // We don't need to do anything special for our hash code since reference equality is what we're going for.
+            return base.GetHashCode();
+        }
+
+        public override string ToString() => $"Razor '{Major}.{Minor}'";
     }
 }

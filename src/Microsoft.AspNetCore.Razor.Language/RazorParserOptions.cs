@@ -8,15 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorParserOptions
     {
-        internal static readonly RazorLanguageVersion LatestRazorLanguageVersion = RazorLanguageVersion.Version2_1;
-
         public static RazorParserOptions CreateDefault()
         {
             return new DefaultRazorParserOptions(
                 Array.Empty<DirectiveDescriptor>(),
                 designTime: false,
                 parseLeadingDirectives: false,
-                version: LatestRazorLanguageVersion);
+                version: RazorLanguageVersion.Latest);
         }
 
         public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure)
@@ -26,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: LatestRazorLanguageVersion);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: RazorLanguageVersion.Latest);
             configure(builder);
             var options = builder.Build();
 
@@ -40,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: LatestRazorLanguageVersion);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: RazorLanguageVersion.Latest);
             configure(builder);
             var options = builder.Build();
 
@@ -61,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </remarks>
         public abstract bool ParseLeadingDirectives { get; }
 
-        public virtual RazorLanguageVersion Version { get; } = LatestRazorLanguageVersion;
+        public virtual RazorLanguageVersion Version { get; } = RazorLanguageVersion.Latest;
 
         internal virtual RazorParserFeatureFlags FeatureFlags { get; }
     }

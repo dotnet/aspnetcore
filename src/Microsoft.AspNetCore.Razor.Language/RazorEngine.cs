@@ -17,25 +17,35 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Create(configure: null);
         }
 
-        public static RazorEngine Create(Action<IRazorEngineBuilder> configure)
-        {
-            var builder = new DefaultRazorEngineBuilder(designTime: false);
-            AddDefaults(builder);
-            AddDefaultRuntimeFeatures(builder.Features);
-            configure?.Invoke(builder);
-            return builder.Build();
-        }
+        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultRuntime, configure);
 
         public static RazorEngine CreateDesignTime()
         {
             return CreateDesignTime(configure: null);
         }
 
-        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure)
+        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultDesignTime, configure);
+
+        // Internal since RazorEngine APIs are going to be obsolete.
+        internal static RazorEngine CreateCore(RazorConfiguration configuration, Action<IRazorEngineBuilder> configure)
         {
-            var builder = new DefaultRazorEngineBuilder(designTime: true);
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
+            var builder = new DefaultRazorEngineBuilder(configuration.DesignTime);
             AddDefaults(builder);
-            AddDefaultDesignTimeFeatures(builder.Features);
+
+            if (configuration.DesignTime)
+            {
+                AddDefaultDesignTimeFeatures(configuration, builder.Features);
+            }
+            else
+            {
+                AddDefaultRuntimeFeatures(configuration, builder.Features);
+            }
+
             configure?.Invoke(builder);
             return builder.Build();
         }
@@ -129,10 +139,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             features.Add(configurationFeature);
         }
 
-        internal static void AddDefaultRuntimeFeatures(ICollection<IRazorEngineFeature> features)
+        internal static void AddDefaultRuntimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: RazorParserOptions.LatestRazorLanguageVersion));
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion));
             features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
 
             // Intermediate Node Passes
@@ -146,10 +156,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             targetExtension.TargetExtensions.Add(new PreallocatedAttributeTargetExtension());
         }
 
-        internal static void AddDefaultDesignTimeFeatures(ICollection<IRazorEngineFeature> features)
+        internal static void AddDefaultDesignTimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: RazorParserOptions.LatestRazorLanguageVersion));
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion));
             features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
             features.Add(new SuppressChecksumOptionsFeature());
 
@@ -171,3 +181,4 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract void Process(RazorCodeDocument document);
     }
 }
+

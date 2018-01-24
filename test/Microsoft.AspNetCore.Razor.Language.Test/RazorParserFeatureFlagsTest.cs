@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Create_LatestVersion_AllowsMinimizedBooleanTagHelperAttributes()
         {
             // Arrange & Act
-            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version2_1);
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_1);
 
             // Assert
             Assert.True(context.AllowMinimizedBooleanTagHelperAttributes);
@@ -22,20 +22,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Create_OlderVersion_DoesNotAllowMinimizedBooleanTagHelperAttributes()
         {
             // Arrange & Act
-            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version1_1);
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_1_1);
 
             // Assert
             Assert.False(context.AllowMinimizedBooleanTagHelperAttributes);
-        }
-
-        [Fact]
-        public void Create_UnknownVersion_Throws()
-        {
-            // Arrange, Act & Assert
-            var exception = Assert.Throws<ArgumentException>(
-                () => RazorParserFeatureFlags.Create(0));
-
-            Assert.Equal("Provided value for razor language version is unsupported or invalid: '0'.", exception.Message);
         }
     }
 }

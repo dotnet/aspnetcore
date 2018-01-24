@@ -669,20 +669,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidOperation_SpanIsNotChangeOwner"), p0, p1);
 
         /// <summary>
-        /// Provided value for razor language version is unsupported or invalid: '{0}'.
-        /// </summary>
-        internal static string InvalidRazorLanguageVersion
-        {
-            get => GetString("InvalidRazorLanguageVersion");
-        }
-
-        /// <summary>
-        /// Provided value for razor language version is unsupported or invalid: '{0}'.
-        /// </summary>
-        internal static string FormatInvalidRazorLanguageVersion(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRazorLanguageVersion"), p0);
-
-        /// <summary>
         /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "name, assemblyName".
         /// </summary>
         internal static string InvalidTagHelperLookupText

@@ -260,9 +260,6 @@
   <data name="InvalidOperation_SpanIsNotChangeOwner" xml:space="preserve">
     <value>The node '{0}' is not the owner of change '{1}'.</value>
   </data>
-  <data name="InvalidRazorLanguageVersion" xml:space="preserve">
-    <value>Provided value for razor language version is unsupported or invalid: '{0}'.</value>
-  </data>
   <data name="InvalidTagHelperLookupText" xml:space="preserve">
     <value>Invalid tag helper directive look up text '{0}'. The correct look up text format is: "name, assemblyName".</value>
   </data>
