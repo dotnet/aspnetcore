@@ -232,7 +232,7 @@ namespace Microsoft.Blazor.Build.Core.RazorCompilation.Engine
                                 if (TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName))
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddComponentElement)}<{componentTypeName}>")
+                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponentElement)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
                                 }

@@ -43,7 +43,7 @@ namespace Microsoft.Blazor.Test
                     builder.AddAttribute(1, "My attribute", "My value");
                     builder.CloseElement();
                 },
-                builder => builder.AddComponentElement<FakeComponent>(0)
+                builder => builder.OpenComponentElement<FakeComponent>(0)
             }.Select(x => new object[] { x });
 
         [Fact]
@@ -350,8 +350,8 @@ namespace Microsoft.Blazor.Test
             var oldTree = new RenderTreeBuilder(renderer);
             var newTree = new RenderTreeBuilder(renderer);
             var diff = new RenderTreeDiffComputer(renderer);
-            oldTree.AddComponentElement<FakeComponent>(123);
-            newTree.AddComponentElement<FakeComponent2>(123);
+            oldTree.OpenComponentElement<FakeComponent>(123);
+            newTree.OpenComponentElement<FakeComponent2>(123);
 
             // Act
             var result = diff.ApplyNewRenderTreeVersion(oldTree.GetNodes(), newTree.GetNodes());
@@ -641,9 +641,9 @@ namespace Microsoft.Blazor.Test
             oldTree.CloseElement();                             //     </container>
             newTree.AddText(10, "text1");                       //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
-            newTree.AddComponentElement<FakeComponent>(12);     //  2:   <FakeComponent>
+            newTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
             newTree.CloseElement();                             //       </FakeComponent>
-            newTree.AddComponentElement<FakeComponent2>(13);    //  3:   <FakeComponent2>
+            newTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
             newTree.CloseElement();                             //       </FakeComponent2>
             newTree.CloseElement();                             //     </container>
 
@@ -684,16 +684,16 @@ namespace Microsoft.Blazor.Test
             var diff = new RenderTreeDiffComputer(renderer);
             oldTree.AddText(10, "text1");                       //  0: text1
             oldTree.OpenElement(11, "container");               //  1: <container>
-            oldTree.AddComponentElement<FakeComponent>(12);     //  2:   <FakeComponent>
+            oldTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
             oldTree.CloseElement();                             //       </FakeComponent>
-            oldTree.AddComponentElement<FakeComponent2>(13);    //  3:   <FakeComponent2>
+            oldTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
             oldTree.CloseElement();                             //       </FakeComponent2>
             oldTree.CloseElement();                             //     </container
             newTree.AddText(10, "text1");                       //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
-            newTree.AddComponentElement<FakeComponent>(12);     //  2:   <FakeComponent>
+            newTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
             newTree.CloseElement();                             //       </FakeComponent>
-            newTree.AddComponentElement<FakeComponent2>(13);    //  3:   <FakeComponent2>
+            newTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
             newTree.CloseElement();                             //       </FakeComponent2>
             newTree.CloseElement();                             //     </container
 

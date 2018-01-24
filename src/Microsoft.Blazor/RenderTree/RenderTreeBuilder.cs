@@ -130,7 +130,7 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void AddComponentElement<TComponent>(int sequence) where TComponent : IComponent
+        public void OpenComponentElement<TComponent>(int sequence) where TComponent : IComponent
         {
             // Currently, child components can't have further grandchildren of their own, so it would
             // technically be possible to skip their CloseElement calls and not track them in _openElementIndices.

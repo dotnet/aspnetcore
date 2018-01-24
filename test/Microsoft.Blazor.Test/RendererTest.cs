@@ -44,7 +44,7 @@ namespace Microsoft.Blazor.Test
             var component = new TestComponent(builder =>
             {
                 builder.AddText(0, "Hello");
-                builder.AddComponentElement<MessageComponent>(1);
+                builder.OpenComponentElement<MessageComponent>(1);
                 builder.CloseElement();
             });
 
@@ -95,7 +95,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponentElement<MessageComponent>(0);
+                builder.OpenComponentElement<MessageComponent>(0);
                 builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
@@ -154,7 +154,7 @@ namespace Microsoft.Blazor.Test
             var renderer = new TestRenderer();
             var parentComponent = new TestComponent(builder =>
             {
-                builder.AddComponentElement<EventComponent>(0);
+                builder.OpenComponentElement<EventComponent>(0);
                 builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
@@ -310,7 +310,7 @@ namespace Microsoft.Blazor.Test
             var component = new TestComponent(builder =>
             {
                 builder.AddText(0, message);
-                builder.AddComponentElement<MessageComponent>(1);
+                builder.OpenComponentElement<MessageComponent>(1);
                 builder.CloseElement();
             });
 
