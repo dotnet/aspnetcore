@@ -470,8 +470,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pageModel = context.PageApplicationModel;
             Assert.Empty(pageModel.HandlerProperties.Where(p => p.BindingInfo != null));
             Assert.Empty(pageModel.HandlerMethods);
-            Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.HandlerType);
+            Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.DeclaredModelType);
             Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.ModelType);
+            Assert.Same(typeof(EmptyPageModel).GetTypeInfo(), pageModel.HandlerType);
             Assert.Same(typeof(EmptyPageWithPageModel).GetTypeInfo(), pageModel.PageType);
         }
 

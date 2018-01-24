@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -31,6 +32,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 .ToArray();
             var handlerMethods = CreateHandlerMethods(applicationModel);
 
+            if (applicationModel.ModelType != null && applicationModel.DeclaredModelType != null &&
+                !applicationModel.DeclaredModelType.IsAssignableFrom(applicationModel.ModelType))
+            {
+                var message = Resources.FormatInvalidActionDescriptorModelType(
+                    applicationModel.ActionDescriptor.DisplayName,
+                    applicationModel.ModelType.Name,
+                    applicationModel.DeclaredModelType.Name);
+
+                throw new InvalidOperationException(message);
+            }
+
             var actionDescriptor = applicationModel.ActionDescriptor;
             return new CompiledPageActionDescriptor(actionDescriptor)
             {
@@ -40,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 FilterDescriptors = filters,
                 HandlerMethods = handlerMethods,
                 HandlerTypeInfo = applicationModel.HandlerType,
+                DeclaredModelTypeInfo = applicationModel.DeclaredModelType,
                 ModelTypeInfo = applicationModel.ModelType,
                 RouteValues = actionDescriptor.RouteValues,
                 PageTypeInfo = applicationModel.PageType,

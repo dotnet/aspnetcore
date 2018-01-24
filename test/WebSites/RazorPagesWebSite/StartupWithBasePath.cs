@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
+using RazorPagesWebSite.Conventions;
 
 namespace RazorPagesWebSite
 {
@@ -22,6 +23,7 @@ namespace RazorPagesWebSite
                     options.Conventions.AuthorizeFolder("/Conventions/AuthFolder");
                     options.Conventions.AuthorizeAreaFolder("Accounts", "/RequiresAuth");
                     options.Conventions.AllowAnonymousToAreaPage("Accounts", "/RequiresAuth/AllowAnonymous");
+                    options.Conventions.Add(new CustomModelTypeConvention());
                 });
         }
 

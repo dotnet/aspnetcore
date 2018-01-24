@@ -23,13 +23,26 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             PageActionDescriptor actionDescriptor,
             TypeInfo handlerType,
             IReadOnlyList<object> handlerAttributes)
+            : this(actionDescriptor, handlerType, handlerType, handlerAttributes)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="PageApplicationModel"/>.
+        /// </summary>
+        public PageApplicationModel(
+            PageActionDescriptor actionDescriptor,
+            TypeInfo declaredModelType,
+            TypeInfo handlerType,
+            IReadOnlyList<object> handlerAttributes)
         {
             ActionDescriptor = actionDescriptor ?? throw new ArgumentNullException(nameof(actionDescriptor));
+            DeclaredModelType = declaredModelType;
             HandlerType = handlerType;
 
             Filters = new List<IFilterMetadata>();
             Properties = new CopyOnWriteDictionary<object, object>(
-                actionDescriptor.Properties, 
+                actionDescriptor.Properties,
                 EqualityComparer<object>.Default);
             HandlerMethods = new List<PageHandlerModel>();
             HandlerProperties = new List<PagePropertyModel>();
@@ -56,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Properties = new Dictionary<object, object>(other.Properties);
 
             HandlerMethods = new List<PageHandlerModel>(other.HandlerMethods.Select(m => new PageHandlerModel(m)));
-            HandlerProperties  = new List<PagePropertyModel>(other.HandlerProperties.Select(p => new PagePropertyModel(p)));
+            HandlerProperties = new List<PagePropertyModel>(other.HandlerProperties.Select(p => new PagePropertyModel(p)));
             HandlerTypeAttributes = other.HandlerTypeAttributes;
         }
 
@@ -109,7 +122,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public TypeInfo PageType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="TypeInfo"/> of the Razor page model.
+        /// Gets the declared model <see cref="TypeInfo"/> of the model for the page.
+        /// Typically this <see cref="TypeInfo"/> will be the type specified by the @model directive
+        /// in the razor page.
+        /// </summary>
+        public TypeInfo DeclaredModelType { get; }
+
+        /// <summary>
+        /// Gets or sets the runtime model <see cref="TypeInfo"/> of the model for the razor page.
+        /// This is the <see cref="TypeInfo"/> that will be used at runtime to instantiate and populate
+        /// the model property of the page.
         /// </summary>
         public TypeInfo ModelType { get; set; }
 

@@ -11,20 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             = new ResourceManager("Microsoft.AspNetCore.Mvc.RazorPages.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The route for the page at '{0}' cannot start with / or ~/. Pages do not support overriding the file path of the page.
-        /// </summary>
-        internal static string PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable
-        {
-            get => GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable");
-        }
-
-        /// <summary>
-        /// The route for the page at '{0}' cannot start with / or ~/. Pages do not support overriding the file path of the page.
-        /// </summary>
-        internal static string FormatPageActionDescriptorProvider_RouteTemplateCannotBeOverrideable(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("PageActionDescriptorProvider_RouteTemplateCannotBeOverrideable"), p0);
-
-        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
@@ -177,6 +163,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         internal static string FormatInvalidValidPageName(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidValidPageName"), p0);
+
+        /// <summary>
+        /// The model type for '{0}' is of type '{1}' which is not assignable to its declared model type '{2}'.
+        /// </summary>
+        internal static string InvalidActionDescriptorModelType
+        {
+            get => GetString("InvalidActionDescriptorModelType");
+        }
+
+        /// <summary>
+        /// The model type for '{0}' is of type '{1}' which is not assignable to its declared model type '{2}'.
+        /// </summary>
+        internal static string FormatInvalidActionDescriptorModelType(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidActionDescriptorModelType"), p0, p1, p2);
 
         private static string GetString(string name, params string[] formatterNames)
         {

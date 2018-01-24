@@ -150,4 +150,7 @@
   <data name="InvalidValidPageName" xml:space="preserve">
     <value>'{0}' is not a valid page name. A page name is path relative to the Razor Pages root directory that starts with a leading forward slash ('/') and does not contain the file extension e.g "/Users/Edit".</value>
   </data>
+  <data name="InvalidActionDescriptorModelType" xml:space="preserve">
+    <value>The model type for '{0}' is of type '{1}' which is not assignable to its declared model type '{2}'.</value>
+  </data>
 </root>

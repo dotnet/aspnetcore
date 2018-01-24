@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -114,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/Login?ReturnUrl=%2FConventions%2FAuthFolder", response.Headers.Location.PathAndQuery);
         }
 
-         [Fact]
+        [Fact]
         public async Task AuthConvention_AppliedToFolders_CanByOverridenByFiltersOnModel()
         {
             // Act
@@ -319,7 +320,7 @@ Hello from page";
         public async Task PagesInAreas_CanGenerateLinksToControllersAndPages()
         {
             // Arrange
-            var expected = 
+            var expected =
 @"<a href=""/Accounts/Manage/RenderPartials"">Link inside area</a>
 <a href=""/Products/List/old/20"">Link to external area</a>
 <a href=""/Accounts"">Link to area action</a>
@@ -336,7 +337,7 @@ Hello from page";
         public async Task PagesInAreas_CanGenerateRelativeLinks()
         {
             // Arrange
-            var expected = 
+            var expected =
 @"<a href=""/Accounts/PageWithRouteTemplate/1"">Parent directory</a>
 <a href=""/Accounts/Manage/RenderPartials"">Sibling directory</a>
 <a href=""/Products/List"">Go back to root of different area</a>";
@@ -352,7 +353,7 @@ Hello from page";
         public async Task PagesInAreas_CanDiscoverViewsFromAreaAndSharedDirectories()
         {
             // Arrange
-            var expected = 
+            var expected =
 @"Layout in /Views/Shared
 Partial in /Areas/Accounts/Pages/Manage/
 
@@ -390,6 +391,77 @@ Hello from /Pages/Shared/";
 
             // Assert
             Assert.Equal("Hello from AllowAnonymous", response.Trim());
+        }
+
+        // These test is important as it covers a feature that allows razor pages to use a different
+        // model at runtime that wasn't known at compile time. Like a non-generic model used at compile
+        // time and overrided at runtime with a closed-generic model that performs the actual implementation.
+        // An example of this is how the Identity UI library defines a base page model in their views,
+        // like how the Register.cshtml view defines its model as RegisterModel and then, at runtime it replaces
+        // that model with RegisterModel<TUser> where TUser is the type of the user used to configure identity.
+        [Fact]
+        public async Task PageConventions_CanBeUsedToCustomizeTheModelType()
+        {
+            // Act
+            var response = await Client.GetAsync("/CustomModelTypeModel");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("<h2>User</h2>", content);
+        }
+
+        [Fact]
+        public async Task PageConventions_CustomizedModelCanPostToHandlers()
+        {
+            // Arrange
+            var getPage = await Client.GetAsync("/CustomModelTypeModel");
+            var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
+
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
+            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["__RequestVerificationToken"] = token,
+                ["ConfirmPassword"] = "",
+                ["Password"] = "",
+                ["Email"] = ""
+            });
+            message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
+
+            // Act
+            var response = await Client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("is required.", content);
+        }
+
+        [Fact]
+        public async Task PageConventions_CustomizedModelCanWorkWithModelState()
+        {
+            // Arrange
+            var getPage = await Client.GetAsync("/CustomModelTypeModel");
+            var token = AntiforgeryTestHelper.RetrieveAntiforgeryToken(await getPage.Content.ReadAsStringAsync(), "");
+            var cookie = AntiforgeryTestHelper.RetrieveAntiforgeryCookie(getPage);
+
+            var message = new HttpRequestMessage(HttpMethod.Post, "/CustomModelTypeModel");
+            message.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                ["__RequestVerificationToken"] = token,
+                ["Email"] = "javi@example.com",
+                ["Password"] = "Password.12$",
+                ["ConfirmPassword"] = "Password.12$",
+            });
+            message.Headers.TryAddWithoutValidation("Cookie", $"{cookie.Key}={cookie.Value}");
+
+            // Act
+            var response = await Client.SendAsync(message);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/", response.Headers.Location.ToString());
         }
     }
 }
