@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="claimsFactory">The factory to use to create claims principals for a user.</param>
         /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-        /// <param name="schemes">The logger used to log messages, warnings and errors.</param>
+        /// <param name="schemes">The scheme provider that is used enumerate the authentication schemes.</param>
         public SignInManager(UserManager<TUser> userManager,
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,

@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets a flag indicating whether the backing user store supports a user authenticator.
         /// </summary>
         /// <value>
-        /// true if the backing user store supports a user authenticatior, otherwise false.
+        /// true if the backing user store supports a user authenticator, otherwise false.
         /// </value>
         public virtual bool SupportsUserAuthenticatorKey
         {
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets a flag indicating whether the backing user store supports recovery codes.
         /// </summary>
         /// <value>
-        /// true if the backing user store supports a user authenticatior, otherwise false.
+        /// true if the backing user store supports a user authenticator, otherwise false.
         /// </value>
         public virtual bool SupportsUserTwoFactorRecoveryCodes
         {
@@ -961,7 +961,7 @@ namespace Microsoft.AspNetCore.Identity
             var existingUser = await FindByLoginAsync(login.LoginProvider, login.ProviderKey);
             if (existingUser != null)
             {
-                Logger.LogWarning(4, "AddLogin for user {userId} failed because it was already assocated with another user.", await GetUserIdAsync(user));
+                Logger.LogWarning(4, "AddLogin for user {userId} failed because it was already associated with another user.", await GetUserIdAsync(user));
                 return IdentityResult.Failed(ErrorDescriber.LoginAlreadyAssociated());
             }
             await loginStore.AddLoginAsync(user, login, CancellationToken);
