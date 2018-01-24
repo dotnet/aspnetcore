@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using BasicTestApp;
 using Microsoft.Blazor.Components;
 using Microsoft.Blazor.E2ETest.Infrastructure;
@@ -86,8 +87,30 @@ namespace Microsoft.Blazor.E2ETest.Tests
 
             // TODO: Once we remove the wrapper elements from around child components,
             // assert that the child component text node is directly inside the <fieldset>
-            Assert.Equal("Child component",
-                appElement.FindElement(By.CssSelector("fieldset > blazor-component")).Text);
+            var childComponentWrapper = appElement.FindElement(By.CssSelector("fieldset > blazor-component"));
+            Assert.Single(childComponentWrapper.FindElements(By.CssSelector("*")));
+
+            var styledElement = childComponentWrapper.FindElement(By.TagName("h1"));
+            Assert.Equal("Hello, world!", styledElement.Text);
+            Assert.Equal("color: red;", styledElement.GetAttribute("style"));
+            Assert.Equal("somevalue", styledElement.GetAttribute("customattribute"));
+        }
+
+        [Fact]
+        public void CanTriggerEventsOnChildComponents()
+        {
+            var childComponentWrapper = MountTestComponent<CounterComponentWrapper>()
+                .FindElements(By.CssSelector("blazor-component")).Single();
+
+            Assert.Equal(
+                "Current count: 0",
+                childComponentWrapper.FindElement(By.TagName("p")).Text);
+
+            childComponentWrapper.FindElement(By.TagName("button")).Click();
+
+            Assert.Equal(
+                "Current count: 1",
+                childComponentWrapper.FindElement(By.TagName("p")).Text);
         }
 
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
