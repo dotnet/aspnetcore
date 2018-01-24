@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateMPack</PackageDependsOn>
-    <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT'">$(GetArtifactInfoDependsOn);GetMPackArtifactInfo</GetArtifactInfoDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);GenerateMPack</PackageDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetMPackArtifactInfo</GetArtifactInfoDependsOn>
     <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
     <AddinDirectory>$(RepositoryRoot)tooling\$(AddinName)\</AddinDirectory>
     <MPackArtifactCategory>shipoob</MPackArtifactCategory>
@@ -34,9 +34,7 @@
     </ItemGroup>
   </Target>
 
-  <Target
-    Name="GenerateMPack"
-    Condition="'$(OS)'=='Windows_NT'">
+  <Target Name="GenerateMPack">
     <!--
       In our case the mpack archive requires the following:
       1. An addin.info
