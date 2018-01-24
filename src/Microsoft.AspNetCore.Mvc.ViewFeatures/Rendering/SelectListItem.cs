@@ -10,6 +10,16 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     /// </summary>
     public class SelectListItem
     {
+        public SelectListItem() { }
+
+        public SelectListItem(string text, string value, bool selected = false, bool disabled = false)
+        {
+            Disabled = disabled;
+            Selected = selected;
+            Text = text;
+            Value = value;
+        }
+
         /// <summary>
         /// Gets or sets a value that indicates whether this <see cref="SelectListItem"/> is disabled.
         /// This property is typically rendered as a <code>disabled="disabled"</code> attribute in the HTML
