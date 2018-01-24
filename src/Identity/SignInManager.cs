@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Validates the two faction sign in code and creates and signs in the user, as an asynchronous operation.
+        /// Validates the two factor sign in code and creates and signs in the user, as an asynchronous operation.
         /// </summary>
         /// <param name="provider">The two factor authentication provider to validate the code against.</param>
         /// <param name="code">The two factor authentication code to validate.</param>
