@@ -6,8 +6,6 @@ let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
 export class BrowserRenderer {
-  // TODO: Instead of associating components to parent elements, associate them with a
-  // start/end node, so that components don't have to be enclosed in a wrapper
   // TODO: To avoid leaking memory, automatically remove entries from this dict as soon
   // as the corresponding DOM nodes are removed (or maybe when the associated component
   // is disposed, assuming we can guarantee that always happens).
@@ -129,6 +127,14 @@ export class BrowserRenderer {
   }
 
   insertComponent(parent: Element, childIndex: number, node: RenderTreeNodePointer) {
+    // TODO: If we can statically detect that a given component will always produce a single
+    // top-level element, then we don't need to wrap it in a further element. That would help
+    // with cases where you want to have a component outputting a <tr> and then embed it
+    // directly in a <tbody> without breaking CSS selectors like "tbody > tr". But we do need
+    // all child components to be contained in a single element (and not produce a range of
+    // arbitrarily many top-level nodes) because if each child contributes a varying number of
+    // nodes to the parent, then the parent can't directly look up child nodes by their
+    // SiblingIndex values in the render tree diff.
     const containerElement = document.createElement('blazor-component');
     insertNodeIntoDOM(containerElement, parent, childIndex);
 
