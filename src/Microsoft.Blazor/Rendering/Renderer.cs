@@ -30,7 +30,7 @@ namespace Microsoft.Blazor.Rendering
         /// </summary>
         /// <param name="component">The <see cref="IComponent"/>.</param>
         /// <returns>The assigned identifier for the <see cref="IComponent"/>.</returns>
-        protected internal int AssignComponentId(IComponent component)
+        protected int AssignComponentId(IComponent component)
         {
             lock (_componentStateById)
             {
@@ -40,6 +40,23 @@ namespace Microsoft.Blazor.Rendering
                 _componentStateByComponent.Add(component, componentState); // Ensure the componentState lives for at least as long as the component
                 return componentId;
             }
+        }
+
+        internal void InstantiateChildComponent(ref RenderTreeNode node)
+        {
+            if (node.NodeType != RenderTreeNodeType.Component)
+            {
+                throw new ArgumentException($"The node's {nameof(RenderTreeNode.NodeType)} property must equal {RenderTreeNodeType.Component}", nameof(node));
+            }
+
+            if (node.Component != null)
+            {
+                throw new ArgumentException($"The node already has a non-null component instance", nameof(node));
+            }
+
+            var newComponent = (IComponent)Activator.CreateInstance(node.ComponentType);
+            var newComponentId = AssignComponentId(newComponent);
+            node.SetChildComponentInstance(newComponentId, newComponent);
         }
 
         /// <summary>

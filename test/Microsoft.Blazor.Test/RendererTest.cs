@@ -45,6 +45,7 @@ namespace Microsoft.Blazor.Test
             {
                 builder.AddText(0, "Hello");
                 builder.AddComponentElement<MessageComponent>(1);
+                builder.CloseElement();
             });
 
             // Act/Assert
@@ -95,6 +96,7 @@ namespace Microsoft.Blazor.Test
             var parentComponent = new TestComponent(builder =>
             {
                 builder.AddComponentElement<MessageComponent>(0);
+                builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);
@@ -153,6 +155,7 @@ namespace Microsoft.Blazor.Test
             var parentComponent = new TestComponent(builder =>
             {
                 builder.AddComponentElement<EventComponent>(0);
+                builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderComponent(parentComponentId);
@@ -296,6 +299,36 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             Assert.True(didRender);
+        }
+
+        [Fact]
+        public void PreservesChildComponentInstancesWithNoAttributes()
+        {
+            // Arrange: First render, capturing child component instance
+            var renderer = new TestRenderer();
+            var message = "Hello";
+            var component = new TestComponent(builder =>
+            {
+                builder.AddText(0, message);
+                builder.AddComponentElement<MessageComponent>(1);
+                builder.CloseElement();
+            });
+
+            var rootComponentId = renderer.AssignComponentId(component);
+            renderer.RenderComponent(rootComponentId);
+
+            var nestedComponentInstance = (MessageComponent)renderer.RenderTreesByComponentId[rootComponentId]
+                .Single(node => node.NodeType == RenderTreeNodeType.Component)
+                .Component;
+
+            // Act: Second render
+            message = "Modified message";
+            renderer.RenderComponent(rootComponentId);
+
+            // Assert
+            Assert.Collection(renderer.RenderTreesByComponentId[rootComponentId],
+                node => AssertNode.Text(node, "Modified message"),
+                node => Assert.Same(nestedComponentInstance, node.Component));
         }
 
         private class NoOpRenderer : Renderer

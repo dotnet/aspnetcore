@@ -32,7 +32,7 @@ namespace Microsoft.Blazor.Rendering
             _componentId = componentId;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            _diffComputer = new RenderTreeDiffComputer();
+            _diffComputer = new RenderTreeDiffComputer(renderer);
             _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
@@ -48,28 +48,10 @@ namespace Microsoft.Blazor.Rendering
 
             _renderTreeBuilderCurrent.Clear();
             _component.BuildRenderTree(_renderTreeBuilderCurrent);
-            var diff = _diffComputer.ComputeDifference(
+            var diff = _diffComputer.ApplyNewRenderTreeVersion(
                 _renderTreeBuilderPrevious.GetNodes(),
                 _renderTreeBuilderCurrent.GetNodes());
-            EnsureChildComponentsInstantiated(diff.CurrentState); // TODO: Move this into the diff phase
             _renderer.UpdateDisplay(_componentId, diff);
-        }
-
-        private void EnsureChildComponentsInstantiated(ArrayRange<RenderTreeNode> renderTree)
-        {
-            var array = renderTree.Array;
-            var count = renderTree.Count;
-            for (var i = 0; i < count; i++)
-            {
-                if (array[i].NodeType == RenderTreeNodeType.Component
-                    && array[i].Component == null)
-                {
-                    var instance = (IComponent)Activator.CreateInstance(array[i].ComponentType);
-                    array[i].SetChildComponentInstance(
-                        _renderer.AssignComponentId(instance),
-                        instance);
-                }
-            }
         }
 
         /// <summary>

@@ -2,14 +2,28 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Blazor.Components;
+using Microsoft.Blazor.Rendering;
 
 namespace Microsoft.Blazor.RenderTree
 {
     internal class RenderTreeDiffComputer
     {
+        private readonly Renderer _renderer;
         private readonly ArrayBuilder<RenderTreeEdit> _entries = new ArrayBuilder<RenderTreeEdit>(10);
 
-        public RenderTreeDiff ComputeDifference(
+        public RenderTreeDiffComputer(Renderer renderer)
+        {
+            _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+        }
+
+        /// <summary>
+        /// As well as computing the diff between the two trees, this method also has the side-effect
+        /// of instantiating child components on newly-inserted Component nodes, and copying the existing
+        /// component instances onto retained Component nodes. It's particularly convenient to do that
+        /// here because we have the right information and are already walking the trees to do the diff.
+        /// </summary>
+        public RenderTreeDiff ApplyNewRenderTreeVersion(
             ArrayRange<RenderTreeNode> oldTree,
             ArrayRange<RenderTreeNode> newTree)
         {
@@ -111,13 +125,19 @@ namespace Microsoft.Blazor.RenderTree
 
                     if (treatAsInsert)
                     {
-                        if (newTree[newStartIndex].NodeType == RenderTreeNodeType.Attribute)
+                        var newNodeType = newTree[newStartIndex].NodeType;
+                        if (newNodeType == RenderTreeNodeType.Attribute)
                         {
                             Append(RenderTreeEdit.SetAttribute(siblingIndex, newStartIndex));
                             newStartIndex++;
                         }
                         else
                         {
+                            if (newNodeType == RenderTreeNodeType.Element || newNodeType == RenderTreeNodeType.Component)
+                            {
+                                InstantiateChildComponents(newTree, newStartIndex);
+                            }
+
                             Append(RenderTreeEdit.PrependNode(siblingIndex, newStartIndex));
                             newStartIndex = NextSiblingIndex(newTree, newStartIndex);
                             siblingIndex++;
@@ -225,10 +245,15 @@ namespace Microsoft.Blazor.RenderTree
                         var newComponentType = newTree[newNodeIndex].ComponentType;
                         if (oldComponentType == newComponentType)
                         {
+                            // Since it's the same child component type, we'll preserve the instance
+                            // rather than instantiating a new one
+                            newTree[newNodeIndex].SetChildComponentInstance(
+                                oldTree[oldNodeIndex].ComponentId,
+                                oldTree[oldNodeIndex].Component);
+
                             // TODO: Compare attributes and notify the existing child component
                             // instance of any changes
-                            // TODO: Also copy the existing child component instance to the new
-                            // tree so we can preserve it across multiple updates
+
                             siblingIndex++;
                         }
                         else
@@ -300,6 +325,23 @@ namespace Microsoft.Blazor.RenderTree
             }
 
             _entries.Append(entry);
+        }
+
+        private void InstantiateChildComponents(RenderTreeNode[] nodes, int startIndex)
+        {
+            var endIndex = nodes[startIndex].ElementDescendantsEndIndex;
+            for (var i = startIndex; i <= endIndex; i++)
+            {
+                if (nodes[i].NodeType == RenderTreeNodeType.Component)
+                {
+                    if (nodes[i].Component != null)
+                    {
+                        throw new InvalidOperationException($"Child component already exists during {nameof(InstantiateChildComponents)}");
+                    }
+
+                    _renderer.InstantiateChildComponent(ref nodes[i]);
+                }
+            }
         }
     }
 }
