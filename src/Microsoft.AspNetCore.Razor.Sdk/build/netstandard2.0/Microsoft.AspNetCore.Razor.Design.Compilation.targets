@@ -1,7 +1,7 @@
 <Project>
   <!--
   What follows in this file is based on:
-     https://github.com/dotnet/roslyn/blob/4d92b18aee99ba8b1b4770ce65133e9ca65a94fe/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets 
+     https://github.com/dotnet/roslyn/blob/4d92b18aee99ba8b1b4770ce65133e9ca65a94fe/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets
 
   We need to keep this basically up to date, as well as track the set of modifications we've made. Try to keep the formatting
   similar to the original to reduce noise. In general try to only deviate from the CoreCompile target when we need to for
@@ -12,7 +12,7 @@
 
   Changes:
     Name="RazorCoreCompile"
-    
+
     Replace @(Compile) with @(RazorCompile)
     Replace @(_DebugSymbolsIntermediatePath) with @(_RazorDebugSymbolsIntermediatePath)
     Replace @(IntermediateAssembly) with @(RazorIntermediateAssembly)
@@ -22,7 +22,7 @@
     Set TargetType="$(OutputType)" to TargetType="Library" - Razor is always a .dll
 
     Remove Returns="@(CscCommandLineArgs)"
-    
+
     Remove @(EmbeddedFiles)
     Remove $(ApplicationIcon) $(Win32Resource) $(Win32Manifest)
     Remove @(EmbeddedDocumentation) and @(EmbeddedFiles)

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+
+    <!-- This project doesn't have any code, so don't include it in the .nupkg -->
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="SDK\*" Pack="true" PackagePath="SDK\" />
+    <None Include="build\**\*" Pack="true" PackagePath="build" />
+  </ItemGroup>
+
+</Project>

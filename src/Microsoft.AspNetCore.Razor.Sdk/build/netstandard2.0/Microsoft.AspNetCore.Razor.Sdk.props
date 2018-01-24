@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="Sdk.CurrentVersion.props" />
+
+  <PropertyGroup>
+    <!-- Redirect the SDK to use the targets from the current package -->
+    <_RazorSdkCurrentVersionPath>$(MSBuildFileDirectory)Sdk.CurrentVersion.targets</_RazorSdkCurrentVersionPath>
+  </PropertyGroup>
+</Project>

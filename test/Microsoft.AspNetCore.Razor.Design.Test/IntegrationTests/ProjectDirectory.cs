@@ -98,6 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 var text = $@"
 <Project>
+  <Import Project=""{originalProjectRoot}\..\..\..\src\Microsoft.AspNetCore.Razor.Sdk\SDK\Sdk.props""/>
   <PropertyGroup>
     <OriginalProjectRoot>{originalProjectRoot}</OriginalProjectRoot>
     <BinariesRoot>{binariesRoot}</BinariesRoot>
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 var text = $@"
 <Project>
-  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.targets""/>
+  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Sdk\SDK\Sdk.targets""/>
 </Project>
 ";
                 File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.targets"), text);

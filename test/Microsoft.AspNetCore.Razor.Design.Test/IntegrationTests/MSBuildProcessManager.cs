@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             {
                 if (string.IsNullOrEmpty(BuildVariables.MSBuildPath))
                 {
-                    throw new ArgumentException("Unable to locate MSBuild.exe to run desktop tests.");
+                    throw new ArgumentException("Unable to locate MSBuild.exe to run desktop tests. " +
+                        "MSBuild.exe is located using state created as part of running build[cmd|sh] at the root of the repository. Run build /t:Prepeare to set this up if this hasn't been done.");
                 }
 
                 processStartInfo.FileName = BuildVariables.MSBuildPath;

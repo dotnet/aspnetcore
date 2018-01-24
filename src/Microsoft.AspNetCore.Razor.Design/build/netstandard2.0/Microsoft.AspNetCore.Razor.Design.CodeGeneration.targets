@@ -1,6 +1,7 @@
 <Project>
   <!--
     Targets used for Razor SDK code generation. Support for the RazorCoreGenerate target.
+    This target is explicitly imported by Razor SDK.
   -->
 
   <!-- 
@@ -27,7 +28,6 @@
   -->
   <Target 
     Name="_HashRazorGenerateInputs" 
-    AfterTargets="ResolveRazorGenerateInputs"
     Condition="'@(RazorGenerate)'!=''">
 
     <Hash ItemsToHash="@(RazorGenerate)">
@@ -83,14 +83,22 @@
     </RazorTagHelper>
   </Target>
 
-  <Target Name="_ResolveRazorGenerateOutputs" AfterTargets="PrepareForRazorGenerate">
+  <Target Name="_ResolveRazorGenerateOutputs">
     <ItemGroup>
       <_RazorGenerateOutput Include="%(RazorGenerate.GeneratedOutput)" Condition="'%(RazorGenerate.GeneratedOutput)'!=''"/>    
     </ItemGroup>
   </Target>
 
+  <PropertyGroup>
+    <RazorCoreGenerateDependsOn>
+      _HashRazorGenerateInputs;
+      _ResolveRazorGenerateOutputs;
+    </RazorCoreGenerateDependsOn>
+  </PropertyGroup>
+
   <Target
     Name="RazorCoreGenerate"
+    DependsOnTargets="$(RazorCoreGenerateDependsOn)"
     Inputs="$(MSBuildAllProjects);$(_RazorGenerateInputsHashFile);$(_RazorTagHelperOutputCache);@(RazorGenerate)"
     Outputs="@(_RazorGenerateOutput)"
     Condition="'@(RazorGenerate)'!= ''">
@@ -118,7 +126,11 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_ResolveGeneratedRazorCompileInputs" BeforeTargets="ResolveRazorCompileInputs">
+  <PropertyGroup>
+    <ResolveRazorCompileInputsDependsOn>$(ResolveRazorCompileInputsDependsOn);_ResolveGeneratedRazorCompileInputs</ResolveRazorCompileInputsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_ResolveGeneratedRazorCompileInputs">
     <ItemGroup>
       <RazorCompile Include="@(_RazorGenerateOutput)" />
       <RazorEmbeddedResource Include="@(RazorGenerate)" Condition="$(EmbedRazorGenerateSources)">

@@ -5,13 +5,6 @@
 
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains MSBuild support for Razor.</Description>
-
-    <!-- 
-      Using netcoreapp2.0 here is a workaround for https://github.com/Microsoft/msbuild/issues/2661
-
-      We need to use a P2P reference to build some other projects that need to target netcoreapp2.0
-      and even though we don't actually want to reference the output, MSBuild will not allow it.
-    -->
     <TargetFramework>netstandard2.0</TargetFramework>
 
     <!-- This project doesn't have any code, so don't include it in the .nupkg -->

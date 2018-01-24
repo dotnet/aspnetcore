@@ -1,50 +1,18 @@
 ﻿<Project TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
-  <!-- 
-    Properties and tasks supporting Razor MSBuild integration
-  -->
-
-  <!--
-    Default properties for common Razor SDK behavior.
-  -->
   <PropertyGroup>
     <!--
-      Set to true to automatically include Razor (.cshtml) files in @(RazorGenerate) from @(Content).
-    -->
-    <EnableDefaultRazorGenerateItems Condition="'$(EnableDefaultRazorGenerateItems)'==''">true</EnableDefaultRazorGenerateItems>
-
-    <!-- 
-      Set to true to copy RazorGenerate items (.cshtml) to the publish directory.
-
-      Typically Razor files are not needed for a published application if they participate in compilation at build-time
-      or publish-time. By default, the Razor SDK will suppress the copying of RazorGenerate items to the publish directory.
-    -->
-    <CopyRazorGenerateFilesToPublishDirectory Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'==''">false</CopyRazorGenerateFilesToPublishDirectory>
-
-    <!-- 
-      Set to true to copy reference assembly items to the publish directory.
-
-      Typically reference assemblies are not needed for a published application if Razor compilation occurs at build-time
-      or publish-time. By default, the Razor SDK will suppress the copying of reference assemblies to the publish directory.
-    -->
-    <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
-  </PropertyGroup>
-
-  <!--
-    Razor also attaches itself by default to some of the standard .NET targets. Uses these properties to
-    configure this behaviour.
-  -->
-  <PropertyGroup>
-    <RazorGenerateDependsOn>RazorResolveGenerateInputs;RazorCoreGenerate</RazorGenerateDependsOn>
-    <RazorCompileDependsOn>RazorGenerate;RazorCoreCompile</RazorCompileDependsOn>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <!--
-      Used by the Web SDK to know if the Razor SDK is present. This needs to live in a nuget package (not in the SDK)
-      so that it only shows up in supported versions.
+    Used by the Web SDK if the Razor SDK can be used for compilation. This needs to live in a nuget package (not in the SDK)
+    so that it only shows up in supported versions.
     -->
     <IsRazorCompilerReferenced>true</IsRazorCompilerReferenced>
-    
+
+    <!-- 
+    Location of the CodeGeneration targets. The SDK uses this to import the file ensuring deterministic import order.
+    -->
+    <RazorCodeGenerationTargetsPath>$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Razor.Design.CodeGeneration.targets</RazorCodeGenerationTargetsPath>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Override this to hijack the tasks and targets. Used by tests. -->
     <_RazorMSBuildRoot Condition="'$(_RazorMSBuildRoot)'==''">$(MSBuildThisFileDirectory)..\..\</_RazorMSBuildRoot>
     
