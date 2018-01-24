@@ -37,7 +37,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "ServerFixture");
             _loggerFactory.AddProvider(_asyncLoggerProvider);
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
-            Url = "http://localhost:" + GetNextPort();
+            // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
+            Url = "http://127.0.0.1:" + GetNextPort();
 
             StartServer(Url);
         }
