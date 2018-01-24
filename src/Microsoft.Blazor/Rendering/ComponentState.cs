@@ -55,11 +55,11 @@ namespace Microsoft.Blazor.Rendering
             _renderer.UpdateDisplay(_componentId, diff);
         }
 
-        private void EnsureChildComponentsInstantiated(ArraySegment<RenderTreeNode> renderTree)
+        private void EnsureChildComponentsInstantiated(ArrayRange<RenderTreeNode> renderTree)
         {
             var array = renderTree.Array;
-            var offsetPlusCount = renderTree.Offset + renderTree.Count;
-            for (var i = renderTree.Offset; i < offsetPlusCount; i++)
+            var count = renderTree.Count;
+            for (var i = 0; i < count; i++)
             {
                 if (array[i].NodeType == RenderTreeNodeType.Component
                     && array[i].Component == null)

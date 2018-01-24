@@ -7,29 +7,17 @@ namespace Microsoft.Blazor.RenderTree
 {
     internal class RenderTreeDiffComputer
     {
-        private const int MinBufferLength = 10;
-        private RenderTreeEdit[] _entries = new RenderTreeEdit[10];
-        private int _entriesInUse;
+        private readonly ArrayBuilder<RenderTreeEdit> _entries = new ArrayBuilder<RenderTreeEdit>(10);
 
         public RenderTreeDiff ComputeDifference(
-            ArraySegment<RenderTreeNode> oldTree,
-            ArraySegment<RenderTreeNode> newTree)
+            ArrayRange<RenderTreeNode> oldTree,
+            ArrayRange<RenderTreeNode> newTree)
         {
-            _entriesInUse = 0;
+            _entries.Clear();
             var siblingIndex = 0;
             AppendDiffEntriesForRange(oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count, ref siblingIndex);
 
-            // If the previous usage of the buffer showed that we have allocated
-            // much more space than needed, free up the excess memory
-            var shrinkToLength = Math.Max(MinBufferLength, _entries.Length / 2);
-            if (_entriesInUse < shrinkToLength)
-            {
-                Array.Resize(ref _entries, shrinkToLength);
-            }
-
-            return new RenderTreeDiff(
-                new ArraySegment<RenderTreeEdit>(_entries, 0, _entriesInUse),
-                newTree);
+            return new RenderTreeDiff(_entries.ToRange(), newTree);
         }
 
         private void AppendDiffEntriesForRange(
@@ -303,19 +291,15 @@ namespace Microsoft.Blazor.RenderTree
             if (entry.Type == RenderTreeEditType.StepOut)
             {
                 // If the preceding node is a StepIn, then the StepOut cancels it out
-                if (_entriesInUse > 0 && _entries[_entriesInUse - 1].Type == RenderTreeEditType.StepIn)
+                var previousIndex = _entries.Count - 1;
+                if (previousIndex >= 0 && _entries.Buffer[previousIndex].Type == RenderTreeEditType.StepIn)
                 {
-                    _entriesInUse--;
+                    _entries.RemoveLast();
                     return;
                 }
             }
 
-            if (_entriesInUse == _entries.Length)
-            {
-                Array.Resize(ref _entries, _entries.Length * 2);
-            }
-
-            _entries[_entriesInUse++] = entry;
+            _entries.Append(entry);
         }
     }
 }

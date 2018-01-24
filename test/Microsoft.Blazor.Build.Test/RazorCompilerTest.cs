@@ -336,7 +336,7 @@ namespace Microsoft.Blazor.Build.Test
             => node.NodeType != RenderTreeNodeType.Text
             || !string.IsNullOrWhiteSpace(node.TextContent);
 
-        private static ArraySegment<RenderTreeNode> GetRenderTree(IComponent component)
+        private static ArrayRange<RenderTreeNode> GetRenderTree(IComponent component)
         {
             var treeBuilder = new RenderTreeBuilder(new TestRenderer());
             component.BuildRenderTree(treeBuilder);

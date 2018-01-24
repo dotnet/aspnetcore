@@ -13,10 +13,8 @@ namespace Microsoft.Blazor.RenderTree
     /// </summary>
     public class RenderTreeBuilder
     {
-        private const int MinBufferLength = 10;
         private readonly Renderer _renderer;
-        private RenderTreeNode[] _entries = new RenderTreeNode[100];
-        private int _entriesInUse = 0;
+        private readonly ArrayBuilder<RenderTreeNode> _entries = new ArrayBuilder<RenderTreeNode>(10);
         private readonly Stack<int> _openElementIndices = new Stack<int>();
         private RenderTreeNodeType? _lastNonAttributeNodeType;
 
@@ -39,7 +37,7 @@ namespace Microsoft.Blazor.RenderTree
         /// <param name="elementName">A value representing the type of the element.</param>
         public void OpenElement(int sequence, string elementName)
         {
-            _openElementIndices.Push(_entriesInUse);
+            _openElementIndices.Push(_entries.Count);
             Append(RenderTreeNode.Element(sequence, elementName));
         }
 
@@ -50,7 +48,7 @@ namespace Microsoft.Blazor.RenderTree
         public void CloseElement()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
-            _entries[indexOfEntryBeingClosed].CloseElement(_entriesInUse - 1);
+            _entries.Buffer[indexOfEntryBeingClosed].CloseElement(_entries.Count - 1);
         }
 
         /// <summary>
@@ -149,35 +147,21 @@ namespace Microsoft.Blazor.RenderTree
         /// </summary>
         public void Clear()
         {
-            // If the previous usage of the buffer showed that we have allocated
-            // much more space than needed, free up the excess memory
-            var shrinkToLength = Math.Max(MinBufferLength, _entries.Length / 2);
-            if (_entriesInUse < shrinkToLength)
-            {
-                Array.Resize(ref _entries, shrinkToLength);
-            }
-
-            _entriesInUse = 0;
+            _entries.Clear();
             _openElementIndices.Clear();
             _lastNonAttributeNodeType = null;
         }
 
         /// <summary>
         /// Returns the <see cref="RenderTreeNode"/> values that have been appended.
-        /// The return value's <see cref="ArraySegment{T}.Offset"/> is always zero.
         /// </summary>
-        /// <returns>An array segment of <see cref="RenderTreeNode"/> values.</returns>
-        public ArraySegment<RenderTreeNode> GetNodes() =>
-            new ArraySegment<RenderTreeNode>(_entries, 0, _entriesInUse);
+        /// <returns>An array range of <see cref="RenderTreeNode"/> values.</returns>
+        public ArrayRange<RenderTreeNode> GetNodes() =>
+            _entries.ToRange();
 
         private void Append(RenderTreeNode node)
         {
-            if (_entriesInUse == _entries.Length)
-            {
-                Array.Resize(ref _entries, _entries.Length * 2);
-            }
-
-            _entries[_entriesInUse++] = node;
+            _entries.Append(node);
 
             var nodeType = node.NodeType;
             if (nodeType != RenderTreeNodeType.Attribute)

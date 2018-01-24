@@ -31,7 +31,6 @@ namespace Microsoft.Blazor.Test
             // Assert
             var nodes = builder.GetNodes();
             Assert.NotNull(nodes.Array);
-            Assert.Equal(0, nodes.Offset);
             Assert.Empty(nodes);
         }
 
@@ -49,7 +48,6 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             var nodes = builder.GetNodes();
-            Assert.Equal(0, nodes.Offset);
             Assert.Collection(nodes,
                 node => AssertNode.Text(node, "First item"),
                 node => AssertNode.Text(node, string.Empty),
@@ -69,7 +67,6 @@ namespace Microsoft.Blazor.Test
 
             // Assert
             var nodes = builder.GetNodes();
-            Assert.Equal(0, nodes.Offset);
             Assert.Collection(nodes,
                 node => AssertNode.Text(node, "1234"),
                 node => AssertNode.Text(node, string.Empty));
@@ -103,7 +100,7 @@ namespace Microsoft.Blazor.Test
             // Assert
             var nodes = builder.GetNodes();
             Assert.Equal(2, nodes.Count);
-            AssertNode.Element(nodes[1], "my element", 1);
+            AssertNode.Element(nodes.Array[1], "my element", 1);
         }
 
         [Fact]
@@ -122,7 +119,7 @@ namespace Microsoft.Blazor.Test
             // Assert
             var nodes = builder.GetNodes();
             Assert.Equal(4, nodes.Count);
-            AssertNode.Element(nodes[0], "my element", 2);
+            AssertNode.Element(nodes.Array[0], "my element", 2);
         }
 
         [Fact]

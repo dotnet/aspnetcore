@@ -313,8 +313,8 @@ namespace Microsoft.Blazor.Test
 
         private class TestRenderer : Renderer
         {
-            public IDictionary<int, ArraySegment<RenderTreeNode>> RenderTreesByComponentId { get; }
-                = new Dictionary<int, ArraySegment<RenderTreeNode>>();
+            public IDictionary<int, ArrayRange<RenderTreeNode>> RenderTreesByComponentId { get; }
+                = new Dictionary<int, ArrayRange<RenderTreeNode>>();
 
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
