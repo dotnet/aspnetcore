@@ -237,6 +237,15 @@ function beginWebpackWatcher(webpackConfig: webpack.Configuration) {
 export function createWebpackDevServer(callback: CreateDevServerCallback, optionsJson: string) {
     const options: CreateDevServerOptions = JSON.parse(optionsJson);
 
+    // Enable TypeScript loading if the webpack config is authored in TypeScript
+    if (path.extname(options.webpackConfigPath) === '.ts') {
+        try {
+            require('ts-node/register');
+        } catch (ex) {
+            throw new Error('Error while attempting to enable support for Webpack config file written in TypeScript. Make sure your project depends on the "ts-node" NPM package. The underlying error was: ' + ex.stack);
+        }
+    }
+
     // See the large comment in WebpackTestPermissions.ts for details about this
     if (!hasSufficientPermissions()) {
         console.log('WARNING: Webpack dev middleware is not enabled because the server process does not have sufficient permissions. You should either remove the UseWebpackDevMiddleware call from your code, or to make it work, give your server process user account permission to write to your application directory and to read all ancestor-level directories.');
