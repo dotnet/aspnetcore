@@ -118,6 +118,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.RangeHelper.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor" Category="ship" AppMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Design" Category="ship" AppMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Razor.Sdk" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Language" Category="ship" AppMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.Runtime" Category="ship" AppMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Razor.TagHelpers.Testing.Sources" Category="noship" />
