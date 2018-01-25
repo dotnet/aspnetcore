@@ -61,7 +61,7 @@ namespace Templates.Test.Helpers
 
             var envVars = new Dictionary<string, string>
             {
-                { "ASPNETCORE_URLS", $"http://localhost:127.0.0.0:0;https://localhost:127.0.0.0:0" }
+                { "ASPNETCORE_URLS", $"http://127.0.0.1:0;https://127.0.0.1:0" }
             };
 
             if (!publish)
