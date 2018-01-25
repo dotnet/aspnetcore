@@ -186,3 +186,7 @@
 	path = modules/WebSockets
 	url = https://github.com/aspnet/WebSockets.git
 	branch = release/2.1
+[submodule "modules/WebHooks"]
+	path = modules/WebHooks
+	url = https://github.com/aspnet/WebHooks.git
+	branch = release/2.1
