@@ -4,7 +4,7 @@ init:
 branches:
   only:
     - master
-    - release
+    - /release\/.*/
     - dev
     - /^(.*\/)?ci-.*$/
     - /^rel\/.*/
