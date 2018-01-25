@@ -1,7 +1,7 @@
 ﻿init:
   - git config --global core.autocrlf true
 install:
-   - ps: Install-Product node 8.4.0 x64
+   - ps: Install-Product node 8 x64
 branches:
   only:
     - master
