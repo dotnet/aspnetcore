@@ -234,6 +234,52 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        public async Task ProcessAsync_DoesNotUseModelFromViewdata_IfModelExpressionEvalulatesToNull()
+        {
+            // Arrange
+            var bufferScope = new TestViewBufferScope();
+            var partialName = "_Partial";
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var containerModel = new TestModel { Property = null };
+            var containerModelExplorer = modelMetadataProvider.GetModelExplorerForType(
+                typeof(TestModel),
+                containerModel);
+            var propertyModelExplorer = containerModelExplorer.GetExplorerForProperty(nameof(TestModel.Property));
+
+            var modelExpression = new ModelExpression("Property", propertyModelExplorer);
+            var viewContext = GetViewContext();
+            viewContext.ViewData.Model = new object();
+
+            var view = new Mock<IView>();
+            view.Setup(v => v.RenderAsync(It.IsAny<ViewContext>()))
+                .Callback((ViewContext v) =>
+                {
+                    Assert.Null(v.ViewData.Model);
+                })
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            var viewEngine = new Mock<ICompositeViewEngine>();
+            viewEngine.Setup(v => v.GetView(It.IsAny<string>(), partialName, false))
+                .Returns(ViewEngineResult.Found(partialName, view.Object));
+
+            var tagHelper = new PartialTagHelper(viewEngine.Object, bufferScope)
+            {
+                Name = partialName,
+                ViewContext = viewContext,
+                For = modelExpression,
+            };
+            var tagHelperContext = GetTagHelperContext();
+            var output = GetTagHelperOutput();
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            view.Verify();
+        }
+
+        [Fact]
         public async Task ProcessAsync_SetsHtmlFieldPrefix_UsingModelExpression()
         {
             // Arrange
