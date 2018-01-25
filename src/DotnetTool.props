@@ -11,6 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SignedPackageFile Include="$(TargetPath)" PackagePath="tools/$(TargetFramework)/any/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
+    <SignedPackageFile Include="$(TargetPath)" PackagePath="tools/any/any/$(TargetFileName)" Certificate="$(AssemblySigningCertName)" />
   </ItemGroup>
 </Project>

@@ -5,7 +5,7 @@
     <OutputType>exe</OutputType>
     <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
     <PackageType>DotnetTool</PackageType>
-    <PackageBasePath>tools/$(TargetFramework)/any/</PackageBasePath>
+    <PackageBasePath>tools/any/any/</PackageBasePath>
   </PropertyGroup>
 
   <ItemGroup>

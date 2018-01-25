@@ -8,7 +8,7 @@ dotnet-user-secrets
 From the command-line, execute:
 
 ```
-dotnet install tool dotnet-user-secrets
+dotnet install tool --global dotnet-user-secrets
 ```
 
 ### How To Use

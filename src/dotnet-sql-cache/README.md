@@ -8,7 +8,7 @@ dotnet-sql-cache
 From the command-line, execute:
 
 ```
-dotnet install tool dotnet-sql-cache
+dotnet install tool --global dotnet-sql-cache
 ```
 
 ### How To Use

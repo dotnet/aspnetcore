@@ -23,10 +23,10 @@ For stable, released versions of the tools, see [these instructions](https://git
 Install tools using the .NET Core command-line.
 
 ```
-dotnet install tool dotnet-watch
-dotnet install tool dotnet-user-secrets
-dotnet install tool dotnet-dev-certs
-dotnet install tool dotnet-sql-cache
+dotnet install tool --global dotnet-watch
+dotnet install tool --global dotnet-user-secrets
+dotnet install tool --global dotnet-dev-certs
+dotnet install tool --global dotnet-sql-cache
 ```
 
 ## Usage

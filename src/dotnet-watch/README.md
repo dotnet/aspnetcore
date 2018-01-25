@@ -7,7 +7,7 @@ dotnet-watch
 From the command-line, execute:
 
 ```
-dotnet install tool dotnet-watch
+dotnet install tool --global dotnet-watch
 ```
 
 ### How To Use

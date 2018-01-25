@@ -2,10 +2,8 @@ init:
   - git config --global core.autocrlf true
 branches:
   only:
-    - master
-    - release
-    - /^rel\/.*/
     - dev
+    - /^release\/.*/
     - /^(.*\/)?ci-.*$/
 build_script:
   - ps: .\run.ps1 default-build

@@ -3,7 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15679</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15681</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion>
@@ -11,6 +11,7 @@
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26115-03</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26112-01</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0-preview1-26112-01</SystemDataSqlClientPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview1-26112-01</SystemSecurityCryptographyCngPackageVersion>

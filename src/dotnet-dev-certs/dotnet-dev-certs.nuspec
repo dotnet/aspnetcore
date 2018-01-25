@@ -17,10 +17,13 @@
       <packageType name="DotnetTool" />
     </packageTypes>
     <repository type="git" url="$repositoryUrl$" />
-    <dependencies />
+    <dependencies>
+      <!-- Workaround https://github.com/dotnet/cli/issues/8418 -->
+      <dependency id="Microsoft.NETCore.Platforms" version="$MicrosoftNETCorePlatformsPackageVersion$" />
+    </dependencies>
   </metadata>
   <files>
-    <file src="$publishdir$" target="tools/$targetframework$/any/" />
-    <file src="DotnetToolSettings.xml" target="tools/DotnetToolSettings.xml" />
+    <file src="$publishdir$" target="tools/any/any/" />
+    <file src="DotnetToolSettings.xml" target="tools/any/any/DotnetToolSettings.xml" />
   </files>
 </package>
