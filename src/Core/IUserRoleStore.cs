@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity
     public interface IUserRoleStore<TUser> : IUserStore<TUser> where TUser : class
     {
         /// <summary>
-        /// Add a the specified <paramref name="user"/> to the named role.
+        /// Add the specified <paramref name="user"/> to the named role.
         /// </summary>
         /// <param name="user">The user to add to the named role.</param>
         /// <param name="roleName">The name of the role to add the user to.</param>
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity
         Task AddToRoleAsync(TUser user, string roleName, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Add a the specified <paramref name="user"/> from the named role.
+        /// Remove the specified <paramref name="user"/> from the named role.
         /// </summary>
         /// <param name="user">The user to remove the named role from.</param>
         /// <param name="roleName">The name of the role to remove.</param>
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Identity
         Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken);
 
         /// <summary>
-        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the give named role.
+        /// Returns a flag indicating whether the specified <paramref name="user"/> is a member of the given named role.
         /// </summary>
         /// <param name="user">The user whose role membership should be checked.</param>
         /// <param name="roleName">The name of the role to be checked.</param>
