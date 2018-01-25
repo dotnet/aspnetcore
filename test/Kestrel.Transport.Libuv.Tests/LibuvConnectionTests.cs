@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
-                await thread.StopAsync(TimeSpan.FromSeconds(1));
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
 
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Now complete the output writer so that the connection closes
                 mockConnectionHandler.Output.Writer.Complete();
 
-                await connectionTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await connectionTask.TimeoutAfter(TestConstants.DefaultTimeout);
 
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
-                await thread.StopAsync(TimeSpan.FromSeconds(1));
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
 
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 // Now complete the output writer and wait for the connection to close
                 mockConnectionHandler.Output.Writer.Complete();
 
-                await connectionTask.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await connectionTask.TimeoutAfter(TestConstants.DefaultTimeout);
 
                 // Assert that we don't try to start reading
                 Assert.Null(mockLibuv.AllocCallback);
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
-                await thread.StopAsync(TimeSpan.FromSeconds(1));
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
 
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
             finally
             {
-                await thread.StopAsync(TimeSpan.FromSeconds(1));
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
             }
         }
     }

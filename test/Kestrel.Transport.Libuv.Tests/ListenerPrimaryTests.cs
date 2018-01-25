@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var listenerSecondary = new ListenerSecondary(transportContextSecondary);
             await listenerSecondary.StartAsync(pipeName, pipeMessage, listenOptions, libuvThreadSecondary);
 
-            var maxWait = Task.Delay(TimeSpan.FromSeconds(30));
+            var maxWait = Task.Delay(TestConstants.DefaultTimeout);
             // wait for ListenerPrimary.ReadCallback to add the secondary pipe
             while (listenerPrimary.UvPipeCount == listenerCount)
             {
@@ -85,10 +85,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
             await listenerSecondary.DisposeAsync();
-            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
 
             await listenerPrimary.DisposeAsync();
-            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
         }
 
         // https://github.com/aspnet/KestrelHttpServer/issues/1182
@@ -191,10 +191,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
             await listenerSecondary.DisposeAsync();
-            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
 
             await listenerPrimary.DisposeAsync();
-            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
 
             Assert.Equal(1, logger.TotalErrorsLogged);
             var errorMessage = logger.Messages.First(m => m.LogLevel == LogLevel.Error);
@@ -258,10 +258,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
 
             await listenerSecondary.DisposeAsync();
-            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
 
             await listenerPrimary.DisposeAsync();
-            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(1));
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
 
             Assert.Equal(1, logger.TotalErrorsLogged);
             var errorMessage = logger.Messages.First(m => m.LogLevel == LogLevel.Error);

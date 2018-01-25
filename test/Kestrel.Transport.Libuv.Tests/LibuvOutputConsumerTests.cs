@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public void Dispose()
         {
-            _libuvThread.StopAsync(TimeSpan.FromSeconds(1)).Wait();
+            _libuvThread.StopAsync(TimeSpan.FromSeconds(5)).Wait();
             _memoryPool.Dispose();
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var writeTask = outputProducer.WriteDataAsync(buffer);
 
                 // Assert
-                await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
+                await writeTask.TimeoutAfter(TestConstants.DefaultTimeout);
             }
         }
 
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var writeTask = outputProducer.WriteDataAsync(buffer);
 
                 // Assert
-                await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
+                await writeTask.TimeoutAfter(TestConstants.DefaultTimeout);
 
                 // Cleanup
                 outputProducer.Dispose();
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
 
                 // Assert
-                await writeTask.TimeoutAfter(TimeSpan.FromSeconds(5));
+                await writeTask.TimeoutAfter(TestConstants.DefaultTimeout);
 
                 // Cleanup
                 outputProducer.Dispose();
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
 
                 // Finishing the first write should allow the second write to pre-complete.
-                await writeTask2.TimeoutAfter(TimeSpan.FromSeconds(5));
+                await writeTask2.TimeoutAfter(TestConstants.DefaultTimeout);
 
                 // Cleanup
                 outputProducer.Dispose();
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                     }
 
-                    var timeout = TimeSpan.FromSeconds(5);
+                    var timeout = TestConstants.DefaultTimeout;
 
                     await writeTask2.TimeoutAfter(timeout);
                     await writeTask3.TimeoutAfter(timeout);
@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                 }
 
-                var timeout = TimeSpan.FromSeconds(5);
+                var timeout = TestConstants.DefaultTimeout;
 
                 // Assert
                 // Too many bytes are already pre-completed for the third but not the second write to pre-complete.

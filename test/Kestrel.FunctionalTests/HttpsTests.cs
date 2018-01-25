@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     // Close socket immediately
                 }
 
-                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await stream.WriteAsync(new byte[10], 0, 10);
                 }
 
-                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+                await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
             }
 
             Assert.Equal(1, loggerProvider.FilterLogger.LastEventId.Id);
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            await tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            await tcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
         // Regression test for https://github.com/aspnet/KestrelHttpServer/issues/1693
@@ -345,11 +345,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 using (var stream = new NetworkStream(socket, ownsSocket: false))
                 {
                     // No data should be sent and the connection should be closed in well under 30 seconds.
-                    Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TimeSpan.FromSeconds(30)));
+                    Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TestConstants.DefaultTimeout));
                 }
             }
 
-            await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
             Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
             Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
         }

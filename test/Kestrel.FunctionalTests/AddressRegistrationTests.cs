@@ -618,14 +618,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void ThrowsWhenBindingLocalhostToIPv4AddressInUse()
         {
-            ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork, IPAddress.Loopback);
+            ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetwork);
         }
 
         [ConditionalFact]
         [IPv6SupportedCondition]
         public void ThrowsWhenBindingLocalhostToIPv6AddressInUse()
         {
-            ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetworkV6, IPAddress.IPv6Loopback);
+            ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily.InterNetworkV6);
         }
 
         [Fact]
@@ -738,27 +738,74 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private void ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily addressFamily, IPAddress address)
+        private void ThrowsWhenBindingLocalhostToAddressInUse(AddressFamily addressFamily)
         {
-            using (var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))
+            var addressInUseCount = 0;
+            var wrongMessageCount = 0;
+
+            var address = addressFamily == AddressFamily.InterNetwork ? IPAddress.Loopback : IPAddress.IPv6Loopback;
+            var otherAddressFamily = addressFamily == AddressFamily.InterNetwork ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+
+            while (addressInUseCount < 10 && wrongMessageCount < 10)
             {
-                socket.Bind(new IPEndPoint(address, 0));
-                socket.Listen(0);
-                var port = ((IPEndPoint)socket.LocalEndPoint).Port;
+                int port;
 
-                var hostBuilder = TransportSelector.GetWebHostBuilder()
-                    .ConfigureLogging(_configureLoggingDelegate)
-                    .UseKestrel()
-                    .UseUrls($"http://localhost:{port}")
-                    .Configure(ConfigureEchoAddress);
-
-                using (var host = hostBuilder.Build())
+                using (var socket = new Socket(AddressFamily.InterNetworkV6, SocketType.Stream, ProtocolType.Tcp))
                 {
-                    var exception = Assert.Throws<IOException>(() => host.Start());
-                    Assert.Equal(
-                        CoreStrings.FormatEndpointAlreadyInUse($"http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}"),
-                        exception.Message);
+                    // Bind first to IPv6Any to ensure both the IPv4 and IPv6 ports are avaiable.
+                    socket.Bind(new IPEndPoint(IPAddress.IPv6Any, 0));
+                    socket.Listen(0);
+                    port = ((IPEndPoint)socket.LocalEndPoint).Port;
                 }
+
+                using (var socket = new Socket(addressFamily, SocketType.Stream, ProtocolType.Tcp))
+                {
+                    try
+                    {
+                        socket.Bind(new IPEndPoint(address, port));
+                        socket.Listen(0);
+                    }
+                    catch (SocketException)
+                    {
+                        addressInUseCount++;
+                        continue;
+                    }
+
+                    var hostBuilder = TransportSelector.GetWebHostBuilder()
+                        .ConfigureLogging(_configureLoggingDelegate)
+                        .UseKestrel()
+                        .UseUrls($"http://localhost:{port}")
+                        .Configure(ConfigureEchoAddress);
+
+                    using (var host = hostBuilder.Build())
+                    {
+                        var exception = Assert.Throws<IOException>(() => host.Start());
+
+                        var thisAddressString = $"http://{(addressFamily == AddressFamily.InterNetwork ? "127.0.0.1" : "[::1]")}:{port}";
+                        var otherAddressString = $"http://{(addressFamily == AddressFamily.InterNetworkV6? "127.0.0.1" : "[::1]")}:{port}";
+
+                        if (exception.Message == CoreStrings.FormatEndpointAlreadyInUse(otherAddressString))
+                        {
+                            // Don't fail immediately, because it's possible that something else really did bind to the
+                            // same port for the other address family between the IPv6Any bind above and now.
+                            wrongMessageCount++;
+                            continue;
+                        }
+
+                        Assert.Equal(CoreStrings.FormatEndpointAlreadyInUse(thisAddressString), exception.Message);
+                        break;
+                    }
+                }
+            }
+
+            if (addressInUseCount >= 10)
+            {
+                Assert.True(false, $"The corresponding {otherAddressFamily} address was already in use 10 times.");
+            }
+
+            if (wrongMessageCount >= 10)
+            {
+                Assert.True(false, $"An error for a conflict with {otherAddressFamily} was thrown 10 times.");
             }
         }
 

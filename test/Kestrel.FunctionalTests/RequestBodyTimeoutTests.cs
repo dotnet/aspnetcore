@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout));
                     systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
 
                     await connection.Receive(
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TimeSpan.FromSeconds(10)));
+                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout));
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",
@@ -163,9 +163,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    Assert.True(appRunningEvent.Wait(TimeSpan.FromSeconds(10)), "AppRunningEvent timed out.");
+                    Assert.True(appRunningEvent.Wait(TestConstants.DefaultTimeout), "AppRunningEvent timed out.");
                     systemClock.UtcNow += gracePeriod + TimeSpan.FromSeconds(1);
-                    Assert.True(exceptionSwallowedEvent.Wait(TimeSpan.FromSeconds(10)), "ExceptionSwallowedEvent timed out.");
+                    Assert.True(exceptionSwallowedEvent.Wait(TestConstants.DefaultTimeout), "ExceptionSwallowedEvent timed out.");
 
                     await connection.Receive(
                         "HTTP/1.1 200 OK",

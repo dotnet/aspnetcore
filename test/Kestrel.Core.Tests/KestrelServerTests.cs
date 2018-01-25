@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             unbind.Release();
             stop.Release();
 
-            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).TimeoutAfter(TimeSpan.FromSeconds(10));
+            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).TimeoutAfter(TestConstants.DefaultTimeout);
 
             mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
             mockTransport.Verify(transport => transport.StopAsync(), Times.Once);
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             unbind.Release();
 
-            var timeout = TimeSpan.FromSeconds(10);
+            var timeout = TestConstants.DefaultTimeout;
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask1.TimeoutAfter(timeout)));
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask2.TimeoutAfter(timeout)));
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask3.TimeoutAfter(timeout)));

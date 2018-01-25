@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     sem.Release();
                 });
 
-                await sem.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+                await sem.WaitAsync().TimeoutAfter(TestConstants.DefaultTimeout);
             };
 
             _largeHeadersApplication = context =>
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     sem.Release();
                 });
 
-                await sem.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+                await sem.WaitAsync().TimeoutAfter(TestConstants.DefaultTimeout);
 
                 _runningStreams[streamIdFeature.StreamId].TrySetResult(null);
             };
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     sem.Release();
                 });
 
-                await sem.WaitAsync().TimeoutAfter(TimeSpan.FromSeconds(10));
+                await sem.WaitAsync().TimeoutAfter(TestConstants.DefaultTimeout);
 
                 await context.Response.Body.FlushAsync();
 
@@ -2133,7 +2133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Task WaitForAllStreamsAsync()
         {
-            return Task.WhenAll(_runningStreams.Values.Select(tcs => tcs.Task)).TimeoutAfter(TimeSpan.FromSeconds(30));
+            return Task.WhenAll(_runningStreams.Values.Select(tcs => tcs.Task)).TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
         private async Task SendAsync(ArraySegment<byte> span)
