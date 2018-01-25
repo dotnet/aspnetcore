@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -37,6 +36,9 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
 
         [TempData]
         public string[] RecoveryCodes { get; set; }
+
+        [TempData]
+        public string StatusMessage { get; set; }
 
         [BindProperty]
         public InputModel Input { get; set; }
@@ -93,9 +95,18 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             await _userManager.SetTwoFactorEnabledAsync(user, true);
             _logger.LogInformation("User with ID '{UserId}' has enabled 2FA with an authenticator app.", user.Id);
 
-            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
-            RecoveryCodes = recoveryCodes.ToArray();
-            return RedirectToPage("./ShowRecoveryCodes");
+            StatusMessage = "Your authenticator app has been verified.";
+
+            if (await _userManager.CountRecoveryCodesAsync(user) == 0)
+            {
+                var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+                RecoveryCodes = recoveryCodes.ToArray();
+                return RedirectToPage("./ShowRecoveryCodes");
+            }
+            else
+            {
+                return RedirectToPage("./TwoFactorAuthentication");
+            }
         }
 
         private async Task LoadSharedKeyAndQrCodeUriAsync(IdentityUser user)

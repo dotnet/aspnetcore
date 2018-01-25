@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -21,6 +20,10 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             _userManager = userManager;
             _logger = logger;
         }
+
+        [TempData]
+        public string StatusMessage { get; set; }
+
         public async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -43,6 +46,8 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
             _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
+
+            StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
 
             return RedirectToPage("./EnableAuthenticator");
         }

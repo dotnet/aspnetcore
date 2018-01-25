@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
         [TempData]
         public string[] RecoveryCodes { get; set; }
 
+        [TempData]
+        public string StatusMessage { get; set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             RecoveryCodes = recoveryCodes.ToArray();
 
             _logger.LogInformation("User with ID '{UserId}' has generated new 2FA recovery codes.", user.Id);
-
+            StatusMessage = "You have generated new recovery codes.";
             return RedirectToPage("./ShowRecoveryCodes");
         }
     }

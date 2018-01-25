@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             _logger = logger;
         }
 
+        [TempData]
+        public string StatusMessage { get; set; }
+
         public async Task<IActionResult> OnGet()
         {
             var user = await _userManager.GetUserAsync(User);
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             }
 
             _logger.LogInformation("User with ID '{UserId}' has disabled 2fa.", _userManager.GetUserId(User));
-
+            StatusMessage = "2fa has been disabled. You can reenable 2fa when you setup an authenticator app";
             return RedirectToPage("./TwoFactorAuthentication");
         }
     }
