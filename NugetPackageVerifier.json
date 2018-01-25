@@ -84,7 +84,7 @@
                     "DOC_MISSING": {
                         "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.dll": "This is a library with packaged UI",
                         "lib/netstandard2.0/Microsoft.AspNetCore.Identity.UI.PrecompiledViews.dll": "This assembly contains precompiled views for the default Identity UI package"
-                    }                    
+                    }
                 }
             },
             "Microsoft.AspNetCore.SpaTemplates": {
@@ -110,18 +110,18 @@
                 ],
                 "Exclusions": {
                     "WRONG_PUBLICKEYTOKEN": {
-                        "tools/netcoreapp2.1/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
-                        "tools/netcoreapp2.1/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/unix/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/win/lib/netcoreapp2.0/System.Text.Encoding.CodePages.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/runtimes/win/lib/netstandard2.0/System.Data.SqlClient.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
@@ -131,28 +131,28 @@
                 ],
                 "Exclusions": {
                     "NEUTRAL_RESOURCES_LANGUAGE": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "SERVICING_ATTRIBUTE": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "VERSION_INFORMATIONALVERSION": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "WRONG_PUBLICKEYTOKEN": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
-                        "tools/netcoreapp2.1/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "ASSEMBLY_FILE_VERSION_MISMATCH": {
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     },
                     "ASSEMBLY_VERSION_MISMATCH": {
-                        "tools/netcoreapp2.1/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
                     }
                 }
             },
