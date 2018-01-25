@@ -298,7 +298,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionModel.RouteValues.Add(routeValueProvider.RouteKey, routeValueProvider.RouteValue);
             }
 
-            //TODO: modify comment
             // Now we need to determine the action selection info (cross-section of routes and constraints)
             //
             // For attribute routes on a action, we want to support 'overriding' routes on a
@@ -313,9 +312,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             while (true)
             {
                 routeAttributes = currentMethodInfo
-                        .GetCustomAttributes(inherit: false)
-                        .OfType<IRouteTemplateProvider>()
-                        .ToArray();
+                    .GetCustomAttributes(inherit: false)
+                    .OfType<IRouteTemplateProvider>()
+                    .ToArray();
 
                 if (routeAttributes.Length > 0)
                 {

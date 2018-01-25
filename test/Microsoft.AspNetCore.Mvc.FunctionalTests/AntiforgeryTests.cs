@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("OK", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7040")]
+        [Fact]
         public async Task SetCookieAndHeaderBeforeFlushAsync_GeneratesCookieTokenAndHeader()
         {
             // Arrange & Act
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("no-cache", pragmaValue.Name);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Mvc/issues/7040")]
+        [Fact]
         public async Task SetCookieAndHeaderBeforeFlushAsync_PostToForm()
         {
             // Arrange

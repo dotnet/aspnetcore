@@ -125,6 +125,11 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     // Ensure non-default value
                     Assert.NotEqual(value1, Activator.CreateInstance(property.PropertyType));
                 }
+                else if (property.Name.Equals(nameof(ActionModel.DisplayName)))
+                {
+                    // DisplayName is re-calculated, hence reference equality wouldn't work.
+                    Assert.Equal(value1, value2);
+                }
                 else
                 {
                     Assert.Same(value1, value2);

@@ -114,7 +114,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (!controllerHasSelectorModel && !actionModel.Selectors.Any(s => s.AttributeRouteModel != null))
             {
                 // Require attribute routing with controllers annotated with ApiControllerAttribute
-                throw new InvalidOperationException(Resources.FormatApiController_AttributeRouteRequired(nameof(ApiControllerAttribute)));
+                var message = Resources.FormatApiController_AttributeRouteRequired(
+                     actionModel.DisplayName,
+                    nameof(ApiControllerAttribute));
+                throw new InvalidOperationException(message);
             }
         }
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.Controllers
 {
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
                     base.DisplayName = string.Format(
                         CultureInfo.InvariantCulture,
                         "{0}.{1} ({2})",
-                        ControllerTypeInfo.FullName,
+                        TypeNameHelper.GetTypeDisplayName(ControllerTypeInfo),
                         MethodInfo.Name,
                         ControllerTypeInfo.Assembly.GetName().Name);
                 }
