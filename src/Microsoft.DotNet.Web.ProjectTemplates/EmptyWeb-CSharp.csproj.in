@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.1</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
-    <RuntimeFrameworkVersion Condition="'$(Framework)' == 'netcoreapp2.1'">${MicrosoftNETCoreApp21PackageVersion}</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition="'$(Framework)' == 'netcoreapp2.1'">${NETStandardLibraryPackageVersion}</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -76,11 +76,6 @@
     "UseBrowserLink": {
       "longName": "use-browserlink",
       "shortName": ""
-    },
-    "RuntimeFrameworkVersion": {
-      "longName": "runtime-framework-version",
-      "shortName": "fv",
-      "isHidden": "true"
     }
   },
   "usageExamples": [

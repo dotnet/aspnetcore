@@ -3,9 +3,6 @@
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.1</TargetFramework>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
-    <RuntimeFrameworkVersion Condition="'$(Framework)' == 'netcoreapp2.1'">${MicrosoftNETCoreApp21PackageVersion}</RuntimeFrameworkVersion>
-    <NETStandardImplicitPackageVersion Condition="'$(Framework)' == 'netcoreapp2.1'">${NETStandardLibraryPackageVersion}</NETStandardImplicitPackageVersion>
-
     <UserSecretsId Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'">aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502</UserSecretsId>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' != 'True'">0</WebProject_DirectoryAccessLevelKey>
     <WebProject_DirectoryAccessLevelKey Condition="'$(OrganizationalAuth)' == 'True' AND '$(OrgReadAccess)' == 'True'">1</WebProject_DirectoryAccessLevelKey>

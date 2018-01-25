@@ -36,7 +36,6 @@
     <MicrosoftVisualStudioWebBrowserLinkPackageVersion>2.1.0-preview1-28163</MicrosoftVisualStudioWebBrowserLinkPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>2.1.0-preview1-28163</MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion>
     <MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>2.1.0-preview1-28163</MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion>
-    <NETStandardLibraryPackageVersion>2.0.0</NETStandardLibraryPackageVersion>
     <SeleniumFirefoxWebDriverPackageVersion>0.19.0</SeleniumFirefoxWebDriverPackageVersion>
     <SeleniumSupportPackageVersion>3.7.0</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>16.16299.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
