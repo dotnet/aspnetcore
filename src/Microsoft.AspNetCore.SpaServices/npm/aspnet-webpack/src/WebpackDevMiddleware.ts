@@ -262,9 +262,9 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         webpackConfigExport = webpackConfigExport(options.suppliedOptions.EnvParam);
     }
 
-    const webpackConfigThenable: Thenable<WebpackConfigOrArray> = isThenable(webpackConfigExport)
+    const webpackConfigThenable = isThenable<WebpackConfigOrArray>(webpackConfigExport)
         ? webpackConfigExport
-        : { then: callback => callback(webpackConfigExport) };
+        : { then: callback => callback(webpackConfigExport) } as Thenable<WebpackConfigOrArray>;
 
     webpackConfigThenable.then(webpackConfigResolved => {
         const webpackConfigArray = webpackConfigResolved instanceof Array ? webpackConfigResolved : [webpackConfigResolved];
