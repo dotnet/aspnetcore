@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                         // The connection was disposed
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
-                        context.Response.ContentType = "plain/text";
+                        context.Response.ContentType = "text/plain";
                         return;
                     }
 
