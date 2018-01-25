@@ -110,6 +110,16 @@ namespace HtmlGenerationWebSite.Controllers
 
         public IActionResult ProductListUsingTagHelpers() => View(_products);
 
+        public IActionResult ProductListUsingTagHelpersWithNullModel()
+        {
+            var model = new List<Product>
+            {
+                null,
+            };
+
+            return View(nameof(ProductListUsingTagHelpers), model);
+        }
+
         public IActionResult EmployeeList()
         {
             var employees = new List<Employee>

@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     // Testing InputTagHelpers invoked in the partial views
                     { "ProductList", "/HtmlGeneration_Product" },
                     { "ProductListUsingTagHelpers", "/HtmlGeneration_Product" },
+                    { "ProductListUsingTagHelpersWithNullModel", "/HtmlGeneration_Product" },
                     // Testing the ScriptTagHelper
                     { "Script", null },
                 };

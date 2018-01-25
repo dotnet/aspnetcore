@@ -101,7 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var view = viewEngineResult.View;
             // Determine which ViewData we should use to construct a new ViewData
             var baseViewData = ViewData ?? ViewContext.ViewData;
-            var model = For?.Model ?? ViewContext.ViewData.Model;
+
+            // Use the rendering View's model only if an asp-for expression does not exist
+            var model = For != null ? For.Model : ViewContext.ViewData.Model;
             var newViewData = new ViewDataDictionary<object>(baseViewData, model);
             var partialViewContext = new ViewContext(ViewContext, view, newViewData, writer);
 
