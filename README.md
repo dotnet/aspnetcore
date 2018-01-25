@@ -35,7 +35,11 @@ We also have a MsgPack protocol library which is installed via:
 
 ```bash
  npm install @aspnet/signalr-protocol-msgpack
- ```
+```
+
+## Deploying
+
+Once you've installed the NPM modules, they will be located in the `node_modules/@aspnet/signalr` and `node_modules/@aspnet/signalr-protocol-msgpack` folders. If you are building a NodeJS application or using an ECMAScript module loader/bundler (such as [webpack](https://webpack.js.org)), you can load them directly. If you are building a browser application without using a module bundler, you can find UMD-compatible bundles in the `dist/browser` folder; minified versions are provided as well. Simply copy these to your project as appropriate and use a build task to keep them up-to-date.
 
 ## Building from source
 
