@@ -244,11 +244,11 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         : (webpackConfigModuleExports as WebpackConfigExport);
 
     if (webpackConfigExport instanceof Function) {
-        // If you export a function, we'll call it with an undefined 'env' arg, since we have nothing else
-        // to pass. This is the same as what the webpack CLI tool does if you specify no '--env.x' values.
-        // In the future, we could add support for configuring the 'env' param in Startup.cs. But right
-        // now, it's not clear that people will want to do that (and they can always make up their own
-        // default env values in their webpack.config.js).
+        // If you export a function, then Webpack convention is that it takes zero or one param,
+        // and that param is called `env` and reflects the `--env.*` args you can specify on
+        // the command line (e.g., `--env.prod`).
+        // When invoking it via WebpackDevMiddleware, we let you configure the `env` param in
+        // your Startup.cs.
         webpackConfigExport = webpackConfigExport(options.suppliedOptions.EnvParam);
     }
     const webpackConfigArray = webpackConfigExport instanceof Array ? webpackConfigExport : [webpackConfigExport];

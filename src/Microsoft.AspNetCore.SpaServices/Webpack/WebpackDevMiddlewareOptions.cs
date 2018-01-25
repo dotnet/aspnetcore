@@ -52,7 +52,9 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         public IDictionary<string, string> EnvironmentVariables { get; set; }
 
         /// <summary>
-        /// Pass in the env parameter to webpack.
+        /// Specifies a value for the "env" parameter to be passed into the Webpack configuration
+        /// function. The value must be JSON-serializable, and will only be used if the Webpack
+        /// configuration is exported as a function.
         /// </summary>
         public object EnvParam { get; set; }
     }
