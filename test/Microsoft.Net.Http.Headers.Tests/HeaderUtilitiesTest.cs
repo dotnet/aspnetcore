@@ -29,31 +29,31 @@ namespace Microsoft.Net.Http.Headers
             {
                 var data = new TheoryData<DateTimeOffset, bool>();
 
-                var now = DateTimeOffset.Now;
+                var date = new DateTimeOffset(new DateTime(2018, 1, 1, 1, 1, 1));
 
                 foreach (var quoted in new[] { true, false })
                 {
-                    data.Add(now, quoted);
+                    data.Add(date, quoted);
 
                     for (var i = 1; i < 60; i++)
                     {
-                        data.Add(now.AddSeconds(i), quoted);
-                        data.Add(now.AddMinutes(i), quoted);
+                        data.Add(date.AddSeconds(i), quoted);
+                        data.Add(date.AddMinutes(i), quoted);
                     }
 
-                    for (var i = 1; i < DateTime.DaysInMonth(now.Year, now.Month); i++)
+                    for (var i = 1; i < DateTime.DaysInMonth(date.Year, date.Month); i++)
                     {
-                        data.Add(now.AddDays(i), quoted);
+                        data.Add(date.AddDays(i), quoted);
                     }
 
                     for (var i = 1; i < 11; i++)
                     {
-                        data.Add(now.AddMonths(i), quoted);
+                        data.Add(date.AddMonths(i), quoted);
                     }
 
                     for (var i = 1; i < 5; i++)
                     {
-                        data.Add(now.AddYears(i), quoted);
+                        data.Add(date.AddYears(i), quoted);
                     }
                 }
 
