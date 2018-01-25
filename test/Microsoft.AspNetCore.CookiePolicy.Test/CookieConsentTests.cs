@@ -221,6 +221,8 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var consentCookie = cookies[0];
             Assert.Equal(".AspNet.Consent", consentCookie.Name);
             Assert.Equal("yes", consentCookie.Value);
+            Assert.True(consentCookie.Expires.HasValue);
+            Assert.True(consentCookie.Expires.Value > DateTimeOffset.Now + TimeSpan.FromDays(364));
             Assert.Equal(Net.Http.Headers.SameSiteMode.Lax, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
             var testCookie = cookies[1];

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
         public CookieBuilder ConsentCookie { get; set; } = new CookieBuilder()
         {
             Name = ".AspNet.Consent",
-            Expiration = TimeSpan.FromDays(90),
+            Expiration = TimeSpan.FromDays(365),
             IsEssential = true,
         };
 
