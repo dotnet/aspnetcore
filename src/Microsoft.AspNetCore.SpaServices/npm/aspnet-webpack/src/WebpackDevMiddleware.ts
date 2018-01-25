@@ -50,7 +50,7 @@ interface WebpackConfigFunc {
 type WebpackConfigExport = WebpackConfigOrArrayOrThenable | WebpackConfigFunc;
 type WebpackConfigModuleExports = WebpackConfigExport | EsModuleExports<WebpackConfigExport>;
 
-function isThenable(obj: any) {
+function isThenable<T>(obj: any): obj is Thenable<T> {
     return obj && typeof (<Thenable<any>>obj).then === 'function';
 }
 
@@ -262,7 +262,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         webpackConfigExport = webpackConfigExport(options.suppliedOptions.EnvParam);
     }
 
-    const webpackConfigThenable = isThenable(webpackConfigExport)
+    const webpackConfigThenable: Thenable<WebpackConfigOrArray> = isThenable(webpackConfigExport)
         ? webpackConfigExport
         : { then: callback => callback(webpackConfigExport) };
 
