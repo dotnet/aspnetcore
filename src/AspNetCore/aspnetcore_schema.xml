@@ -19,7 +19,7 @@
         <attribute name="shutdownTimeLimit" type="uint" defaultValue="10" validationType="integerRange" validationParameter="0,600"/>
         <!-- in seconds -->
         <attribute name="rapidFailsPerMinute" type="uint" defaultValue="10" validationType="integerRange" validationParameter="0,100"/>
-        <attribute name="requestTimeout" type="timeSpan" defaultValue="00:02:00" validationType="timeSpanRange" validationParameter="0,1296000,60"/>
+        <attribute name="requestTimeout" type="timeSpan" defaultValue="00:02:00" validationType="timeSpanRange" validationParameter="0,1296000,1"/>
         <attribute name="stdoutLogEnabled" type="bool" defaultValue="false" />
         <attribute name="stdoutLogFile" type="string" defaultValue=".\aspnetcore-stdout" expanded="true"/>
         <attribute name="processesPerApplication" type="uint" defaultValue="1" validationType="integerRange" validationParameter="1,100"/>
