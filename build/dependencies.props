@@ -4,22 +4,22 @@
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15679</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreDiagnosticsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreServerHttpSysPackageVersion>
-    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
-    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-28153</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
-    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreServerKestrelPackageVersion>
-    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreStaticFilesPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-28153</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
-    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsLoggingConsolePackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-28153</MicrosoftExtensionsOptionsPackageVersion>
+    <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreServerHttpSysPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreServerHttpSysPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>0.5.0-preview1-28172</MicrosoftAspNetCoreServerIntegrationTestingPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreServerKestrelHttpsPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview1-28172</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview1-28172</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-28172</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview1-28172</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsOptionsPackageVersion>2.1.0-preview1-28172</MicrosoftExtensionsOptionsPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26115-03</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26122-01</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview1-26119-06</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
