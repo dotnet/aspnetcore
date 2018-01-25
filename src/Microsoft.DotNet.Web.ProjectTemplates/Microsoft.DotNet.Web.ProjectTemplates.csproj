@@ -33,8 +33,6 @@
       MicrosoftVisualStudioWebBrowserLinkPackageVersion=$(MicrosoftVisualStudioWebBrowserLinkPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion);
       MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion=$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion);
-      MicrosoftNETCoreApp21PackageVersion=$(MicrosoftNETCoreApp21PackageVersion);
-      NETStandardLibraryPackageVersion=$(NETStandardLibraryPackageVersion);
     </GeneratedContentProperties>
   </PropertyGroup>
 

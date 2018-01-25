@@ -22,11 +22,6 @@
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""
-    },
-    "RuntimeFrameworkVersion": {
-      "longName": "runtime-framework-version",
-      "shortName": "fv",
-      "isHidden": "true"
     }
   },
   "usageExamples": [

@@ -62,12 +62,6 @@
     }
   ],
   "symbols": {
-    "RuntimeFrameworkVersion": {
-      "type": "parameter",
-      "replaces": "2.1.0-preview2-25624-02",
-      "datatype": "string",
-      "defaultValue": "2.1.0-preview2-25624-02"
-    },
     "auth": {
       "type": "parameter",
       "datatype": "choice",

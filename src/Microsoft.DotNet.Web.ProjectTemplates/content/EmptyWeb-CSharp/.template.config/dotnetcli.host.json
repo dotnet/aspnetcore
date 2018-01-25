@@ -22,11 +22,6 @@
     "ExcludeLaunchSettings": {
       "longName": "exclude-launch-settings",
       "shortName": ""
-    },
-    "RuntimeFrameworkVersion": {
-      "longName": "runtime-framework-version",
-      "shortName": "fv",
-      "isHidden": "true"
     }
   },
   "usageExamples": [
