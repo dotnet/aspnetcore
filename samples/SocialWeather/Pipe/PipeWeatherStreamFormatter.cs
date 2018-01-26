@@ -31,14 +31,14 @@ namespace SocialWeather.Pipe
                 temperature = int.MinValue;
             }
 
-            if (tokens.Length < 2 || !long.TryParse(tokens[1], out reportTime))
-            {
-                temperature = int.MinValue;
-            }
-
-            if (tokens.Length < 3 || !Enum.TryParse<Weather>(tokens[2], out weather))
+            if (tokens.Length < 2 || !Enum.TryParse<Weather>(tokens[1], out weather))
             {
                 weather = (Weather)(-1);
+            }
+
+            if (tokens.Length < 3 || !long.TryParse(tokens[2], out reportTime))
+            {
+                reportTime = int.MinValue;
             }
 
             return new WeatherReport

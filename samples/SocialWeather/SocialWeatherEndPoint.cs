@@ -32,7 +32,7 @@ namespace SocialWeather
         public async Task ProcessRequests(ConnectionContext connection)
         {
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
-                (string)connection.Metadata["formatType"]);
+                (string)connection.Metadata["format"]);
 
             while (await connection.Transport.Reader.WaitToReadAsync())
             {

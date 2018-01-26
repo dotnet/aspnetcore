@@ -22,7 +22,7 @@ namespace SocialWeather
         public void OnConnectedAsync(ConnectionContext connection)
         {
             connection.Metadata["groups"] = new HashSet<string>();
-            connection.Metadata["format"] = "json";
+            connection.Metadata["format"] = connection.GetHttpContext().Request.Query["formatType"].ToString();
             _connectionList.Add(connection);
         }
 

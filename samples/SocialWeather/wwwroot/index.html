@@ -67,7 +67,7 @@
                 span.style.color = color;
             }
 
-            let connectUrl = `ws://${document.location.host}/weather/ws?formatType=json`;
+            let connectUrl = `ws://${document.location.host}/weather?formatType=json`;
             let webSocket = new WebSocket(connectUrl);
             webSocket.onopen = event => {
                 updateStatus('Connected', 'green');
