@@ -68,7 +68,7 @@
             .then(function () {
                 var options = {
                     transport: transportType,
-                    accessToken: function () { return tokens[clientId]; }
+                    accessTokenFactory: function () { return tokens[clientId]; }
                 };
 
                 connection = new signalR.HubConnection('/broadcast', options);

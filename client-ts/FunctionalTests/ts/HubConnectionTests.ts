@@ -476,7 +476,7 @@ describe('hubConnection', function () {
                         hubConnection = new HubConnection('/authorizedhub', {
                             transport: transportType,
                             logger: LogLevel.Trace,
-                            accessToken: () => jwtToken
+                            accessTokenFactory: () => jwtToken
                         });
                         hubConnection.onclose(function (error) {
                             expect(error).toBe(undefined);
