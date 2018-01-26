@@ -54,7 +54,7 @@
       Value="$(PackageVersion)" />
   </Target>
 
-  <Target Name="GetFilesToPublish" DependsOnTargets="GeneratePublishFiles">
+  <Target Name="GetFilesToPublish" DependsOnTargets="ResolveRepoInfo;GeneratePublishFiles">
     <PropertyGroup>
       <BlobBasePath>Runtime/$(PackageVersion)/</BlobBasePath>
       <AliasBlobBasePath>Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
@@ -112,16 +112,25 @@
         <Overwrite>true</Overwrite>
       </FilesToPublish>
 
-      <PackagesToPublish Include="$(DependencyPackagesDir)*.nupkg" Exclude="$(DependencyPackagesDir)*.symbols.nupkg" />
-      <PackagesToPublish Include="$(DependencyPackagesDir)*.symbols.nupkg" Exclude="@(PackagesToPublish)" IsSymbolsPackage="true" />
+      <_Artifact
+        Include="@(ArtifactInfo)"
+        ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).nupkg"
+        Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
     </ItemGroup>
+
+    <RepoTasks.JoinItems
+      Left="@(_Artifact)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="Identity"
+      Right="@(PackageArtifact)" RightMetadata="Category">
+      <Output TaskParameter="JoinResult" ItemName="PackagesToPublish" />
+    </RepoTasks.JoinItems>
 
     <Message Text="@(FilesToPublish -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" />
   </Target>
 
   <Target Name="_CheckFilesToPublish">
     <ItemGroup>
-      <_MissingFiles Include="%(FilesToPublish.Identity)" Condition=" ! Exists(%(FilesToPublish.Identity))" />
+      <_MissingFiles Include="%(FilesToPublish.Identity)" Condition="!Exists(%(FilesToPublish.Identity))" />
+      <_MissingFiles Include="%(PackagesToPublish.ArtifactPath)" Condition="!Exists(%(PackagesToPublish.ArtifactPath))" />
     </ItemGroup>
 
     <Error Text="Missing expected files:%0A - @(_MissingFiles, '%0A - ')" Condition="@(_MissingFiles->Count()) != 0" />
@@ -156,11 +165,18 @@
   </Target>
 
   <Target Name="PublishToTransportFeed"
-    DependsOnTargets="GetFilesToPublish;_CheckFilesToPublish"
+    DependsOnTargets="ResolveCommitHash;GetFilesToPublish;_CheckFilesToPublish"
     Condition="'$(PublishToTransportFeed)' == 'true'">
 
     <ItemGroup>
-      <PackagesToPublishToTransport Include="@(PackagesToPublish)" Condition=" '%(PackagesToPublish.IsSymbolsPackage)' != 'true' " />
+      <PackagesToPublishToTransport
+        Include="%(PackagesToPublish.PackagePath)"
+        Condition="'%(PackageToPublish.Category)' == 'ship'" />
+
+      <PackagesToPublishToTransport
+        Include="%(PackagesToPublish.PackagePath)"
+        ManifestArtifactData="NonShipping=true"
+        Condition="'%(PackageToPublish.Category)' != 'ship'" />
 
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"
@@ -175,6 +191,9 @@
                     AccountKey="$(PublishBlobFeedKey)"
                     ItemsToPush="@(PackagesToPublishToTransport)"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    ManifestBuildId="$(BuildNumber)"
+                    ManifestCommit="$(CommitHash)"
+                    ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)"
                     Condition="@(PackagesToPublish->Count()) != 0" />
 
@@ -183,6 +202,9 @@
                     ItemsToPush="@(FilesToPublishToTransport)"
                     PublishFlatContainer="true"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
+                    ManifestBuildId="$(BuildNumber)"
+                    ManifestCommit="$(CommitHash)"
+                    ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)" />
   </Target>
 
