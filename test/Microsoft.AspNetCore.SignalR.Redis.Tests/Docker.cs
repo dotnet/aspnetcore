@@ -57,6 +57,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         {
             logger.LogInformation("Starting docker container");
 
+            // stop container if there is one, could be from a previous test run, ignore failures
+            RunProcess(_path, $"stop {_dockerContainerName}", logger, TimeSpan.FromSeconds(5), out var output);
+
             // create and run docker container, remove automatically when stopped, map 6379 from the container to 6379 localhost
             // use static name 'redisTestContainer' so if the container doesn't get removed we don't keep adding more
             // use redis base docker image
@@ -76,13 +79,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         public int RunCommand(string commandAndArguments, ILogger logger, out string output)
         {
             return RunProcess(_path, commandAndArguments, logger, TimeSpan.FromSeconds(5), out output);
-        } 
+        }
 
         private static void RunProcessAndThrowIfFailed(string fileName, string arguments, ILogger logger, TimeSpan timeout)
         {
             var exitCode = RunProcess(fileName, arguments, logger, timeout, out var output);
 
-            if(exitCode != 0)
+            if (exitCode != 0)
             {
                 throw new Exception($"Command '{fileName} {arguments}' failed with exit code '{exitCode}'. Output:{Environment.NewLine}{output}");
             }
