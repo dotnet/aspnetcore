@@ -104,9 +104,25 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         private void SetPropertyOnComponent(IComponent component, in RenderTreeNode attributeNode)
         {
-            // TODO: Cache the reflection
+            // TODO: Is it beneficial to cache the reflection?
             var property = component.GetType().GetProperty(attributeNode.AttributeName);
-            property.SetValue(component, attributeNode.AttributeValue);
+            if (property == null)
+            {
+                throw new InvalidOperationException(
+                    $"Component of type '{component.GetType().FullName}' does not have a property " +
+                    $"matching the name '{attributeNode.AttributeName}'.");
+            }
+
+            try
+            {
+                property.SetValue(component, attributeNode.AttributeValue);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to set property '{attributeNode.AttributeName}' on component of " +
+                    $"type '{component.GetType().FullName}'. The error was: {ex.Message}", ex);
+            }
         }
     }
 }

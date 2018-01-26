@@ -702,9 +702,46 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void RejectsUnknownPropertiesOnChildComponents()
+        public void ThrowsIfAssigningUnknownPropertiesToChildComponents()
         {
+            // Arrange
+            var renderer = new FakeRenderer();
+            var oldTree = new RenderTreeBuilder(renderer);
+            var newTree = new RenderTreeBuilder(renderer);
+            var diff = new RenderTreeDiffComputer(renderer);
+            var testObject = new object();
+            newTree.OpenComponentElement<FakeComponent>(0);
+            newTree.AddAttribute(1, "SomeUnknownProperty", 123);
+            newTree.CloseElement();
 
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                diff.ApplyNewRenderTreeVersion(oldTree.GetNodes(), newTree.GetNodes());
+            });
+            Assert.Equal($"Component of type '{typeof(FakeComponent).FullName}' does not have a property matching the name 'SomeUnknownProperty'.", ex.Message);
+        }
+
+        [Fact]
+        public void ThrowsIfAssigningReadOnlyPropertiesToChildComponents()
+        {
+            // Arrange
+            var renderer = new FakeRenderer();
+            var oldTree = new RenderTreeBuilder(renderer);
+            var newTree = new RenderTreeBuilder(renderer);
+            var diff = new RenderTreeDiffComputer(renderer);
+            var testObject = new object();
+            newTree.OpenComponentElement<FakeComponent>(0);
+            newTree.AddAttribute(1, nameof(FakeComponent.ReadonlyProperty), 123);
+            newTree.CloseElement();
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                diff.ApplyNewRenderTreeVersion(oldTree.GetNodes(), newTree.GetNodes());
+            });
+            Assert.StartsWith($"Unable to set property '{nameof(FakeComponent.ReadonlyProperty)}' on " +
+                $"component of type '{typeof(FakeComponent).FullName}'.", ex.Message);
         }
 
         [Fact]
