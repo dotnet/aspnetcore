@@ -12,9 +12,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <Import Project="$(_RazorSdkCurrentVersionPath)"
-    Condition="'$(_RazorSdkCurrentVersionPath)' != '' AND Exists('$(_RazorSdkCurrentVersionPath)')" />
+    Condition="'$(IsCrossTargetingBuild)' != 'true' AND '$(_RazorSdkCurrentVersionPath)' != '' AND Exists('$(_RazorSdkCurrentVersionPath)')" />
 
   <Import Project="$(MSBuildThisFileDirectory)..\build\netstandard2.0\Razor.Sdk.CurrentVersion.targets"
-    Condition="'$(MicrosoftAspNetCoreRazorSdkTargetsImported)' != 'true'" />
+    Condition="'$(IsCrossTargetingBuild)' != 'true' AND '$(MicrosoftAspNetCoreRazorSdkTargetsImported)' != 'true'" />
 
 </Project>
