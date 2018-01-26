@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ViewEnginePath = "/Pages/Foo",
             };
             var handlerTypeInfo = typeof(TestModel).GetTypeInfo();
-            var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new object[0])
+            var pageApplicationModel = new PageApplicationModel(actionDescriptor, typeof(TestModel).GetTypeInfo(), handlerTypeInfo, new object[0])
             {
                 PageType = typeof(TestPage).GetTypeInfo(),
                 ModelType = typeof(TestModel).GetTypeInfo(),
@@ -86,12 +87,55 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.Same(pageApplicationModel.PageType, actual.PageTypeInfo);
+            Assert.Same(pageApplicationModel.DeclaredModelType, actual.DeclaredModelTypeInfo);
             Assert.Same(pageApplicationModel.ModelType, actual.ModelTypeInfo);
             Assert.Same(pageApplicationModel.HandlerType, actual.HandlerTypeInfo);
             Assert.Same(pageApplicationModel.Properties, actual.Properties);
             Assert.Equal(pageApplicationModel.Filters, actual.FilterDescriptors.Select(f => f.Filter));
             Assert.Equal(pageApplicationModel.HandlerMethods.Select(p => p.MethodInfo), actual.HandlerMethods.Select(p => p.MethodInfo));
             Assert.Equal(pageApplicationModel.HandlerProperties.Select(p => p.PropertyName), actual.BoundProperties.Select(p => p.Name));
+        }
+
+        [Fact]
+        public void CreateDescriptor_ThrowsIfModelIsNotCompatibleWithDeclaredModel()
+        {
+            // Arrange
+            var actionDescriptor = new PageActionDescriptor
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>(),
+                AttributeRouteInfo = new AttributeRouteInfo(),
+                FilterDescriptors = new List<FilterDescriptor>(),
+                RelativePath = "/Foo",
+                RouteValues = new Dictionary<string, string>(),
+                ViewEnginePath = "/Pages/Foo",
+            };
+            var handlerTypeInfo = typeof(TestModel).GetTypeInfo();
+            var pageApplicationModel = new PageApplicationModel(actionDescriptor, typeof(TestModel).GetTypeInfo(), handlerTypeInfo, new object[0])
+            {
+                PageType = typeof(TestPage).GetTypeInfo(),
+                ModelType = typeof(string).GetTypeInfo(),
+                Filters =
+                {
+                    Mock.Of<IFilterMetadata>(),
+                    Mock.Of<IFilterMetadata>(),
+                },
+                HandlerMethods =
+                {
+                    new PageHandlerModel(handlerTypeInfo.GetMethod(nameof(TestModel.OnGet)), new object[0]),
+                },
+                HandlerProperties =
+                {
+                    new PagePropertyModel(handlerTypeInfo.GetProperty(nameof(TestModel.Property)), new object[0])
+                    {
+                        BindingInfo = new BindingInfo(),
+                    },
+                }
+            };
+            var globalFilters = new FilterCollection();
+
+            // Act & Assert
+            var actual = Assert.Throws<InvalidOperationException>(() => 
+                CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters));
         }
 
         [Fact]

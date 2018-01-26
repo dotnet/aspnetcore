@@ -75,6 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             var modelTypeInfo = modelProperty.PropertyType.GetTypeInfo();
+            var declaredModelType = modelTypeInfo;
 
             // Now we want figure out which type is the handler type.
             TypeInfo handlerType;
@@ -90,6 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var handlerTypeAttributes = handlerType.GetCustomAttributes(inherit: true);
             var pageModel = new PageApplicationModel(
                 actionDescriptor,
+                declaredModelType,
                 handlerType,
                 handlerTypeAttributes)
             {

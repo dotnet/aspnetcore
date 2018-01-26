@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var compiledActionDescriptor = (CompiledPageActionDescriptor)context.ActionContext.ActionDescriptor;
 
-            var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(compiledActionDescriptor.ModelTypeInfo);
+            var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(compiledActionDescriptor.DeclaredModelTypeInfo);
 
             var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
             var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);

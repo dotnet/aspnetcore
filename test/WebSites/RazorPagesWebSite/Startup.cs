@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using RazorPagesWebSite.Conventions;
 
 namespace RazorPagesWebSite
 {
@@ -22,6 +23,7 @@ namespace RazorPagesWebSite
                     options.Conventions.AllowAnonymousToPage("/Pages/Admin/Login");
                     options.Conventions.AddPageRoute("/HelloWorldWithRoute", "Different-Route/{text}");
                     options.Conventions.AddPageRoute("/Pages/NotTheRoot", string.Empty);
+                    options.Conventions.Add(new CustomModelTypeConvention());
                 })
                 .WithRazorPagesAtContentRoot();
         }

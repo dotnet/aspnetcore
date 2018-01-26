@@ -110,6 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var descriptor = new CompiledPageActionDescriptor
             {
                 PageTypeInfo = typeof(ViewDataTestPage).GetTypeInfo(),
+                DeclaredModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo(),
                 ModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo()
             };
             descriptor.RelativePath = "/this/is/a/path.cshtml";
@@ -139,7 +140,35 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 ActionDescriptor = new CompiledPageActionDescriptor
                 {
                     PageTypeInfo = typeof(ViewDataTestPage).GetTypeInfo(),
+                    DeclaredModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo(),
                     ModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo(),
+                },
+            };
+
+            var viewContext = new ViewContext();
+
+            var factoryProvider = CreatePageFactory();
+
+            // Act
+            var factory = factoryProvider.CreatePageFactory(pageContext.ActionDescriptor);
+            var instance = factory(pageContext, viewContext);
+
+            // Assert
+            var testPage = Assert.IsType<ViewDataTestPage>(instance);
+            Assert.NotNull(testPage.ViewData);
+        }
+
+        [Fact]
+        public void PageFactorySetViewDataWithDeclaredModelTypeWhenNotNull()
+        {
+            // Arrange
+            var pageContext = new PageContext
+            {
+                ActionDescriptor = new CompiledPageActionDescriptor
+                {
+                    PageTypeInfo = typeof(ViewDataTestPage).GetTypeInfo(),
+                    DeclaredModelTypeInfo = typeof(ViewDataTestPageModel).GetTypeInfo(),
+                    ModelTypeInfo = typeof(DerivedViewDataTestPageModel).GetTypeInfo(),
                 },
             };
 
@@ -333,6 +362,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private class ViewDataTestPageModel
         {
         }
+
+        private class DerivedViewDataTestPageModel : ViewDataTestPageModel
+        {
+        }
+
 
         private class PropertiesWithoutRazorInject : Page
         {

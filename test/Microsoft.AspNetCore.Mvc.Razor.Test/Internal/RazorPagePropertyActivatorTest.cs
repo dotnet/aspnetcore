@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: null,
+                declaredModelType: null,
                 metadataProvider: new TestModelMetadataProvider(),
                 propertyValueAccessors: null);
             var viewContext = new ViewContext();
@@ -55,7 +55,36 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var modelMetadataProvider = new TestModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: typeof(TestModel),
+                declaredModelType: typeof(TestModel),
+                metadataProvider: modelMetadataProvider,
+                propertyValueAccessors: null);
+            var original = new ViewDataDictionary(modelMetadataProvider, new ModelStateDictionary())
+            {
+                {  "test-key", "test-value" },
+            };
+            var viewContext = new ViewContext
+            {
+                ViewData = original,
+            };
+
+            // Act
+            var viewDataDictionary = activator.CreateViewDataDictionary(viewContext);
+
+            // Assert
+            Assert.NotNull(viewDataDictionary);
+            Assert.NotSame(original, viewDataDictionary);
+            Assert.IsType<ViewDataDictionary<TestModel>>(viewDataDictionary);
+            Assert.Equal("test-value", viewDataDictionary["test-key"]);
+        }
+
+        [Fact]
+        public void CreateViewDataDictionary_UsesDeclaredTypeOverModelType_WhenCreatingTheViewDataDictionary()
+        {
+            // Arrange
+            var modelMetadataProvider = new TestModelMetadataProvider();
+            var activator = new RazorPagePropertyActivator(
+                typeof(TestPage),
+                declaredModelType: typeof(TestModel),
                 metadataProvider: modelMetadataProvider,
                 propertyValueAccessors: null);
             var original = new ViewDataDictionary(modelMetadataProvider, new ModelStateDictionary())
@@ -84,7 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var modelMetadataProvider = new TestModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: typeof(TestModel),
+                declaredModelType: typeof(TestModel),
                 metadataProvider: modelMetadataProvider,
                 propertyValueAccessors: null);
             var original = new ViewDataDictionary<object>(modelMetadataProvider, new ModelStateDictionary())
@@ -113,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var modelMetadataProvider = new TestModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: null,
+                declaredModelType: null,
                 metadataProvider: modelMetadataProvider,
                 propertyValueAccessors: null);
             var original = new ViewDataDictionary<TestModel>(modelMetadataProvider, new ModelStateDictionary())
@@ -142,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var modelMetadataProvider = new TestModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: typeof(TestModel),
+                declaredModelType: typeof(TestModel),
                 metadataProvider: modelMetadataProvider,
                 propertyValueAccessors: null);
             var original = new ViewDataDictionary<TestModel>(modelMetadataProvider, new ModelStateDictionary())
@@ -169,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var modelMetadataProvider = new TestModelMetadataProvider();
             var activator = new RazorPagePropertyActivator(
                 typeof(TestPage),
-                modelType: null,
+                declaredModelType: null,
                 metadataProvider: modelMetadataProvider,
                 propertyValueAccessors: null);
             var original = new ViewDataDictionary<object>(modelMetadataProvider, new ModelStateDictionary());
@@ -191,6 +220,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         }
 
         private class TestModel
+        {
+        }
+
+        private class DerivedTestModel : TestModel
         {
         }
     }

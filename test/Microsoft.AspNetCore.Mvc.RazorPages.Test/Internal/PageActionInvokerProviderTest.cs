@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var descriptor = new PageActionDescriptor
             {
                 RelativePath = "Path1",
-                FilterDescriptors = new FilterDescriptor[0],
+                FilterDescriptors = new FilterDescriptor[0]
             };
 
             Func<PageContext, ViewContext, object> factory = (a, b) => null;
@@ -102,7 +102,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var loader = new Mock<IPageLoader>();
             loader
                 .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor, pageType: typeof(PageWithModel)));
+                .Returns(CreateCompiledPageActionDescriptor(
+                    descriptor,
+                    pageType: typeof(PageWithModel),
+                    modelType: typeof(DerivedTestPageModel)));
 
             var pageFactoryProvider = new Mock<IPageFactoryProvider>();
             pageFactoryProvider
@@ -322,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void GetViewStartFactories_FindsFullHeirarchy()
+        public void GetViewStartFactories_FindsFullHierarchy()
         {
 
             // Arrange
@@ -437,20 +440,27 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private static CompiledPageActionDescriptor CreateCompiledPageActionDescriptor(
             PageActionDescriptor descriptor,
-            Type pageType = null)
+            Type pageType = null,
+            Type modelType = null)
         {
             pageType = pageType ?? typeof(object);
             var pageTypeInfo = pageType.GetTypeInfo();
 
-            TypeInfo modelTypeInfo = null;
+            var modelTypeInfo = modelType?.GetTypeInfo();
+            TypeInfo declaredModelTypeInfo = null;
             if (pageType != null)
             {
-                modelTypeInfo = pageTypeInfo.GetProperty("Model")?.PropertyType.GetTypeInfo();
+                declaredModelTypeInfo = pageTypeInfo.GetProperty("Model")?.PropertyType.GetTypeInfo();
+                if (modelTypeInfo == null)
+                {
+                    modelTypeInfo = declaredModelTypeInfo;
+                }
             }
 
             return new CompiledPageActionDescriptor(descriptor)
             {
                 HandlerTypeInfo = modelTypeInfo ?? pageTypeInfo,
+                DeclaredModelTypeInfo = declaredModelTypeInfo ?? pageTypeInfo,
                 ModelTypeInfo = modelTypeInfo ?? pageTypeInfo,
                 PageTypeInfo = pageTypeInfo,
                 FilterDescriptors = Array.Empty<FilterDescriptor>(),
@@ -521,6 +531,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public void OnGet()
             {
             }
+        }
+
+        private class DerivedTestPageModel : TestPageModel
+        {
         }
     }
 }
