@@ -29,6 +29,8 @@ namespace FunctionalTests
             {
                 // Arrange
                 var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
+                var expectedViewLocation = Path.Combine(deployment.ContentRoot, "ApplicationWithRazorSdkUsed.Views.dll");
+                var expectedPrecompiledViewsLocation = Path.Combine(deployment.ContentRoot, "ApplicationWithRazorSdkUsed.PrecompiledViews.dll");
 
                 // Act
                 var response = await deployment.HttpClient.GetStringWithRetryAsync(
@@ -36,8 +38,8 @@ namespace FunctionalTests
                     loggerFactory.CreateLogger(Fixture.ApplicationName));
 
                 // Assert
-                Assert.False(File.Exists(Path.Combine(deployment.ContentRoot, "ApplicationWithRazorSdkUsed.PrecompiledViews.dll")));
-                Assert.True(File.Exists(Path.Combine(deployment.ContentRoot, "ApplicationWithRazorSdkUsed.Views.dll")));
+                Assert.False(File.Exists(expectedPrecompiledViewsLocation), $"{expectedPrecompiledViewsLocation} existed, but shouldn't have.");
+                Assert.True(File.Exists(expectedViewLocation), $"{expectedViewLocation} didn't exist.");
                 TestEmbeddedResource.AssertContent("ApplicationWithRazorSdkUsed.Home.Index.txt", response);
             }
         }
