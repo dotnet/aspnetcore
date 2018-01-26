@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -43,33 +44,13 @@ namespace JwtBearerSample
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // This can be removed after https://github.com/aspnet/IISIntegration/issues/371
-            services.AddAuthentication(options =>
-            {
-                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(o =>
-            {
-                // You also need to update /wwwroot/app/scripts/app.js
-                o.Authority = Configuration["jwt:authority"];
-                o.Audience = Configuration["jwt:audience"];
-                o.Events = new JwtBearerEvents()
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(o =>
                 {
-                    OnAuthenticationFailed = c =>
-                    {
-                        c.NoResult();
-
-                        c.Response.StatusCode = 500;
-                        c.Response.ContentType = "text/plain";
-                        if (Environment.IsDevelopment())
-                        {
-                            // Debug only, in production do not share exceptions with the remote host.
-                            return c.Response.WriteAsync(c.Exception.ToString());
-                        }
-                        return c.Response.WriteAsync("An error occurred processing your authentication.");
-                    }
-                };
-            });
+                    // You also need to update /wwwroot/app/scripts/app.js
+                    o.Authority = Configuration["oidc:authority"];
+                    o.Audience = Configuration["oidc:clientid"];
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -86,12 +67,15 @@ namespace JwtBearerSample
             app.Use(async (context, next) =>
             {
                 // Use this if there are multiple authentication schemes
-                // var user = await context.Authentication.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
-
-                var user = context.User; // We can do this because of there's only a single authentication scheme
-                if (user?.Identity?.IsAuthenticated ?? false)
+                var authResult = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+                if (authResult.Succeeded && authResult.Principal.Identity.IsAuthenticated)
                 {
                     await next();
+                }
+                else if (authResult.Failure != null)
+                {
+                    // Rethrow, let the exception page handle it.
+                    ExceptionDispatchInfo.Capture(authResult.Failure).Throw();
                 }
                 else
                 {
