@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
@@ -339,7 +338,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         throw new InvalidOperationException($"Child component already exists during {nameof(InstantiateChildComponents)}");
                     }
 
-                    _renderer.InstantiateChildComponent(ref nodes[i]);
+                    _renderer.InstantiateChildComponent(nodes, i);
                 }
             }
         }

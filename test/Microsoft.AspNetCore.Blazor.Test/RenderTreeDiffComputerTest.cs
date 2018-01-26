@@ -675,6 +675,39 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void SetsKnownPropertiesOnChildComponents()
+        {
+            // Arrange
+            var renderer = new FakeRenderer();
+            var oldTree = new RenderTreeBuilder(renderer);
+            var newTree = new RenderTreeBuilder(renderer);
+            var diff = new RenderTreeDiffComputer(renderer);
+            var testObject = new object();
+            newTree.OpenComponentElement<FakeComponent>(0);
+            //newTree.AddAttribute(1, nameof(FakeComponent.IntProperty), 123);
+            newTree.AddAttribute(2, nameof(FakeComponent.StringProperty), "some string");
+            //newTree.AddAttribute(3, nameof(FakeComponent.ObjectProperty), testObject);
+            newTree.CloseElement();
+
+            // Act
+            var result = diff.ApplyNewRenderTreeVersion(oldTree.GetNodes(), newTree.GetNodes());
+            var componentInstance = newTree.GetNodes().First().Component as FakeComponent;
+
+            // Assert
+            AssertEdit(result.Edits.Single(), RenderTreeEditType.PrependNode, 0);
+            Assert.NotNull(componentInstance);
+            //Assert.Equal(123, componentInstance.IntProperty);
+            Assert.Equal("some string", componentInstance.StringProperty);
+            //Assert.Same(testObject, componentInstance.ObjectProperty);
+        }
+
+        [Fact]
+        public void RejectsUnknownPropertiesOnChildComponents()
+        {
+
+        }
+
+        [Fact]
         public void RetainsChildComponentsForExistingNodes()
         {
             // Arrange
@@ -722,6 +755,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class FakeComponent : IComponent
         {
+            public int IntProperty { get; set; }
+            public string StringProperty { get; set; }
+            public object ObjectProperty { get; set; }
+            public string ReadonlyProperty { get; private set; }
+            private string PrivateProperty { get; set; }
+
             public void BuildRenderTree(RenderTreeBuilder builder)
                 => throw new NotImplementedException();
         }

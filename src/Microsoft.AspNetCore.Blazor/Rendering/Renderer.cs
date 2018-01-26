@@ -42,23 +42,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
         }
 
-        internal void InstantiateChildComponent(ref RenderTreeNode node)
-        {
-            if (node.NodeType != RenderTreeNodeType.Component)
-            {
-                throw new ArgumentException($"The node's {nameof(RenderTreeNode.NodeType)} property must equal {RenderTreeNodeType.Component}", nameof(node));
-            }
-
-            if (node.Component != null)
-            {
-                throw new ArgumentException($"The node already has a non-null component instance", nameof(node));
-            }
-
-            var newComponent = (IComponent)Activator.CreateInstance(node.ComponentType);
-            var newComponentId = AssignComponentId(newComponent);
-            node.SetChildComponentInstance(newComponentId, newComponent);
-        }
-
         /// <summary>
         /// Updates the visible UI to display the supplied <paramref name="renderTree"/>
         /// at the location corresponding to the <paramref name="componentId"/>.
@@ -84,9 +67,46 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         protected void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs eventArgs)
             => GetRequiredComponentState(componentId).DispatchEvent(renderTreeIndex, eventArgs);
 
+        internal void InstantiateChildComponent(RenderTreeNode[] nodes, int componentNodeIndex)
+        {
+            ref var node = ref nodes[componentNodeIndex];
+            if (node.NodeType != RenderTreeNodeType.Component)
+            {
+                throw new ArgumentException($"The node's {nameof(RenderTreeNode.NodeType)} property must equal {RenderTreeNodeType.Component}", nameof(node));
+            }
+
+            if (node.Component != null)
+            {
+                throw new ArgumentException($"The node already has a non-null component instance", nameof(node));
+            }
+
+            var newComponent = (IComponent)Activator.CreateInstance(node.ComponentType);
+            var newComponentId = AssignComponentId(newComponent);
+            node.SetChildComponentInstance(newComponentId, newComponent);
+            SetPropertiesOnComponent(nodes, componentNodeIndex);
+        }
+
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
+
+        private void SetPropertiesOnComponent(RenderTreeNode[] nodes, int componentNodeIndex)
+        {
+            ref var componentNode = ref nodes[componentNodeIndex];
+            var component = componentNode.Component;
+            var descendantsEndIndex = componentNode.ElementDescendantsEndIndex;
+            for (var attributeNodeIndex = componentNodeIndex + 1; attributeNodeIndex <= descendantsEndIndex; attributeNodeIndex++)
+            {
+                SetPropertyOnComponent(component, nodes[attributeNodeIndex]);
+            }
+        }
+
+        private void SetPropertyOnComponent(IComponent component, in RenderTreeNode attributeNode)
+        {
+            // TODO: Cache the reflection
+            var property = component.GetType().GetProperty(attributeNode.AttributeName);
+            property.SetValue(component, attributeNode.AttributeValue);
+        }
     }
 }
