@@ -116,6 +116,7 @@ namespace Microsoft.AspNetCore.WebSockets
                 {
                     _context.Response.Headers[headerPair.Key] = headerPair.Value;
                 }
+
                 Stream opaqueTransport = await _upgradeFeature.UpgradeAsync(); // Sets status code to 101
 
                 return WebSocketProtocol.CreateFromStream(opaqueTransport, isServer: true, subProtocol: subProtocol, keepAliveInterval: keepAliveInterval);

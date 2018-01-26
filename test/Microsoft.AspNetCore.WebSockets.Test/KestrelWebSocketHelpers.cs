@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.WebSockets.Test
 {
     public class KestrelWebSocketHelpers
     {
-        public static IDisposable CreateServer(Func<HttpContext, Task> app)
+        public static IDisposable CreateServer(ILoggerFactory loggerFactory, Func<HttpContext, Task> app)
         {
             Action<IApplicationBuilder> startup = builder =>
             {
@@ -46,6 +48,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
             config["server.urls"] = "http://localhost:54321";
 
             var host = new WebHostBuilder()
+                .ConfigureServices(s => s.AddSingleton(loggerFactory))
                 .UseConfiguration(config)
                 .UseKestrel()
                 .Configure(startup)
