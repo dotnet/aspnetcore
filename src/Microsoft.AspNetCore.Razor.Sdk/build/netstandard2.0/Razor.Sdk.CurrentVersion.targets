@@ -1,4 +1,15 @@
-﻿<Project>
+﻿<!--
+***********************************************************************************************
+Razor.Sdk.CurrentVersion.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
   <!-- 
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor
     and including the generated code in the project lifecycle, including compiling, publishing and producing
@@ -9,10 +20,6 @@
     This is a hook to import a set of targets before the Razor targets. By default this is unused.
   -->
   <Import Project="$(CustomBeforeRazorSdkTargets)" Condition="'$(CustomBeforeRazorSdkTargets)' != '' and Exists('$(CustomBeforeRazorSdkTargets)')"/>
-
-  <PropertyGroup>
-    <MicrosoftAspNetCoreRazorSdkTargetsImported>true</MicrosoftAspNetCoreRazorSdkTargetsImported>
-  </PropertyGroup>
 
   <!--
     Razor defines two primary targets:

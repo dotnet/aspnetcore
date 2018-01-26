@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Sdk.targets
+Microsoft.AspNetCore.Razor.Sdk.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -10,12 +10,5 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
-
-  <PropertyGroup Condition="'$(RazorSdkTargetsPath)' == ''">
-    <RazorSdkTargetsPath Condition="'$(IsCrossTargetingBuild)' == 'true'">$(MSBuildThisFileDirectory)..\buildMultiTargeting\Razor.Sdk.CurrentVersion.MultiTargeting.targets</RazorSdkTargetsPath>
-    <RazorSdkTargetsPath Condition="'$(IsCrossTargetingBuild)' != 'true'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Razor.Sdk.CurrentVersion.targets</RazorSdkTargetsPath>
-  </PropertyGroup>
-
-  <Import Project="$(RazorSdkTargetsPath)" />
-
+  <Import Project="Razor.Sdk.CurrentVersion.MultiTargeting.targets" />
 </Project>
