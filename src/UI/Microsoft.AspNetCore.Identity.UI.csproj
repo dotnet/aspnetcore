@@ -11,6 +11,7 @@
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
     <ResolvedRazorCompileToolset>RazorSdk</ResolvedRazorCompileToolset>
     <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
+    <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>
 
   <ItemGroup>
