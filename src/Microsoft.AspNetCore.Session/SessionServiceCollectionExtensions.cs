@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Session;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -24,7 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddTransient<ISessionStore, DistributedSessionStore>();
+            services.TryAddTransient<ISessionStore, DistributedSessionStore>();
             services.AddDataProtection();
             return services;
         }
