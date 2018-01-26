@@ -106,6 +106,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             AttributeValue = value
         };
 
+        internal static RenderTreeNode Attribute(int sequence, string name, object value) => new RenderTreeNode
+        {
+            Sequence = sequence,
+            NodeType = RenderTreeNodeType.Attribute,
+            AttributeName = name,
+            AttributeValue = value
+        };
+
         internal static RenderTreeNode ChildComponent<T>(int sequence) where T: IComponent => new RenderTreeNode
         {
             Sequence = sequence,

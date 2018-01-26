@@ -102,8 +102,20 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, object value)
         {
-            AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(sequence, name, value.ToString()));
+            if (_lastNonAttributeNodeType == RenderTreeNodeType.Element)
+            {
+                // Element attribute values can only be strings or UIEventHandler
+                Append(RenderTreeNode.Attribute(sequence, name, value.ToString()));
+            }
+            else if (_lastNonAttributeNodeType == RenderTreeNodeType.Component)
+            {
+                Append(RenderTreeNode.Attribute(sequence, name, value));
+            }
+            else
+            {
+                // This is going to throw. Calling it just to get a consistent exception message.
+                AssertCanAddAttribute();
+            }
         }
 
         /// <summary>

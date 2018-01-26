@@ -684,9 +684,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var diff = new RenderTreeDiffComputer(renderer);
             var testObject = new object();
             newTree.OpenComponentElement<FakeComponent>(0);
-            //newTree.AddAttribute(1, nameof(FakeComponent.IntProperty), 123);
+            newTree.AddAttribute(1, nameof(FakeComponent.IntProperty), 123);
             newTree.AddAttribute(2, nameof(FakeComponent.StringProperty), "some string");
-            //newTree.AddAttribute(3, nameof(FakeComponent.ObjectProperty), testObject);
+            newTree.AddAttribute(3, nameof(FakeComponent.ObjectProperty), testObject);
             newTree.CloseElement();
 
             // Act
@@ -696,9 +696,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Assert
             AssertEdit(result.Edits.Single(), RenderTreeEditType.PrependNode, 0);
             Assert.NotNull(componentInstance);
-            //Assert.Equal(123, componentInstance.IntProperty);
+            Assert.Equal(123, componentInstance.IntProperty);
             Assert.Equal("some string", componentInstance.StringProperty);
-            //Assert.Same(testObject, componentInstance.ObjectProperty);
+            Assert.Same(testObject, componentInstance.ObjectProperty);
         }
 
         [Fact]
