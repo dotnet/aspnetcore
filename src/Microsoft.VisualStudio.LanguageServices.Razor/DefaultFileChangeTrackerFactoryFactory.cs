@@ -17,15 +17,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     internal class DefaultFileChangeTrackerFactoryFactory : ILanguageServiceFactory
     {
         private readonly IVsFileChangeEx _fileChangeService;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
 
         [ImportingConstructor]
-        public DefaultFileChangeTrackerFactoryFactory(SVsServiceProvider serviceProvider)
+        public DefaultFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, SVsServiceProvider serviceProvider)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
             _fileChangeService = serviceProvider.GetService(typeof(SVsFileChangeEx)) as IVsFileChangeEx;
         }
 
@@ -36,9 +43,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var foregroundDispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
-            return new DefaultFileChangeTrackerFactory(foregroundDispatcher, errorReporter, _fileChangeService);
+            return new DefaultFileChangeTrackerFactory(_foregroundDispatcher, errorReporter, _fileChangeService);
         }
     }
 }

@@ -13,6 +13,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(ImportDocumentManager), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultImportDocumentManagerFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+
+        [ImportingConstructor]
+        public DefaultImportDocumentManagerFactory(ForegroundDispatcher foregroundDispatcher)
+        {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+        }
+
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             if (languageServices == null)
@@ -20,13 +33,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
             var fileChangeTrackerFactory = languageServices.GetRequiredService<FileChangeTrackerFactory>();
             var templateEngineFactoryService = languageServices.GetRequiredService<RazorTemplateEngineFactoryService>();
 
             return new DefaultImportDocumentManager(
-                dispatcher,
+                _foregroundDispatcher,
                 errorReporter,
                 fileChangeTrackerFactory,
                 templateEngineFactoryService);

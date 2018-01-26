@@ -14,6 +14,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
     [ExportLanguageServiceFactory(typeof(FileChangeTrackerFactory), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultFileChangeTrackerFactoryFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+
+        [ImportingConstructor]
+        public DefaultFileChangeTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher)
+        {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+        }
+
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             if (languageServices == null)
@@ -21,9 +34,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var foregroundDispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
-            var errorReporter = languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>();
-            return new DefaultFileChangeTrackerFactory(foregroundDispatcher);
+            return new DefaultFileChangeTrackerFactory(_foregroundDispatcher);
         }
     }
 }

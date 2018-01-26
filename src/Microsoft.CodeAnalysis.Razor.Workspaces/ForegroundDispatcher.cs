@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    internal abstract class ForegroundDispatcher : IWorkspaceService
+    internal abstract class ForegroundDispatcher
     {
         public abstract bool IsForegroundThread { get; }
 

@@ -13,6 +13,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(VisualStudioRazorParserFactory), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultVisualStudioRazorParserFactoryFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+
+        [ImportingConstructor]
+        public DefaultVisualStudioRazorParserFactoryFactory(ForegroundDispatcher foregroundDispatcher)
+        {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+        }
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             if (languageServices == null)
@@ -21,13 +33,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var workspaceServices = languageServices.WorkspaceServices;
-            var dispatcher = workspaceServices.GetRequiredService<ForegroundDispatcher>();
             var errorReporter = workspaceServices.GetRequiredService<ErrorReporter>();
             var completionBroker = languageServices.GetRequiredService<VisualStudioCompletionBroker>();
             var templateEngineFactoryService = languageServices.GetRequiredService<RazorTemplateEngineFactoryService>();
 
             return new DefaultVisualStudioRazorParserFactory(
-                dispatcher,
+                _foregroundDispatcher,
                 errorReporter,
                 completionBroker,
                 templateEngineFactoryService);

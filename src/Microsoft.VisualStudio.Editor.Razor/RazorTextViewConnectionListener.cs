@@ -20,14 +20,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly RazorDocumentManager _documentManager;
 
         [ImportingConstructor]
-        public RazorTextViewConnectionListener(VisualStudioWorkspaceAccessor workspaceAccessor)
+        public RazorTextViewConnectionListener(ForegroundDispatcher foregroundDispatcher, VisualStudioWorkspaceAccessor workspaceAccessor)
         {
             if (workspaceAccessor == null)
             {
                 throw new ArgumentNullException(nameof(workspaceAccessor));
             }
 
-            _foregroundDispatcher = workspaceAccessor.Workspace.Services.GetRequiredService<ForegroundDispatcher>();
+            _foregroundDispatcher = foregroundDispatcher;
 
             var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
             _documentManager = languageServices.GetRequiredService<RazorDocumentManager>();

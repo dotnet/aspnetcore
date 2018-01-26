@@ -11,10 +11,23 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     [ExportLanguageServiceFactory(typeof(ProjectSnapshotWorker), RazorLanguage.Name)]
     internal class DefaultProjectSnapshotWorkerFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+
+        [ImportingConstructor]
+        public DefaultProjectSnapshotWorkerFactory(ForegroundDispatcher foregroundDispatcher)
+        {
+            if (foregroundDispatcher == null)
+            {
+                throw new System.ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+        }
+
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             return new DefaultProjectSnapshotWorker(
-                languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>(),
+                _foregroundDispatcher,
                 languageServices.GetRequiredService<ProjectExtensibilityConfigurationFactory>(),
                 languageServices.GetRequiredService<TagHelperResolver>());
         }

@@ -12,6 +12,19 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
     [ExportLanguageServiceFactory(typeof(EditorSettingsManagerInternal), RazorLanguage.Name)]
     internal class DefaultEditorSettingsManagerInternalFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+
+        [ImportingConstructor]
+        public DefaultEditorSettingsManagerInternalFactory(ForegroundDispatcher foregroundDispatcher)
+        {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            _foregroundDispatcher = foregroundDispatcher;
+        }
+
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
             if (languageServices == null)
@@ -19,9 +32,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var foregroundDispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
-
-            return new DefaultEditorSettingsManagerInternal(foregroundDispatcher);
+            return new DefaultEditorSettingsManagerInternal(_foregroundDispatcher);
         }
     }
 }

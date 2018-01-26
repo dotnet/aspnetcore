@@ -16,16 +16,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(VisualStudioDocumentTrackerFactory), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultVisualStudioDocumentTrackerFactoryFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ITextDocumentFactoryService _textDocumentFactory;
 
         [ImportingConstructor]
-        public DefaultVisualStudioDocumentTrackerFactoryFactory(ITextDocumentFactoryService textDocumentFactory)
+        public DefaultVisualStudioDocumentTrackerFactoryFactory(ForegroundDispatcher foregroundDispatcher, ITextDocumentFactoryService textDocumentFactory)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (textDocumentFactory == null)
             {
                 throw new ArgumentNullException(nameof(textDocumentFactory));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
             _textDocumentFactory = textDocumentFactory;
         }
 
@@ -36,14 +43,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var projectManager = languageServices.GetRequiredService<ProjectSnapshotManager>();
             var editorSettingsManager = languageServices.GetRequiredService<EditorSettingsManagerInternal>();
             var projectService = languageServices.GetRequiredService<TextBufferProjectService>();
             var importDocumentManager = languageServices.GetRequiredService<ImportDocumentManager>();
 
             return new DefaultVisualStudioDocumentTrackerFactory(
-                dispatcher,
+                _foregroundDispatcher,
                 projectManager,
                 editorSettingsManager,
                 projectService,

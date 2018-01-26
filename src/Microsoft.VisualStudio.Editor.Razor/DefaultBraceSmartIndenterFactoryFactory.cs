@@ -14,16 +14,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(BraceSmartIndenterFactory), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultBraceSmartIndenterFactoryFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly IEditorOperationsFactoryService _editorOperationsFactory;
 
         [ImportingConstructor]
-        public DefaultBraceSmartIndenterFactoryFactory(IEditorOperationsFactoryService editorOperationsFactory)
+        public DefaultBraceSmartIndenterFactoryFactory(ForegroundDispatcher foregroundDispatcher, IEditorOperationsFactoryService editorOperationsFactory)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (editorOperationsFactory == null)
             {
                 throw new ArgumentNullException(nameof(editorOperationsFactory));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
             _editorOperationsFactory = editorOperationsFactory;
         }
 
@@ -34,8 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
-            return new DefaultBraceSmartIndenterFactory(dispatcher, _editorOperationsFactory);
+            return new DefaultBraceSmartIndenterFactory(_foregroundDispatcher, _editorOperationsFactory);
         }
     }
 }

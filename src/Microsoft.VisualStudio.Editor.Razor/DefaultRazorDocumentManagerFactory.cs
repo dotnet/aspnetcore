@@ -13,16 +13,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [ExportLanguageServiceFactory(typeof(RazorDocumentManager), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultRazorDocumentManagerFactory : ILanguageServiceFactory
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorEditorFactoryService _editorFactoryService;
 
         [ImportingConstructor]
-        public DefaultRazorDocumentManagerFactory(RazorEditorFactoryService editorFactoryService)
+        public DefaultRazorDocumentManagerFactory(ForegroundDispatcher foregroundDispatcher, RazorEditorFactoryService editorFactoryService)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (editorFactoryService == null)
             {
                 throw new ArgumentNullException(nameof(editorFactoryService));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
             _editorFactoryService = editorFactoryService;
         }
 
@@ -33,10 +40,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var dispatcher = languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>();
             var projectService = languageServices.GetRequiredService<TextBufferProjectService>();
 
-            return new DefaultRazorDocumentManager(dispatcher, _editorFactoryService, projectService);
+            return new DefaultRazorDocumentManager(_foregroundDispatcher, _editorFactoryService, projectService);
         }
     }
 }
