@@ -83,46 +83,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var newComponent = (IComponent)Activator.CreateInstance(node.ComponentType);
             var newComponentId = AssignComponentId(newComponent);
             node.SetChildComponentInstance(newComponentId, newComponent);
-            SetPropertiesOnComponent(nodes, componentNodeIndex);
         }
 
         private ComponentState GetRequiredComponentState(int componentId)
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
-
-        private void SetPropertiesOnComponent(RenderTreeNode[] nodes, int componentNodeIndex)
-        {
-            ref var componentNode = ref nodes[componentNodeIndex];
-            var component = componentNode.Component;
-            var descendantsEndIndex = componentNode.ElementDescendantsEndIndex;
-            for (var attributeNodeIndex = componentNodeIndex + 1; attributeNodeIndex <= descendantsEndIndex; attributeNodeIndex++)
-            {
-                SetPropertyOnComponent(component, nodes[attributeNodeIndex]);
-            }
-        }
-
-        private void SetPropertyOnComponent(IComponent component, in RenderTreeNode attributeNode)
-        {
-            // TODO: Is it beneficial to cache the reflection?
-            var property = component.GetType().GetProperty(attributeNode.AttributeName);
-            if (property == null)
-            {
-                throw new InvalidOperationException(
-                    $"Component of type '{component.GetType().FullName}' does not have a property " +
-                    $"matching the name '{attributeNode.AttributeName}'.");
-            }
-
-            try
-            {
-                property.SetValue(component, attributeNode.AttributeValue);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to set property '{attributeNode.AttributeName}' on component of " +
-                    $"type '{component.GetType().FullName}'. The error was: {ex.Message}", ex);
-            }
-        }
     }
 }

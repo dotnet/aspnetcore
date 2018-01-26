@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
+using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
@@ -164,6 +166,126 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             }
         }
 
+        private void UpdateRetainedChildComponent(
+            RenderTreeNode[] oldTree, int oldComponentIndex,
+            RenderTreeNode[] newTree, int newComponentIndex)
+        {
+            // The algorithm here is the same as in AppendDiffEntriesForRange, except that
+            // here we don't optimise for loops - we assume that both sequences are forward-only.
+            // That's because this is true for all currently supported scenarios, and it means
+            // fewer steps here.
+
+            ref var oldComponentNode = ref oldTree[oldComponentIndex];
+            ref var newComponentNode = ref newTree[newComponentIndex];
+            var componentId = oldComponentNode.ComponentId;
+            var componentInstance = oldComponentNode.Component;
+
+            // Preserve the actual componentInstance
+            newComponentNode.SetChildComponentInstance(componentId, componentInstance);
+
+            // Now locate any added/changed/removed properties
+            var oldStartIndex = oldComponentIndex + 1;
+            var newStartIndex = newComponentIndex + 1;
+            var oldEndIndexIncl = oldComponentNode.ElementDescendantsEndIndex;
+            var newEndIndexIncl = newComponentNode.ElementDescendantsEndIndex;
+            var hasMoreOld = oldEndIndexIncl >= oldStartIndex;
+            var hasMoreNew = newEndIndexIncl >= newStartIndex;
+            while (hasMoreOld || hasMoreNew)
+            {
+                var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
+                var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
+
+                if (oldSeq == newSeq)
+                {
+                    var oldName = oldTree[oldStartIndex].AttributeName;
+                    var newName = newTree[newStartIndex].AttributeName;
+                    var newPropertyValue = newTree[newStartIndex].AttributeValue;
+                    if (string.Equals(oldName, newName, StringComparison.Ordinal))
+                    {
+                        // Using Equals to account for string comparisons, nulls, etc.
+                        var oldPropertyValue = oldTree[oldStartIndex].AttributeValue;
+                        if (!Equals(oldPropertyValue, newPropertyValue))
+                        {
+                            SetChildComponentProperty(componentInstance, newName, newPropertyValue);
+                        }
+                    }
+                    else
+                    {
+                        // Since this code path is never reachable for Razor components (because you
+                        // can't have two different attribute names from the same source sequence), we
+                        // could consider removing the 'name equality' check entirely for perf
+                        SetChildComponentProperty(componentInstance, newName, newPropertyValue);
+                        RemoveChildComponentProperty(componentInstance, oldName);
+                    }
+
+                    oldStartIndex++;
+                    newStartIndex++;
+                    hasMoreOld = oldEndIndexIncl >= oldStartIndex;
+                    hasMoreNew = newEndIndexIncl >= newStartIndex;
+                }
+                else
+                {
+                    // Both sequences are proceeding through the same loop block, so do a simple
+                    // preordered merge join (picking from whichever side brings us closer to being
+                    // back in sync)
+                    var treatAsInsert = newSeq < oldSeq;
+
+                    if (treatAsInsert)
+                    {
+                        SetChildComponentProperty(componentInstance,
+                            newTree[newStartIndex].AttributeName,
+                            newTree[newStartIndex].AttributeValue);
+                        newStartIndex++;
+                        hasMoreNew = newEndIndexIncl >= newStartIndex;
+                    }
+                    else
+                    {
+                        RemoveChildComponentProperty(componentInstance,
+                            oldTree[oldStartIndex].AttributeName);
+                        oldStartIndex++;
+                        hasMoreOld = oldEndIndexIncl >= oldStartIndex;
+                    }
+                }
+            }
+        }
+
+        private static void RemoveChildComponentProperty(IComponent component, string componentPropertyName)
+        {
+            var propertyInfo = GetChildComponentPropertyInfo(component.GetType(), componentPropertyName);
+            var defaultValue = propertyInfo.PropertyType.IsValueType
+                ? Activator.CreateInstance(propertyInfo.PropertyType)
+                : null;
+            SetChildComponentProperty(component, componentPropertyName, defaultValue);
+        }
+
+        private static void SetChildComponentProperty(IComponent component, string componentPropertyName, object newPropertyValue)
+        {
+            var propertyInfo = GetChildComponentPropertyInfo(component.GetType(), componentPropertyName);
+            try
+            {
+                propertyInfo.SetValue(component, newPropertyValue);
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    $"Unable to set property '{componentPropertyName}' on component of " +
+                    $"type '{component.GetType().FullName}'. The error was: {ex.Message}", ex);
+            }
+        }
+
+        private static PropertyInfo GetChildComponentPropertyInfo(Type componentType, string componentPropertyName)
+        {
+            var property = componentType.GetProperty(componentPropertyName);
+            if (property == null)
+            {
+                throw new InvalidOperationException(
+                    $"Component of type '{componentType.FullName}' does not have a property " +
+                    $"matching the name '{componentPropertyName}'.");
+            }
+
+            return property;
+        }
+
         private static int NextSiblingIndex(RenderTreeNode[] tree, int nodeIndex)
         {
             var descendantsEndIndex = tree[nodeIndex].ElementDescendantsEndIndex;
@@ -175,6 +297,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             RenderTreeNode[] newTree, int newNodeIndex,
             ref int siblingIndex)
         {
+            // TODO: Refactor to use a "ref var oldNode/newNode" everywhere in this method
+            // Same in other methods in this class that do a lot of indexing into RenderTreeNode[]
+
             // We can assume that the old and new nodes are of the same type, because they correspond
             // to the same sequence number (and if not, the behaviour is undefined).
             switch (newTree[newNodeIndex].NodeType)
@@ -244,14 +369,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         var newComponentType = newTree[newNodeIndex].ComponentType;
                         if (oldComponentType == newComponentType)
                         {
-                            // Since it's the same child component type, we'll preserve the instance
-                            // rather than instantiating a new one
-                            newTree[newNodeIndex].SetChildComponentInstance(
-                                oldTree[oldNodeIndex].ComponentId,
-                                oldTree[oldNodeIndex].Component);
-
-                            // TODO: Compare attributes and notify the existing child component
-                            // instance of any changes
+                            UpdateRetainedChildComponent(
+                                oldTree, oldNodeIndex,
+                                newTree, newNodeIndex);
 
                             siblingIndex++;
                         }
@@ -340,6 +460,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     }
 
                     _renderer.InstantiateChildComponent(nodes, i);
+                    var childComponentInstance = nodes[i].Component;
+
+                    // All descendants of a component are its properties
+                    var componentDescendantsEndIndex = nodes[i].ElementDescendantsEndIndex;
+                    for (var attributeNodeIndex = i + 1; attributeNodeIndex <= componentDescendantsEndIndex; attributeNodeIndex++)
+                    {
+                        SetChildComponentProperty(
+                            childComponentInstance,
+                            nodes[attributeNodeIndex].AttributeName,
+                            nodes[attributeNodeIndex].AttributeValue);
+                    }
                 }
             }
         }

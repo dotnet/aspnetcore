@@ -51,6 +51,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var diff = _diffComputer.ApplyNewRenderTreeVersion(
                 _renderTreeBuilderPrevious.GetNodes(),
                 _renderTreeBuilderCurrent.GetNodes());
+
+            // TODO: Instead of triggering the UpdateDisplay here, collect all the (componentId, diff)
+            // pairs from the whole render cycle, including descendant components, then send them
+            // in bulk to a single UpdateDisplay. Need to ensure that if the same component gets
+            // triggered multiple times that the diff reflects the entire chain.
             _renderer.UpdateDisplay(_componentId, diff);
         }
 

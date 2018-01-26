@@ -784,6 +784,38 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Same(originalFakeComponent2Instance, newNode2.Component);
         }
 
+        [Fact]
+        public void UpdatesChangedPropertiesOnRetainedChildComponents()
+        {
+            // Arrange
+            var renderer = new FakeRenderer();
+            var oldTree = new RenderTreeBuilder(renderer);
+            var newTree = new RenderTreeBuilder(renderer);
+            var diff = new RenderTreeDiffComputer(renderer);
+            var objectWillNotChange = new object();
+            oldTree.OpenComponentElement<FakeComponent>(12);
+            oldTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String will change");
+            oldTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
+            oldTree.CloseElement();
+            newTree.OpenComponentElement<FakeComponent>(12);
+            newTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String did change");
+            newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
+            newTree.CloseElement();
+
+            diff.ApplyNewRenderTreeVersion(new RenderTreeBuilder(renderer).GetNodes(), oldTree.GetNodes());
+            var originalComponentInstance = (FakeComponent)oldTree.GetNodes().Array[0].Component;
+            originalComponentInstance.ObjectProperty = null; // So we can see it doesn't get reassigned 
+
+            // Act
+            var result = diff.ApplyNewRenderTreeVersion(oldTree.GetNodes(), newTree.GetNodes());
+            var newComponentInstance = (FakeComponent)oldTree.GetNodes().Array[0].Component;
+
+            // Assert
+            Assert.Same(originalComponentInstance, newComponentInstance);
+            Assert.Equal("String did change", newComponentInstance.StringProperty);
+            Assert.Null(newComponentInstance.ObjectProperty); // To observe that the property wasn't even written, we nulled it out on the original
+        }
+
         private class FakeRenderer : Renderer
         {
             internal protected override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)

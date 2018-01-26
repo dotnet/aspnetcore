@@ -331,6 +331,49 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 node => Assert.Same(nestedComponentInstance, node.Component));
         }
 
+        [Fact]
+        public void UpdatesPropertiesOnRetainedChildComponentInstances()
+        {
+            // Arrange: First render, capturing child component instance
+            var renderer = new TestRenderer();
+            var objectThatWillNotChange = new object();
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponentElement<FakeComponent>(1);
+                builder.AddAttribute(2, nameof(FakeComponent.IntProperty), firstRender ? 123 : 256);
+                builder.AddAttribute(3, nameof(FakeComponent.ObjectProperty), objectThatWillNotChange);
+                builder.AddAttribute(4, nameof(FakeComponent.StringProperty), firstRender ? "String that will change" : "String that did change");
+                builder.CloseElement();
+            });
+
+            var rootComponentId = renderer.AssignComponentId(component);
+            renderer.RenderComponent(rootComponentId);
+
+            var originalComponentInstance = (FakeComponent)renderer.RenderTreesByComponentId[rootComponentId]
+                .Single(node => node.NodeType == RenderTreeNodeType.Component)
+                .Component;
+
+            // Assert 1: properties were assigned
+            Assert.Equal(123, originalComponentInstance.IntProperty);
+            Assert.Equal("String that will change", originalComponentInstance.StringProperty);
+            Assert.Same(objectThatWillNotChange, originalComponentInstance.ObjectProperty);
+
+            // Act: Second render
+            firstRender = false;
+            renderer.RenderComponent(rootComponentId);
+
+            var updatedComponentInstance = (FakeComponent)renderer.RenderTreesByComponentId[rootComponentId]
+                .Single(node => node.NodeType == RenderTreeNodeType.Component)
+                .Component;
+
+            // Assert
+            Assert.Same(originalComponentInstance, updatedComponentInstance);
+            Assert.Equal(256, updatedComponentInstance.IntProperty);
+            Assert.Equal("String that did change", updatedComponentInstance.StringProperty);
+            Assert.Same(objectThatWillNotChange, updatedComponentInstance.ObjectProperty);
+        }
+
         private class NoOpRenderer : Renderer
         {
             public new int AssignComponentId(IComponent component)
@@ -384,6 +427,17 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, Message);
+            }
+        }
+
+        private class FakeComponent : IComponent
+        {
+            public int IntProperty { get; set; }
+            public string StringProperty { get; set; }
+            public object ObjectProperty { get; set; }
+
+            public void BuildRenderTree(RenderTreeBuilder builder)
+            {
             }
         }
 
