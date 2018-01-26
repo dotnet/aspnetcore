@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,7 +17,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -137,6 +140,31 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();
                 throw new Exception("SaveChanges should have thrown");
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public void No_exception_on_diagnostic_event_received_when_null_state()
+        {
+            using (var database = SqlServerTestStore.CreateScratch())
+            {
+                using (var server = SetupTestServer<BloggingContext, NoMigrationsMiddleware>(database))
+                {
+                    using (var db = server.Host.Services.GetService<BloggingContext>())
+                    {
+                        db.Blogs.Add(new Blog());
+
+                        try
+                        {
+                            db.SaveChanges();
+                        }
+                        catch (SqlException)
+                        {
+                        }
+                    }
+                }
             }
         }
 

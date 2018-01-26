@@ -78,6 +78,8 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DatabaseErrorPageMiddleware>();
 
+            // Note: this currently leaks if the server hosting this middleware is disposed.
+            // See aspnet/Home #2825
             DiagnosticListener.AllListeners.Subscribe(this);
         }
 
@@ -121,7 +123,6 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                         else
                         {
                             var relationalDatabaseCreator = context.GetService<IDatabaseCreator>() as IRelationalDatabaseCreator;
-
                             if (relationalDatabaseCreator == null)
                             {
                                 _logger.NotRelationalDatabase();
@@ -216,15 +217,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
         {
             switch (keyValuePair.Value)
             {
+                // NB: _localDiagnostic.Value can be null when this middleware has been leaked.
+
                 case DbContextErrorEventData contextErrorEventData:
                     {
-                        _localDiagnostic.Value.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
+                        _localDiagnostic.Value?.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
 
                         break;
                     }
                 case DbContextTypeErrorEventData contextTypeErrorEventData:
                     {
-                        _localDiagnostic.Value.Hold(contextTypeErrorEventData.Exception, contextTypeErrorEventData.ContextType);
+                        _localDiagnostic.Value?.Hold(contextTypeErrorEventData.Exception, contextTypeErrorEventData.ContextType);
 
                         break;
                     }
