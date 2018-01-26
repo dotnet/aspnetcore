@@ -11,10 +11,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
 
-  <PropertyGroup>
-    <RazorSdkTargetsImported>true</RazorSdkTargetsImported>
-  </PropertyGroup>
-
   <Target Name="RazorCompile">
     <Error Text="The 'RazorCompile' target is not supported without specifying a target framework. The current project targets multiple frameworks, please specify a framework to execute this target." />
   </Target>
