@@ -1747,7 +1747,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("EndpointMissingUrl", "endpointName"), endpointName);
 
         /// <summary>
-        /// Unable to configure HTTPS endpoint. No server certificate was specified and the default developer certificate could not be found. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
+        /// Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found.
+        /// To install the developer certificate first install the dev-certs tool by running 'dotnet install tool dotnet-dev-certs -g --version 2.1.0-preview1-final' and then run 'dotnet-dev-certs https'. To trust the certificate (Windows and macOS only) run 'dotnet-dev-certs https --trust'.
+        /// For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.
         /// </summary>
         internal static string NoCertSpecifiedNoDevelopmentCertificateFound
         {
@@ -1755,7 +1757,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Unable to configure HTTPS endpoint. No server certificate was specified and the default developer certificate could not be found. Try running 'dotnet developercertificates https -t' to setup a developer certificate for use with localhost. For information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054
+        /// Unable to configure HTTPS endpoint. No server certificate was specified, and the default developer certificate could not be found.
+        /// To install the developer certificate first install the dev-certs tool by running 'dotnet install tool dotnet-dev-certs -g --version 2.1.0-preview1-final' and then run 'dotnet-dev-certs https'. To trust the certificate (Windows and macOS only) run 'dotnet-dev-certs https --trust'.
+        /// For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?linkid=848054.
         /// </summary>
         internal static string FormatNoCertSpecifiedNoDevelopmentCertificateFound()
             => GetString("NoCertSpecifiedNoDevelopmentCertificateFound");
