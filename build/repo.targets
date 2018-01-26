@@ -196,10 +196,7 @@
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMA='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMA)' == 'true' " />
 
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMATools='true' must be Category='ship'."
-           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMATools)' == 'true' " />
-
- 	<Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must be Category='ship'."
+ 	  <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.AppMetapackage)' == 'true' " />
 
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AllMetapackage='true' must be Category='ship'."

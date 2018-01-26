@@ -31,10 +31,10 @@ namespace RepoTasks
         public override bool Execute()
         {
             // Parse input
-            var externalArchiveArtifacts = ExternalDependencies.Where(p => p.GetMetadata("LZMA") == "true");
-            var externalArchiveTools = ExternalDependencies.Where(p => p.GetMetadata("LZMATools") == "true");
-            var archiveArtifacts = PackageArtifacts.Where(p => p.GetMetadata("LZMA") == "true");
-            var archiveTools = PackageArtifacts.Where(p => p.GetMetadata("LZMATools") == "true");
+            var externalArchiveArtifacts = ExternalDependencies.Where(p => p.GetMetadata("LZMA") == "true" && p.GetMetadata("PackageType") == "Dependency");
+            var externalArchiveTools = ExternalDependencies.Where(p => p.GetMetadata("LZMA") == "true" && p.GetMetadata("PackageType") == "DotnetCliTool");
+            var archiveArtifacts = PackageArtifacts.Where(p => p.GetMetadata("LZMA") == "true" && p.GetMetadata("PackageType") == "Dependency");
+            var archiveTools = PackageArtifacts.Where(p => p.GetMetadata("LZMA") == "true" && p.GetMetadata("PackageType") == "DotnetCliTool");
             var buildArtifacts = BuildArtifacts.Select(ArtifactInfo.Parse)
                 .OfType<ArtifactInfo.Package>()
                 .Where(p => !p.IsSymbolsArtifact);

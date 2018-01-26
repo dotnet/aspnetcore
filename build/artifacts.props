@@ -2,20 +2,31 @@
 
   <ItemDefinitionGroup>
     <PackageArtifact>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
       <AppMetapackage>false</AppMetapackage>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
       <AllMetapackage>false</AllMetapackage>
-      <HostingStartup>false</HostingStartup>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
       <Analyzer>false</Analyzer>
+      <!-- When true, this dependency will be used to generate a deps.json for hosting startup. -->
+      <HostingStartup>false</HostingStartup>
+      <!-- When true, this dependency will be included in the LZMA. -->
       <LZMA>false</LZMA>
-      <LZMATools>false</LZMATools>
+      <!--
+      Other known package types:
+        Dependency = for packages that are installed via PackageReference
+        DotnetCliTool = for packages that are installed via DotNetCliToolReference
+        DotnetTOol = for packages that installed via dotnet-install-tool
+      -->
+      <PackageType>Dependency</PackageType>
     </PackageArtifact>
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-dev-certs" Category="ship" LZMATools="true" />
-    <PackageArtifact Include="dotnet-sql-cache" Category="ship" LZMATools="true" />
-    <PackageArtifact Include="dotnet-user-secrets" Category="ship" LZMATools="true" />
-    <PackageArtifact Include="dotnet-watch" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="dotnet-dev-certs" Category="ship" LZMA="true" PackageType="DotnetTool" />
+    <PackageArtifact Include="dotnet-sql-cache" Category="ship" LZMA="true" PackageType="DotnetTool" />
+    <PackageArtifact Include="dotnet-user-secrets" Category="ship" LZMA="true" PackageType="DotnetTool" />
+    <PackageArtifact Include="dotnet-watch" Category="ship" LZMA="true" PackageType="DotnetTool" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
@@ -203,7 +214,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.SqlServer" Category="ship" AppMetapackage="true"/>
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools" Category="ship" AppMetapackage="true" />
-    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Category="ship" LZMA="true" PackageType="DotnetCliTool" />
     <PackageArtifact Include="Microsoft.Extensions.ActivatorUtilities.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.ApplicationModelDetection" Category="noship" />
     <PackageArtifact Include="Microsoft.Extensions.Caching.Abstractions" Category="ship" AppMetapackage="true" />
@@ -283,7 +294,7 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Category="ship" LZMATools="true" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Category="ship" LZMA="true" PackageType="DotnetCliTool" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
