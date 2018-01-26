@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new RazorPageDocumentClassifierPass());
             builder.Features.Add(new MvcViewDocumentClassifierPass());
 
-            if (!builder.DesignTime)
+            if (!builder.Configuration.DesignTime)
             {
                 builder.Features.Add(new AssemblyAttributeInjectionPass());
                 builder.Features.Add(new InstrumentationPass());

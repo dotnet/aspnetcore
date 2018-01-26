@@ -7,8 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class RazorConfiguration
     {
-        public static readonly RazorConfiguration DefaultRuntime = new RazorConfiguration(RazorLanguageVersion.Latest, designTime: false);
-        public static readonly RazorConfiguration DefaultDesignTime = new RazorConfiguration(RazorLanguageVersion.Latest, designTime: true);
+        public static readonly RazorConfiguration Default = new RazorConfiguration(RazorLanguageVersion.Latest, designTime: false);
 
         public RazorConfiguration(RazorLanguageVersion languageVersion, bool designTime)
         {

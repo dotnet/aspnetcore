@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_AddsFeaturesToRazorEngine()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             builder.Features.Add(Mock.Of<IRazorEngineFeature>());
             builder.Features.Add(Mock.Of<IRazorEngineFeature>());
             builder.Features.Add(Mock.Of<IRazorProjectEngineFeature>());
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_AddsPhasesToRazorEngine()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
             builder.Phases.Add(Mock.Of<IRazorEnginePhase>());
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var fileSystem = Mock.Of<RazorProjectFileSystem>();
-            var builder = new DefaultRazorProjectEngineBuilder(false, fileSystem);
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, fileSystem);
 
             // Act
             var projectEngine = builder.Build();

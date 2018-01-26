@@ -17,14 +17,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Create(configure: null);
         }
 
-        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultRuntime, configure);
+        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, configure);
 
         public static RazorEngine CreateDesignTime()
         {
             return CreateDesignTime(configure: null);
         }
 
-        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultDesignTime, configure);
+        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure)
+            => CreateCore(new RazorConfiguration(RazorLanguageVersion.Latest, designTime: true), configure);
 
         // Internal since RazorEngine APIs are going to be obsolete.
         internal static RazorEngine CreateCore(RazorConfiguration configuration, Action<IRazorEngineBuilder> configure)

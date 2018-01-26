@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         private static void EnsureDesignTime(RazorProjectEngineBuilder builder)
         {
-            if (builder.DesignTime)
+            if (builder.Configuration.DesignTime)
             {
                 return;
             }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void SetImportFeature_SetsTheImportFeature()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             var testFeature1 = Mock.Of<IRazorImportFeature>();
             var testFeature2 = Mock.Of<IRazorImportFeature>();
             builder.Features.Add(testFeature1);
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void AddTargetExtension_CreatesAndAddsToTargetExtensionFeatureIfItDoesNotExist()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             var expectedExtension = Mock.Of<ICodeTargetExtension>();
 
             // Act
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void AddTargetExtension_UsesExistingFeatureIfExistsAndAddsTo()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             var codeTargetExtensionFeature = new DefaultRazorTargetExtensionFeature();
             builder.Features.Add(codeTargetExtensionFeature);
             var expectedExtension = Mock.Of<ICodeTargetExtension>();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void AddDirective_CreatesAndAddsToDirectiveFeatureIfItDoesNotExist()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             var expectedDirective = Mock.Of<DirectiveDescriptor>();
 
             // Act
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void AddDirective_UsesExistingFeatureIfExistsAndAddsTo()
         {
             // Arrange
-            var builder = new DefaultRazorProjectEngineBuilder(false, Mock.Of<RazorProjectFileSystem>());
+            var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
             var directiveFeature = new DefaultRazorDirectiveFeature();
             builder.Features.Add(directiveFeature);
             var expecteDirective = Mock.Of<DirectiveDescriptor>();

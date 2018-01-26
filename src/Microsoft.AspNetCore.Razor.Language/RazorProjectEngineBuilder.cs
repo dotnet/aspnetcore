@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract IList<IRazorEnginePhase> Phases { get; }
 
-        public abstract bool DesignTime { get; }
+        public abstract RazorConfiguration Configuration { get; }
 
         public abstract RazorProjectEngine Build();
     }

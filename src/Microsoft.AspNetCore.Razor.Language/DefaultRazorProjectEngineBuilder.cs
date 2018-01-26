@@ -9,14 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorProjectEngineBuilder : RazorProjectEngineBuilder
     {
-        public DefaultRazorProjectEngineBuilder(bool designTime, RazorProjectFileSystem fileSystem)
+        public DefaultRazorProjectEngineBuilder(RazorConfiguration configuration, RazorProjectFileSystem fileSystem)
         {
             if (fileSystem == null)
             {
                 throw new ArgumentNullException(nameof(fileSystem));
             }
 
-            DesignTime = designTime;
+            Configuration = configuration;
             FileSystem = fileSystem;
             Features = new List<IRazorFeature>();
             Phases = new List<IRazorEnginePhase>();
@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override IList<IRazorEnginePhase> Phases { get; }
 
-        public override bool DesignTime { get; }
+        public override RazorConfiguration Configuration { get; }
 
         public override RazorProjectEngine Build()
         {
             RazorEngine engine = null;
 
-            if (DesignTime)
+            if (Configuration.DesignTime)
             {
                 engine = RazorEngine.CreateDesignTimeEmpty(ConfigureRazorEngine);
             }

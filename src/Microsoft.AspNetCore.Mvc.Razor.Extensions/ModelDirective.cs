@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             builder.AddDirective(Directive);
-            builder.Features.Add(new Pass(builder.DesignTime));
+            builder.Features.Add(new Pass(builder.Configuration.DesignTime));
             return builder;
         }
 
