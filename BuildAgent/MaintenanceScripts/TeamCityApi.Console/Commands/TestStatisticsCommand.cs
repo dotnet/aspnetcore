@@ -48,10 +48,12 @@ namespace TeamCityApi.Console.Commands
             var ts = new Dictionary<string, TestStats>();
             foreach (var buildType in failedBuildTypes)
             {
+                System.Console.WriteLine($"About to get builds of {buildType}.");
                 var builds = client.GetBuilds($"buildType:{buildType},sinceDate:{TeamCityClient.TCDateTime(startDate)}");
 
                 foreach (var build in builds)
                 {
+                    System.Console.WriteLine($"About to get tests from {build.Id}.");
                     var tests = client.GetTests(build.Id, build.BuildTypeID);
                     foreach (var test in tests)
                     {

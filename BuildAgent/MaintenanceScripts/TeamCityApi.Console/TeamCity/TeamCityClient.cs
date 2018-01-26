@@ -37,10 +37,10 @@ namespace TeamCityApi
         public IEnumerable<TestOccurrence> GetTests(int buildId, string buildTypeId)
         {
             var locator = $"build:(id:{buildId})";
-            var fields = "testOccurrence(test:id,id,name,status,duration,href)";
+            var fields = "testOccurrence(test:id,name,status,duration)";
 
             var url = $"httpAuth/app/rest/testOccurrences?locator={locator},count:{_defaultCount}&fields={fields}";
-            using (var stream = MakeTeamCityRequest(url))
+            using (var stream = MakeTeamCityRequest(url, TimeSpan.FromMinutes(5)))
             {
                 var serializer = new XmlSerializer(typeof(TestOccurrences));
                 var tests = serializer.Deserialize(stream) as TestOccurrences;
@@ -97,7 +97,7 @@ namespace TeamCityApi
             }
         }
 
-        private Stream MakeTeamCityRequest(string url)
+        private Stream MakeTeamCityRequest(string url, TimeSpan? timeout = null)
         {
             var requestUri = $"http://{_ciServer}/{url}";
 
@@ -109,6 +109,11 @@ namespace TeamCityApi
 
             using (var client = new HttpClient())
             {
+                if (timeout != null)
+                {
+                    client.Timeout = timeout.Value;
+                }
+
                 var response = client.SendAsync(request).Result;
 
                 if (response.StatusCode == HttpStatusCode.OK)
