@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="solutionRelativePath">The path to the project folder relative to the solution file of your
         /// application. The folder of the first .sln file found traversing up the folder hierarchy from the test execution
         /// folder is considered as the base path.</param>
-        public WebApplicationTestFixture(string solutionRelativePath)
+        protected WebApplicationTestFixture(string solutionRelativePath)
             : this("*.sln", solutionRelativePath)
         {
         }
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="solutionRelativePath">The path to the project folder relative to the solution file of your
         /// application. The folder of the first sln file that matches the <paramref name="solutionSearchPattern"/>
         /// found traversing up the folder hierarchy from the test execution folder is considered as the base path.</param>
-        public WebApplicationTestFixture(string solutionSearchPattern, string solutionRelativePath)
+        protected WebApplicationTestFixture(string solutionSearchPattern, string solutionRelativePath)
         {
             EnsureDepsFile();
 
