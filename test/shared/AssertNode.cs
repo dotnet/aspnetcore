@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Blazor.Test.Shared
         public static void Attribute(RenderTreeNode node, string attributeName, UIEventHandler attributeEventHandlerValue)
         {
             AssertNode.Attribute(node, attributeName);
-            Assert.Equal(attributeEventHandlerValue, node.AttributeEventHandlerValue);
+            Assert.Equal(attributeEventHandlerValue, node.AttributeValue);
         }
 
         public static void Component<T>(RenderTreeNode node) where T : IComponent

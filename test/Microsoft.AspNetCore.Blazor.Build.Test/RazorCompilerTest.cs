@@ -254,9 +254,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 node =>
                 {
                     Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.NotNull(node.AttributeEventHandlerValue);
+                    Assert.NotNull(node.AttributeValue);
 
-                    node.AttributeEventHandlerValue(null);
+                    ((UIEventHandler)node.AttributeValue)(null);
                     Assert.True((bool)handlerWasCalledProperty.GetValue(component));
                 });
         }
@@ -279,9 +279,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 node =>
                 {
                     Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.NotNull(node.AttributeEventHandlerValue);
+                    Assert.NotNull(node.AttributeValue);
 
-                    node.AttributeEventHandlerValue(null);
+                    ((UIEventHandler)node.AttributeValue)(null);
                     Assert.True((bool)didInvokeCodeProperty.GetValue(component));
                 });
         }
@@ -325,9 +325,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 node =>
                 {
                     Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.NotNull(node.AttributeEventHandlerValue);
+                    Assert.NotNull(node.AttributeValue);
 
-                    node.AttributeEventHandlerValue(null);
+                    ((UIEventHandler)node.AttributeValue)(null);
                     Assert.True((bool)didInvokeCodeProperty.GetValue(component));
                 });
         }

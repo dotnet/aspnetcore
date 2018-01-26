@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             var (eventHandlerNodeIndex, _) = FirstWithIndex(
                 renderer.RenderTreesByComponentId[componentId],
-                node => node.AttributeEventHandlerValue != null);
+                node => node.AttributeValue != null);
 
             // Assert: Event not yet fired
             Assert.Null(receivedArgs);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Find nested component's event handler ndoe
             var (eventHandlerNodeIndex, _) = FirstWithIndex(
                 renderer.RenderTreesByComponentId[nestedComponentId],
-                node => node.AttributeEventHandlerValue != null);
+                node => node.AttributeValue != null);
 
             // Assert: Event not yet fired
             Assert.Null(receivedArgs);

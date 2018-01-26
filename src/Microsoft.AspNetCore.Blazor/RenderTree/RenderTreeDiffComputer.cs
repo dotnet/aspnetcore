@@ -271,10 +271,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         var newName = newTree[newNodeIndex].AttributeName;
                         if (string.Equals(oldName, newName, StringComparison.Ordinal))
                         {
-                            var changed =
-                                !string.Equals(oldTree[oldNodeIndex].AttributeValue, newTree[newNodeIndex].AttributeValue, StringComparison.Ordinal)
-                                || oldTree[oldNodeIndex].AttributeEventHandlerValue != newTree[newNodeIndex].AttributeEventHandlerValue;
-                            if (changed)
+                            // Using Equals to account for string comparisons, nulls, etc.
+                            var valueChanged = !Equals(
+                                oldTree[oldNodeIndex].AttributeValue,
+                                newTree[newNodeIndex].AttributeValue);
+                            if (valueChanged)
                             {
                                 Append(RenderTreeEdit.SetAttribute(siblingIndex, newNodeIndex));
                             }

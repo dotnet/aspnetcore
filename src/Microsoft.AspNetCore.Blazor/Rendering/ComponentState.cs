@@ -67,10 +67,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
 
             var nodes = _renderTreeBuilderCurrent.GetNodes();
-            var eventHandler = nodes.Array[renderTreeIndex].AttributeEventHandlerValue;
+            var eventHandler = nodes.Array[renderTreeIndex].AttributeValue as UIEventHandler;
             if (eventHandler == null)
             {
-                throw new ArgumentException($"The render tree node at index {renderTreeIndex} has a null value for {nameof(RenderTreeNode.AttributeEventHandlerValue)}.");
+                throw new ArgumentException($"The render tree node at index {renderTreeIndex} does not specify a {nameof(UIEventHandler)}.");
             }
 
             eventHandler.Invoke(eventArgs);

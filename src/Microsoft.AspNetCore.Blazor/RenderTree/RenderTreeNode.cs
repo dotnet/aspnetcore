@@ -56,13 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public string AttributeValue { get; private set; }
-
-        /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
-        /// gets the attribute's event handle, if any. Otherwise, the value is <see langword="null"/>.
-        /// </summary>
-        public UIEventHandler AttributeEventHandlerValue { get; private set; }
+        public object AttributeValue { get; private set; }
 
         /// <summary>
         /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
@@ -109,7 +103,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             Sequence = sequence,
             NodeType = RenderTreeNodeType.Attribute,
             AttributeName = name,
-            AttributeEventHandlerValue = value
+            AttributeValue = value
         };
 
         internal static RenderTreeNode ChildComponent<T>(int sequence) where T: IComponent => new RenderTreeNode
