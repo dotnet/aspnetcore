@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Updates the rendered state of the specified <see cref="IComponent"/>.
         /// </summary>
         /// <param name="componentId">The identifier of the <see cref="IComponent"/> to render.</param>
-        protected void RenderComponent(int componentId)
+        protected internal void RenderComponent(int componentId)
             => GetRequiredComponentState(componentId).Render();
 
         /// <summary>

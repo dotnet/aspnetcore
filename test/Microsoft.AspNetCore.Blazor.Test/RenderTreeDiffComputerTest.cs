@@ -819,7 +819,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class FakeRenderer : Renderer
         {
             internal protected override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
-                => throw new NotImplementedException();
+            {
+            }
         }
 
         private class FakeComponent : IComponent
@@ -831,7 +832,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             private string PrivateProperty { get; set; }
 
             public void BuildRenderTree(RenderTreeBuilder builder)
-                => throw new NotImplementedException();
+            {
+            }
         }
 
         private class FakeComponent2 : IComponent

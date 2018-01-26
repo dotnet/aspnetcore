@@ -179,6 +179,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             ref var newComponentNode = ref newTree[newComponentIndex];
             var componentId = oldComponentNode.ComponentId;
             var componentInstance = oldComponentNode.Component;
+            var hasSetAnyProperty = false;
 
             // Preserve the actual componentInstance
             newComponentNode.SetChildComponentInstance(componentId, componentInstance);
@@ -207,6 +208,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         if (!Equals(oldPropertyValue, newPropertyValue))
                         {
                             SetChildComponentProperty(componentInstance, newName, newPropertyValue);
+                            hasSetAnyProperty = true;
                         }
                     }
                     else
@@ -216,6 +218,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         // could consider removing the 'name equality' check entirely for perf
                         SetChildComponentProperty(componentInstance, newName, newPropertyValue);
                         RemoveChildComponentProperty(componentInstance, oldName);
+                        hasSetAnyProperty = true;
                     }
 
                     oldStartIndex++;
@@ -235,6 +238,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         SetChildComponentProperty(componentInstance,
                             newTree[newStartIndex].AttributeName,
                             newTree[newStartIndex].AttributeValue);
+                        hasSetAnyProperty = true;
                         newStartIndex++;
                         hasMoreNew = newEndIndexIncl >= newStartIndex;
                     }
@@ -242,10 +246,18 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     {
                         RemoveChildComponentProperty(componentInstance,
                             oldTree[oldStartIndex].AttributeName);
+                        hasSetAnyProperty = true;
                         oldStartIndex++;
                         hasMoreOld = oldEndIndexIncl >= oldStartIndex;
                     }
                 }
+            }
+
+            if (hasSetAnyProperty)
+            {
+                // TODO: Instead, call some OnPropertiesUpdated method on IComponent,
+                // whose default implementation causes itself to be rerendered
+                _renderer.RenderComponent(componentId);
             }
         }
 

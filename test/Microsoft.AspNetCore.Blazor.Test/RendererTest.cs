@@ -374,6 +374,42 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Same(objectThatWillNotChange, updatedComponentInstance.ObjectProperty);
         }
 
+        [Fact]
+        public void ReRendersChildComponentsWhenPropertiesChange()
+        {
+            // Arrange: First render
+            var renderer = new TestRenderer();
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponentElement<MessageComponent>(1);
+                builder.AddAttribute(2, nameof(MessageComponent.Message), firstRender ? "first" : "second");
+                builder.CloseElement();
+            });
+
+            var rootComponentId = renderer.AssignComponentId(component);
+            renderer.RenderComponent(rootComponentId);
+
+            var childComponentId = renderer.RenderTreesByComponentId[rootComponentId]
+                .Single(node => node.NodeType == RenderTreeNodeType.Component)
+                .ComponentId;
+
+            // This isn't strictly necessary for the test, but it's more common for components
+            // to be updated after their first render than before it
+            renderer.RenderComponent(childComponentId);
+
+            // Act: Second render
+            firstRender = false;
+            renderer.RenderComponent(rootComponentId);
+
+            var updatedComponentNode = renderer.RenderTreesByComponentId[rootComponentId]
+                .Single(node => node.NodeType == RenderTreeNodeType.Component);
+
+            // Assert
+            Assert.Collection(renderer.RenderTreesByComponentId[updatedComponentNode.ComponentId],
+                node => AssertNode.Text(node, "second"));
+        }
+
         private class NoOpRenderer : Renderer
         {
             public new int AssignComponentId(IComponent component)
