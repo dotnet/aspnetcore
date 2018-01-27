@@ -19,7 +19,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly string _filePath;
         private readonly string _projectPath;
         private readonly ProjectSnapshotManager _projectManager;
-        private readonly EditorSettingsManagerInternal _editorSettingsManager;
+        private readonly WorkspaceEditorSettings _workspaceEditorSettings;
         private readonly ITextBuffer _textBuffer;
         private readonly ImportDocumentManager _importDocumentManager;
         private readonly List<ITextView> _textViews;
@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             string filePath,
             string projectPath,
             ProjectSnapshotManager projectManager,
-            EditorSettingsManagerInternal editorSettingsManager,
+            WorkspaceEditorSettings workspaceEditorSettings,
             Workspace workspace,
             ITextBuffer textBuffer,
             ImportDocumentManager importDocumentManager)
@@ -59,9 +59,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(projectManager));
             }
 
-            if (editorSettingsManager == null)
+            if (workspaceEditorSettings == null)
             {
-                throw new ArgumentNullException(nameof(editorSettingsManager));
+                throw new ArgumentNullException(nameof(workspaceEditorSettings));
             }
 
             if (workspace == null)
@@ -83,7 +83,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _filePath = filePath;
             _projectPath = projectPath;
             _projectManager = projectManager;
-            _editorSettingsManager = editorSettingsManager;
+            _workspaceEditorSettings = workspaceEditorSettings;
             _textBuffer = textBuffer;
             _importDocumentManager = importDocumentManager;
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
@@ -93,7 +93,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         internal override ProjectExtensibilityConfiguration Configuration => _project?.Configuration;
 
-        public override EditorSettings EditorSettings => _editorSettingsManager.Current;
+        public override EditorSettings EditorSettings => _workspaceEditorSettings.Current;
 
         public override IReadOnlyList<TagHelperDescriptor> TagHelpers => _project?.TagHelpers ?? Array.Empty<TagHelperDescriptor>();
 
@@ -154,7 +154,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             _importDocumentManager.OnSubscribed(this);
 
-            _editorSettingsManager.Changed += EditorSettingsManager_Changed;
+            _workspaceEditorSettings.Changed += EditorSettingsManager_Changed;
             _projectManager.Changed += ProjectManager_Changed;
             _importDocumentManager.Changed += Import_Changed;
 
@@ -169,7 +169,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _importDocumentManager.OnUnsubscribed(this);
 
             _projectManager.Changed -= ProjectManager_Changed;
-            _editorSettingsManager.Changed -= EditorSettingsManager_Changed;
+            _workspaceEditorSettings.Changed -= EditorSettingsManager_Changed;
             _importDocumentManager.Changed -= Import_Changed;
 
             // Detached from project.

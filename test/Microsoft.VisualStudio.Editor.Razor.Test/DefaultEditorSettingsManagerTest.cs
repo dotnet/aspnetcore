@@ -1,17 +1,18 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class DefaultEditorSettingsManagerInternalTest : ForegroundDispatcherTestBase
+    public class DefaultEditorSettingsManagerTest : ForegroundDispatcherTestBase
     {
         [Fact]
         public void InitialSettingsAreDefault()
         {
             // Act
-            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
+            var manager = new DefaultEditorSettingsManager(Dispatcher);
 
             // Assert
             Assert.Equal(EditorSettings.Default, manager.Current);
@@ -21,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
         public void Update_TriggersChangedIfEditorSettingsAreDifferent()
         {
             // Arrange
-            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
+            var manager = new DefaultEditorSettingsManager(Dispatcher);
             var called = false;
             manager.Changed += (caller, args) =>
             {
@@ -41,7 +42,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
         public void Update_DoesNotTriggerChangedIfEditorSettingsAreSame()
         {
             // Arrange
-            var manager = new DefaultEditorSettingsManagerInternal(Dispatcher);
+            var manager = new DefaultEditorSettingsManager(Dispatcher);
             var called = false;
             manager.Changed += (caller, args) =>
             {

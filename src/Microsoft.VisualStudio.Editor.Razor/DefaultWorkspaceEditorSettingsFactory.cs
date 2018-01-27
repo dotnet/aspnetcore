@@ -5,24 +5,33 @@ using System;
 using System.Composition;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
+using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
 
-namespace Microsoft.CodeAnalysis.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     [Shared]
-    [ExportLanguageServiceFactory(typeof(EditorSettingsManagerInternal), RazorLanguage.Name)]
-    internal class DefaultEditorSettingsManagerInternalFactory : ILanguageServiceFactory
+    [ExportLanguageServiceFactory(typeof(WorkspaceEditorSettings), RazorLanguage.Name)]
+    internal class DefaultWorkspaceEditorSettingsFactory : ILanguageServiceFactory
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly EditorSettingsManager _editorSettingsManager;
 
         [ImportingConstructor]
-        public DefaultEditorSettingsManagerInternalFactory(ForegroundDispatcher foregroundDispatcher)
+        public DefaultWorkspaceEditorSettingsFactory(ForegroundDispatcher foregroundDispatcher, EditorSettingsManager editorSettingsManager)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
+            if (editorSettingsManager == null)
+            {
+                throw new ArgumentNullException(nameof(editorSettingsManager));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
+            _editorSettingsManager = editorSettingsManager;
         }
 
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
@@ -32,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Razor.Editor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            return new DefaultEditorSettingsManagerInternal(_foregroundDispatcher);
+            return new DefaultWorkspaceEditorSettings(_foregroundDispatcher, _editorSettingsManager);
         }
     }
 }

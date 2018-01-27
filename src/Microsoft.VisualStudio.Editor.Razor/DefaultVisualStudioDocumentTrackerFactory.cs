@@ -19,12 +19,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly ImportDocumentManager _importDocumentManager;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectManager;
-        private readonly EditorSettingsManagerInternal _editorSettingsManager;
+        private readonly WorkspaceEditorSettings _workspaceEditorSettings;
 
         public DefaultVisualStudioDocumentTrackerFactory(
             ForegroundDispatcher foregroundDispatcher,
             ProjectSnapshotManager projectManager,
-            EditorSettingsManagerInternal editorSettingsManager,
+            WorkspaceEditorSettings workspaceEditorSettings,
             TextBufferProjectService projectService,
             ITextDocumentFactoryService textDocumentFactory,
             ImportDocumentManager importDocumentManager,
@@ -40,9 +40,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(projectManager));
             }
 
-            if (editorSettingsManager == null)
+            if (workspaceEditorSettings == null)
             {
-                throw new ArgumentNullException(nameof(editorSettingsManager));
+                throw new ArgumentNullException(nameof(workspaceEditorSettings));
             }
 
             if (projectService == null)
@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             _foregroundDispatcher = foregroundDispatcher;
             _projectManager = projectManager;
-            _editorSettingsManager = editorSettingsManager;
+            _workspaceEditorSettings = workspaceEditorSettings;
             _projectService = projectService;
             _textDocumentFactory = textDocumentFactory;
             _importDocumentManager = importDocumentManager;
@@ -97,7 +97,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var projectPath = _projectService.GetProjectPath(project);
 
-            var tracker = new DefaultVisualStudioDocumentTracker(_foregroundDispatcher, filePath, projectPath, _projectManager, _editorSettingsManager, _workspace, textBuffer, _importDocumentManager);
+            var tracker = new DefaultVisualStudioDocumentTracker(_foregroundDispatcher, filePath, projectPath, _projectManager, _workspaceEditorSettings, _workspace, textBuffer, _importDocumentManager);
 
             return tracker;
         }

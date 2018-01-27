@@ -44,14 +44,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             var projectManager = languageServices.GetRequiredService<ProjectSnapshotManager>();
-            var editorSettingsManager = languageServices.GetRequiredService<EditorSettingsManagerInternal>();
+            var workspaceEditorSettings = languageServices.GetRequiredService<WorkspaceEditorSettings>();
             var projectService = languageServices.GetRequiredService<TextBufferProjectService>();
             var importDocumentManager = languageServices.GetRequiredService<ImportDocumentManager>();
 
             return new DefaultVisualStudioDocumentTrackerFactory(
                 _foregroundDispatcher,
                 projectManager,
-                editorSettingsManager,
+                workspaceEditorSettings,
                 projectService,
                 _textDocumentFactory,
                 importDocumentManager,

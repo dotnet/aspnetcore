@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
@@ -12,26 +13,55 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(EditorSettingsManager))]
     internal class DefaultEditorSettingsManager : EditorSettingsManager
     {
-        private readonly EditorSettingsManagerInternal _editorSettingsManager;
+        public override event EventHandler<EditorSettingsChangedEventArgs> Changed;
+
+        private readonly object SettingsAccessorLock = new object();
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+        private EditorSettings _settings;
 
         [ImportingConstructor]
-        public DefaultEditorSettingsManager(VisualStudioWorkspaceAccessor workspaceAccessor)
+        public DefaultEditorSettingsManager(ForegroundDispatcher foregroundDispatcher)
         {
-            var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManagerInternal>();
+            _foregroundDispatcher = foregroundDispatcher;
+            _settings = EditorSettings.Default;
         }
 
-        public override event EventHandler<EditorSettingsChangedEventArgs> Changed
+        public override EditorSettings Current
         {
-            add => _editorSettingsManager.Changed += value;
-            remove => _editorSettingsManager.Changed -= value;
+            get
+            {
+                lock (SettingsAccessorLock)
+                {
+                    return _settings;
+                }
+            }
         }
 
-        public override EditorSettings Current => _editorSettingsManager.Current;
-
-        public override void Update(EditorSettings updateSettings)
+        public override void Update(EditorSettings updatedSettings)
         {
-            _editorSettingsManager.Update(updateSettings);
+            if (updatedSettings == null)
+            {
+                throw new ArgumentNullException(nameof(updatedSettings));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            lock (SettingsAccessorLock)
+            {
+                if (!_settings.Equals(updatedSettings))
+                {
+                    _settings = updatedSettings;
+                    OnChanged();
+                }
+            }
+        }
+
+        private void OnChanged()
+        {
+            _foregroundDispatcher.AssertForegroundThread();
+
+            var args = new EditorSettingsChangedEventArgs(Current);
+            Changed?.Invoke(this, args);
         }
     }
 }

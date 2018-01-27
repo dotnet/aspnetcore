@@ -6,12 +6,10 @@ using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor.Editor
 {
-    internal abstract class EditorSettingsManagerInternal : ILanguageService
+    internal abstract class WorkspaceEditorSettings : ILanguageService
     {
         public abstract event EventHandler<EditorSettingsChangedEventArgs> Changed;
 
         public abstract EditorSettings Current { get; }
-
-        public abstract void Update(EditorSettings updateSettings);
     }
 }
