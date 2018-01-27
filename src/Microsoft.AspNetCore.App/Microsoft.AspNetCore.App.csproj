@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <Content Include="build\$(TargetFramework)\*.props" PackagePath="%(Identity)" />
+    <Content Include="build\$(TargetFramework)\*.targets" PackagePath="%(Identity)" />
     <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
   </ItemGroup>
 
