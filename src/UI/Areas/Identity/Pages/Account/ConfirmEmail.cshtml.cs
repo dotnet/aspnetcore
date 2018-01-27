@@ -6,18 +6,24 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
-    public class ConfirmEmailModel : PageModel
+    [IdentityDefaultUI(typeof(ConfirmEmailModel<>))]
+    public abstract class ConfirmEmailModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        public virtual Task<IActionResult> OnGetAsync(string userId, string code) => throw new NotImplementedException();
+    }
 
-        public ConfirmEmailModel(UserManager<IdentityUser> userManager)
+    internal class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+
+        public ConfirmEmailModel(UserManager<TUser> userManager)
         {
             _userManager = userManager;
         }
 
-        public async Task<IActionResult> OnGetAsync(string userId, string code)
+        public override async Task<IActionResult> OnGetAsync(string userId, string code)
         {
             if (userId == null || code == null)
             {

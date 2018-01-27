@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity.UI.Areas.Identity.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,10 +14,10 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity.UI
 {
-    internal class IdentityDefaultUIConfigureOptions :
+    internal class IdentityDefaultUIConfigureOptions<TUser> :
         IPostConfigureOptions<RazorPagesOptions>,
         IPostConfigureOptions<StaticFileOptions>,
-        IPostConfigureOptions<CookieAuthenticationOptions>
+        IPostConfigureOptions<CookieAuthenticationOptions> where TUser : IdentityUser
     {
         private const string IdentityUIDefaultAreaName = "Identity";
 
@@ -35,6 +36,15 @@ namespace Microsoft.AspNetCore.Identity.UI
             options.AllowAreas = true;
             options.Conventions.AuthorizeAreaFolder(IdentityUIDefaultAreaName, "/Account/Manage");
             options.Conventions.AuthorizeAreaPage(IdentityUIDefaultAreaName, "/Account/Logout");
+            var convention = new IdentityPageModelConvention<TUser>();
+            options.Conventions.AddAreaFolderApplicationModelConvention(
+                IdentityUIDefaultAreaName,
+                "/",
+                pam => convention.Apply(pam));
+            options.Conventions.AddAreaFolderApplicationModelConvention(
+                IdentityUIDefaultAreaName,
+                "/Account/Manage",
+                pam => pam.Filters.Add(new ExternalLoginsPageFilter<TUser>()));
         }
 
         public void PostConfigure(string name, StaticFileOptions options)

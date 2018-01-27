@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -8,19 +9,11 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
-    public class ForgotPasswordModel : PageModel
+    [IdentityDefaultUI(typeof(ForgotPasswordModel<>))]
+    public abstract class ForgotPasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly IEmailSender _emailSender;
-
-        public ForgotPasswordModel(UserManager<IdentityUser> userManager, IEmailSender emailSender)
-        {
-            _userManager = userManager;
-            _emailSender = emailSender;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -31,7 +24,21 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             public string Email { get; set; }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class ForgotPasswordModel<TUser> : ForgotPasswordModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+        private readonly IEmailSender _emailSender;
+
+        public ForgotPasswordModel(UserManager<TUser> userManager, IEmailSender emailSender)
+        {
+            _userManager = userManager;
+            _emailSender = emailSender;
+        }
+
+        public override async Task<IActionResult> OnPostAsync()
         {
             if (ModelState.IsValid)
             {

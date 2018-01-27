@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -8,24 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
+    [IdentityDefaultUI(typeof(ExternalLoginModel<>))]
     public class ExternalLoginModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly ILogger<ExternalLoginModel> _logger;
-
-        public ExternalLoginModel(
-            SignInManager<IdentityUser> signInManager,
-            UserManager<IdentityUser> userManager,
-            ILogger<ExternalLoginModel> logger)
-        {
-            _signInManager = signInManager;
-            _userManager = userManager;
-            _logger = logger;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -43,12 +31,37 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             public string Email { get; set; }
         }
 
-        public IActionResult OnGetAsync()
+        public virtual IActionResult OnGet() => throw new NotImplementedException();
+
+        public virtual IActionResult OnPost(string provider, string returnUrl = null) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null) => throw new NotImplementedException();
+    }
+
+    internal class ExternalLoginModel<TUser> : ExternalLoginModel where TUser : IdentityUser, new()
+    {
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly UserManager<TUser> _userManager;
+        private readonly ILogger<ExternalLoginModel> _logger;
+
+        public ExternalLoginModel(
+            SignInManager<TUser> signInManager,
+            UserManager<TUser> userManager,
+            ILogger<ExternalLoginModel> logger)
+        {
+            _signInManager = signInManager;
+            _userManager = userManager;
+            _logger = logger;
+        }
+
+        public override IActionResult OnGet()
         {
             return RedirectToPage("./Login");
         }
 
-        public IActionResult OnPost(string provider, string returnUrl = null)
+        public override IActionResult OnPost(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
             var redirectUrl = Url.Page("./ExternalLogin", pageHandler: "Callback", values: new { returnUrl });
@@ -56,7 +69,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             return new ChallengeResult(provider, properties);
         }
 
-        public async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
+        public override async Task<IActionResult> OnGetCallbackAsync(string returnUrl = null, string remoteError = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             if (remoteError != null)
@@ -98,20 +111,20 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             }
         }
 
-        public async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
+        public override async Task<IActionResult> OnPostConfirmationAsync(string returnUrl = null)
         {
             returnUrl = returnUrl ?? Url.Content("~/");
             // Get the information about the user from the external login provider
             var info = await _signInManager.GetExternalLoginInfoAsync();
             if (info == null)
             {
-                    ErrorMessage = "Error loading external login information during confirmation.";
-                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
+                ErrorMessage = "Error loading external login information during confirmation.";
+                return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
             }
 
             if (ModelState.IsValid)
             {
-                var user = new IdentityUser { UserName = Input.Email, Email = Input.Email };
+                var user = new TUser { UserName = Input.Email, Email = Input.Email };
                 var result = await _userManager.CreateAsync(user);
                 if (result.Succeeded)
                 {

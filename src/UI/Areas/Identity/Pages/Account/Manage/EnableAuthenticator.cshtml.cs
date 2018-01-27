@@ -10,26 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
+    [IdentityDefaultUI(typeof(EnableAuthenticatorModel<>))]
     public class EnableAuthenticatorModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly ILogger<EnableAuthenticatorModel> _logger;
-        private readonly UrlEncoder _urlEncoder;
-
-        private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
-
-        public EnableAuthenticatorModel(
-            UserManager<IdentityUser> userManager,
-            ILogger<EnableAuthenticatorModel> logger,
-            UrlEncoder urlEncoder)
-        {
-            _userManager = userManager;
-            _logger = logger;
-            _urlEncoder = urlEncoder;
-        }
-
         public string SharedKey { get; set; }
 
         public string AuthenticatorUri { get; set; }
@@ -52,7 +37,30 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             public string Code { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class EnableAuthenticatorModel<TUser> : EnableAuthenticatorModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+        private readonly ILogger<EnableAuthenticatorModel> _logger;
+        private readonly UrlEncoder _urlEncoder;
+
+        private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
+
+        public EnableAuthenticatorModel(
+            UserManager<TUser> userManager,
+            ILogger<EnableAuthenticatorModel> logger,
+            UrlEncoder urlEncoder)
+        {
+            _userManager = userManager;
+            _logger = logger;
+            _urlEncoder = urlEncoder;
+        }
+
+        public override async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -65,7 +73,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -109,7 +117,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             }
         }
 
-        private async Task LoadSharedKeyAndQrCodeUriAsync(IdentityUser user)
+        private async Task LoadSharedKeyAndQrCodeUriAsync(TUser user)
         {
             // Load the authenticator key & QR code URI to display on the form
             var unformattedKey = await _userManager.GetAuthenticatorKeyAsync(user);

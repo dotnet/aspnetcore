@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
     public class ShowRecoveryCodesModel : PageModel
     {

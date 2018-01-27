@@ -33,7 +33,9 @@ namespace Microsoft.AspNetCore.Identity
         {
             AddAdditionalApplicationParts(builder);
 
-            builder.Services.ConfigureOptions<IdentityDefaultUIConfigureOptions>();
+            builder.Services.ConfigureOptions(
+                typeof(IdentityDefaultUIConfigureOptions<>)
+                    .MakeGenericType(builder.UserType));
             builder.Services.TryAddTransient<IEmailSender, EmailSender>();
 
             return builder;

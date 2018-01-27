@@ -9,22 +9,28 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class DownloadPersonalDataModel : PageModel
+    [IdentityDefaultUI(typeof(DownloadPersonalDataModel<>))]
+    public abstract class DownloadPersonalDataModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class DownloadPersonalDataModel<TUser> : DownloadPersonalDataModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
         private readonly ILogger<DownloadPersonalDataModel> _logger;
 
         public DownloadPersonalDataModel(
-            UserManager<IdentityUser> userManager,
+            UserManager<TUser> userManager,
             ILogger<DownloadPersonalDataModel> logger)
         {
             _userManager = userManager;
             _logger = logger;
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

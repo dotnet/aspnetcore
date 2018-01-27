@@ -8,19 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
-    public class LoginWith2faModel : PageModel
+    [IdentityDefaultUI(typeof(LoginWith2faModel<>))]
+    public abstract class LoginWith2faModel : PageModel
     {
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<LoginWith2faModel> _logger;
-
-        public LoginWith2faModel(SignInManager<IdentityUser> signInManager, ILogger<LoginWith2faModel> logger)
-        {
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -40,7 +32,23 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             public bool RememberMachine { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync(bool rememberMe, string returnUrl = null)
+        public virtual Task<IActionResult> OnGetAsync(bool rememberMe, string returnUrl = null) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync(bool rememberMe, string returnUrl = null) => throw new NotImplementedException();
+    }
+
+    internal class LoginWith2faModel<TUser> : LoginWith2faModel where TUser : IdentityUser
+    {
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly ILogger<LoginWith2faModel> _logger;
+
+        public LoginWith2faModel(SignInManager<TUser> signInManager, ILogger<LoginWith2faModel> logger)
+        {
+            _signInManager = signInManager;
+            _logger = logger;
+        }
+
+        public override async Task<IActionResult> OnGetAsync(bool rememberMe, string returnUrl = null)
         {
             // Ensure the user has gone through the username & password screen first
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -56,7 +64,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync(bool rememberMe, string returnUrl = null)
+        public override async Task<IActionResult> OnPostAsync(bool rememberMe, string returnUrl = null)
         {
             if (!ModelState.IsValid)
             {
@@ -91,6 +99,6 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
                 ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
                 return Page();
             }
-        }  
+        }
     }
 }

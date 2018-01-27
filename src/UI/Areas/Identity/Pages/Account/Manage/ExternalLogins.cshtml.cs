@@ -9,21 +9,11 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class ExternalLoginsModel : PageModel
+    [IdentityDefaultUI(typeof(ExternalLoginsModel<>))]
+    public abstract class ExternalLoginsModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-
-        public ExternalLoginsModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-        }
-
         public IList<UserLoginInfo> CurrentLogins { get; set; }
 
         public IList<AuthenticationScheme> OtherLogins { get; set; }
@@ -33,7 +23,29 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
         [TempData]
         public string StatusMessage { get; set; }
 
-        public async Task<IActionResult> OnGetAsync()
+        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostRemoveLoginAsync(string loginProvider, string providerKey) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostLinkLoginAsync(string provider) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnGetLinkLoginCallbackAsync() => throw new NotImplementedException();
+    }
+
+    internal class ExternalLoginsModel<TUser> : ExternalLoginsModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
+
+        public ExternalLoginsModel(
+            UserManager<TUser> userManager,
+            SignInManager<TUser> signInManager)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+        }
+
+        public override async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -49,7 +61,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostRemoveLoginAsync(string loginProvider, string providerKey)
+        public override async Task<IActionResult> OnPostRemoveLoginAsync(string loginProvider, string providerKey)
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -68,7 +80,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return RedirectToPage();
         }
 
-        public async Task<IActionResult> OnPostLinkLoginAsync(string provider)
+        public override async Task<IActionResult> OnPostLinkLoginAsync(string provider)
         {
             // Clear the existing external cookie to ensure a clean login process
             await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
@@ -79,7 +91,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return new ChallengeResult(provider, properties);
         }
 
-        public async Task<IActionResult> OnGetLinkLoginCallbackAsync()
+        public override async Task<IActionResult> OnGetLinkLoginCallbackAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

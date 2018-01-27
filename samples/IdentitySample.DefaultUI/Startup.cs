@@ -1,3 +1,4 @@
+using IdentitySample.DefaultUI.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -28,12 +29,12 @@ namespace IdentitySample.DefaultUI
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
-            services.AddDbContext<IdentityDbContext>(
+            services.AddDbContext<ApplicationDbContext>(
                 options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                 x => x.MigrationsAssembly("IdentitySample.DefaultUI")));
 
-            services.AddIdentity<IdentityUser, IdentityRole>(o => o.Stores.MaxLengthForKeys = 128)
-                .AddEntityFrameworkStores<IdentityDbContext>()
+            services.AddIdentity<ApplicationUser, IdentityRole>(o => o.Stores.MaxLengthForKeys = 128)
+                .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultUI()
                 .AddDefaultTokenProviders();
 

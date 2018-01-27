@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
     public class ForgotPasswordConfirmation : PageModel
     {

@@ -8,24 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 {
-    public class ChangePasswordModel : PageModel
+    [IdentityDefaultUI(typeof(ChangePasswordModel<>))]
+    public abstract class ChangePasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly ILogger<ChangePasswordModel> _logger;
-
-        public ChangePasswordModel(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
-            ILogger<ChangePasswordModel> logger)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _logger = logger;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -51,7 +38,28 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             public string ConfirmPassword { get; set; }
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+    }
+
+    internal class ChangePasswordModel<TUser> : ChangePasswordModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
+        private readonly ILogger<ChangePasswordModel> _logger;
+
+        public ChangePasswordModel(
+            UserManager<TUser> userManager,
+            SignInManager<TUser> signInManager,
+            ILogger<ChangePasswordModel> logger)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _logger = logger;
+        }
+
+        public override async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -68,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage
             return Page();
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {

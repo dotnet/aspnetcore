@@ -7,17 +7,11 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
+namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
-    public class ResetPasswordModel : PageModel
+    [IdentityDefaultUI(typeof(ResetPasswordModel<>))]
+    public abstract class ResetPasswordModel : PageModel
     {
-        private readonly UserManager<IdentityUser> _userManager;
-
-        public ResetPasswordModel(UserManager<IdentityUser> userManager)
-        {
-            _userManager = userManager;
-        }
-
         [BindProperty]
         public InputModel Input { get; set; }
 
@@ -38,6 +32,20 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account
             public string ConfirmPassword { get; set; }
 
             public string Code { get; set; }
+
+            public virtual IActionResult OnGet(string code = null) => throw new NotImplementedException();
+
+            public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+        }
+    }
+
+    internal class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : IdentityUser
+    {
+        private readonly UserManager<TUser> _userManager;
+
+        public ResetPasswordModel(UserManager<TUser> userManager)
+        {
+            _userManager = userManager;
         }
 
         public IActionResult OnGet(string code = null)

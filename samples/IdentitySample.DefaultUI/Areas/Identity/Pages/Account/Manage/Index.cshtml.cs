@@ -5,15 +5,30 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using IdentitySample.DefaultUI.Data;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
+namespace IdentitySample.DefaultUI
 {
-    [IdentityDefaultUI(typeof(IndexModel<>))]
-    public abstract class IndexModel : PageModel
+    public class IndexModel : PageModel
     {
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IEmailSender _emailSender;
+
+        public IndexModel(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IEmailSender emailSender)
+        {
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _emailSender = emailSender;
+        }
+
         public string Username { get; set; }
 
         public bool IsEmailConfirmed { get; set; }
@@ -33,32 +48,19 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+
+            [Required]
+            [DataType(DataType.Text)]
+            [Display(Name = "Full Name")]
+            public string Name { get; set; }
+
+            [Required]
+            [Range(0, 199, ErrorMessage = "Age must be between 0 and 199")]
+            [Display(Name = "Age")]
+            public int Age { get; set; }
         }
 
-        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
-
-        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
-
-        public virtual Task<IActionResult> OnPostSendVerificationEmailAsync() => throw new NotImplementedException();
-    }
-
-    internal class IndexModel<TUser> : IndexModel where TUser : IdentityUser
-    {
-        private readonly UserManager<TUser> _userManager;
-        private readonly SignInManager<TUser> _signInManager;
-        private readonly IEmailSender _emailSender;
-
-        public IndexModel(
-            UserManager<TUser> userManager,
-            SignInManager<TUser> signInManager,
-            IEmailSender emailSender)
-        {
-            _userManager = userManager;
-            _signInManager = signInManager;
-            _emailSender = emailSender;
-        }
-
-        public override async Task<IActionResult> OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -67,9 +69,10 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             }
 
             Username = user.UserName;
-
             Input = new InputModel
             {
+                Name = user.Name,
+                Age = user.Age,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber
             };
@@ -79,7 +82,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             return Page();
         }
 
-        public override async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
@@ -90,6 +93,22 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             if (user == null)
             {
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            if (Input.Name != user.Name)
+            {
+                user.Name = Input.Name;
+            }
+
+            if (Input.Age != user.Age)
+            {
+                user.Age = Input.Age;
+            }
+
+            var updateProfileResult = await _userManager.UpdateAsync(user);
+            if (!updateProfileResult.Succeeded)
+            {
+                throw new InvalidOperationException($"Unexpected error ocurred updating the profile for user with ID '{user.Id}'");
             }
 
             if (Input.Email != user.Email)
@@ -114,7 +133,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             return RedirectToPage();
         }
 
-        public override async Task<IActionResult> OnPostSendVerificationEmailAsync()
+        public async Task<IActionResult> OnPostSendVerificationEmailAsync()
         {
             if (!ModelState.IsValid)
             {
