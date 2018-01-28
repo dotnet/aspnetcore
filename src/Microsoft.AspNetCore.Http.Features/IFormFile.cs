@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Http
         long Length { get; }
 
         /// <summary>
-        /// Gets the name from the Content-Disposition header.
+        /// Gets the form field name from the Content-Disposition header.
         /// </summary>
         string Name { get; }
 
