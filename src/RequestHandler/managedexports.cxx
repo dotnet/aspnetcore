@@ -43,6 +43,37 @@ http_get_raw_response(
     return pInProcessHandler->QueryHttpContext()->GetResponse()->GetRawHttpResponse();
 }
 
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_get_server_variable(
+    _In_ IN_PROCESS_HANDLER* pInProcessHandler,
+    _In_ PCSTR pszVariableName,
+    _Out_ BSTR* pwszReturn
+)
+{
+    PCWSTR pszVariableValue;
+    DWORD cbLength;
+    HRESULT hr = pInProcessHandler
+        ->QueryHttpContext()
+        ->GetServerVariable(pszVariableName, &pszVariableValue, &cbLength);
+
+    if (FAILED(hr) || cbLength == 0)
+    {
+        goto Finished;
+    }
+
+    *pwszReturn = SysAllocString(pszVariableValue);
+
+    if (*pwszReturn == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+
+Finished:
+    return hr;
+}
+
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT VOID http_set_response_status_code(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler,
     _In_ USHORT statusCode,

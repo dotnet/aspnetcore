@@ -78,6 +78,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public unsafe static extern int http_get_application_properties(ref IISConfigurationData iiConfigData);
 
         [DllImport(AspNetCoreModuleDll)]
+        public static extern int http_get_server_variable(IntPtr pInProcessHandler, [MarshalAs(UnmanagedType.AnsiBStr)] string variableName, [MarshalAs(UnmanagedType.BStr)] out string value);
+
+        [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern bool http_shutdown();
 
         [DllImport(AspNetCoreModuleDll)]

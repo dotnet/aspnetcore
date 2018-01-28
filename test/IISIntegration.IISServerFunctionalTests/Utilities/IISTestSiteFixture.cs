@@ -1,0 +1,52 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.Logging.Abstractions;
+
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+{
+    public class IISTestSiteFixture : IDisposable
+    {
+        private readonly IApplicationDeployer _deployer;
+
+        public IISTestSiteFixture()
+        {
+            var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(),
+                ServerType.IISExpress,
+                RuntimeFlavor.CoreClr,
+                RuntimeArchitecture.x64)
+            {
+                ServerConfigTemplateContent = File.ReadAllText("Http.config"),
+                SiteName = "HttpTestSite",
+                TargetFramework = "netcoreapp2.0",
+                ApplicationType = ApplicationType.Portable,
+                Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
+            };
+
+            _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);
+            var deploymentResult = _deployer.DeployAsync().Result;
+            Client = deploymentResult.HttpClient;
+            BaseUri = deploymentResult.ApplicationBaseUri;
+            ShutdownToken = deploymentResult.HostShutdownToken;
+        }
+
+        public string BaseUri { get; }
+        public HttpClient Client { get; }
+        public CancellationToken ShutdownToken { get; }
+
+        public void Dispose()
+        {
+            _deployer.Dispose();
+        }
+    }
+}

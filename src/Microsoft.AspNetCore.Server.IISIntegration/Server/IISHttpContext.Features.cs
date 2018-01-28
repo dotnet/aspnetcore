@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -28,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
         private static readonly Type IISHttpContextType = typeof(IISHttpContext);
+        private static readonly Type IServerVariablesFeature = typeof(global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
 
         private object _currentIHttpRequestFeature;
         private object _currentIHttpResponseFeature;
@@ -49,6 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private object _currentISessionFeature;
         private object _currentIHttpBodyControlFeature;
         private object _currentIHttpSendFileFeature;
+        private object _currentIServerVariablesFeature;
 
         private void Initialize()
         {
@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
             _currentIHttpAuthenticationFeature = this;
+            _currentIServerVariablesFeature = this;
         }
 
         internal object FastFeatureGet(Type key)
@@ -136,6 +137,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 return _currentIHttpSendFileFeature;
             }
             if (key == IISHttpContextType)
+            {
+                return this;
+            }
+            if (key == IServerVariablesFeature)
             {
                 return this;
             }
@@ -232,6 +237,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _currentIHttpSendFileFeature = feature;
                 return;
             }
+            if (key == IServerVariablesFeature)
+            {
+                _currentIServerVariablesFeature = feature;
+                return;
+            }
             if (key == IISHttpContextType)
             {
                 throw new InvalidOperationException("Cannot set IISHttpContext in feature collection");
@@ -308,6 +318,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (_currentIHttpSendFileFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpSendFileFeatureType, _currentIHttpSendFileFeature as global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
+            }
+            if (_currentIServerVariablesFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IServerVariablesFeature, _currentIServerVariablesFeature as global::Microsoft.AspNetCore.Http.Features.IServerVariablesFeature);
             }
 
             if (MaybeExtra != null)

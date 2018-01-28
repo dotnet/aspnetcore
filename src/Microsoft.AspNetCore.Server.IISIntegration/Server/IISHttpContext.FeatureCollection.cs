@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                                             IHttpConnectionFeature,
                                             IHttpRequestLifetimeFeature,
                                             IHttpRequestIdentifierFeature,
-                                            IHttpAuthenticationFeature
+                                            IHttpAuthenticationFeature,
+                                            IServerVariablesFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -233,6 +234,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         }
 
         public IAuthenticationHandler Handler { get; set; }
+
+        string IServerVariablesFeature.this[string variableName]
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(variableName))
+                {
+                    return null;
+                }
+
+                int hr = NativeMethods.http_get_server_variable(_pInProcessHandler, variableName, out var value);
+                return hr == 0 ? value : null;
+            }
+        }
 
         object IFeatureCollection.this[Type key]
         {

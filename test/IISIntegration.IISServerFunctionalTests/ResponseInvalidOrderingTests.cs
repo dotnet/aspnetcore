@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
         }
 
-        [Theory(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        [ConditionalTheory]
         [InlineData("SetStatusCodeAfterWrite")]
         [InlineData("SetHeaderAfterWrite")]
         public Task ResponseInvalidOrderingTests_ExpectFailure(string path)

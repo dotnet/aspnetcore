@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -23,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         {
         }
 
-        [Theory(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        [ConditionalTheory]
         [InlineData(10000)]
         [InlineData(100000)]
         [InlineData(1000000)]
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         }
 
 
-        [Fact (Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        [ConditionalFact]
         public Task LargeFileResponseBodyInternalCheck()
         {
             return LargeResponseBodyFromFile(RuntimeFlavor.CoreClr, ApplicationType.Portable);
@@ -106,7 +104,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     ApplicationType = applicationType,
-
+                    Configuration =
+#if DEBUG
+                        "Debug"
+#else
+                        "Release"
+#endif
                 };
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))

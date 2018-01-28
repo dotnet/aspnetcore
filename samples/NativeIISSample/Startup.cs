@@ -7,19 +7,20 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.AspNetCore.Server.IISIntegration;
 
 namespace NativeIISSample
 {
     public class Startup
     {
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, IAuthenticationSchemeProvider authSchemeProvider)
         {
             app.Run(async (context) =>
             {
                 context.Response.ContentType = "text/plain";
+
                 await context.Response.WriteAsync("Hello World - " + DateTimeOffset.Now + Environment.NewLine);
                 await context.Response.WriteAsync(Environment.NewLine);
 
@@ -60,8 +61,28 @@ namespace NativeIISSample
                     await context.Response.WriteAsync(key + ": " + value + Environment.NewLine);
                 }
                 await context.Response.WriteAsync(Environment.NewLine);
+
+                // accessing IIS server variables
+                await context.Response.WriteAsync("Server Variables:" + Environment.NewLine);
+
+                foreach (var varName in IISServerVarNames)
+                {
+                    await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
+                }
             });
         }
+
+        private static readonly string[] IISServerVarNames =
+        {
+            "AUTH_TYPE",
+            "AUTH_USER",
+            "CONTENT_TYPE",
+            "HTTP_HOST",
+            "HTTPS",
+            "REMOTE_PORT",
+            "REMOTE_USER",
+            "REQUEST_METHOD",
+        };
 
         public static void Main(string[] args)
         {

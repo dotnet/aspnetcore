@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.Server.IIS.FunctionalTests</RootNamespace>
+    <AssemblyName>Microsoft.AspNetCore.Server.IIS.FunctionalTests</AssemblyName>
   </PropertyGroup>
   
   <ItemGroup>
