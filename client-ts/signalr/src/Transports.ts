@@ -29,21 +29,21 @@ export interface ITransport {
 
 export class WebSocketTransport implements ITransport {
     private readonly logger: ILogger;
-    private readonly accessToken: () => string;
+    private readonly accessTokenFactory: () => string;
     private webSocket: WebSocket;
 
-    constructor(accessToken: () => string, logger: ILogger) {
+    constructor(accessTokenFactory: () => string, logger: ILogger) {
         this.logger = logger;
-        this.accessToken = accessToken;
+        this.accessTokenFactory = accessTokenFactory || (() => null);
     }
 
     connect(url: string, requestedTransferMode: TransferMode, connection: IConnection): Promise<TransferMode> {
 
         return new Promise<TransferMode>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
-            if (this.accessToken) {
-                let token = this.accessToken();
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
+            let token = this.accessTokenFactory();
+            if (token) {
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
             }
 
             let webSocket = new WebSocket(url);
@@ -105,14 +105,14 @@ export class WebSocketTransport implements ITransport {
 
 export class ServerSentEventsTransport implements ITransport {
     private readonly httpClient: HttpClient;
-    private readonly accessToken: () => string;
+    private readonly accessTokenFactory: () => string;
     private readonly logger: ILogger;
     private eventSource: EventSource;
     private url: string;
 
-    constructor(httpClient: HttpClient, accessToken: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger) {
         this.httpClient = httpClient;
-        this.accessToken = accessToken;
+        this.accessTokenFactory = accessTokenFactory || (() => null);
         this.logger = logger;
     }
 
@@ -123,9 +123,9 @@ export class ServerSentEventsTransport implements ITransport {
 
         this.url = url;
         return new Promise<TransferMode>((resolve, reject) => {
-            if (this.accessToken) {
-                let token = this.accessToken();
-                url += (url.indexOf("?") < 0 ? "?" : "&") + `signalRTokenHeader=${token}`;
+            let token = this.accessTokenFactory();
+            if (token) {
+                url += (url.indexOf("?") < 0 ? "?" : "&") + `access_token=${encodeURIComponent(token)}`;
             }
 
             let eventSource = new EventSource(url);
@@ -145,7 +145,7 @@ export class ServerSentEventsTransport implements ITransport {
                     }
                 };
 
-                eventSource.onerror = (e: ErrorEvent) => {
+                eventSource.onerror = (e: any) => {
                     reject();
 
                     // don't report an error if the transport did not start successfully
@@ -168,7 +168,7 @@ export class ServerSentEventsTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.accessToken, data);
+        return send(this.httpClient, this.url, this.accessTokenFactory, data);
     }
 
     stop(): Promise<void> {
@@ -185,16 +185,16 @@ export class ServerSentEventsTransport implements ITransport {
 
 export class LongPollingTransport implements ITransport {
     private readonly httpClient: HttpClient;
-    private readonly accessToken: () => string;
+    private readonly accessTokenFactory: () => string;
     private readonly logger: ILogger;
 
     private url: string;
     private pollXhr: XMLHttpRequest;
     private pollAbort: AbortController;
 
-    constructor(httpClient: HttpClient, accessToken: () => string, logger: ILogger) {
+    constructor(httpClient: HttpClient, accessTokenFactory: () => string, logger: ILogger) {
         this.httpClient = httpClient;
-        this.accessToken = accessToken;
+        this.accessTokenFactory = accessTokenFactory || (() => null);
         this.logger = logger;
         this.pollAbort = new AbortController();
     }
@@ -225,8 +225,9 @@ export class LongPollingTransport implements ITransport {
             pollOptions.responseType = "arraybuffer";
         }
 
-        if (this.accessToken) {
-            pollOptions.headers.set("Authorization", `Bearer ${this.accessToken()}`);
+        let token = this.accessTokenFactory();
+        if (token) {
+            pollOptions.headers.set("Authorization", `Bearer ${token}`);
         }
 
         while (!this.pollAbort.signal.aborted) {
@@ -281,7 +282,7 @@ export class LongPollingTransport implements ITransport {
     }
 
     async send(data: any): Promise<void> {
-        return send(this.httpClient, this.url, this.accessToken, data);
+        return send(this.httpClient, this.url, this.accessTokenFactory, data);
     }
 
     stop(): Promise<void> {
@@ -293,11 +294,12 @@ export class LongPollingTransport implements ITransport {
     onclose: TransportClosed;
 }
 
-async function send(httpClient: HttpClient, url: string, accessToken: () => string, content: string | ArrayBuffer): Promise<void> {
+async function send(httpClient: HttpClient, url: string, accessTokenFactory: () => string, content: string | ArrayBuffer): Promise<void> {
     let headers;
-    if (accessToken) {
+    let token = accessTokenFactory();
+    if (token) {
         headers = new Map<string, string>();
-        headers.set("Authorization", `Bearer ${accessToken()}`)
+        headers.set("Authorization", `Bearer ${accessTokenFactory()}`)
     }
 
     await httpClient.post(url, {

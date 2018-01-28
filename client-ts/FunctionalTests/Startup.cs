@@ -58,12 +58,12 @@ namespace FunctionalTests
                     {
                         OnMessageReceived = context =>
                         {
-                            var signalRTokenHeader = context.Request.Query["signalRTokenHeader"];
+                            var signalRTokenHeader = context.Request.Query["access_token"];
 
                             if (!string.IsNullOrEmpty(signalRTokenHeader) &&
                                 (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
                             {
-                                context.Token = context.Request.Query["signalRTokenHeader"];
+                                context.Token = context.Request.Query["access_token"];
                             }
                             return Task.CompletedTask;
                         }

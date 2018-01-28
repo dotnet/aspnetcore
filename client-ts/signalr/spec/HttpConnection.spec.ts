@@ -9,25 +9,29 @@ import { ITransport, TransportType, TransferMode } from "../src/Transports"
 import { eachTransport, eachEndpointUrl } from "./Common";
 import { HttpResponse } from "../src/index";
 
+const commonOptions: IHttpConnectionOptions = {
+    logger: null
+};
+
 describe("HttpConnection", () => {
     it("cannot be created with relative url if document object is not present", () => {
-        expect(() => new HttpConnection("/test"))
+        expect(() => new HttpConnection("/test", commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
     });
 
     it("cannot be created with relative url if window object is not present", () => {
         (<any>global).window = {};
-        expect(() => new HttpConnection("/test"))
+        expect(() => new HttpConnection("/test", commonOptions))
             .toThrow(new Error("Cannot resolve '/test'."));
         delete (<any>global).window;
     });
 
     it("starting connection fails if getting id fails", async (done) => {
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => Promise.reject("error"))
                 .on("GET", r => ""),
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -45,6 +49,7 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async (done) => {
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => {
                     connection.start()
@@ -58,7 +63,6 @@ describe("HttpConnection", () => {
                         });
                     return Promise.reject("error");
                 }),
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -75,13 +79,13 @@ describe("HttpConnection", () => {
     it("can start a stopped connection", async (done) => {
         let negotiateCalls = 0;
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => {
                     negotiateCalls += 1;
                     return Promise.reject("reached negotiate");
                 })
                 .on("GET", r => ""),
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -103,6 +107,7 @@ describe("HttpConnection", () => {
 
     it("can stop a starting connection", async (done) => {
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => {
                     connection.stop();
@@ -112,7 +117,6 @@ describe("HttpConnection", () => {
                     connection.stop();
                     return "";
                 }),
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -128,7 +132,7 @@ describe("HttpConnection", () => {
     });
 
     it("can stop a non-started connection", async (done) => {
-        let connection = new HttpConnection("http://tempuri.org");
+        let connection = new HttpConnection("http://tempuri.org", commonOptions);
         await connection.stop();
         done();
     });
@@ -151,11 +155,11 @@ describe("HttpConnection", () => {
         }
 
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => "{ \"connectionId\": \"42\" }")
                 .on("GET", r => ""),
             transport: fakeTransport,
-            logger: null,
         } as IHttpConnectionOptions;
 
 
@@ -178,6 +182,7 @@ describe("HttpConnection", () => {
             let negotiateUrl: string;
             let connection: HttpConnection;
             let options: IHttpConnectionOptions = {
+                ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", r => {
                         negotiateUrl = r.url;
@@ -188,7 +193,6 @@ describe("HttpConnection", () => {
                         connection.stop();
                         return "";
                     }),
-                logger: null
             } as IHttpConnectionOptions;
 
             connection = new HttpConnection(givenUrl, options);
@@ -212,11 +216,11 @@ describe("HttpConnection", () => {
         }
         it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
             let options: IHttpConnectionOptions = {
+                ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
                     .on("GET", r => ""),
                 transport: requestedTransport,
-                logger: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("http://tempuri.org", options);
@@ -234,10 +238,10 @@ describe("HttpConnection", () => {
 
     it("cannot be started if no transport available on server and no transport requested", async done => {
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient()
                 .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
                 .on("GET", r => ""),
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -254,9 +258,9 @@ describe("HttpConnection", () => {
 
     it('does not send negotiate request if WebSockets transport requested explicitly', async done => {
         let options: IHttpConnectionOptions = {
+            ...commonOptions,
             httpClient: new TestHttpClient(),
             transport: TransportType.WebSockets,
-            logger: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -291,11 +295,11 @@ describe("HttpConnection", () => {
             } as ITransport;
 
             let options: IHttpConnectionOptions = {
+                ...commonOptions,
                 httpClient: new TestHttpClient()
                     .on("POST", r => "{ \"connectionId\": \"42\", \"availableTransports\": [] }")
                     .on("GET", r => ""),
                 transport: fakeTransport,
-                logger: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("https://tempuri.org", options);
