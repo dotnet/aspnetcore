@@ -6,6 +6,7 @@
     <VerifyVersion>false</VerifyVersion>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
+    <PackageVersion>$(ExperimentalPackageVersion)</PackageVersion>
 
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
