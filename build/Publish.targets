@@ -69,30 +69,36 @@
       <!-- symbols -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)" Condition=" '%(RuntimeSymbolsArchive.Identity)' != '' ">
         <RelativeBlobPath>$(BlobBasePath)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
         <RelativeBlobPath>$(BlobBasePath)$(PackageArchiveFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
       <FilesToPublish Include="$(DependencyAssetsDir)$(IntermediateInstallerBaseFileName)-%(IntermediateInstaller.Identity)%(IntermediateInstaller.FileExt)" Condition=" '%(IntermediateInstaller.Identity)' != '' ">
         <RelativeBlobPath>$(BlobBasePath)$(IntermediateInstallerBaseFileName)-%(IntermediateInstaller.Identity)%(IntermediateInstaller.FileExt)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
       <FilesToPublish Include="$(BaseRuntimeVersionFile)">
         <RelativeBlobPath>$(BlobBasePath)$(BaseRuntimeVersionFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
         <ContentType>text/plain</ContentType>
       </FilesToPublish>
 
       <!-- Archive installers -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)" Condition=" '%(NativeInstaller.FileExt)' != '' ">
         <RelativeBlobPath>$(BlobBasePath)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
 
       <!-- Support for README badges and dotnet-install.ps1/sh -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(InstallerBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)" Condition=" '%(NativeInstaller.FileExt)' != '' ">
         <RelativeBlobPath>$(AliasBlobBasePath)$(InstallerAliasBaseFileName)-%(NativeInstaller.Identity)%(NativeInstaller.FileExt)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
         <Overwrite>true</Overwrite>
         <!-- These uploads duplicate the same blob in a separate location for README download links and to make dotnet-install.ps1/sh work when specifying -Channel. -->
         <IsDuplicateUpload>true</IsDuplicateUpload>
@@ -100,6 +106,7 @@
 
       <FilesToPublish Include="@(SharedFxVersionBadge)">
         <RelativeBlobPath>$(AliasBlobBasePath)%(SharedFxVersionBadge.FileName)%(SharedFxVersionBadge.Extension)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
         <ContentType>image/svg+xml</ContentType>
         <Overwrite>true</Overwrite>
@@ -107,6 +114,7 @@
 
       <FilesToPublish Include="$(LatestRuntimeVersionFile)">
         <RelativeBlobPath>$(AliasBlobBasePath)$(LatestRuntimeVersionFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
         <CacheControl>no-cache, no-store, must-revalidate</CacheControl>
         <ContentType>text/plain</ContentType>
         <Overwrite>true</Overwrite>
@@ -181,6 +189,7 @@
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"
         RelativeBlobPath="$(BlobFileRelativePathBase)%(FilesToPublish.RelativeBlobPath)"
+        ManifestArtifactData="%(FilesToPublish.ManifestArtifactData)"
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
 
