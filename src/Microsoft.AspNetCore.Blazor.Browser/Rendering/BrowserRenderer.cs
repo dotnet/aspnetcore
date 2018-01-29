@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         internal void DispatchBrowserEvent(int componentId, int renderTreeIndex, UIEventArgs eventArgs)
             => DispatchEvent(componentId, renderTreeIndex, eventArgs);
 
-        internal void RenderComponentInternal(int componentId)
-            => RenderComponent(componentId);
+        internal void RenderNewBatchInternal(int componentId)
+            => RenderNewBatch(componentId);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="BrowserRenderer"/>,
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                 componentId);
             _rootComponents.Add(component);
 
-            RenderComponent(componentId);
+            RenderNewBatch(componentId);
         }
 
         /// <summary>

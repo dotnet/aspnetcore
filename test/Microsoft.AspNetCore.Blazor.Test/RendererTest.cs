@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act
             var componentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
 
             // Assert
             Assert.Collection(renderer.RenderTreesByComponentId[componentId],
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act/Assert
             var componentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
             var componentNode = renderer.RenderTreesByComponentId[componentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component);
             var nestedComponentId = componentNode.ComponentId;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.False(renderer.RenderTreesByComponentId.ContainsKey(nestedComponentId));
 
             // It can be rendered
-            renderer.RenderComponent(nestedComponentId);
+            renderer.RenderNewBatch(nestedComponentId);
             Assert.Collection(renderer.RenderTreesByComponentId[nestedComponentId],
                 node => AssertNode.Text(node, "Nested component output"));
         }
@@ -77,13 +77,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var componentId = renderer.AssignComponentId(component);
 
             // Act/Assert: first render
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
             Assert.Collection(renderer.RenderTreesByComponentId[componentId],
                 node => AssertNode.Text(node, "Initial message"));
 
             // Act/Assert: second render
             component.Message = "Modified message";
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
             Assert.Collection(renderer.RenderTreesByComponentId[componentId],
                 node => AssertNode.Text(node, "Modified message"));
         }
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
-            renderer.RenderComponent(parentComponentId);
+            renderer.RenderNewBatch(parentComponentId);
             var nestedComponentNode = renderer.RenderTreesByComponentId[parentComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component);
             var nestedComponent = (MessageComponent)nestedComponentNode.Component;
@@ -107,13 +107,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act/Assert: inital render
             nestedComponent.Message = "Render 1";
-            renderer.RenderComponent(nestedComponentId);
+            renderer.RenderNewBatch(nestedComponentId);
             Assert.Collection(renderer.RenderTreesByComponentId[nestedComponentId],
                 node => AssertNode.Text(node, "Render 1"));
 
             // Act/Assert: re-render
             nestedComponent.Message = "Render 2";
-            renderer.RenderComponent(nestedComponentId);
+            renderer.RenderNewBatch(nestedComponentId);
             Assert.Collection(renderer.RenderTreesByComponentId[nestedComponentId],
                 node => AssertNode.Text(node, "Render 2"));
         }
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 Handler = args => { receivedArgs = args; }
             };
             var componentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
 
             var (eventHandlerNodeIndex, _) = FirstWithIndex(
                 renderer.RenderTreesByComponentId[componentId],
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.CloseElement();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
-            renderer.RenderComponent(parentComponentId);
+            renderer.RenderNewBatch(parentComponentId);
 
             // Arrange: Render nested component
             var nestedComponentNode = renderer.RenderTreesByComponentId[parentComponentId]
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var nestedComponent = (EventComponent)nestedComponentNode.Component;
             nestedComponent.Handler = args => { receivedArgs = args; };
             var nestedComponentId = nestedComponentNode.ComponentId;
-            renderer.RenderComponent(nestedComponentId);
+            renderer.RenderNewBatch(nestedComponentId);
 
             // Find nested component's event handler ndoe
             var (eventHandlerNodeIndex, _) = FirstWithIndex(
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             Assert.Throws<ArgumentException>(() =>
             {
-                renderer.RenderComponent(123);
+                renderer.RenderNewBatch(123);
             });
         }
 
@@ -220,12 +220,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var renderer2ComponentId = renderer2.AssignComponentId(component);
 
             // Act/Assert: Render component in renderer1
-            renderer1.RenderComponent(renderer1ComponentId);
+            renderer1.RenderNewBatch(renderer1ComponentId);
             Assert.True(renderer1.RenderTreesByComponentId.ContainsKey(renderer1ComponentId));
             Assert.False(renderer2.RenderTreesByComponentId.ContainsKey(renderer2ComponentId));
 
             // Act/Assert: Render same component in renderer2
-            renderer2.RenderComponent(renderer2ComponentId);
+            renderer2.RenderNewBatch(renderer2ComponentId);
             Assert.True(renderer2.RenderTreesByComponentId.ContainsKey(renderer2ComponentId));
         }
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Assert
             Assert.ThrowsAny<Exception>(() =>
             {
-                renderer.RenderComponent(componentId);
+                renderer.RenderNewBatch(componentId);
             });
         }
 
@@ -295,7 +295,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             GC.Collect();
             GC.WaitForPendingFinalizers();
 
-            renderer.RenderComponent(componentId);
+            renderer.RenderNewBatch(componentId);
 
             // Assert
             Assert.True(didRender);
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             var nestedComponentInstance = (MessageComponent)renderer.RenderTreesByComponentId[rootComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component)
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act: Second render
             message = "Modified message";
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             // Assert
             Assert.Collection(renderer.RenderTreesByComponentId[rootComponentId],
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             var originalComponentInstance = (FakeComponent)renderer.RenderTreesByComponentId[rootComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component)
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act: Second render
             firstRender = false;
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             var updatedComponentInstance = (FakeComponent)renderer.RenderTreesByComponentId[rootComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component)
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             var childComponentId = renderer.RenderTreesByComponentId[rootComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component)
@@ -396,11 +396,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // This isn't strictly necessary for the test, but it's more common for components
             // to be updated after their first render than before it
-            renderer.RenderComponent(childComponentId);
+            renderer.RenderNewBatch(childComponentId);
 
             // Act: Second render
             firstRender = false;
-            renderer.RenderComponent(rootComponentId);
+            renderer.RenderNewBatch(rootComponentId);
 
             var updatedComponentNode = renderer.RenderTreesByComponentId[rootComponentId]
                 .Single(node => node.NodeType == RenderTreeNodeType.Component);
@@ -415,8 +415,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
 
-            public new void RenderComponent(int componentId)
-                => base.RenderComponent(componentId);
+            public new void RenderNewBatch(int componentId)
+                => base.RenderNewBatch(componentId);
 
             protected internal override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
             {
@@ -431,8 +431,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
 
-            public new void RenderComponent(int componentId)
-                => base.RenderComponent(componentId);
+            public new void RenderNewBatch(int componentId)
+                => base.RenderNewBatch(componentId);
 
             public new void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs args)
                 => base.DispatchEvent(componentId, renderTreeIndex, args);

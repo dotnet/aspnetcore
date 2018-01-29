@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             {
                 // TODO: Instead, call some OnPropertiesUpdated method on IComponent,
                 // whose default implementation causes itself to be rerendered
-                _renderer.RenderComponent(componentId);
+                _renderer.RenderInExistingBatch(componentId);
             }
         }
 

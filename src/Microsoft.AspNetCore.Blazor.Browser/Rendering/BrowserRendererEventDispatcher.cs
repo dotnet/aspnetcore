@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             string componentId)
         {
             var browserRenderer = BrowserRendererRegistry.Find(int.Parse(browserRendererId));
-            browserRenderer.RenderComponentInternal(
+            browserRenderer.RenderNewBatchInternal(
                 int.Parse(componentId));
         }
 
