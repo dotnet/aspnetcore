@@ -74,11 +74,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 0, Path.Combine(PublishOutputPath, "Views"), "*.cshtml");
         }
 
-        [Fact]
+        [Fact] // This will use the old precompilation tool, RazorSDK shouldn't get involved.
         [InitializeTestProject("SimpleMvc")]
-        public async Task Publish_WithMvcRazorCompileOnPublish_PublishesAssembly()
+        public async Task Publish_WithMvcRazorCompileOnPublish_Noops()
         {
             var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, PublishOutputPath, "SimpleMvc.pdb");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, PublishOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact] // This is an override to force the new toolset
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Publish_WithMvcRazorCompileOnPublish_AndRazorSDK_PublishesAssembly()
+        {
+            var result = await DotnetMSBuild("Publish", "/p:MvcRazorCompileOnPublish=true /p:ResolvedRazorCompileToolset=RazorSDK");
 
             Assert.BuildPassed(result);
 

@@ -2,8 +2,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
+    <!-- This is needed without a reference to the Web SDK. See: #1986 -->
+    <ResolvedRazorCompileToolset>RazorSDK</ResolvedRazorCompileToolset>
   </PropertyGroup>
 
   <!-- Test Placeholder -->
