@@ -13,9 +13,9 @@
 
   getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer;
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
-  readObjectField(baseAddress: Pointer, fieldOffset?: number): System_Object;
+  readObjectField<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T;
   readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
-  readStructField(baseAddress: Pointer, fieldOffset?: number): Pointer;
+  readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T;
 }
 
 // We don't actually instantiate any of these at runtime. For perf it's preferable to

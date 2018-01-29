@@ -4,20 +4,20 @@ import { platform } from '../Environment';
 // Keep in sync with the structs in .NET code
 
 export const renderBatch = {
-  updatedComponents: (obj: RenderBatchPointer) => platform.readStructField(obj, 0) as ArrayRangePointer,
+  updatedComponents: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer>(obj, 0),
 };
 
 const arrayRangeStructLength = 8;
 export const arrayRange = {
-  array: (obj: ArrayRangePointer) => platform.readObjectField(obj, 0) as System_Array,
+  array: (obj: ArrayRangePointer) => platform.readObjectField<System_Array>(obj, 0),
   count: (obj: ArrayRangePointer) => platform.readInt32Field(obj, 4),
 };
 
 export const renderTreeDiffStructLength = 4 + 2 * arrayRangeStructLength;
 export const renderTreeDiff = {
   componentId: (obj: RenderTreeDiffPointer) => platform.readInt32Field(obj, 0),
-  edits: (obj: RenderTreeDiffPointer) => platform.readStructField(obj, 4) as ArrayRangePointer,
-  currentState: (obj: RenderTreeDiffPointer) => platform.readStructField(obj, 4 + arrayRangeStructLength) as ArrayRangePointer,
+  edits: (obj: RenderTreeDiffPointer) => platform.readStructField<ArrayRangePointer>(obj, 4),
+  currentState: (obj: RenderTreeDiffPointer) => platform.readStructField<ArrayRangePointer>(obj, 4 + arrayRangeStructLength),
 };
 
 // Nominal types to ensure only valid pointers are passed to the functions above.

@@ -116,8 +116,8 @@ export const monoPlatform: Platform = {
     return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
   },
 
-  readObjectField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): System_Object {
-    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as System_Object;
+  readObjectField: function readHeapObject<T extends System_Object>(baseAddress: Pointer, fieldOffset?: number): T {
+    return Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32') as any as T;
   },
 
   readStringField: function readHeapObject(baseAddress: Pointer, fieldOffset?: number): string | null {
@@ -125,8 +125,8 @@ export const monoPlatform: Platform = {
     return fieldValue === 0 ? null : monoPlatform.toJavaScriptString(fieldValue as any as System_String);
   },
 
-  readStructField: function readStructField(baseAddress: Pointer, fieldOffset?: number): Pointer {
-    return ((baseAddress as any as number) + (fieldOffset || 0)) as any as Pointer;
+  readStructField: function readStructField<T extends Pointer>(baseAddress: Pointer, fieldOffset?: number): T {
+    return ((baseAddress as any as number) + (fieldOffset || 0)) as any as T;
   },
 };
 

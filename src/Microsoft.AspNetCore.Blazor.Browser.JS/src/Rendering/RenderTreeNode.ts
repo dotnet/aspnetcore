@@ -19,7 +19,6 @@ export const renderTreeNode = {
   attributeName: (node: RenderTreeNodePointer) => platform.readStringField(node, 20),
   attributeValue: (node: RenderTreeNodePointer) => platform.readStringField(node, 24),
   componentId: (node: RenderTreeNodePointer) => platform.readInt32Field(node, 32),
-  component: (node: RenderTreeNodePointer) => platform.readObjectField(node, 36),
 };
 
 export enum NodeType {
