@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <see cref="CookieBuilder.Path"/> defaults to <see cref="SessionDefaults.CookiePath"/>.
         /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
         /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>
+        /// <see cref="CookieBuilder.IsEssential"/> defaults to <c>false</c>
         /// </para>
         /// </summary>
         public CookieBuilder Cookie
@@ -111,6 +112,8 @@ namespace Microsoft.AspNetCore.Builder
                 SecurePolicy = CookieSecurePolicy.None;
                 SameSite = SameSiteMode.Lax;
                 HttpOnly = true;
+                // Session is considered non-essential as it's designed for ephemeral data.
+                IsEssential = false;
             }
 
             public override TimeSpan? Expiration
