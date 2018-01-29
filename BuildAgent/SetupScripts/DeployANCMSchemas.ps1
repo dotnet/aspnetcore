@@ -1,6 +1,8 @@
-$agents = @("aspnetci-a-101")
 $sourcefile = "C:\code\aspnetcoremodule\src\AspNetCore\aspnetcore_schema.xml"
 $creds = Get-Credential "redmond\asplab"
+Import-Module -Scope Local -Force $PSScriptRoot/agentlist.psm1
+
+$agents = Get-Agents | ? { ($_.OS -eq 'Windows') } | % { $_.Name }
 
 foreach ($agent in $agents)
 {
