@@ -28,7 +28,8 @@ export class BrowserRenderer {
   }
 
   applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array, editsLength: number, referenceTree: System_Array) {
-    const childIndexStack: number[] = []; // TODO: This can be removed. We only (potentially) have nonzero childIndex values at the root, so we only need to track the current depth to determine whether we are at the root
+    let currentDepth = 0;
+    let childIndexAtCurrentDepth = childIndex;
     for (let editIndex = 0; editIndex < editsLength; editIndex++) {
       const edit = getRenderTreeEditPtr(edits, editIndex);
       const editType = renderTreeEdit.type(edit);
@@ -37,45 +38,46 @@ export class BrowserRenderer {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          this.insertNode(componentId, parent, childIndex + siblingIndex, referenceTree, node, nodeIndex);
+          this.insertNode(componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceTree, node, nodeIndex);
           break;
         }
         case EditType.removeNode: {
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          removeNodeFromDOM(parent, childIndex + siblingIndex);
+          removeNodeFromDOM(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }
         case EditType.setAttribute: {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          const element = parent.childNodes[childIndex + siblingIndex] as HTMLElement;
+          const element = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as HTMLElement;
           this.applyAttribute(componentId, element, node, nodeIndex);
           break;
         }
         case EditType.removeAttribute: {
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          removeAttributeFromDOM(parent, childIndex + siblingIndex, renderTreeEdit.removedAttributeName(edit)!);
+          removeAttributeFromDOM(parent, childIndexAtCurrentDepth + siblingIndex, renderTreeEdit.removedAttributeName(edit)!);
           break;
         }
         case EditType.updateText: {
           const nodeIndex = renderTreeEdit.newTreeIndex(edit);
           const node = getTreeNodePtr(referenceTree, nodeIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          const domTextNode = parent.childNodes[childIndex + siblingIndex] as Text;
+          const domTextNode = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as Text;
           domTextNode.textContent = renderTreeNode.textContent(node);
           break;
         }
         case EditType.stepIn: {
-          childIndexStack.push(childIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          parent = parent.childNodes[childIndex + siblingIndex] as HTMLElement;
-          childIndex = 0;
+          parent = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as HTMLElement;
+          currentDepth++;
+          childIndexAtCurrentDepth = 0;
           break;
         }
         case EditType.stepOut: {
           parent = parent.parentElement!;
-          childIndex = childIndexStack.pop()!;
+          currentDepth--;
+          childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
           break;
         }
         default: {
