@@ -1,3 +1,8 @@
 ﻿<Project>
-  <Import Project="..\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.targets" />
+  <Target Name="RazorCompile">
+    <Error Text="The 'RazorCompile' target is not supported without specifying a target framework. The current project targets multiple frameworks, please specify a framework to execute this target." />
+  </Target>
+   <Target Name="RazorGenerate">
+    <Error Text="The 'RazorGenerate' target is not supported without specifying a target framework. The current project targets multiple frameworks, please specify a framework to execute this target." />
+  </Target>
 </Project>
