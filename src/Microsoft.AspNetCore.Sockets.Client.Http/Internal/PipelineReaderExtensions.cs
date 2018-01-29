@@ -8,7 +8,7 @@ namespace System.IO.Pipelines
 {
     internal static class PipelineReaderExtensions
     {
-        public static async Task CopyToAsync(this IPipeReader input, Stream stream, int bufferSize, CancellationToken cancellationToken)
+        public static async Task CopyToAsync(this PipeReader input, Stream stream, int bufferSize, CancellationToken cancellationToken)
         {
             // TODO: Use bufferSize argument
             while (!cancellationToken.IsCancellationRequested)
@@ -26,7 +26,7 @@ namespace System.IO.Pipelines
                 }
                 finally
                 {
-                    input.Advance(inputBuffer.End);
+                    input.AdvanceTo(inputBuffer.End);
                 }
             }
         }

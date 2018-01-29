@@ -11,19 +11,19 @@ namespace System.IO.Pipelines
     internal static class StreamExtensions
     {
         /// <summary>
-        /// Copies the content of a <see cref="Stream"/> into a <see cref="IPipeWriter"/>.
+        /// Copies the content of a <see cref="Stream"/> into a <see cref="PipeWriter"/>.
         /// </summary>
         /// <param name="stream"></param>
         /// <param name="writer"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task CopyToAsync(this Stream stream, IPipeWriter writer, CancellationToken cancellationToken = default)
+        public static Task CopyToAsync(this Stream stream, PipeWriter writer, CancellationToken cancellationToken = default)
         {
             // 81920 is the default bufferSize, there is not stream.CopyToAsync overload that takes only a cancellationToken
             return stream.CopyToAsync(new PipelineWriterStream(writer), bufferSize: 81920, cancellationToken: cancellationToken);
         }
 
-        public static async Task CopyToEndAsync(this Stream stream, IPipeWriter writer, CancellationToken cancellationToken = default)
+        public static async Task CopyToEndAsync(this Stream stream, PipeWriter writer, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -38,14 +38,14 @@ namespace System.IO.Pipelines
         }
 
         /// <summary>
-        /// Copies a <see cref="ReadOnlyBuffer"/> to a <see cref="Stream"/> asynchronously
+        /// Copies a <see cref="ReadOnlyBuffer{Byte}"/> to a <see cref="Stream"/> asynchronously
         /// </summary>
-        /// <param name="buffer">The <see cref="ReadOnlyBuffer"/> to copy</param>
+        /// <param name="buffer">The <see cref="ReadOnlyBuffer{Byte}"/> to copy</param>
         /// <param name="stream">The target <see cref="Stream"/></param>
         /// <returns></returns>
-        public static Task CopyToAsync(this ReadOnlyBuffer buffer, Stream stream)
+        public static Task CopyToAsync(this ReadOnlyBuffer<byte> buffer, Stream stream)
         {
-            if (buffer.IsSingleSpan)
+            if (buffer.IsSingleSegment)
             {
                 return WriteToStream(stream, buffer.First);
             }
@@ -53,7 +53,7 @@ namespace System.IO.Pipelines
             return CopyMultipleToStreamAsync(buffer, stream);
         }
 
-        private static async Task CopyMultipleToStreamAsync(this ReadOnlyBuffer buffer, Stream stream)
+        private static async Task CopyMultipleToStreamAsync(this ReadOnlyBuffer<byte> buffer, Stream stream)
         {
             foreach (var memory in buffer)
             {
@@ -77,12 +77,12 @@ namespace System.IO.Pipelines
             }
         }
 
-        public static Task CopyToEndAsync(this IPipeReader input, Stream stream)
+        public static Task CopyToEndAsync(this PipeReader input, Stream stream)
         {
             return input.CopyToEndAsync(stream, 4096, CancellationToken.None);
         }
 
-        public static async Task CopyToEndAsync(this IPipeReader input, Stream stream, int bufferSize, CancellationToken cancellationToken)
+        public static async Task CopyToEndAsync(this PipeReader input, Stream stream, int bufferSize, CancellationToken cancellationToken)
         {
             try
             {
@@ -98,9 +98,9 @@ namespace System.IO.Pipelines
 
         private class PipelineWriterStream : Stream
         {
-            private readonly IPipeWriter _writer;
+            private readonly PipeWriter _writer;
 
-            public PipelineWriterStream(IPipeWriter writer)
+            public PipelineWriterStream(PipeWriter writer)
             {
                 _writer = writer;
             }
@@ -148,9 +148,8 @@ namespace System.IO.Pipelines
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var output = _writer.Alloc();
-                output.Write(new ReadOnlySpan<byte>(buffer, offset, count));
-                await output.FlushAsync(cancellationToken);
+                _writer.Write(new ReadOnlySpan<byte>(buffer, offset, count));
+                await _writer.FlushAsync(cancellationToken);
             }
         }
     }

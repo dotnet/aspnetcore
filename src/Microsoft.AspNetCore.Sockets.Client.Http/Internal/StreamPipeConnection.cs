@@ -3,7 +3,7 @@
 
 namespace System.IO.Pipelines
 {
-    internal class StreamPipeConnection : IPipeConnection
+    internal class StreamPipeConnection : IDuplexPipe
     {
         public StreamPipeConnection(PipeOptions options, Stream stream)
         {
@@ -11,9 +11,9 @@ namespace System.IO.Pipelines
             Output = CreateWriter(options, stream);
         }
 
-        public IPipeReader Input { get; }
+        public PipeReader Input { get; }
 
-        public IPipeWriter Output { get; }
+        public PipeWriter Output { get; }
 
         public void Dispose()
         {
@@ -21,7 +21,7 @@ namespace System.IO.Pipelines
             Output.Complete();
         }
 
-        public static IPipeReader CreateReader(PipeOptions options, Stream stream)
+        public static PipeReader CreateReader(PipeOptions options, Stream stream)
         {
             if (!stream.CanRead)
             {
@@ -34,7 +34,7 @@ namespace System.IO.Pipelines
             return pipe.Reader;
         }
 
-        public static IPipeWriter CreateWriter(PipeOptions options, Stream stream)
+        public static PipeWriter CreateWriter(PipeOptions options, Stream stream)
         {
             if (!stream.CanWrite)
             {
