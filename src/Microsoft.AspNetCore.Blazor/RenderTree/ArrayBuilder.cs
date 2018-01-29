@@ -57,6 +57,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
+        /// Sets the supplied value at the specified index. The index must be within
+        /// range for the array.
+        /// </summary>
+        /// <param name="index">The index.</param>
+        /// <param name="value">The value.</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Overwrite(int index, in T value)
+            => _items[index] = value;
+
+        /// <summary>
         /// Removes the last item.
         /// </summary>
         public void RemoveLast()

@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 builder.AddText(0, "Hello");
                 builder.OpenComponentElement<MessageComponent>(1);
+                builder.AddAttribute(2, nameof(MessageComponent.Message), "Nested component output");
                 builder.CloseElement();
             });
 
@@ -57,13 +58,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // The nested component exists
             Assert.IsType<MessageComponent>(componentNode.Component);
-            ((MessageComponent)(componentNode.Component)).Message = "Nested component output";
 
-            // It isn't rendered until the consumer asks for it to be
-            Assert.False(renderer.RenderTreesByComponentId.ContainsKey(nestedComponentId));
-
-            // It can be rendered
-            renderer.RenderNewBatch(nestedComponentId);
+            // The nested component was rendered as part of the batch
             Assert.Collection(renderer.RenderTreesByComponentId[nestedComponentId],
                 node => AssertNode.Text(node, "Nested component output"));
         }
@@ -418,7 +414,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new void RenderNewBatch(int componentId)
                 => base.RenderNewBatch(componentId);
 
-            protected internal override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
+            protected internal override void UpdateDisplay(RenderBatch renderBatch)
             {
             }
         }
@@ -437,9 +433,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs args)
                 => base.DispatchEvent(componentId, renderTreeIndex, args);
 
-            protected internal override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
+            protected internal override void UpdateDisplay(RenderBatch renderBatch)
             {
-                RenderTreesByComponentId[componentId] = renderTreeDiff.CurrentState;
+                // TODO: Capture the batches and rephrase assertions in terms of those
+                for (var i = 0; i < renderBatch.UpdatedComponents.Count; i++)
+                {
+                    ref var renderTreeDiff = ref renderBatch.UpdatedComponents.Array[i];
+                    RenderTreesByComponentId[renderTreeDiff.ComponentId] = renderTreeDiff.CurrentState;
+                }
             }
         }
 

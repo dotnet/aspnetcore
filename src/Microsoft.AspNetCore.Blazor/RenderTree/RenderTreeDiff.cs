@@ -12,6 +12,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     public readonly struct RenderTreeDiff
     {
         /// <summary>
+        /// Gets the ID of the component.
+        /// </summary>
+        public int ComponentId { get; }
+
+        /// <summary>
         /// Gets the changes to the render tree since a previous state.
         /// </summary>
         public ArrayRange<RenderTreeEdit> Edits { get; }
@@ -23,9 +28,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         public ArrayRange<RenderTreeNode> CurrentState { get; }
 
         internal RenderTreeDiff(
+            int componentId,
             ArrayRange<RenderTreeEdit> entries,
             ArrayRange<RenderTreeNode> referenceTree)
         {
+            ComponentId = componentId;
             Edits = entries;
             CurrentState = referenceTree;
         }

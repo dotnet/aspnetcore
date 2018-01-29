@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class TestRenderer : Renderer
         {
-            protected internal override void UpdateDisplay(int componentId, RenderTreeDiff renderTreeDiff)
+            protected internal override void UpdateDisplay(RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }
     }

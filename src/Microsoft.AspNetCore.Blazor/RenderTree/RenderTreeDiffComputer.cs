@@ -24,18 +24,24 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// component instances onto retained Component nodes. It's particularly convenient to do that
         /// here because we have the right information and are already walking the trees to do the diff.
         /// </summary>
-        public RenderTreeDiff ApplyNewRenderTreeVersion(
+        public void ApplyNewRenderTreeVersion(
+            RenderBatchBuilder batchBuilder,
+            int componentId,
             ArrayRange<RenderTreeNode> oldTree,
             ArrayRange<RenderTreeNode> newTree)
         {
             _entries.Clear();
             var siblingIndex = 0;
-            AppendDiffEntriesForRange(oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count, ref siblingIndex);
 
-            return new RenderTreeDiff(_entries.ToRange(), newTree);
+            var slotId = batchBuilder.ReserveUpdatedComponentSlotId();
+            AppendDiffEntriesForRange(batchBuilder, oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count, ref siblingIndex);
+            batchBuilder.SetUpdatedComponent(
+                slotId,
+                new RenderTreeDiff(componentId, _entries.ToRange(), newTree));
         }
 
         private void AppendDiffEntriesForRange(
+            RenderBatchBuilder batchBuilder,
             RenderTreeNode[] oldTree, int oldStartIndex, int oldEndIndexExcl,
             RenderTreeNode[] newTree, int newStartIndex, int newEndIndexExcl,
             ref int siblingIndex)
@@ -51,7 +57,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                 if (oldSeq == newSeq)
                 {
-                    AppendDiffEntriesForNodesWithSameSequence(oldTree, oldStartIndex, newTree, newStartIndex, ref siblingIndex);
+                    AppendDiffEntriesForNodesWithSameSequence(batchBuilder, oldTree, oldStartIndex, newTree, newStartIndex, ref siblingIndex);
                     oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
                     newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
                     hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -137,7 +143,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         {
                             if (newNodeType == RenderTreeNodeType.Element || newNodeType == RenderTreeNodeType.Component)
                             {
-                                InstantiateChildComponents(newTree, newStartIndex);
+                                InstantiateChildComponents(batchBuilder, newTree, newStartIndex);
                             }
 
                             Append(RenderTreeEdit.PrependNode(siblingIndex, newStartIndex));
@@ -169,6 +175,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         private void UpdateRetainedChildComponent(
+            RenderBatchBuilder batchBuilder,
             RenderTreeNode[] oldTree, int oldComponentIndex,
             RenderTreeNode[] newTree, int newComponentIndex)
         {
@@ -260,7 +267,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             {
                 // TODO: Instead, call some OnPropertiesUpdated method on IComponent,
                 // whose default implementation causes itself to be rerendered
-                _renderer.RenderInExistingBatch(componentId);
+                _renderer.RenderInExistingBatch(batchBuilder, componentId);
             }
         }
 
@@ -308,6 +315,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         private void AppendDiffEntriesForNodesWithSameSequence(
+            RenderBatchBuilder batchBuilder,
             RenderTreeNode[] oldTree, int oldNodeIndex,
             RenderTreeNode[] newTree, int newNodeIndex,
             ref int siblingIndex)
@@ -342,6 +350,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                             // Diff the attributes
                             AppendDiffEntriesForRange(
+                                batchBuilder,
                                 oldTree, oldNodeIndex + 1, oldNodeAttributesEndIndexExcl,
                                 newTree, newNodeIndex + 1, newNodeAttributesEndIndexExcl,
                                 ref siblingIndex);
@@ -357,6 +366,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                                 Append(RenderTreeEdit.StepIn(siblingIndex));
                                 var childSiblingIndex = 0;
                                 AppendDiffEntriesForRange(
+                                    batchBuilder,
                                     oldTree, oldNodeAttributesEndIndexExcl, oldNodeChildrenEndIndexExcl,
                                     newTree, newNodeAttributesEndIndexExcl, newNodeChildrenEndIndexExcl,
                                     ref childSiblingIndex);
@@ -385,6 +395,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         if (oldComponentType == newComponentType)
                         {
                             UpdateRetainedChildComponent(
+                                batchBuilder,
                                 oldTree, oldNodeIndex,
                                 newTree, newNodeIndex);
 
@@ -460,30 +471,34 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             _entries.Append(entry);
         }
 
-        private void InstantiateChildComponents(RenderTreeNode[] nodes, int elementOrComponentIndex)
+        private void InstantiateChildComponents(RenderBatchBuilder batchBuilder, RenderTreeNode[] nodes, int elementOrComponentIndex)
         {
             var endIndex = nodes[elementOrComponentIndex].ElementDescendantsEndIndex;
             for (var i = elementOrComponentIndex; i <= endIndex; i++)
             {
-                if (nodes[i].NodeType == RenderTreeNodeType.Component)
+                ref var node = ref nodes[i];
+                if (node.NodeType == RenderTreeNodeType.Component)
                 {
-                    if (nodes[i].Component != null)
+                    if (node.Component != null)
                     {
                         throw new InvalidOperationException($"Child component already exists during {nameof(InstantiateChildComponents)}");
                     }
 
                     _renderer.InstantiateChildComponent(nodes, i);
-                    var childComponentInstance = nodes[i].Component;
+                    var childComponentInstance = node.Component;
 
                     // All descendants of a component are its properties
-                    var componentDescendantsEndIndex = nodes[i].ElementDescendantsEndIndex;
+                    var componentDescendantsEndIndex = node.ElementDescendantsEndIndex;
                     for (var attributeNodeIndex = i + 1; attributeNodeIndex <= componentDescendantsEndIndex; attributeNodeIndex++)
                     {
+                        ref var attributeNode = ref nodes[attributeNodeIndex];
                         SetChildComponentProperty(
                             childComponentInstance,
-                            nodes[attributeNodeIndex].AttributeName,
-                            nodes[attributeNodeIndex].AttributeValue);
+                            attributeNode.AttributeName,
+                            attributeNode.AttributeValue);
                     }
+
+                    _renderer.RenderInExistingBatch(batchBuilder, node.ComponentId);
                 }
             }
         }

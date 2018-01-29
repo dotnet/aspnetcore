@@ -28,17 +28,6 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                 eventArgs);
         }
 
-        // Again, the params are received as strings for the same reason as above and
-        // can be simplified once runtime support improves.
-        public static void RenderChildComponent(
-            string browserRendererId,
-            string componentId)
-        {
-            var browserRenderer = BrowserRendererRegistry.Find(int.Parse(browserRendererId));
-            browserRenderer.RenderNewBatchInternal(
-                int.Parse(componentId));
-        }
-
         private static UIEventArgs ParseEventArgsJson(string eventArgsType, string eventArgsJson)
         {
             switch (eventArgsType)

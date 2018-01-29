@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -23,6 +24,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly ConditionalWeakTable<IComponent, ComponentState> _componentStateByComponent
             = new ConditionalWeakTable<IComponent, ComponentState>();
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
+
+        // Because rendering is currently synchronous and single-threaded, we can keep re-using the
+        // same RenderBatchBuilder instance to avoid reallocating
+        private readonly RenderBatchBuilder _sharedRenderBatchBuilder = new RenderBatchBuilder();
+        private int _renderBatchLock = 0;
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -43,13 +49,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <summary>
-        /// Updates the visible UI to display the supplied <paramref name="renderTree"/>
-        /// at the location corresponding to the <paramref name="componentId"/>.
+        /// Updates the visible UI.
         /// </summary>
-        /// <param name="componentId">The identifier for the updated <see cref="IComponent"/>.</param>
-        /// <param name="renderTreeDiff">The changes to the render tree since the component was last rendered.</param>
-        internal protected abstract void UpdateDisplay(
-            int componentId, RenderTreeDiff renderTreeDiff);
+        /// <param name="renderBatch">The changes to the UI since the previous call.</param>
+        internal protected abstract void UpdateDisplay(RenderBatch renderBatch);
 
         /// <summary>
         /// Updates the rendered state of the specified <see cref="IComponent"/>.
@@ -57,12 +60,40 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <param name="componentId">The identifier of the <see cref="IComponent"/> to render.</param>
         protected internal void RenderNewBatch(int componentId)
         {
-            RenderInExistingBatch(componentId);
+            // It's very important that components' rendering logic has no side-effects, and in particular
+            // components must *not* trigger Render from inside their render logic, otherwise you could
+            // easily get hard-to-debug infinite loops.
+            // Since rendering is currently synchronous and single-threaded, we can enforce the above by
+            // checking here that no other rendering process is already underway. This also means we only
+            // need a single _renderBatchBuilder instance that can be reused throughout the lifetime of
+            // the Renderer instance, which also means we're not allocating on a typical render cycle.
+            // In the future, if rendering becomes async, we'll need a more sophisticated system of
+            // capturing successive diffs from each component and probably serializing them for the
+            // interop calls instead of using shared memory.
+
+            // Note that Monitor.TryEnter is not yet supported in Mono WASM, so using the following instead
+            var renderAlreadyRunning = Interlocked.CompareExchange(ref _renderBatchLock, 1, 0) == 1;
+            if (renderAlreadyRunning)
+            {
+                throw new InvalidOperationException("Cannot render while a render is already in progress. " +
+                    "Render logic must not have side-effects such as manually triggering other rendering.");
+            }
+
+            try
+            {
+                RenderInExistingBatch(_sharedRenderBatchBuilder, componentId);
+                UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
+            }
+            finally
+            {
+                _sharedRenderBatchBuilder.Clear();
+                Interlocked.Exchange(ref _renderBatchLock, 0);
+            }            
         }
 
-        internal void RenderInExistingBatch(int componentId)
+        internal void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
         {
-            GetRequiredComponentState(componentId).Render();
+            GetRequiredComponentState(componentId).Render(batchBuilder);
         }
 
         /// <summary>

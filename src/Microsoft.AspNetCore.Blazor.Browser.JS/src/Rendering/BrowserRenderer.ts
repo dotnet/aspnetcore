@@ -147,20 +147,10 @@ export class BrowserRenderer {
     const containerElement = document.createElement('blazor-component');
     insertNodeIntoDOM(containerElement, parent, childIndex);
 
+    // All we have to do is associate the child component ID with its location. We don't actually
+    // do any rendering here, because the diff for the child will appear later in the render batch.
     const childComponentId = renderTreeNode.componentId(node);
     this.attachComponentToElement(childComponentId, containerElement);
-
-    if (!renderComponentMethod) {
-      renderComponentMethod = platform.findMethod(
-        'Microsoft.AspNetCore.Blazor.Browser', 'Microsoft.AspNetCore.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'RenderChildComponent'
-      );
-    }
-
-    // TODO: Consider caching the .NET string instance for this.browserRendererId
-    platform.callMethod(renderComponentMethod, null, [
-      platform.toDotNetString(this.browserRendererId.toString()),
-      platform.toDotNetString(childComponentId.toString())
-    ]);
   }
 
   insertText(parent: Element, childIndex: number, textNode: RenderTreeNodePointer) {

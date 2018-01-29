@@ -38,25 +38,21 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <summary>
-        /// Regenerates the <see cref="RenderTree"/> and notifies the <see cref="Renderer"/>
-        /// to update the visible UI state.
+        /// Regenerates the <see cref="RenderTree"/> and adds the changes to the
+        /// <paramref name="batchBuilder"/>.
         /// </summary>
-        public void Render()
+        public void Render(RenderBatchBuilder batchBuilder)
         {
             // Swap the old and new tree builders
             (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 
             _renderTreeBuilderCurrent.Clear();
             _component.BuildRenderTree(_renderTreeBuilderCurrent);
-            var diff = _diffComputer.ApplyNewRenderTreeVersion(
+            _diffComputer.ApplyNewRenderTreeVersion(
+                batchBuilder,
+                _componentId,
                 _renderTreeBuilderPrevious.GetNodes(),
                 _renderTreeBuilderCurrent.GetNodes());
-
-            // TODO: Instead of triggering the UpdateDisplay here, collect all the (componentId, diff)
-            // pairs from the whole render cycle, including descendant components, then send them
-            // in bulk to a single UpdateDisplay. Need to ensure that if the same component gets
-            // triggered multiple times that the diff reflects the entire chain.
-            _renderer.UpdateDisplay(_componentId, diff);
         }
 
         /// <summary>
@@ -82,7 +78,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             // After any event, we synchronously re-render. Most of the time this means that
             // developers don't need to call Render() on their components explicitly.
-            Render();
+            _renderer.RenderNewBatch(_componentId);
         }
     }
 }
