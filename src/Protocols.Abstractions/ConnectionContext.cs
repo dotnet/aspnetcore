@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Protocols
 
         public abstract IFeatureCollection Features { get; }
 
-        public abstract IPipeConnection Transport { get; set; }
+        public abstract IDuplexPipe Transport { get; set; }
 
         public abstract MemoryPool MemoryPool { get; }
     }

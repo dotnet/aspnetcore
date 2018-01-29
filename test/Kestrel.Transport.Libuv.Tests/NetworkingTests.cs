@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                             {
                                 var req = new UvWriteReq(_logger);
                                 req.DangerousInit(loop);
-                                var block = new ReadOnlyBuffer(new byte[] { 65, 66, 67, 68, 69 });
+                                var block = new ReadOnlyBuffer<byte>(new byte[] { 65, 66, 67, 68, 69 });
 
                                 await req.WriteAsync(
                                     tcp2,

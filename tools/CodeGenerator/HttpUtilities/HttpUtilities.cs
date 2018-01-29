@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace CodeGenerator.HttpUtilities
 {
@@ -17,27 +16,27 @@ namespace CodeGenerator.HttpUtilities
         {
             var httpMethods = new []
             {
-                new Tuple<string, HttpMethod>("CONNECT ", HttpMethod.Connect),
-                new Tuple<string, HttpMethod>("DELETE ", HttpMethod.Delete),
-                new Tuple<string, HttpMethod>("HEAD ", HttpMethod.Head),
-                new Tuple<string, HttpMethod>("PATCH ", HttpMethod.Patch),
-                new Tuple<string, HttpMethod>("POST ", HttpMethod.Post),
-                new Tuple<string, HttpMethod>("PUT ", HttpMethod.Put),
-                new Tuple<string, HttpMethod>("OPTIONS ", HttpMethod.Options),
-                new Tuple<string, HttpMethod>("TRACE ", HttpMethod.Trace),
-                new Tuple<string, HttpMethod>("GET ", HttpMethod.Get)
+                new Tuple<string, String>("CONNECT ", "Connect"),
+                new Tuple<string, String>("DELETE ", "Delete"),
+                new Tuple<string, String>("HEAD ", "Head"),
+                new Tuple<string, String>("PATCH ", "Patch"),
+                new Tuple<string, String>("POST ", "Post"),
+                new Tuple<string, String>("PUT ", "Put"),
+                new Tuple<string, String>("OPTIONS ", "Options"),
+                new Tuple<string, String>("TRACE ", "Trace"),
+                new Tuple<string, String>("GET ", "Get")
             };
 
             return GenerateFile(httpMethods);
         }
 
-        private static string GenerateFile(Tuple<string, HttpMethod>[] httpMethods)
+        private static string GenerateFile(Tuple<string, String>[] httpMethods)
         {
             var maskLength = (byte)Math.Ceiling(Math.Log(httpMethods.Length, 2));
 
             var methodsInfo = httpMethods.Select(GetMethodStringAndUlongAndMaskLength).ToList();
 
-            var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != HttpMethod.Get.ToString()).ToList();
+            var methodsInfoWithoutGet = methodsInfo.Where(m => m.HttpMethod != "Get".ToString()).ToList();
 
             var methodsAsciiStringAsLong = methodsInfo.Select(m => m.AsciiStringAsLong).ToArray();
 
@@ -158,7 +157,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 var maskFieldName = GetMaskFieldName(methodInfo.MaskLength);
                 var httpMethodFieldName = GetHttpMethodFieldName(methodInfo);
 
-                result.AppendFormat("            SetKnownMethod({0}, {1}, {2}.{3}, {4});", maskFieldName, httpMethodFieldName, typeof(HttpMethod).Name, methodInfo.HttpMethod, methodInfo.MaskLength - 1);
+                result.AppendFormat("            SetKnownMethod({0}, {1}, HttpMethod.{3}, {4});", maskFieldName, httpMethodFieldName, typeof(String).Name, methodInfo.HttpMethod, methodInfo.MaskLength - 1);
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -181,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 var methodInfo = methodsInfo[index];
 
-                result.AppendFormat("            _methodNames[(byte){0}.{1}] = {2}.{3};", typeof(HttpMethod).Name, methodInfo.HttpMethod, typeof(HttpMethods).Name, methodInfo.HttpMethod);
+                result.AppendFormat("            _methodNames[(byte)HttpMethod.{1}] = {2}.{3};", typeof(String).Name, methodInfo.HttpMethod, typeof(HttpMethods).Name, methodInfo.HttpMethod);
 
                 if (index < methodsInfo.Count - 1)
                 {
@@ -281,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             public int MaskLength;
         }
 
-        private static MethodInfo GetMethodStringAndUlongAndMaskLength(Tuple<string, HttpMethod> method)
+        private static MethodInfo GetMethodStringAndUlongAndMaskLength(Tuple<string, string> method)
         {
             var methodString = GetMethodString(method.Item1);
 

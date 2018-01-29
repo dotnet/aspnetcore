@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(
                     pool: pool,
-                    maximumSizeHigh: 3);
+                    pauseWriterThreshold: 3);
 
             // We don't set the output writer scheduler here since we want to run the callback inline
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContext = new TestLibuvTransportContext() { ConnectionHandler = mockConnectionHandler };
             var transport = new LibuvTransport(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
-            var mockScheduler = new Mock<Scheduler>();
+            var mockScheduler = new Mock<PipeScheduler>();
             Action backPressure = null;
             mockScheduler.Setup(m => m.Schedule(It.IsAny<Action>())).Callback<Action>(a =>
             {
@@ -126,8 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(
                     pool: pool,
-                    maximumSizeHigh: 3,
-                    maximumSizeLow: 3,
+                    pauseWriterThreshold: 3,
+                    resumeWriterThreshold: 3,
                     writerScheduler: mockScheduler.Object);
 
             mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler:thread );
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var result = await mockConnectionHandler.Input.Reader.ReadAsync();
                 // Calling advance will call into our custom scheduler that captures the back pressure
                 // callback
-                mockConnectionHandler.Input.Reader.Advance(result.Buffer.End);
+                mockConnectionHandler.Input.Reader.AdvanceTo(result.Buffer.End);
 
                 // Cancel the current pending flush
                 mockConnectionHandler.Input.Writer.CancelPendingFlush();

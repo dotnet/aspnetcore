@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-        private static readonly Action<WritableBuffer, ArraySegment<byte>> _writeChunk = WriteChunk;
+        private static readonly Action<PipeWriter, ArraySegment<byte>> _writeChunk = WriteChunk;
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -895,13 +896,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return Output.WriteAsync(_writeChunk, data);
         }
 
-        private static void WriteChunk(WritableBuffer writableBuffer, ArraySegment<byte> buffer)
+        private static void WriteChunk(PipeWriter writableBuffer, ArraySegment<byte> buffer)
         {
-            var writer = new WritableBufferWriter(writableBuffer);
+            var writer = OutputWriter.Create(writableBuffer);
             if (buffer.Count > 0)
             {
                 ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Count);
-                writer.Write(buffer.Array, buffer.Offset, buffer.Count);
+                writer.Write(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count));
                 ChunkWriter.WriteEndChunkBytes(ref writer);
             }
         }
@@ -1297,9 +1298,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             (
                 pool: _context.MemoryPool,
                 readerScheduler: ServiceContext.ThreadPool,
-                writerScheduler: Scheduler.Inline,
-                maximumSizeHigh: 1,
-                maximumSizeLow: 1
+                writerScheduler: PipeScheduler.Inline,
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1
             ));
     }
 }

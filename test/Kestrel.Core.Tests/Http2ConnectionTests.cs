@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Frame.MinAllowedMaxFrameSize));
 
         private readonly MemoryPool _memoryPool = new MemoryPool();
-        private readonly (IPipeConnection Transport, IPipeConnection Application) _pair;
+        private readonly (IDuplexPipe Transport, IDuplexPipe Application) _pair;
         private readonly TestApplicationErrorLogger _logger;
         private readonly Http2ConnectionContext _connectionContext;
         private readonly Http2Connection _connection;
@@ -2138,7 +2138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private async Task SendAsync(ArraySegment<byte> span)
         {
-            var writableBuffer = _pair.Application.Output.Alloc(1);
+            var writableBuffer = _pair.Application.Output;
             writableBuffer.Write(span);
             await writableBuffer.FlushAsync();
         }
@@ -2466,7 +2466,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 finally
                 {
-                    _pair.Application.Input.Advance(consumed, examined);
+                    _pair.Application.Input.AdvanceTo(consumed, examined);
                 }
             }
         }

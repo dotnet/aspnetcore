@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
 
         private readonly TestHttp1Connection _http1Connection;
-        private (IPipeConnection Transport, IPipeConnection Application) _pair;
+        private (IDuplexPipe Transport, IDuplexPipe Application) _pair;
 
         private readonly byte[] _writeData;
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var reader = _pair.Application.Input;
             if (reader.TryRead(out var readResult))
             {
-                reader.Advance(readResult.Buffer.End);
+                reader.AdvanceTo(readResult.Buffer.End);
             }
         }
 

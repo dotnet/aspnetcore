@@ -3,8 +3,6 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace CodeGenerator
 {
@@ -36,7 +34,7 @@ namespace CodeGenerator
         public static void Run(string knownHeadersPath, string httpProtocolFeatureCollectionPath, string httpUtilitiesPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
-            var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GeneratedFile(nameof(HttpProtocol));
+            var httpProtocolFeatureCollectionContent = HttpProtocolFeatureCollection.GeneratedFile("HttpProtocol");
             var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
 
             var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";

@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Protocols
 
         public override MemoryPool MemoryPool => ConnectionTransportFeature.MemoryPool;
 
-        public override IPipeConnection Transport
+        public override IDuplexPipe Transport
         {
             get => ConnectionTransportFeature.Transport;
             set => ConnectionTransportFeature.Transport = value;

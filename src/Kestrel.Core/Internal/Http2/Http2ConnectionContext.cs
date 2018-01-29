@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
 
-        public IPipeConnection Transport { get; set; }
-        public IPipeConnection Application { get; set; }
+        public IDuplexPipe Transport { get; set; }
+        public IDuplexPipe Application { get; set; }
     }
 }

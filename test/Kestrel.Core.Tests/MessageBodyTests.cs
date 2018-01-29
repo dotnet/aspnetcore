@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -445,23 +446,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // The block returned by IncomingStart always has at least 2048 available bytes,
                 // so no need to bounds check in this test.
                 var bytes = Encoding.ASCII.GetBytes(data[0]);
-                var buffer = input.Application.Output.Alloc(2048);
+                var buffer = input.Application.Output.GetMemory(2028);
                 ArraySegment<byte> block;
-                Assert.True(buffer.Buffer.TryGetArray(out block));
+                Assert.True(MemoryMarshal.TryGetArray(buffer, out block));
                 Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
-                buffer.Advance(bytes.Length);
-                await buffer.FlushAsync();
+                input.Application.Output.Advance(bytes.Length);
+                await input.Application.Output.FlushAsync();
 
                 // Verify the block passed to WriteAsync is the same one incoming data was written into.
                 Assert.Same(block.Array, await writeTcs.Task);
 
                 writeTcs = new TaskCompletionSource<byte[]>();
                 bytes = Encoding.ASCII.GetBytes(data[1]);
-                buffer = input.Application.Output.Alloc(2048);
-                Assert.True(buffer.Buffer.TryGetArray(out block));
+                buffer = input.Application.Output.GetMemory(2048);
+                Assert.True(MemoryMarshal.TryGetArray(buffer, out block));
                 Buffer.BlockCopy(bytes, 0, block.Array, block.Offset, bytes.Length);
-                buffer.Advance(bytes.Length);
-                await buffer.FlushAsync();
+                input.Application.Output.Advance(bytes.Length);
+                await input.Application.Output.FlushAsync();
 
                 Assert.Same(block.Array, await writeTcs.Task);
 

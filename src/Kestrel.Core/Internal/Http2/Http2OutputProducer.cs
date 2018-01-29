@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // TODO: RST_STREAM?
         }
 
-        public Task WriteAsync<T>(Action<WritableBuffer, T> callback, T state)
+        public Task WriteAsync<T>(Action<PipeWriter, T> callback, T state)
         {
             throw new NotImplementedException();
         }

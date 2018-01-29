@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Text;
 
@@ -47,16 +48,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
-        public static int WriteBeginChunkBytes(ref WritableBufferWriter start, int dataCount)
+        public static int WriteBeginChunkBytes(ref OutputWriter<PipeWriter> start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
-            start.Write(chunkSegment.Array, chunkSegment.Offset, chunkSegment.Count);
+            start.Write(new ReadOnlySpan<byte>(chunkSegment.Array, chunkSegment.Offset, chunkSegment.Count));
             return chunkSegment.Count;
         }
 
-        public static void WriteEndChunkBytes(ref WritableBufferWriter start)
+        public static void WriteEndChunkBytes(ref OutputWriter<PipeWriter> start)
         {
-            start.Write(_endChunkBytes.Array, _endChunkBytes.Offset, _endChunkBytes.Count);
+            start.Write(new ReadOnlySpan<byte>(_endChunkBytes.Array, _endChunkBytes.Offset, _endChunkBytes.Count));
         }
     }
 }

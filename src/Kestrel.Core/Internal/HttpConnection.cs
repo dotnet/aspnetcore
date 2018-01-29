@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         private IList<IAdaptedConnection> _adaptedConnections;
-        private IPipeConnection _adaptedTransport;
+        private IDuplexPipe _adaptedTransport;
 
         private readonly object _protocolSelectionLock = new object();
         private ProtocolSelectionState _protocolSelectionState = ProtocolSelectionState.Initializing;
@@ -75,18 +75,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         (
             pool: MemoryPool,
             readerScheduler: _context.ServiceContext.ThreadPool,
-            writerScheduler: Scheduler.Inline,
-            maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
         );
 
         internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
         (
             pool: MemoryPool,
-            readerScheduler: Scheduler.Inline,
-            writerScheduler: Scheduler.Inline,
-            maximumSizeHigh: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
-            maximumSizeLow: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
+            readerScheduler: PipeScheduler.Inline,
+            writerScheduler: PipeScheduler.Inline,
+            pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
+            resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0
         );
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
@@ -196,13 +196,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // For testing only
-        internal void Initialize(IPipeConnection transport, IPipeConnection application)
+        internal void Initialize(IDuplexPipe transport, IDuplexPipe application)
         {
             _requestProcessor = _http1Connection = CreateHttp1Connection(transport, application);
             _protocolSelectionState = ProtocolSelectionState.Selected;
         }
 
-        private Http1Connection CreateHttp1Connection(IPipeConnection transport, IPipeConnection application)
+        private Http1Connection CreateHttp1Connection(IDuplexPipe transport, IDuplexPipe application)
         {
             return new Http1Connection(new Http1ConnectionContext
             {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             });
         }
 
-        private Http2Connection CreateHttp2Connection(IPipeConnection transport, IPipeConnection application)
+        private Http2Connection CreateHttp2Connection(IDuplexPipe transport, IDuplexPipe application)
         {
             return new Http2Connection(new Http2ConnectionContext
             {

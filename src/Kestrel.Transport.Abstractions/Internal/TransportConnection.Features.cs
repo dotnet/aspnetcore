@@ -98,13 +98,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         MemoryPool IConnectionTransportFeature.MemoryPool => MemoryPool;
 
-        IPipeConnection IConnectionTransportFeature.Transport
+        IDuplexPipe IConnectionTransportFeature.Transport
         {
             get => Transport;
             set => Transport = value;
         }
 
-        IPipeConnection IConnectionTransportFeature.Application
+        IDuplexPipe IConnectionTransportFeature.Application
         {
             get => Application;
             set => Application = value;

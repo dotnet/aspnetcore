@@ -1,9 +1,7 @@
-﻿using System;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -55,12 +53,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             public MemoryPool MemoryPool { get; } = new MemoryPool();
 
-            public IPipeConnection Transport { get; set; }
-            public IPipeConnection Application { get; set; }
+            public IDuplexPipe Transport { get; set; }
+            public IDuplexPipe Application { get; set; }
 
-            public Scheduler InputWriterScheduler => Scheduler.TaskRun;
+            public PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
 
-            public Scheduler OutputReaderScheduler => Scheduler.TaskRun;
+            public PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
 
             public string ConnectionId { get; set; }
         }

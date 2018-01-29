@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.Protocols.Features
     {
         MemoryPool MemoryPool { get; }
 
-        IPipeConnection Transport { get; set; }
+        IDuplexPipe Transport { get; set; }
 
-        IPipeConnection Application { get; set; }
+        IDuplexPipe Application { get; set; }
 
-        Scheduler InputWriterScheduler { get; }
+        PipeScheduler InputWriterScheduler { get; }
 
-        Scheduler OutputReaderScheduler { get; }
+        PipeScheduler OutputReaderScheduler { get; }
     }
 }
