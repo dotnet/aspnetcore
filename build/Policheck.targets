@@ -20,26 +20,6 @@
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
-        <term>Edge</term>
-        <Justification>Refers to the Microsoft Browser.</Justification>
-      </SrcExclusions>
-      <SrcExclusions Include="
-        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
-        <term>hanging</term>
-        <Justification>Refers to keeping a reference to a DOM element longer than needed.</Justification>
-      </SrcExclusions>
-      <SrcExclusions Include="
-        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js">
-        <term>screw</term>
-        <Justification>Refers to leaving an object in an invalid state.</Justification>
-      </SrcExclusions>
-      <SrcExclusions Include="
-        src\UI\wwwroot\Identity\lib\jquery-validation\dist\additional-methods.js">
-        <term>Brazilian</term>
-        <Justification>It is part of a sample in the documentation of a library.</Justification>
-      </SrcExclusions>      
-      <SrcExclusions Include="
         src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs">
         <term>hanging</term>
         <Justification>Refers to a stuck process/thread.</Justification>
@@ -66,6 +46,14 @@
         tools\runtimes\unix\lib\netstandard1.3\System.Text.Encoding.CodePages.dll;
         tools\runtimes\win\lib\netstandard1.3\System.Text.Encoding.CodePages.dll">
         <Justification>This BCL library includes geopolitical terms to support localized code pages.</Justification>
+      </FileExclusions>
+
+      <FileExclusions Include="
+        src\UI\wwwroot\Identity\lib\jquery\dist\jquery.js;
+        src\UI\wwwroot\Identity\lib\jquery-validation\dist\additional-methods.js;
+        Templates\Identity\wwwroot\lib\jquery\dist\jquery.js;
+        Templates\Identity\wwwroot\lib\jquery-validation\dist\additional-methods.js">
+        <Justification>Third party code shipping in our packages</Justification>
       </FileExclusions>
     </ItemGroup>
 
