@@ -16,8 +16,10 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 You can install the latest released JavaScript client from npm with the following command:
 
 ```bash
-npm install @aspnet/signalr-client
+npm install @aspnet/signalr
 ```
+
+**NOTE:** Previous previews of the SignalR client library for JavaScript were named `@aspnet/signalr-client`. This has been deprecated as of Preview 1.
 
 The CI build publishes the latest dev version of the JavaScript client to our dev npm registry as @aspnet/signalr. You can install the module as follows:
 
