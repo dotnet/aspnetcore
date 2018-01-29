@@ -370,6 +370,23 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void ServiceProviderDisposedOnBuildException()
+        {
+            var service = new DisposableService();
+            var hostBuilder = new WebHostBuilder()
+                .UseServer(new TestServer())
+                .ConfigureServices(services =>
+                {
+                    // Added as a factory since instances are never disposed by the container
+                    services.AddSingleton(sp => service);
+                })
+                .UseStartup<StartupWithResolvedDisposableThatThrows>();
+
+            Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
+            Assert.True(service.Disposed);
+        }
+
+        [Fact]
         public void CaptureStartupErrorsHonored()
         {
             var hostBuilder = new WebHostBuilder()
@@ -1050,6 +1067,16 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
+        public class DisposableService : IDisposable
+        {
+            public bool Disposed { get; private set; }
+
+            public void Dispose()
+            {
+                Disposed = true;
+            }
+        }
+
         public class TestHostingStartup : IHostingStartup
         {
             public void Configure(IWebHostBuilder builder)
@@ -1065,6 +1092,24 @@ namespace Microsoft.AspNetCore.Hosting
                            {
                                new KeyValuePair<string,string>("testhostingstartup:config", "value")
                            }));
+            }
+        }
+
+        public class StartupWithResolvedDisposableThatThrows
+        {
+            public StartupWithResolvedDisposableThatThrows(DisposableService service)
+            {
+
+            }
+
+            public void ConfigureServices(IServiceCollection services)
+            {
+                throw new InvalidOperationException();
+            }
+
+            public void Configure(IApplicationBuilder app)
+            {
+
             }
         }
 

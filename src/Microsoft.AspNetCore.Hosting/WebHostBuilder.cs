@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Hosting
                 throw new ArgumentNullException(nameof(configureServices));
             }
 
-            return ConfigureServices((_ , services) => configureServices(services));
+            return ConfigureServices((_, services) => configureServices(services));
         }
 
         /// <summary>
@@ -189,10 +189,19 @@ namespace Microsoft.AspNetCore.Hosting
                 _options,
                 _config,
                 hostingStartupErrors);
+            try
+            {
+                host.Initialize();
 
-            host.Initialize();
-
-            return host;
+                return host;
+            }
+            catch
+            {
+                // Dispose the host if there's a failure to initialize, this should clean up
+                // will dispose services that were constructed until the exception was thrown
+                host.Dispose();
+                throw;
+            }
         }
 
         private IServiceCollection BuildCommonServices(out AggregateException hostingStartupErrors)
