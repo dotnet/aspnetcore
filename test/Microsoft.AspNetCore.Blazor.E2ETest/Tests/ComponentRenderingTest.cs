@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using BasicTestApp;
 using Microsoft.AspNetCore.Blazor.Components;
@@ -48,32 +49,34 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanTriggerEvents()
         {
+            // Initial count is zero
             var appElement = MountTestComponent<CounterComponent>();
+            var countDisplayElement = appElement.FindElement(By.TagName("p"));
+            Assert.Equal("Current count: 0", countDisplayElement.Text);
 
-            Assert.Equal(
-                "Current count: 0",
-                appElement.FindElement(By.TagName("p")).Text);
-
+            // Clicking button increments count
             appElement.FindElement(By.TagName("button")).Click();
-
-            Assert.Equal(
-                "Current count: 1",
-                appElement.FindElement(By.TagName("p")).Text);
+            Assert.Equal("Current count: 1", countDisplayElement.Text);
         }
 
         [Fact]
         public void CanTriggerKeyPressEvents()
         {
+            // List is initially empty
             var appElement = MountTestComponent<KeyPressEventComponent>();
+            var inputElement = appElement.FindElement(By.TagName("input"));
+            Func<IEnumerable<IWebElement>> liElements =
+                () => appElement.FindElements(By.TagName("li"));
+            Assert.Empty(liElements());
 
-            Assert.Empty(appElement.FindElements(By.TagName("li")));
-
-            appElement.FindElement(By.TagName("input")).SendKeys("a");
-            Assert.Collection(appElement.FindElements(By.TagName("li")),
+            // Typing adds element
+            inputElement.SendKeys("a");
+            Assert.Collection(liElements(),
                 li => Assert.Equal("a", li.Text));
 
-            appElement.FindElement(By.TagName("input")).SendKeys("b");
-            Assert.Collection(appElement.FindElements(By.TagName("li")),
+            // Typing again adds another element
+            inputElement.SendKeys("b");
+            Assert.Collection(liElements(),
                 li => Assert.Equal("a", li.Text),
                 li => Assert.Equal("b", li.Text));
         }
@@ -99,34 +102,30 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         [Fact]
         public void CanTriggerEventsOnChildComponents()
         {
+            // Counter is displayed as child component. Initial count is zero.
             var childComponentWrapper = MountTestComponent<CounterComponentWrapper>()
                 .FindElements(By.CssSelector("blazor-component")).Single();
+            var counterDisplay = childComponentWrapper.FindElement(By.TagName("p"));
+            Assert.Equal("Current count: 0", counterDisplay.Text);
 
-            Assert.Equal(
-                "Current count: 0",
-                childComponentWrapper.FindElement(By.TagName("p")).Text);
-
+            // Clicking increments count in child component
             childComponentWrapper.FindElement(By.TagName("button")).Click();
-
-            Assert.Equal(
-                "Current count: 1",
-                childComponentWrapper.FindElement(By.TagName("p")).Text);
+            Assert.Equal("Current count: 1", counterDisplay.Text);
         }
 
         [Fact]
         public void ChildComponentsRerenderWhenPropertiesChanged()
         {
+            // Count value is displayed in child component with initial value zero
             var appElement = MountTestComponent<CounterComponentUsingChild>();
+            var wholeCounterElement = appElement.FindElement(By.TagName("p"));
+            var messageElementInChild = wholeCounterElement.FindElement(By.ClassName("message"));
+            Assert.Equal("Current count: 0", wholeCounterElement.Text);
+            Assert.Equal("0", messageElementInChild.Text);
 
-            Assert.Equal(
-                "Current count: 0",
-                appElement.FindElement(By.TagName("p")).Text);
-
+            // Clicking increments count in child element
             appElement.FindElement(By.TagName("button")).Click();
-
-            Assert.Equal(
-                "Current count: 1",
-                appElement.FindElement(By.TagName("p")).Text);
+            Assert.Equal("1", messageElementInChild.Text);
         }
 
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
