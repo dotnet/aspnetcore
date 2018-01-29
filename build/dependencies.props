@@ -3,6 +3,7 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
+    <AngleSharpPackageVersion>0.9.9</AngleSharpPackageVersion>
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15694</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
@@ -10,6 +11,7 @@
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
     <MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAuthenticationTwitterPackageVersion>
     <MicrosoftAspNetCoreAuthorizationPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreCookiePolicyPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreCookiePolicyPackageVersion>
     <MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreCryptographyKeyDerivationPackageVersion>
     <MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreDataProtectionExtensionsPackageVersion>
     <MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion>
@@ -18,6 +20,7 @@
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion>
     <MicrosoftAspNetCoreMvcTestingPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreMvcTestingPackageVersion>
@@ -34,6 +37,7 @@
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreSqlitePackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreSqlitePackageVersion>
     <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview2-30020</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview2-30020</MicrosoftExtensionsConfigurationBinderPackageVersion>

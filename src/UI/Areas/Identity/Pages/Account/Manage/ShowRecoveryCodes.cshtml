@@ -20,7 +20,7 @@
     <div class="col-md-12">
         @for (var row = 0; row < Model.RecoveryCodes.Length; row += 2)
         {
-            <code>@Model.RecoveryCodes[row]</code><text>&nbsp;</text><code>@Model.RecoveryCodes[row + 1]</code><br />
+            <code class="recovery-code">@Model.RecoveryCodes[row]</code><text>&nbsp;</text><code class="recovery-code">@Model.RecoveryCodes[row + 1]</code><br />
         }
     </div>
 </div>
