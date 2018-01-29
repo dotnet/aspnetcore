@@ -2,9 +2,14 @@
   <PropertyGroup>
     <VersionPrefix>2.1.0</VersionPrefix>
     <VersionSuffix>preview1</VersionSuffix>
+    <ExperimentalVersionPrefix>0.1.0</ExperimentalVersionPrefix>
+    <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
+    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(VersionPrefix)-$(VersionSuffix)-final</ExperimentalPackageVersion>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(VersionPrefix)-$(VersionSuffix)-final</ExperimentalPackageVersion>
     <SharedFxCliBlobChannel>release/2.1</SharedFxCliBlobChannel>
   </PropertyGroup>
 </Project>
