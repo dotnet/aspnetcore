@@ -124,6 +124,10 @@ export const monoPlatform: Platform = {
     const fieldValue = Module.getValue((baseAddress as any as number) + (fieldOffset || 0), 'i32');
     return fieldValue === 0 ? null : monoPlatform.toJavaScriptString(fieldValue as any as System_String);
   },
+
+  readStructField: function readStructField(baseAddress: Pointer, fieldOffset?: number): Pointer {
+    return ((baseAddress as any as number) + (fieldOffset || 0)) as any as Pointer;
+  },
 };
 
 // Bypass normal type checking to add this extra function. It's only intended to be called from

@@ -68,33 +68,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <inheritdoc />
         protected override void UpdateDisplay(RenderBatch batch)
         {
-            // TODO: Pass to JS in a single call
-            for (var i = 0; i < batch.UpdatedComponents.Count; i++)
-            {
-                ref var diff = ref batch.UpdatedComponents.Array[i];
-                RegisteredFunction.InvokeUnmarshalled<RenderComponentArgs, object>(
-                    "renderRenderTree",
-                    new RenderComponentArgs
-                    {
-                        BrowserRendererId = _browserRendererId,
-                        ComponentId = diff.ComponentId,
-                        RenderTreeEdits = diff.Edits.Array,
-                        RenderTreeEditsLength = diff.Edits.Count,
-                        RenderTree = diff.CurrentState.Array
-                    });
-            }
-        }
-
-        // Encapsulates the data we pass to the JS rendering function
-        private struct RenderComponentArgs
-        {
-            // Important: If you edit this struct, keep it in sync with RenderComponentArgs.ts
-
-            public int BrowserRendererId;
-            public int ComponentId;
-            public RenderTreeEdit[] RenderTreeEdits;
-            public int RenderTreeEditsLength;
-            public RenderTreeNode[] RenderTree;
+            RegisteredFunction.InvokeUnmarshalled<int, RenderBatch, object>(
+                "renderBatch",
+                _browserRendererId,
+                batch);
         }
     }
 }

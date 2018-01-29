@@ -15,6 +15,7 @@
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
   readObjectField(baseAddress: Pointer, fieldOffset?: number): System_Object;
   readStringField(baseAddress: Pointer, fieldOffset?: number): string | null;
+  readStructField(baseAddress: Pointer, fieldOffset?: number): Pointer;
 }
 
 // We don't actually instantiate any of these at runtime. For perf it's preferable to

@@ -2,7 +2,7 @@
 import { platform } from '../Environment';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
 import { RenderTreeEditPointer } from './RenderTreeEdit';
-import { renderComponentArgs, RenderComponentArgsPointer } from './RenderComponentArgs';
+import { renderBatch as renderBatchStruct, arrayRange, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 
 type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
@@ -23,19 +23,27 @@ export function attachComponentToElement(browserRendererId: number, elementSelec
   clearElement(element);
 }
 
-export function renderRenderTree(args: RenderComponentArgsPointer) {
-  const browserRendererId = renderComponentArgs.browserRendererId(args);
+export function renderBatch(browserRendererId: number, batch: RenderBatchPointer) {
   const browserRenderer = browserRenderers[browserRendererId];
   if (!browserRenderer) {
     throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
   }
+  
+  const updatedComponents = renderBatchStruct.updatedComponents(batch);
+  const updatedComponentsLength = arrayRange.count(updatedComponents);
+  const updatedComponentsArray = arrayRange.array(updatedComponents);
+  for (var i = 0; i < updatedComponentsLength; i++) {
+    const updatedComponentDiff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength) as RenderTreeDiffPointer;
+    const componentId = renderTreeDiff.componentId(updatedComponentDiff);
 
-  const componentId = renderComponentArgs.componentId(args);
-  const edits = renderComponentArgs.renderTreeEdits(args);
-  const editsLength = renderComponentArgs.renderTreeEditsLength(args);
-  const tree = renderComponentArgs.renderTree(args);
+    const editsArrayRange = renderTreeDiff.edits(updatedComponentDiff);
+    const currentStateArrayRange = renderTreeDiff.currentState(updatedComponentDiff);
 
-  browserRenderer.updateComponent(componentId, edits, editsLength, tree);
+    const edits = arrayRange.array(editsArrayRange);
+    const editsLength = arrayRange.count(editsArrayRange);
+    const tree = arrayRange.array(currentStateArrayRange);
+    browserRenderer.updateComponent(componentId, edits, editsLength, tree);
+  }
 }
 
 function clearElement(element: Element) {
