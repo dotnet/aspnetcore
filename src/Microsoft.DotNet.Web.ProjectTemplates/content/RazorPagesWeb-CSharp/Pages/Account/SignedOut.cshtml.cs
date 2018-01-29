@@ -5,16 +5,19 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-public class SignedOutModel : PageModel
+namespace Company.WebApplication1.Pages.Account
 {
-    public IActionResult OnGet()
+    public class SignedOutModel : PageModel
     {
-        if (User.Identity.IsAuthenticated)
+        public IActionResult OnGet()
         {
-            // Redirect to home page if the user is authenticated.
-            return RedirectToPage("/Index");
-        }
+            if (User.Identity.IsAuthenticated)
+            {
+                // Redirect to home page if the user is authenticated.
+                return RedirectToPage("/Index");
+            }
 
-        return Page();
+            return Page();
+        }
     }
 }
