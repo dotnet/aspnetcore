@@ -128,6 +128,26 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("1", messageElementInChild.Text);
         }
 
+        [Fact]
+        public void CanAddAndRemoveChildComponentsDynamically()
+        {
+            // Initially there are zero child components
+            var appElement = MountTestComponent<AddRemoveChildComponents>();
+            var addButton = appElement.FindElement(By.ClassName("addChild"));
+            var removeButton = appElement.FindElement(By.ClassName("removeChild"));
+            Func<IEnumerable<IWebElement>> childComponentWrappers = () => appElement.FindElements(By.TagName("p"));
+            Assert.Empty(childComponentWrappers());
+
+            // Click to add some child components
+            addButton.Click();
+            addButton.Click();
+            removeButton.Click();
+            addButton.Click();
+            Assert.Collection(childComponentWrappers(),
+                elem => Assert.Equal("Child 1", elem.FindElement(By.ClassName("message")).Text),
+                elem => Assert.Equal("Child 3", elem.FindElement(By.ClassName("message")).Text));
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;
