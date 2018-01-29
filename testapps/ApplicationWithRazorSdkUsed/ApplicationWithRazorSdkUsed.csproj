@@ -3,12 +3,6 @@
   <PropertyGroup>
 
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
-    
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
-
-    <!-- This will become the default for 2.1 soon -->
-    <RazorCompileOnPublish>true</RazorCompileOnPublish>
 
     <!-- Use a different filename so we can tell the difference -->
     <RazorTargetName>ApplicationWithRazorSdkUsed.Views</RazorTargetName>

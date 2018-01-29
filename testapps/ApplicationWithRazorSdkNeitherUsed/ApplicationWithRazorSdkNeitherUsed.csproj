@@ -3,9 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset></ResolvedRazorCompileToolset>
-
     <!--
       Turning off precompilation on will also turn off Razor SDK.
     -->

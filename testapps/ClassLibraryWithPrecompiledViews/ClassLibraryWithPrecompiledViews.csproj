@@ -4,8 +4,6 @@
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
     <MvcRazorOutputPath Condition="'$(TargetFramework)'!=''">obj\precompiled\$(TargetFramework)</MvcRazorOutputPath>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">PrecompilationTool</ResolvedRazorCompileToolset>
     <TestIncludeViewCompilationTargets>true</TestIncludeViewCompilationTargets>
   </PropertyGroup>
 
