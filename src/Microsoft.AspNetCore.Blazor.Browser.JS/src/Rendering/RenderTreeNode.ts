@@ -6,8 +6,8 @@ const renderTreeNodeStructLength = 40;
 // we work in terms of pointers to the structs on the .NET heap, and use static functions that
 // know how to read property values from those structs.
 
-export function getTreeNodePtr(renderTreeEntries: System_Array, index: number): RenderTreeNodePointer {
-  return platform.getArrayEntryPtr(renderTreeEntries, index, renderTreeNodeStructLength) as RenderTreeNodePointer;
+export function getTreeNodePtr(renderTreeEntries: System_Array<RenderTreeNodePointer>, index: number) {
+  return platform.getArrayEntryPtr(renderTreeEntries, index, renderTreeNodeStructLength);
 }
 
 export const renderTreeNode = {

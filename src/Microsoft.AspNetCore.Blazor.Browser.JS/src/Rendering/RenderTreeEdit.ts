@@ -2,8 +2,8 @@
 import { platform } from '../Environment';
 const renderTreeEditStructLength = 16;
 
-export function getRenderTreeEditPtr(renderTreeEdits: System_Array, index: number): RenderTreeEditPointer {
-  return platform.getArrayEntryPtr(renderTreeEdits, index, renderTreeEditStructLength) as RenderTreeEditPointer;
+export function getRenderTreeEditPtr(renderTreeEdits: System_Array<RenderTreeEditPointer>, index: number) {
+  return platform.getArrayEntryPtr(renderTreeEdits, index, renderTreeEditStructLength);
 }
 
 export const renderTreeEdit = {

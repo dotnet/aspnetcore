@@ -1,5 +1,5 @@
 ﻿import { System_Array, MethodHandle } from '../Platform/Platform';
-import { getRenderTreeEditPtr, renderTreeEdit, EditType } from './RenderTreeEdit';
+import { getRenderTreeEditPtr, renderTreeEdit, RenderTreeEditPointer, EditType } from './RenderTreeEdit';
 import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
 import { platform } from '../Environment';
 let raiseEventMethod: MethodHandle;
@@ -18,7 +18,7 @@ export class BrowserRenderer {
     this.childComponentLocations[componentId] = element;
   }
 
-  public updateComponent(componentId: number, edits: System_Array, editsLength: number, referenceTree: System_Array) {
+  public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeNodePointer>) {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -27,7 +27,7 @@ export class BrowserRenderer {
     this.applyEdits(componentId, element, 0, edits, editsLength, referenceTree);
   }
 
-  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array, editsLength: number, referenceTree: System_Array) {
+  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeNodePointer>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
     for (let editIndex = 0; editIndex < editsLength; editIndex++) {
@@ -88,7 +88,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertNode(componentId: number, parent: Element, childIndex: number, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
+  insertNode(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, node: RenderTreeNodePointer, nodeIndex: number) {
     const nodeType = renderTreeNode.nodeType(node);
     switch (nodeType) {
       case NodeType.element:
@@ -108,7 +108,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertElement(componentId: number, parent: Element, childIndex: number, nodes: System_Array, node: RenderTreeNodePointer, nodeIndex: number) {
+  insertElement(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, node: RenderTreeNodePointer, nodeIndex: number) {
     const tagName = renderTreeNode.elementName(node)!;
     const newDomElement = document.createElement(tagName);
     insertNodeIntoDOM(newDomElement, parent, childIndex);
@@ -196,7 +196,7 @@ export class BrowserRenderer {
     }
   }
 
-  insertNodeRange(componentId: number, parent: Element, childIndex: number, nodes: System_Array, startIndex: number, endIndex: number) {
+  insertNodeRange(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, startIndex: number, endIndex: number) {
     for (let index = startIndex; index <= endIndex; index++) {
       const node = getTreeNodePtr(nodes, index);
       this.insertNode(componentId, parent, childIndex, nodes, node, index);

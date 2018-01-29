@@ -33,11 +33,11 @@ export function renderBatch(browserRendererId: number, batch: RenderBatchPointer
   const updatedComponentsLength = arrayRange.count(updatedComponents);
   const updatedComponentsArray = arrayRange.array(updatedComponents);
   for (var i = 0; i < updatedComponentsLength; i++) {
-    const updatedComponentDiff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength) as RenderTreeDiffPointer;
-    const componentId = renderTreeDiff.componentId(updatedComponentDiff);
+    const diff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength);
+    const componentId = renderTreeDiff.componentId(diff);
 
-    const editsArrayRange = renderTreeDiff.edits(updatedComponentDiff);
-    const currentStateArrayRange = renderTreeDiff.currentState(updatedComponentDiff);
+    const editsArrayRange = renderTreeDiff.edits(diff);
+    const currentStateArrayRange = renderTreeDiff.currentState(diff);
 
     const edits = arrayRange.array(editsArrayRange);
     const editsLength = arrayRange.count(editsArrayRange);

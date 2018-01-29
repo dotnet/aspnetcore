@@ -8,8 +8,8 @@
   toJavaScriptString(dotNetString: System_String): string;
   toDotNetString(javaScriptString: string): System_String;
 
-  getArrayLength(array: System_Array): number;
-  getArrayEntryPtr(array: System_Array, index: number, itemSize: number): Pointer;
+  getArrayLength(array: System_Array<any>): number;
+  getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr;
 
   getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer;
   readInt32Field(baseAddress: Pointer, fieldOffset?: number): number;
@@ -24,5 +24,5 @@
 export interface MethodHandle { MethodHandle__DO_NOT_IMPLEMENT: any };
 export interface System_Object { System_Object__DO_NOT_IMPLEMENT: any };
 export interface System_String extends System_Object { System_String__DO_NOT_IMPLEMENT: any }
-export interface System_Array extends System_Object { System_Array__DO_NOT_IMPLEMENT: any }
+export interface System_Array<T> extends System_Object { System_Array__DO_NOT_IMPLEMENT: any }
 export interface Pointer { Pointer__DO_NOT_IMPLEMENT: any }

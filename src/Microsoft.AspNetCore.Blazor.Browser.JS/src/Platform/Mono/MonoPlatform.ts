@@ -97,14 +97,14 @@ export const monoPlatform: Platform = {
     return mono_string(jsString);
   },
 
-  getArrayLength: function getArrayLength(array: System_Array): number {
+  getArrayLength: function getArrayLength(array: System_Array<any>): number {
     return Module.getValue(getArrayDataPointer(array), 'i32');
   },
 
-  getArrayEntryPtr: function getArrayEntryPtr(array: System_Array, index: number, itemSize: number): Pointer {
+  getArrayEntryPtr: function getArrayEntryPtr<TPtr extends Pointer>(array: System_Array<TPtr>, index: number, itemSize: number): TPtr {
     // First byte is array length, followed by entries
     const address = getArrayDataPointer(array) + 4 + index * itemSize;
-    return address as any as Pointer;
+    return address as any as TPtr;
   },
 
   getObjectFieldsBaseAddress: function getObjectFieldsBaseAddress(referenceTypedObject: System_Object): Pointer {
@@ -201,6 +201,6 @@ function asyncLoad(url, onload, onerror) {
   xhr.send(null);
 }
 
-function getArrayDataPointer(array: System_Array): number {
+function getArrayDataPointer<T>(array: System_Array<T>): number {
   return <number><any>array + 12; // First byte from here is length, then following bytes are entries
 }
