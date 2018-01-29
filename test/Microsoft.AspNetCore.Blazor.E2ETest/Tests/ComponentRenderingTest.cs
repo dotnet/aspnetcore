@@ -113,6 +113,22 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 childComponentWrapper.FindElement(By.TagName("p")).Text);
         }
 
+        [Fact]
+        public void ChildComponentsRerenderWhenPropertiesChanged()
+        {
+            var appElement = MountTestComponent<CounterComponentUsingChild>();
+
+            Assert.Equal(
+                "Current count: 0",
+                appElement.FindElement(By.TagName("p")).Text);
+
+            appElement.FindElement(By.TagName("button")).Click();
+
+            Assert.Equal(
+                "Current count: 1",
+                appElement.FindElement(By.TagName("p")).Text);
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;
