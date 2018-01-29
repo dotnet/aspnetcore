@@ -13,9 +13,6 @@
     <_RazorTagHelperInputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.input.cache</_RazorTagHelperInputCache>
     <_RazorTagHelperOutputCache>$(IntermediateOutputPath)$(TargetName).TagHelpers.output.cache</_RazorTagHelperOutputCache>
     
-    <!-- Used to locate our tools -->
-    <_RazorToolAssembly>$(_RazorMSBuildRoot)tools\rzc.dll</_RazorToolAssembly>
-
     <!-- Used to hash file inputs for RazorGenerate -->
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
@@ -74,6 +71,7 @@
       DebugTool="$(_RazorDebugTagHelperTool)"
       ToolAssembly="$(_RazorToolAssembly)"
       UseServer="$(UseRazorBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
       Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
@@ -116,6 +114,7 @@
       DebugTool="$(_RazorDebugGenerateCodeTool)"
       ToolAssembly="$(_RazorToolAssembly)"
       UseServer="$(UseRazorBuildServer)"
+      PipeName="$(_RazorBuildServerPipeName)"
       Sources="@(RazorGenerate)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)"

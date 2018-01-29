@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     internal static partial class BuildVariables
     {
-        private static string _msBuildPath = "";
+        private static string _msBuildPath = string.Empty;
 
         static partial void InitializeVariables();
 

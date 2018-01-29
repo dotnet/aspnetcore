@@ -42,12 +42,11 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
   </ItemGroup>
 
   <Target Name="EnsureBuildVariablesGeneratedFile">
-    <Error
-      Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it."
-      Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
+    <Error Text="BuildVariables.generated.cs was not found. Run .\build /t:Prepare from the root of the repository to generate it." Condition="!Exists('$(BuildVariablesGeneratedFile)')" />
   </Target>
   
 </Project>

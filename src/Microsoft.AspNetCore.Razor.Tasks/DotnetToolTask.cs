@@ -29,6 +29,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public bool UseServer { get; set; }
 
+        public string PipeName { get; set; }
+
         protected override string ToolName => "dotnet";
 
         // If we're debugging then make all of the stdout gets logged in MSBuild
@@ -130,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 var arguments = GetArguments(responseFileCommands);
 
-                var responseTask = ServerConnection.RunOnServer(arguments, serverPaths, _razorServerCts.Token);
+                var responseTask = ServerConnection.RunOnServer(PipeName, arguments, serverPaths, _razorServerCts.Token);
                 responseTask.Wait(_razorServerCts.Token);
 
                 var response = responseTask.Result;

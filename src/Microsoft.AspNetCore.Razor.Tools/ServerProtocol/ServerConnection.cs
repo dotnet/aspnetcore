@@ -83,12 +83,16 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         public static Task<ServerResponse> RunOnServer(
+            string pipeName,
             List<string> arguments,
             ServerPaths buildPaths,
             CancellationToken cancellationToken,
             string keepAlive = null)
         {
-            var pipeName = PipeName.ComputeDefault();
+            if (string.IsNullOrEmpty(pipeName))
+            {
+                pipeName = PipeName.ComputeDefault();
+            }
 
             return RunOnServerCore(
                 arguments,
@@ -244,7 +248,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        private static bool TryCreateServerCore(string clientDir, string pipeName)
+        // Internal for testing.
+        internal static bool TryCreateServerCore(string clientDir, string pipeName)
         {
             string expectedPath;
             string processArguments;

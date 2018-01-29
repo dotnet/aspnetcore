@@ -49,9 +49,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 StartInfo = processStartInfo,
                 EnableRaisingEvents = true,
             };
-            
+
             var output = new StringBuilder();
-            
+
             process.ErrorDataReceived += Process_ErrorDataReceived;
             process.OutputDataReceived += Process_OutputDataReceived;
 

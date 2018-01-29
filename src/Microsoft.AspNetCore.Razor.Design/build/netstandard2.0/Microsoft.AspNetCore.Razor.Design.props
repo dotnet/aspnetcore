@@ -20,6 +20,9 @@
     <_RazorTaskFolder Condition=" '$(MSBuildRuntimeType)' != 'Core' ">net46</_RazorTaskFolder>
     
     <_RazorTaskAssembly Condition="'$(_RazorTaskAssembly)'==''">$(_RazorMSBuildRoot)\tasks\$(_RazorTaskFolder)\Microsoft.AspNetCore.Razor.Tasks.dll</_RazorTaskAssembly>
+
+    <!-- Used to locate our tools -->
+    <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(_RazorMSBuildRoot)tools\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(_RazorTaskAssembly)" />

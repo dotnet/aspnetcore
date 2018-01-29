@@ -72,8 +72,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Default to on if MvcRazorCompileOnPublish isn't set for some reason -->
     <RazorCompileOnPublish Condition="'$(RazorCompileOnPublish)'==''">true</RazorCompileOnPublish>
-    
-    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
 
   <!--

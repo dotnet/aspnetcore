@@ -38,6 +38,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       or publish-time. By default, the Razor SDK will suppress the copying of reference assemblies to the publish directory.
     -->
     <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
+
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
 
 </Project>

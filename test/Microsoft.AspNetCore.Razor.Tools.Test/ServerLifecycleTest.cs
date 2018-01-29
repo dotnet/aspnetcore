@@ -155,7 +155,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Multiple clients should be able to send shutdown requests to the server.
         /// </summary>
-        [Fact]
+        // Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ServerRunning_MultipleShutdownRequests_HandlesSuccessfully()
         {
             // Arrange

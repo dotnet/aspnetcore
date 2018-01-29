@@ -29,4 +29,14 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
   </ItemGroup>
+
+  <!-- This makes it so that the runtimeconfig.json is included as part of the build output of the project that references this project. -->
+  <Target Name="PreserveRuntimeConfig" BeforeTargets="GetCopyToOutputDirectoryItems">
+    <ItemGroup>
+      <AllItemsFullPathWithTargetPath Include="$(ProjectRuntimeConfigFilePath)">
+        <TargetPath>$(ProjectRuntimeConfigFileName)</TargetPath>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </AllItemsFullPathWithTargetPath>
+    </ItemGroup>
+  </Target>
 </Project>
