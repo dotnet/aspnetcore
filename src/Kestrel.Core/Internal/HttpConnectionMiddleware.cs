@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Pipelines;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,15 +7,11 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class HttpConnectionMiddleware<TContext>
     {
-        private static Action<Exception, object> _completeTcs = CompleteTcs;
-
         private static long _lastHttpConnectionId = long.MinValue;
 
         private readonly IList<IConnectionAdapter> _connectionAdapters;
@@ -74,42 +68,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var connection = new HttpConnection(httpConnectionContext);
 
             var processingTask = connection.StartRequestProcessing(_application);
-
-            var inputTcs = new TaskCompletionSource<object>();
-            var outputTcs = new TaskCompletionSource<object>();
-
-            // The reason we don't fire events directly from these callbacks is because it seems
-            // like the transport callbacks root the state object (even after it fires)
-            connectionContext.Transport.Input.OnWriterCompleted(_completeTcs, inputTcs);
-            connectionContext.Transport.Output.OnReaderCompleted(_completeTcs, outputTcs);
-
-            inputTcs.Task.ContinueWith((task, state) =>
+            
+            connectionContext.Transport.Input.OnWriterCompleted((error, state) =>
             {
-                ((HttpConnection)state).Abort(task.Exception?.InnerException);
+                ((HttpConnection)state).Abort(error);
             },
-            connection, TaskContinuationOptions.ExecuteSynchronously);
+            connection);
 
-            outputTcs.Task.ContinueWith((task, state) =>
+            connectionContext.Transport.Output.OnReaderCompleted((error, state) =>
             {
-                ((HttpConnection)state).OnConnectionClosed(task.Exception?.InnerException);
+                ((HttpConnection)state).OnConnectionClosed(error);
             },
-            connection, TaskContinuationOptions.ExecuteSynchronously);
+            connection);
 
             return processingTask;
-        }
-
-        private static void CompleteTcs(Exception error, object state)
-        {
-            var tcs = (TaskCompletionSource<object>)state;
-
-            if (error != null)
-            {
-                tcs.TrySetException(error);
-            }
-            else
-            {
-                tcs.TrySetResult(null);
-            }
         }
     }
 }
