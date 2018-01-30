@@ -316,16 +316,34 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.OpenComponentElement<FakeComponent2>(123);
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var renderBatch = GetRenderedBatch();
 
-            // Assert
-            Assert.Collection(result.Edits,
+            // Assert: Even though we didn't assign IDs to the components, this
+            // shows that FakeComponent was disposed
+            Assert.Collection(renderBatch.DisposedComponentIDs,
+                disposedComponentId => Assert.Equal(0, disposedComponentId));
+
+            // Assert: First updated component is the root with one child being
+            // prepended, and its earlier incarnation being removed
+            Assert.Equal(2, renderBatch.UpdatedComponents.Count);
+            var updatedComponent1 = renderBatch.UpdatedComponents.Array[0];
+            Assert.Collection(updatedComponent1.Edits,
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
+                    Assert.IsType<FakeComponent2>(updatedComponent1.CurrentState.Array[0].Component);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+
+            // Assert: Second updated component is the new FakeComponent2
+            var updatedComponent2 = renderBatch.UpdatedComponents.Array[1];
+            Assert.Collection(updatedComponent2.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
+                    Assert.Equal(0, entry.NewTreeIndex);
+                });
         }
 
         [Fact]
@@ -744,6 +762,37 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Null(newComponentInstance.ObjectProperty); // To observe that the property wasn't even written, we nulled it out on the original
         }
 
+        [Fact]
+        public void CallsDisposeOnlyOnRemovedChildComponents()
+        {
+            // Arrange
+            oldTree.OpenComponentElement<DisposableComponent>(10);       // <DisposableComponent>
+            oldTree.CloseElement();                                      // </DisposableComponent>
+            oldTree.OpenComponentElement<NonDisposableComponent>(20);    // <NonDisposableComponent>
+            oldTree.CloseElement();                                      // </NonDisposableComponent>
+            oldTree.OpenComponentElement<DisposableComponent>(30);       // <DisposableComponent>
+            oldTree.CloseElement();                                      // </DisposableComponent>
+            newTree.OpenComponentElement<DisposableComponent>(30);       // <DisposableComponent>
+            newTree.CloseElement();                                      // </DisposableComponent>
+
+            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetNodes(), oldTree.GetNodes());
+            var disposableComponent1 = (DisposableComponent)oldTree.GetNodes().Array[0].Component;
+            var nonDisposableComponent = (NonDisposableComponent)oldTree.GetNodes().Array[1].Component;
+            var disposableComponent2 = (DisposableComponent)oldTree.GetNodes().Array[2].Component;
+
+            // Act
+            var renderedBatch = GetRenderedBatch();
+
+            // Assert: We track NonDisposableComponent was disposed even though it's not IDisposable
+            Assert.Equal(renderedBatch.DisposedComponentIDs, new[] { 0, 1 });
+
+            // Assert: We did call Dispose on the disposed DisposableComponent
+            Assert.Equal(1, disposableComponent1.DisposalCount);
+
+            // Assert: We didn't dispose the retained component
+            Assert.Equal(0, disposableComponent2.DisposalCount);
+        }
+
         private RenderTreeDiff GetSingleUpdatedComponent()
         {
             var diffsInBatch = GetRenderedBatch().UpdatedComponents;
@@ -785,6 +834,19 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.AddText(100, $"Hello from {nameof(FakeComponent2)}");
             }
         }
+
+        private class DisposableComponent : IComponent, IDisposable
+        {
+            public int DisposalCount { get; private set; }
+            public void Dispose() => DisposalCount++;
+            public void BuildRenderTree(RenderTreeBuilder builder) { }
+        }
+
+        private class NonDisposableComponent : IComponent
+        {
+            public void BuildRenderTree(RenderTreeBuilder builder) { }
+        }
+
 
         private static void AssertEdit(
             RenderTreeEdit edit,

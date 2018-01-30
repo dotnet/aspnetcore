@@ -32,7 +32,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatchPointer
   const updatedComponents = renderBatchStruct.updatedComponents(batch);
   const updatedComponentsLength = arrayRange.count(updatedComponents);
   const updatedComponentsArray = arrayRange.array(updatedComponents);
-  for (var i = 0; i < updatedComponentsLength; i++) {
+  for (let i = 0; i < updatedComponentsLength; i++) {
     const diff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength);
     const componentId = renderTreeDiff.componentId(diff);
 
@@ -43,6 +43,15 @@ export function renderBatch(browserRendererId: number, batch: RenderBatchPointer
     const editsLength = arrayRange.count(editsArrayRange);
     const tree = arrayRange.array(currentStateArrayRange);
     browserRenderer.updateComponent(componentId, edits, editsLength, tree);
+  }
+
+  const disposedComponentIds = renderBatchStruct.disposedComponentIds(batch);
+  const disposedComponentIdsLength = arrayRange.count(disposedComponentIds);
+  const disposedComponentIdsArray = arrayRange.array(disposedComponentIds);
+  for (let i = 0; i < disposedComponentIdsLength; i++) {
+    const componentIdPtr = platform.getArrayEntryPtr(disposedComponentIdsArray, i, 4);
+    const componentId = platform.readInt32Field(componentIdPtr);
+    browserRenderer.disposeComponent(componentId);
   }
 }
 

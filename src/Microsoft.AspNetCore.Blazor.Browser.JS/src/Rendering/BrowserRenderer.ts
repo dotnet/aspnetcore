@@ -6,9 +6,6 @@ let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
 
 export class BrowserRenderer {
-  // TODO: To avoid leaking memory, automatically remove entries from this dict as soon
-  // as the corresponding DOM nodes are removed (or maybe when the associated component
-  // is disposed, assuming we can guarantee that always happens).
   private childComponentLocations: { [componentId: number]: Element } = {};
 
   constructor(private browserRendererId: number) {
@@ -25,6 +22,10 @@ export class BrowserRenderer {
     }
 
     this.applyEdits(componentId, element, 0, edits, editsLength, referenceTree);
+  }
+
+  public disposeComponent(componentId: number) {
+    delete this.childComponentLocations[componentId];
   }
 
   applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeNodePointer>) {

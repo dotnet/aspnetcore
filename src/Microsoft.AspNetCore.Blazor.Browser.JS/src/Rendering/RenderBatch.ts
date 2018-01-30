@@ -7,6 +7,7 @@ import { RenderTreeEditPointer } from './RenderTreeEdit';
 
 export const renderBatch = {
   updatedComponents: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<RenderTreeDiffPointer>>(obj, 0),
+  disposedComponentIds: (obj: RenderBatchPointer) => platform.readStructField<ArrayRangePointer<number>>(obj, arrayRangeStructLength),
 };
 
 const arrayRangeStructLength = 8;

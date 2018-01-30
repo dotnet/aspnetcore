@@ -157,13 +157,19 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     else
                     {
                         ref var oldNode = ref oldTree[oldStartIndex];
-                        if (oldNode.NodeType == RenderTreeNodeType.Attribute)
+                        var oldNodeType = oldNode.NodeType;
+                        if (oldNodeType == RenderTreeNodeType.Attribute)
                         {
                             Append(RenderTreeEdit.RemoveAttribute(siblingIndex, oldNode.AttributeName));
                             oldStartIndex++;
                         }
                         else
                         {
+                            if (oldNodeType == RenderTreeNodeType.Element || oldNodeType == RenderTreeNodeType.Component)
+                            {
+                                DisposeChildComponents(batchBuilder, oldTree, oldStartIndex);
+                            }
+
                             Append(RenderTreeEdit.RemoveNode(siblingIndex));
                             oldStartIndex = NextSiblingIndex(oldNode, oldStartIndex);
                         }
@@ -381,6 +387,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         else
                         {
                             // Elements with different names are treated as completely unrelated
+                            InstantiateChildComponents(batchBuilder, newTree, newNodeIndex);
+                            DisposeChildComponents(batchBuilder, oldTree, oldNodeIndex);
                             Append(RenderTreeEdit.PrependNode(siblingIndex, newNodeIndex));
                             siblingIndex++;
                             Append(RenderTreeEdit.RemoveNode(siblingIndex));
@@ -404,6 +412,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         else
                         {
                             // Child components of different types are treated as completely unrelated
+                            InstantiateChildComponents(batchBuilder, newTree, newNodeIndex);
+                            DisposeChildComponents(batchBuilder, oldTree, oldNodeIndex);
                             Append(RenderTreeEdit.PrependNode(siblingIndex, newNodeIndex));
                             siblingIndex++;
                             Append(RenderTreeEdit.RemoveNode(siblingIndex));
@@ -499,6 +509,19 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     }
 
                     _renderer.RenderInExistingBatch(batchBuilder, node.ComponentId);
+                }
+            }
+        }
+
+        private void DisposeChildComponents(RenderBatchBuilder batchBuilder, RenderTreeNode[] nodes, int elementOrComponentIndex)
+        {
+            var endIndex = nodes[elementOrComponentIndex].ElementDescendantsEndIndex;
+            for (var i = elementOrComponentIndex; i <= endIndex; i++)
+            {
+                ref var node = ref nodes[i];
+                if (node.NodeType == RenderTreeNodeType.Component)
+                {
+                    _renderer.DisposeInExistingBatch(batchBuilder, node.ComponentId);
                 }
             }
         }

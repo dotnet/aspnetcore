@@ -96,6 +96,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             GetRequiredComponentState(componentId).Render(batchBuilder);
         }
 
+        internal void DisposeInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
+        {
+            GetRequiredComponentState(componentId).NotifyDisposed();
+            batchBuilder.AddDisposedComponent(componentId);
+        }
+
         /// <summary>
         /// Notifies the specified component that an event has occurred.
         /// </summary>

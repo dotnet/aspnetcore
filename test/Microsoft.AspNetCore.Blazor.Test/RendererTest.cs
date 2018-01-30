@@ -402,6 +402,45 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 node => AssertNode.Text(node, "second"));
         }
 
+        [Fact]
+        public void RenderBatchIncludesListOfDisposedComponents()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(7, "some element");
+                if (firstRender)
+                {
+                    builder.OpenComponentElement<FakeComponent>(100);
+                    builder.CloseElement();
+                    builder.OpenComponentElement<FakeComponent>(150);
+                    builder.CloseElement();
+                }
+                builder.OpenComponentElement<FakeComponent>(200);
+                builder.CloseElement();
+                builder.CloseElement();
+            });
+
+            var rootComponentId = renderer.AssignComponentId(component);
+
+            // Act/Assert 1: First render, capturing child component IDs
+            renderer.RenderNewBatch(rootComponentId);
+            var childComponentIds = renderer.Batches.Single().RenderTreesByComponentId[rootComponentId]
+                .Where(node => node.NodeType == RenderTreeNodeType.Component)
+                .Select(node => node.ComponentId)
+                .ToList();
+            Assert.Equal(childComponentIds, new[] { 1, 2, 3 });
+
+            // Act: Second render
+            firstRender = false;
+            renderer.RenderNewBatch(rootComponentId);
+
+            // Assert: Applicable children are included in disposal list
+            Assert.Equal(renderer.Batches[1].DisposedComponentIDs, new[] { 1, 2 });
+        }
+
         private class NoOpRenderer : Renderer
         {
             public new int AssignComponentId(IComponent component)
@@ -440,6 +479,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     capturedBatch.RenderTreesByComponentId[renderTreeDiff.ComponentId] =
                         renderTreeDiff.CurrentState.ToArray();
                 }
+
+                capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.ToList();
             }
         }
 
@@ -447,6 +488,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             public IDictionary<int, RenderTreeNode[]> RenderTreesByComponentId { get; }
                 = new Dictionary<int, RenderTreeNode[]>();
+
+            public IList<int> DisposedComponentIDs { get; set; }
         }
 
         private class TestComponent : IComponent

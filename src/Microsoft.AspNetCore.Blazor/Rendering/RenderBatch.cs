@@ -15,9 +15,17 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// </summary>
         public ArrayRange<RenderTreeDiff> UpdatedComponents { get; }
 
-        internal RenderBatch(ArrayRange<RenderTreeDiff> updatedComponents)
+        /// <summary>
+        /// Gets the IDs of the components that were disposed.
+        /// </summary>
+        public ArrayRange<int> DisposedComponentIDs { get; }
+
+        internal RenderBatch(
+            ArrayRange<RenderTreeDiff> updatedComponents,
+            ArrayRange<int> disposedComponentIDs)
         {
             UpdatedComponents = updatedComponents;
+            DisposedComponentIDs = disposedComponentIDs;
         }
     }
 }

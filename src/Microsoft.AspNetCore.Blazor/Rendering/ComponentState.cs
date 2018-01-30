@@ -80,5 +80,17 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             // developers don't need to call Render() on their components explicitly.
             _renderer.RenderNewBatch(_componentId);
         }
+
+        /// <summary>
+        /// Notifies the component that it is being disposed.
+        /// </summary>
+        public void NotifyDisposed()
+        {
+            // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
+            if (_component is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 }
