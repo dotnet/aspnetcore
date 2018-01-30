@@ -579,7 +579,13 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.Equal(Net.Http.Headers.SameSiteMode.Lax, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
 
-            Assert.Equal(httpContext.Response.Headers[HeaderNames.SetCookie], httpContext.Response.Headers["ManualCookie"]);
+            cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers["ManualCookie"]);
+            Assert.Equal(1, cookies.Count);
+            var manualCookie = cookies[0];
+            Assert.Equal(consentCookie.Name, manualCookie.Name);
+            Assert.Equal(consentCookie.Value, manualCookie.Value);
+            Assert.Equal(consentCookie.SameSite, manualCookie.SameSite);
+            Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
         }
 
         [Fact]
@@ -626,7 +632,13 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             Assert.Equal(Net.Http.Headers.SameSiteMode.Strict, consentCookie.SameSite);
             Assert.NotNull(consentCookie.Expires);
 
-            Assert.Equal(httpContext.Response.Headers[HeaderNames.SetCookie], httpContext.Response.Headers["ManualCookie"]);
+            cookies = SetCookieHeaderValue.ParseList(httpContext.Response.Headers["ManualCookie"]);
+            Assert.Equal(1, cookies.Count);
+            var manualCookie = cookies[0];
+            Assert.Equal(consentCookie.Name, manualCookie.Name);
+            Assert.Equal(consentCookie.Value, manualCookie.Value);
+            Assert.Equal(consentCookie.SameSite, manualCookie.SameSite);
+            Assert.NotNull(manualCookie.Expires); // Expires may not exactly match to the second.
         }
 
         private Task<HttpContext> RunTestAsync(Action<CookiePolicyOptions> configureOptions, Action<HttpContext> configureRequest, RequestDelegate handleRequest)
