@@ -56,15 +56,21 @@ namespace Templates.Test
         [Fact]
         public void RazorPagesTemplate_IndividualAuth_Works_NetCore()
             => RazorPagesTemplate_IndividualAuthImpl(null);
+        [Fact]
+        public void RazorPagesTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
+            => RazorPagesTemplate_IndividualAuthImpl(null, true);
 
-        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride)
+        private void RazorPagesTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false)
         {
-            RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual");
+            RunDotNetNew("razor", targetFrameworkOverride, auth: "Individual", useLocalDB: useLocalDB);
 
             AssertFileExists("Pages/Shared/_LoginPartial.cshtml", true);
 
             var projectFileContents = ReadFile($"{ProjectName}.csproj");
-            Assert.Contains(".db", projectFileContents);
+            if (!useLocalDB)
+            {
+                Assert.Contains(".db", projectFileContents);
+            }
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
