@@ -4,6 +4,7 @@
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Editor.Razor;
+using Microsoft.VisualStudio.Text;
 using MonoDevelop.Ide.TypeSystem;
 
 namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
@@ -18,5 +19,10 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         }
 
         public override Workspace Workspace { get; }
+
+        public override bool TryGetWorkspace(ITextBuffer textBuffer, out Workspace workspace)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }
