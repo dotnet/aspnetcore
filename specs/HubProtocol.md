@@ -565,8 +565,8 @@ is decoded as follows:
 * InvocationId - A `String` encoding the Invocation ID for the message
 * ResultKind - A flag indicating the invocation result kind:
     * `1` - Error result - Result contains a `String` with the error message
-    * `2` - Void result - Result contains the value returned by the server
-    * `3` - Non-Void result - Result is absent
+    * `2` - Void result - Result is absent
+    * `3` - Non-Void result - Result contains the value returned by the server
 * Result - An optional item containing the result of invocation. Absent if the server did not return any value (void methods)
 
 Examples:
