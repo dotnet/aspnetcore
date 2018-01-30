@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// A shutdown request should not abort an existing compilation.  It should be allowed to run to 
         /// completion.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1991")]
         public async Task ServerRunning_ShutdownRequest_DoesNotAbortCompilation()
         {
             // Arrange
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1991")]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
             // Arrange
