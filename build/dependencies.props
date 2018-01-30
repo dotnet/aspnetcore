@@ -48,7 +48,7 @@
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26126-02</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26126-02</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26126-02</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26126-02</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26126-05</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
@@ -123,15 +123,15 @@
     <SystemBuffersPackageVersion>4.5.0-preview1-26126-05</SystemBuffersPackageVersion>
     <SystemBuffersPrimitivesPackageVersion>0.1.0-preview1-180129-1</SystemBuffersPrimitivesPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview1-26126-05</SystemCodeDomPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-26126-02</SystemCollectionsImmutablePackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-26126-05</SystemCollectionsImmutablePackageVersion>
     <SystemCollectionsSequencesPackageVersion>0.1.0-preview1-180129-1</SystemCollectionsSequencesPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview1-26126-05</SystemComponentModelAnnotationsPackageVersion>
-    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview1-26126-02</SystemCompositionAttributedModelPackageVersion>
-    <SystemCompositionConventionPackageVersion>1.2.0-preview1-26126-02</SystemCompositionConventionPackageVersion>
-    <SystemCompositionHostingPackageVersion>1.2.0-preview1-26126-02</SystemCompositionHostingPackageVersion>
-    <SystemCompositionPackageVersion>1.2.0-preview1-26126-02</SystemCompositionPackageVersion>
-    <SystemCompositionRuntimePackageVersion>1.2.0-preview1-26126-02</SystemCompositionRuntimePackageVersion>
-    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview1-26126-02</SystemCompositionTypedPartsPackageVersion>
+    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview1-26126-05</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>1.2.0-preview1-26126-05</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>1.2.0-preview1-26126-05</SystemCompositionHostingPackageVersion>
+    <SystemCompositionPackageVersion>1.2.0-preview1-26126-05</SystemCompositionPackageVersion>
+    <SystemCompositionRuntimePackageVersion>1.2.0-preview1-26126-05</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview1-26126-05</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>4.5.0-preview1-26126-05</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0-preview1-26126-05</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview1-26126-05</SystemDiagnosticsDiagnosticSourcePackageVersion>
@@ -155,7 +155,7 @@
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview1-26126-05</SystemReflectionDispatchProxyPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0-preview1-26126-02</SystemReflectionMetadataPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.6.0-preview1-26126-05</SystemReflectionMetadataPackageVersion>
     <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview1-26126-05</SystemReflectionTypeExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26126-05</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
@@ -175,7 +175,7 @@
     <SystemTextUtf8StringPackageVersion>0.1.0-preview1-180129-1</SystemTextUtf8StringPackageVersion>
     <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-26126-05</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0-preview1-26126-05</SystemThreadingChannelsPackageVersion>
-    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26126-02</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26126-05</SystemThreadingTasksDataflowPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26126-05</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview1-26126-05</SystemValueTuplePackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
