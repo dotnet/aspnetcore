@@ -258,7 +258,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Localization.Abstractions" Category="ship" AppMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" AppMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Abstractions" Category="ship" AppMetapackage="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="noship" Analyzer="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="shipoob" Analyzer="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.AzureAppServices" Category="ship" AppMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Configuration" Category="ship" AppMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Console" Category="ship" AppMetapackage="true" />
