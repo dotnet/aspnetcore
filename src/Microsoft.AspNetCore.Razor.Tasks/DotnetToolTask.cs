@@ -69,9 +69,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         {
             if (Debug)
             {
+                Log.LogMessage(MessageImportance.High, "Waiting for debugger in pid: {0}", Process.GetCurrentProcess().Id);
                 while (!Debugger.IsAttached)
                 {
-                    Log.LogMessage(MessageImportance.High, "Waiting for debugger in pid: {0}", Process.GetCurrentProcess().Id);
                     Thread.Sleep(TimeSpan.FromSeconds(3));
                 }
             }
@@ -173,6 +173,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             var responseFileArguments =
                 CommandLineUtilities.SplitCommandLineIntoArguments(responseFileCommands, removeHashComments: true);
             return responseFileArguments.ToList();
+        }
+
+        protected override bool HandleTaskExecutionErrors()
+        {
+            if (!HasLoggedErrors)
+            {
+                var toolCommand = Path.GetFileNameWithoutExtension(ToolAssembly) + " " + Command;
+                // Show a slightly better error than the standard ToolTask message that says "dotnet" failed.
+                Log.LogError($"{toolCommand} exited with code {ExitCode}.");
+                return false;
+            }
+
+            return base.HandleTaskExecutionErrors();
         }
     }
 }

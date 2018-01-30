@@ -31,6 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <PrepareForRazorGenerateDependsOn>
       ResolveRazorGenerateInputs;
+      AssignRazorGenerateTargetPaths;
       ResolveAssemblyReferenceRazorGenerateInputs;
       _EnsureRazorCompilerReferenced;
       ResolveTagHelperRazorGenerateInputs
@@ -48,6 +49,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
+        ResolveRazorEmbeddedResources
     </ResolveRazorCompileInputsDependsOn>
 
     <RazorCompileDependsOn>
@@ -221,11 +223,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(EnableDefaultRazorGenerateItems)'=='true'">
       <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="AssignRazorGenerateTargetPaths" Condition="'@(RazorGenerate)' != ''">
+    <AssignTargetPath Files="@(RazorGenerate)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="RazorGenerateWithTargetPath" />
+    </AssignTargetPath>
 
     <ItemGroup>
-      <RazorGenerate Update="@(RazorGenerate)" Condtion="'%(RazorGenerate.GeneratedOutput)'==''">
-        <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)%(RelativeDir)%(Filename).cs</GeneratedOutput>
-      </RazorGenerate>
+      <RazorGenerateWithTargetPath Condition="'%(RazorGenerateWithTargetPath.GeneratedOutput)' == ''">
+        <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)$([System.IO.Path]::ChangeExtension('%(RazorGenerateWithTargetPath.TargetPath)', '.cs'))</GeneratedOutput>
+      </RazorGenerateWithTargetPath>
     </ItemGroup>
   </Target>
 
@@ -247,6 +255,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     This is marker target so that the code generation targets can attach.
   -->
   <Target Name="ResolveRazorCompileInputs" DependsOnTargets="$(ResolveRazorCompileInputsDependsOn)">
+  </Target>
+
+  <Target Name="ResolveRazorEmbeddedResources" Condition="'$(EmbedRazorGenerateSources)'=='true'">
+    <ItemGroup>
+      <RazorEmbeddedResource Include="@(RazorGenerateWithTargetPath)">
+        <LogicalName>/$([System.String]::Copy('%(RazorGenerateWithTargetPath.TargetPath)').Replace('\','/'))</LogicalName>
+        <Type>Non-Resx</Type>
+        <WithCulture>false</WithCulture>
+      </RazorEmbeddedResource>
+
+      <!-- Similar to _GenerateCompileInputs -->
+      <_RazorCoreCompileResourceInputs
+        Include="@(RazorEmbeddedResource)"
+        Condition="'%(RazorEmbeddedResource.WithCulture)'=='false' and '%(RazorEmbeddedResource.Type)'=='Non-Resx' " />
+    </ItemGroup>
   </Target>
 
   <!--

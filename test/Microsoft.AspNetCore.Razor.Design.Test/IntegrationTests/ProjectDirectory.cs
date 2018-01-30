@@ -5,10 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
@@ -100,7 +98,7 @@ $@"<Project>
 </Project>";
                 File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);
 
-                new List<string> { "Directory.Build.props", "Directory.Build.targets" }
+                new List<string> { "Directory.Build.props", "Directory.Build.targets", "RazorTest.Introspection.targets" }
                     .ForEach(file =>
                     {
                         var source = Path.Combine(testAppsRoot, file);

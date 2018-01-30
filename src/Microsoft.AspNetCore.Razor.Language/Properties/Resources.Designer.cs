@@ -1870,6 +1870,34 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatRazorLanguageVersion_InvalidVersion(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("RazorLanguageVersion_InvalidVersion"), p0);
 
+        /// <summary>
+        /// File path '{0}' does not belong to the directory '{1}'.
+        /// </summary>
+        internal static string VirtualFileSystem_FileDoesNotBelongToDirectory
+        {
+            get => GetString("VirtualFileSystem_FileDoesNotBelongToDirectory");
+        }
+
+        /// <summary>
+        /// File path '{0}' does not belong to the directory '{1}'.
+        /// </summary>
+        internal static string FormatVirtualFileSystem_FileDoesNotBelongToDirectory(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("VirtualFileSystem_FileDoesNotBelongToDirectory"), p0, p1);
+
+        /// <summary>
+        /// The file path '{0}' is invalid. File path is the root relative path of the file starting with '/' and should not contain any '\' characters.
+        /// </summary>
+        internal static string VirtualFileSystem_InvalidRelativePath
+        {
+            get => GetString("VirtualFileSystem_InvalidRelativePath");
+        }
+
+        /// <summary>
+        /// The file path '{0}' is invalid. File path is the root relative path of the file starting with '/' and should not contain any '\' characters.
+        /// </summary>
+        internal static string FormatVirtualFileSystem_InvalidRelativePath(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("VirtualFileSystem_InvalidRelativePath"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

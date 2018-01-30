@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.DotNet.PlatformAbstractions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
 
-            if (RuntimeEnvironment.OperatingSystemPlatform != Platform.Darwin)
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 // GetFullPath on OSX doesn't work well in travis. We end up computing a different path than will
                 // end up in the MSBuild logs.
@@ -193,6 +193,28 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "ClassLibrary.pdb");
             Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.dll");
             Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimplePages", "LinkedDir")]
+        public async Task Build_SetsUpEmbeddedResourcesWithLogicalName()
+        {
+            // Arrange
+            var additionalProjectContent = @"
+<ItemGroup>
+  <Content Include=""..\LinkedDir\LinkedFile.cshtml"" Link=""LinkedFileOut\LinkedFile.cshtml"" />
+</ItemGroup>
+";
+            AddProjectFileContent(additionalProjectContent);
+            Directory.CreateDirectory(Path.Combine(Project.DirectoryPath, "..", "LinkedDir"));
+
+            var result = await DotnetMSBuild("Build", "/t:_IntrospectRazorEmbeddedResources /p:RazorCompileOnBuild=true /p:EmbedRazorGenerateSources=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("Pages", "Index.cshtml")} /Pages/Index.cshtml");
+            Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("Areas", "Products", "Pages", "_ViewStart.cshtml")} /Areas/Products/Pages/_ViewStart.cshtml");
+            Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} /LinkedFileOut/LinkedFile.cshtml");
         }
     }
 }

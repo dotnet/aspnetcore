@@ -536,4 +536,10 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="RazorLanguageVersion_InvalidVersion" xml:space="preserve">
     <value>The Razor language version '{0}' is unrecognized or not supported by this version of Razor.</value>
   </data>
+  <data name="VirtualFileSystem_FileDoesNotBelongToDirectory" xml:space="preserve">
+    <value>File path '{0}' does not belong to the directory '{1}'.</value>
+  </data>
+  <data name="VirtualFileSystem_InvalidRelativePath" xml:space="preserve">
+    <value>The file path '{0}' is invalid. File path is the root relative path of the file starting with '/' and should not contain any '\' characters.</value>
+  </data>
 </root>

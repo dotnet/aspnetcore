@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string RelativePhysicalPath { get; }
 
-        public override bool Exists => true;
+        public override bool Exists { get; } = true;
 
         public string Content { get; set; } = "Default content";
 

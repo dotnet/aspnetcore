@@ -314,7 +314,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-
         private class BuildFailedException : MSBuildXunitException
         {
             public BuildFailedException(MSBuildResult result)

@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 args = args.Skip(1).ToArray();
 
+                Console.WriteLine("Waiting for debugger in pid: {0}", Process.GetCurrentProcess().Id);
                 while (!Debugger.IsAttached)
                 {
-                    Console.WriteLine("Waiting for debugger in pid: {0}", Process.GetCurrentProcess().Id);
                     Thread.Sleep(TimeSpan.FromSeconds(3));
                 }
             }

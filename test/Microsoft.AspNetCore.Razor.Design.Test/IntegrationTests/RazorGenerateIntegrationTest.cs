@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
@@ -196,7 +197,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // We shouldn't need to hash the files
             Assert.FileDoesNotExist(result, Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorCoreGenerate.cache"));
-            
+
             Assert.FileCountEquals(result, 0, RazorIntermediateOutputPath, "*.cs");
         }
 
@@ -204,14 +205,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorGenerate_MvcRazorFilesToCompile_OverridesDefaultItems()
         {
-            var content = @"
-<Project>
-  <ItemGroup>
-    <MvcRazorFilesToCompile Include=""Views/Home/About.cshtml"" />
-  </ItemGroup>
-</Project>
+            var projectContent = @"
+<ItemGroup>
+  <MvcRazorFilesToCompile Include=""Views/Home/About.cshtml"" />
+</ItemGroup>
 ";
-            File.WriteAllText(Path.Combine(Project.DirectoryPath, "After.Directory.Build.props"), content);
+            AddProjectFileContent(projectContent);
 
             var result = await DotnetMSBuild(RazorGenerateTarget);
 
@@ -225,17 +224,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorGenerate_EnableDefaultRazorGenerateItems_False_OverridesDefaultItems()
         {
-            var content = @"
-<Project>
-  <PropertyGroup>
-    <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
-  </PropertyGroup>
-  <ItemGroup>
-    <RazorGenerate Include=""Views/Home/About.cshtml"" />
-  </ItemGroup>
-</Project>
+            var projectContent = @"
+ <PropertyGroup>
+   <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
+ </PropertyGroup>
+ <ItemGroup>
+   <RazorGenerate Include=""Views/Home/About.cshtml"" />
+ </ItemGroup>
 ";
-            File.WriteAllText(Path.Combine(Project.DirectoryPath, "After.Directory.Build.props"), content);
+            AddProjectFileContent(projectContent);
 
             var result = await DotnetMSBuild(RazorGenerateTarget);
 
@@ -245,9 +242,61 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cs");
         }
 
-        [Fact(Skip = "Fails due to #1999")]
+        [Fact]
+        [InitializeTestProject("SimpleMvc", "LinkedDir")]
+        public async Task RazorGenerate_WorksWithLinkedFiles()
+        {
+            // Arrange
+            var projectContent = @"
+<ItemGroup>
+  <Content Include=""..\LinkedDir\LinkedFile.cshtml"" />
+  <Content Include=""..\LinkedDir\LinkedFile2.cshtml"" Link=""LinkedFileOut\LinkedFile2.cshtml"" />
+  <Content Include=""..\LinkedDir\LinkedFile3.cshtml"" Link=""LinkedFileOut\LinkedFileWithRename.cshtml"" />
+</ItemGroup>
+";
+            AddProjectFileContent(projectContent);
+
+            var result = await DotnetMSBuild(RazorGenerateTarget, "/t:_IntrospectRazorGenerateWithTargetPath");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFile.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cs");
+
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} LinkedFile.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFile.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile2.cshtml")} LinkedFileOut\LinkedFile2.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFile2.cs")}");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {Path.Combine("..", "LinkedDir", "LinkedFile3.cshtml")} LinkedFileOut\LinkedFileWithRename.cshtml {Path.Combine(RazorIntermediateOutputPath, "LinkedFileOut", "LinkedFileWithRename.cs")}");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc", "LinkedDir")]
+        public async Task RazorGenerate_PrintsErrorsFromLinkedFiles()
+        {
+            // Arrange
+            var file = @"..\LinkedDir\LinkedErrorFile.cshtml";
+            var projectContent = $@"
+<ItemGroup>
+  <Content Include=""{file}"" Link=""LinkedFileOut\LinkedFile.cshtml"" />
+</ItemGroup>
+";
+            AddProjectFileContent(projectContent);
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildFailed(result);
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // GetFullPath on OSX doesn't work well in travis. We end up computing a different path than will
+                // end up in the MSBuild logs.
+                var errorLocation = Path.GetFullPath(Path.Combine(Project.DirectoryPath, "..", "LinkedDir", "LinkedErrorFile.cshtml")) + "(1,2)";
+                Assert.BuildError(result, "RZ1006", errorLocation);
+            }
+        }
+
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task RazorGenerate_FileWithAbsolutePath_IgnoresFile()
+        public async Task RazorGenerate_FileWithAbsolutePath()
         {
             // In preview1 we totally ignore files that are specified with an absolute path
             var filePath = Path.Combine(Project.SolutionPath, "temp.cshtml");
@@ -258,7 +307,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
   <Content Include=""{filePath}""/>
 </ItemGroup>");
 
-            var result = await DotnetMSBuild(RazorGenerateTarget);
+            var result = await DotnetMSBuild(RazorGenerateTarget, "/t:_IntrospectRazorGenerateWithTargetPath");
 
             Assert.BuildPassed(result);
 
@@ -274,7 +323,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.cs");
-            Assert.FileCountEquals(result, 8, RazorIntermediateOutputPath, "*.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "temp.cs");
+            Assert.FileCountEquals(result, 9, RazorIntermediateOutputPath, "*.cs");
+            Assert.BuildOutputContainsLine(result, $@"RazorGenerateWithTargetPath: {filePath} temp.cshtml {Path.Combine(RazorIntermediateOutputPath, "temp.cs")}");
         }
     }
 }

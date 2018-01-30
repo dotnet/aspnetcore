@@ -25,9 +25,9 @@
   -->
   <Target 
     Name="_HashRazorGenerateInputs" 
-    Condition="'@(RazorGenerate)'!=''">
+    Condition="'@(RazorGenerateWithTargetPath)' != ''">
 
-    <Hash ItemsToHash="@(RazorGenerate)">
+    <Hash ItemsToHash="@(RazorGenerateWithTargetPath)">
       <Output TaskParameter="HashResult" PropertyName="_RazorGenerateInputsHash" />
     </Hash>
 
@@ -51,7 +51,7 @@
     DependsOnTargets="Compile"
     Inputs="$(MSBuildAllProjects);@(RazorReferencePath)"
     Outputs="$(_RazorTagHelperInputCache)"
-    Condition="'@(RazorGenerate)'!=''">
+    Condition="'@(RazorGenerateWithTargetPath)' != ''">
 
     <!-- 
       We're manipulating our output directly here because we want to separate the actual up-to-date check
@@ -81,9 +81,13 @@
     </RazorTagHelper>
   </Target>
 
-  <Target Name="_ResolveRazorGenerateOutputs">
+  <Target Name="_ResolveRazorGenerateOutputs" Condition="'@(RazorGenerateWithTargetPath)' != ''">
+    <Error
+      Text="RazorGenerateWithTargetPath item '%(RazorGenerateWithTargetPath.Identity)' does not specify required metadata 'GeneratedOutput'."
+      Condition="'%(RazorGenerateWithTargetPath.GeneratedOutput)' == ''" />
+
     <ItemGroup>
-      <_RazorGenerateOutput Include="%(RazorGenerate.GeneratedOutput)" Condition="'%(RazorGenerate.GeneratedOutput)'!=''"/>    
+      <_RazorGenerateOutput Include="%(RazorGenerateWithTargetPath.GeneratedOutput)" />
     </ItemGroup>
   </Target>
 
@@ -97,9 +101,9 @@
   <Target
     Name="RazorCoreGenerate"
     DependsOnTargets="$(RazorCoreGenerateDependsOn)"
-    Inputs="$(MSBuildAllProjects);$(_RazorGenerateInputsHashFile);$(_RazorTagHelperOutputCache);@(RazorGenerate)"
+    Inputs="$(MSBuildAllProjects);$(_RazorGenerateInputsHashFile);$(_RazorTagHelperOutputCache);@(RazorGenerateWithTargetPath)"
     Outputs="@(_RazorGenerateOutput)"
-    Condition="'@(RazorGenerate)'!= ''">
+    Condition="'@(RazorGenerateWithTargetPath)'!= ''">
 
     <RemoveDir
       Directories="$(RazorGenerateIntermediateOutputPath)"
@@ -115,10 +119,9 @@
       ToolAssembly="$(_RazorToolAssembly)"
       UseServer="$(UseRazorBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
-      Sources="@(RazorGenerate)"
+      Sources="@(RazorGenerateWithTargetPath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
-      TagHelperManifest="$(_RazorTagHelperOutputCache)"
-      OutputPath="$(RazorGenerateIntermediateOutputPath)" />
+      TagHelperManifest="$(_RazorTagHelperOutputCache)" />
 
     <ItemGroup>
       <FileWrites Include="@(_RazorGenerateOutput)" />
@@ -132,18 +135,6 @@
   <Target Name="_ResolveGeneratedRazorCompileInputs">
     <ItemGroup>
       <RazorCompile Include="@(_RazorGenerateOutput)" />
-      <RazorEmbeddedResource Include="@(RazorGenerate)" Condition="$(EmbedRazorGenerateSources)">
-        <LogicalName>/$([System.String]::Copy('%(Identity)').Replace('\','/'))</LogicalName>
-        <Type>Non-Resx</Type>
-        <WithCulture>false</WithCulture>
-      </RazorEmbeddedResource>
-    </ItemGroup>
-
-    <!-- Similar to _GenerateCompileInputs -->
-    <ItemGroup>
-      <_RazorCoreCompileResourceInputs 
-        Include="@(RazorEmbeddedResource)" 
-        Condition="'%(RazorEmbeddedResource.WithCulture)'=='false' and '%(RazorEmbeddedResource.Type)'=='Non-Resx' " />
     </ItemGroup>
   </Target>
 

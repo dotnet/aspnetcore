@@ -13,20 +13,30 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
+    internal class Builder<T>
+    {
+        public static Builder<T> Make(CommandBase result) => null;
+
+        public static Builder<T> Make(T result) => null;
+    }
+
     internal class GenerateCommand : CommandBase
     {
         public GenerateCommand(Application parent)
             : base(parent, "generate")
         {
-            Sources = Argument("sources", ".cshtml files to compile", multipleValues: true);
+            Sources = Option("-s", ".cshtml files to compile", CommandOptionType.MultipleValue);
+            Outputs = Option("-o", "Generated output file path", CommandOptionType.MultipleValue);
+            RelativePaths = Option("-r", "Relative path", CommandOptionType.MultipleValue);
             ProjectDirectory = Option("-p", "project root directory", CommandOptionType.SingleValue);
-            OutputDirectory = Option("-o", "output directory", CommandOptionType.SingleValue);
             TagHelperManifest = Option("-t", "tag helper manifest file", CommandOptionType.SingleValue);
         }
 
-        public CommandArgument Sources { get; }
+        public CommandOption Sources { get; }
 
-        public CommandOption OutputDirectory { get; }
+        public CommandOption Outputs { get; }
+
+        public CommandOption RelativePaths { get; }
 
         public CommandOption ProjectDirectory { get; }
 
@@ -36,25 +46,30 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             var result = ExecuteCore(
                 projectDirectory: ProjectDirectory.Value(),
-                outputDirectory: OutputDirectory.Value(),
                 tagHelperManifest: TagHelperManifest.Value(),
-                sources: Sources.Values.ToArray());
+                sources: Sources.Values,
+                outputs: Outputs.Values,
+                relativePaths: RelativePaths.Values);
 
             return Task.FromResult(result);
         }
 
         protected override bool ValidateArguments()
         {
-            if (string.IsNullOrEmpty(OutputDirectory.Value()))
+            if (Sources.Values.Count == 0)
             {
-                Error.WriteLine($"{OutputDirectory.ValueName} not specified.");
+                Error.WriteLine($"{Sources.ValueName} should have at least one value.");
                 return false;
             }
 
-            if (Sources.Values.Count == 0)
+            if (Outputs.Values.Count != Sources.Values.Count)
             {
-                Error.WriteLine($"{Sources.Name} should have at least one value.");
-                return false;
+                Error.WriteLine($"{Sources.ValueName} has {Sources.Values.Count}, but {Outputs.ValueName} has {Outputs.Values.Count}.");
+            }
+
+            if (RelativePaths.Values.Count != Sources.Values.Count)
+            {
+                Error.WriteLine($"{Sources.ValueName} has {Sources.Values.Count}, but {RelativePaths.ValueName} has {RelativePaths.Values.Count}.");
             }
 
             if (string.IsNullOrEmpty(ProjectDirectory.Value()))
@@ -65,10 +80,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return true;
         }
 
-        private int ExecuteCore(string projectDirectory, string outputDirectory, string tagHelperManifest, string[] sources)
+        private int ExecuteCore(
+            string projectDirectory,
+            string tagHelperManifest,
+            List<string> sources,
+            List<string> outputs,
+            List<string> relativePaths)
         {
             tagHelperManifest = Path.Combine(projectDirectory, tagHelperManifest);
-            outputDirectory = Path.Combine(projectDirectory, outputDirectory);
 
             var tagHelpers = GetTagHelpers(tagHelperManifest);
 
@@ -79,10 +98,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
             });
 
-            var templateEngine = new MvcRazorTemplateEngine(engine, RazorProject.Create(projectDirectory));
 
-            var sourceItems = GetRazorFiles(projectDirectory, sources);
-            var results = GenerateCode(templateEngine, sourceItems);
+            var inputItems = GetInputItems(projectDirectory, sources, outputs, relativePaths);
+            var compositeProject = new CompositeRazorProjectFileSystem(
+                new[]
+                {
+                    GetVirtualRazorProjectSystem(inputItems),
+                    RazorProjectFileSystem.Create(projectDirectory),
+                });
+
+            var templateEngine = new MvcRazorTemplateEngine(engine, compositeProject);
+
+            var results = GenerateCode(templateEngine, inputItems);
 
             var success = true;
 
@@ -97,14 +124,28 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                 }
 
-                var viewFile = result.ViewFileInfo.ViewEnginePath.Substring(1);
-                var outputFileName = Path.ChangeExtension(viewFile, ".cs");
-
-                var outputFilePath = Path.Combine(outputDirectory, outputFileName);
+                var outputFilePath = result.InputItem.OutputPath;
                 File.WriteAllText(outputFilePath, result.CSharpDocument.GeneratedCode);
             }
 
             return success ? 0 : -1;
+        }
+
+        private VirtualRazorProjectFileSystem GetVirtualRazorProjectSystem(SourceItem[] inputItems)
+        {
+            var project = new VirtualRazorProjectFileSystem();
+            foreach (var item in inputItems)
+            {
+                var projectItem = new FileSystemRazorProjectItem(
+                    basePath: "/",
+                    filePath: item.FilePath,
+                    relativePhysicalPath: item.RelativePhysicalPath,
+                    file: new FileInfo(item.SourcePath));
+
+                project.Add(projectItem);
+            }
+
+            return project;
         }
 
         private IReadOnlyList<TagHelperDescriptor> GetTagHelpers(string tagHelperManifest)
@@ -127,33 +168,27 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        private List<SourceItem> GetRazorFiles(string projectDirectory, string[] sources)
+        private SourceItem[] GetInputItems(string projectDirectory, List<string> sources, List<string> outputs, List<string> relativePath)
         {
-            var trimLength = projectDirectory.EndsWith("/") ? projectDirectory.Length - 1 : projectDirectory.Length;
-
-            var items = new List<SourceItem>(sources.Length);
-            for (var i = 0; i < sources.Length; i++)
+            var items = new SourceItem[sources.Count];
+            for (var i = 0; i < items.Length; i++)
             {
-                var fullPath = Path.Combine(projectDirectory, sources[i]);
-                if (fullPath.StartsWith(projectDirectory, StringComparison.OrdinalIgnoreCase))
-                {
-                    var viewEnginePath = fullPath.Substring(trimLength).Replace('\\', '/');
-                    items.Add(new SourceItem(fullPath, viewEnginePath));
-                }
+                var outputPath = Path.Combine(projectDirectory, outputs[i]);
+                items[i] = new SourceItem(sources[i], outputs[i], relativePath[i]);
             }
 
             return items;
         }
 
-        private OutputItem[] GenerateCode(RazorTemplateEngine templateEngine, IReadOnlyList<SourceItem> sources)
+        private OutputItem[] GenerateCode(RazorTemplateEngine templateEngine, SourceItem[] inputs)
         {
-            var outputs = new OutputItem[sources.Count];
+            var outputs = new OutputItem[inputs.Length];
             Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, i =>
             {
-                var source = sources[i];
+                var inputItem = inputs[i];
 
-                var csharpDocument = templateEngine.GenerateCode(source.ViewEnginePath);
-                outputs[i] = new OutputItem(source, csharpDocument);
+                var csharpDocument = templateEngine.GenerateCode(inputItem.FilePath);
+                outputs[i] = new OutputItem(inputItem, csharpDocument);
             });
 
             return outputs;
@@ -162,43 +197,37 @@ namespace Microsoft.AspNetCore.Razor.Tools
         private struct OutputItem
         {
             public OutputItem(
-                SourceItem viewFileInfo,
+                SourceItem inputItem,
                 RazorCSharpDocument cSharpDocument)
             {
-                ViewFileInfo = viewFileInfo;
+                InputItem = inputItem;
                 CSharpDocument = cSharpDocument;
             }
 
-            public SourceItem ViewFileInfo { get; }
+            public SourceItem InputItem { get; }
 
             public RazorCSharpDocument CSharpDocument { get; }
         }
 
         private struct SourceItem
         {
-            public SourceItem(string fullPath, string viewEnginePath)
+            public SourceItem(string sourcePath, string outputPath, string physicalRelativePath)
             {
-                FullPath = fullPath;
-                ViewEnginePath = viewEnginePath;
+                SourcePath = sourcePath;
+                OutputPath = outputPath;
+                RelativePhysicalPath = physicalRelativePath;
+                FilePath = '/' + physicalRelativePath
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace("//", "/");
             }
 
-            public string FullPath { get; }
+            public string SourcePath { get; }
 
-            public string ViewEnginePath { get; }
+            public string OutputPath { get; }
 
-            public Stream CreateReadStream()
-            {
-                // We are setting buffer size to 1 to prevent FileStream from allocating it's internal buffer
-                // 0 causes constructor to throw
-                var bufferSize = 1;
-                return new FileStream(
-                    FullPath,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite,
-                    bufferSize,
-                    FileOptions.Asynchronous | FileOptions.SequentialScan);
-            }
+            public string RelativePhysicalPath { get; }
+
+            public string FilePath { get; }
         }
 
         private class StaticTagHelperFeature : ITagHelperFeature
