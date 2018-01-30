@@ -36,13 +36,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
 
         private struct PendingAttribute
         {
-            public int SourceSequence;
             public object AttributeValue;
         }
 
         private struct PendingAttributeToken
         {
-            public int SourceSequence;
             public IntermediateToken AttributeValue;
         }
 
@@ -114,7 +112,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                 var token = (IntermediateToken)node.Children.Single();
                 _currentElementAttributeTokens.Add(new PendingAttributeToken
                 {
-                    SourceSequence = _sourceSequence++,
                     AttributeValue = token
                 });
                 return;
@@ -165,12 +162,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
 
         public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
-            var attributeSourceSequence = _sourceSequence++;
             _currentAttributeValues = new List<object>();
             context.RenderChildren(node);
             _currentElementAttributes[node.AttributeName] = new PendingAttribute
             {
-                SourceSequence = attributeSourceSequence,
                 AttributeValue = _currentAttributeValues
             };
             _currentAttributeValues = null;
@@ -249,14 +244,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
 
                             foreach (var attribute in nextTag.Attributes)
                             {
-                                WriteAttribute(codeWriter, _sourceSequence++, attribute.Key, attribute.Value);
+                                WriteAttribute(codeWriter, attribute.Key, attribute.Value);
                             }
 
                             if (_currentElementAttributes.Count > 0)
                             {
                                 foreach (var pair in _currentElementAttributes)
                                 {
-                                    WriteAttribute(codeWriter, pair.Value.SourceSequence, pair.Key, pair.Value.AttributeValue);
+                                    WriteAttribute(codeWriter, pair.Key, pair.Value.AttributeValue);
                                 }
                                 _currentElementAttributes.Clear();
                             }
@@ -267,7 +262,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                                 {
                                     codeWriter
                                         .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
-                                        .Write(token.SourceSequence.ToString())
+                                        .Write((_sourceSequence++).ToString())
                                         .WriteParameterSeparator()
                                         .Write(token.AttributeValue.Content)
                                         .WriteEndMethodInvocation();
@@ -330,11 +325,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             }
         }
 
-        private static void WriteAttribute(CodeWriter codeWriter, int sourceSequence, string key, object value)
+        private void WriteAttribute(CodeWriter codeWriter, string key, object value)
         {
             codeWriter
                 .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
-                .Write(sourceSequence.ToString())
+                .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
