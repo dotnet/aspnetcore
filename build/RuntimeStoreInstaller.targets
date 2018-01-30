@@ -25,7 +25,8 @@
 
     <RuntimeStore20LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/$(PreviousRuntimeStoreArchiveVersion)/Build.RS.</RuntimeStore20LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
-    <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
+    <TimestampRSArchivePrefix>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-</TimestampRSArchivePrefix>
+    <TimestampLinuxRSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</TimestampLinuxRSArchive>
     <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
     <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</TimestampFreeLinuxRSArchive>
   </PropertyGroup>
@@ -43,8 +44,17 @@
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
 
     <Error
-      Text="Timestamp linux archive not found. Expected it to exist in $(TimestampRSArchive)."
-      Condition="!Exists('$(TimestampRSArchive)')" />
+      Text="Timestamp linux archive not found. Expected it to exist in $(TimestampLinuxRSArchive)."
+      Condition="!Exists('$(TimestampLinuxRSArchive)')" />
+    <Error
+      Text="Timestamp osx archive not found. Expected it to exist in $(TimestampRSArchivePrefix)osx-x64.tar.gz."
+      Condition="!Exists('$(TimestampRSArchivePrefix)osx-x64.tar.gz')" />
+    <Error
+      Text="Timestamp winx64 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x64.zip."
+      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x64.zip')" />
+    <Error
+      Text="Timestamp winx86 archive not found. Expected it to exist in $(TimestampRSArchivePrefix)win7-x86.zip."
+      Condition="!Exists('$(TimestampRSArchivePrefix)win7-x86.zip')" />
     <Error
       Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeLinuxRSArchive)."
       Condition="!Exists('$(TimestampFreeLinuxRSArchive)')" />
@@ -132,7 +142,7 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampRSArchive);OutputArchiveName=$(HostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampLinuxRSArchive);OutputArchiveName=$(HostingArchiveName)" />
     <!-- Timestamp free hosting bundle -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
@@ -151,15 +161,35 @@
 
     <ItemGroup>
       <TargzArchives Include="Build.RS.linux.tar.gz">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx.tar.gz">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)osx-x64.tar.gz</RSArchive>
       </TargzArchives>
-      <ZipArchives Include="Build.RS.winx64.zip">
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+      <ZipArchives Include="Build.RS.winx64.zip"></ZipArchives>
+        <DependentArchive>Build.RS.winx64.zip</DependentArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x64.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86.zip">
+        <DependentArchive>Build.RS.winx86.zip</DependentArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x86.zip</RSArchive>
+      </ZipArchives>
+      <TargzArchives Include="Build.RS.linux-$(VersionSuffix).tar.gz">
+        <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+      </TargzArchives>
+      <TargzArchives Include="Build.RS.osx-$(VersionSuffix).tar.gz">
+        <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+      </TargzArchives>
+      <ZipArchives Include="Build.RS.winx64-$(VersionSuffix).zip">
+        <DependentArchive>Build.RS.winx64.zip</DependentArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+      </ZipArchives>
+      <ZipArchives Include="Build.RS.winx86-$(VersionSuffix).zip">
+        <DependentArchive>Build.RS.winx86.zip</DependentArchive>
         <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
       </ZipArchives>
     </ItemGroup>
@@ -168,12 +198,12 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(_InstallerSource)%(TargzArchives.Identity);RSArchive=%(TargzArchives.RSArchive);OutputArchiveName=%(TargzArchives.Identity)" />
+      Properties="DependentArchives=$(_InstallerSource)%(TargzArchives.DependentArchive);RSArchive=%(TargzArchives.RSArchive);OutputArchiveName=%(TargzArchives.Identity)" />
     <!-- Targz -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateZip"
-      Properties="DependentArchives=$(_InstallerSource)%(ZipArchives.Identity);RSArchive=%(ZipArchives.RSArchive);OutputArchiveName=%(ZipArchives.Identity)" />
+      Properties="DependentArchives=$(_InstallerSource)%(ZipArchives.DependentArchive);RSArchive=%(ZipArchives.RSArchive);OutputArchiveName=%(ZipArchives.Identity)" />
   </Target>
 
   <Target Name="_BuildDockerImage">
@@ -344,7 +374,7 @@
       <CommonHostingArguments>$(CommonHostingArguments);RPMLicense=@(_HostingLicense);RPMHomepage=@(_HostingHomepage)</CommonHostingArguments>
 
       <TimestampRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampRSArguments>
-      <TimestampRSArguments>$(TimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(GenericRSArguments)</TimestampRSArguments>
+      <TimestampRSArguments>$(TimestampRSArguments);RSArchive=$(TimestampLinuxRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(GenericRSArguments)</TimestampRSArguments>
 
       <TimestampFreeRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampFreeRSArguments>
       <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
@@ -356,7 +386,7 @@
       <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(TimestampFreeHostingFPMArguments)</TimestampFreeHostingArguments>
 
       <RHTimestampRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampRSArguments>
-      <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
+      <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampLinuxRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
 
       <RHTimestampFreeRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampFreeRSArguments>
       <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
@@ -466,7 +496,7 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampLinuxRSArchive);DebVersion=$(Version);RsDepVersion=$(RuntimeStoreInstallerDependencyVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
