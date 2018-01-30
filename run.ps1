@@ -44,6 +44,9 @@ The path to the configuration file that stores values. Defaults to korebuild.jso
 .PARAMETER RestoreSources
 (optional) Semi-colon delimited list of additional NuGet feeds to use as part of restore.
 
+.PARAMETER ProductBuildId
+(optional) The product build ID for correlation with orchestrated builds.
+
 .PARAMETER MSBuildArguments
 Additional MSBuild arguments to be passed through.
 
@@ -83,6 +86,7 @@ param(
     [string]$AccessTokenSuffix = $null,
     [string]$RestoreSources = $null,
     [string]$AssetRootUrl = $null,
+    [string]$ProductBuildId = $null,
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
 )
@@ -219,6 +223,10 @@ if ($AssetRootUrl) {
 
 if ($AccessTokenSuffix) {
     $MSBuildArguments += "-p:DotNetAssetRootAccessTokenSuffix=$AccessTokenSuffix"
+}
+
+if ($ProductBuildId) {
+    $MSBuildArguments += "-p:DotNetProductBuildId=$ProductBuildId"
 }
 
 # Execute
