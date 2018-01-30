@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.CodeDom.Compiler;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
 {
@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
     /// </summary>
     public class RazorCompiler
     {
-        // TODO: Relax this to allow for whatever C# allows
-        private static Regex ClassNameRegex
-            = new Regex("^[a-z][a-z0-9_]*$", RegexOptions.IgnoreCase);
+        private static CodeDomProvider _csharpCodeDomProvider = CodeDomProvider.CreateProvider("c#");
 
         /// <summary>
         /// Writes C# source code representing Blazor components defined by Razor files.
@@ -150,12 +148,15 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
 
             // Use the filename as class name
             var inputBasename = Path.GetFileNameWithoutExtension(inputFilePathRelative);
-            if (!ClassNameRegex.IsMatch(inputBasename))
+            if (!IsValidClassName(inputBasename))
             {
                 throw new RazorCompilerException($"Invalid name '{inputBasename}'. The name must be valid for a C# class name.");
             }
 
             return (resultNamespace, inputBasename);
         }
+
+        private static bool IsValidClassName(string name)
+            => _csharpCodeDomProvider.IsValidIdentifier(name);
     }
 }
