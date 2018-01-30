@@ -22,6 +22,7 @@ package_version_props_url=''
 asset_root_url=''
 access_token_suffix=''
 restore_sources=''
+product_build_id=''
 msbuild_args=()
 
 #
@@ -44,6 +45,7 @@ __usage() {
     echo "    --package-version-props-url <URL>         The url of the package versions props path containing dependency versions."
     echo "    --access-token <Token>                    The query string to append to any blob store access for PackageVersionPropsUrl, if any."
     echo "    --restore-sources <Sources>               Semi-colon delimited list of additional NuGet feeds to use as part of restore."
+    echo "    --product-build-id <ID>                   The product build ID for correlation with orchestrated builds."
     echo "    -u|--update                               Update to the latest KoreBuild even if the lock file is present."
     echo "    --reinstall                               Reinstall KoreBuild."
     echo ""
@@ -202,6 +204,12 @@ while [[ $# -gt 0 ]]; do
             [ -z "${1+x}" ] && __error "Missing value for parameter --asset-root-url" && __usage
             asset_root_url="$1"
             ;;
+        --product-build-id|-ProductBuildId)
+            shift
+            # This parameter can be an empty string, but it should be set
+            [ -z "${1+x}" ] && __error "Missing value for parameter --product-build-id" && __usage
+            product_build_id="$1"
+            ;;
         -u|--update|-Update)
             update=true
             ;;
@@ -270,6 +278,10 @@ fi
 
 if [ ! -z "$access_token_suffix" ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:DotNetAssetRootAccessTokenSuffix=$access_token_suffix"
+fi
+
+if [ ! -z "$product_build_id" ]; then
+    msbuild_args[${#msbuild_args[*]}]="-p:DotNetProductBuildId=$product_build_id"
 fi
 
 [ -z "$channel" ] && channel='dev'
