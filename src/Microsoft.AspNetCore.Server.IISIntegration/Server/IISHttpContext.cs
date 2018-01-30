@@ -141,8 +141,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             RequestBody = new IISHttpRequestBody(this);
             ResponseBody = new IISHttpResponseBody(this);
 
-            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: Scheduler.TaskRun));
-            var pipe = new Pipe(new PipeOptions(_memoryPool,  readerScheduler: Scheduler.TaskRun));
+            Input = new Pipe(new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.ThreadPool));
+            var pipe = new Pipe(new PipeOptions(_memoryPool,  readerScheduler: PipeScheduler.ThreadPool));
             Output = new OutputProducer(pipe);
         }
 
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal WindowsPrincipal WindowsUser { get; set; }
         public Stream RequestBody { get; set; }
         public Stream ResponseBody { get; set; }
-        public IPipe Input { get; set; }
+        public Pipe Input { get; set; }
         public OutputProducer Output { get; set; }
 
         public IHeaderDictionary RequestHeaders { get; set; }
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
                 finally
                 {
-                    Input.Reader.Advance(readableBuffer.End, readableBuffer.End);
+                    Input.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
                 }
             }
         }
@@ -438,22 +438,22 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 while (true)
                 {
                     // These buffers are pinned
-                    var wb = Input.Writer.Alloc(MinAllocBufferSize);
-                    _inputHandle = wb.Buffer.Retain(true);
+                    var wb = Input.Writer.GetMemory(MinAllocBufferSize);
+                    _inputHandle = wb.Retain(true);
 
                     try
                     {
                         int read = 0;
                         if (_wasUpgraded)
                         {
-                            read = await ReadWebSocketsAsync(wb.Buffer.Length);
+                            read = await ReadWebSocketsAsync(wb.Length);
                         }
                         else
                         {
                             _currentOperation = _currentOperation.ContinueWith(async (t) =>
                             {
                                 _currentOperationType = CurrentOperationType.Read;
-                                read = await ReadAsync(wb.Buffer.Length);
+                                read = await ReadAsync(wb.Length);
                             }).Unwrap();
                             await _currentOperation;
                         }
@@ -463,15 +463,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                             break;
                         }
 
-                        wb.Advance(read);
+                        Input.Writer.Advance(read);
                     }
                     finally
                     {
-                        wb.Commit();
+                        Input.Writer.Commit();
                         _inputHandle.Dispose();
                     }
 
-                    var result = await wb.FlushAsync();
+                    var result = await Input.Writer.FlushAsync();
 
                     if (result.IsCompleted || result.IsCancelled)
                     {
@@ -555,19 +555,19 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
                 finally
                 {
-                    Output.Reader.Advance(consumed);
+                    Output.Reader.AdvanceTo(consumed);
                 }
             }
             Output.Reader.Complete();
         }
 
-        private unsafe IISAwaitable WriteAsync(ReadOnlyBuffer buffer)
+        private unsafe IISAwaitable WriteAsync(ReadOnlyBuffer<byte> buffer)
         {
             var fCompletionExpected = false;
             var hr = 0;
             var nChunks = 0;
 
-            if (buffer.IsSingleSpan)
+            if (buffer.IsSingleSegment)
             {
                 nChunks = 1;
             }
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
             }
 
-            if (buffer.IsSingleSpan)
+            if (buffer.IsSingleSegment)
             {
                 var pDataChunks = stackalloc HttpApiTypes.HTTP_DATA_CHUNK[1];
 

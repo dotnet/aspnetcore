@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private bool _completed = false;
 
-        private readonly IPipe _pipe;
+        private readonly Pipe _pipe;
 
         // https://github.com/dotnet/corefxlab/issues/1334
         // Pipelines don't support multiple awaiters on flush
@@ -26,13 +27,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private readonly object _flushLock = new object();
         private Action _flushCompleted;
 
-        public OutputProducer(IPipe pipe)
+        public OutputProducer(Pipe pipe)
         {
             _pipe = pipe;
             _flushCompleted = OnFlushCompleted;
         }
 
-        public IPipeReader Reader => _pipe.Reader;
+        public PipeReader Reader => _pipe.Reader;
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -73,8 +74,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             ArraySegment<byte> buffer,
             CancellationToken cancellationToken)
         {
-            var writableBuffer = default(WritableBuffer);
-
             lock (_contextLock)
             {
                 if (_completed)
@@ -82,26 +81,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     throw new ObjectDisposedException("Response is already completed");
                 }
 
-                writableBuffer = _pipe.Writer.Alloc(1);
-                // TODO obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-                var writer = new WritableBufferWriter(writableBuffer);
-#pragma warning restore CS0618 // Type or member is obsolete
-                if (buffer.Count > 0)
-                {
-                    writer.Write(buffer.Array, buffer.Offset, buffer.Count);
-                }
-
-                writableBuffer.Commit();
+                _pipe.Writer.Write(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count));
             }
 
-            return FlushAsync(writableBuffer, cancellationToken);
+            return FlushAsync(_pipe.Writer, cancellationToken);
         }
 
-        private Task FlushAsync(WritableBuffer writableBuffer,
+        private Task FlushAsync(PipeWriter pipeWriter,
             CancellationToken cancellationToken)
         {
-            var awaitable = writableBuffer.FlushAsync(cancellationToken);
+            var awaitable = pipeWriter.FlushAsync(cancellationToken);
             if (awaitable.IsCompleted)
             {
                 // The flush task can't fail today
