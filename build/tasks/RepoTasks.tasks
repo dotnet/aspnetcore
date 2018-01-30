@@ -20,4 +20,15 @@
   <UsingTask TaskName="RepoTasks.ResolveHostingStartupPackages" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.TrimDeps" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyCoherentVersions" AssemblyFile="$(_RepoTaskAssembly)" />
+
+  <!-- tools from dotnet-buildtools -->
+  <PropertyGroup>
+    <NuGetPackagesPath>$(NUGET_PACKAGES)</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(USERPROFILE)' != '' ">$(USERPROFILE)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(HOME)' != '' ">$(HOME)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
+    <_MicrosoftDotNetBuildTasksFeedTaskDir>$(NuGetPackagesPath)microsoft.dotnet.build.tasks.feed\$(DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion.ToLowerInvariant())\build\netstandard1.5\</_MicrosoftDotNetBuildTasksFeedTaskDir>
+  </PropertyGroup>
+
+  <UsingTask TaskName="PushToBlobFeed" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
 </Project>
