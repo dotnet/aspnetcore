@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var stream = await response.Content.ReadAsStreamAsync();
             var pipelineReader = StreamPipeConnection.CreateReader(new PipeOptions(_memoryPool), stream);
             var readCancellationRegistration = cancellationToken.Register(
-                reader => ((IPipeReader)reader).CancelPendingRead(), pipelineReader);
+                reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
             try
             {
                 while (true)
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                     finally
                     {
-                        pipelineReader.Advance(consumed, examined);
+                        pipelineReader.AdvanceTo(consumed, examined);
                     }
                 }
             }

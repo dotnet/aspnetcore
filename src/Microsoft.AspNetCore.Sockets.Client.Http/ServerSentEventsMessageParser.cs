@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Sequences;
 using System.IO.Pipelines;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private List<byte[]> _data = new List<byte[]>();
 
-        public ParseResult ParseMessage(ReadOnlyBuffer buffer, out Position consumed, out Position examined, out byte[] message)
+        public ParseResult ParseMessage(ReadOnlyBuffer<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             while (buffer.Length > 0)
             {
-                if (ReadOnlyBuffer.Seek(start, end, out var lineEnd, ByteLF) == -1)
+                if (!(buffer.PositionOf(ByteLF) is SequencePosition lineEnd))
                 {
                     // For the case of  data: Foo\r\n\r\<Anytine except \n>
                     if (_internalParserState == InternalParseState.ReadEndOfMessage)
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     return ParseResult.Incomplete;
                 }
 
-                lineEnd = buffer.Move(lineEnd, 1);
+                lineEnd = buffer.GetPosition(lineEnd, 1);
                 var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
                 buffer = buffer.Slice(line.Length);
 
@@ -148,9 +149,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlyBuffer buffer)
+        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlyBuffer<byte> buffer)
         {
-            if (buffer.IsSingleSpan)
+            if (buffer.IsSingleSegment)
             {
                 return buffer.First.Span;
             }
