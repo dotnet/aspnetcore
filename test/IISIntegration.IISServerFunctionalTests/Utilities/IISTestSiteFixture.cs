@@ -34,15 +34,16 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
             };
 
             _deployer = ApplicationDeployerFactory.Create(deploymentParameters, NullLoggerFactory.Instance);
-            var deploymentResult = _deployer.DeployAsync().Result;
-            Client = deploymentResult.HttpClient;
-            BaseUri = deploymentResult.ApplicationBaseUri;
-            ShutdownToken = deploymentResult.HostShutdownToken;
+            DeploymentResult = _deployer.DeployAsync().Result;
+            Client = DeploymentResult.HttpClient;
+            BaseUri = DeploymentResult.ApplicationBaseUri;
+            ShutdownToken = DeploymentResult.HostShutdownToken;
         }
 
         public string BaseUri { get; }
         public HttpClient Client { get; }
         public CancellationToken ShutdownToken { get; }
+        public DeploymentResult DeploymentResult { get; }
 
         public void Dispose()
         {
