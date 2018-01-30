@@ -232,23 +232,6 @@ namespace Microsoft.AspNetCore.Http
             Assert.Same(middlewareFactory.Created, middlewareFactory.Released);
         }
 
-        [Fact]
-        public async Task UseMiddlewareWithIMiddlewareAndMiddlewareFactoryTypeActivates()
-        {
-            var mockServiceProvider = new DummyServiceProvider();
-            var builder = new ApplicationBuilder(mockServiceProvider);
-            builder.UseMiddleware(typeof(Middleware));
-            var app = builder.Build();
-            var context = new DefaultHttpContext();
-            var sp = new DummyServiceProvider();
-            var middlewareFactory = new MiddlewareFactory(sp);
-            sp.AddService(typeof(IMiddlewareFactory), middlewareFactory);
-            context.RequestServices = sp;
-            await app(context);
-            Assert.True(Assert.IsType<bool>(context.Items["before"]));
-            Assert.True(Assert.IsType<bool>(context.Items["after"]));
-        }
-
         public class Middleware : IMiddleware
         {
             public async Task InvokeAsync(HttpContext context, RequestDelegate next)

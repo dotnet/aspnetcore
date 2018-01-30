@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http
 
         public IMiddleware Create(Type middlewareType)
         {
-            return ActivatorUtilities.GetServiceOrCreateInstance(_serviceProvider, middlewareType) as IMiddleware;
+            return _serviceProvider.GetRequiredService(middlewareType) as IMiddleware;
         }
 
         public void Release(IMiddleware middleware)
