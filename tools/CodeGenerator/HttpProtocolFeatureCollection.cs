@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+//using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace CodeGenerator
 {
@@ -23,39 +23,39 @@ namespace CodeGenerator
         {
             var alwaysFeatures = new[]
             {
-                typeof(IHttpRequestFeature),
-                typeof(IHttpResponseFeature),
-                typeof(IHttpRequestIdentifierFeature),
-                typeof(IServiceProvidersFeature),
-                typeof(IHttpRequestLifetimeFeature),
-                typeof(IHttpConnectionFeature),
+                "IHttpRequestFeature",
+                "IHttpResponseFeature",
+                "IHttpRequestIdentifierFeature",
+                "IServiceProvidersFeature",
+                "IHttpRequestLifetimeFeature",
+                "IHttpConnectionFeature",
             };
 
             var commonFeatures = new[]
             {
-                typeof(IHttpAuthenticationFeature),
-                typeof(IQueryFeature),
-                typeof(IFormFeature),
+                "IHttpAuthenticationFeature",
+                "IQueryFeature",
+                "IFormFeature",
             };
 
             var sometimesFeatures = new[]
             {
-                typeof(IHttpUpgradeFeature),
-                typeof(IHttp2StreamIdFeature),
-                typeof(IResponseCookiesFeature),
-                typeof(IItemsFeature),
-                typeof(ITlsConnectionFeature),
-                typeof(IHttpWebSocketFeature),
-                typeof(ISessionFeature),
-                typeof(IHttpMaxRequestBodySizeFeature),
-                typeof(IHttpMinRequestBodyDataRateFeature),
-                typeof(IHttpMinResponseDataRateFeature),
-                typeof(IHttpBodyControlFeature),
+                "IHttpUpgradeFeature",
+                "IHttp2StreamIdFeature",
+                "IResponseCookiesFeature",
+                "IItemsFeature",
+                "ITlsConnectionFeature",
+                "IHttpWebSocketFeature",
+                "ISessionFeature",
+                "IHttpMaxRequestBodySizeFeature",
+                "IHttpMinRequestBodyDataRateFeature",
+                "IHttpMinResponseDataRateFeature",
+                "IHttpBodyControlFeature",
             };
 
             var rareFeatures = new[]
             {
-                typeof(IHttpSendFileFeature),
+                "IHttpSendFileFeature",
             };
 
             var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
@@ -64,15 +64,15 @@ namespace CodeGenerator
             // See also: src/Kestrel/Http/HttpProtocol.FeatureCollection.cs
             var implementedFeatures = new[]
             {
-                typeof(IHttpRequestFeature),
-                typeof(IHttpResponseFeature),
-                typeof(IHttpRequestIdentifierFeature),
-                typeof(IHttpRequestLifetimeFeature),
-                typeof(IHttpConnectionFeature),
-                typeof(IHttpMaxRequestBodySizeFeature),
-                typeof(IHttpMinRequestBodyDataRateFeature),
-                typeof(IHttpMinResponseDataRateFeature),
-                typeof(IHttpBodyControlFeature),
+                "IHttpRequestFeature",
+                "IHttpResponseFeature",
+                "IHttpRequestIdentifierFeature",
+                "IHttpRequestLifetimeFeature",
+                "IHttpConnectionFeature",
+                "IHttpMaxRequestBodySizeFeature",
+                "IHttpMinRequestBodyDataRateFeature",
+                "IHttpMinResponseDataRateFeature",
+                "IHttpBodyControlFeature",
             };
 
             return $@"// Copyright (c) .NET Foundation. All rights reserved.
@@ -81,26 +81,30 @@ namespace CodeGenerator
 using System;
 using System.Collections.Generic;
 
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
     public partial class {className}
     {{{Each(allFeatures, feature => $@"
-        private static readonly Type {feature.Name}Type = typeof(global::{feature.FullName});")}
+        private static readonly Type {feature}Type = typeof({feature});")}
 {Each(allFeatures, feature => $@"
-        private object _current{feature.Name};")}
+        private object _current{feature};")}
 
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
-            _current{feature.Name} = this;")}
+            _current{feature} = this;")}
             {Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
-            _current{feature.Name} = null;")}
+            _current{feature} = null;")}
         }}
 
         internal object FastFeatureGet(Type key)
         {{{Each(allFeatures, feature => $@"
-            if (key == {feature.Name}Type)
+            if (key == {feature}Type)
             {{
-                return _current{feature.Name};
+                return _current{feature};
             }}")}
             return ExtraFeatureGet(key);
         }}
@@ -109,9 +113,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {{
             _featureRevision++;
             {Each(allFeatures, feature => $@"
-            if (key == {feature.Name}Type)
+            if (key == {feature}Type)
             {{
-                _current{feature.Name} = feature;
+                _current{feature} = feature;
                 return;
             }}")};
             ExtraFeatureSet(key, feature);
@@ -119,9 +123,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {{{Each(allFeatures, feature => $@"
-            if (_current{feature.Name} != null)
+            if (_current{feature} != null)
             {{
-                yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name} as global::{feature.FullName});
+                yield return new KeyValuePair<Type, object>({feature}Type, _current{feature} as {feature});
             }}")}
 
             if (MaybeExtra != null)

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -78,19 +79,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (data.Count > 0)
                 {
-                    var writableBuffer = RequestBodyPipe.Writer.Alloc(1);
-
                     try
                     {
-                        writableBuffer.Write(data);
+                        RequestBodyPipe.Writer.Write(data);
                     }
                     finally
                     {
-                        writableBuffer.Commit();
+                        RequestBodyPipe.Writer.Commit();
                     }
 
                     RequestBodyStarted = true;
-                    await writableBuffer.FlushAsync();
+                    await RequestBodyPipe.Writer.FlushAsync();
                 }
 
                 if (endStream)

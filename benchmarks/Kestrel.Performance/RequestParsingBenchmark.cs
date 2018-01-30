@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class RequestParsingBenchmark
     {
-        public IPipe Pipe { get; set; }
+        public Pipe Pipe { get; set; }
 
         public Http1Connection Http1Connection { get; set; }
 
@@ -130,10 +130,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void InsertData(byte[] bytes)
         {
-            var buffer = Pipe.Writer.Alloc(2048);
-            buffer.Write(bytes);
+            Pipe.Writer.Write(bytes);
             // There should not be any backpressure and task completes immediately
-            buffer.FlushAsync().GetAwaiter().GetResult();
+            Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
         }
 
         private void ParseDataDrainBuffer()
@@ -166,7 +165,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             }
             while (readableBuffer.Length > 0);
 
-            Pipe.Reader.Advance(readableBuffer.End);
+            Pipe.Reader.AdvanceTo(readableBuffer.End);
         }
 
         private void ParseData()
@@ -189,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
-                Pipe.Reader.Advance(consumed, examined);
+                Pipe.Reader.AdvanceTo(consumed, examined);
 
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
@@ -198,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
-                Pipe.Reader.Advance(consumed, examined);
+                Pipe.Reader.AdvanceTo(consumed, examined);
             }
             while (true);
         }

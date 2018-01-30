@@ -26,11 +26,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxResponseBufferSize = maxResponseBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var mockScheduler = Mock.Of<Scheduler>();
+            var mockScheduler = Mock.Of<PipeScheduler>();
             var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, new MemoryPool(), readerScheduler: mockScheduler);
 
-            Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.MaximumSizeLow);
-            Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.MaximumSizeHigh);
+            Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.ResumeWriterThreshold);
+            Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.PauseWriterThreshold);
             Assert.Same(mockScheduler, outputPipeOptions.ReaderScheduler);
             Assert.Same(serviceContext.ThreadPool, outputPipeOptions.WriterScheduler);
         }
@@ -44,11 +44,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var mockScheduler = Mock.Of<Scheduler>();
+            var mockScheduler = Mock.Of<PipeScheduler>();
             var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, new MemoryPool(), writerScheduler: mockScheduler);
 
-            Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.MaximumSizeLow);
-            Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.MaximumSizeHigh);
+            Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.ResumeWriterThreshold);
+            Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.PauseWriterThreshold);
             Assert.Same(serviceContext.ThreadPool, inputPipeOptions.ReaderScheduler);
             Assert.Same(mockScheduler, inputPipeOptions.WriterScheduler);
         }
@@ -66,10 +66,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ServiceContext = serviceContext
             });
 
-            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeLow);
-            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedInputPipeOptions.MaximumSizeHigh);
+            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedInputPipeOptions.ResumeWriterThreshold);
+            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedInputPipeOptions.PauseWriterThreshold);
             Assert.Same(serviceContext.ThreadPool, connectionLifetime.AdaptedInputPipeOptions.ReaderScheduler);
-            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
+            Assert.Same(PipeScheduler.Inline, connectionLifetime.AdaptedInputPipeOptions.WriterScheduler);
         }
 
         [Theory]
@@ -85,10 +85,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ServiceContext = serviceContext
             });
 
-            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeLow);
-            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedOutputPipeOptions.MaximumSizeHigh);
-            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.ReaderScheduler);
-            Assert.Same(Scheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.WriterScheduler);
+            Assert.Equal(expectedMaximumSizeLow, connectionLifetime.AdaptedOutputPipeOptions.ResumeWriterThreshold);
+            Assert.Equal(expectedMaximumSizeHigh, connectionLifetime.AdaptedOutputPipeOptions.PauseWriterThreshold);
+            Assert.Same(PipeScheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.ReaderScheduler);
+            Assert.Same(PipeScheduler.Inline, connectionLifetime.AdaptedOutputPipeOptions.WriterScheduler);
         }
     }
 }

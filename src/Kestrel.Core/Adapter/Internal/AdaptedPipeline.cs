@@ -10,17 +10,17 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    public class AdaptedPipeline : IPipeConnection
+    public class AdaptedPipeline : IDuplexPipe
     {
         private const int MinAllocBufferSize = 2048;
 
-        private readonly IPipeConnection _transport;
-        private readonly IPipeConnection _application;
+        private readonly IDuplexPipe _transport;
+        private readonly IDuplexPipe _application;
 
-        public AdaptedPipeline(IPipeConnection transport,
-                               IPipeConnection application,
-                               IPipe inputPipe,
-                               IPipe outputPipe)
+        public AdaptedPipeline(IDuplexPipe transport,
+                               IDuplexPipe application,
+                               Pipe inputPipe,
+                               Pipe outputPipe)
         {
             _transport = transport;
             _application = application;
@@ -28,13 +28,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             Output = outputPipe;
         }
 
-        public IPipe Input { get; }
+        public Pipe Input { get; }
 
-        public IPipe Output { get; }
+        public Pipe Output { get; }
 
-        IPipeReader IPipeConnection.Input => Input.Reader;
+        PipeReader IDuplexPipe.Input => Input.Reader;
 
-        IPipeWriter IPipeConnection.Output => Output.Writer;
+        PipeWriter IDuplexPipe.Output => Output.Writer;
 
         public async Task RunAsync(Stream stream)
         {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                             }
                             await stream.FlushAsync();
                         }
-                        else if (buffer.IsSingleSpan)
+                        else if (buffer.IsSingleSegment)
                         {
                             var array = buffer.First.GetArray();
                             await stream.WriteAsync(array.Array, array.Offset, array.Count);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     }
                     finally
                     {
-                        Output.Reader.Advance(buffer.End);
+                        Output.Reader.AdvanceTo(buffer.End);
                     }
                 }
             }
@@ -124,13 +124,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 while (true)
                 {
 
-                    var outputBuffer = Input.Writer.Alloc(MinAllocBufferSize);
+                    var outputBuffer = Input.Writer.GetMemory(MinAllocBufferSize);
 
-                    var array = outputBuffer.Buffer.GetArray();
+                    var array = outputBuffer.GetArray();
                     try
                     {
                         var bytesRead = await stream.ReadAsync(array.Array, array.Offset, array.Count);
-                        outputBuffer.Advance(bytesRead);
+                        Input.Writer.Advance(bytesRead);
 
                         if (bytesRead == 0)
                         {
@@ -140,10 +140,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     }
                     finally
                     {
-                        outputBuffer.Commit();
+                        Input.Writer.Commit();
                     }
 
-                    var result = await outputBuffer.FlushAsync();
+                    var result = await Input.Writer.FlushAsync();
 
                     if (result.IsCompleted)
                     {

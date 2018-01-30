@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             feature.Application = new PipeConnection(Output.Reader, Input.Writer);
         }
 
-        public IPipe Input { get; private set; }
-        public IPipe Output { get; private set; }
+        public Pipe Input { get; private set; }
+        public Pipe Output { get; private set; }
     }
 }

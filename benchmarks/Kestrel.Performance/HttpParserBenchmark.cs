@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
-        private ReadOnlyBuffer _buffer;
+        private ReadOnlyBuffer<byte> _buffer;
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
         public void PlaintextTechEmpower()
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private void InsertData(byte[] data)
         {
-            _buffer = new ReadOnlyBuffer(data);
+            _buffer = new ReadOnlyBuffer<byte>(data);
         }
 
         private void ParseData()

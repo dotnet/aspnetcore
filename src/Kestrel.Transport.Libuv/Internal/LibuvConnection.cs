@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private readonly UvStreamHandle _socket;
 
-        private WritableBuffer? _currentWritableBuffer;
         private MemoryHandle _bufferHandle;
 
         public LibuvConnection(ListenerContext context, UvStreamHandle socket) : base(context)
@@ -107,13 +106,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private unsafe LibuvFunctions.uv_buf_t OnAlloc(UvStreamHandle handle, int suggestedSize)
         {
-            Debug.Assert(_currentWritableBuffer == null);
-            var currentWritableBuffer = Input.Alloc(MinAllocBufferSize);
-            _currentWritableBuffer = currentWritableBuffer;
+            var currentWritableBuffer = Input.GetMemory(MinAllocBufferSize);
+            _bufferHandle = currentWritableBuffer.Retain(true);
 
-            _bufferHandle = currentWritableBuffer.Buffer.Retain(true);
-
-            return handle.Libuv.buf_init((IntPtr)_bufferHandle.Pointer, currentWritableBuffer.Buffer.Length);
+            return handle.Libuv.buf_init((IntPtr)_bufferHandle.Pointer, currentWritableBuffer.Length);
         }
 
         private static void ReadCallback(UvStreamHandle handle, int status, object state)
@@ -127,17 +123,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 // EAGAIN/EWOULDBLOCK so just return the buffer.
                 // http://docs.libuv.org/en/v1.x/stream.html#c.uv_read_cb
-                Debug.Assert(_currentWritableBuffer != null);
-                _currentWritableBuffer.Value.Commit();
+                Input.Commit();
             }
             else if (status > 0)
             {
                 Log.ConnectionRead(ConnectionId, status);
 
-                Debug.Assert(_currentWritableBuffer != null);
-                var currentWritableBuffer = _currentWritableBuffer.Value;
-                currentWritableBuffer.Advance(status);
-                var flushTask = currentWritableBuffer.FlushAsync();
+                Input.Advance(status);
+                var flushTask = Input.FlushAsync();
 
                 if (!flushTask.IsCompleted)
                 {
@@ -149,7 +142,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else
             {
                 // Given a negative status, it's possible that OnAlloc wasn't called.
-                _currentWritableBuffer?.Commit();
+                Input.Commit();
                 _socket.ReadStop();
 
                 IOException error = null;
@@ -180,7 +173,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             // Cleanup state from last OnAlloc. This is safe even if OnAlloc wasn't called.
-            _currentWritableBuffer = null;
             _bufferHandle.Dispose();
         }
 

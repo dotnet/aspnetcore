@@ -6,15 +6,16 @@ using System.IO.Pipelines;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
     public class RawStream : Stream
     {
-        private readonly IPipeReader _input;
-        private readonly IPipeWriter _output;
+        private readonly PipeReader _input;
+        private readonly PipeWriter _output;
 
-        public RawStream(IPipeReader input, IPipeWriter output)
+        public RawStream(PipeReader input, PipeWriter output)
         {
             _input = input;
             _output = output;
@@ -75,14 +76,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
-            var output = _output.Alloc();
-
             if (buffer != null)
             {
-                output.Write(new ArraySegment<byte>(buffer, offset, count));
+                _output.Write(new ReadOnlySpan<byte>(buffer, offset, count));
             }
 
-            await output.FlushAsync(token);
+            await _output.FlushAsync(token);
         }
 
         public override void Flush()
@@ -118,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 }
                 finally
                 {
-                    _input.Advance(readableBuffer.End, readableBuffer.End);
+                    _input.AdvanceTo(readableBuffer.End, readableBuffer.End);
                 }
             }
         }

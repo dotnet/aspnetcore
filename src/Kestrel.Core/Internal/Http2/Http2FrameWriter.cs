@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
@@ -20,12 +21,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Frame _outgoingFrame = new Http2Frame();
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
-        private readonly IPipeWriter _outputWriter;
-        private readonly IPipeReader _outputReader;
+        private readonly PipeWriter _outputWriter;
+        private readonly PipeReader _outputReader;
 
         private bool _completed;
 
-        public Http2FrameWriter(IPipeWriter outputPipeWriter, IPipeReader outputPipeReader)
+        public Http2FrameWriter(PipeWriter outputPipeWriter, PipeReader outputPipeReader)
         {
             _outputWriter = outputPipeWriter;
             _outputReader = outputPipeReader;
@@ -48,7 +49,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(Constants.EmptyData);
+            lock (_writeLock)
+            {
+                return WriteAsync(Constants.EmptyData);
+            }
         }
 
         public Task Write100ContinueAsync(int streamId)
@@ -185,9 +189,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return;
             }
 
-            var writeableBuffer = _outputWriter.Alloc(1);
-            writeableBuffer.Write(data);
-            writeableBuffer.Commit();
+            _outputWriter.Write(data);
+            _outputWriter.Commit();
         }
 
         // Must be called with _writeLock
@@ -198,9 +201,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return;
             }
 
-            var writeableBuffer = _outputWriter.Alloc(1);
-            writeableBuffer.Write(data);
-            await writeableBuffer.FlushAsync(cancellationToken);
+            _outputWriter.Write(data);
+            await _outputWriter.FlushAsync(cancellationToken);
         }
 
         private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)

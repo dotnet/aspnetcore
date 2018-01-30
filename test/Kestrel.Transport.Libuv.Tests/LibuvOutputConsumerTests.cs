@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // SocketOutput, the write callback would never be invoked for writes larger than
             // maxResponseBufferSize even after the write actually completed.
 
-            // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
+            // ConnectionHandler will set Pause/ResumeWriterThreshold to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: maxResponseBufferSize ?? 0,
-                maximumSizeLow: maxResponseBufferSize ?? 0
+                pauseWriterThreshold: maxResponseBufferSize ?? 0,
+                resumeWriterThreshold: maxResponseBufferSize ?? 0
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -96,14 +96,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return 0;
             };
 
-            // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
+            // ConnectionHandler will set Pause/ResumeWriterThreshold to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: 0,
-                maximumSizeLow: 0
+                pauseWriterThreshold: 0,
+                resumeWriterThreshold: 0
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -144,14 +144,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return 0;
             };
 
-            // ConnectionHandler will set MaximumSizeHigh/Low to 1 when MaxResponseBufferSize is zero.
+            // ConnectionHandler will set Pause/ResumeWriterThreshold to 1 when MaxResponseBufferSize is zero.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: 1,
-                maximumSizeLow: 1
+                pauseWriterThreshold: 1,
+                resumeWriterThreshold: 1
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -206,8 +206,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: maxResponseBufferSize,
-                maximumSizeLow: maxResponseBufferSize
+                pauseWriterThreshold: maxResponseBufferSize,
+                resumeWriterThreshold: maxResponseBufferSize
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -270,8 +270,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
-                    maximumSizeHigh: maxResponseBufferSize,
-                    maximumSizeLow: maxResponseBufferSize
+                    pauseWriterThreshold: maxResponseBufferSize,
+                    resumeWriterThreshold: maxResponseBufferSize
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -340,8 +340,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
-                    maximumSizeHigh: maxResponseBufferSize,
-                    maximumSizeLow: maxResponseBufferSize
+                    pauseWriterThreshold: maxResponseBufferSize,
+                    resumeWriterThreshold: maxResponseBufferSize
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions, abortedSource))
@@ -433,8 +433,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
-                    maximumSizeHigh: maxResponseBufferSize,
-                    maximumSizeLow: maxResponseBufferSize
+                    pauseWriterThreshold: maxResponseBufferSize,
+                    resumeWriterThreshold: maxResponseBufferSize
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -517,8 +517,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
-                    maximumSizeHigh: maxResponseBufferSize,
-                    maximumSizeLow: maxResponseBufferSize
+                    pauseWriterThreshold: maxResponseBufferSize,
+                    resumeWriterThreshold: maxResponseBufferSize
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -599,8 +599,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: maxResponseBufferSize,
-                maximumSizeLow: maxResponseBufferSize
+                pauseWriterThreshold: maxResponseBufferSize,
+                resumeWriterThreshold: maxResponseBufferSize
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -654,14 +654,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 return 0;
             };
 
-            // ConnectionHandler will set MaximumSizeHigh/Low to zero when MaxResponseBufferSize is null.
+            // ConnectionHandler will set Pause/ResumeWriterThreshold to zero when MaxResponseBufferSize is null.
             // This is verified in PipeOptionsTests.OutputPipeOptionsConfiguredCorrectly.
             var pipeOptions = new PipeOptions
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
-                maximumSizeHigh: maxResponseBufferSize ?? 0,
-                maximumSizeLow: maxResponseBufferSize ?? 0
+                pauseWriterThreshold: maxResponseBufferSize ?? 0,
+                resumeWriterThreshold: maxResponseBufferSize ?? 0
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             return (Http1OutputProducer)http1Connection.Output;
         }
 
-        private async Task WriteOutputAsync(LibuvOutputConsumer consumer, IPipeReader outputReader, Http1Connection http1Connection)
+        private async Task WriteOutputAsync(LibuvOutputConsumer consumer, PipeReader outputReader, Http1Connection http1Connection)
         {
             // This WriteOutputAsync() calling code is equivalent to that in LibuvConnection.
             try

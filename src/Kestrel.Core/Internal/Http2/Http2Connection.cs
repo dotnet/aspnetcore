@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Sequences;
 using System.Collections.Concurrent;
 using System.IO.Pipelines;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public string ConnectionId => _context.ConnectionId;
 
-        public IPipeReader Input => _context.Transport.Input;
+        public PipeReader Input => _context.Transport.Input;
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     finally
                     {
-                        Input.Advance(consumed, examined);
+                        Input.AdvanceTo(consumed, examined);
                     }
                 }
 
@@ -165,7 +166,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     finally
                     {
-                        Input.Advance(consumed, examined);
+                        Input.AdvanceTo(consumed, examined);
                     }
                 }
             }
@@ -216,7 +217,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private bool ParsePreface(ReadOnlyBuffer readableBuffer, out Position consumed, out Position examined)
+        private bool ParsePreface(ReadOnlyBuffer<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = readableBuffer.Start;
             examined = readableBuffer.End;
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return false;
             }
 
-            var span = readableBuffer.IsSingleSpan
+            var span = readableBuffer.IsSingleSegment
                 ? readableBuffer.First.Span
                 : readableBuffer.ToSpan();
 
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
-            consumed = examined = readableBuffer.Move(readableBuffer.Start, ClientPreface.Length);
+            consumed = examined = readableBuffer.GetPosition(readableBuffer.Start, ClientPreface.Length);
             return true;
         }
 

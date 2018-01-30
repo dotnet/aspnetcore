@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Http1Connection.HttpResponseControl = Mock.Of<IHttpResponseControl>();
         }
 
-        public IPipeConnection Transport { get; }
+        public IDuplexPipe Transport { get; }
 
-        public IPipeConnection Application { get; }
+        public IDuplexPipe Application { get; }
 
         public Http1ConnectionContext Http1ConnectionContext { get; }
 

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         //  buffer.Count is int
                         var actual = (int) Math.Min(readableBuffer.Length, buffer.Count);
                         var slice = readableBuffer.Slice(0, actual);
-                        consumed = readableBuffer.Move(readableBuffer.Start, actual);
+                        consumed = readableBuffer.GetPosition(readableBuffer.Start, actual);
                         slice.CopyTo(buffer);
                         return actual;
                     }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 finally
                 {
-                    _context.RequestBodyPipe.Reader.Advance(consumed);
+                    _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
                 }
             }
         }
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 finally
                 {
-                    _context.RequestBodyPipe.Reader.Advance(consumed);
+                    _context.RequestBodyPipe.Reader.AdvanceTo(consumed);
                 }
             }
         }
