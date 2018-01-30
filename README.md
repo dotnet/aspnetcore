@@ -17,3 +17,4 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
  - ASP.NET Identity RavenDB Provider:
     - [By Judah Gabriel Himango](https://github.com/JudahGabriel/RavenDB.Identity)
     - [By Iskandar Rafiev](https://github.com/maqduni/AspNetCore.Identity.RavenDB)
+ - [ASP.NET Identity Cassandra Provider](https://github.com/lkubis/AspNetCore.Identity.Cassandra)
