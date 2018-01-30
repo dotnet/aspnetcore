@@ -55,19 +55,14 @@
     <RepoTasks.JoinItems
          Left="@(ArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="PackageId"
          Right="@(PackageArtifact->WithMetadataValue('LZMA', 'true')->WithMetadataValue('PackageType', 'DotnetTool'))">
-       <Output TaskParameter="JoinResult" ItemName="_DotnetToolPackages" />
+       <Output TaskParameter="JoinResult" ItemName="_DotnetToolPackageId" />
     </RepoTasks.JoinItems>
 
     <ItemGroup>
-      <_DotnetToolPackages Update="@(_DotnetToolPackages)">
-        <DestFileName>$([System.String]::new('%(PackageId).%(Version)').ToLowerInvariant())</DestFileName>
-        <DestDirName>$([System.String]::new('%(PackageId)/%(Version)').ToLowerInvariant())</DestDirName>
-      </_DotnetToolPackages>
+      <_DotnetToolPackages Include="$(MetapackageRestoreSource)%(_DotnetToolPackageId.Identity).%(_DotnetToolPackageId.Version).nupkg" />
     </ItemGroup>
 
-    <!-- No need to extract global CLI tool packages. They are extracted from the CliFallbackFolder into $HOME/.dotnet/tools by dotnet-install-tool. -->
-    <MakeDir Directories="$(FallbackStagingDir)\%(_DotnetToolPackages.DestDirName)\" Condition="'%(Identity)'!= ''" />
-    <Copy SourceFiles="$(MetapackageRestoreSource)%(_DotnetToolPackages.Identity).%(Version).nupkg" DestinationFiles="$(FallbackStagingDir)\%(DestDirName)\%(DestFileName).nupkg" Condition="'%(Identity)'!= ''" />
+    <RepoTasks.CreateNuGetV3FolderFeed Packages="@(_DotnetToolPackages)" DestinationFolder="$(FallbackStagingDir)" Overwrite="true" />
 
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
