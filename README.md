@@ -22,7 +22,7 @@ Commonly referenced packages:
 [metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.svg?style=flat-square&label=nuget
 
 Package                           | NuGet.org
-----------------------------------|-------------------
+:---------------------------------|:---------------------------------------------------------
 Microsoft.AspNetCore.All          | [![][all-metapackage-nuget-badge]][all-metapackage-nuget]
 Microsoft.AspNetCore              | [![][metapackage-nuget-badge]][metapackage-nuget]
 
@@ -43,17 +43,13 @@ Commonly referenced packages:
 [metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
 
 Package                           | MyGet
-----------------------------------|-------------------
+:---------------------------------|:---------------------------------------------------------
 Microsoft.AspNetCore.All          | [![][all-metapackage-myget-badge]][all-metapackage-myget]
 Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-myget]
 
 ### ASP.NET Core Shared Framework
 
-[win-x64-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x86-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-win-x86-version-badge.svg
-[linux-x64-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-linux-x64-version-badge.svg
-[osx-x64-badge]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-osx-x64-version-badge.svg
-
+[badge-master]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
 [win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
 [win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
 [win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
@@ -63,14 +59,24 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-x64.deb
 [redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-x64.rpm
 
-Platform              | Latest (dev branch)
-----------------------|---------------------
-Windows (x64)         | ![][win-x64-badge]<br>[Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]
-Windows (x86)         | ![][win-x86-badge]<br>[Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]
-macOS (x64)           | ![][osx-x64-badge]<br>[Archive (tar.gz)][osx-x64-tar]
-Linux (x64)           | ![][linux-x64-badge]<br>[Archive (tar.gz)][linux-x64-tar]
-Debian/Ubuntu (x64)   | ![][linux-x64-badge]<br>[Installer (deb)][debian-x64-deb]
-RedHat/Fedora (x64)   | ![][linux-x64-badge]<br>[Installer (rpm)][redhat-x64-rpm]
+[badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-rhel.7-x64.rpm
+
+Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
+:---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
+Windows (x64)         | [Installer (exe)][win-x64-exe]<br>[Archive (zip)][win-x64-zip]   | [Installer (exe)][win-x64-exe-rel-21]<br>[Archive (zip)][win-x64-zip-rel-21]
+Windows (x86)         | [Installer (exe)][win-x86-exe]<br>[Archive (zip)][win-x86-zip]   | [Installer (exe)][win-x86-exe-rel-21]<br>[Archive (zip)][win-x86-zip-rel-21]
+macOS (x64)           | [Archive (tar.gz)][osx-x64-tar]                                  | [Archive (tar.gz)][osx-x64-tar-rel-21]
+Linux (x64)           | [Archive (tar.gz)][linux-x64-tar]                                | [Archive (tar.gz)][linux-x64-tar-rel-21]
+Debian/Ubuntu (x64)   | [Installer (deb)][debian-x64-deb]                                | [Installer (deb)][debian-x64-deb-rel-21]
+RedHat/Fedora (x64)   | [Installer (rpm)][redhat-x64-rpm]                                | [Installer (rpm)][redhat-x64-rpm-rel-21]
 
 ## Building from source
 
