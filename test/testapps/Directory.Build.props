@@ -1,0 +1,25 @@
+<Project>
+  <Import Project="Before.Directory.Build.props" Condition="Exists('Before.Directory.Build.props')" />
+
+  <PropertyGroup>
+    <SolutionRoot Condition="'$(SolutionRoot)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionRoot>
+    <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'==''">
+    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BinariesRoot)'!=''">
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
+    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.dll"/>
+  </ItemGroup>
+
+  <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
+
+</Project>

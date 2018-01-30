@@ -207,13 +207,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var content = @"
 <Project>
-  <Import Project=""$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"" />
   <ItemGroup>
     <MvcRazorFilesToCompile Include=""Views/Home/About.cshtml"" />
   </ItemGroup>
 </Project>
 ";
-            File.WriteAllText(Path.Combine(Project.DirectoryPath, "Directory.Build.props"), content);
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "After.Directory.Build.props"), content);
 
             var result = await DotnetMSBuild(RazorGenerateTarget);
 
@@ -229,7 +228,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var content = @"
 <Project>
-  <Import Project=""$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"" />
   <PropertyGroup>
     <EnableDefaultRazorGenerateItems>false</EnableDefaultRazorGenerateItems>
   </PropertyGroup>
@@ -238,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
   </ItemGroup>
 </Project>
 ";
-            File.WriteAllText(Path.Combine(Project.DirectoryPath, "Directory.Build.props"), content);
+            File.WriteAllText(Path.Combine(Project.DirectoryPath, "After.Directory.Build.props"), content);
 
             var result = await DotnetMSBuild(RazorGenerateTarget);
 

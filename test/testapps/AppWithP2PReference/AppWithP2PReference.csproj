@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
+    <_RazorMSBuildRoot>$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\bin\$(Configuration)\netstandard2.0\</_RazorMSBuildRoot>
+  </PropertyGroup>
+
+  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Sdk\SDK\Sdk.props" />
+  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props" />
+
+  <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <!-- Workaround until we get a new SDK build -->
@@ -8,18 +15,5 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(BinariesRoot)'==''">
-    <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj"/>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(BinariesRoot)'!=''">
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Html.Abstractions.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Runtime.dll"/>
-    <Reference Include="$(BinariesRoot)\Microsoft.AspNetCore.Razor.Test.MvcShim.dll"/>
   </ItemGroup>
 </Project>

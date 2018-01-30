@@ -42,17 +42,17 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 foreach (var project in new string[] { projectName, }.Concat(additionalProjects))
                 {
-                    var projectRoot = Path.Combine(solutionRoot, "test", "testapps", project);
+                    var testAppsRoot = Path.Combine(solutionRoot, "test", "testapps");
+                    var projectRoot = Path.Combine(testAppsRoot, project);
                     if (!Directory.Exists(projectRoot))
                     {
                         throw new InvalidOperationException($"Could not find project at '{projectRoot}'");
                     }
 
                     var projectDestination = Path.Combine(destinationPath, project);
-                    Directory.CreateDirectory(projectDestination);
-                    CopyDirectory(new DirectoryInfo(projectRoot), new DirectoryInfo(projectDestination));
-                    CreateDirectoryProps(projectRoot, binariesRoot, destinationPath);
-                    CreateDirectoryTargets(destinationPath);
+                    var projectDestinationDir = Directory.CreateDirectory(projectDestination);
+                    CopyDirectory(new DirectoryInfo(projectRoot), projectDestinationDir);
+                    SetupDirectoryBuildFiles(solutionRoot, binariesRoot, testAppsRoot, projectDestination);
                 }
                 
                 CopyGlobalJson(solutionRoot, destinationPath);
@@ -86,38 +86,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
 
-            void CreateDirectoryProps(string originalProjectRoot, string binariesRoot, string projectRoot)
+            void SetupDirectoryBuildFiles(string solutionRoot, string binariesRoot, string testAppsRoot, string projectDestination)
             {
-#if DEBUG
-                var configuration = "Debug";
-#elif RELEASE
-                var configuration = "Release";
-#else
-#error Unknown Configuration
-#endif
-
-                var text = $@"
-<Project>
-  <Import Project=""{originalProjectRoot}\..\..\..\src\Microsoft.AspNetCore.Razor.Sdk\SDK\Sdk.props""/>
+                var beforeDirectoryPropsContent =
+$@"<Project>
   <PropertyGroup>
-    <OriginalProjectRoot>{originalProjectRoot}</OriginalProjectRoot>
+    <SolutionRoot>{solutionRoot}</SolutionRoot>
     <BinariesRoot>{binariesRoot}</BinariesRoot>
-    <_RazorMSBuildRoot>$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\bin\{configuration}\netstandard2.0\</_RazorMSBuildRoot>
   </PropertyGroup>
-  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Design\build\netstandard2.0\Microsoft.AspNetCore.Razor.Design.props""/>
-</Project>
-";
-                File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.props"), text);
-            }
+</Project>";
+                File.WriteAllText(Path.Combine(projectDestination, "Before.Directory.Build.props"), beforeDirectoryPropsContent);
 
-            void CreateDirectoryTargets(string projectRoot)
-            {
-                var text = $@"
-<Project>
-  <Import Project=""$(OriginalProjectRoot)\..\..\..\src\Microsoft.AspNetCore.Razor.Sdk\SDK\Sdk.targets""/>
-</Project>
-";
-                File.WriteAllText(Path.Combine(projectRoot, "Directory.Build.targets"), text);
+                new List<string> { "Directory.Build.props", "Directory.Build.targets" }
+                    .ForEach(file =>
+                    {
+                        var source = Path.Combine(testAppsRoot, file);
+                        var destination = Path.Combine(projectDestination, file);
+                        File.Copy(source, destination);
+                    });
             }
 
             void CopyGlobalJson(string solutionRoot, string projectRoot)
