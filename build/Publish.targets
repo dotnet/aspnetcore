@@ -10,6 +10,7 @@
     <LatestRuntimeVersionFile>$(IntermediateDir)$(LatestRuntimeVersionFileName)</LatestRuntimeVersionFile>
 
     <PublishDependsOn>
+      ResolveCommitHash;
       PrepareOutputPaths;
       GetFilesToPublish;
       CopyToPublishArtifacts;
@@ -178,11 +179,11 @@
 
     <ItemGroup>
       <PackagesToPublishToTransport
-        Include="%(PackagesToPublish.PackagePath)"
+        Include="%(PackagesToPublish.ArtifactPath)"
         Condition="'%(PackageToPublish.Category)' == 'ship'" />
 
       <PackagesToPublishToTransport
-        Include="%(PackagesToPublish.PackagePath)"
+        Include="%(PackagesToPublish.ArtifactPath)"
         ManifestArtifactData="NonShipping=true"
         Condition="'%(PackageToPublish.Category)' != 'ship'" />
 
@@ -200,7 +201,8 @@
                     AccountKey="$(PublishBlobFeedKey)"
                     ItemsToPush="@(PackagesToPublishToTransport)"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
-                    ManifestBuildId="$(BuildNumber)"
+                    ManifestBuildId="$(Version)"
+                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
                     ManifestCommit="$(CommitHash)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)"
@@ -211,7 +213,8 @@
                     ItemsToPush="@(FilesToPublishToTransport)"
                     PublishFlatContainer="true"
                     Overwrite="$(PushToBlobFeed_Overwrite)"
-                    ManifestBuildId="$(BuildNumber)"
+                    ManifestBuildId="$(Version)"
+                    ManifestBuildData="ProductVersion=$(PackageVersion);UniverseCommitHash=$(CommitHash)"
                     ManifestCommit="$(CommitHash)"
                     ManifestName="aspnet"
                     MaxClients="$(PushToBlobFeed_MaxClients)" />
