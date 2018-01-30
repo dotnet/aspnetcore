@@ -6,6 +6,6 @@ namespace Microsoft.AspNetCore.Sockets
 {
     public class LongPollingOptions
     {
-        public TimeSpan PollTimeout { get; set; } = TimeSpan.FromSeconds(110);
+        public TimeSpan PollTimeout { get; set; } = TimeSpan.FromSeconds(90);
     }
 }

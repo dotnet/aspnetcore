@@ -101,5 +101,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var payload = ms.ToArray();
             Assert.Equal("Hello World", Encoding.UTF8.GetString(payload));
         }
+
+        [Fact]
+        public void CheckLongPollingTimeoutValue()
+        {
+            var options = new HttpSocketOptions();
+            Assert.Equal(options.LongPolling.PollTimeout, TimeSpan.FromSeconds(90));
+        }
     }
 }
