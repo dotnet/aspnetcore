@@ -17,4 +17,4 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 script:
-  - ./build.sh -t:ComputeGraph
+  - ./build.sh -t:CheckUniverse

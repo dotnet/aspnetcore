@@ -206,6 +206,9 @@
            Condition="'%(PackageArtifact.AppMetapackage)' == 'true' AND '%(PackageArtifact.AllMetapackage)' == 'true' " />
   </Target>
 
+  <Target Name="CheckUniverse"
+    DependsOnTargets="ComputeGraph;VerifyPackageArtifactConfig" />
+
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
       <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
