@@ -162,35 +162,35 @@
     <ItemGroup>
       <TargzArchives Include="Build.RS.linux.tar.gz">
         <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx.tar.gz">
         <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
       </TargzArchives>
       <ZipArchives Include="Build.RS.winx64.zip">
         <DependentArchive>Build.RS.winx64.zip</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)win7-x64.zip</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86.zip">
         <DependentArchive>Build.RS.winx86.zip</DependentArchive>
-        <RSArchive>$(TimestampRSArchivePrefix)win7-x86.zip</RSArchive>
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
       </ZipArchives>
       <TargzArchives Include="Build.RS.linux-$(VersionSuffix).tar.gz">
         <DependentArchive>Build.RS.linux.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)linux-x64.tar.gz</RSArchive>
       </TargzArchives>
       <TargzArchives Include="Build.RS.osx-$(VersionSuffix).tar.gz">
         <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)osx-x64.tar.gz</RSArchive>
       </TargzArchives>
       <ZipArchives Include="Build.RS.winx64-$(VersionSuffix).zip">
         <DependentArchive>Build.RS.winx64.zip</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x64.zip</RSArchive>
       </ZipArchives>
       <ZipArchives Include="Build.RS.winx86-$(VersionSuffix).zip">
         <DependentArchive>Build.RS.winx86.zip</DependentArchive>
-        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
+        <RSArchive>$(TimestampRSArchivePrefix)win7-x86.zip</RSArchive>
       </ZipArchives>
     </ItemGroup>
 
