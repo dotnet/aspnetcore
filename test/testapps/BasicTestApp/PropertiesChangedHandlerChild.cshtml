@@ -1,0 +1,12 @@
+﻿<div class="supplied">You supplied: @SuppliedValue</div>
+<div class="computed">I computed: @ComputedValue</div>
+
+@functions {
+    public int SuppliedValue { get; set; }
+    private int ComputedValue { get; set; }
+
+    public override void OnPropertiesChanged()
+    {
+        ComputedValue = SuppliedValue * 2;
+    }
+}

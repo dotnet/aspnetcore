@@ -148,6 +148,23 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
                 elem => Assert.Equal("Child 3", elem.FindElement(By.ClassName("message")).Text));
         }
 
+        [Fact]
+        public void ChildComponentsNotifiedWhenPropertiesChanged()
+        {
+            // Child component receives notification that lets it compute a property before first render
+            var appElement = MountTestComponent<PropertiesChangedHandlerParent>();
+            var suppliedValueElement = appElement.FindElement(By.ClassName("supplied"));
+            var computedValueElement = appElement.FindElement(By.ClassName("computed"));
+            var incrementButton = appElement.FindElement(By.TagName("button"));
+            Assert.Equal("You supplied: 100", suppliedValueElement.Text);
+            Assert.Equal("I computed: 200", computedValueElement.Text);
+
+            // When property changes, child is renotified before rerender
+            incrementButton.Click();
+            Assert.Equal("You supplied: 101", suppliedValueElement.Text);
+            Assert.Equal("I computed: 202", computedValueElement.Text);
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;

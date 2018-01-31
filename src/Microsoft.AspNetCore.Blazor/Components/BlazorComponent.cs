@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// Optional base class for Blazor components. Alternatively, Blazor components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class BlazorComponent : IComponent
+    public abstract class BlazorComponent : IComponent, IHandlePropertiesChanged
     {
         /// <inheritdoc />
         public virtual void BuildRenderTree(RenderTreeBuilder builder)
@@ -34,6 +34,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <returns>Always throws an exception.</returns>
         public virtual Task ExecuteAsync()
             => throw new NotImplementedException($"Blazor components do not implement {nameof(ExecuteAsync)}.");
+
+        /// <inheritdoc />
+        public virtual void OnPropertiesChanged()
+        {
+        }
 
         /// <summary>
         /// Handles click events by invoking <paramref name="handler"/>.

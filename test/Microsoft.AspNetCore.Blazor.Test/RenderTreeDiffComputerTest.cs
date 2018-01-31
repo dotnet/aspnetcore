@@ -763,6 +763,59 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void NotifiesIHandlePropertiesChangedBeforeFirstRender()
+        {
+            // Arrange
+            newTree.OpenComponentElement<HandlePropertiesChangedComponent>(0);
+            newTree.CloseElement();
+
+            // Act
+            var batch = GetRenderedBatch();
+            var diffForChildComponent = batch.UpdatedComponents.Array[1];
+
+            // Assert
+            Assert.Collection(diffForChildComponent.CurrentState,
+                node => AssertNode.Text(node, "Notifications: 1", 0));
+        }
+
+        [Fact]
+        public void NotifiesIHandlePropertiesChangedWhenChanged()
+        {
+            // Arrange
+            var newTree1 = new RenderTreeBuilder(renderer);
+            var newTree2 = new RenderTreeBuilder(renderer);
+            oldTree.OpenComponentElement<HandlePropertiesChangedComponent>(0);
+            oldTree.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
+            oldTree.CloseElement();
+            newTree1.OpenComponentElement<HandlePropertiesChangedComponent>(0);
+            newTree1.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
+            newTree1.CloseElement();
+            newTree2.OpenComponentElement<HandlePropertiesChangedComponent>(0);
+            newTree2.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 456);
+            newTree2.CloseElement();
+
+            // Act/Assert 0: Initial render
+            var batch0 = GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree);
+            var diffForChildComponent0 = batch0.UpdatedComponents.Array[1];
+            var childComponentNode = batch0.UpdatedComponents.Array[0].CurrentState.Array[0];
+            var childComponentInstance = (HandlePropertiesChangedComponent)childComponentNode.Component;
+            Assert.Equal(1, childComponentInstance.NotificationsCount);
+            Assert.Collection(diffForChildComponent0.CurrentState,
+                node => AssertNode.Text(node, "Notifications: 1", 0));
+
+            // Act/Assert 1: If properties didn't change, we don't notify
+            GetRenderedBatch(oldTree, newTree1);
+            Assert.Equal(1, childComponentInstance.NotificationsCount);
+
+            // Act/Assert 2: If properties did change, we do notify
+            var batch2 = GetRenderedBatch(newTree1, newTree2);
+            var diffForChildComponent2 = batch2.UpdatedComponents.Array[1];
+            Assert.Equal(2, childComponentInstance.NotificationsCount);
+            Assert.Collection(diffForChildComponent2.CurrentState,
+                node => AssertNode.Text(node, "Notifications: 2", 0));
+        }
+
+        [Fact]
         public void CallsDisposeOnlyOnRemovedChildComponents()
         {
             // Arrange
@@ -801,9 +854,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         private RenderBatch GetRenderedBatch()
+            => GetRenderedBatch(oldTree, newTree);
+
+        private RenderBatch GetRenderedBatch(RenderTreeBuilder from, RenderTreeBuilder to)
         {
             var batchBuilder = new RenderBatchBuilder();
-            diff.ApplyNewRenderTreeVersion(batchBuilder, 0, oldTree.GetNodes(), newTree.GetNodes());
+            diff.ApplyNewRenderTreeVersion(batchBuilder, 0, from.GetNodes(), to.GetNodes());
             return batchBuilder.ToBatch();
         }
 
@@ -832,6 +888,23 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(100, $"Hello from {nameof(FakeComponent2)}");
+            }
+        }
+
+        private class HandlePropertiesChangedComponent : IComponent, IHandlePropertiesChanged
+        {
+            public int NotificationsCount { get; private set; }
+
+            public int IntProperty { get; set; }
+
+            public void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddText(0, $"Notifications: {NotificationsCount}");
+            }
+
+            public void OnPropertiesChanged()
+            {
+                NotificationsCount++;
             }
         }
 

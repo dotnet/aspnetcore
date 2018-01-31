@@ -271,9 +271,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
             if (hasSetAnyProperty)
             {
-                // TODO: Instead, call some OnPropertiesUpdated method on IComponent,
-                // whose default implementation causes itself to be rerendered
-                _renderer.RenderInExistingBatch(batchBuilder, componentId);
+                TriggerChildComponentRender(batchBuilder, newComponentNode);
             }
         }
 
@@ -508,9 +506,26 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                             attributeNode.AttributeValue);
                     }
 
-                    _renderer.RenderInExistingBatch(batchBuilder, node.ComponentId);
+                    TriggerChildComponentRender(batchBuilder, node);
                 }
             }
+        }
+
+        private void TriggerChildComponentRender(RenderBatchBuilder batchBuilder, in RenderTreeNode node)
+        {
+            if (node.Component is IHandlePropertiesChanged notifyableComponent)
+            {
+                // TODO: Ensure any exceptions thrown here are handled equivalently to
+                // unhandled exceptions during rendering.
+                notifyableComponent.OnPropertiesChanged();
+            }
+
+            // TODO: Consider moving the responsibility for triggering re-rendering
+            // into the OnPropertiesChanged handler (if implemented) so that components
+            // can control whether any given set of property changes cause re-rendering.
+            // Not doing so yet because it's unclear that the usage patterns would be
+            // good to use.
+            _renderer.RenderInExistingBatch(batchBuilder, node.ComponentId);
         }
 
         private void DisposeChildComponents(RenderBatchBuilder batchBuilder, RenderTreeNode[] nodes, int elementOrComponentIndex)
