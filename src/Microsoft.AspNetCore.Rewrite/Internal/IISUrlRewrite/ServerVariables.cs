@@ -60,6 +60,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     return new RemotePortSegment();
                 case "REQUEST_FILENAME":
                     return new RequestFileNameSegment();
+                case "REQUEST_METHOD":
+                    return new RequestMethodSegment();
                 case "REQUEST_URI":
                     return new UrlSegment(uriMatchPart);
                 default:
