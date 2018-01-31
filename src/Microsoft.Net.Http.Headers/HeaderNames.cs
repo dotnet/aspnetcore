@@ -20,6 +20,7 @@ namespace Microsoft.Net.Http.Headers
         public const string AccessControlRequestMethod = "Access-Control-Request-Method";
         public const string Age = "Age";
         public const string Allow = "Allow";
+        public const string Authority = ":authority";
         public const string Authorization = "Authorization";
         public const string CacheControl = "Cache-Control";
         public const string Connection = "Connection";
@@ -48,15 +49,19 @@ namespace Microsoft.Net.Http.Headers
         public const string LastModified = "Last-Modified";
         public const string Location = "Location";
         public const string MaxForwards = "Max-Forwards";
+        public const string Method = ":method";
         public const string Origin = "Origin";
+        public const string Path = ":path";
         public const string Pragma = "Pragma";
         public const string ProxyAuthenticate = "Proxy-Authenticate";
         public const string ProxyAuthorization = "Proxy-Authorization";
         public const string Range = "Range";
         public const string Referer = "Referer";
         public const string RetryAfter = "Retry-After";
+        public const string Scheme = ":scheme";
         public const string Server = "Server";
         public const string SetCookie = "Set-Cookie";
+        public const string Status = ":status";
         public const string StrictTransportSecurity = "Strict-Transport-Security";
         public const string TE = "TE";
         public const string Trailer = "Trailer";
