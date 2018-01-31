@@ -249,7 +249,7 @@
     <PropertyGroup>
       <DebSharedFxDependencies>@(_DebSharedFxDependencies->'"%(Identity)": {}', ', ')</DebSharedFxDependencies>
 
-      <CommonProps>Image=$(Image);DebVersion=$(Version)</CommonProps>
+      <CommonProps>Image=$(Image);DebVersion=$(PackageVersion)</CommonProps>
       <DebSharedFxProps>DebPrefix=$(SharedFxInstallerName);DebSummary=$(SharedFxSummary);DebDescription=$(SharedFxDescription)</DebSharedFxProps>
       <DebSharedFxProps>$(DebSharedFxProps);DebDependencies=$(DebSharedFxDependencies);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</DebSharedFxProps>
     </PropertyGroup>
@@ -261,6 +261,6 @@
   </Target>
 
   <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="Version=$(Version);Image=ubuntu.14.04" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="PackageVersion=$(PackageVersion);Image=ubuntu.14.04" />
   </Target>
 </Project>
