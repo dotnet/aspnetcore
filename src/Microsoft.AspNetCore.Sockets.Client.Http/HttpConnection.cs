@@ -516,24 +516,45 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // _startTask is returned to the user and they should handle exceptions.
             }
 
+            TaskCompletionSource<object> closeTcs = null;
+            Task receiveLoopTask = null;
+            ITransport transport = null;
+
+            lock (_stateChangeLock)
+            {
+                // Copy locals in lock to prevent a race when the server closes the connection and StopAsync is called
+                // at the same time
+                if (_connectionState != ConnectionState.Connected)
+                {
+                    // If not Connected then someone else disconnected while StopAsync was in progress, we can now NO-OP
+                    return;
+                }
+
+                // Create locals of relevant member variables to prevent a race when Closed event triggers a connect
+                // while StopAsync is still running
+                closeTcs = _closeTcs;
+                receiveLoopTask = _receiveLoopTask;
+                transport = _transport;
+            }
+
             if (_transportChannel != null)
             {
                 Output.TryComplete();
             }
 
-            if (_transport != null)
+            if (transport != null)
             {
-                await _transport.StopAsync();
+                await transport.StopAsync();
             }
 
-            if (_receiveLoopTask != null)
+            if (receiveLoopTask != null)
             {
-                await _receiveLoopTask;
+                await receiveLoopTask;
             }
 
-            if (_closeTcs != null)
+            if (closeTcs != null)
             {
-                await _closeTcs.Task;
+                await closeTcs.Task;
             }
         }
 
