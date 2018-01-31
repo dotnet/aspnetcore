@@ -121,7 +121,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         {
                             // this may throw IOException, depending on how fast Kestrel closes the socket
                             await connection.SendEmptyGetAsKeepAlive();
-                        } catch { }
+                        }
+                        catch { }
 
                         // connection should close without sending any data
                         await connection.WaitForConnectionClose().TimeoutAfter(TestConstants.DefaultTimeout);
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/KestrelHttpServer/issues/2282")]
         public async Task ConnectionCountingReturnsToZero()
         {
             const int count = 100;
