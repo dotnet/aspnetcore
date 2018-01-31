@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         [InlineData("REQUEST_FILENAME", "/foo", UriMatchPart.Path)]
         [InlineData("REQUEST_URI", "/foo", UriMatchPart.Path)]
         [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "GET", UriMatchPart.Full)]
         public void CheckServerVariableParsingAndApplication(string variable, string expected, UriMatchPart uriMatchPart)
         {
             // Arrange and Act
@@ -40,6 +41,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         private RewriteContext CreateTestHttpContext()
         {
             var context = new DefaultHttpContext();
+            context.Request.Method = HttpMethods.Get;
             context.Request.Scheme = "http";
             context.Request.Host = new HostString("example.com");
             context.Request.Path = PathString.FromUriComponent("/foo");
