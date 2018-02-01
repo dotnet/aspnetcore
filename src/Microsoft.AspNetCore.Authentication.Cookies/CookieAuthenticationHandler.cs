@@ -240,6 +240,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 throw new ArgumentNullException(nameof(user));
             }
 
+            var target = ResolveTarget(Options.ForwardSignIn);
+            if (target != null)
+            {
+                await Context.SignInAsync(target, user, properties);
+                return;
+            }
+
             properties = properties ?? new AuthenticationProperties();
 
             _signInCalled = true;
@@ -322,6 +329,13 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         public async virtual Task SignOutAsync(AuthenticationProperties properties)
         {
+            var target = ResolveTarget(Options.ForwardSignOut);
+            if (target != null)
+            {
+                await Context.SignOutAsync(target, properties);
+                return;
+            }
+
             properties = properties ?? new AuthenticationProperties();
 
             _signOutCalled = true;
