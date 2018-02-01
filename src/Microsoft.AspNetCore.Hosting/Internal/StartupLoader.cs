@@ -143,9 +143,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     {
                         // Get the default factory
                         var serviceProviderFactory = HostingServiceProvider.GetRequiredService<IServiceProviderFactory<IServiceCollection>>();
-
-                        // Don't bother calling CreateBuilder since it just returns the default service collection
-                        applicationServiceProvider = serviceProviderFactory.CreateServiceProvider(services);
+                        var builder = serviceProviderFactory.CreateBuilder(services);
+                        applicationServiceProvider = serviceProviderFactory.CreateServiceProvider(builder);
                     }
 
                     return applicationServiceProvider ?? services.BuildServiceProvider();

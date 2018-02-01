@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var hostingServices = BuildCommonServices(out var hostingStartupErrors);
             var applicationServices = hostingServices.Clone();
-            var hostingServiceProvider = hostingServices.BuildServiceProvider();
+            var hostingServiceProvider = GetProviderFromFactory(hostingServices);
 
             if (!_options.SuppressStatusMessages)
             {
@@ -201,6 +201,22 @@ namespace Microsoft.AspNetCore.Hosting
                 // will dispose services that were constructed until the exception was thrown
                 host.Dispose();
                 throw;
+            }
+
+            IServiceProvider GetProviderFromFactory(IServiceCollection collection)
+            {
+                var provider = collection.BuildServiceProvider();
+                var factory = provider.GetService<IServiceProviderFactory<IServiceCollection>>();
+
+                if (factory != null)
+                {
+                    using (provider)
+                    {
+                        return factory.CreateServiceProvider(factory.CreateBuilder(collection));
+                    }
+                }
+                
+                return provider;                
             }
         }
 

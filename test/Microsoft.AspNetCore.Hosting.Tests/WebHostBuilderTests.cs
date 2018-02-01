@@ -809,6 +809,45 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
+
+        [Fact]
+        public async Task ExternalContainerInstanceCanBeUsedForEverything()
+        {
+            var disposables = new List<DisposableService>();
+
+            var containerFactory = new ExternalContainerFactory(services =>
+            {
+                services.AddSingleton(sp =>
+                {
+                    var service = new DisposableService();
+                    disposables.Add(service);
+                    return service;
+                });
+            });
+
+            var host = new WebHostBuilder()
+                .UseStartup<StartupWithExternalServices>()
+                .UseServer(new TestServer())
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IServiceProviderFactory<IServiceCollection>>(containerFactory);
+                })
+                .Build();
+
+            using (host)
+            {
+                await host.StartAsync();
+            }
+
+            // We should create the hosting service provider and the application service provider
+            Assert.Equal(2, containerFactory.ServiceProviders.Count);
+            Assert.Equal(2, disposables.Count);
+
+            Assert.NotEqual(disposables[0], disposables[1]);
+            Assert.True(disposables[0].Disposed);
+            Assert.True(disposables[1].Disposed);
+        }
+
         [Fact]
         public void Build_HostingStartupAssemblyCanBeExcluded()
         {
@@ -1046,6 +1085,51 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        }
+
+        internal class ExternalContainerFactory : IServiceProviderFactory<IServiceCollection>
+        {
+            private readonly Action<IServiceCollection> _configureServices;
+            private readonly List<IServiceProvider> _serviceProviders = new List<IServiceProvider>();
+
+            public List<IServiceProvider> ServiceProviders => _serviceProviders;
+
+            public ExternalContainerFactory(Action<IServiceCollection> configureServices)
+            {
+                _configureServices = configureServices;
+            }
+
+            public IServiceCollection CreateBuilder(IServiceCollection services)
+            {
+                _configureServices(services);
+                return services;
+            }
+
+            public IServiceProvider CreateServiceProvider(IServiceCollection containerBuilder)
+            {
+                var provider = containerBuilder.BuildServiceProvider();
+                _serviceProviders.Add(provider);
+                return provider;
+            }
+        }
+
+        internal class StartupWithExternalServices
+        {
+            public DisposableService DisposableServiceCtor { get; set; }
+
+            public DisposableService DisposableServiceApp { get; set; }
+
+            public StartupWithExternalServices(DisposableService disposable)
+            {
+                DisposableServiceCtor = disposable;
+            }
+
+            public void ConfigureServices(IServiceCollection services) { }
+
+            public void Configure(IApplicationBuilder app, DisposableService disposable)
+            {
+                DisposableServiceApp = disposable;
+            }
         }
 
         internal class StartupVerifyServiceA : IStartup
