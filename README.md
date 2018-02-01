@@ -15,6 +15,8 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 If you are encountering TypeScript definition issues with SignalR, please ensure you are using the latest version of TypeScript to compile your application. If the issue occurs in the latest TypeScript, please let us know.
 
+When in doubt, check the version of TypeScript referenced by our [package.json](client-ts/package.json) file. That version is the minimum TypeScript version expected to work with SignalR.
+
 ## Packages
 
 You can install the latest released JavaScript client from npm with the following command:

@@ -16,7 +16,6 @@
   },
   "include": [
     "./**/*",
-    "../typings/**/*",
     "../signalr/dist/esm/**/*.d.ts"
   ],
   "exclude": [
