@@ -50,6 +50,7 @@ apt-get install -y nginx
 update-rc.d nginx defaults
 
 echo "Installing Docker..."
+export CHANNEL=stable
 curl -fsSL https://get.docker.com | sh
 usermod -aG docker $SUDO_USER
 
