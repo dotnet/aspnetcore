@@ -91,7 +91,7 @@ try {
 
                 # Test the submodule
                 try {
-                    Invoke-Block { & .\run.ps1 default-build }
+                    Invoke-Block { & .\run.ps1 default-build /p:SkipTests=true }
                 }
                 catch {
                     Write-Warning "Error in $($submodule.module): $_"
