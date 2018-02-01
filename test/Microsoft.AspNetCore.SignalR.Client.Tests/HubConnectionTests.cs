@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -199,10 +198,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             hubConnection.ServerTimeout = TimeSpan.FromMilliseconds(100);
 
-            await hubConnection.StartAsync().OrTimeout();
-
             var closeTcs = new TaskCompletionSource<Exception>();
             hubConnection.Closed += ex => closeTcs.TrySetResult(ex);
+
+            await hubConnection.StartAsync().OrTimeout();
+
             var exception = Assert.IsType<TimeoutException>(await closeTcs.Task.OrTimeout());
             Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", exception.Message);
         }
