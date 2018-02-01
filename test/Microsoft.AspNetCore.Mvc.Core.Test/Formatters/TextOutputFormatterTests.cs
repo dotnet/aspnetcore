@@ -235,14 +235,14 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Fact]
-        public void GetAcceptCharsetHeaderValues_Succeeds()
+        public void GetAcceptCharsetHeaderValues_ReadsHeaderAndParsesValues()
         {
             // Arrange
-            const string testCharsetValue = "fakeValue";
+            const string expectedValue = "expected";
 
             var formatter = new OverrideEncodingFormatter(encoding: null);
             var context = new DefaultHttpContext();
-            context.Request.Headers[HeaderNames.AcceptCharset] = testCharsetValue;
+            context.Request.Headers[HeaderNames.AcceptCharset] = expectedValue;
 
             var writerContext = new OutputFormatterWriteContext(
                 context,
@@ -254,8 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var result = TextOutputFormatter.GetAcceptCharsetHeaderValues(writerContext);
 
             //Assert
-            Assert.Equal(1, result.Count);
-            Assert.Equal(testCharsetValue, result.Single().Value);
+            Assert.Equal(expectedValue, Assert.Single(result).Value.Value);
         }
 
         private class TestOutputFormatter : TextOutputFormatter
