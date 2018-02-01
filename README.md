@@ -11,6 +11,10 @@ You can watch an introductory presentation here - [Introducing ASP.NET Core Sock
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
+## TypeScript Version
+
+If you are encountering TypeScript definition issues with SignalR, please ensure you are using the latest version of TypeScript to compile your application. If the issue occurs in the latest TypeScript, please let us know.
+
 ## Packages
 
 You can install the latest released JavaScript client from npm with the following command:
