@@ -167,8 +167,16 @@
       <RazorGenerate Include="@(Content)" Condition="'%(Content.Extension)'=='.cshtml'" />
     </ItemGroup>
 
-    <ItemGroup>
-      <RazorGenerate Update="@(RazorGenerate)" Condtion="'%(RazorGenerate.GeneratedOutput)'==''">
+    <!--
+      For preview1 we only support files that are within the project's directory hierarchy. 
+
+      This is similar to to a limitation in MvcPrecompilation. This will be improved for preview2,
+      tracked by https://github.com/aspnet/Razor/issues/1829
+    -->
+    <ItemGroup Condition="'@(RazorGenerate)'!=''">
+      <RazorGenerate 
+        Update="@(RazorGenerate)" 
+        Condition="'%(RazorGenerate.GeneratedOutput)'=='' and '$([System.IO.Path]::IsPathRooted(%(RazorGenerate.Identity)))'=='false'">
         <GeneratedOutput>$(RazorGenerateIntermediateOutputPath)%(RelativeDir)%(Filename).cs</GeneratedOutput>
       </RazorGenerate>
     </ItemGroup>

@@ -61,6 +61,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 msBuildProcessKind);
         }
 
+        internal void AddProjectFileContent(string content)
+        {
+            if (content == null)
+            {
+                throw new ArgumentNullException(nameof(content));
+            }
+
+            var existing = File.ReadAllText(Project.ProjectFilePath);
+            var updated = existing.Replace("<!-- Test Placeholder -->", content);
+            File.WriteAllText(Project.ProjectFilePath, updated);
+        }
+
         internal void ReplaceContent(string content, params string[] paths)
         {
             if (content == null)

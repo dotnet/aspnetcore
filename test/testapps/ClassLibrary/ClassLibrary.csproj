@@ -6,6 +6,8 @@
     <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
   </PropertyGroup>
 
+  <!-- Test Placeholder -->
+
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj"/>

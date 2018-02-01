@@ -57,7 +57,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 
                 CopyGlobalJson(solutionRoot, destinationPath);
 
-                return new ProjectDirectory(destinationPath, Path.Combine(destinationPath, projectName));
+                return new ProjectDirectory(
+                    destinationPath, 
+                    Path.Combine(destinationPath, projectName),
+                    Path.Combine(destinationPath, projectName, projectName + ".csproj"));
             }
             catch
             {
@@ -132,13 +135,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        private ProjectDirectory(string solutionPath, string directoryPath)
+        private ProjectDirectory(string solutionPath, string directoryPath, string projectFilePath)
         {
             SolutionPath = solutionPath;
             DirectoryPath = directoryPath;
+            ProjectFilePath = projectFilePath;
         }
 
         public string DirectoryPath { get; }
+
+        public string ProjectFilePath { get;}
 
         public string SolutionPath { get; }
 

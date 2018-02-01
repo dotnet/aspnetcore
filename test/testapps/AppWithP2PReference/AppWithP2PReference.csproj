@@ -6,6 +6,8 @@
     <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
   </PropertyGroup>
 
+  <!-- Test Placeholder -->
+
   <ItemGroup>
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj"/>
   </ItemGroup>

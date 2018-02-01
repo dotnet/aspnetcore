@@ -247,5 +247,37 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cs");
             Assert.FileCountEquals(result, 1, RazorIntermediateOutputPath, "*.cs");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_FileWithAbsolutePath_IgnoresFile()
+        {
+            // In preview1 we totally ignore files that are specified with an absolute path
+            var filePath = Path.Combine(Project.SolutionPath, "temp.cshtml");
+            File.WriteAllText(filePath, string.Empty);
+
+            AddProjectFileContent($@"
+<ItemGroup>
+  <Content Include=""{filePath}""/>
+</ItemGroup>");
+
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+
+            Assert.BuildPassed(result);
+
+            // RazorGenerate should compile the assembly, but not the views.
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Contact.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_Layout.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "_ValidationScriptsPartial.cs");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Shared", "Error.cs");
+            Assert.FileCountEquals(result, 8, RazorIntermediateOutputPath, "*.cs");
+        }
     }
 }
