@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
-                var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
+                var stopwatch = ValueStopwatch.StartNew();
 
                 object resultAsObject;
                 var returnType = executor.MethodReturnType;
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 }
 
                 var viewComponentResult = CoerceToViewComponentResult(resultAsObject);
-                _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
+                _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
                 _viewComponentFactory.ReleaseViewComponent(context, component);
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 _diagnosticSource.BeforeViewComponent(context, component);
                 _logger.ViewComponentExecuting(context, arguments);
 
-                var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
+                var stopwatch = ValueStopwatch.StartNew();
                 object result;
 
                 try
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 }
 
                 var viewComponentResult = CoerceToViewComponentResult(result);
-                _logger.ViewComponentExecuted(context, startTimestamp, viewComponentResult);
+                _logger.ViewComponentExecuted(context, stopwatch.GetElapsedTime(), viewComponentResult);
                 _diagnosticSource.AfterViewComponent(context, viewComponentResult, component);
 
                 _viewComponentFactory.ReleaseViewComponent(context, component);

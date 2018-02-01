@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     _logger.ExceptionFiltersExecutionPlan(_filters);
                     _logger.ResultFiltersExecutionPlan(_filters);
 
-                    var startTimestamp = _logger.IsEnabled(LogLevel.Information) ? Stopwatch.GetTimestamp() : 0;
+                    var stopwatch = ValueStopwatch.StartNew();
 
                     try
                     {
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     finally
                     {
                         ReleaseResources();
-                        _logger.ExecutedAction(_actionContext.ActionDescriptor, startTimestamp);
+                        _logger.ExecutedAction(_actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
                     }
                 }
             }

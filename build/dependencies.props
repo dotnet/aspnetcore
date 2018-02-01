@@ -70,6 +70,7 @@
     <MicrosoftExtensionsPropertyHelperSourcesPackageVersion>2.1.0-preview2-28169</MicrosoftExtensionsPropertyHelperSourcesPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview2-28169</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>2.1.0-preview2-28169</MicrosoftExtensionsTypeNameHelperSourcesPackageVersion>
+    <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>2.1.0-preview2-28169</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview2-28169</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview1-26122-01</MicrosoftNETCoreApp21PackageVersion>

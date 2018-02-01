@@ -38,6 +38,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsPropertyHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsSecurityHelperSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsTypeNameHelperSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsValueStopwatchSourcesPackageVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
   </ItemGroup>

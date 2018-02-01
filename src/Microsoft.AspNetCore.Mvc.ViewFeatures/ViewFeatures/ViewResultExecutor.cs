@@ -7,10 +7,10 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -78,6 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             var viewName = viewResult.ViewName ?? GetActionName(actionContext);
 
+            var stopwatch = ValueStopwatch.StartNew();
+
             var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
             var originalResult = result;
             if (!result.Success)
@@ -85,6 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 result = viewEngine.FindView(actionContext, viewName, isMainPage: true);
             }
 
+            Logger.ViewResultExecuting(result.ViewName);
             if (!result.Success)
             {
                 if (originalResult.SearchedLocations.Any())
@@ -120,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                         });
                 }
 
-                Logger.ViewFound(viewName);
+                Logger.ViewFound(result.View, stopwatch.GetElapsedTime());
             }
             else
             {
@@ -156,13 +159,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(result));
             }
 
+            var stopwatch = ValueStopwatch.StartNew();
+
             var viewEngineResult = FindView(context, result);
             viewEngineResult.EnsureSuccessful(originalLocations: null);
 
             var view = viewEngineResult.View;
             using (view as IDisposable)
             {
-                Logger.ViewResultExecuting(view);
 
                 await ExecuteAsync(
                     context,
@@ -172,6 +176,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     result.ContentType,
                     result.StatusCode);
             }
+
+            Logger.ViewResultExecuted(viewEngineResult.ViewName, stopwatch.GetElapsedTime());
         }
 
         private static string GetActionName(ActionContext context)
