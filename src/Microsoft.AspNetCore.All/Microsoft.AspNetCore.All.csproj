@@ -28,8 +28,4 @@
     <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="[$(AppMetapackageVersion)]" PrivateAssets="None" />
-  </ItemGroup>
-
 </Project>

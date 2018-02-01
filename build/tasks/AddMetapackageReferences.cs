@@ -19,6 +19,9 @@ namespace RepoTasks
         public string MetapackageReferenceType { get; set; }
 
         [Required]
+        public bool LockToExactVersions { get; set; }
+
+        [Required]
         public ITaskItem[] BuildArtifacts { get; set; }
 
         [Required]
@@ -61,11 +64,14 @@ namespace RepoTasks
                     Log.LogError($"Missing Package: {packageName} from build artifacts");
                     throw;
                 }
-                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: [{packageVersion}]");
+
+                var packageVersionValue = LockToExactVersions ? $"[{packageVersion}]" : packageVersion;
+
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersionValue}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
-                packageReferenceElement.SetAttribute("Version", $"[{packageVersion}]");
+                packageReferenceElement.SetAttribute("Version", packageVersionValue);
                 packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);
@@ -75,11 +81,13 @@ namespace RepoTasks
             {
                 var packageName = package.ItemSpec;
                 var packageVersion = package.GetMetadata("Version");
-                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: [{packageVersion}]");
+                var packageVersionValue = LockToExactVersions ? $"[{packageVersion}]" : packageVersion;
+
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersionValue}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
-                packageReferenceElement.SetAttribute("Version", $"[{packageVersion}]");
+                packageReferenceElement.SetAttribute("Version", packageVersionValue);
                 packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);

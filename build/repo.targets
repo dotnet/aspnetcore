@@ -202,8 +202,8 @@
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AllMetapackage='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.AllMetapackage)' == 'true' " />
 
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages cannot be marked as AppMetapackage='true' and AllMetapackage='true'."
-           Condition="'%(PackageArtifact.AppMetapackage)' == 'true' AND '%(PackageArtifact.AllMetapackage)' == 'true' " />
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as AppMetapackage='true' must also be marked as AllMetapackage='true'."
+           Condition="'%(PackageArtifact.AppMetapackage)' == 'true' AND '%(PackageArtifact.AllMetapackage)' != 'true' " />
   </Target>
 
   <Target Name="CheckUniverse"
