@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanSendAndReceiveMessage(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanStopAndStartConnection(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanInvokeClientMethodFromServer(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -317,7 +317,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanCloseStreamMethodEarly(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task StreamDoesNotStartIfTokenAlreadyCanceled(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ExceptionFromStreamingSentToClient(IHubProtocol protocol, TransportType transportType, string path)
         {
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfHubMethodCannotBeResolved(IHubProtocol hubProtocol, TransportType transportType, string hubPath)
         {
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentTypeMismatch(IHubProtocol hubProtocol, TransportType transportType, string hubPath)
         {
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionIfStreamingHubMethodCannotBeResolved(IHubProtocol hubProtocol, TransportType transportType, string hubPath)
         {
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1392")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnStreamingHubMethodArgumentTypeMismatch(IHubProtocol hubProtocol, TransportType transportType, string hubPath)
         {
