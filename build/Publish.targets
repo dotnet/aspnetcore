@@ -55,7 +55,7 @@
       Value="$(PackageVersion)" />
   </Target>
 
-  <Target Name="GetFilesToPublish" DependsOnTargets="ResolveRepoInfo;GeneratePublishFiles">
+  <Target Name="GetFilesToPublish" DependsOnTargets="GetArtifactInfo;GeneratePublishFiles">
     <PropertyGroup>
       <BlobBasePath>Runtime/$(PackageVersion)/</BlobBasePath>
       <AliasBlobBasePath>Runtime/$(SharedFxCliBlobChannel)/</AliasBlobBasePath>
@@ -133,7 +133,12 @@
       <Output TaskParameter="JoinResult" ItemName="PackagesToPublish" />
     </RepoTasks.JoinItems>
 
-    <Message Text="@(FilesToPublish -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" />
+    <ItemGroup>
+      <_MissingPackages Include="@(PackageArtifact)" />
+      <_MissingPackages Remove="%(PackagesToPublish.PackageId)" />
+    </ItemGroup>
+
+    <Error Text="Missing expected packages from PackagesToPublish: %0A - @(_MissingPackages, '%0A - ')" Condition="@(_MissingPackages->Count()) != 0" />
   </Target>
 
   <Target Name="_CheckFilesToPublish">

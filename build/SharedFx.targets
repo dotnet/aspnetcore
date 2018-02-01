@@ -3,8 +3,26 @@
   <Import Project="SharedFx.props" />
 
   <PropertyGroup>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetMetapackageArtifactInfo</GetArtifactInfoDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <SharedFxOutputPath>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))assets\Runtime\$(PackageVersion)\</SharedFxOutputPath>
   </PropertyGroup>
+
+  <Target Name="GetMetapackageArtifactInfo">
+    <ItemGroup>
+      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.All\Microsoft.AspNetCore.All.csproj" />
+      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.App\Microsoft.AspNetCore.App.csproj" />
+      <_MetapackageProject Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Analyzers\Microsoft.AspNetCore.Analyzers.csproj" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_MetapackageProject)"
+      Targets="GetArtifactInfo"
+      Properties="PackageOutputPath=$(BuildDir);BuildNumber=$(BuildNumber);DesignTimeBuild=true;IsFinalBuild=$(IsFinalBuild)">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+  </Target>
 
   <Target Name="_BuildMetapackage" DependsOnTargets="ResolveRepoInfo">
     <PropertyGroup>
