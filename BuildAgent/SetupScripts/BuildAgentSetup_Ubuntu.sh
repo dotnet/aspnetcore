@@ -93,6 +93,8 @@ cat <<EOF >> agentStartStop
 ### END INIT INFO
 case "\$1" in
 start)
+ # Grant all users write access to /mnt, since TeamCity uses /mnt for temp storage
+ chmod a+w /mnt
  sudo ~/TeamCity/bin/agent.sh start
 ;;
 stop)
