@@ -1,24 +1,40 @@
 <Project>
   <PropertyGroup>
     <TemplatingProjectRoot>$(MSBuildThisFileDirectory)..\modules\Templating\</TemplatingProjectRoot>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetTemplateArtifactInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <TemplateProjProperties>
+      RepositoryRoot=$(TemplatingProjectRoot);
+      BuildNumber=$(BuildNumber);
+      Configuration=$(Configuration);
+      IsFinalBuild=$(IsFinalBuild);
+    </TemplateProjProperties>
+  </PropertyGroup>
+
+  <Target Name="GetTemplateArtifactInfo">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+      Targets="GetArtifactInfo"
+      Properties="$(TemplateProjProperties);DesignTimeBuild=true">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+  </Target>
 
   <Target Name="BuildTemplates" DependsOnTargets="GeneratePropsFiles">
     <PropertyGroup>
-      <TemplateProjProperties>
-        RepositoryRoot=$(TemplatingProjectRoot);
+      <_BuildTemplateProjProperties>
+        $(TemplateProjProperties);
+        SkipAspNetCoreRuntimeInstall=true;
         DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
-        BuildNumber=$(BuildNumber);
-        Configuration=$(Configuration);
-        IsFinalBuild=$(IsFinalBuild);
-        SkipAspNetCoreRuntimeInstall=true;
-      </TemplateProjProperties>
+        SkipTests=true;
+      </_BuildTemplateProjProperties>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="CleanArtifacts;Build"
-             Properties="$(TemplateProjProperties);SkipTests=true" />
+             Properties="$(_BuildTemplateProjProperties)" />
 
     <ItemGroup>
       <TemplateArtifacts Include="$(TemplatingProjectRoot)artifacts\build\*" />
