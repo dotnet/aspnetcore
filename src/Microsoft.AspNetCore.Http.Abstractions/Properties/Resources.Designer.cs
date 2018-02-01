@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions
             => string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareIServiceProviderNotAvailable"), p0);
 
         /// <summary>
-        /// No public '{0}' or '{1}' method found.
+        /// No public '{0}' or '{1}' method found for middleware of type '{2}'.
         /// </summary>
         internal static string Exception_UseMiddlewareNoInvokeMethod
         {
@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         }
 
         /// <summary>
-        /// No public '{0}' or '{1}' method found.
+        /// No public '{0}' or '{1}' method found for middleware of type '{2}'.
         /// </summary>
-        internal static string FormatException_UseMiddlewareNoInvokeMethod(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoInvokeMethod"), p0, p1);
+        internal static string FormatException_UseMiddlewareNoInvokeMethod(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Exception_UseMiddlewareNoInvokeMethod"), p0, p1, p2);
 
         /// <summary>
         /// '{0}' or '{1}' does not return an object of type '{2}'.

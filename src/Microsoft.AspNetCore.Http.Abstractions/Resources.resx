@@ -121,7 +121,7 @@
     <value>'{0}' is not available.</value>
   </data>
   <data name="Exception_UseMiddlewareNoInvokeMethod" xml:space="preserve">
-    <value>No public '{0}' or '{1}' method found.</value>
+    <value>No public '{0}' or '{1}' method found for middleware of type '{2}'.</value>
   </data>
   <data name="Exception_UseMiddlewareNonTaskReturnType" xml:space="preserve">
     <value>'{0}' or '{1}' does not return an object of type '{2}'.</value>

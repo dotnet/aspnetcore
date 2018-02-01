@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Http
             Assert.Equal(
                 Resources.FormatException_UseMiddlewareNoInvokeMethod(
                     UseMiddlewareExtensions.InvokeMethodName,
-                    UseMiddlewareExtensions.InvokeAsyncMethodName),
+                    UseMiddlewareExtensions.InvokeAsyncMethodName, typeof(MiddlewareNoInvokeStub)),
                 exception.Message);
         }
 

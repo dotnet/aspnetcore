@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Builder
 
                 if (invokeMethods.Length == 0)
                 {
-                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName, InvokeAsyncMethodName));
+                    throw new InvalidOperationException(Resources.FormatException_UseMiddlewareNoInvokeMethod(InvokeMethodName, InvokeAsyncMethodName, middleware));
                 }
 
                 var methodinfo = invokeMethods[0];
