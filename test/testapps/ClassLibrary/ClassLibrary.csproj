@@ -13,6 +13,8 @@
     <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">RazorSDK</ResolvedRazorCompileToolset>
   </PropertyGroup>
 
+  <!-- Test Placeholder -->
+
   <ItemGroup>
     <Content Include="**\*.cshtml">
       <Pack>false</Pack>
