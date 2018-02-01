@@ -15,19 +15,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(TagHelperCompletionService))]
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
-        private readonly TagHelperFactsServiceInternal _tagHelperFactsService;
+        private readonly TagHelperFactsService _tagHelperFactsService;
         private static readonly HashSet<TagHelperDescriptor> _emptyHashSet = new HashSet<TagHelperDescriptor>();
 
         [ImportingConstructor]
-        public DefaultTagHelperCompletionService(VisualStudioWorkspaceAccessor workspaceAccessor)
+        public DefaultTagHelperCompletionService(TagHelperFactsService tagHelperFactsService)
         {
-            var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _tagHelperFactsService = razorLanguageServices.GetRequiredService<TagHelperFactsServiceInternal>();
-        }
+            if (tagHelperFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperFactsService));
+            }
 
-        // Internal for testing
-        internal DefaultTagHelperCompletionService(TagHelperFactsServiceInternal tagHelperFactsService)
-        {
             _tagHelperFactsService = tagHelperFactsService;
         }
 

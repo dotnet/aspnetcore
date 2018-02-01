@@ -6,9 +6,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class DefaultTagHelperFactsServiceInternalTest
+    public class DefaultTagHelperFactsServiceTest
     {
         // Purposefully not thoroughly testing DefaultTagHelperFactsService.GetTagHelperBinding because it's a pass through
         // into TagHelperDescriptorProvider.GetTagHelperBinding.
@@ -24,7 +24,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var binding = service.GetTagHelperBinding(documentContext, "!a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
@@ -66,7 +66,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build(),
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
             var attributes = new[]
             {
                 new KeyValuePair<string, string>("asp-for", "Name")
@@ -108,7 +108,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 documentDescriptors[0].BoundAttributes.Last()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
             var binding = service.GetTagHelperBinding(documentContext, "a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
 
             // Act
@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 documentDescriptors[0].BoundAttributes.First()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
             var binding = service.GetTagHelperBinding(documentContext, "input", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
 
             // Act
@@ -164,7 +164,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "!strong", parentTag: null);
@@ -184,7 +184,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "strong", "p");
@@ -217,7 +217,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "a", "div");
@@ -244,7 +244,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create("th", documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "thstrong", "div");
@@ -277,7 +277,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenTag(documentContext, "strong", "div");
@@ -297,7 +297,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenParent(documentContext, parentTag: null /* root */);
@@ -322,7 +322,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenParent(documentContext, parentTag: null /* root */);
@@ -343,7 +343,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenParent(documentContext, "p");
@@ -376,7 +376,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
-            var service = new DefaultTagHelperFactsServiceInternal();
+            var service = new DefaultTagHelperFactsService();
 
             // Act
             var descriptors = service.GetTagHelpersGivenParent(documentContext, "div");
