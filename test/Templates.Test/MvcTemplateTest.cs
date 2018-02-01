@@ -65,16 +65,23 @@ namespace Templates.Test
         public void MvcTemplate_IndividualAuth_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null);
 
-        private void MvcTemplate_IndividualAuthImpl(string targetFrameworkOverride)
+        [Fact]
+        public void MvcTemplate_IndividualAuth_UsingLocalDB_Works_NetCore()
+            => MvcTemplate_IndividualAuthImpl(null, true);
+
+        private void MvcTemplate_IndividualAuthImpl(string targetFrameworkOverride, bool useLocalDB = false)
         {
-            RunDotNetNew("mvc", targetFrameworkOverride, auth: "Individual");
+            RunDotNetNew("mvc", targetFrameworkOverride, auth: "Individual", useLocalDB: useLocalDB);
 
             AssertDirectoryExists("Extensions", false);
             AssertFileExists("urlRewrite.config", false);
             AssertFileExists("Controllers/AccountController.cs", false);
 
             var projectFileContents = ReadFile($"{ProjectName}.csproj");
-            Assert.Contains(".db", projectFileContents);
+            if (!useLocalDB)
+            {
+                Assert.Contains(".db", projectFileContents);
+            }
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
