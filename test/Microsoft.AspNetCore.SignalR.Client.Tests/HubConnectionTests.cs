@@ -207,6 +207,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Assert.Equal("Server timeout (100.00ms) elapsed without receiving a message from the server.", exception.Message);
         }
 
+        [Fact]
+        public async Task OnReceivedAfterTimerDisposedDoesNotThrow()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+            await hubConnection.StartAsync().OrTimeout();
+            await hubConnection.DisposeAsync().OrTimeout();
+
+            // Fire callbacks, they shouldn't fail
+            foreach (var registration in connection.Callbacks)
+            {
+                await registration.InvokeAsync(new byte[0]);
+            }
+        }
+
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse
         private class MockHubProtocol : IHubProtocol
         {

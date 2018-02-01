@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private bool _closed;
         private object _closedLock = new object();
 
-        private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
+        public List<ReceiveCallback> Callbacks { get; } = new List<ReceiveCallback>();
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
@@ -130,9 +130,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         while (_receivedMessages.Reader.TryRead(out var message))
                         {
                             ReceiveCallback[] callbackCopies;
-                            lock (_callbacks)
+                            lock (Callbacks)
                             {
-                                callbackCopies = _callbacks.ToArray();
+                                callbackCopies = Callbacks.ToArray();
                             }
 
                             foreach (var callback in callbackCopies)
@@ -170,14 +170,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public IDisposable OnReceived(Func<byte[], object, Task> callback, object state)
         {
             var receiveCallBack = new ReceiveCallback(callback, state);
-            lock (_callbacks)
+            lock (Callbacks)
             {
-                _callbacks.Add(receiveCallBack);
+                Callbacks.Add(receiveCallBack);
             }
-            return new Subscription(receiveCallBack, _callbacks);
+            return new Subscription(receiveCallBack, Callbacks);
         }
 
-        private class ReceiveCallback
+        public class ReceiveCallback
         {
             private readonly Func<byte[], object, Task> _callback;
             private readonly object _state;

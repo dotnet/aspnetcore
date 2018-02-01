@@ -97,7 +97,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (_needKeepAlive)
             {
                 _logger.ResettingKeepAliveTimer();
-                _timeoutTimer.Change(ServerTimeout, Timeout.InfiniteTimeSpan);
+
+                // If the connection is disposed while this callback is firing, or if the callback is fired after dispose
+                // (which can happen because of some races), this will throw ObjectDisposedException. That's OK, because
+                // we don't need the timer anyway.
+                try
+                {
+                    _timeoutTimer.Change(ServerTimeout, Timeout.InfiniteTimeSpan);
+                }
+                catch (ObjectDisposedException)
+                {
+                    // This is OK!
+                }
             }
         }
 
@@ -157,8 +168,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task DisposeAsyncCore()
         {
-            _timeoutTimer.Dispose();
             await _connection.DisposeAsync();
+
+            // Dispose the timer AFTER shutting down the connection.
+            _timeoutTimer.Dispose();
         }
 
         // TODO: Client return values/tasks?
