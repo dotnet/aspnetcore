@@ -3,12 +3,11 @@
 
 using System;
 using System.ComponentModel.Composition;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Editor.Razor;
-using System.Runtime.InteropServices;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -23,29 +22,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         [ImportingConstructor]
         public VsSolutionUpdatesProjectSnapshotChangeTrigger(
             [Import(typeof(SVsServiceProvider))] IServiceProvider services,
-            VisualStudioWorkspaceAccessor workspaceAccessor)
+            TextBufferProjectService projectService)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            if (workspaceAccessor == null)
+            if (projectService == null)
             {
-                throw new ArgumentNullException(nameof(workspaceAccessor));
+                throw new ArgumentNullException(nameof(projectService));
             }
 
-            _services = services;
-
-            var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _projectService = languageServices.GetRequiredService<TextBufferProjectService>();
-        }
-
-        // Internal for testing
-        internal VsSolutionUpdatesProjectSnapshotChangeTrigger(
-            IServiceProvider services,
-            TextBufferProjectService projectService)
-        {
             _services = services;
             _projectService = projectService;
         }

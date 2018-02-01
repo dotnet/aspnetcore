@@ -19,22 +19,20 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         private ProjectSnapshotManagerBase _projectManager;
 
         [ImportingConstructor]
-        public ProjectBuildChangeTrigger(ForegroundDispatcher foregroundDispatcher, VisualStudioWorkspaceAccessor workspaceAccessor)
+        public ProjectBuildChangeTrigger(ForegroundDispatcher foregroundDispatcher, TextBufferProjectService projectService)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (workspaceAccessor == null)
+            if (projectService == null)
             {
-                throw new ArgumentNullException(nameof(workspaceAccessor));
+                throw new ArgumentNullException(nameof(projectService));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
-
-            var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _projectService = languageServices.GetRequiredService<TextBufferProjectService>();
+            _projectService = projectService;
         }
 
         // Internal for testing

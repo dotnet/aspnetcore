@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
@@ -13,6 +14,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     /// <summary>
     /// Infrastructure methods to find project information from an <see cref="ITextBuffer"/>.
     /// </summary>
+    [System.Composition.Shared]
+    [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
         private const string DotNetCoreCapability = "(CSharp|VB)&CPS";
@@ -20,13 +23,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly RunningDocumentTable _documentTable;
         private readonly ITextDocumentFactoryService _documentFactory;
 
+        [ImportingConstructor]
         public DefaultTextBufferProjectService(
-            RunningDocumentTable documentTable,
+            [Import(typeof(SVsServiceProvider))] IServiceProvider services,
             ITextDocumentFactoryService documentFactory)
         {
-            if (documentTable == null)
+            if (services == null)
             {
-                throw new ArgumentNullException(nameof(documentTable));
+                throw new ArgumentNullException(nameof(services));
             }
 
             if (documentFactory == null)
@@ -35,7 +39,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _documentFactory = documentFactory;
-            _documentTable = documentTable;
+            _documentTable = new RunningDocumentTable(services);
         }
 
         public override object GetHostProject(ITextBuffer textBuffer)

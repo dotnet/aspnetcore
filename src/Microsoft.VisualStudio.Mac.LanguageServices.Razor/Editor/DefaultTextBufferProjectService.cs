@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.Linq;
-using Microsoft.CodeAnalysis.Razor;
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 using MonoDevelop.Ide;
@@ -15,27 +13,21 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
     /// <summary>
     /// Infrastructure methods to find project information from an <see cref="ITextBuffer"/>.
     /// </summary>
+    [System.Composition.Shared]
+    [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
         private readonly ITextDocumentFactoryService _documentFactory;
-        private readonly ErrorReporter _errorReporter;
 
-        public DefaultTextBufferProjectService(
-            ITextDocumentFactoryService documentFactory,
-            ErrorReporter errorReporter)
+        [ImportingConstructor]
+        public DefaultTextBufferProjectService(ITextDocumentFactoryService documentFactory)
         {
             if (documentFactory == null)
             {
                 throw new ArgumentNullException(nameof(documentFactory));
             }
 
-            if (errorReporter == null)
-            {
-                throw new ArgumentNullException(nameof(errorReporter));
-            }
-
             _documentFactory = documentFactory;
-            _errorReporter = errorReporter;
         }
 
         public override object GetHostProject(ITextBuffer textBuffer)

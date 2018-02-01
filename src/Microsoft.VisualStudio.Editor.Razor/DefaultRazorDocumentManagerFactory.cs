@@ -15,9 +15,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorEditorFactoryService _editorFactoryService;
+        private readonly TextBufferProjectService _projectService;
 
         [ImportingConstructor]
-        public DefaultRazorDocumentManagerFactory(ForegroundDispatcher foregroundDispatcher, RazorEditorFactoryService editorFactoryService)
+        public DefaultRazorDocumentManagerFactory(
+            ForegroundDispatcher foregroundDispatcher, 
+            RazorEditorFactoryService editorFactoryService,
+            TextBufferProjectService projectService)
         {
             if (foregroundDispatcher == null)
             {
@@ -29,8 +33,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(editorFactoryService));
             }
 
+            if (projectService == null)
+            {
+                throw new ArgumentNullException(nameof(projectService));
+            }
+
             _foregroundDispatcher = foregroundDispatcher;
             _editorFactoryService = editorFactoryService;
+            _projectService = projectService;
         }
 
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
@@ -40,9 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            var projectService = languageServices.GetRequiredService<TextBufferProjectService>();
-
-            return new DefaultRazorDocumentManager(_foregroundDispatcher, _editorFactoryService, projectService);
+            return new DefaultRazorDocumentManager(_foregroundDispatcher, _editorFactoryService, _projectService);
         }
     }
 }
