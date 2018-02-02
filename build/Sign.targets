@@ -47,18 +47,20 @@
 
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
 
-      <SharedFxBinaries Include="
-        $(UnsignedSharedFxPath)**\microsoft.*.dll;
-        $(UnsignedSharedFxPath)**\system.*.dll;
-        $(UnsignedSharedFxPath)**\libuv.dll;
-        $(UnsignedSharedFxPath)**\sni.dll" />
-
       <SharedFxThirdPartyBinaries Include="
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
         $(UnsignedSharedFxPath)**\e_sqlite3.dll;
-        $(UnsignedSharedFxPath)**\stackexchange*.dll" />
+        $(UnsignedSharedFxPath)**\stackexchange*.dll;
+        $(UnsignedSharedFxPath)**\System.Interactive.Async.dll" />
+
+      <SharedFxBinaries Include="
+        $(UnsignedSharedFxPath)**\microsoft.*.dll;
+        $(UnsignedSharedFxPath)**\system.*.dll;
+        $(UnsignedSharedFxPath)**\libuv.dll;
+        $(UnsignedSharedFxPath)**\sni.dll"
+        Exclude="@(SharedFxThirdPartyBinaries)"/>
 
       <UnaccountedSharedFxBinaries Include="$(UnsignedSharedFxPath)**\*.dll" Exclude="@(SharedFxBinaries);@(SharedFxThirdPartyBinaries)"/>
 
