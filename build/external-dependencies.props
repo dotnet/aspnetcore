@@ -273,6 +273,7 @@
     <ExternalDependency Include="Microsoft.Extensions.PlatformAbstractions" Version="$(MicrosoftExtensionsPlatformAbstractionsPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(MicrosoftIdentityModelClientsActiveDirectoryPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="$(MicrosoftIdentityModelProtocolsWsFederationPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp10PackageVersion)" TargetFramework="netcoreapp1.0" Source="$(DefaultNuGetFeed)">
       <!-- Multiple versions of this package required to support all netcoreapp versions -->
@@ -358,6 +359,7 @@
       <NoWarn>KRB2004</NoWarn>
       <VariableName>Benchmarks_11_SystemDataSqlClientPackageVersion</VariableName>
     </ExternalDependency>
+    <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="$(SystemIdentityModelTokensJwtPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Management.Automation" Version="$(SystemManagementAutomationPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" Source="$(DefaultNuGetFeed)" />
