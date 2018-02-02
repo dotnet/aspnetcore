@@ -1,2 +1,1 @@
-﻿body {
-}
+// Write your TypeScript code.
