@@ -119,5 +119,4 @@ sudo chmod +x buildAgent
 sudo mv buildAgent /etc/init.d/
 sudo update-rc.d buildAgent defaults
 
-echo "Starting the build agent..."
-sudo /etc/init.d/buildAgent start
+echo "Logout and login to finish docker config, then run 'sudo /etc/init.d/buildAgent start' to start agent"
