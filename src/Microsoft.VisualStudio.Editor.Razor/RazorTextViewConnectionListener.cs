@@ -20,23 +20,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly RazorDocumentManager _documentManager;
 
         [ImportingConstructor]
-        public RazorTextViewConnectionListener(ForegroundDispatcher foregroundDispatcher, VisualStudioWorkspaceAccessor workspaceAccessor)
-        {
-            if (workspaceAccessor == null)
-            {
-                throw new ArgumentNullException(nameof(workspaceAccessor));
-            }
-
-            _foregroundDispatcher = foregroundDispatcher;
-
-            var languageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _documentManager = languageServices.GetRequiredService<RazorDocumentManager>();
-        }
-
-        // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
-        internal RazorTextViewConnectionListener(
-            ForegroundDispatcher foregroundDispatcher,
-            RazorDocumentManager documentManager)
+        public RazorTextViewConnectionListener(ForegroundDispatcher foregroundDispatcher, RazorDocumentManager documentManager)
         {
             if (foregroundDispatcher == null)
             {

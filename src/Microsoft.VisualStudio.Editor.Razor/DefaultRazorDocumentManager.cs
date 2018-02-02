@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Text;
@@ -10,12 +11,15 @@ using Microsoft.VisualStudio.Text.Editor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [System.Composition.Shared]
+    [Export(typeof(RazorDocumentManager))]
     internal class DefaultRazorDocumentManager : RazorDocumentManager
     {
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly RazorEditorFactoryService _editorFactoryService;
         private readonly TextBufferProjectService _projectService;
 
+        [ImportingConstructor]
         public DefaultRazorDocumentManager(
             ForegroundDispatcher dispatcher,
             RazorEditorFactoryService editorFactoryService,
