@@ -2,16 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
+    [System.Composition.Shared]
+    [Export(typeof(RazorCodeDocumentProvider))]
     internal class DefaultCodeDocumentProvider : RazorCodeDocumentProvider
     {
         private readonly RazorTextBufferProvider _bufferProvider;
         private readonly TextBufferCodeDocumentProvider _codeDocumentProvider;
 
+        [ImportingConstructor]
         public DefaultCodeDocumentProvider(
             RazorTextBufferProvider bufferProvider,
             TextBufferCodeDocumentProvider codeDocumentProvider)
