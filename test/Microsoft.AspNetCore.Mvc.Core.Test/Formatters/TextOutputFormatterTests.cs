@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -231,6 +232,29 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.Equal(StatusCodes.Status406NotAcceptable, context.HttpContext.Response.StatusCode);
+        }
+
+        [Fact]
+        public void GetAcceptCharsetHeaderValues_ReadsHeaderAndParsesValues()
+        {
+            // Arrange
+            const string expectedValue = "expected";
+
+            var formatter = new OverrideEncodingFormatter(encoding: null);
+            var context = new DefaultHttpContext();
+            context.Request.Headers[HeaderNames.AcceptCharset] = expectedValue;
+
+            var writerContext = new OutputFormatterWriteContext(
+                context,
+                new TestHttpResponseStreamWriterFactory().CreateWriter,
+                objectType: null,
+                @object: null);
+
+            // Act
+            var result = TextOutputFormatter.GetAcceptCharsetHeaderValues(writerContext);
+
+            //Assert
+            Assert.Equal(expectedValue, Assert.Single(result).Value.Value);
         }
 
         private class TestOutputFormatter : TextOutputFormatter

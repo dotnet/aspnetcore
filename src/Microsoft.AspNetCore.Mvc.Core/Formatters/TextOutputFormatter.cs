@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new InvalidOperationException(message);
             }
 
-            var request = context.HttpContext.Request;
-            var encoding = MatchAcceptCharacterEncoding(request.GetTypedHeaders().AcceptCharset);
+            var acceptCharsetHeaderValues = GetAcceptCharsetHeaderValues(context);
+            var encoding = MatchAcceptCharacterEncoding(acceptCharsetHeaderValues);
             if (encoding != null)
             {
                 return encoding;
@@ -164,6 +164,17 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="selectedEncoding">The <see cref="Encoding"/> that should be used to write the response.</param>
         /// <returns>A task which can write the response body.</returns>
         public abstract Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding);
+
+        internal static IList<StringWithQualityHeaderValue> GetAcceptCharsetHeaderValues(OutputFormatterWriteContext context)
+        {
+            var request = context.HttpContext.Request;
+            if (StringWithQualityHeaderValue.TryParseList(request.Headers[HeaderNames.AcceptCharset], out IList<StringWithQualityHeaderValue> result))
+            {
+                return result;
+            }
+
+            return Array.Empty<StringWithQualityHeaderValue>();
+        }
 
         private string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
         {
