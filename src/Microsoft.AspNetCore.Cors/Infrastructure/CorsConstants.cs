@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
@@ -13,7 +14,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// The HTTP method for the CORS preflight request.
         /// </summary>        
-        public static readonly string PreflightHttpMethod = "OPTIONS";
+        public static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         /// <summary>
         /// The Origin request header.
@@ -86,9 +87,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
         internal static readonly string[] SimpleMethods =
         {
-            "GET",
-            "HEAD",
-            "POST"
+            HttpMethods.Get,
+            HttpMethods.Head,
+            HttpMethods.Post
         };
     }
 }
