@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         {
             using (Logger.BeginScope("Dispose"))
             {
-                if (!string.IsNullOrEmpty(_configFile))
+                if (File.Exists(_configFile))
                 {
                     var startInfo = new ProcessStartInfo
                     {
