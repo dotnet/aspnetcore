@@ -22,6 +22,13 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;" />
 
+      <NoShipPackageBinaries Include="
+        $(UnsignedNoShipPackagesPath)**\*.dll;
+        $(UnsignedNoShipPackagesPath)**\*.exe;
+        $(UnsignedNoShipPackagesPath)**\*.psd1;
+        $(UnsignedNoShipPackagesPath)**\*.psm1;
+        $(UnsignedNoShipPackagesPath)**\*.ps1;" />
+        
       <OobPackageBinaries Include="
         $(UnsignedOobPackagesPath)**\*.dll;
         $(UnsignedOobPackagesPath)**\*.exe;
@@ -66,6 +73,7 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
+        @(NoShipPackageBinaries);
         @(OobPackageBinaries);
         @(SymbolsPackageBinaries);
         @(VSIXBinaries);
@@ -111,6 +119,7 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+      <NuSpecNoShip Include="$(UnsignedNoShipPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
     </ItemGroup>
@@ -120,6 +129,11 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
       Condition="'@(NuSpec)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(NuSpecNoShip.RootDir)%(NuSpecNoShip.Directory);OutputDir=$(PackagesNoShipOutputPath);Extension=.nupkg"
+      Condition="'@(NuSpecNoShip)'!=''" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="ZipFile"

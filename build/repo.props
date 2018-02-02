@@ -10,6 +10,7 @@
     <!-- Working directories -->
     <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
+    <PackagesNoShipOutputPath>$(ArtifactsDir)Signed\NoShipPackages\</PackagesNoShipOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
     <SharedFxOutputPath>$(ArtifactsDir)Signed\SharedFx\</SharedFxOutputPath>
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
@@ -18,6 +19,7 @@
     <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
 
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedNoShipPackagesPath>$(IntermediateDir)UnsignedNoShipPackages\</UnsignedNoShipPackagesPath>
     <UnsignedOobPackagesPath>$(IntermediateDir)UnsignedOobPackages\</UnsignedOobPackagesPath>
     <UnsignedSymbolPackagesPath>$(IntermediateDir)UnsignedSymbolsPackages\</UnsignedSymbolPackagesPath>
     <UnsignedVSIXPath>$(IntermediateDir)UnsignedVSIX\</UnsignedVSIXPath>

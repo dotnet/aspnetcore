@@ -39,6 +39,7 @@
   <Target Name="GetPackagesToPublish">
     <ItemGroup>
       <PackagesToPublish Include="$(PackagesOutputPath)*.nupkg" />
+      <PackagesToPublish Include="$(PackagesNoShipOutputPath)*.nupkg" />
       <PackagesToPublish Include="$(PackagesOobOutputPath)*.nupkg" />
       <PackagesToPublish Include="$(SymbolsOutputPath)*.nupkg" />
     </ItemGroup>
@@ -51,7 +52,6 @@
     <!-- Contains the super set of packages that we'd like to publish to MyGet and Azure blob -->
     <ItemGroup>
       <_PackagesToPublish Include="@(PackagesToPublish)" />
-      <_PackagesToPublish Include="$(DepsDirectory)noship\*.nupkg" />
       <_PackagesToPublish Include="$(DepsDirectory)mirror\*.nupkg" />
       <_PackagesToPublish Include="$(DepsDirectory)lineups\*.nupkg" />
     </ItemGroup>

@@ -6,6 +6,7 @@
   <Target Name="ExtractInputs">
     <ItemGroup>
       <UnsignedPackages Include="$(UnsignedShipPackagesDir)*.nupkg" />
+      <UnsignedNoShipPackages Include="$(DepsDirectory)noship\*.nupkg" />
       <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)build\*.vsix" />
@@ -15,6 +16,7 @@
       <UnsignedMPacks Include="$(DepsDirectory)build\**\*.mpack" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
+      <_UnzipFiles Include="@(UnsignedNoShipPackages)" Destination="$(UnsignedNoShipPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
@@ -36,7 +38,9 @@
       Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')" />
 
     <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
+    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedNoShipPackagesPath)" />
     <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
+    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedSymbolPackagesPath)" />
 
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
