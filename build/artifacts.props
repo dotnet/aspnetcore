@@ -22,6 +22,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OAuth" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="ship" Metapackage="true" RuntimeStore="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.WsFederation" Category="ship" Metapackage="false" RuntimeStore="false"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Twitter" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" Metapackage="true" RuntimeStore="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" Metapackage="true" RuntimeStore="true"/>
