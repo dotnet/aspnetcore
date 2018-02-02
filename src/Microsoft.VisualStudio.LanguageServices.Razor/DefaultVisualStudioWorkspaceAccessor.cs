@@ -46,8 +46,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             _defaultWorkspace = defaultWorkspace;
         }
 
-        public override Workspace Workspace => _defaultWorkspace;
-
         public override bool TryGetWorkspace(ITextBuffer textBuffer, out Workspace workspace)
         {
             if (textBuffer == null)

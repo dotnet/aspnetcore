@@ -8,8 +8,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal abstract class VisualStudioWorkspaceAccessor
     {
-        public abstract Workspace Workspace { get; }
-
         public abstract bool TryGetWorkspace(ITextBuffer textBuffer, out Workspace workspace);
     }
 }

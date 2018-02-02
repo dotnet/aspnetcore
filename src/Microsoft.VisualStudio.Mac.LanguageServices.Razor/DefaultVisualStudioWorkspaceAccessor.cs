@@ -28,8 +28,6 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             _projectService = projectService;
         }
 
-        public override Workspace Workspace => TypeSystemService.Workspace;
-
         public override bool TryGetWorkspace(ITextBuffer textBuffer, out Workspace workspace)
         {
             if (textBuffer == null)
