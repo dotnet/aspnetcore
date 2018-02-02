@@ -301,6 +301,9 @@
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="$(MicrosoftVisualStudioOLEInteropPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Analyzers" Version="$(MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" Version="$(MicrosoftVisualStudioProjectSystemManagedVSPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.ProjectSystem.SDK" Version="$(MicrosoftVisualStudioProjectSystemSDKPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="$(MicrosoftVisualStudioShell150PackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="$(MicrosoftVisualStudioShellInterop100PackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="$(MicrosoftVisualStudioShellInterop110PackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
