@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Sdk" Version="$(MicrosoftAspNetCoreRazorSdkPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Net.Sdk.Razor" Version="$(MicrosoftNetSdkRazorPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
   </ItemGroup>
 
