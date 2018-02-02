@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 return result;
             }
 
-            return null;
+            return Array.Empty<StringWithQualityHeaderValue>();
         }
 
         private string GetMediaTypeWithCharset(string mediaType, Encoding encoding)
