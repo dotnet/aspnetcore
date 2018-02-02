@@ -147,7 +147,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     RazorCoreCompile should be defined there.
   -->
-  <Import Project="Microsoft.Net.Sdk.Razor.Compilation.targets" />
+  <Import Project="Microsoft.NET.Sdk.Razor.Compilation.targets" />
 
   <Target Name="PrepareForRazorGenerate" DependsOnTargets="$(PrepareForRazorGenerateDependsOn)">
   </Target>

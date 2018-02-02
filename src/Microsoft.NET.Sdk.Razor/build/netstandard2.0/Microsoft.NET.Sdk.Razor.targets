@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.Net.Sdk.Razor.targets
+Microsoft.NET.Sdk.Razor.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
