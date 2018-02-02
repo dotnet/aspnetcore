@@ -4,7 +4,7 @@
     <VersionSuffix>preview2</VersionSuffix>
 
     <ExperimentalVersionPrefix>0.1.0</ExperimentalVersionPrefix>
-    <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
+    <ExperimentalVersionSuffix>alpha2</ExperimentalVersionSuffix>
 
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
