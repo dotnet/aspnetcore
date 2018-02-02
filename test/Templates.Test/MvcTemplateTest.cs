@@ -55,13 +55,13 @@ namespace Templates.Test
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip="https://github.com/aspnet/templating/issues/286")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void MvcTemplate_IndividualAuth_Works_NetFramework()
             => MvcTemplate_IndividualAuthImpl("net461");
 
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/templating/issues/286")]
         public void MvcTemplate_IndividualAuth_Works_NetCore()
             => MvcTemplate_IndividualAuthImpl(null);
 
