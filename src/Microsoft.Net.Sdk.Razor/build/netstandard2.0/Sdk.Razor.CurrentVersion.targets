@@ -1,6 +1,6 @@
 ﻿<!--
 ***********************************************************************************************
-Razor.Sdk.CurrentVersion.targets
+Sdk.Razor.CurrentVersion.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -9,7 +9,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
-<Project>
+<Project ToolsVersion="14.0">
   <!-- 
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor
     and including the generated code in the project lifecycle, including compiling, publishing and producing
@@ -147,7 +147,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     RazorCoreCompile should be defined there.
   -->
-  <Import Project="Microsoft.AspNetCore.Razor.Design.Compilation.targets" />
+  <Import Project="Microsoft.Net.Sdk.Razor.Compilation.targets" />
 
   <Target Name="PrepareForRazorGenerate" DependsOnTargets="$(PrepareForRazorGenerateDependsOn)">
   </Target>

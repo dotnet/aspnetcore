@@ -1,4 +1,4 @@
-<Project>
+<Project ToolsVersion="14.0">
   <!--
     Targets used for Razor SDK code generation. Support for the RazorCoreGenerate target.
     This target is explicitly imported by Razor SDK.

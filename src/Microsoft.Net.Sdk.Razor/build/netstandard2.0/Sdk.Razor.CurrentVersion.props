@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Razor.Sdk.CurrentVersion.props
+Sdk.Razor.CurrentVersion.props
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -9,7 +9,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
-<Project>
+<Project ToolsVersion="14.0">
   <!--
     Properties and tasks supporting Razor MSBuild integration
   -->

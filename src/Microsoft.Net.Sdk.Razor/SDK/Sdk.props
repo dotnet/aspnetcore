@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.AspNetCore.Razor.Sdk.props
+Sdk.props
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -9,11 +9,8 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
-<Project>
-  <Import Project="Razor.Sdk.CurrentVersion.props" />
+<Project ToolsVersion="14.0">
 
-  <PropertyGroup>
-    <!-- Redirect the SDK to use the targets from the current package -->
-    <RazorSdkTargetsPath>$(MSBuildFileDirectory)Sdk.CurrentVersion.targets</RazorSdkTargetsPath>
-  </PropertyGroup>
+  <Import Project="$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props" />
+
 </Project>

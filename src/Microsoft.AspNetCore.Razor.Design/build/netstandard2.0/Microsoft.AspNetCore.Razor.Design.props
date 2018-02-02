@@ -1,4 +1,4 @@
-﻿<Project TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
+﻿<Project ToolsVersion="14.0" TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
   <PropertyGroup>
     <!--
     Used by the Web SDK if the Razor SDK can be used for compilation. This needs to live in a nuget package (not in the SDK)

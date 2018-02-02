@@ -1,6 +1,6 @@
 ﻿<!--
 ***********************************************************************************************
-Razor.Sdk.CurrentVersion.MultiTargeting.targets
+Sdk.Razor.CurrentVersion.MultiTargeting.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -9,7 +9,7 @@ WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
-<Project>
+<Project ToolsVersion="14.0">
 
   <Target Name="RazorCompile">
     <Error Text="The 'RazorCompile' target is not supported without specifying a target framework. The current project targets multiple frameworks, please specify a framework to execute this target." />

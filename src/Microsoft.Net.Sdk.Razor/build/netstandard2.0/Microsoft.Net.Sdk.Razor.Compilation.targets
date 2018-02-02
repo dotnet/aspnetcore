@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.AspNetCore.Razor.Design.Compilation.targets
+Microsoft.Net.Sdk.Razor.Compilation.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -10,7 +10,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 
-<Project>
+<Project ToolsVersion="14.0">
   <!--
   What follows in this file is based on:
      https://github.com/dotnet/roslyn/blob/4d92b18aee99ba8b1b4770ce65133e9ca65a94fe/src/Compilers/Core/MSBuildTask/Microsoft.CSharp.Core.targets

@@ -92,7 +92,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools", "src\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj", "{3E7F2D49-3B45-45A8-9893-F73EC1EEBAAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Sdk", "src\Microsoft.AspNetCore.Razor.Sdk\Microsoft.AspNetCore.Razor.Sdk.csproj", "{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Razor", "src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj", "{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Tools.Test", "test\Microsoft.AspNetCore.Razor.Tools.Test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{6EA56B2B-89EC-4C38-A384-97D203375B06}"
 EndProject
