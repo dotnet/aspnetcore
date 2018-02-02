@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             }
         }
 
-        [ConditionalFact(Skip="https://github.com/aspnet/Home/issues/2844")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public void No_exception_on_diagnostic_event_received_when_null_state()
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         .UseLoggerFactory(context.RequestServices.GetService<ILoggerFactory>());
                     if (!PlatformHelper.IsMono)
                     {
-                        optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600));
+                        optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600).EnableRetryOnFailure());
                     }
                     else
                     {
@@ -498,7 +498,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                     {
                         if (!PlatformHelper.IsMono)
                         {
-                            optionsBuilder.UseSqlServer(database.ConnectionString, b => b.CommandTimeout(600));
+                            optionsBuilder.UseSqlServer(
+                                database.ConnectionString, 
+                                b => b.CommandTimeout(600).EnableRetryOnFailure());
                         }
                         else
                         {
