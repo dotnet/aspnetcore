@@ -51,6 +51,10 @@
   ],
   "ports": [
     {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
       "name": "HttpsPort",
       "useHttps": true
     }
