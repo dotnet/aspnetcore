@@ -21,6 +21,9 @@
     <MicrosoftVisualStudioEditorPackageVersion>15.0.26606</MicrosoftVisualStudioEditorPackageVersion>
     <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.0.26606</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
     <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
+    <MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>15.3.224</MicrosoftVisualStudioProjectSystemAnalyzersPackageVersion>
+    <MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>2.0.6142705</MicrosoftVisualStudioProjectSystemManagedVSPackageVersion>
+    <MicrosoftVisualStudioProjectSystemSDKPackageVersion>15.3.224</MicrosoftVisualStudioProjectSystemSDKPackageVersion>
     <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
     <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
     <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
