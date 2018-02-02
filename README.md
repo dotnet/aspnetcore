@@ -49,6 +49,7 @@ Prerequisites:
 - Chrome
 
 Run `selenium-standalone start`
+
 Run `dotnet test test/<test name>.E2ETest.csproj`
 
 ## Contributing
