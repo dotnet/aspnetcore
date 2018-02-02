@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     return EmptyServerResponse;
                 };
             });
-            
+
             var dispatcher = new DefaultRequestDispatcher(connectionHost, compilerHost, CancellationToken.None);
             var readyTaskSource = new TaskCompletionSource<bool>();
             var disconnectTaskSource = new TaskCompletionSource<bool>();
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     throw new Exception();
                 };
             });
-            
+
             var compilerHost = CreateCompilerHost();
             var connectionHost = CreateConnectionHost();
             var dispatcher = new DefaultRequestDispatcher(connectionHost, compilerHost, CancellationToken.None);
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Ensure server respects keep alive and shuts down after processing simultaneous connections.
         /// </summary>
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2018")]
         public async Task Dispatcher_ProcessSimultaneousConnections_HitsKeepAliveTimeout()
         {
             // Arrange
@@ -389,8 +389,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             // Assert
             Assert.Equal(totalCount, eventBus.CompletedCount);
-            Assert.True(eventBus.LastProcessedTime.HasValue);
-            Assert.True(eventBus.HitKeepAliveTimeout);
+            Assert.True(eventBus.LastProcessedTime.HasValue, "LastProcessedTime should have had a value.");
+            Assert.True(eventBus.HitKeepAliveTimeout, "HitKeepAliveTimeout should have been hit.");
         }
 
         [Fact]
