@@ -22,9 +22,34 @@ Blazor will have all the features of a modern web framework, including:
 
 > Note: Blazor is an *experimental* project. It's not (yet) a committed product. This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
 
+To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo](https://www.youtube.com/watch?v=MiLAE6HMr10&feature=youtu.be&t=31m45s) last year. You can also try out a [simple Blazor app running in Azure](https://blazor-demo.azurewebsites.net/).
+
 ## Getting Started
 
-We are still *very early* in this project. There isn’t yet anything you can download nor any project template you can use. Most of the planned features aren’t implemented yet. Even the parts that are already implemented aren’t yet optimized for minimal payload size. If you’re keen, you can clone the repo, build it, and run the tests.
+We are still *very early* in this project. There isn't yet anything you can download nor any project template you can use. Most of the planned features aren't implemented yet. Even the parts that are already implemented aren't yet optimized for minimal payload size. If you're keen, you can clone the repo, build it, and run the samples and tests.
+
+## Build
+
+Prerequisites:
+- [.NET Core SDK](https://dot.net/core) (>2.1.4)
+- [Node.js](https://nodejs.org/) (>8.3)
+
+Run `dotnet build` from the solution directory.
+
+## Run tests
+
+Run `dotnet test test/<test name>.Test.csproj`
+
+## Run end-to-end tests
+
+Prerequisites:
+- Install [selenium-standalone](https://www.npmjs.com/package/selenium-standalone) (requires Java 8 or later)
+  - `npm install -g selenium-standalone`
+  - `selenium-standalone install`
+- Chrome
+
+Run `selenium-standalone start`
+Run `dotnet test test/<test name>.E2ETest.csproj`
 
 ## Contributing
 
