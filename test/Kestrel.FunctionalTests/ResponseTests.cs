@@ -2495,10 +2495,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, "ConnClosedWhenRespDoesNotSatisfyMin"))
             {
-                var logger = loggerFactory.CreateLogger($"{typeof(ResponseTests).FullName}.{nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
-
+                var logger = loggerFactory.CreateLogger($"{ typeof(ResponseTests).FullName}.{ nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
                 var chunkSize = 64 * 1024;
                 var chunks = 128;
                 var responseSize = chunks * chunkSize;
