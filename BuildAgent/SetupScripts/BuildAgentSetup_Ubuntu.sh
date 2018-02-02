@@ -32,8 +32,8 @@ sudo apt-get install -y git
 # Sometimes git pull stalls, so this could fix it
 git config --global http.postBuffer 2M
 
-echo "Installing libunwind8..."
-sudo apt-get install -y libunwind8
+echo "Installing .NET Core Prereqs..."
+sudo apt-get install -y libunwind8 liblttng-ust0 libcurl3 libssl1.0.0 libuuid1 libkrb5-3 zlib1g libicu55
 
 echo "Installing Java..."
 sudo apt-get install -y default-jre-headless unzip
