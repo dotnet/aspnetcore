@@ -18,6 +18,10 @@
   "legacyTemplateIdentity": "Microsoft.NetCore.CSharp.EmptyWeb",
   "ports": [
     {
+      "name": "HttpPort",
+      "useHttps": false
+    },
+    {
       "name": "HttpsPort",
       "useHttps": true
     }
