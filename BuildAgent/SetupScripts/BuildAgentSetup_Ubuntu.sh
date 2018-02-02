@@ -95,7 +95,7 @@ sudo cat <<EOF >> buildAgent
 ### END INIT INFO
 #Provide the correct user name:
 USER="aspnetagent"
- 
+
 case "$1" in
 start)
  # Grant all users write access to /mnt, since TeamCity uses /mnt for temp storage
@@ -109,9 +109,9 @@ stop)
   echo "usage start/stop"
   exit 1
  ;;
- 
+
 esac
- 
+
 exit 0
 EOF
 
