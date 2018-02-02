@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(WebSocketMessageType.Binary)]
         public async Task ReceivedFramesAreWrittenToChannel(WebSocketMessageType webSocketMessageType)
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransferMode.Binary, WebSocketMessageType.Binary)]
         public async Task WebSocketTransportSetsMessageTypeBasedOnTransferModeFeature(TransferMode transferMode, WebSocketMessageType expectedMessageType)
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ClientReceivesInternalServerErrorWhenTheApplicationFails()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportClosesOnCloseTimeoutIfClientDoesNotSendCloseFrame()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task TransportFailsOnTimeoutWithErrorWhenApplicationFailsAndClientDoesNotSendCloseFrame()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ServerGracefullyClosesWhenApplicationEndsThenClientSendsCloseFrame()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task ServerGracefullyClosesWhenClientSendsCloseFrameThenApplicationEnds()
         {
-            using (StartLog(out var loggerFactory))
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
                 var transportToApplication = Channel.CreateUnbounded<byte[]>();
                 var applicationToTransport = Channel.CreateUnbounded<byte[]>();

@@ -17,33 +17,42 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Tests
 {
-    public class HttpConnectionDispatcherTests
+    public class HttpConnectionDispatcherTests : LoggedTest
     {
+        public HttpConnectionDispatcherTests(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Fact]
         public async Task NegotiateReservesConnectionIdAndReturnsIt()
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddOptions();
-            var ms = new MemoryStream();
-            context.Request.Path = "/foo";
-            context.Request.Method = "POST";
-            context.Response.Body = ms;
-            await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions());
-            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-            var connectionId = negotiateResponse.Value<string>("connectionId");
-            Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
-            Assert.Equal(connectionId, connectionContext.ConnectionId);
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions());
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+                var connectionId = negotiateResponse.Value<string>("connectionId");
+                Assert.True(manager.TryGetConnection(connectionId, out var connectionContext));
+                Assert.Equal(connectionId, connectionContext.ConnectionId);
+            }
         }
 
         [Theory]
@@ -52,27 +61,30 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling | TransportType.WebSockets)]
         public async Task NegotiateReturnsAvailableTransports(TransportType transports)
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddOptions();
-            var ms = new MemoryStream();
-            context.Request.Path = "/foo";
-            context.Request.Method = "POST";
-            context.Response.Body = ms;
-            await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions { Transports = transports });
-
-            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
-            var availableTransports = (TransportType)0;
-            foreach (var transport in negotiateResponse["availableTransports"])
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                availableTransports |= (TransportType)Enum.Parse(typeof(TransportType), transport.Value<string>());
-            }
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddOptions();
+                var ms = new MemoryStream();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                context.Response.Body = ms;
+                await dispatcher.ExecuteNegotiateAsync(context, new HttpSocketOptions { Transports = transports });
 
-            Assert.Equal(transports, availableTransports);
+                var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+                var availableTransports = (TransportType)0;
+                foreach (var transport in negotiateResponse["availableTransports"])
+                {
+                    availableTransports |= (TransportType)Enum.Parse(typeof(TransportType), transport.Value<string>());
+                }
+
+                Assert.Equal(transports, availableTransports);
+            }
         }
 
         [Theory]
@@ -81,100 +93,109 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling)]
         public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvided(TransportType transportType)
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-
-            using (var strm = new MemoryStream())
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                context.Response.Body = strm;
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-                var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
-                services.AddOptions();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = "unknown";
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
-                SetTransport(context, transportType);
+                using (var strm = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                    context.Response.Body = strm;
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
-                builder.UseEndPoint<TestEndPoint>();
-                var app = builder.Build();
-                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                    var services = new ServiceCollection();
+                    services.AddEndPoint<TestEndPoint>();
+                    services.AddOptions();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "GET";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = "unknown";
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+                    SetTransport(context, transportType);
 
-                Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
-                await strm.FlushAsync();
-                Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                    Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+                    await strm.FlushAsync();
+                    Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+                }
             }
         }
 
         [Fact]
         public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvidedForPost()
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-
-            using (var strm = new MemoryStream())
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var context = new DefaultHttpContext();
-                context.Response.Body = strm;
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-                var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
-                services.AddOptions();
-                context.Request.Path = "/foo";
-                context.Request.Method = "POST";
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = "unknown";
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
+                using (var strm = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Response.Body = strm;
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
-                builder.UseEndPoint<TestEndPoint>();
-                var app = builder.Build();
-                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                    var services = new ServiceCollection();
+                    services.AddEndPoint<TestEndPoint>();
+                    services.AddOptions();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = "unknown";
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
 
-                Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
-                await strm.FlushAsync();
-                Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                    Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+                    await strm.FlushAsync();
+                    Assert.Equal("No Connection with that ID", Encoding.UTF8.GetString(strm.ToArray()));
+                }
             }
         }
 
         [Fact]
         public async Task PostNotAllowedForWebSocketConnections()
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var connection = manager.CreateConnection();
-            connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.WebSockets;
-
-            using (var strm = new MemoryStream())
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var context = new DefaultHttpContext();
-                context.Response.Body = strm;
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.WebSockets;
 
-                var services = new ServiceCollection();
-                services.AddEndPoint<TestEndPoint>();
-                services.AddOptions();
-                context.Request.Path = "/foo";
-                context.Request.Method = "POST";
-                var values = new Dictionary<string, StringValues>();
-                values["id"] = connection.ConnectionId;
-                var qs = new QueryCollection(values);
-                context.Request.Query = qs;
+                using (var strm = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Response.Body = strm;
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
-                builder.UseEndPoint<TestEndPoint>();
-                var app = builder.Build();
-                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                    var services = new ServiceCollection();
+                    services.AddEndPoint<TestEndPoint>();
+                    services.AddOptions();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
 
-                Assert.Equal(StatusCodes.Status405MethodNotAllowed, context.Response.StatusCode);
-                await strm.FlushAsync();
-                Assert.Equal("POST requests are not allowed for WebSocket connections.", Encoding.UTF8.GetString(strm.ToArray()));
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                    Assert.Equal(StatusCodes.Status405MethodNotAllowed, context.Response.StatusCode);
+                    await strm.FlushAsync();
+                    Assert.Equal("POST requests are not allowed for WebSocket connections.", Encoding.UTF8.GetString(strm.ToArray()));
+                }
             }
         }
 
@@ -183,55 +204,61 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling)]
         public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvided(TransportType transportType)
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            using (var strm = new MemoryStream())
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var context = new DefaultHttpContext();
-                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-                context.Response.Body = strm;
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
-                context.Request.Path = "/foo";
-                context.Request.Method = "GET";
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                using (var strm = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                    context.Response.Body = strm;
+                    var services = new ServiceCollection();
+                    services.AddOptions();
+                    services.AddEndPoint<TestEndPoint>();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "GET";
 
-                SetTransport(context, transportType);
+                    SetTransport(context, transportType);
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
-                builder.UseEndPoint<TestEndPoint>();
-                var app = builder.Build();
-                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
-                Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
-                await strm.FlushAsync();
-                Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+                    Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+                    await strm.FlushAsync();
+                    Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+                }
             }
         }
 
         [Fact]
         public async Task EndpointsThatRequireConnectionId400WhenNoConnectionIdProvidedForPost()
         {
-            var manager = CreateConnectionManager();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            using (var strm = new MemoryStream())
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var context = new DefaultHttpContext();
-                context.Response.Body = strm;
-                var services = new ServiceCollection();
-                services.AddOptions();
-                services.AddEndPoint<TestEndPoint>();
-                context.Request.Path = "/foo";
-                context.Request.Method = "POST";
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                using (var strm = new MemoryStream())
+                {
+                    var context = new DefaultHttpContext();
+                    context.Response.Body = strm;
+                    var services = new ServiceCollection();
+                    services.AddOptions();
+                    services.AddEndPoint<TestEndPoint>();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
-                builder.UseEndPoint<TestEndPoint>();
-                var app = builder.Build();
-                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
-                Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
-                await strm.FlushAsync();
-                Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+                    Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+                    await strm.FlushAsync();
+                    Assert.Equal("Connection ID required", Encoding.UTF8.GetString(strm.ToArray()));
+                }
             }
         }
 
@@ -241,7 +268,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.ServerSentEvents, 404)]
         public async Task EndPointThatOnlySupportsLongPollingRejectsOtherTransports(TransportType transportType, int status)
         {
-            await CheckTransportSupported(TransportType.LongPolling, transportType, status);
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                await CheckTransportSupported(TransportType.LongPolling, transportType, status, loggerFactory);
+            }
         }
 
         [Theory]
@@ -250,7 +280,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsSSERejectsOtherTransports(TransportType transportType, int status)
         {
-            await CheckTransportSupported(TransportType.ServerSentEvents, transportType, status);
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                await CheckTransportSupported(TransportType.ServerSentEvents, transportType, status, loggerFactory);
+            }
         }
 
         [Theory]
@@ -259,130 +292,151 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsWebSockesRejectsOtherTransports(TransportType transportType, int status)
         {
-            await CheckTransportSupported(TransportType.WebSockets, transportType, status);
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                await CheckTransportSupported(TransportType.WebSockets, transportType, status, loggerFactory);
+            }
         }
 
         [Theory]
         [InlineData(TransportType.LongPolling, 404)]
         public async Task EndPointThatOnlySupportsWebSocketsAndSSERejectsLongPolling(TransportType transportType, int status)
         {
-            await CheckTransportSupported(TransportType.WebSockets | TransportType.ServerSentEvents, transportType, status);
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                await CheckTransportSupported(TransportType.WebSockets | TransportType.ServerSentEvents, transportType, status, loggerFactory);
+            }
         }
 
         [Fact]
         public async Task CompletedEndPointEndsConnection()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, TransportType.ServerSentEvents);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, TransportType.ServerSentEvents);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
-            Assert.False(exists);
+                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                Assert.False(exists);
+            }
         }
 
         [Fact]
         public async Task SynchronusExceptionEndsConnection()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, TransportType.ServerSentEvents);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, TransportType.ServerSentEvents);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<SynchronusExceptionEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<SynchronusExceptionEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<SynchronusExceptionEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<SynchronusExceptionEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
 
-            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
-            Assert.False(exists);
+                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                Assert.False(exists);
+            }
         }
 
         [Fact]
         public async Task CompletedEndPointEndsLongPollingConnection()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
-            var app = builder.Build();
-            await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
 
-            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
 
-            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
-            Assert.False(exists);
+                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                Assert.False(exists);
+            }
         }
 
         [Fact]
         public async Task LongPollingTimeoutSets200StatusCode()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.LongPolling.PollTimeout = TimeSpan.FromSeconds(2);
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.LongPolling.PollTimeout = TimeSpan.FromSeconds(2);
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task WebSocketTransportTimesOutWhenCloseFrameNotReceived()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Trace))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, TransportType.WebSockets);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, TransportType.WebSockets);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
+                var services = new ServiceCollection();
+                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(1);
 
-            var task = dispatcher.ExecuteAsync(context, options, app);
+                var task = dispatcher.ExecuteAsync(context, options, app);
 
-            await task.OrTimeout();
+                await task.OrTimeout();
+            }
         }
 
         [Theory]
@@ -390,72 +444,78 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.ServerSentEvents)]
         public async Task RequestToActiveConnectionId409ForStreamingTransports(TransportType transportType)
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-
-            var context1 = MakeRequest("/foo", connection);
-            var context2 = MakeRequest("/foo", connection);
-
-            SetTransport(context1, transportType);
-            SetTransport(context2, transportType);
-
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            var request1 = dispatcher.ExecuteAsync(context1, options, app);
-
-            await dispatcher.ExecuteAsync(context2, options, app);
-
-            Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
-
-            var webSocketTask = Task.CompletedTask;
-
-            var ws = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
-            if (ws != null)
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                await ws.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+
+                var context1 = MakeRequest("/foo", connection);
+                var context2 = MakeRequest("/foo", connection);
+
+                SetTransport(context1, transportType);
+                SetTransport(context2, transportType);
+
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                var request1 = dispatcher.ExecuteAsync(context1, options, app);
+
+                await dispatcher.ExecuteAsync(context2, options, app);
+
+                Assert.Equal(StatusCodes.Status409Conflict, context2.Response.StatusCode);
+
+                var webSocketTask = Task.CompletedTask;
+
+                var ws = (TestWebSocketConnectionFeature)context1.Features.Get<IHttpWebSocketFeature>();
+                if (ws != null)
+                {
+                    await ws.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                }
+
+                manager.CloseConnections();
+
+                await request1.OrTimeout();
             }
-
-            manager.CloseConnections();
-
-            await request1.OrTimeout();
         }
 
         [Fact]
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context1 = MakeRequest("/foo", connection);
-            var context2 = MakeRequest("/foo", connection);
+                var context1 = MakeRequest("/foo", connection);
+                var context2 = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            var request1 = dispatcher.ExecuteAsync(context1, options, app);
-            var request2 = dispatcher.ExecuteAsync(context2, options, app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                var request1 = dispatcher.ExecuteAsync(context1, options, app);
+                var request2 = dispatcher.ExecuteAsync(context2, options, app);
 
-            await request1;
+                await request1;
 
-            Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
-            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Active, connection.Status);
+                Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+                Assert.Equal(DefaultConnectionContext.ConnectionStatus.Active, connection.Status);
 
-            Assert.False(request2.IsCompleted);
+                Assert.False(request2.IsCompleted);
 
-            manager.CloseConnections();
+                manager.CloseConnections();
 
-            await request2;
+                await request2;
+            }
         }
 
         [Theory]
@@ -463,152 +523,167 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.LongPolling)]
         public async Task RequestToDisposedConnectionIdReturns404(TransportType transportType)
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            connection.Status = DefaultConnectionContext.ConnectionStatus.Disposed;
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.Status = DefaultConnectionContext.ConnectionStatus.Disposed;
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, transportType);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, transportType);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            await dispatcher.ExecuteAsync(context, options, app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                await dispatcher.ExecuteAsync(context, options, app);
 
 
-            Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status404NotFound, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task ConnectionStateSetToInactiveAfterPoll()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            var task = dispatcher.ExecuteAsync(context, options, app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                var task = dispatcher.ExecuteAsync(context, options, app);
 
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+                var buffer = Encoding.UTF8.GetBytes("Hello World");
 
-            // Write to the transport so the poll yields
-            await connection.Transport.Writer.WriteAsync(buffer);
+                // Write to the transport so the poll yields
+                await connection.Transport.Writer.WriteAsync(buffer);
 
-            await task;
+                await task;
 
-            Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
-            Assert.Null(connection.GetHttpContext());
+                Assert.Equal(DefaultConnectionContext.ConnectionStatus.Inactive, connection.Status);
+                Assert.Null(connection.GetHttpContext());
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task BlockingConnectionWorksWithStreamingConnections()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, TransportType.ServerSentEvents);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, TransportType.ServerSentEvents);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<BlockingEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<BlockingEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            var task = dispatcher.ExecuteAsync(context, options, app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<BlockingEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<BlockingEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                var task = dispatcher.ExecuteAsync(context, options, app);
 
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+                var buffer = Encoding.UTF8.GetBytes("Hello World");
 
-            // Write to the application
-            await connection.Application.Writer.WriteAsync(buffer);
+                // Write to the application
+                await connection.Application.Writer.WriteAsync(buffer);
 
-            await task;
+                await task;
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
-            Assert.False(exists);
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                Assert.False(exists);
+            }
         }
 
         [Fact]
         public async Task BlockingConnectionWorksWithLongPollingConnection()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<BlockingEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<BlockingEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            var task = dispatcher.ExecuteAsync(context, options, app);
+                var services = new ServiceCollection();
+                services.AddEndPoint<BlockingEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<BlockingEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                var task = dispatcher.ExecuteAsync(context, options, app);
 
-            var buffer = Encoding.UTF8.GetBytes("Hello World");
+                var buffer = Encoding.UTF8.GetBytes("Hello World");
 
-            // Write to the application
-            await connection.Application.Writer.WriteAsync(buffer);
+                // Write to the application
+                await connection.Application.Writer.WriteAsync(buffer);
 
-            await task;
+                await task;
 
-            Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
-            bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
-            Assert.False(exists);
+                Assert.Equal(StatusCodes.Status204NoContent, context.Response.StatusCode);
+                bool exists = manager.TryGetConnection(connection.ConnectionId, out _);
+                Assert.False(exists);
+            }
         }
 
         [Fact]
         public async Task AttemptingToPollWhileAlreadyPollingReplacesTheCurrentPoll()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
 
-            var context1 = MakeRequest("/foo", connection);
-            var task1 = dispatcher.ExecuteAsync(context1, options, app);
-            var context2 = MakeRequest("/foo", connection);
-            var task2 = dispatcher.ExecuteAsync(context2, options, app);
+                var context1 = MakeRequest("/foo", connection);
+                var task1 = dispatcher.ExecuteAsync(context1, options, app);
+                var context2 = MakeRequest("/foo", connection);
+                var task2 = dispatcher.ExecuteAsync(context2, options, app);
 
-            // Task 1 should finish when request 2 arrives
-            await task1.OrTimeout();
+                // Task 1 should finish when request 2 arrives
+                await task1.OrTimeout();
 
-            // Send a message from the app to complete Task 2
-            await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
+                // Send a message from the app to complete Task 2
+                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
 
-            await task2.OrTimeout();
+                await task2.OrTimeout();
 
-            // Verify the results
-            Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
-            Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
-            Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
-            Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
+                // Verify the results
+                Assert.Equal(StatusCodes.Status204NoContent, context1.Response.StatusCode);
+                Assert.Equal(string.Empty, GetContentAsString(context1.Response.Body));
+                Assert.Equal(StatusCodes.Status200OK, context2.Response.StatusCode);
+                Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
+            }
         }
 
         [Theory]
@@ -617,372 +692,396 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData(TransportType.WebSockets, TransferMode.Binary | TransferMode.Text)]
         public async Task TransportCapabilitiesSet(TransportType transportType, TransferMode expectedTransportCapabilities)
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
-            SetTransport(context, transportType);
+                var context = MakeRequest("/foo", connection);
+                SetTransport(context, transportType);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
-            var app = builder.Build();
+                var services = new ServiceCollection();
+                services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+                var app = builder.Build();
 
-            var options = new HttpSocketOptions();
-            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
-            await dispatcher.ExecuteAsync(context, options, app);
+                var options = new HttpSocketOptions();
+                options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
+                await dispatcher.ExecuteAsync(context, options, app);
 
-            Assert.Equal(expectedTransportCapabilities, connection.TransportCapabilities);
+                Assert.Equal(expectedTransportCapabilities, connection.TransportCapabilities);
+            }
         }
 
         [Fact]
         public async Task UnauthorizedConnectionFailsToStartEndPoint()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
-            });
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-            });
-            services.AddLogging();
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddAuthorization(o =>
+                {
+                    o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+                });
+                services.AddAuthenticationCore(o =>
+                {
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+                });
+                services.AddLogging();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-            // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                // would hang if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task AuthenticatedUserWithoutPermissionCausesForbidden()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
-            });
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-            });
-            services.AddLogging();
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddAuthorization(o =>
+                {
+                    o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
+                });
+                services.AddAuthenticationCore(o =>
+                {
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+                });
+                services.AddLogging();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-            context.User = new ClaimsPrincipal(new ClaimsIdentity("authenticated"));
+                context.User = new ClaimsPrincipal(new ClaimsIdentity("authenticated"));
 
-            // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                // would hang if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status403Forbidden, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task AuthorizedConnectionCanConnectToEndPoint()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy =>
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddAuthorization(o =>
                 {
-                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    o.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    });
                 });
-            });
-            services.AddLogging();
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-            });
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
-            context.Response.Body = new MemoryStream();
+                services.AddLogging();
+                services.AddAuthenticationCore(o =>
+                {
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+                });
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                context.Response.Body = new MemoryStream();
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-            // "authorize" user
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                // "authorize" user
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-            await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                var endPointTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
-            await endPointTask.OrTimeout();
+                await endPointTask.OrTimeout();
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+            }
         }
 
         [Fact]
         public async Task AllPoliciesRequiredForAuthorizedEndPoint()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy =>
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddAuthorization(o =>
                 {
-                    policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    o.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                    });
+                    o.AddPolicy("secondPolicy", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.StreetAddress);
+                    });
                 });
-                o.AddPolicy("secondPolicy", policy =>
+                services.AddLogging();
+                services.AddAuthenticationCore(o =>
                 {
-                    policy.RequireClaim(ClaimTypes.StreetAddress);
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
                 });
-            });
-            services.AddLogging();
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-            });
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
-            context.Response.Body = new MemoryStream();
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                context.Response.Body = new MemoryStream();
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
-            options.AuthorizationData.Add(new AuthorizeAttribute("secondPolicy"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                options.AuthorizationData.Add(new AuthorizeAttribute("secondPolicy"));
 
-            // partially "authorize" user
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                // partially "authorize" user
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            // would hang if EndPoint was running
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                // would hang if EndPoint was running
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
 
-            // reset HttpContext
-            context = new DefaultHttpContext();
-            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            context.Request.Query = qs;
-            context.Response.Body = new MemoryStream();
-            // fully "authorize" user
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
-            {
+                // reset HttpContext
+                context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                context.Request.Query = qs;
+                context.Response.Body = new MemoryStream();
+                // fully "authorize" user
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[]
+                {
                 new Claim(ClaimTypes.NameIdentifier, "name"),
                 new Claim(ClaimTypes.StreetAddress, "12345 123rd St. NW")
             }));
 
-            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-            await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                var endPointTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
-            await endPointTask.OrTimeout();
+                await endPointTask.OrTimeout();
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+            }
         }
 
         [Fact]
         public async Task AuthorizedConnectionWithAcceptedSchemesCanConnectToEndPoint()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy =>
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                context.Features.Set<IHttpResponseFeature>(new ResponseFeature());
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorization(o =>
                 {
-                    policy.RequireClaim(ClaimTypes.NameIdentifier);
-                    policy.AddAuthenticationSchemes("Default");
+                    o.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                        policy.AddAuthenticationSchemes("Default");
+                    });
                 });
-            });
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddLogging();
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
-            });
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
-            context.Response.Body = new MemoryStream();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddLogging();
+                services.AddAuthenticationCore(o =>
+                {
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+                });
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                context.Response.Body = new MemoryStream();
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-            // "authorize" user
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                // "authorize" user
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-            await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                var endPointTask = dispatcher.ExecuteAsync(context, options, app);
+                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
-            await endPointTask.OrTimeout();
+                await endPointTask.OrTimeout();
 
-            Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
-            Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+                Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+                Assert.Equal("Hello, World", GetContentAsString(context.Response.Body));
+            }
         }
 
         [Fact]
         public async Task AuthorizedConnectionWithRejectedSchemesFailsToConnectToEndPoint()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
-            var context = new DefaultHttpContext();
-            var services = new ServiceCollection();
-            services.AddOptions();
-            services.AddEndPoint<TestEndPoint>();
-            services.AddAuthorization(o =>
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                o.AddPolicy("test", policy =>
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var context = new DefaultHttpContext();
+                var services = new ServiceCollection();
+                services.AddOptions();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddAuthorization(o =>
                 {
-                    policy.RequireClaim(ClaimTypes.NameIdentifier);
-                    policy.AddAuthenticationSchemes("Default");
+                    o.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                        policy.AddAuthenticationSchemes("Default");
+                    });
                 });
-            });
-            services.AddAuthorizationPolicyEvaluator();
-            services.AddLogging();
-            services.AddAuthenticationCore(o =>
-            {
-                o.DefaultScheme = "Default";
-                o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler));
-            });
-            var sp = services.BuildServiceProvider();
-            context.Request.Path = "/foo";
-            context.Request.Method = "GET";
-            context.RequestServices = sp;
-            var values = new Dictionary<string, StringValues>();
-            values["id"] = connection.ConnectionId;
-            var qs = new QueryCollection(values);
-            context.Request.Query = qs;
-            context.Response.Body = new MemoryStream();
+                services.AddAuthorizationPolicyEvaluator();
+                services.AddLogging();
+                services.AddAuthenticationCore(o =>
+                {
+                    o.DefaultScheme = "Default";
+                    o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler));
+                });
+                var sp = services.BuildServiceProvider();
+                context.Request.Path = "/foo";
+                context.Request.Method = "GET";
+                context.RequestServices = sp;
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+                context.Response.Body = new MemoryStream();
 
-            var builder = new SocketBuilder(sp);
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.AuthorizationData.Add(new AuthorizeAttribute("test"));
+                var builder = new SocketBuilder(sp);
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.AuthorizationData.Add(new AuthorizeAttribute("test"));
 
-            // "authorize" user
-            context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                // "authorize" user
+                context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
-            // would block if EndPoint was executed
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                // would block if EndPoint was executed
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+                Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+            }
         }
 
         [Fact]
         public async Task SetsInherentKeepAliveFeatureOnFirstLongPollingRequest()
         {
-            var manager = CreateConnectionManager();
-            var connection = manager.CreateConnection();
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var connection = manager.CreateConnection();
 
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
 
-            var context = MakeRequest("/foo", connection);
+                var context = MakeRequest("/foo", connection);
 
-            var services = new ServiceCollection();
-            services.AddEndPoint<TestEndPoint>();
-            var builder = new SocketBuilder(services.BuildServiceProvider());
-            builder.UseEndPoint<TestEndPoint>();
-            var app = builder.Build();
-            var options = new HttpSocketOptions();
-            options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                var options = new HttpSocketOptions();
+                options.LongPolling.PollTimeout = TimeSpan.FromMilliseconds(1); // We don't care about the poll itself
 
-            Assert.Null(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
+                Assert.Null(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
 
-            await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
+                await dispatcher.ExecuteAsync(context, options, app).OrTimeout();
 
-            Assert.NotNull(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
-            Assert.Equal(options.LongPolling.PollTimeout, connection.Features.Get<IConnectionInherentKeepAliveFeature>().KeepAliveInterval);
+                Assert.NotNull(connection.Features.Get<IConnectionInherentKeepAliveFeature>());
+                Assert.Equal(options.LongPolling.PollTimeout, connection.Features.Get<IConnectionInherentKeepAliveFeature>().KeepAliveInterval);
+            }
         }
 
         private class RejectHandler : TestAuthenticationHandler
@@ -1029,11 +1128,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private static async Task CheckTransportSupported(TransportType supportedTransports, TransportType transportType, int status)
+        private static async Task CheckTransportSupported(TransportType supportedTransports, TransportType transportType, int status, ILoggerFactory loggerFactory)
         {
-            var manager = CreateConnectionManager();
+            var manager = CreateConnectionManager(loggerFactory);
             var connection = manager.CreateConnection();
-            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
             using (var strm = new MemoryStream())
             {
                 var context = new DefaultHttpContext();
@@ -1101,9 +1200,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        private static ConnectionManager CreateConnectionManager()
+        private static ConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory)
         {
-            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()), new EmptyApplicationLifetime());
+            return new ConnectionManager(new Logger<ConnectionManager>(loggerFactory ?? new LoggerFactory()), new EmptyApplicationLifetime());
         }
 
         private string GetContentAsString(Stream body)
