@@ -291,4 +291,7 @@
   <data name="SectionDirective_NameToken_Name" xml:space="preserve">
     <value>SectionName</value>
   </data>
+  <data name="RazorLanguageVersion_InvalidVersion" xml:space="preserve">
+    <value>The Razor language version '{0}' is unrecognized or not supported by this version of Razor.</value>
+  </data>
 </root>

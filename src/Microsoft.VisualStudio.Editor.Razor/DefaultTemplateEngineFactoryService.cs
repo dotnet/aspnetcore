@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var project = FindProject(projectPath);
             var configuration = (project?.Configuration as MvcExtensibilityConfiguration) ?? DefaultConfiguration;
             var razorLanguageVersion = configuration.LanguageVersion;
-            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, designTime: true);
+            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>(), designTime: true);
 
             RazorEngine engine;
             if (razorLanguageVersion.Major == 1)

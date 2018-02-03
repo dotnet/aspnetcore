@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Create(configure: null);
         }
 
-        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultRuntime, configure);
+        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, configure);
 
         public static RazorEngine CreateDesignTime()
         {
