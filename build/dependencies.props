@@ -228,6 +228,7 @@
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="1.0.0-rc3-003121" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="2.1.4" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="5.2.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="3.0.1" Source="$(DefaultNuGetFeed)" />
@@ -272,6 +273,7 @@
     <ExternalDependency Include="System.Collections.Immutable" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.IdentityModel.Tokens.Jwt" Version="5.2.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Interactive.Async" Version="3.1.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
