@@ -7,8 +7,7 @@ if ! type -p python >/dev/null 2>&1; then
 	exit 1
 fi
 
-python -m ensurepip
-pip install virtualenv
+sudo apt-get install -y python-dev python-virtualenv gcc
 
 mkdir -p ~/virtualenvs
 
@@ -19,6 +18,6 @@ fi
 ~/virtualenvs/autobahntestsuite/bin/pip install autobahntestsuite
 
 if [ -e /usr/local/bin/wstest ]; then
-	rm /usr/local/bin/wstest
+	sudo rm /usr/local/bin/wstest
 fi
-ln -s ~/virtualenvs/autobahntestsuite/bin/wstest /usr/local/bin/wstest
+sudo ln -s ~/virtualenvs/autobahntestsuite/bin/wstest /usr/local/bin/wstest
