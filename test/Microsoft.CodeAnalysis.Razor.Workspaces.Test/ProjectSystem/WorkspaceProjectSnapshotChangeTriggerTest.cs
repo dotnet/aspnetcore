@@ -14,32 +14,52 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public WorkspaceProjectSnapshotChangeTriggerTest()
         {
-            Solution emptySolution = null;
-            Project project1 = null;
-            Project project2 = null;
-            Project project3 = null;
-            Solution solutionWithTwoProjects = null;
-            Solution solutionWithOneProject = null;
+            Workspace = TestWorkspace.Create();
+            EmptySolution = Workspace.CurrentSolution.GetIsolatedSolution();
 
-            Workspace = TestWorkspace.Create(ws =>
-            {
-                emptySolution = ws.CurrentSolution.GetIsolatedSolution();
-                project1 = ws.CurrentSolution.AddProject("One", "One", LanguageNames.CSharp);
-                project2 = project1.Solution.AddProject("Two", "Two", LanguageNames.CSharp);
-                solutionWithTwoProjects = project2.Solution;
+            var projectId1 = ProjectId.CreateNewId("One");
+            var projectId2 = ProjectId.CreateNewId("Two");
+            var projectId3 = ProjectId.CreateNewId("Three");
 
-                project3 = emptySolution.GetIsolatedSolution().AddProject("Three", "Three", LanguageNames.CSharp);
-                solutionWithOneProject = project3.Solution;
-            });
+            SolutionWithTwoProjects = Workspace.CurrentSolution
+                .AddProject(ProjectInfo.Create(
+                    projectId1,
+                    VersionStamp.Default,
+                    "One",
+                    "One",
+                    LanguageNames.CSharp,
+                    filePath: "One.csproj"))
+                .AddProject(ProjectInfo.Create(
+                    projectId2,
+                    VersionStamp.Default,
+                    "Two",
+                    "Two",
+                    LanguageNames.CSharp,
+                    filePath: "Two.csproj"));
 
-            EmptySolution = emptySolution;
-            ProjectNumberOne = project1;
-            ProjectNumberTwo = project2;
-            ProjectNumberThree = project3;
-            SolutionWithTwoProjects = solutionWithTwoProjects;
-            SolutionWithOneProject = solutionWithOneProject;
+            SolutionWithOneProject = EmptySolution.GetIsolatedSolution()
+                .AddProject(ProjectInfo.Create(
+                    projectId3,
+                    VersionStamp.Default,
+                    "Three",
+                    "Three",
+                    LanguageNames.CSharp,
+                    filePath: "Three.csproj"));
 
+            ProjectNumberOne = SolutionWithTwoProjects.GetProject(projectId1);
+            ProjectNumberTwo = SolutionWithTwoProjects.GetProject(projectId2);
+            ProjectNumberThree = SolutionWithOneProject.GetProject(projectId3);
+
+            HostProjectOne = new HostProject("One.csproj", FallbackRazorConfiguration.MVC_1_1);
+            HostProjectTwo = new HostProject("Two.csproj", FallbackRazorConfiguration.MVC_1_1);
+            HostProjectThree = new HostProject("Three.csproj", FallbackRazorConfiguration.MVC_1_1);
         }
+
+        private HostProject HostProjectOne { get; }
+
+        private HostProject HostProjectTwo { get; }
+
+        private HostProject HostProjectThree { get; }
 
         private Solution EmptySolution { get; }
 
@@ -66,7 +86,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
-            
+            projectManager.HostProjectAdded(HostProjectOne);
+            projectManager.HostProjectAdded(HostProjectTwo);
+
             var e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
 
             // Act
@@ -74,9 +96,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
-                p => Assert.Equal(ProjectNumberOne.Id, p.UnderlyingProject.Id),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.UnderlyingProject.Id));
+                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
+                p => Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id),
+                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
         [Theory]
@@ -90,21 +112,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
+            projectManager.HostProjectAdded(HostProjectOne);
+            projectManager.HostProjectAdded(HostProjectTwo);
+            projectManager.HostProjectAdded(HostProjectThree);
 
             // Initialize with a project. This will get removed.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithOneProject);
             trigger.Workspace_WorkspaceChanged(Workspace, e);
 
-            e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
+            e = new WorkspaceChangeEventArgs(kind, oldSolution: SolutionWithOneProject, newSolution: SolutionWithTwoProjects);
 
             // Act
             trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
-                p => Assert.Equal(ProjectNumberOne.Id, p.UnderlyingProject.Id),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.UnderlyingProject.Id));
+                projectManager.Projects.OrderBy(p => p.WorkspaceProject?.Name),
+                p => Assert.Null(p.WorkspaceProject),
+                p => Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id),
+                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
         [Theory]
@@ -115,6 +141,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
+            projectManager.HostProjectAdded(HostProjectOne);
+            projectManager.HostProjectAdded(HostProjectTwo);
 
             // Initialize with some projects.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
@@ -128,13 +156,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
+                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
                 p =>
                 {
-                    Assert.Equal(ProjectNumberOne.Id, p.UnderlyingProject.Id);
-                    Assert.Equal("Changed", p.UnderlyingProject.AssemblyName);
+                    Assert.Equal(ProjectNumberOne.Id, p.WorkspaceProject.Id);
+                    Assert.Equal("Changed", p.WorkspaceProject.AssemblyName);
                 },
-                p => Assert.Equal(ProjectNumberTwo.Id, p.UnderlyingProject.Id));
+                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
         [Fact]
@@ -143,6 +171,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
+            projectManager.HostProjectAdded(HostProjectOne);
+            projectManager.HostProjectAdded(HostProjectTwo);
 
             // Initialize with some projects project.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
@@ -156,8 +186,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
-                p => Assert.Equal(ProjectNumberTwo.Id, p.UnderlyingProject.Id));
+                projectManager.Projects.OrderBy(p => p.WorkspaceProject?.Name),
+                p => Assert.Null(p.WorkspaceProject),
+                p => Assert.Equal(ProjectNumberTwo.Id, p.WorkspaceProject.Id));
         }
 
         [Fact]
@@ -166,6 +197,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
             var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
+            projectManager.HostProjectAdded(HostProjectThree);
 
             var solution = SolutionWithOneProject;
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectAdded, oldSolution: EmptySolution, newSolution: solution, projectId: ProjectNumberThree.Id);
@@ -175,19 +207,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Assert
             Assert.Collection(
-                projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
-                p => Assert.Equal(ProjectNumberThree.Id, p.UnderlyingProject.Id));
+                projectManager.Projects.OrderBy(p => p.WorkspaceProject.Name),
+                p => Assert.Equal(ProjectNumberThree.Id, p.WorkspaceProject.Id));
         }
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
-            public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace) 
+            public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
                 : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), new TestProjectSnapshotWorker(), triggers, workspace)
             {
             }
 
-            protected override void NotifyBackgroundWorker(Project project)
+            protected override void NotifyBackgroundWorker(ProjectSnapshotUpdateContext context)
             {
+                Assert.NotNull(context.HostProject);
+                Assert.NotNull(context.WorkspaceProject);
             }
         }
 

@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             for (var i = 0; i< projects.Count; i++)
             {
                 var project = projects[i];
-                if (string.Equals(filePath, project.UnderlyingProject.FilePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(filePath, project.WorkspaceProject.FilePath, StringComparison.OrdinalIgnoreCase))
                 {
                     return project;
                 }

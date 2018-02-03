@@ -26,28 +26,31 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 project = workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
             });
 
-            Project = project;
+            WorkspaceProject = project;
+
+            HostProject_For_1_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_0);
+            HostProject_For_1_1 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_1);
+            HostProject_For_2_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_2_0);
         }
 
-        // We don't actually look at the project, we rely on the ProjectStateManager
-        public Project Project { get; }
+        private HostProject HostProject_For_1_0 { get; }
 
-        public Workspace Workspace { get; }
+        private HostProject HostProject_For_1_1 { get; }
+
+        private HostProject HostProject_For_2_0 { get; }
+
+        // We don't actually look at the project, we rely on the ProjectStateManager
+        private Project WorkspaceProject { get; }
+
+        private Workspace Workspace { get; }
 
         [Fact]
         public void Create_CreatesTemplateEngine_ForLatest()
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_2_0,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("2.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("2.0.0.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_2_0);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
             var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
@@ -68,15 +71,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_1_1,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.1.3.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.1.3.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_1_1);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
             var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
@@ -97,15 +93,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_1_0,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.0.0.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_1_0);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
             var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
@@ -119,35 +108,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
             Assert.Single(engine.Engine.Features.OfType<Mvc1_X.MvcViewDocumentClassifierPass>());
             Assert.Empty(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperPass>());
-        }
-
-        [Fact]
-        public void Create_HigherMvcVersion_UsesLatest()
-        {
-            // Arrange
-            var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Latest,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("3.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("3.0.0.0")))),
-            });
-
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
-
-            // Act
-            var engine = factoryService.Create("/TestPath/SomePath/", b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
-
-            // Assert
-            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
         }
 
         [Fact]
@@ -175,7 +135,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
+            projectManager.HostProjectAdded(HostProject_For_2_0);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
             var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 

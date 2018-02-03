@@ -8,20 +8,9 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     public class ProjectInfoViewModel : NotifyPropertyChanged
     {
-        private ObservableCollection<AssemblyViewModel> _assemblies;
         private ObservableCollection<DirectiveViewModel> _directives;
         private ObservableCollection<DocumentViewModel> _documents;
         private ObservableCollection<TagHelperViewModel> _tagHelpers;
-
-        public ObservableCollection<AssemblyViewModel> Assemblies
-        {
-            get { return _assemblies; }
-            set
-            {
-                _assemblies = value;
-                OnPropertyChanged();
-            }
-        }
 
         public ObservableCollection<DirectiveViewModel> Directives
         {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
@@ -9,11 +10,31 @@ namespace Microsoft.CodeAnalysis.Razor
     {
         public override void ReportError(Exception exception)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             // Do nothing.
         }
 
-        public override void ReportError(Exception exception, Project project)
+        public override void ReportError(Exception exception, ProjectSnapshot project)
         {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
+            // Do nothing.
+        }
+
+        public override void ReportError(Exception exception, Project workspaceProject)
+        {
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
+
             // Do nothing.
         }
     }

@@ -23,7 +23,7 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
             _documentTracker = documentTracker;
         }
 
-        public string Configuration => _documentTracker.Configuration?.DisplayName;
+        public string Configuration => _documentTracker.Configuration?.ConfigurationName;
 
         public bool IsSupportedDocument => _documentTracker.IsSupportedProject;
 

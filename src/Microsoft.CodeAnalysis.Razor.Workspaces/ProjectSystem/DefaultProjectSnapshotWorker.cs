@@ -9,25 +9,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DefaultProjectSnapshotWorker : ProjectSnapshotWorker
     {
-        private readonly ProjectExtensibilityConfigurationFactory _configurationFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
 
-        public DefaultProjectSnapshotWorker(
-            ForegroundDispatcher foregroundDispatcher,
-            ProjectExtensibilityConfigurationFactory configurationFactory)
+        public DefaultProjectSnapshotWorker(ForegroundDispatcher foregroundDispatcher)
         {
             if (foregroundDispatcher == null)
             {
                 throw new ArgumentNullException(nameof(foregroundDispatcher));
             }
 
-            if (configurationFactory == null)
-            {
-                throw new ArgumentNullException(nameof(configurationFactory));
-            }
-
             _foregroundDispatcher = foregroundDispatcher;
-            _configurationFactory = configurationFactory;
         }
 
         public override Task ProcessUpdateAsync(ProjectSnapshotUpdateContext update, CancellationToken cancellationToken = default(CancellationToken))
@@ -46,14 +37,15 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return ProjectUpdatesCoreAsync(update);
         }
 
-        private async Task ProjectUpdatesCoreAsync(object state)
+        protected virtual void OnProcessingUpdate()
         {
-            var update = (ProjectSnapshotUpdateContext)state;
+        }
 
-            // We'll have more things to process here, but for now we're just hardcoding the configuration.
+        private Task ProjectUpdatesCoreAsync(object state)
+        {
+            OnProcessingUpdate();
 
-            var configuration = await _configurationFactory.GetConfigurationAsync(update.UnderlyingProject);
-            update.Configuration = configuration;
+            return Task.CompletedTask;
         }
     }
 }

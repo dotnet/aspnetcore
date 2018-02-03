@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.Editor;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 
@@ -16,7 +15,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         public abstract event EventHandler<ContextChangeEventArgs> ContextChanged;
 
-        internal abstract ProjectExtensibilityConfiguration Configuration { get; }
+        public abstract RazorConfiguration Configuration { get; }
 
         public abstract EditorSettings EditorSettings { get; }
 

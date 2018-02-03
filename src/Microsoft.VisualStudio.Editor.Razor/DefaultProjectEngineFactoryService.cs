@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
@@ -14,11 +13,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultProjectEngineFactoryService : RazorProjectEngineFactoryService
     {
-        private readonly static MvcExtensibilityConfiguration DefaultConfiguration = new MvcExtensibilityConfiguration(
-            RazorLanguageVersion.Version_2_0,
-            ProjectExtensibilityConfigurationKind.Fallback,
-            new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor.Language", new Version("2.0.0.0"))),
-            new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("2.0.0.0"))));
+        private readonly static RazorConfiguration DefaultConfiguration = FallbackRazorConfiguration.MVC_2_0;
 
         private readonly ProjectSnapshotManager _projectManager;
 
@@ -41,22 +36,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // In 15.5 we expect projectPath to be a directory, NOT the path to the csproj.
             var project = FindProject(projectPath);
-            var configuration = (project?.Configuration as MvcExtensibilityConfiguration) ?? DefaultConfiguration;
-            var razorLanguageVersion = configuration.LanguageVersion;
-
-            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>());
+            var configuration = project?.Configuration ?? DefaultConfiguration;
             var fileSystem = RazorProjectFileSystem.Create(projectPath);
 
             RazorProjectEngine projectEngine;
-            if (razorLanguageVersion.Major == 1)
+            if (configuration.LanguageVersion.Major == 1)
             {
-                projectEngine = RazorProjectEngine.Create(razorConfiguration, fileSystem, b =>
+                projectEngine = RazorProjectEngine.Create(configuration, fileSystem, b =>
                 {
                     configure?.Invoke(b);
 
                     Mvc1_X.RazorExtensions.Register(b);
 
-                    if (configuration.MvcAssembly.Identity.Version.Minor >= 1)
+                    if (configuration.LanguageVersion.Minor >= 1)
                     {
                         Mvc1_X.RazorExtensions.RegisterViewComponentTagHelpers(b);
                     }
@@ -64,7 +56,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else
             {
-                projectEngine = RazorProjectEngine.Create(razorConfiguration, fileSystem, b =>
+                projectEngine = RazorProjectEngine.Create(configuration, fileSystem, b =>
                 {
                     configure?.Invoke(b);
 
@@ -83,9 +75,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             for (var i = 0; i < projects.Count; i++)
             {
                 var project = projects[i];
-                if (project.UnderlyingProject.FilePath != null)
+                if (project.WorkspaceProject?.FilePath != null)
                 {
-                    if (string.Equals(directory, NormalizeDirectoryPath(Path.GetDirectoryName(project.UnderlyingProject.FilePath)), StringComparison.OrdinalIgnoreCase))
+                    if (string.Equals(directory, NormalizeDirectoryPath(Path.GetDirectoryName(project.WorkspaceProject.FilePath)), StringComparison.OrdinalIgnoreCase))
                     {
                         return project;
                     }

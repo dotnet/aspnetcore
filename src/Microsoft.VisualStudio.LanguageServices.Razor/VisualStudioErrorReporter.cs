@@ -4,6 +4,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
@@ -40,7 +41,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
         }
 
-        public override void ReportError(Exception exception, Project project)
+        public override void ReportError(Exception exception, ProjectSnapshot project)
         {
             if (exception == null)
             {
@@ -53,7 +54,25 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 var hr = activityLog.LogEntry(
                     (uint)__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR,
                     "Razor Language Services",
-                    $"Error encountered from project '{project?.Name}':{Environment.NewLine}{exception}");
+                    $"Error encountered from project '{project?.FilePath}':{Environment.NewLine}{exception}");
+                ErrorHandler.ThrowOnFailure(hr);
+            }
+        }
+
+        public override void ReportError(Exception exception, Project workspaceProject)
+        {
+            if (exception == null)
+            {
+                return;
+            }
+
+            var activityLog = GetActivityLog();
+            if (activityLog != null)
+            {
+                var hr = activityLog.LogEntry(
+                    (uint)__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR,
+                    "Razor Language Services",
+                    $"Error encountered from project '{workspaceProject?.Name}' '{workspaceProject?.FilePath}':{Environment.NewLine}{exception}");
                 ErrorHandler.ThrowOnFailure(hr);
             }
         }

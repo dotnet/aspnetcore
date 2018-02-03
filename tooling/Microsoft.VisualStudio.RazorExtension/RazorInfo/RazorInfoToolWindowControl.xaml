@@ -1,162 +1,266 @@
-﻿<UserControl x:Class="Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindowControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:behaviors="clr-namespace:Microsoft.VisualStudio.RazorExtension.Behaviors"
-             Background="{DynamicResource VsBrush.Window}"
-             Foreground="{DynamicResource VsBrush.WindowText}"
-             mc:Ignorable="d"
-             d:DesignHeight="300"
-             d:DesignWidth="300"
-             Name="RazorInfoToolWindow">
-    <UserControl.Resources>
-        <Style x:Key="{x:Type Button}">
-            <Setter Property="FrameworkElement.Margin"
-                    Value="5" />
-        </Style>
-        <Style x:Key="{x:Type GridSplitter}">
-            <Setter Property="FrameworkElement.Height"
-                    Value="5" />
-            <Setter Property="FrameworkElement.HorizontalAlignment"
-                    Value="Stretch" />
-            <Setter Property="FrameworkElement.VerticalAlignment"
-                    Value="Bottom" />
-            <Setter Property="GridSplitter.ShowsPreview"
-                    Value="True" />
-        </Style>
-        <Style x:Key="{x:Type ListBox}">
-            <Setter Property="FrameworkElement.Margin"
-                    Value="5" />
-        </Style>
-        <Style x:Key="{x:Type ListView}">
-            <Setter Property="FrameworkElement.Margin"
-                    Value="5" />
-        </Style>
-    </UserControl.Resources>
-    <ScrollViewer VerticalScrollBarVisibility="Visible">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
-            <Expander Grid.Row="0"
-                      IsExpanded="True">
-                <Expander.Header>
-                    <Label Content="Select Project" />
-                </Expander.Header>
-                <StackPanel>
-                    <ListBox ItemsSource="{Binding Projects}"
-                             SelectedValue="{Binding CurrentProject}"
-                             IsEnabled="{Binding IsSelectionEnabled}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="{Binding Name}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ListBox>
-                    <Button Content="Load"
-                            Command="{Binding LoadCommand}" />
+﻿<UserControl
+  x:Class="Microsoft.VisualStudio.RazorExtension.RazorInfo.RazorInfoToolWindowControl"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="clr-namespace:Microsoft.VisualStudio.RazorExtension.RazorInfo"
+  xmlns:behaviors="clr-namespace:Microsoft.VisualStudio.RazorExtension.Behaviors"
+  Background="{DynamicResource VsBrush.Window}"
+  Foreground="{DynamicResource VsBrush.WindowText}"
+  mc:Ignorable="d"
+  d:DesignHeight="300"
+  d:DesignWidth="300"
+  Name="RazorInfoToolWindow">
+  <UserControl.Resources>
+    <Style
+      x:Key="{x:Type Button}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+      <Setter
+        Property="Control.Padding"
+        Value="5 2 5 2" />
+    </Style>
+    <Style
+      x:Key="{x:Type GridSplitter}">
+      <Setter
+        Property="FrameworkElement.Height"
+        Value="5" />
+      <Setter
+        Property="FrameworkElement.HorizontalAlignment"
+        Value="Stretch" />
+      <Setter
+        Property="FrameworkElement.VerticalAlignment"
+        Value="Bottom" />
+      <Setter
+        Property="GridSplitter.ShowsPreview"
+        Value="True" />
+    </Style>
+    <Style
+      x:Key="{x:Type ComboBox}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type Label}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type ListBox}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+    <Style
+      x:Key="{x:Type ListView}">
+      <Setter
+        Property="FrameworkElement.Margin"
+        Value="5" />
+    </Style>
+  </UserControl.Resources>
+  <ScrollViewer
+    VerticalScrollBarVisibility="Visible">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+      </Grid.RowDefinitions>
+      <Grid
+        Grid.Row="0">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition
+            Width="Auto" />
+          <ColumnDefinition
+            Width="*" />
+          <ColumnDefinition
+            Width="Auto" />
+        </Grid.ColumnDefinitions>
+        <Label
+          Grid.Column="0"
+          Content="Select Project" />
+        <ComboBox
+          Grid.Column="1"
+          ItemsSource="{Binding Projects}"
+          SelectedValue="{Binding CurrentProject}"
+          IsEnabled="{Binding IsSelectionEnabled}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel
+                Orientation="Horizontal">
+                <Label
+                  Margin="0"
+                  Content="{Binding Name}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ComboBox>
+        <Button
+          Grid.Column="2"
+          Content="Load"
+          Command="{Binding LoadCommand}" />
+      </Grid>
+      <GridSplitter
+        Grid.Row="1" 
+        IsEnabled="False" />
+      <Grid
+        Grid.Row="2"
+        IsEnabled="{Binding CurrentProject.HasSnapshot}"
+        Height="150">
+        <ListView
+          ItemsSource="{Binding CurrentProject.Snapshot.Properties}">
+          <ListView.View>
+            <GridView
+              AllowsColumnReorder="False">
+              <GridViewColumn
+                Width="150">
+                <GridViewColumnHeader
+                  Content="Property Name" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Name, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+              <GridViewColumn
+                Width="Auto">
+                <GridViewColumnHeader
+                  Content="Property Value" />
+                <GridViewColumn.CellTemplate>
+                  <DataTemplate>
+                    <TextBlock
+                      TextAlignment="Right"
+                      Margin="0"
+                      TextWrapping="NoWrap"
+                      TextTrimming="CharacterEllipsis"
+                      Text="{Binding Path=Value, Mode=OneWay}" />
+                  </DataTemplate>
+                </GridViewColumn.CellTemplate>
+              </GridViewColumn>
+            </GridView>
+          </ListView.View>
+        </ListView>
+      </Grid>
+      <GridSplitter
+        Grid.Row="3" />
+      <Expander
+        Grid.Row="4"
+        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        <Expander.Header>
+          <Label
+            Content="Tag Helpers" />
+        </Expander.Header>
+        <ListView
+          ItemsSource="{Binding CurrentProjectInfo.TagHelpers}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel
+                Orientation="Horizontal">
+                <Label
+                  Content="{Binding TargetElement}" />
+                <Label
+                  Content="{Binding TypeName}" />
+                <Label
+                  Content="{Binding AssemblyName}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ListView>
+      </Expander>
+      <GridSplitter
+        Grid.Row="5" />
+      <Expander
+        Grid.Row="6"
+        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        <Expander.Header>
+          <Label
+            Content="Directives" />
+        </Expander.Header>
+        <ListView
+          ItemsSource="{Binding CurrentProjectInfo.Directives}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <StackPanel
+                Orientation="Horizontal">
+                <Label
+                  Content="{Binding Name}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ListView>
+      </Expander>
+      <GridSplitter
+        Grid.Row="7" />
+      <Expander
+        Grid.Row="8"
+        IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
+        <Expander.Header>
+          <Label
+            Content="Select Document" />
+        </Expander.Header>
+        <StackPanel>
+          <ListBox
+            ItemsSource="{Binding CurrentProjectInfo.Documents}"
+            SelectedValue="{Binding CurrentDocument}"
+            IsEnabled="{Binding IsSelectionEnabled}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <StackPanel
+                  Orientation="Horizontal">
+                  <Label
+                    Content="{Binding FilePath}" />
                 </StackPanel>
-            </Expander>
-            <GridSplitter Grid.Row="1" />
-            <Expander Grid.Row="2"
-                      IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
-                <Expander.Header>
-                    <Label Content="Assemblies" />
-                </Expander.Header>
-                <ListView ItemsSource="{Binding CurrentProjectInfo.Assemblies}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Name}">
-                                    <Label.ToolTip>
-                                        <ToolTip Content="{Binding FilePath}" />
-                                    </Label.ToolTip>
-                                </Label>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ListView>
-            </Expander>
-            <GridSplitter Grid.Row="3" />
-            <Expander Grid.Row="4"
-                      IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}" >
-                <Expander.Header>
-                    <Label Content="Tag Helpers" />
-                </Expander.Header>
-                <ListView ItemsSource="{Binding CurrentProjectInfo.TagHelpers}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding TargetElement}" />
-                                <Label Content="{Binding TypeName}" />
-                                <Label Content="{Binding AssemblyName}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ListView>
-            </Expander>
-            <GridSplitter Grid.Row="5" />
-            <Expander Grid.Row="6"
-                      IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
-                <Expander.Header>
-                    <Label Content="Directives" />
-                </Expander.Header>
-                <ListView ItemsSource="{Binding CurrentProjectInfo.Directives}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <Label Content="{Binding Name}" />
-                            </StackPanel>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ListView>
-            </Expander>
-            <GridSplitter Grid.Row="7" />
-            <Expander Grid.Row="8"
-                      IsEnabled="{Binding CurrentProjectInfo, TargetNullValue=False}">
-                <Expander.Header>
-                    <Label Content="Select Document" />
-                </Expander.Header>
-                <StackPanel>
-                    <ListBox ItemsSource="{Binding CurrentProjectInfo.Documents}"
-                             SelectedValue="{Binding CurrentDocument}"
-                             IsEnabled="{Binding IsSelectionEnabled}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <StackPanel Orientation="Horizontal">
-                                    <Label Content="{Binding FilePath}" />
-                                </StackPanel>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ListBox>
-                    <Button Content="Generate"
-                            Command="{Binding GenerateCommand}" />
-                </StackPanel>
-            </Expander>
-            <GridSplitter Grid.Row="9" />
-            <Expander Grid.Row="10"
-                      IsEnabled="{Binding CurrentDocumentInfo, TargetNullValue=False}">
-                <Expander.Header>
-                    <Label Content="Generated Code" />
-                </Expander.Header>
-                <TextBlock Text="{Binding CurrentDocumentInfo.Text}"
-                           TextWrapping="Wrap" />
-            </Expander>
-            <GridSplitter Grid.Row="11" />
-        </Grid>
-    </ScrollViewer>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ListBox>
+          <Button
+            Content="Generate"
+            Command="{Binding GenerateCommand}" />
+        </StackPanel>
+      </Expander>
+      <GridSplitter
+        Grid.Row="9" />
+      <Expander
+        Grid.Row="10"
+        IsEnabled="{Binding CurrentDocumentInfo, TargetNullValue=False}">
+        <Expander.Header>
+          <Label
+            Content="Generated Code" />
+        </Expander.Header>
+        <TextBlock
+          Text="{Binding CurrentDocumentInfo.Text}"
+          TextWrapping="Wrap" />
+      </Expander>
+      <GridSplitter
+        Grid.Row="11" />
+    </Grid>
+  </ScrollViewer>
 </UserControl>
