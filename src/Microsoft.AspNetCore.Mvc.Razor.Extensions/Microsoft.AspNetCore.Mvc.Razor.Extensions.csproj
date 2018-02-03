@@ -13,6 +13,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="build\**\*.props" PackagePath="build\" />
+    <Content Include="build\**\*.targets" PackagePath="build\" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../Microsoft.AspNetCore.Razor.Language/Microsoft.AspNetCore.Razor.Language.csproj" />
     <ProjectReference Include="../Microsoft.CodeAnalysis.Razor/Microsoft.CodeAnalysis.Razor.csproj" />
   </ItemGroup>

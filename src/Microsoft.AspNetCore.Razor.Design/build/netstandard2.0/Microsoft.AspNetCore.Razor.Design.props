@@ -1,15 +1,29 @@
 ﻿<Project ToolsVersion="14.0" TreatAsLocalProperty="_RazorTaskFolder;_RazorTaskAssembly">
   <PropertyGroup>
     <!--
-    Used by the Web SDK if the Razor SDK can be used for compilation. This needs to live in a nuget package (not in the SDK)
-    so that it only shows up in supported versions.
+      Used by the Web SDK if the Razor SDK can be used for compilation. This needs to live in a nuget package (not in the SDK)
+      so that it only shows up in supported versions.
     -->
     <IsRazorCompilerReferenced>true</IsRazorCompilerReferenced>
 
     <!-- 
-    Location of the CodeGeneration targets. The SDK uses this to import the file ensuring deterministic import order.
+      Location of the CodeGeneration targets. The SDK uses this to import the file ensuring deterministic import order.
     -->
     <RazorCodeGenerationTargetsPath>$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Razor.Design.CodeGeneration.targets</RazorCodeGenerationTargetsPath>
+
+    <!--
+      Configures the language version of Razor. Supported and default values differ depending on the version of
+      the packages in use.
+
+      Supported:
+        2.0
+        2.1
+        Latest = 2.1
+      
+      Default:
+        2.1
+    -->
+    <RazorLangVersion Condition="'$(RazorLangVersion)'==''">2.1</RazorLangVersion>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -1,3 +1,2 @@
 <Project>
-  <Import Project="$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\SDK\Sdk.targets" />
 </Project>

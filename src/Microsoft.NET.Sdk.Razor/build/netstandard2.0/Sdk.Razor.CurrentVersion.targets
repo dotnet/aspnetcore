@@ -162,6 +162,46 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
+    Generates assembly attributes in support for Razor runtime code generation. This is a set of standard
+    metadata attributes (defined in Microsoft.AspNetCore.Razor.Runtime) that capture the build-time
+    Razor configuration of an application to be used at runtime.
+    
+    This allows the project file to act as the source of truth for the applicable Razor configuration regardless 
+    of how Razor is used.
+
+    The SDK expects configurations that use runtime compilation to set $(GenerateRazorAssemblyInfo) to true,
+    it will be unset by default.
+  -->
+  <Target 
+    Name="RazorGetAssemblyAttributes" 
+    AfterTargets="GetAssemblyAttributes"
+    Condition="'$(GenerateRazorAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''">
+
+    <ItemGroup>
+      <_ResolvedRazorConfiguration Include="@(RazorConfiguration)" Condition="'%(RazorConfiguration.Identity)'=='$(RazorDefaultConfiguration)'" />
+      <_ResolvedRazorExtensionName Include="%(_ResolvedRazorConfiguration.Extensions)"/>
+    </ItemGroup>
+
+    <FindInList List="@(RazorExtension)" ItemSpecToFind="%(_ResolvedRazorExtensionName.Identity)">
+      <Output TaskParameter="ItemFound" ItemName="_ResolvedRazorExtension" />
+    </FindInList>
+
+    <ItemGroup>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute">
+        <_Parameter1>$(RazorLangVersion)</_Parameter1>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute">
+        <_Parameter1>$(RazorDefaultConfiguration)</_Parameter1>
+      </AssemblyAttribute>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute" Condition="'%(_ResolvedRazorExtension.AssemblyName)'!=''">
+        <_Parameter1>%(_ResolvedRazorExtension.Identity)</_Parameter1>
+        <_Parameter2>%(_ResolvedRazorExtension.AssemblyName)</_Parameter2>
+      </AssemblyAttribute>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
     Gathers input source files for code generation. This is a separate target so that we can avoid
     lots of work when there are no inputs for code generation.
   -->

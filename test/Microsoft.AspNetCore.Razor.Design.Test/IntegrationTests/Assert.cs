@@ -100,6 +100,50 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             throw new BuildOutputMissingException(result, match);
         }
 
+        public static void FileContainsLine(MSBuildResult result, string filePath, string match)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+            
+            var lines = File.ReadAllLines(filePath);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (line == match)
+                {
+                    return;
+                }
+            }
+
+            throw new FileContentMissingException(result, filePath, File.ReadAllText(filePath), match);
+        }
+
+        public static void FileDoesNotContainLine(MSBuildResult result, string filePath, string match)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+
+            var lines = File.ReadAllLines(filePath);
+            for (var i = 0; i < lines.Length; i++)
+            {
+                var line = lines[i].Trim();
+                if (line == match)
+                {
+                    throw new FileContentFoundException(result, filePath, File.ReadAllText(filePath), match);
+                }
+            }
+        }
+
         public static void FileExists(MSBuildResult result, params string[] paths)
         {
             if (result == null)
@@ -302,6 +346,66 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             public string Match { get; }
 
             protected override string Heading => $"Build did not contain the line: '{Match}'.";
+        }
+
+        private class FileContentFoundException : MSBuildXunitException
+        {
+            public FileContentFoundException(MSBuildResult result, string filePath, string content, string match)
+                : base(result)
+            {
+                FilePath = filePath;
+                Content = content;
+                Match = match;
+            }
+
+            public string Content { get; }
+
+            public string FilePath { get; }
+
+            public string Match { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendFormat("File content of '{0}' should not contain line: '{1}'.", FilePath, Match);
+                    builder.AppendLine();
+                    builder.AppendLine();
+                    builder.AppendLine(Content);
+                    return builder.ToString();
+                }
+            }
+        }
+
+        private class FileContentMissingException : MSBuildXunitException
+        {
+            public FileContentMissingException(MSBuildResult result, string filePath, string content, string match)
+                : base(result)
+            {
+                FilePath = filePath;
+                Content = content;
+                Match = match;
+            }
+
+            public string Content { get; }
+
+            public string FilePath { get; }
+
+            public string Match { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendFormat("File content of '{0}' did not contain the line: '{1}'.", FilePath, Match);
+                    builder.AppendLine();
+                    builder.AppendLine();
+                    builder.AppendLine(Content);
+                    return builder.ToString();
+                }
+            }
         }
 
         private class FileMissingException : MSBuildXunitException

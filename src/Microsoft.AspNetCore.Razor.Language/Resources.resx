@@ -533,4 +533,7 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="RazorProjectEngineMissingFeatureDependency" xml:space="preserve">
     <value>The '{0}' is missing feature '{1}'.</value>
   </data>
+  <data name="RazorLanguageVersion_InvalidVersion" xml:space="preserve">
+    <value>The Razor language version '{0}' is unrecognized or not supported by this version of Razor.</value>
+  </data>
 </root>

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class RazorLanguageVersion : IEquatable<RazorLanguageVersion>
+    [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
+    public sealed class RazorLanguageVersion : IEquatable<RazorLanguageVersion>, IComparable<RazorLanguageVersion>
     {
         public static readonly RazorLanguageVersion Version_1_0 = new RazorLanguageVersion(1, 0);
 
@@ -17,6 +19,60 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static readonly RazorLanguageVersion Latest = Version_2_1;
 
+        public static bool TryParse(string languageVersion, out RazorLanguageVersion version)
+        {
+            if (languageVersion == null)
+            {
+                throw new ArgumentNullException(nameof(languageVersion));
+            }
+
+            if (string.Equals(languageVersion, "latest", StringComparison.OrdinalIgnoreCase))
+            {
+                version = Version_2_1;
+                return true;
+            }
+            else if (languageVersion == "2.1")
+            {
+                version = Version_2_1;
+                return true; 
+            }
+            else if (languageVersion == "2.0")
+            {
+                version = Version_2_0;
+                return true;
+            }
+            else if (languageVersion == "1.1")
+            {
+                version = Version_1_1;
+                return true;
+            }
+            else if (languageVersion == "1.0")
+            {
+                version = Version_1_0;
+                return true;
+            }
+
+            version = null;
+            return false;
+        }
+
+        public static RazorLanguageVersion Parse(string languageVersion)
+        {
+            if (languageVersion == null)
+            {
+                throw new ArgumentNullException(nameof(languageVersion));
+            }
+
+            if (TryParse(languageVersion, out var parsed))
+            {
+                return parsed;
+            }
+
+            throw new ArgumentException(
+                Resources.FormatRazorLanguageVersion_InvalidVersion(languageVersion), 
+                nameof(languageVersion));
+        }
+
         // Don't want anyone else constructing language versions.
         private RazorLanguageVersion(int major, int minor)
         {
@@ -27,6 +83,22 @@ namespace Microsoft.AspNetCore.Razor.Language
         public int Major { get; }
 
         public int Minor { get; }
+
+        public int CompareTo(RazorLanguageVersion other)
+        {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
+            var result = Major.CompareTo(other.Major);
+            if (result != 0)
+            {
+                return result;
+            }
+
+            return Minor.CompareTo(other.Minor);
+        }
 
         public bool Equals(RazorLanguageVersion other)
         {
@@ -44,7 +116,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We don't need to do anything special for our hash code since reference equality is what we're going for.
             return base.GetHashCode();
         }
+        
+        public override string ToString() => $"{Major}.{Minor}";
 
-        public override string ToString() => $"Razor '{Major}.{Minor}'";
+        private string DebuggerToString() => $"Razor '{Major}.{Minor}'";
     }
 }

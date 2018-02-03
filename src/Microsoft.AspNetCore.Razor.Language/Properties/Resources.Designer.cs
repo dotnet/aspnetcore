@@ -1856,6 +1856,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatRazorProjectEngineMissingFeatureDependency(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("RazorProjectEngineMissingFeatureDependency"), p0, p1);
 
+        /// <summary>
+        /// The Razor language version '{0}' is unrecognized or not supported by this version of Razor.
+        /// </summary>
+        internal static string RazorLanguageVersion_InvalidVersion
+        {
+            get => GetString("RazorLanguageVersion_InvalidVersion");
+        }
+
+        /// <summary>
+        /// The Razor language version '{0}' is unrecognized or not supported by this version of Razor.
+        /// </summary>
+        internal static string FormatRazorLanguageVersion_InvalidVersion(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorLanguageVersion_InvalidVersion"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
