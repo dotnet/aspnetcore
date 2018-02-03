@@ -80,6 +80,10 @@ sed -i "s|^systemDir=.*|systemDir=/mnt/system|" buildAgent.properties
 echo >> buildAgent.properties # append a new line
 echo "system.aspnet.os.name=$ASPNETOSNAME" >> buildAgent.properties
 
+echo >> ~/.profile
+echo '# Add /usr/sbin to path if not already present.  Required for TeamCity to execute /usr/sbin/nginx.' >> ~/.profile
+echo '[[ ":$PATH:" != *":/usr/sbin:"* ]] && PATH="/usr/sbin:${PATH}"' >> ~/.profile
+
 cd ~/BuildAgent
 
 sudo cat <<EOF >> buildAgent
