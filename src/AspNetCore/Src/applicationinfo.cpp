@@ -369,7 +369,8 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     INT         intIndex = -1;
     INT         intPrevIndex = 0;
     BOOL        fFound = FALSE;
-    DWORD       dwBufferSize = 1024 * 10;
+    DWORD       dwBufferSize = 1024;
+    DWORD       dwRequiredBufferSize = 0;
 
     DBG_ASSERT(struFileName != NULL);
 
@@ -404,16 +405,17 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
             m_pConfiguration->QueryHostFxrArgCount(),
             m_pConfiguration->QueryHostFxrArguments(),
             struNativeSearchPaths.QueryStr(),
-            dwBufferSize
+            dwBufferSize,
+            &dwRequiredBufferSize
         );
 
         if (intHostFxrExitCode == 0)
         {
             break;
         }
-        else if (intHostFxrExitCode == API_BUFFER_TOO_SMALL)
+        else if (dwRequiredBufferSize >= dwBufferSize)
         {
-            dwBufferSize *= 2; // smaller buffer. increase the buffer and retry
+            dwBufferSize = dwRequiredBufferSize + 1; // for null terminator
             if (FAILED(hr = struNativeSearchPaths.Resize(dwBufferSize)))
             {
                 goto Finished;
