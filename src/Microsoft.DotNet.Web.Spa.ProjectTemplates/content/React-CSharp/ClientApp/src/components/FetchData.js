@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 export class FetchData extends Component {
   displayName = FetchData.name
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = { forecasts: [], loading: true };
 
     fetch('api/SampleData/WeatherForecasts')

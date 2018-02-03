@@ -3,8 +3,8 @@ import React, { Component } from 'react';
 export class Counter extends Component {
   displayName = Counter.name
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = { currentCount: 0 };
     this.incrementCounter = this.incrementCounter.bind(this);
   }
