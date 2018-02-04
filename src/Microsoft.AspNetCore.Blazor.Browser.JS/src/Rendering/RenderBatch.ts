@@ -1,6 +1,6 @@
 ﻿import { Pointer, System_Array } from '../Platform/Platform';
 import { platform } from '../Environment';
-import { RenderTreeNodePointer } from './RenderTreeNode';
+import { RenderTreeFramePointer } from './RenderTreeFrame';
 import { RenderTreeEditPointer } from './RenderTreeEdit';
 
 // Keep in sync with the structs in .NET code
@@ -20,7 +20,7 @@ export const renderTreeDiffStructLength = 4 + 2 * arrayRangeStructLength;
 export const renderTreeDiff = {
   componentId: (obj: RenderTreeDiffPointer) => platform.readInt32Field(obj, 0),
   edits: (obj: RenderTreeDiffPointer) => platform.readStructField<ArrayRangePointer<RenderTreeEditPointer>>(obj, 4),
-  currentState: (obj: RenderTreeDiffPointer) => platform.readStructField<ArrayRangePointer<RenderTreeNodePointer>>(obj, 4 + arrayRangeStructLength),
+  currentState: (obj: RenderTreeDiffPointer) => platform.readStructField<ArrayRangePointer<RenderTreeFramePointer>>(obj, 4 + arrayRangeStructLength),
 };
 
 // Nominal types to ensure only valid pointers are passed to the functions above.

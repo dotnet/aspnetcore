@@ -1,6 +1,6 @@
 ﻿import { System_Array, MethodHandle } from '../Platform/Platform';
 import { getRenderTreeEditPtr, renderTreeEdit, RenderTreeEditPointer, EditType } from './RenderTreeEdit';
-import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
+import { getTreeFramePtr, renderTreeFrame, FrameType, RenderTreeFramePointer } from './RenderTreeFrame';
 import { platform } from '../Environment';
 let raiseEventMethod: MethodHandle;
 let renderComponentMethod: MethodHandle;
@@ -15,7 +15,7 @@ export class BrowserRenderer {
     this.childComponentLocations[componentId] = element;
   }
 
-  public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeNodePointer>) {
+  public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeFramePointer>) {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
@@ -28,31 +28,31 @@ export class BrowserRenderer {
     delete this.childComponentLocations[componentId];
   }
 
-  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeNodePointer>) {
+  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeFramePointer>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
     for (let editIndex = 0; editIndex < editsLength; editIndex++) {
       const edit = getRenderTreeEditPtr(edits, editIndex);
       const editType = renderTreeEdit.type(edit);
       switch (editType) {
-        case EditType.prependNode: {
-          const nodeIndex = renderTreeEdit.newTreeIndex(edit);
-          const node = getTreeNodePtr(referenceTree, nodeIndex);
+        case EditType.prependFrame: {
+          const frameIndex = renderTreeEdit.newTreeIndex(edit);
+          const frame = getTreeFramePtr(referenceTree, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          this.insertNode(componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceTree, node, nodeIndex);
+          this.insertFrame(componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceTree, frame, frameIndex);
           break;
         }
-        case EditType.removeNode: {
+        case EditType.removeFrame: {
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           removeNodeFromDOM(parent, childIndexAtCurrentDepth + siblingIndex);
           break;
         }
         case EditType.setAttribute: {
-          const nodeIndex = renderTreeEdit.newTreeIndex(edit);
-          const node = getTreeNodePtr(referenceTree, nodeIndex);
+          const frameIndex = renderTreeEdit.newTreeIndex(edit);
+          const frame = getTreeFramePtr(referenceTree, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           const element = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as HTMLElement;
-          this.applyAttribute(componentId, element, node, nodeIndex);
+          this.applyAttribute(componentId, element, frame, frameIndex);
           break;
         }
         case EditType.removeAttribute: {
@@ -61,11 +61,11 @@ export class BrowserRenderer {
           break;
         }
         case EditType.updateText: {
-          const nodeIndex = renderTreeEdit.newTreeIndex(edit);
-          const node = getTreeNodePtr(referenceTree, nodeIndex);
+          const frameIndex = renderTreeEdit.newTreeIndex(edit);
+          const frame = getTreeFramePtr(referenceTree, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           const domTextNode = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as Text;
-          domTextNode.textContent = renderTreeNode.textContent(node);
+          domTextNode.textContent = renderTreeFrame.textContent(frame);
           break;
         }
         case EditType.stepIn: {
@@ -89,79 +89,79 @@ export class BrowserRenderer {
     }
   }
 
-  insertNode(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, node: RenderTreeNodePointer, nodeIndex: number) {
-    const nodeType = renderTreeNode.nodeType(node);
-    switch (nodeType) {
-      case NodeType.element:
-        this.insertElement(componentId, parent, childIndex, nodes, node, nodeIndex);
+  insertFrame(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
+    const frameType = renderTreeFrame.frameType(frame);
+    switch (frameType) {
+      case FrameType.element:
+        this.insertElement(componentId, parent, childIndex, frames, frame, frameIndex);
         break;
-      case NodeType.text:
-        this.insertText(parent, childIndex, node);
+      case FrameType.text:
+        this.insertText(parent, childIndex, frame);
         break;
-      case NodeType.attribute:
-        throw new Error('Attribute nodes should only be present as leading children of element nodes.');
-      case NodeType.component:
-        this.insertComponent(parent, childIndex, node);
+      case FrameType.attribute:
+        throw new Error('Attribute frames should only be present as leading children of element frames.');
+      case FrameType.component:
+        this.insertComponent(parent, childIndex, frame);
         break;
       default:
-        const unknownType: never = nodeType; // Compile-time verification that the switch was exhaustive
-        throw new Error(`Unknown node type: ${unknownType}`);
+        const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
+        throw new Error(`Unknown frame type: ${unknownType}`);
     }
   }
 
-  insertElement(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, node: RenderTreeNodePointer, nodeIndex: number) {
-    const tagName = renderTreeNode.elementName(node)!;
+  insertElement(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
+    const tagName = renderTreeFrame.elementName(frame)!;
     const newDomElement = document.createElement(tagName);
     insertNodeIntoDOM(newDomElement, parent, childIndex);
 
     // Apply attributes
-    const descendantsEndIndex = renderTreeNode.descendantsEndIndex(node);
-    for (let descendantIndex = nodeIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
-      const descendantNode = getTreeNodePtr(nodes, descendantIndex);
-      if (renderTreeNode.nodeType(descendantNode) === NodeType.attribute) {
-        this.applyAttribute(componentId, newDomElement, descendantNode, descendantIndex);
+    const descendantsEndIndex = renderTreeFrame.descendantsEndIndex(frame);
+    for (let descendantIndex = frameIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
+      const descendantFrame = getTreeFramePtr(frames, descendantIndex);
+      if (renderTreeFrame.frameType(descendantFrame) === FrameType.attribute) {
+        this.applyAttribute(componentId, newDomElement, descendantFrame, descendantIndex);
       } else {
-        // As soon as we see a non-attribute child, all the subsequent child nodes are
+        // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
-        this.insertNodeRange(componentId, newDomElement, 0, nodes, descendantIndex, descendantsEndIndex);
+        this.insertFrameRange(componentId, newDomElement, 0, frames, descendantIndex, descendantsEndIndex);
         break;
       }
     }
   }
 
-  insertComponent(parent: Element, childIndex: number, node: RenderTreeNodePointer) {
-    // Currently, to support O(1) lookups from render tree nodes to DOM nodes, we rely on
+  insertComponent(parent: Element, childIndex: number, frame: RenderTreeFramePointer) {
+    // Currently, to support O(1) lookups from render tree frames to DOM nodes, we rely on
     // each child component existing as a single top-level element in the DOM. To guarantee
     // that, we wrap child components in these 'blazor-component' wrappers.
     // To improve on this in the future:
     // - If we can statically detect that a given component always produces a single top-level
     //   element anyway, then don't wrap it in a further nonstandard element
-    // - If we really want to support child components producing multiple top-level nodes and
+    // - If we really want to support child components producing multiple top-level frames and
     //   not being wrapped in a container at all, then every time a component is refreshed in
     //   the DOM, we could update an array on the parent element that specifies how many DOM
-    //   nodes correspond to each of its render tree nodes. Then when that parent wants to
-    //   locate the first DOM node for a render tree node, it can sum all the node counts for
-    //   all the preceding render trees nodes. It's O(N), but where N is the number of siblings
+    //   nodes correspond to each of its render tree frames. Then when that parent wants to
+    //   locate the first DOM node for a render tree frame, it can sum all the frame counts for
+    //   all the preceding render trees frames. It's O(N), but where N is the number of siblings
     //   (counting child components as a single item), so N will rarely if ever be large.
     //   We could even keep track of whether all the child components happen to have exactly 1
-    //   top level node, and in that case, there's no need to sum as we can do direct lookups.
+    //   top level frames, and in that case, there's no need to sum as we can do direct lookups.
     const containerElement = document.createElement('blazor-component');
     insertNodeIntoDOM(containerElement, parent, childIndex);
 
     // All we have to do is associate the child component ID with its location. We don't actually
     // do any rendering here, because the diff for the child will appear later in the render batch.
-    const childComponentId = renderTreeNode.componentId(node);
+    const childComponentId = renderTreeFrame.componentId(frame);
     this.attachComponentToElement(childComponentId, containerElement);
   }
 
-  insertText(parent: Element, childIndex: number, textNode: RenderTreeNodePointer) {
-    const textContent = renderTreeNode.textContent(textNode)!;
+  insertText(parent: Element, childIndex: number, textFrame: RenderTreeFramePointer) {
+    const textContent = renderTreeFrame.textContent(textFrame)!;
     const newDomTextNode = document.createTextNode(textContent);
     insertNodeIntoDOM(newDomTextNode, parent, childIndex);
   }
 
-  applyAttribute(componentId: number, toDomElement: Element, attributeNode: RenderTreeNodePointer, attributeNodeIndex: number) {
-    const attributeName = renderTreeNode.attributeName(attributeNode)!;
+  applyAttribute(componentId: number, toDomElement: Element, attributeFrame: RenderTreeFramePointer, attributeFrameIndex: number) {
+    const attributeName = renderTreeFrame.attributeName(attributeFrame)!;
     const browserRendererId = this.browserRendererId;
 
     // TODO: Instead of applying separate event listeners to each DOM element, use event delegation
@@ -169,7 +169,7 @@ export class BrowserRenderer {
     switch (attributeName) {
       case 'onclick': {
         toDomElement.removeEventListener('click', toDomElement['_blazorClickListener']);
-        const listener = () => raiseEvent(browserRendererId, componentId, attributeNodeIndex, 'mouse', { Type: 'click' });
+        const listener = () => raiseEvent(browserRendererId, componentId, attributeFrameIndex, 'mouse', { Type: 'click' });
         toDomElement['_blazorClickListener'] = listener;
         toDomElement.addEventListener('click', listener);
         break;
@@ -181,7 +181,7 @@ export class BrowserRenderer {
           // just to establish that we can pass parameters when raising events.
           // We use C#-style PascalCase on the eventInfo to simplify deserialization, but this could
           // change if we introduced a richer JSON library on the .NET side.
-          raiseEvent(browserRendererId, componentId, attributeNodeIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
+          raiseEvent(browserRendererId, componentId, attributeFrameIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
         };
         toDomElement['_blazorKeypressListener'] = listener;
         toDomElement.addEventListener('keypress', listener);
@@ -191,20 +191,20 @@ export class BrowserRenderer {
         // Treat as a regular string-valued attribute
         toDomElement.setAttribute(
           attributeName,
-          renderTreeNode.attributeValue(attributeNode)!
+          renderTreeFrame.attributeValue(attributeFrame)!
         );
         break;
     }
   }
 
-  insertNodeRange(componentId: number, parent: Element, childIndex: number, nodes: System_Array<RenderTreeNodePointer>, startIndex: number, endIndex: number) {
+  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndex: number) {
     for (let index = startIndex; index <= endIndex; index++) {
-      const node = getTreeNodePtr(nodes, index);
-      this.insertNode(componentId, parent, childIndex, nodes, node, index);
+      const frame = getTreeFramePtr(frames, index);
+      this.insertFrame(componentId, parent, childIndex, frames, frame, index);
       childIndex++;
 
       // Skip over any descendants, since they are already dealt with recursively
-      const descendantsEndIndex = renderTreeNode.descendantsEndIndex(node);
+      const descendantsEndIndex = renderTreeFrame.descendantsEndIndex(frame);
       if (descendantsEndIndex > 0) {
         index = descendantsEndIndex;
       }
@@ -229,7 +229,7 @@ function removeAttributeFromDOM(parent: Element, childIndex: number, attributeNa
   element.removeAttribute(attributeName);
 }
 
-function raiseEvent(browserRendererId: number, componentId: number, renderTreeNodeIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
+function raiseEvent(browserRendererId: number, componentId: number, renderTreeFrameIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
   if (!raiseEventMethod) {
     raiseEventMethod = platform.findMethod(
       'Microsoft.AspNetCore.Blazor.Browser', 'Microsoft.AspNetCore.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'DispatchEvent'
@@ -239,7 +239,7 @@ function raiseEvent(browserRendererId: number, componentId: number, renderTreeNo
   const eventDescriptor = {
     BrowserRendererId: browserRendererId,
     ComponentId: componentId,
-    RenderTreeNodeIndex: renderTreeNodeIndex,
+    RenderTreeFrameIndex: renderTreeFrameIndex,
     EventArgsType: eventInfoType
   };
 

@@ -15,8 +15,8 @@ export const renderTreeEdit = {
 };
 
 export enum EditType {
-  prependNode = 1,
-  removeNode = 2,
+  prependFrame = 1,
+  removeFrame = 2,
   setAttribute = 3,
   removeAttribute = 4,
   updateText = 5,

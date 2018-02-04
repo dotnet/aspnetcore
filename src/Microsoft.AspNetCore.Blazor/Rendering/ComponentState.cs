@@ -51,14 +51,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _diffComputer.ApplyNewRenderTreeVersion(
                 batchBuilder,
                 _componentId,
-                _renderTreeBuilderPrevious.GetNodes(),
-                _renderTreeBuilderCurrent.GetNodes());
+                _renderTreeBuilderPrevious.GetFrames(),
+                _renderTreeBuilderCurrent.GetFrames());
         }
 
         /// <summary>
         /// Invokes the handler corresponding to an event.
         /// </summary>
-        /// <param name="renderTreeIndex">The index of the current render tree node that holds the event handler to be invoked.</param>
+        /// <param name="renderTreeIndex">The index of the current render tree frame that holds the event handler to be invoked.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
         public void DispatchEvent(int renderTreeIndex, UIEventArgs eventArgs)
         {
@@ -67,11 +67,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 throw new ArgumentNullException(nameof(eventArgs));
             }
 
-            var nodes = _renderTreeBuilderCurrent.GetNodes();
-            var eventHandler = nodes.Array[renderTreeIndex].AttributeValue as UIEventHandler;
+            var frames = _renderTreeBuilderCurrent.GetFrames();
+            var eventHandler = frames.Array[renderTreeIndex].AttributeValue as UIEventHandler;
             if (eventHandler == null)
             {
-                throw new ArgumentException($"The render tree node at index {renderTreeIndex} does not specify a {nameof(UIEventHandler)}.");
+                throw new ArgumentException($"The render tree frame at index {renderTreeIndex} does not specify a {nameof(UIEventHandler)}.");
             }
 
             eventHandler.Invoke(eventArgs);

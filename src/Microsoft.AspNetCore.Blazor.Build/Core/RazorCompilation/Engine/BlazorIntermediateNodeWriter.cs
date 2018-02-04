@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             // To support syntax like <elem @completeAttributePair /> (which in turn supports syntax
             // like <elem @OnSomeEvent(Handler) />), check whether we are currently in the middle of
             // writing an element. If so, treat this C# expression as something that should evaluate
-            // as a RenderTreeNode of type Attribute.
+            // as a RenderTreeFrame of type Attribute.
             if (_unconsumedHtml != null)
             {
                 var token = (IntermediateToken)node.Children.Single();
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             var codeWriter = context.CodeWriter;
 
             // TODO: As an optimization, identify static subtrees (i.e., HTML elements in the Razor source
-            // that contain no C#) and represent them as a new RenderTreeNodeType called StaticElement or
+            // that contain no C#) and represent them as a new RenderTreeFrameType called StaticElement or
             // similar. This means you can have arbitrarily deep static subtrees without paying any per-
             // node cost during rendering or diffing.
             HtmlToken nextToken;

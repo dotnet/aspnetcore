@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
     /// <summary>
-    /// Handles an event raised for a <see cref="RenderTreeNode"/>.
+    /// Handles an event raised for a <see cref="RenderTreeFrame"/>.
     /// </summary>
     public delegate void UIEventHandler(UIEventArgs eventArgs);
 }

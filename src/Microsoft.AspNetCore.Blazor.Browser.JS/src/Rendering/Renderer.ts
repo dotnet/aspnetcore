@@ -1,7 +1,5 @@
 ﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-import { getTreeNodePtr, renderTreeNode, NodeType, RenderTreeNodePointer } from './RenderTreeNode';
-import { RenderTreeEditPointer } from './RenderTreeEdit';
 import { renderBatch as renderBatchStruct, arrayRange, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 

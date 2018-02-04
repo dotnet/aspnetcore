@@ -96,8 +96,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             component.BuildRenderTree(treeBuilder);
 
             // Assert
-            Assert.Collection(treeBuilder.GetNodes(),
-                node => AssertNode.Text(node, "Some plain text", 0));
+            Assert.Collection(treeBuilder.GetFrames(),
+                frame => AssertFrame.Text(frame, "Some plain text", 0));
         }
 
         [Fact]
@@ -112,17 +112,17 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             ");
 
             // Assert
-            var nodes = GetRenderTree(component);
-            Assert.Collection(nodes,
-                node => AssertNode.Whitespace(node, 0),
-                node => AssertNode.Text(node, "Hello", 1),
-                node => AssertNode.Whitespace(node, 2),
-                node => AssertNode.Whitespace(node, 3), // @((object)null)
-                node => AssertNode.Whitespace(node, 4),
-                node => AssertNode.Text(node, "123", 5),
-                node => AssertNode.Whitespace(node, 6),
-                node => AssertNode.Text(node, new object().ToString(), 7),
-                node => AssertNode.Whitespace(node, 8));
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Whitespace(frame, 0),
+                frame => AssertFrame.Text(frame, "Hello", 1),
+                frame => AssertFrame.Whitespace(frame, 2),
+                frame => AssertFrame.Whitespace(frame, 3), // @((object)null)
+                frame => AssertFrame.Whitespace(frame, 4),
+                frame => AssertFrame.Text(frame, "123", 5),
+                frame => AssertFrame.Whitespace(frame, 6),
+                frame => AssertFrame.Text(frame, new object().ToString(), 7),
+                frame => AssertFrame.Whitespace(frame, 8));
         }
 
         [Fact]
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             ");
 
             // Assert
-            var nodes = GetRenderTree(component);
-            Assert.Collection(nodes,
-                node => AssertNode.Whitespace(node, 0),
-                node => AssertNode.Text(node, "First", 1),
-                node => AssertNode.Text(node, "Second", 1),
-                node => AssertNode.Text(node, "Third", 1),
-                node => AssertNode.Whitespace(node, 2),
-                node => AssertNode.Whitespace(node, 3));
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Whitespace(frame, 0),
+                frame => AssertFrame.Text(frame, "First", 1),
+                frame => AssertFrame.Text(frame, "Second", 1),
+                frame => AssertFrame.Text(frame, "Third", 1),
+                frame => AssertFrame.Whitespace(frame, 2),
+                frame => AssertFrame.Whitespace(frame, 3));
         }
 
         [Fact]
@@ -157,8 +157,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "myelem", 1, 0),
-                node => AssertNode.Text(node, "Hello", 1));
+                frame => AssertFrame.Element(frame, "myelem", 1, 0),
+                frame => AssertFrame.Text(frame, "Hello", 1));
         }
 
         [Fact]
@@ -169,8 +169,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Text(node, "Some text so elem isn't at position 0 ", 0),
-                node => AssertNode.Element(node, "myelem", 1, 1));
+                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
+                frame => AssertFrame.Element(frame, "myelem", 1, 1));
         }
 
         [Fact]
@@ -181,8 +181,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Text(node, "Some text so elem isn't at position 0 ", 0),
-                node => AssertNode.Element(node, "img", 1, 1));
+                frame => AssertFrame.Text(frame, "Some text so elem isn't at position 0 ", 0),
+                frame => AssertFrame.Element(frame, "img", 1, 1));
         }
 
         [Fact]
@@ -193,9 +193,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 2, 0),
-                node => AssertNode.Attribute(node, "attrib-one", "Value 1", 1),
-                node => AssertNode.Attribute(node, "a2", "v2", 2));
+                frame => AssertFrame.Element(frame, "elem", 2, 0),
+                frame => AssertFrame.Attribute(frame, "attrib-one", "Value 1", 1),
+                frame => AssertFrame.Attribute(frame, "a2", "v2", 2));
         }
 
         [Fact]
@@ -208,8 +208,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node => AssertNode.Attribute(node, "attr", "My string", 1));
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "My string", 1));
         }
 
         [Fact]
@@ -222,8 +222,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node => AssertNode.Attribute(node, "attr", "123", 1));
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "123", 1));
         }
 
         [Fact]
@@ -236,8 +236,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node => AssertNode.Attribute(node, "attr", "Hello, WORLD    with number 246!", 1));
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "Hello, WORLD    with number 246!", 1));
         }
 
         [Fact]
@@ -259,17 +259,17 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             Assert.False((bool)handlerWasCalledProperty.GetValue(component));
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node =>
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame =>
                 {
-                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.Equal(1, node.Sequence);
-                    Assert.NotNull(node.AttributeValue);
+                    Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
+                    Assert.Equal(1, frame.Sequence);
+                    Assert.NotNull(frame.AttributeValue);
 
-                    ((UIEventHandler)node.AttributeValue)(null);
+                    ((UIEventHandler)frame.AttributeValue)(null);
                     Assert.True((bool)handlerWasCalledProperty.GetValue(component));
                 },
-                node => AssertNode.Whitespace(node, 2));
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]
@@ -282,22 +282,22 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     public bool DidInvokeCode { get; set; } = false;
                 }");
             var didInvokeCodeProperty = component.GetType().GetProperty("DidInvokeCode");
-            var nodes = GetRenderTree(component);
+            var frames = GetRenderTree(component);
 
             // Assert
             Assert.False((bool)didInvokeCodeProperty.GetValue(component));
-            Assert.Collection(nodes,
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node =>
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame =>
                 {
-                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.NotNull(node.AttributeValue);
-                    Assert.Equal(1, node.Sequence);
+                    Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
+                    Assert.NotNull(frame.AttributeValue);
+                    Assert.Equal(1, frame.Sequence);
 
-                    ((UIEventHandler)node.AttributeValue)(null);
+                    ((UIEventHandler)frame.AttributeValue)(null);
                     Assert.True((bool)didInvokeCodeProperty.GetValue(component));
                 },
-                node => AssertNode.Whitespace(node, 2));
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]
@@ -313,13 +313,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             component.BuildRenderTree(treeBuilder);
 
             // Assert
-            Assert.Collection(treeBuilder.GetNodes(),
-                node => AssertNode.Whitespace(node, 0),
-                node => AssertNode.Text(node, typeof(List<string>).FullName, 1));
+            Assert.Collection(treeBuilder.GetFrames(),
+                frame => AssertFrame.Whitespace(frame, 0),
+                frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 1));
         }
 
         [Fact]
-        public void SupportsAttributeNodesEvaluatedInline()
+        public void SupportsAttributeFramesEvaluatedInline()
         {
             // Arrange/Act
             var component = CompileToComponent(
@@ -336,17 +336,17 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             Assert.False((bool)didInvokeCodeProperty.GetValue(component));
             Assert.Collection(GetRenderTree(component),
-                node => AssertNode.Element(node, "elem", 1, 0),
-                node =>
+                frame => AssertFrame.Element(frame, "elem", 1, 0),
+                frame =>
                 {
-                    Assert.Equal(RenderTreeNodeType.Attribute, node.NodeType);
-                    Assert.NotNull(node.AttributeValue);
-                    Assert.Equal(1, node.Sequence);
+                    Assert.Equal(RenderTreeFrameType.Attribute, frame.FrameType);
+                    Assert.NotNull(frame.AttributeValue);
+                    Assert.Equal(1, frame.Sequence);
 
-                    ((UIEventHandler)node.AttributeValue)(null);
+                    ((UIEventHandler)frame.AttributeValue)(null);
                     Assert.True((bool)didInvokeCodeProperty.GetValue(component));
                 },
-                node => AssertNode.Whitespace(node, 2));
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]
@@ -361,15 +361,15 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             component.BuildRenderTree(treeBuilder);
 
             // Assert
-            Assert.Collection(treeBuilder.GetNodes(),
-                node => AssertNode.Component<TestComponent>(node, 0));
+            Assert.Collection(treeBuilder.GetFrames(),
+                frame => AssertFrame.Component<TestComponent>(frame, 0));
         }
 
-        private static ArrayRange<RenderTreeNode> GetRenderTree(IComponent component)
+        private static ArrayRange<RenderTreeFrame> GetRenderTree(IComponent component)
         {
             var treeBuilder = new RenderTreeBuilder(new TestRenderer());
             component.BuildRenderTree(treeBuilder);
-            return treeBuilder.GetNodes();
+            return treeBuilder.GetFrames();
         }
 
         private static IComponent CompileToComponent(string cshtmlSource)

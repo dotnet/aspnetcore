@@ -111,22 +111,22 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         protected void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs eventArgs)
             => GetRequiredComponentState(componentId).DispatchEvent(renderTreeIndex, eventArgs);
 
-        internal void InstantiateChildComponent(RenderTreeNode[] nodes, int componentNodeIndex)
+        internal void InstantiateChildComponent(RenderTreeFrame[] frames, int componentFrameIndex)
         {
-            ref var node = ref nodes[componentNodeIndex];
-            if (node.NodeType != RenderTreeNodeType.Component)
+            ref var frame = ref frames[componentFrameIndex];
+            if (frame.FrameType != RenderTreeFrameType.Component)
             {
-                throw new ArgumentException($"The node's {nameof(RenderTreeNode.NodeType)} property must equal {RenderTreeNodeType.Component}", nameof(node));
+                throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
             }
 
-            if (node.Component != null)
+            if (frame.Component != null)
             {
-                throw new ArgumentException($"The node already has a non-null component instance", nameof(node));
+                throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
             }
 
-            var newComponent = (IComponent)Activator.CreateInstance(node.ComponentType);
+            var newComponent = (IComponent)Activator.CreateInstance(frame.ComponentType);
             var newComponentId = AssignComponentId(newComponent);
-            node.SetChildComponentInstance(newComponentId, newComponent);
+            frame.SetChildComponentInstance(newComponentId, newComponent);
         }
 
         private ComponentState GetRequiredComponentState(int componentId)

@@ -25,12 +25,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// Gets the latest render tree. That is, the result of applying the <see cref="Edits"/>
         /// to the previous state.
         /// </summary>
-        public ArrayRange<RenderTreeNode> CurrentState { get; }
+        public ArrayRange<RenderTreeFrame> CurrentState { get; }
 
         internal RenderTreeDiff(
             int componentId,
             ArrayRange<RenderTreeEdit> entries,
-            ArrayRange<RenderTreeNode> referenceTree)
+            ArrayRange<RenderTreeFrame> referenceTree)
         {
             ComponentId = componentId;
             Edits = entries;

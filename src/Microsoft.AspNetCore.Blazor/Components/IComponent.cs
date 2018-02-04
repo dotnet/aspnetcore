@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Builds a <see cref="RenderTree"/> representing the current state of the component.
         /// </summary>
-        /// <param name="builder">A <see cref="RenderTreeBuilder"/> to which the rendered nodes should be appended.</param>
+        /// <param name="builder">A <see cref="RenderTreeBuilder"/> to which the rendered frames should be appended.</param>
         void BuildRenderTree(RenderTreeBuilder builder);
     }
 }

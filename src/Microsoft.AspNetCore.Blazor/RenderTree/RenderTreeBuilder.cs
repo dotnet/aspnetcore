@@ -9,14 +9,14 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
     /// <summary>
-    /// Provides methods for building a collection of <see cref="RenderTreeNode"/> entries.
+    /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.
     /// </summary>
     public class RenderTreeBuilder
     {
         private readonly Renderer _renderer;
-        private readonly ArrayBuilder<RenderTreeNode> _entries = new ArrayBuilder<RenderTreeNode>(10);
+        private readonly ArrayBuilder<RenderTreeFrame> _entries = new ArrayBuilder<RenderTreeFrame>(10);
         private readonly Stack<int> _openElementIndices = new Stack<int>();
-        private RenderTreeNodeType? _lastNonAttributeNodeType;
+        private RenderTreeFrameType? _lastNonAttributeFrameType;
 
         /// <summary>
         /// Constructs an instance of <see cref="RenderTreeBuilder"/>.
@@ -28,21 +28,21 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
-        /// Appends a node representing an element, i.e., a container for other nodes.
+        /// Appends a frame representing an element, i.e., a container for other frames.
         /// In order for the <see cref="RenderTreeBuilder"/> state to be valid, you must
         /// also call <see cref="CloseElement"/> immediately after appending the
-        /// new element's child nodes.
+        /// new element's child frames.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="elementName">A value representing the type of the element.</param>
         public void OpenElement(int sequence, string elementName)
         {
             _openElementIndices.Push(_entries.Count);
-            Append(RenderTreeNode.Element(sequence, elementName));
+            Append(RenderTreeFrame.Element(sequence, elementName));
         }
 
         /// <summary>
-        /// Marks a previously appended element node as closed. Calls to this method
+        /// Marks a previously appended element frame as closed. Calls to this method
         /// must be balanced with calls to <see cref="OpenElement(string)"/>.
         /// </summary>
         public void CloseElement()
@@ -52,23 +52,23 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
-        /// Appends a node representing text content.
+        /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="textContent">Content for the new text node.</param>
+        /// <param name="textContent">Content for the new text frame.</param>
         public void AddText(int sequence, string textContent)
-            => Append(RenderTreeNode.Text(sequence, textContent));
+            => Append(RenderTreeFrame.Text(sequence, textContent));
 
         /// <summary>
-        /// Appends a node representing text content.
+        /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        /// <param name="textContent">Content for the new text node.</param>
+        /// <param name="textContent">Content for the new text frame.</param>
         public void AddText(int sequence, object textContent)
             => AddText(sequence, textContent?.ToString());
 
         /// <summary>
-        /// Appends a node representing a string-valued attribute.
+        /// Appends a frame representing a string-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -77,11 +77,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         public void AddAttribute(int sequence, string name, string value)
         {
             AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(sequence, name, value));
+            Append(RenderTreeFrame.Attribute(sequence, name, value));
         }
 
         /// <summary>
-        /// Appends a node representing an <see cref="UIEventArgs"/>-valued attribute.
+        /// Appends a frame representing an <see cref="UIEventArgs"/>-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -90,11 +90,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         public void AddAttribute(int sequence, string name, UIEventHandler value)
         {
             AssertCanAddAttribute();
-            Append(RenderTreeNode.Attribute(sequence, name, value));
+            Append(RenderTreeFrame.Attribute(sequence, name, value));
         }
 
         /// <summary>
-        /// Appends a node representing a string-valued attribute.
+        /// Appends a frame representing a string-valued attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -102,14 +102,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, object value)
         {
-            if (_lastNonAttributeNodeType == RenderTreeNodeType.Element)
+            if (_lastNonAttributeFrameType == RenderTreeFrameType.Element)
             {
                 // Element attribute values can only be strings or UIEventHandler
-                Append(RenderTreeNode.Attribute(sequence, name, value.ToString()));
+                Append(RenderTreeFrame.Attribute(sequence, name, value.ToString()));
             }
-            else if (_lastNonAttributeNodeType == RenderTreeNodeType.Component)
+            else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
-                Append(RenderTreeNode.Attribute(sequence, name, value));
+                Append(RenderTreeFrame.Attribute(sequence, name, value));
             }
             else
             {
@@ -119,26 +119,26 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
-        /// Appends a node representing an attribute.
+        /// Appends a frame representing an attribute.
         /// The attribute is associated with the most recently added element.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="name">The name of the attribute.</param>
         /// <param name="value">The value of the attribute.</param>
-        public void AddAttribute(int sequence, RenderTreeNode node)
+        public void AddAttribute(int sequence, RenderTreeFrame frame)
         {
-            if (node.NodeType != RenderTreeNodeType.Attribute)
+            if (frame.FrameType != RenderTreeFrameType.Attribute)
             {
-                throw new ArgumentException($"The {nameof(node.NodeType)} must be {RenderTreeNodeType.Attribute}.");
+                throw new ArgumentException($"The {nameof(frame.FrameType)} must be {RenderTreeFrameType.Attribute}.");
             }
 
             AssertCanAddAttribute();
-            node.SetSequence(sequence);
-            Append(node);
+            frame.SetSequence(sequence);
+            Append(frame);
         }
 
         /// <summary>
-        /// Appends a node representing a child component.
+        /// Appends a frame representing a child component.
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -146,21 +146,21 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             // Currently, child components can't have further grandchildren of their own, so it would
             // technically be possible to skip their CloseElement calls and not track them in _openElementIndices.
-            // However at some point we might want to have the grandchildren nodes available at runtime
+            // However at some point we might want to have the grandchildren frames available at runtime
             // (rather than being parsed as attributes at compile time) so that we could have APIs for
-            // components to query the complete hierarchy of transcluded nodes instead of forcing the
+            // components to query the complete hierarchy of transcluded frames instead of forcing the
             // transcluded subtree to be in a particular shape such as representing key/value pairs.
-            // So it's more flexible if we track open/close nodes for components explicitly.
+            // So it's more flexible if we track open/close frames for components explicitly.
             _openElementIndices.Push(_entries.Count);
-            Append(RenderTreeNode.ChildComponent<TComponent>(sequence));
+            Append(RenderTreeFrame.ChildComponent<TComponent>(sequence));
         }
 
         private void AssertCanAddAttribute()
         {
-            if (_lastNonAttributeNodeType != RenderTreeNodeType.Element
-                && _lastNonAttributeNodeType != RenderTreeNodeType.Component)
+            if (_lastNonAttributeFrameType != RenderTreeFrameType.Element
+                && _lastNonAttributeFrameType != RenderTreeFrameType.Component)
             {
-                throw new InvalidOperationException($"Attributes may only be added immediately after nodes of type {RenderTreeNodeType.Element} or {RenderTreeNodeType.Component}");
+                throw new InvalidOperationException($"Attributes may only be added immediately after frames of type {RenderTreeFrameType.Element} or {RenderTreeFrameType.Component}");
             }
         }
 
@@ -171,24 +171,24 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             _entries.Clear();
             _openElementIndices.Clear();
-            _lastNonAttributeNodeType = null;
+            _lastNonAttributeFrameType = null;
         }
 
         /// <summary>
-        /// Returns the <see cref="RenderTreeNode"/> values that have been appended.
+        /// Returns the <see cref="RenderTreeFrame"/> values that have been appended.
         /// </summary>
-        /// <returns>An array range of <see cref="RenderTreeNode"/> values.</returns>
-        public ArrayRange<RenderTreeNode> GetNodes() =>
+        /// <returns>An array range of <see cref="RenderTreeFrame"/> values.</returns>
+        public ArrayRange<RenderTreeFrame> GetFrames() =>
             _entries.ToRange();
 
-        private void Append(in RenderTreeNode node)
+        private void Append(in RenderTreeFrame frame)
         {
-            _entries.Append(node);
+            _entries.Append(frame);
 
-            var nodeType = node.NodeType;
-            if (nodeType != RenderTreeNodeType.Attribute)
+            var frameType = frame.FrameType;
+            if (frameType != RenderTreeFrameType.Attribute)
             {
-                _lastNonAttributeNodeType = node.NodeType;
+                _lastNonAttributeFrameType = frame.FrameType;
             }
         }
     }

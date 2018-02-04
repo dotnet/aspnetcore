@@ -28,8 +28,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Theory]
-        [MemberData(nameof(RecognizesEquivalentNodesAsSameCases))]
-        public void RecognizesEquivalentNodesAsSame(Action<RenderTreeBuilder> appendAction)
+        [MemberData(nameof(RecognizesEquivalentFramesAsSameCases))]
+        public void RecognizesEquivalentFramesAsSame(Action<RenderTreeBuilder> appendAction)
         {
             // Arrange
             appendAction(oldTree);
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Empty(result.Edits);
         }
 
-        public static IEnumerable<object[]> RecognizesEquivalentNodesAsSameCases()
+        public static IEnumerable<object[]> RecognizesEquivalentFramesAsSameCases()
             => new Action<RenderTreeBuilder>[]
             {
                 builder => builder.AddText(0, "Hello"),
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 });
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
@@ -112,8 +112,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1),
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
@@ -134,12 +134,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -160,8 +160,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 2),
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 2));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 2),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 2));
         }
 
         [Fact]
@@ -182,12 +182,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 3);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 3);
                     Assert.Equal(3, entry.NewTreeIndex);
                 });
         }
@@ -210,12 +210,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
                     Assert.Equal(1, entry.NewTreeIndex);
                 },
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 2);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
                     Assert.Equal(2, entry.NewTreeIndex);
                 });
         }
@@ -236,8 +236,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1),
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
@@ -252,8 +252,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 0),
-                entry => AssertEdit(entry, RenderTreeEditType.PrependNode, 0));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0),
+                entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
         }
 
         [Fact]
@@ -302,10 +302,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                 },
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
@@ -330,18 +330,18 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(updatedComponent1.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                     Assert.IsType<FakeComponent2>(updatedComponent1.CurrentState.Array[0].Component);
                 },
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveNode, 1));
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
 
             // Assert: Second updated component is the new FakeComponent2
             var updatedComponent2 = renderBatch.UpdatedComponents.Array[1];
             Assert.Collection(updatedComponent2.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(0, entry.NewTreeIndex);
                 });
         }
@@ -577,7 +577,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void InstantiatesChildComponentsForInsertedNodes()
+        public void InstantiatesChildComponentsForInsertedFrames()
         {
             // Arrange
             oldTree.AddText(10, "text1");                       //  0: text1
@@ -603,37 +603,37 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry => AssertEdit(entry, RenderTreeEditType.StepIn, 1),
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 0);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(2, entry.NewTreeIndex);
 
-                    var newTreeNode = newTree.GetNodes().Array[entry.NewTreeIndex];
-                    Assert.Equal(0, newTreeNode.ComponentId);
-                    Assert.IsType<FakeComponent>(newTreeNode.Component);
+                    var newTreeFrame = newTree.GetFrames().Array[entry.NewTreeIndex];
+                    Assert.Equal(0, newTreeFrame.ComponentId);
+                    Assert.IsType<FakeComponent>(newTreeFrame.Component);
                 },
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.PrependNode, 1);
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
                     Assert.Equal(3, entry.NewTreeIndex);
 
-                    var newTreeNode = newTree.GetNodes().Array[entry.NewTreeIndex];
-                    Assert.Equal(1, newTreeNode.ComponentId);
-                    Assert.IsType<FakeComponent2>(newTreeNode.Component);
+                    var newTreeFrame = newTree.GetFrames().Array[entry.NewTreeIndex];
+                    Assert.Equal(1, newTreeFrame.ComponentId);
+                    Assert.IsType<FakeComponent2>(newTreeFrame.Component);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
 
             // Second in batch is the first child component
             var secondComponentDiff = renderBatch.UpdatedComponents.Array[1];
             Assert.Equal(0, secondComponentDiff.ComponentId);
-            Assert.Empty(secondComponentDiff.Edits); // Because FakeComponent produces no nodes
-            Assert.Empty(secondComponentDiff.CurrentState); // Because FakeComponent produces no nodes
+            Assert.Empty(secondComponentDiff.Edits); // Because FakeComponent produces no frames
+            Assert.Empty(secondComponentDiff.CurrentState); // Because FakeComponent produces no frames
 
             // Third in batch is the second child component
             var thirdComponentDiff = renderBatch.UpdatedComponents.Array[2];
             Assert.Equal(1, thirdComponentDiff.ComponentId);
             Assert.Collection(thirdComponentDiff.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.PrependNode, 0));
+                entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
             Assert.Collection(thirdComponentDiff.CurrentState,
-                node => AssertNode.Text(node, $"Hello from {nameof(FakeComponent2)}"));
+                frame => AssertFrame.Text(frame, $"Hello from {nameof(FakeComponent2)}"));
         }
 
         [Fact]
@@ -649,13 +649,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act
             var renderBatch = GetRenderedBatch();
-            var componentInstance = newTree.GetNodes().First().Component as FakeComponent;
+            var componentInstance = newTree.GetFrames().First().Component as FakeComponent;
 
             // Assert
             Assert.Equal(2, renderBatch.UpdatedComponents.Count);
 
             var rootComponentDiff = renderBatch.UpdatedComponents.Array[0];
-            AssertEdit(rootComponentDiff.Edits.Single(), RenderTreeEditType.PrependNode, 0);
+            AssertEdit(rootComponentDiff.Edits.Single(), RenderTreeEditType.PrependFrame, 0);
             Assert.NotNull(componentInstance);
             Assert.Equal(123, componentInstance.IntProperty);
             Assert.Equal("some string", componentInstance.StringProperty);
@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetNodes(), newTree.GetNodes());
+                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
             });
             Assert.Equal($"Component of type '{typeof(FakeComponent).FullName}' does not have a property matching the name 'SomeUnknownProperty'.", ex.Message);
         }
@@ -691,14 +691,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetNodes(), newTree.GetNodes());
+                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
             });
             Assert.StartsWith($"Unable to set property '{nameof(FakeComponent.ReadonlyProperty)}' on " +
                 $"component of type '{typeof(FakeComponent).FullName}'.", ex.Message);
         }
 
         [Fact]
-        public void RetainsChildComponentsForExistingNodes()
+        public void RetainsChildComponentsForExistingFrames()
         {
             // Arrange
             oldTree.AddText(10, "text1");                       //  0: text1
@@ -716,21 +716,21 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();                             //       </FakeComponent2>
             newTree.CloseElement();                             //     </container
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetNodes(), oldTree.GetNodes());
-            var originalFakeComponentInstance = oldTree.GetNodes().Array[2].Component;
-            var originalFakeComponent2Instance = oldTree.GetNodes().Array[3].Component;
+            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            var originalFakeComponentInstance = oldTree.GetFrames().Array[2].Component;
+            var originalFakeComponent2Instance = oldTree.GetFrames().Array[3].Component;
 
             // Act
             var result = GetSingleUpdatedComponent();
-            var newNode1 = newTree.GetNodes().Array[2];
-            var newNode2 = newTree.GetNodes().Array[3];
+            var newFrame1 = newTree.GetFrames().Array[2];
+            var newFrame2 = newTree.GetFrames().Array[3];
 
             // Assert
             Assert.Empty(result.Edits);
-            Assert.Equal(0, newNode1.ComponentId);
-            Assert.Equal(1, newNode2.ComponentId);
-            Assert.Same(originalFakeComponentInstance, newNode1.Component);
-            Assert.Same(originalFakeComponent2Instance, newNode2.Component);
+            Assert.Equal(0, newFrame1.ComponentId);
+            Assert.Equal(1, newFrame2.ComponentId);
+            Assert.Same(originalFakeComponentInstance, newFrame1.Component);
+            Assert.Same(originalFakeComponent2Instance, newFrame2.Component);
         }
 
         [Fact]
@@ -747,13 +747,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
             newTree.CloseElement();
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetNodes(), oldTree.GetNodes());
-            var originalComponentInstance = (FakeComponent)oldTree.GetNodes().Array[0].Component;
+            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
             originalComponentInstance.ObjectProperty = null; // So we can see it doesn't get reassigned 
 
             // Act
             var renderBatch = GetRenderedBatch();
-            var newComponentInstance = (FakeComponent)oldTree.GetNodes().Array[0].Component;
+            var newComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
             // Assert
             Assert.Equal(2, renderBatch.UpdatedComponents.Count);
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(diffForChildComponent.CurrentState,
-                node => AssertNode.Text(node, "Notifications: 1", 0));
+                frame => AssertFrame.Text(frame, "Notifications: 1", 0));
         }
 
         [Fact]
@@ -797,11 +797,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert 0: Initial render
             var batch0 = GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree);
             var diffForChildComponent0 = batch0.UpdatedComponents.Array[1];
-            var childComponentNode = batch0.UpdatedComponents.Array[0].CurrentState.Array[0];
-            var childComponentInstance = (HandlePropertiesChangedComponent)childComponentNode.Component;
+            var childComponentFrame = batch0.UpdatedComponents.Array[0].CurrentState.Array[0];
+            var childComponentInstance = (HandlePropertiesChangedComponent)childComponentFrame.Component;
             Assert.Equal(1, childComponentInstance.NotificationsCount);
             Assert.Collection(diffForChildComponent0.CurrentState,
-                node => AssertNode.Text(node, "Notifications: 1", 0));
+                frame => AssertFrame.Text(frame, "Notifications: 1", 0));
 
             // Act/Assert 1: If properties didn't change, we don't notify
             GetRenderedBatch(oldTree, newTree1);
@@ -812,7 +812,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var diffForChildComponent2 = batch2.UpdatedComponents.Array[1];
             Assert.Equal(2, childComponentInstance.NotificationsCount);
             Assert.Collection(diffForChildComponent2.CurrentState,
-                node => AssertNode.Text(node, "Notifications: 2", 0));
+                frame => AssertFrame.Text(frame, "Notifications: 2", 0));
         }
 
         [Fact]
@@ -828,10 +828,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.OpenComponentElement<DisposableComponent>(30);       // <DisposableComponent>
             newTree.CloseElement();                                      // </DisposableComponent>
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetNodes(), oldTree.GetNodes());
-            var disposableComponent1 = (DisposableComponent)oldTree.GetNodes().Array[0].Component;
-            var nonDisposableComponent = (NonDisposableComponent)oldTree.GetNodes().Array[1].Component;
-            var disposableComponent2 = (DisposableComponent)oldTree.GetNodes().Array[2].Component;
+            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            var disposableComponent1 = (DisposableComponent)oldTree.GetFrames().Array[0].Component;
+            var nonDisposableComponent = (NonDisposableComponent)oldTree.GetFrames().Array[1].Component;
+            var disposableComponent2 = (DisposableComponent)oldTree.GetFrames().Array[2].Component;
 
             // Act
             var renderedBatch = GetRenderedBatch();
@@ -859,7 +859,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private RenderBatch GetRenderedBatch(RenderTreeBuilder from, RenderTreeBuilder to)
         {
             var batchBuilder = new RenderBatchBuilder();
-            diff.ApplyNewRenderTreeVersion(batchBuilder, 0, from.GetNodes(), to.GetNodes());
+            diff.ApplyNewRenderTreeVersion(batchBuilder, 0, from.GetFrames(), to.GetFrames());
             return batchBuilder.ToBatch();
         }
 

@@ -4,12 +4,12 @@
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
     /// <summary>
-    /// Describes the type of a <see cref="RenderTreeNode"/>.
+    /// Describes the type of a <see cref="RenderTreeFrame"/>.
     /// </summary>
-    public enum RenderTreeNodeType: int
+    public enum RenderTreeFrameType: int
     {
         /// <summary>
-        /// Represents a container for other nodes.
+        /// Represents a container for other frames.
         /// </summary>
         Element = 1,
 
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         Text = 2,
 
         /// <summary>
-        /// Represents a key-value pair associated with another <see cref="RenderTreeNode"/>.
+        /// Represents a key-value pair associated with another <see cref="RenderTreeFrame"/>.
         /// </summary>
         Attribute = 3,
 

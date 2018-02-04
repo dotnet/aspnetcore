@@ -13,111 +13,111 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     /// <summary>
     /// Represents an entry in a tree of user interface (UI) items.
     /// </summary>
-    public struct RenderTreeNode
+    public struct RenderTreeFrame
     {
         /// <summary>
-        /// Gets the sequence number of the node. Sequence numbers indicate the relative source
-        /// positions of the instructions that inserted the nodes. Sequence numbers are only
+        /// Gets the sequence number of the frame. Sequence numbers indicate the relative source
+        /// positions of the instructions that inserted the frames. Sequence numbers are only
         /// comparable within the same sequence (typically, the same source method).
         /// </summary>
         public int Sequence { get; private set; }
 
         /// <summary>
-        /// Describes the type of this node.
+        /// Describes the type of this frame.
         /// </summary>
-        public RenderTreeNodeType NodeType { get; private set; }
+        public RenderTreeFrameType FrameType { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
         /// gets a name representing the type of the element. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string ElementName { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Element"/>,
-        /// gets the index of the final descendant node in the tree. The value is
-        /// zero if the node is of a different type, or if it has not yet been closed.
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
+        /// gets the index of the final descendant frame in the tree. The value is
+        /// zero if the frame is of a different type, or if it has not yet been closed.
         /// </summary>
         public int ElementDescendantsEndIndex { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Text"/>,
-        /// gets the content of the text node. Otherwise, the value is <see langword="null"/>.
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Text"/>,
+        /// gets the content of the text frame. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string TextContent { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public string AttributeName { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Attribute"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public object AttributeValue { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the type of the child component.
         /// </summary>
         public Type ComponentType { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component instance identifier.
         /// </summary>
         public int ComponentId { get; private set; }
 
         /// <summary>
-        /// If the <see cref="NodeType"/> property equals <see cref="RenderTreeNodeType.Component"/>,
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component instance. Otherwise, the value is <see langword="null"/>.
         /// </summary>
         public IComponent Component { get; private set; }
 
-        internal static RenderTreeNode Element(int sequence, string elementName) => new RenderTreeNode
+        internal static RenderTreeFrame Element(int sequence, string elementName) => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Element,
+            FrameType = RenderTreeFrameType.Element,
             ElementName = elementName,
         };
 
-        internal static RenderTreeNode Text(int sequence, string textContent) => new RenderTreeNode
+        internal static RenderTreeFrame Text(int sequence, string textContent) => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Text,
+            FrameType = RenderTreeFrameType.Text,
             TextContent = textContent ?? string.Empty,
         };
 
-        internal static RenderTreeNode Attribute(int sequence, string name, string value) => new RenderTreeNode
+        internal static RenderTreeFrame Attribute(int sequence, string name, string value) => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Attribute,
+            FrameType = RenderTreeFrameType.Attribute,
             AttributeName = name,
             AttributeValue = value
         };
 
-        internal static RenderTreeNode Attribute(int sequence, string name, UIEventHandler value) => new RenderTreeNode
+        internal static RenderTreeFrame Attribute(int sequence, string name, UIEventHandler value) => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Attribute,
+            FrameType = RenderTreeFrameType.Attribute,
             AttributeName = name,
             AttributeValue = value
         };
 
-        internal static RenderTreeNode Attribute(int sequence, string name, object value) => new RenderTreeNode
+        internal static RenderTreeFrame Attribute(int sequence, string name, object value) => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Attribute,
+            FrameType = RenderTreeFrameType.Attribute,
             AttributeName = name,
             AttributeValue = value
         };
 
-        internal static RenderTreeNode ChildComponent<T>(int sequence) where T: IComponent => new RenderTreeNode
+        internal static RenderTreeFrame ChildComponent<T>(int sequence) where T: IComponent => new RenderTreeFrame
         {
             Sequence = sequence,
-            NodeType = RenderTreeNodeType.Component,
+            FrameType = RenderTreeFrameType.Component,
             ComponentType = typeof(T)
         };
 
@@ -134,8 +134,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         internal void SetSequence(int sequence)
         {
-            // This is only used when appending attribute nodes, because helpers such as @onclick
-            // need to construct the attribute node in a context where they don't know the sequence
+            // This is only used when appending attribute frames, because helpers such as @onclick
+            // need to construct the attribute frame in a context where they don't know the sequence
             // number, so we assign it later
             Sequence = sequence;
         }
