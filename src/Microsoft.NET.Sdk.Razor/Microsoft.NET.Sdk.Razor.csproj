@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="SDK\*" Pack="true" PackagePath="SDK\" />
+    <None Include="Sdk\*" Pack="true" PackagePath="Sdk\" />
     <None Include="build\**\*" Pack="true" PackagePath="build" />
   </ItemGroup>
 
