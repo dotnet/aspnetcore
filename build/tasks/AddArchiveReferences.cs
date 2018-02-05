@@ -52,12 +52,27 @@ namespace RepoTasks
             foreach (var package in archiveArtifacts)
             {
                 var packageName = package.ItemSpec;
-                var packageVersion = string.Equals(packageName, "Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase) ?
-                    MetaPackageVersion :
-                    buildArtifacts
-                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                        .PackageInfo.Version.ToString();
 
+                string packageVersion;
+
+                if(string.Equals(packageName, "Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase))
+                {
+                    packageVersion = MetaPackageVersion;
+                }
+                else
+                {
+                    try
+                    {
+                        packageVersion = buildArtifacts
+                            .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
+                            .PackageInfo.Version.ToString();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        Log.LogError($"Missing Package: {packageName} from artifacts archive.");
+                        throw;
+                    }
+                }
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
@@ -83,9 +98,19 @@ namespace RepoTasks
             foreach (var package in archiveTools)
             {
                 var packageName = package.ItemSpec;
-                var packageVersion = buildArtifacts
-                    .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                    .PackageInfo.Version.ToString();
+
+                string packageVersion;
+
+                try{
+                    packageVersion = buildArtifacts
+                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
+                        .PackageInfo.Version.ToString();
+                }
+                catch(InvalidOperationException)
+                {
+                    Log.LogError($"Missing Package: {packageName} from tools archive.");
+                    throw;
+                }
 
                 Log.LogMessage(MessageImportance.High, $" - Tool: {packageName} Version: {packageVersion}");
 
