@@ -7,8 +7,8 @@
     <InternalAspNetCoreSiteExtensionSdkPackageVersion>2.1.0-preview2-15694</InternalAspNetCoreSiteExtensionSdkPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModulePackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreAspNetCoreModulePackageVersion>
-    <MicrosoftAspNetCoreAzureAppServicesHostingStartupVersion>2.1.0-preview1-27855</MicrosoftAspNetCoreAzureAppServicesHostingStartupVersion>
-    <MicrosoftAspNetCoreAzureKeyVaultHostingStartupVersion>2.1.0-preview1-27855</MicrosoftAspNetCoreAzureKeyVaultHostingStartupVersion>
+    <MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>2.1.0-preview1-27855</MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion>
+    <MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>2.1.0-preview1-27855</MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion>
     <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview2-30020</MicrosoftAspNetCoreHostingPackageVersion>
