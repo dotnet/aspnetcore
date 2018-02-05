@@ -8,6 +8,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
     /// <summary>
     /// Implements a list that uses an array of objects to store the elements.
+    /// 
+    /// This differs from a <see cref="System.Collections.Generic.List{T}"/> in that
+    /// it not only grows as required but also shrinks if cleared with significant
+    /// excess capacity. This makes it useful for component rendering, because
+    /// components can be long-lived and re-render frequently, with the rendered size
+    /// varying dramatically depending on the user's navigation in the app.
     /// </summary>
     internal class ArrayBuilder<T>
     {
