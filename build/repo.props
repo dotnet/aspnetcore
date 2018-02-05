@@ -1,4 +1,5 @@
 <Project>
+  <Import Project="dependencies.props" />
   <PropertyGroup>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <UnsignedShipPackagesDir>$(DepsDirectory)ship\</UnsignedShipPackagesDir>
@@ -7,8 +8,7 @@
     <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
     <GenerateSignRequest>false</GenerateSignRequest>
 
-    <!-- Working directories -->
-    <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
+    <!-- Output -->
     <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
     <PackagesNoShipOutputPath>$(ArtifactsDir)Signed\NoShipPackages\</PackagesNoShipOutputPath>
     <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
@@ -17,7 +17,10 @@
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
     <SignedMPacksOutputPath>$(ArtifactsDir)Signed\MPacks\</SignedMPacksOutputPath>
     <SignedOobArchivePath>$(ArtifactsDir)Signed\OobArchives\</SignedOobArchivePath>
-
+    <FullSymbolsOutputPath>$(ArtifactsDir)FullSymbols\</FullSymbolsOutputPath>
+    
+    <!-- Working directories -->
+    <PoliCheckPath>$(IntermediateDir)policheck\</PoliCheckPath>
     <UnsignedPackagesPath>$(IntermediateDir)UnsignedPackages\</UnsignedPackagesPath>
     <UnsignedNoShipPackagesPath>$(IntermediateDir)UnsignedNoShipPackages\</UnsignedNoShipPackagesPath>
     <UnsignedOobPackagesPath>$(IntermediateDir)UnsignedOobPackages\</UnsignedOobPackagesPath>
