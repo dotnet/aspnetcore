@@ -3,10 +3,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication
@@ -117,6 +119,39 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.NotNull(await provider.GetDefaultSignOutSchemeAsync());
         }
 
+        [Fact]
+        public void SchemeRegistrationIsCaseSensitive()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<Handler>("signin", "whatever");
+                o.AddScheme<Handler>("signin", "whatever");
+            }).BuildServiceProvider();
+
+            var error = Assert.Throws<InvalidOperationException>(() => services.GetRequiredService<IAuthenticationSchemeProvider>());
+
+            Assert.Contains("Scheme already exists: signin", error.Message);
+        }
+
+        [Fact]
+        public async Task LookupUsesProvidedStringComparer()
+        {
+            var services = new ServiceCollection().AddOptions()
+                .AddSingleton<IAuthenticationSchemeProvider, IgnoreCaseSchemeProvider>()
+                .AddAuthenticationCore(o => o.AddScheme<Handler>("signin", "whatever"))
+                .BuildServiceProvider();
+
+            var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+
+            var a = await provider.GetSchemeAsync("signin");
+            var b = await provider.GetSchemeAsync("SignIn");
+            var c = await provider.GetSchemeAsync("SIGNIN");
+
+            Assert.NotNull(a);
+            Assert.Same(a, b);
+            Assert.Same(b, c);
+        }
+
         private class Handler : IAuthenticationHandler
         {
             public Task<AuthenticateResult> AuthenticateAsync()
@@ -158,6 +193,14 @@ namespace Microsoft.AspNetCore.Authentication
             public Task SignOutAsync(AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class IgnoreCaseSchemeProvider : AuthenticationSchemeProvider
+        {
+            public IgnoreCaseSchemeProvider(IOptions<AuthenticationOptions> options)
+                : base(options, new Dictionary<string, AuthenticationScheme>(StringComparer.OrdinalIgnoreCase))
+            {
             }
         }
     }

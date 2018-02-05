@@ -15,12 +15,27 @@ namespace Microsoft.AspNetCore.Authentication
     public class AuthenticationSchemeProvider : IAuthenticationSchemeProvider
     {
         /// <summary>
-        /// Constructor.
+        /// Creates an instance of <see cref="AuthenticationSchemeProvider"/>
+        /// using the specified <paramref name="options"/>,
         /// </summary>
         /// <param name="options">The <see cref="AuthenticationOptions"/> options.</param>
         public AuthenticationSchemeProvider(IOptions<AuthenticationOptions> options)
+            : this(options, new Dictionary<string, AuthenticationScheme>(StringComparer.Ordinal))
+        {
+        }
+
+        /// <summary>
+        /// Creates an instance of <see cref="AuthenticationSchemeProvider"/>
+        /// using the specified <paramref name="options"/> and <paramref name="schemes"/>.
+        /// </summary>
+        /// <param name="options">The <see cref="AuthenticationOptions"/> options.</param>
+        /// <param name="schemes">The dictionary used to store authentication schemes.</param>
+        protected AuthenticationSchemeProvider(IOptions<AuthenticationOptions> options, IDictionary<string, AuthenticationScheme> schemes)
         {
             _options = options.Value;
+
+            _schemes = schemes ?? throw new ArgumentNullException(nameof(schemes));
+            _requestHandlers = new List<AuthenticationScheme>();
 
             foreach (var builder in _options.Schemes)
             {
@@ -32,8 +47,8 @@ namespace Microsoft.AspNetCore.Authentication
         private readonly AuthenticationOptions _options;
         private readonly object _lock = new object();
 
-        private IDictionary<string, AuthenticationScheme> _map = new Dictionary<string, AuthenticationScheme>(StringComparer.Ordinal);
-        private List<AuthenticationScheme> _requestHandlers = new List<AuthenticationScheme>();
+        private readonly IDictionary<string, AuthenticationScheme> _schemes;
+        private readonly List<AuthenticationScheme> _requestHandlers;
 
         private Task<AuthenticationScheme> GetDefaultSchemeAsync()
             => _options.DefaultScheme != null
@@ -101,7 +116,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="name">The name of the authenticationScheme.</param>
         /// <returns>The scheme or null if not found.</returns>
         public virtual Task<AuthenticationScheme> GetSchemeAsync(string name)
-            => Task.FromResult(_map.ContainsKey(name) ? _map[name] : null);
+            => Task.FromResult(_schemes.ContainsKey(name) ? _schemes[name] : null);
 
         /// <summary>
         /// Returns the schemes in priority order for request handling.
@@ -116,13 +131,13 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="scheme">The scheme.</param>
         public virtual void AddScheme(AuthenticationScheme scheme)
         {
-            if (_map.ContainsKey(scheme.Name))
+            if (_schemes.ContainsKey(scheme.Name))
             {
                 throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
             }
             lock (_lock)
             {
-                if (_map.ContainsKey(scheme.Name))
+                if (_schemes.ContainsKey(scheme.Name))
                 {
                     throw new InvalidOperationException("Scheme already exists: " + scheme.Name);
                 }
@@ -130,7 +145,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     _requestHandlers.Add(scheme);
                 }
-                _map[scheme.Name] = scheme;
+                _schemes[scheme.Name] = scheme;
             }
         }
 
@@ -140,22 +155,22 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="name">The name of the authenticationScheme being removed.</param>
         public virtual void RemoveScheme(string name)
         {
-            if (!_map.ContainsKey(name))
+            if (!_schemes.ContainsKey(name))
             {
                 return;
             }
             lock (_lock)
             {
-                if (_map.ContainsKey(name))
+                if (_schemes.ContainsKey(name))
                 {
-                    var scheme = _map[name];
+                    var scheme = _schemes[name];
                     _requestHandlers.Remove(scheme);
-                    _map.Remove(name);
+                    _schemes.Remove(name);
                 }
             }
         }
 
         public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
-            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_map.Values);
+            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_schemes.Values);
     }
 }
