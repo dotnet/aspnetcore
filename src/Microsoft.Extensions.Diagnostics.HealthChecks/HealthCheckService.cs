@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <param name="logger">A <see cref="ILogger{T}"/> that can be used to log events that occur during health check operations.</param>
         public HealthCheckService(IEnumerable<IHealthCheck> healthChecks, ILogger<HealthCheckService> logger)
         {
-            healthChecks = healthChecks ?? throw new ArgumentNullException(nameof(logger));
+            healthChecks = healthChecks ?? throw new ArgumentNullException(nameof(healthChecks));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             // Scan the list for duplicate names to provide a better error if there are duplicates.
