@@ -6,4 +6,14 @@
   <UsingTask TaskName="RepoTasks.RenameEncodedFolders" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifySignedSharedFxBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyPoliCheckResults" AssemblyFile="$(_RepoTaskAssembly)" />
+
+  <PropertyGroup>
+    <NuGetPackagesPath>$(NUGET_PACKAGES)</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(USERPROFILE)' != '' ">$(USERPROFILE)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath Condition=" '$(NuGetPackagesPath)' == '' AND '$(HOME)' != '' ">$(HOME)\.nuget\packages\</NuGetPackagesPath>
+    <NuGetPackagesPath>$([MSBuild]::NormalizeDirectory($(NuGetPackagesPath)))</NuGetPackagesPath>
+    
+    <Pdb2PdbToolPath>$(NuGetPackagesPath)microsoft.diasymreader.pdb2pdb\$(MicrosoftDiaSymReaderPdb2PdbPackageVersion)\tools\Pdb2Pdb.exe</Pdb2PdbToolPath>
+  </PropertyGroup>
+
 </Project>
