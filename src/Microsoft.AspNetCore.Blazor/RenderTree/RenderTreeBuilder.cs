@@ -48,7 +48,19 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         public void CloseElement()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
-            _entries.Buffer[indexOfEntryBeingClosed].CloseElement(_entries.Count - 1);
+            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
+            entry = entry.WithElementDescendantsEndIndex(_entries.Count - 1);
+        }
+
+        /// <summary>
+        /// Marks a previously appended component frame as closed. Calls to this method
+        /// must be balanced with calls to <see cref="OpenComponentElement{TComponent}"/>.
+        /// </summary>
+        public void CloseComponent()
+        {
+            var indexOfEntryBeingClosed = _openElementIndices.Pop();
+            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
+            entry = entry.WithComponentDescendantsEndIndex(_entries.Count - 1);
         }
 
         /// <summary>
@@ -57,7 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text frame.</param>
         public void AddText(int sequence, string textContent)
-            => Append(RenderTreeFrame.Text(sequence, textContent));
+            => Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
 
         /// <summary>
         /// Appends a frame representing text content.
@@ -133,8 +145,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             }
 
             AssertCanAddAttribute();
-            frame.SetSequence(sequence);
-            Append(frame);
+            Append(frame.WithAttributeSequence(sequence));
         }
 
         /// <summary>

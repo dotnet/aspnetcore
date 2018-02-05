@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.AddText(0, "Hello");
                 builder.OpenComponentElement<MessageComponent>(1);
                 builder.AddAttribute(2, nameof(MessageComponent.Message), "Nested component output");
-                builder.CloseElement();
+                builder.CloseComponent();
             });
 
             // Act/Assert
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var parentComponent = new TestComponent(builder =>
             {
                 builder.OpenComponentElement<MessageComponent>(0);
-                builder.CloseElement();
+                builder.CloseComponent();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderNewBatch(parentComponentId);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var parentComponent = new TestComponent(builder =>
             {
                 builder.OpenComponentElement<EventComponent>(0);
-                builder.CloseElement();
+                builder.CloseComponent();
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderNewBatch(parentComponentId);
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 builder.AddText(0, message);
                 builder.OpenComponentElement<MessageComponent>(1);
-                builder.CloseElement();
+                builder.CloseComponent();
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.AddAttribute(2, nameof(FakeComponent.IntProperty), firstRender ? 123 : 256);
                 builder.AddAttribute(3, nameof(FakeComponent.ObjectProperty), objectThatWillNotChange);
                 builder.AddAttribute(4, nameof(FakeComponent.StringProperty), firstRender ? "String that will change" : "String that did change");
-                builder.CloseElement();
+                builder.CloseComponent();
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 builder.OpenComponentElement<MessageComponent>(1);
                 builder.AddAttribute(2, nameof(MessageComponent.Message), firstRender ? "first" : "second");
-                builder.CloseElement();
+                builder.CloseComponent();
             });
 
             var rootComponentId = renderer.AssignComponentId(component);
@@ -414,12 +414,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 if (firstRender)
                 {
                     builder.OpenComponentElement<FakeComponent>(100);
-                    builder.CloseElement();
+                    builder.CloseComponent();
                     builder.OpenComponentElement<FakeComponent>(150);
-                    builder.CloseElement();
+                    builder.CloseComponent();
                 }
                 builder.OpenComponentElement<FakeComponent>(200);
-                builder.CloseElement();
+                builder.CloseComponent();
                 builder.CloseElement();
             });
 

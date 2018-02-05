@@ -586,9 +586,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(10, "text1");                       //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
             newTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
-            newTree.CloseElement();                             //       </FakeComponent>
+            newTree.CloseComponent();                           //       </FakeComponent>
             newTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
-            newTree.CloseElement();                             //       </FakeComponent2>
+            newTree.CloseComponent();                           //       </FakeComponent2>
             newTree.CloseElement();                             //     </container>
 
             // Act
@@ -645,7 +645,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddAttribute(1, nameof(FakeComponent.IntProperty), 123);
             newTree.AddAttribute(2, nameof(FakeComponent.StringProperty), "some string");
             newTree.AddAttribute(3, nameof(FakeComponent.ObjectProperty), testObject);
-            newTree.CloseElement();
+            newTree.CloseComponent();
 
             // Act
             var renderBatch = GetRenderedBatch();
@@ -669,7 +669,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var testObject = new object();
             newTree.OpenComponentElement<FakeComponent>(0);
             newTree.AddAttribute(1, "SomeUnknownProperty", 123);
-            newTree.CloseElement();
+            newTree.CloseComponent();
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -686,7 +686,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var testObject = new object();
             newTree.OpenComponentElement<FakeComponent>(0);
             newTree.AddAttribute(1, nameof(FakeComponent.ReadonlyProperty), 123);
-            newTree.CloseElement();
+            newTree.CloseComponent();
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -704,16 +704,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
             oldTree.AddText(10, "text1");                       //  0: text1
             oldTree.OpenElement(11, "container");               //  1: <container>
             oldTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
-            oldTree.CloseElement();                             //       </FakeComponent>
+            oldTree.CloseComponent();                           //       </FakeComponent>
             oldTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
-            oldTree.CloseElement();                             //       </FakeComponent2>
-            oldTree.CloseElement();                             //     </container
+            oldTree.CloseComponent();                           //       </FakeComponent2>
+            oldTree.CloseElement();                             //     </container>
             newTree.AddText(10, "text1");                       //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
             newTree.OpenComponentElement<FakeComponent>(12);    //  2:   <FakeComponent>
-            newTree.CloseElement();                             //       </FakeComponent>
+            newTree.CloseComponent();                           //       </FakeComponent>
             newTree.OpenComponentElement<FakeComponent2>(13);   //  3:   <FakeComponent2>
-            newTree.CloseElement();                             //       </FakeComponent2>
+            newTree.CloseComponent();                           //       </FakeComponent2>
             newTree.CloseElement();                             //     </container
 
             diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
@@ -741,11 +741,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
             oldTree.OpenComponentElement<FakeComponent>(12);
             oldTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String will change");
             oldTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
-            oldTree.CloseElement();
+            oldTree.CloseComponent();
             newTree.OpenComponentElement<FakeComponent>(12);
             newTree.AddAttribute(13, nameof(FakeComponent.StringProperty), "String did change");
             newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
-            newTree.CloseElement();
+            newTree.CloseComponent();
 
             diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
             var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
@@ -767,7 +767,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange
             newTree.OpenComponentElement<HandlePropertiesChangedComponent>(0);
-            newTree.CloseElement();
+            newTree.CloseComponent();
 
             // Act
             var batch = GetRenderedBatch();
@@ -786,13 +786,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var newTree2 = new RenderTreeBuilder(renderer);
             oldTree.OpenComponentElement<HandlePropertiesChangedComponent>(0);
             oldTree.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
-            oldTree.CloseElement();
+            oldTree.CloseComponent();
             newTree1.OpenComponentElement<HandlePropertiesChangedComponent>(0);
             newTree1.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
-            newTree1.CloseElement();
+            newTree1.CloseComponent();
             newTree2.OpenComponentElement<HandlePropertiesChangedComponent>(0);
             newTree2.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 456);
-            newTree2.CloseElement();
+            newTree2.CloseComponent();
 
             // Act/Assert 0: Initial render
             var batch0 = GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree);
@@ -820,13 +820,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange
             oldTree.OpenComponentElement<DisposableComponent>(10);       // <DisposableComponent>
-            oldTree.CloseElement();                                      // </DisposableComponent>
+            oldTree.CloseComponent();                                    // </DisposableComponent>
             oldTree.OpenComponentElement<NonDisposableComponent>(20);    // <NonDisposableComponent>
-            oldTree.CloseElement();                                      // </NonDisposableComponent>
+            oldTree.CloseComponent();                                    // </NonDisposableComponent>
             oldTree.OpenComponentElement<DisposableComponent>(30);       // <DisposableComponent>
-            oldTree.CloseElement();                                      // </DisposableComponent>
+            oldTree.CloseComponent();                                    // </DisposableComponent>
             newTree.OpenComponentElement<DisposableComponent>(30);       // <DisposableComponent>
-            newTree.CloseElement();                                      // </DisposableComponent>
+            newTree.CloseComponent();                                    // </DisposableComponent>
 
             diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
             var disposableComponent1 = (DisposableComponent)oldTree.GetFrames().Array[0].Component;

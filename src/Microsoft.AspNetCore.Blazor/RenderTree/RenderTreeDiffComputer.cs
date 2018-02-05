@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             var hasSetAnyProperty = false;
 
             // Preserve the actual componentInstance
-            newComponentFrame.SetChildComponentInstance(componentId, componentInstance);
+            newComponentFrame = newComponentFrame.WithComponentInstance(componentId, componentInstance);
 
             // Now locate any added/changed/removed properties
             var oldStartIndex = oldComponentIndex + 1;

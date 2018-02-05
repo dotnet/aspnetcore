@@ -221,6 +221,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                     case HtmlTokenType.EndTag:
                         {
                             var nextTag = nextToken.AsTag();
+                            var isComponent = false;
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
                                 var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
@@ -230,6 +231,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                                         .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponentElement)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
+                                    isComponent = true;
                                 }
                                 else
                                 {
@@ -274,8 +276,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                                 || nextTag.IsSelfClosing
                                 || htmlVoidElementsLookup.Contains(nextTag.Data))
                             {
+                                var closeMethodName = isComponent
+                                    ? nameof(RenderTreeBuilder.CloseComponent)
+                                    : nameof(RenderTreeBuilder.CloseElement);
                                 codeWriter
-                                    .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.CloseElement)}")
+                                    .WriteStartMethodInvocation($"{builderVarName}.{closeMethodName}")
                                     .WriteEndMethodInvocation();
                             }
                             break;

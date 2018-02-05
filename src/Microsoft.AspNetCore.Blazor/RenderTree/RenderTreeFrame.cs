@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     /// Represents an entry in a tree of user interface (UI) items.
     /// </summary>
     [StructLayout(LayoutKind.Explicit)]
-    public struct RenderTreeFrame
+    public readonly struct RenderTreeFrame
     {
         // Note that the struct layout has to be valid in both 32-bit and 64-bit runtime platforms,
         // which means that all reference-type fields need to take up 8 bytes (except for the last
@@ -25,25 +25,25 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         // 8 bytes here.
 
         // Common
-        [FieldOffset(0)] int _sequence;
-        [FieldOffset(4)] RenderTreeFrameType _frameType;
+        [FieldOffset(0)] readonly int _sequence;
+        [FieldOffset(4)] readonly RenderTreeFrameType _frameType;
 
         // RenderTreeFrameType.Element
-        [FieldOffset(8)] private int _elementDescendantsEndIndex;
-        [FieldOffset(16)] string _elementName;
+        [FieldOffset(8)] readonly int _elementDescendantsEndIndex;
+        [FieldOffset(16)] readonly string _elementName;
 
         // RenderTreeFrameType.Text
-        [FieldOffset(16)] private string _textContent;
+        [FieldOffset(16)] readonly string _textContent;
 
         // RenderTreeFrameType.Attribute
-        [FieldOffset(16)] private string _attributeName;
-        [FieldOffset(24)] private object _attributeValue;
+        [FieldOffset(16)] readonly string _attributeName;
+        [FieldOffset(24)] readonly object _attributeValue;
 
         // RenderTreeFrameType.Component
-        [FieldOffset(8)] private int _componentDescendantsEndIndex;
-        [FieldOffset(12)] private int _componentId;
-        [FieldOffset(16)] private Type _componentType;
-        [FieldOffset(24)] private IComponent _component;
+        [FieldOffset(8)] readonly int _componentDescendantsEndIndex;
+        [FieldOffset(12)] readonly int _componentId;
+        [FieldOffset(16)] readonly Type _componentType;
+        [FieldOffset(24)] readonly IComponent _component;
 
         /// <summary>
         /// Gets the sequence number of the frame. Sequence numbers indicate the relative source
@@ -106,68 +106,73 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         public IComponent Component => _component;
 
-        internal static RenderTreeFrame Element(int sequence, string elementName) => new RenderTreeFrame
+        private RenderTreeFrame(int sequence, string elementName, int descendantsEndIndex)
+            : this()
         {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Element,
-            _elementName = elementName,
-        };
-
-        internal static RenderTreeFrame Text(int sequence, string textContent) => new RenderTreeFrame
-        {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Text,
-            _textContent = textContent ?? string.Empty,
-        };
-
-        internal static RenderTreeFrame Attribute(int sequence, string name, string value) => new RenderTreeFrame
-        {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Attribute,
-            _attributeName = name,
-            _attributeValue = value
-        };
-
-        internal static RenderTreeFrame Attribute(int sequence, string name, UIEventHandler value) => new RenderTreeFrame
-        {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Attribute,
-            _attributeName = name,
-            _attributeValue = value
-        };
-
-        internal static RenderTreeFrame Attribute(int sequence, string name, object value) => new RenderTreeFrame
-        {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Attribute,
-            _attributeName = name,
-            _attributeValue = value
-        };
-
-        internal static RenderTreeFrame ChildComponent<T>(int sequence) where T : IComponent => new RenderTreeFrame
-        {
-            _sequence = sequence,
-            _frameType = RenderTreeFrameType.Component,
-            _componentType = typeof(T)
-        };
-
-        internal void CloseElement(int descendantsEndIndex)
-        {
+            _frameType = RenderTreeFrameType.Element;
+            _sequence = sequence;
+            _elementName = elementName;
             _elementDescendantsEndIndex = descendantsEndIndex;
         }
 
-        internal void SetChildComponentInstance(int componentId, IComponent component)
+        private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex)
+            : this()
+        {
+            _frameType = RenderTreeFrameType.Component;
+            _sequence = sequence;
+            _componentType = componentType;
+            _componentDescendantsEndIndex = descendantsEndIndex;
+        }
+
+        private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex, int componentId, IComponent component)
+            : this(sequence, componentType, descendantsEndIndex)
         {
             _componentId = componentId;
             _component = component;
         }
 
-        internal void SetSequence(int sequence)
+        private RenderTreeFrame(int sequence, string textContent)
+            : this()
         {
-            // This is only used when appending attribute frames, because helpers such as @onclick
-            // need to construct the attribute frame in a context where they don't know the sequence
-            // number, so we assign it later
+            _frameType = RenderTreeFrameType.Text;
             _sequence = sequence;
+            _textContent = textContent;
         }
+
+        private RenderTreeFrame(int sequence, string attributeName, object attributeValue)
+            : this()
+        {
+            _frameType = RenderTreeFrameType.Attribute;
+            _sequence = sequence;
+            _attributeName = attributeName;
+            _attributeValue = attributeValue;
+        }
+
+        internal static RenderTreeFrame Element(int sequence, string elementName)
+            => new RenderTreeFrame(sequence, elementName: elementName, descendantsEndIndex: 0);
+
+        internal static RenderTreeFrame Text(int sequence, string textContent)
+            => new RenderTreeFrame(sequence, textContent: textContent);
+
+        internal static RenderTreeFrame Attribute(int sequence, string name, UIEventHandler value)
+             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);
+
+        internal static RenderTreeFrame Attribute(int sequence, string name, object value)
+            => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);
+
+        internal static RenderTreeFrame ChildComponent<T>(int sequence) where T : IComponent
+            => new RenderTreeFrame(sequence, typeof(T), 0);
+
+        internal RenderTreeFrame WithElementDescendantsEndIndex(int descendantsEndIndex)
+            => new RenderTreeFrame(_sequence, elementName: _elementName, descendantsEndIndex: descendantsEndIndex);
+
+        internal RenderTreeFrame WithComponentDescendantsEndIndex(int descendantsEndIndex)
+            => new RenderTreeFrame(_sequence, componentType: _componentType, descendantsEndIndex: descendantsEndIndex);
+
+        internal RenderTreeFrame WithAttributeSequence(int sequence)
+            => new RenderTreeFrame(sequence, attributeName: _attributeName, attributeValue: _attributeValue);
+
+        internal RenderTreeFrame WithComponentInstance(int componentId, IComponent component)
+            => new RenderTreeFrame(_sequence, _componentType, _componentDescendantsEndIndex, componentId, component);
     }
 }

@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             var newComponent = (IComponent)Activator.CreateInstance(frame.ComponentType);
             var newComponentId = AssignComponentId(newComponent);
-            frame.SetChildComponentInstance(newComponentId, newComponent);
+            frame = frame.WithComponentInstance(newComponentId, newComponent);
         }
 
         private ComponentState GetRequiredComponentState(int componentId)
