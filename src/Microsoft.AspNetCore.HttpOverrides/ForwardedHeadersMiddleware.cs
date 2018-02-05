@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
@@ -22,6 +24,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private readonly ForwardedHeadersOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
+        private bool _allowAllHosts;
+        private IList<StringSegment> _allowedHosts;
 
         static ForwardedHeadersMiddleware()
         {
@@ -85,6 +89,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
             _next = next;
+
+            PreProcessHosts();
         }
 
         private static void EnsureOptionNotNullorWhitespace(string value, string propertyName)
@@ -93,6 +99,43 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 throw new ArgumentException($"options.{propertyName} is required", "options");
             }
+        }
+
+        private void PreProcessHosts()
+        {
+            if (_options.AllowedHosts == null || _options.AllowedHosts.Count == 0)
+            {
+                _allowAllHosts = true;
+                return;
+            }
+
+            var allowedHosts = new List<StringSegment>();
+            foreach (var entry in _options.AllowedHosts)
+            {
+                // Punycode. Http.Sys requires you to register Unicode hosts, but the headers contain punycode.
+                var host = new HostString(entry).ToUriComponent();
+
+                if (IsTopLevelWildcard(host))
+                {
+                    // Disable filtering
+                    _allowAllHosts = true;
+                    return;
+                }
+
+                if (!allowedHosts.Contains(host, StringSegmentComparer.OrdinalIgnoreCase))
+                {
+                    allowedHosts.Add(host);
+                }
+            }
+
+            _allowedHosts = allowedHosts;
+        }
+
+        private bool IsTopLevelWildcard(string host)
+        {
+            return (string.Equals("*", host, StringComparison.Ordinal) // HttpSys wildcard
+                           || string.Equals("[::]", host, StringComparison.Ordinal) // Kestrel wildcard, IPv6 Any
+                           || string.Equals("0.0.0.0", host, StringComparison.Ordinal)); // IPv4 Any
         }
 
         public Task Invoke(HttpContext context)
@@ -231,7 +274,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
                 if (checkHost)
                 {
-                    if (!string.IsNullOrEmpty(set.Host) && TryValidateHost(set.Host))
+                    if (!string.IsNullOrEmpty(set.Host) && TryValidateHost(set.Host)
+                        && (_allowAllHosts || HostString.MatchesAny(set.Host, _allowedHosts)))
                     {
                         applyChanges = true;
                         currentValues.Host = set.Host;

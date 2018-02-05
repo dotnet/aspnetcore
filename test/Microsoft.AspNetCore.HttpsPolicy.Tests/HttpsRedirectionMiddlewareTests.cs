@@ -22,9 +22,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetOptions_DefaultsSetCorrectly()
         {
             var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                })
                 .Configure(app =>
                 {
                     app.UseHttpsRedirection();
@@ -34,9 +31,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     });
                 });
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            var server = new TestServer(builder);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -75,9 +70,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     });
                 });
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            var server = new TestServer(builder);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -115,9 +108,7 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
                     });
                 });
 
-            var featureCollection = new FeatureCollection();
-            featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-            var server = new TestServer(builder, featureCollection);
+            var server = new TestServer(builder);
             var client = server.CreateClient();
 
             var request = new HttpRequestMessage(HttpMethod.Get, "");
@@ -182,12 +173,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetServerAddressesFeature_SingleHttpsAddress_Success()
         {
             var builder = new WebHostBuilder()
-               .ConfigureServices(services =>
-               {
-                   services.AddHttpsRedirection(options =>
-                   {
-                   });
-               })
                .Configure(app =>
                {
                    app.UseHttpsRedirection();
@@ -215,12 +200,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetServerAddressesFeature_MultipleHttpsAddresses_ThrowInMiddleware()
         {
             var builder = new WebHostBuilder()
-               .ConfigureServices(services =>
-               {
-                   services.AddHttpsRedirection(options =>
-                   {
-                   });
-               })
                .Configure(app =>
                {
                    app.UseHttpsRedirection();
@@ -248,12 +227,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetServerAddressesFeature_MultipleHttpsAddressesWithSamePort_Success()
         {
             var builder = new WebHostBuilder()
-               .ConfigureServices(services =>
-               {
-                   services.AddHttpsRedirection(options =>
-                   {
-                   });
-               })
                .Configure(app =>
                {
                    app.UseHttpsRedirection();

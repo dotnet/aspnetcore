@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26817.0
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "src\Microsoft.AspNetCore.HttpOverrides\Microsoft.AspNetCore.HttpOverrides.csproj", "{517308C3-B477-4B01-B461-CAB9C10B6928}"
 EndProject
@@ -62,6 +62,19 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpsPolicySample", "samples\HttpsPolicySample\HttpsPolicySample.csproj", "{AC424AEE-4883-49C6-945F-2FC916B8CA1C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpsPolicy.Tests", "test\Microsoft.AspNetCore.HttpsPolicy.Tests\Microsoft.AspNetCore.HttpsPolicy.Tests.csproj", "{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HostFilteringSample", "samples\HostFilteringSample\HostFilteringSample.csproj", "{368B00A2-992A-4B0E-9085-A8136A22922D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{5CEA6F31-A829-4A02-8CD5-EC3DDD4CC1EA}"
+	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering.Tests", "test\Microsoft.AspNetCore.HostFiltering.Tests\Microsoft.AspNetCore.HostFiltering.Tests.csproj", "{4BC947ED-13B8-4BE6-82A4-96A48D86980B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HostFiltering", "src\Microsoft.AspNetCore.HostFiltering\Microsoft.AspNetCore.HostFiltering.csproj", "{762F7276-C916-4111-A6C0-41668ABB3823}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -129,6 +142,18 @@ Global
 		{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{368B00A2-992A-4B0E-9085-A8136A22922D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{368B00A2-992A-4B0E-9085-A8136A22922D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{368B00A2-992A-4B0E-9085-A8136A22922D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{368B00A2-992A-4B0E-9085-A8136A22922D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BC947ED-13B8-4BE6-82A4-96A48D86980B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BC947ED-13B8-4BE6-82A4-96A48D86980B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BC947ED-13B8-4BE6-82A4-96A48D86980B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BC947ED-13B8-4BE6-82A4-96A48D86980B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{762F7276-C916-4111-A6C0-41668ABB3823}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{762F7276-C916-4111-A6C0-41668ABB3823}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{762F7276-C916-4111-A6C0-41668ABB3823}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{762F7276-C916-4111-A6C0-41668ABB3823}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -149,6 +174,10 @@ Global
 		{4D39C29B-4EC8-497C-B411-922DA494D71B} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
 		{AC424AEE-4883-49C6-945F-2FC916B8CA1C} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
 		{1C67B0F1-6E70-449E-A2F1-98B9D5C576CE} = {8437B0F3-3894-4828-A945-A9187F37631D}
+		{368B00A2-992A-4B0E-9085-A8136A22922D} = {9587FE9F-5A17-42C4-8021-E87F59CECB98}
+		{5CEA6F31-A829-4A02-8CD5-EC3DDD4CC1EA} = {59A9B64C-E9BE-409E-89A2-58D72E2918F5}
+		{4BC947ED-13B8-4BE6-82A4-96A48D86980B} = {8437B0F3-3894-4828-A945-A9187F37631D}
+		{762F7276-C916-4111-A6C0-41668ABB3823} = {A5076D28-FA7E-4606-9410-FEDD0D603527}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4518E9CE-3680-4E05-9259-B64EA7807158}

@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.HttpOverrides
@@ -388,6 +390,119 @@ namespace Microsoft.AspNetCore.HttpOverrides
             await server.SendAsync(c =>
             {
                 c.Request.Headers["X-Forwarded-Host"] = host;
+            });
+            Assert.True(assertsExecuted);
+        }
+
+        [Theory]
+        [InlineData("localHost", "localhost")]
+        [InlineData("localHost", "*")] // Any - Used by HttpSys
+        [InlineData("localHost", "[::]")] // IPv6 Any - This is what Kestrel reports when binding to *
+        [InlineData("localHost", "0.0.0.0")] // IPv4 Any
+        [InlineData("localhost:9090", "example.com;localHost")]
+        [InlineData("example.com:443", "example.com;localhost")]
+        [InlineData("localHost:80", "localhost;")]
+        [InlineData("foo.eXample.com:443", "*.exampLe.com")]
+        [InlineData("f.eXample.com:443", "*.exampLe.com")]
+        [InlineData("127.0.0.1", "127.0.0.1")]
+        [InlineData("127.0.0.1:443", "127.0.0.1")]
+        [InlineData("xn--c1yn36f:443", "xn--c1yn36f")]
+        [InlineData("xn--c1yn36f:443", "點看")]
+        [InlineData("[::ABC]", "[::aBc]")]
+        [InlineData("[::1]:80", "[::1]")]
+        public async Task XForwardedHostAllowsSpecifiedHost(string host, string allowedHost)
+        {
+            bool assertsExecuted = false;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                        AllowedHosts = allowedHost.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal(host, context.Request.Headers[HeaderNames.Host]);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+            var response = await server.SendAsync(ctx =>
+            {
+                ctx.Request.Headers["X-forwarded-Host"] = host;
+            });
+            Assert.True(assertsExecuted);
+        }
+
+        [Theory]
+        [InlineData("example.com", "localhost")]
+        [InlineData("localhost:9090", "example.com;")]
+        [InlineData(";", "example.com;localhost")]
+        [InlineData(";:80", "example.com;localhost")]
+        [InlineData(":80", "localhost")]
+        [InlineData(":", "localhost")]
+        [InlineData("example.com:443", "*.example.com")]
+        [InlineData(".example.com:443", "*.example.com")]
+        [InlineData("foo.com:443", "*.example.com")]
+        [InlineData("foo.example.com.bar:443", "*.example.com")]
+        [InlineData(".com:443", "*.com")]
+        // Unicode in the host shouldn't be allowed without punycode anyways. This match fails because the middleware converts
+        // its input to punycode.
+        [InlineData("點看", "點看")]
+        [InlineData("[::1", "[::1]")]
+        [InlineData("[::1:80", "[::1]")]
+        public async Task XForwardedHostFailsMismatchedHosts(string host, string allowedHost)
+        {
+            bool assertsExecuted = false;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                        AllowedHosts = new[] { allowedHost }
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.NotEqual<string>(host, context.Request.Headers[HeaderNames.Host]);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+            var response = await server.SendAsync(ctx =>
+            {
+                ctx.Request.Headers["X-forwarded-Host"] = host;
+            });
+            Assert.True(assertsExecuted);
+        }
+
+        [Fact]
+        public async Task XForwardedHostStopsAtFirstUnspecifiedHost()
+        {
+            bool assertsExecuted = false;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseForwardedHeaders(new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = ForwardedHeaders.XForwardedHost,
+                        ForwardLimit = 10,
+                        AllowedHosts = new[] { "bar.com", "*.foo.com" }
+                    });
+                    app.Run(context =>
+                    {
+                        Assert.Equal("bar.foo.com:432", context.Request.Headers[HeaderNames.Host]);
+                        assertsExecuted = true;
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+            var response = await server.SendAsync(ctx =>
+            {
+                ctx.Request.Headers["X-forwarded-Host"] = "stuff:523, bar.foo.com:432, bar.com:80";
             });
             Assert.True(assertsExecuted);
         }

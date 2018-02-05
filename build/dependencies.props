@@ -14,6 +14,7 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30281</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsConfigurationBinderPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview2-30281</MicrosoftExtensionsLoggingConsolePackageVersion>
