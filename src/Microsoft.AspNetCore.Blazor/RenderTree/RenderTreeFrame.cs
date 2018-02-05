@@ -24,128 +24,134 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         // if running as a web worker) so for now to keep things simple, treat reference types as
         // 8 bytes here.
 
+        // --------------------------------------------------------------------------------
         // Common
-        [FieldOffset(0)] readonly int _sequence;
-        [FieldOffset(4)] readonly RenderTreeFrameType _frameType;
-
-        // RenderTreeFrameType.Element
-        [FieldOffset(8)] readonly int _elementDescendantsEndIndex;
-        [FieldOffset(16)] readonly string _elementName;
-
-        // RenderTreeFrameType.Text
-        [FieldOffset(16)] readonly string _textContent;
-
-        // RenderTreeFrameType.Attribute
-        [FieldOffset(16)] readonly string _attributeName;
-        [FieldOffset(24)] readonly object _attributeValue;
-
-        // RenderTreeFrameType.Component
-        [FieldOffset(8)] readonly int _componentDescendantsEndIndex;
-        [FieldOffset(12)] readonly int _componentId;
-        [FieldOffset(16)] readonly Type _componentType;
-        [FieldOffset(24)] readonly IComponent _component;
+        // --------------------------------------------------------------------------------
 
         /// <summary>
         /// Gets the sequence number of the frame. Sequence numbers indicate the relative source
         /// positions of the instructions that inserted the frames. Sequence numbers are only
         /// comparable within the same sequence (typically, the same source method).
         /// </summary>
-        public int Sequence => _sequence;
+        [FieldOffset(0)] public readonly int Sequence;
 
         /// <summary>
         /// Describes the type of this frame.
         /// </summary>
-        public RenderTreeFrameType FrameType => _frameType;
+        [FieldOffset(4)] public readonly RenderTreeFrameType FrameType;
+
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Element
+        // --------------------------------------------------------------------------------
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
+        /// gets the index of the final descendant frame in the tree. The value is
+        /// zero if the frame has not yet been closed.
+        /// </summary>
+        [FieldOffset(8)] public readonly int ElementDescendantsEndIndex;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
         /// gets a name representing the type of the element. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public string ElementName => _elementName;
+        [FieldOffset(16)] public readonly string ElementName;
 
-        /// <summary>
-        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
-        /// gets the index of the final descendant frame in the tree. The value is
-        /// zero if the frame is of a different type, or if it has not yet been closed.
-        /// </summary>
-        public int ElementDescendantsEndIndex => _elementDescendantsEndIndex;
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Text
+        // --------------------------------------------------------------------------------
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Text"/>,
         /// gets the content of the text frame. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public string TextContent => _textContent;
+        [FieldOffset(16)] public readonly string TextContent;
+
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Attribute
+        // --------------------------------------------------------------------------------
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public string AttributeName => _attributeName;
+        [FieldOffset(16)] public readonly string AttributeName;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public object AttributeValue => _attributeValue;
+        [FieldOffset(24)] public readonly object AttributeValue;
+
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Component
+        // --------------------------------------------------------------------------------
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
-        /// gets the type of the child component.
+        /// gets the index of the final descendant frame in the tree. The value is
+        /// zero if the frame has not yet been closed.
         /// </summary>
-        public Type ComponentType => _componentType;
+        [FieldOffset(8)] public readonly int ComponentDescendantsEndIndex;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component instance identifier.
         /// </summary>
-        public int ComponentId => _componentId;
+        [FieldOffset(12)] public readonly int ComponentId;
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
+        /// gets the type of the child component.
+        /// </summary>
+        [FieldOffset(16)] public readonly Type ComponentType;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component instance. Otherwise, the value is <see langword="null"/>.
         /// </summary>
-        public IComponent Component => _component;
+        [FieldOffset(24)] public readonly IComponent Component;
 
         private RenderTreeFrame(int sequence, string elementName, int descendantsEndIndex)
             : this()
         {
-            _frameType = RenderTreeFrameType.Element;
-            _sequence = sequence;
-            _elementName = elementName;
-            _elementDescendantsEndIndex = descendantsEndIndex;
+            FrameType = RenderTreeFrameType.Element;
+            Sequence = sequence;
+            ElementName = elementName;
+            ElementDescendantsEndIndex = descendantsEndIndex;
         }
 
         private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex)
             : this()
         {
-            _frameType = RenderTreeFrameType.Component;
-            _sequence = sequence;
-            _componentType = componentType;
-            _componentDescendantsEndIndex = descendantsEndIndex;
+            FrameType = RenderTreeFrameType.Component;
+            Sequence = sequence;
+            ComponentType = componentType;
+            ComponentDescendantsEndIndex = descendantsEndIndex;
         }
 
         private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex, int componentId, IComponent component)
             : this(sequence, componentType, descendantsEndIndex)
         {
-            _componentId = componentId;
-            _component = component;
+            ComponentId = componentId;
+            Component = component;
         }
 
         private RenderTreeFrame(int sequence, string textContent)
             : this()
         {
-            _frameType = RenderTreeFrameType.Text;
-            _sequence = sequence;
-            _textContent = textContent;
+            FrameType = RenderTreeFrameType.Text;
+            Sequence = sequence;
+            TextContent = textContent;
         }
 
         private RenderTreeFrame(int sequence, string attributeName, object attributeValue)
             : this()
         {
-            _frameType = RenderTreeFrameType.Attribute;
-            _sequence = sequence;
-            _attributeName = attributeName;
-            _attributeValue = attributeValue;
+            FrameType = RenderTreeFrameType.Attribute;
+            Sequence = sequence;
+            AttributeName = attributeName;
+            AttributeValue = attributeValue;
         }
 
         internal static RenderTreeFrame Element(int sequence, string elementName)
@@ -164,15 +170,15 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             => new RenderTreeFrame(sequence, typeof(T), 0);
 
         internal RenderTreeFrame WithElementDescendantsEndIndex(int descendantsEndIndex)
-            => new RenderTreeFrame(_sequence, elementName: _elementName, descendantsEndIndex: descendantsEndIndex);
+            => new RenderTreeFrame(Sequence, elementName: ElementName, descendantsEndIndex: descendantsEndIndex);
 
         internal RenderTreeFrame WithComponentDescendantsEndIndex(int descendantsEndIndex)
-            => new RenderTreeFrame(_sequence, componentType: _componentType, descendantsEndIndex: descendantsEndIndex);
+            => new RenderTreeFrame(Sequence, componentType: ComponentType, descendantsEndIndex: descendantsEndIndex);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
-            => new RenderTreeFrame(sequence, attributeName: _attributeName, attributeValue: _attributeValue);
+            => new RenderTreeFrame(sequence, attributeName: AttributeName, attributeValue: AttributeValue);
 
         internal RenderTreeFrame WithComponentInstance(int componentId, IComponent component)
-            => new RenderTreeFrame(_sequence, _componentType, _componentDescendantsEndIndex, componentId, component);
+            => new RenderTreeFrame(Sequence, ComponentType, ComponentDescendantsEndIndex, componentId, component);
     }
 }
