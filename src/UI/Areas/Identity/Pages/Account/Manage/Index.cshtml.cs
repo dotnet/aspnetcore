@@ -110,6 +110,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
                 }
             }
 
+            await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
         }
