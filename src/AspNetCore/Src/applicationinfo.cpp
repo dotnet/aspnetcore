@@ -161,7 +161,9 @@ APPLICATION_INFO::EnsureApplicationCreated()
     BOOL                fLocked = FALSE;
     APPLICATION*        pApplication = NULL;
     STACK_STRU(struFileName, 300);  // >MAX_PATH
-    STRU                hostFxrDllLocation;
+    STRU                struHostFxrDllLocation;
+    PWSTR*              pwzArgv;
+    DWORD               dwArgCount;
 
     if (m_pApplication != NULL)
     {
@@ -170,10 +172,24 @@ APPLICATION_INFO::EnsureApplicationCreated()
 
     if ( m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS )
     {
-        if ( FAILED( hr = HOSTFXR_UTILITY::GetHostFxrParameters( m_pConfiguration ) ) )
+        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
+            g_hEventLog,
+            m_pConfiguration->QueryProcessPath()->QueryStr(),
+            m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
+            m_pConfiguration->QueryArguments()->QueryStr(),
+            &struHostFxrDllLocation,
+            &dwArgCount,
+            &pwzArgv)))
         {
             goto Finished;
         }
+
+        if (FAILED(hr = m_pConfiguration->SetHostFxrFullPath(struHostFxrDllLocation.QueryStr())))
+        {
+            goto Finished;
+        }
+
+        m_pConfiguration->SetHostFxrArguments(dwArgCount, pwzArgv);
     }
 
     hr = FindRequestHandlerAssembly();

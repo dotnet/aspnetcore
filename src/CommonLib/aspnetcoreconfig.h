@@ -253,7 +253,7 @@ public:
     VOID
     SetHostFxrArguments(
         DWORD dwArgc,
-        PCWSTR* ppStrArguments
+        PWSTR* ppStrArguments
     )
     {
         if (m_ppStrArguments != NULL)
@@ -319,6 +319,6 @@ private:
     APP_HOSTING_MODEL      m_hostingModel;
     ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;
-    PCWSTR*                m_ppStrArguments;
+    PWSTR*                m_ppStrArguments;
     DWORD                  m_dwArgc;
 };

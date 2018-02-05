@@ -14,33 +14,47 @@ public:
     HOSTFXR_UTILITY();
     ~HOSTFXR_UTILITY();
 
-    static
-    HRESULT
-    GetHostFxrParameters(
-        ASPNETCORE_CONFIG *pConfig
-    );
+	static
+	HRESULT
+	GetHostFxrParameters(
+        HANDLE              hEventLog,
+        PCWSTR				pcwzProcessPath,
+        PCWSTR              pcwzApplicationPhysicalPath,
+        PCWSTR              pcwzArguments,
+        _Inout_ STRU*       struHostFxrDllLocation,
+        _Out_ DWORD*        pdwArgCount,
+        _Out_ PWSTR**       ppwzArgv
+	);
 
 private:
     static
     HRESULT
     GetStandaloneHostfxrParameters(
-        PCWSTR             pStruExePath,
-        ASPNETCORE_CONFIG *pConfig
+        PCWSTR              pwzExeAbsolutePath, // includes .exe file extension.
+        PCWSTR				pcwzApplicationPhysicalPath,
+        PCWSTR              pcwzArguments,
+        HANDLE              hEventLog,
+        _Inout_ STRU*		struHostFxrDllLocation,
+        _Out_ DWORD*		pdwArgCount,
+        _Out_ PWSTR**		ppwzArgv
     );
 
     static
     HRESULT
-    SetHostFxrArguments(
-        PCWSTR              struArguments,
-        PCWSTR              pStruExePath,
-        ASPNETCORE_CONFIG  *pConfig
+    ParseHostfxrArguments(
+        PCWSTR              pwzArgumentsFromConfig,
+        PCWSTR              pwzExePath, 
+        PCWSTR				pcwzApplicationPhysicalPath,
+        HANDLE              hEventLog,
+        _Out_ DWORD*        pdwArgCount,
+        _Out_ PWSTR**       ppwzArgv
     );
 
 
     static
     HRESULT
     FindDotnetExePath(
-        STRU * struDotnetLocation
+        STRU*   struDotnetLocation
     );
 };
 
