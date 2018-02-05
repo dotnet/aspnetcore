@@ -58,36 +58,36 @@
     </XmlPeek>
 
     <ItemGroup>
-      <AddinInfoLines Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
-      <AddinInfoLines Include="  &lt;Runtime&gt;" />
-      <AddinInfoLines Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblyNames.Identity)&quot; /&gt;" />
-      <AddinInfoLines Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
-      <AddinInfoLines Include="  &lt;/Runtime&gt;" />
-      <AddinInfoLines Include="  &lt;Dependencies&gt;" />
-      <AddinInfoLines Include="    %(AddinDependencies.Identity)" />
-      <AddinInfoLines Include="  &lt;/Dependencies&gt;" />
-      <AddinInfoLines Include="&lt;/Addin&gt;" />
+      <AddinInfoLine Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
+      <AddinInfoLine Include="  &lt;Runtime&gt;" />
+      <AddinInfoLine Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblyNames.Identity)&quot; /&gt;" />
+      <AddinInfoLine Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
+      <AddinInfoLine Include="  &lt;/Runtime&gt;" />
+      <AddinInfoLine Include="  &lt;Dependencies&gt;" />
+      <AddinInfoLine Include="    %(AddinDependencies.Identity)" />
+      <AddinInfoLine Include="  &lt;/Dependencies&gt;" />
+      <AddinInfoLine Include="&lt;/Addin&gt;" />
     </ItemGroup>
 
     <ItemGroup>
-      <LanguageServiceAssemblies Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" />
-      <LanguageServicePDBs Include="%(LanguageServiceAssemblies.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssemblies.RootDir)%(Directory)%(FileName).pdb')" />
+      <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" />
+      <LanguageServicePDB Include="%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb')" />
     </ItemGroup>
 
     <!-- Generate the addin.info and gather sources for mpack zipping-->
-    <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLines)" Overwrite="true" />
-    <Copy SourceFiles="%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
-    <Copy SourceFiles="%(LanguageServicePDBs.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLine)" Overwrite="true" />
+    <Copy SourceFiles="%(LanguageServiceAssembly.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="%(LanguageServicePDB.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
     <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackIntermediateOutputPath)" />
     <Copy SourceFiles="$(AddinOutputPath)$(AddinName).pdb" DestinationFolder="$(MPackIntermediateOutputPath)" />
 
     <ItemGroup>
-      <MPackFiles Include="$(MPackIntermediateOutputPath)\*" />
+      <MPackFile Include="$(MPackIntermediateOutputPath)\*" />
     </ItemGroup>
 
     <ZipArchive
       File="$(MPackOutputPath)"
-      SourceFiles="@(MPackFiles)"
+      SourceFiles="@(MPackFile)"
       WorkingDirectory="$(MPackIntermediateOutputPath)" />
   </Target>
 
