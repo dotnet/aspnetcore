@@ -44,13 +44,12 @@
       3. All language service binaries
     -->
 
-  
     <MakeDir Directories="$(MPackIntermediateOutputPath)" Condition="!Exists('$(MPackIntermediateOutputPath)')" />
     <Delete Files="$(MPackOutputPath)" Condition="Exists('$(MPackOutputPath)')" />
 
     <!-- We need to resolve the language service assemblies to generate an addin.info for the mpack -->
     <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Runtime/Import/@assembly">
-      <Output TaskParameter="Result" ItemName="LanguageServiceAssemblies" />
+      <Output TaskParameter="Result" ItemName="LanguageServiceAssemblyNames" />
     </XmlPeek>
 
     <!-- We need to resolve the addin dependencies to generate an addin.info for the mpack -->
@@ -61,7 +60,7 @@
     <ItemGroup>
       <AddinInfoLines Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
       <AddinInfoLines Include="  &lt;Runtime&gt;" />
-      <AddinInfoLines Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblies.Identity)&quot; /&gt;" />
+      <AddinInfoLines Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblyNames.Identity)&quot; /&gt;" />
       <AddinInfoLines Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
       <AddinInfoLines Include="  &lt;/Runtime&gt;" />
       <AddinInfoLines Include="  &lt;Dependencies&gt;" />
@@ -70,10 +69,17 @@
       <AddinInfoLines Include="&lt;/Addin&gt;" />
     </ItemGroup>
 
+    <ItemGroup>
+      <LanguageServiceAssemblies Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" />
+      <LanguageServicePDBs Include="%(LanguageServiceAssemblies.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssemblies.RootDir)%(Directory)%(FileName).pdb')" />
+    </ItemGroup>
+
     <!-- Generate the addin.info and gather sources for mpack zipping-->
     <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLines)" Overwrite="true" />
-    <Copy SourceFiles="$(LanguageServiceOutputPath)\%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="%(LanguageServicePDBs.Identity)" DestinationFolder="$(MPackIntermediateOutputPath)" />
     <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackIntermediateOutputPath)" />
+    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).pdb" DestinationFolder="$(MPackIntermediateOutputPath)" />
 
     <ItemGroup>
       <MPackFiles Include="$(MPackIntermediateOutputPath)\*" />
