@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             List<string> arguments,
             ServerPaths buildPaths,
             CancellationToken cancellationToken,
-            string keepAlive = null)
+            string keepAlive = null,
+            bool debug = false)
         {
             if (string.IsNullOrEmpty(pipeName))
             {
@@ -101,7 +102,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 keepAlive: keepAlive,
                 timeoutOverride: null,
                 tryCreateServerFunc: TryCreateServerCore,
-                cancellationToken: cancellationToken);
+                cancellationToken: cancellationToken,
+                debug: debug);
         }
 
         private static async Task<ServerResponse> RunOnServerCore(
@@ -110,8 +112,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             string pipeName,
             string keepAlive,
             int? timeoutOverride,
-            Func<string, string, bool> tryCreateServerFunc,
-            CancellationToken cancellationToken)
+            Func<string, string, bool, bool> tryCreateServerFunc,
+            CancellationToken cancellationToken,
+            bool debug)
         {
             if (pipeName == null)
             {
@@ -154,7 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     var wasServerRunning = WasServerMutexOpen(serverMutexName);
                     var timeout = wasServerRunning ? timeoutExistingProcess : timeoutNewProcess;
 
-                    if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName))
+                    if (wasServerRunning || tryCreateServerFunc(clientDir, pipeName, debug))
                     {
                         pipeTask = Client.ConnectAsync(pipeName, TimeSpan.FromMilliseconds(timeout), cancellationToken);
                     }
@@ -249,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         // Internal for testing.
-        internal static bool TryCreateServerCore(string clientDir, string pipeName)
+        internal static bool TryCreateServerCore(string clientDir, string pipeName, bool debug = false)
         {
             string expectedPath;
             string processArguments;
@@ -257,7 +260,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
             expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
-            processArguments = $@"""{expectedCompilerPath}"" server -p {pipeName}";
+            processArguments = $@"""{expectedCompilerPath}"" {(debug ? "--debug" : "")} server -p {pipeName}";
 
             if (!File.Exists(expectedCompilerPath))
             {

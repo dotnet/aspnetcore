@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
                 var arguments = GetArguments(responseFileCommands);
 
-                var responseTask = ServerConnection.RunOnServer(PipeName, arguments, serverPaths, _razorServerCts.Token);
+                var responseTask = ServerConnection.RunOnServer(PipeName, arguments, serverPaths, _razorServerCts.Token, debug: DebugTool);
                 responseTask.Wait(_razorServerCts.Token);
 
                 var response = responseTask.Result;
