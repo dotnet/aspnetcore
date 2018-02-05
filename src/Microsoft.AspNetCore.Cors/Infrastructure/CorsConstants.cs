@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     {
         /// <summary>
         /// The HTTP method for the CORS preflight request.
-        /// </summary>        
+        /// </summary>
         public static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         /// <summary>
