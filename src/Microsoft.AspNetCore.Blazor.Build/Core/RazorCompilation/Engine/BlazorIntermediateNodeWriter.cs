@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
                                 if (TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName))
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponentElement)}<{componentTypeName}>")
+                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
                                     isComponent = true;

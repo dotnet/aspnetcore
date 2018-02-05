@@ -253,11 +253,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act
             builder.OpenElement(10, "parent");                   //  0: <parent>
-            builder.OpenComponentElement<TestComponent>(11);     //  1:     <testcomponent
+            builder.OpenComponent<TestComponent>(11);            //  1:     <testcomponent
             builder.AddAttribute(12, "child1attribute1", "A");   //  2:       child1attribute1="A"
             builder.AddAttribute(13, "child1attribute2", "B");   //  3:       child1attribute2="B">
             builder.CloseComponent();                            //         </testcomponent>
-            builder.OpenComponentElement<TestComponent>(14);     //  4:     <testcomponent
+            builder.OpenComponent<TestComponent>(14);            //  4:     <testcomponent
             builder.AddAttribute(15, "child2attribute", "C");    //  5:       child2attribute="C">
             builder.CloseComponent();                            //         </testcomponent>
             builder.CloseElement();                              //     </parent>

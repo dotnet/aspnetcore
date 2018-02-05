@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         /// <summary>
         /// Marks a previously appended component frame as closed. Calls to this method
-        /// must be balanced with calls to <see cref="OpenComponentElement{TComponent}"/>.
+        /// must be balanced with calls to <see cref="OpenComponent{TComponent}"/>.
         /// </summary>
         public void CloseComponent()
         {
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void OpenComponentElement<TComponent>(int sequence) where TComponent : IComponent
+        public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent
         {
             // Currently, child components can't have further grandchildren of their own, so it would
             // technically be possible to skip their CloseElement calls and not track them in _openElementIndices.
