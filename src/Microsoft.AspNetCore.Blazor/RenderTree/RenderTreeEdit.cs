@@ -6,74 +6,75 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     /// <summary>
     /// Represents a single edit operation on a component's render tree.
     /// </summary>
-    public struct RenderTreeEdit
+    public readonly struct RenderTreeEdit
     {
         /// <summary>
         /// Gets the type of the edit operation.
         /// </summary>
-        public RenderTreeEditType Type { get; private set; }
+        public readonly RenderTreeEditType Type;
 
         /// <summary>
         /// Gets the index of the sibling frame that the edit relates to.
         /// </summary>
-        public int SiblingIndex { get; private set; }
+        public readonly int SiblingIndex;
 
         /// <summary>
         /// Gets the index of related data in an associated render tree. For example, if the
         /// <see cref="Type"/> value is <see cref="RenderTreeEditType.PrependFrame"/>, gets the
         /// index of the new frame data in an associated render tree.
         /// </summary>
-        public int NewTreeIndex { get; private set; }
+        public readonly int NewTreeIndex;
 
         /// <summary>
         /// If the <see cref="Type"/> value is <see cref="RenderTreeEditType.RemoveAttribute"/>,
         /// gets the name of the attribute that is being removed.
         /// </summary>
-        public string RemovedAttributeName { get; private set; }
+        public readonly string RemovedAttributeName;
 
-        internal static RenderTreeEdit RemoveFrame(int siblingIndex) => new RenderTreeEdit
+        private RenderTreeEdit(RenderTreeEditType type) : this()
         {
-            Type = RenderTreeEditType.RemoveFrame,
-            SiblingIndex = siblingIndex
-        };
+            Type = type;
+        }
 
-        internal static RenderTreeEdit PrependFrame(int siblingIndex, int newTreeIndex) => new RenderTreeEdit
+        private RenderTreeEdit(RenderTreeEditType type, int siblingIndex) : this()
         {
-            Type = RenderTreeEditType.PrependFrame,
-            SiblingIndex = siblingIndex,
-            NewTreeIndex = newTreeIndex
-        };
+            Type = type;
+            SiblingIndex = siblingIndex;
+        }
 
-        internal static RenderTreeEdit UpdateText(int siblingIndex, int newTreeIndex) => new RenderTreeEdit
+        private RenderTreeEdit(RenderTreeEditType type, int siblingIndex, int newTreeIndex) : this()
         {
-            Type = RenderTreeEditType.UpdateText,
-            SiblingIndex = siblingIndex,
-            NewTreeIndex = newTreeIndex
-        };
+            Type = type;
+            SiblingIndex = siblingIndex;
+            NewTreeIndex = newTreeIndex;
+        }
 
-        internal static RenderTreeEdit SetAttribute(int siblingIndex, int newFrameIndex) => new RenderTreeEdit
+        private RenderTreeEdit(RenderTreeEditType type, int siblingIndex, string removedAttributeName) : this()
         {
-            Type = RenderTreeEditType.SetAttribute,
-            SiblingIndex = siblingIndex,
-            NewTreeIndex = newFrameIndex
-        };
+            Type = type;
+            SiblingIndex = siblingIndex;
+            RemovedAttributeName = removedAttributeName;
+        }
 
-        internal static RenderTreeEdit RemoveAttribute(int siblingIndex, string name) => new RenderTreeEdit
-        {
-            Type = RenderTreeEditType.RemoveAttribute,
-            SiblingIndex = siblingIndex,
-            RemovedAttributeName = name
-        };
+        internal static RenderTreeEdit RemoveFrame(int siblingIndex)
+            => new RenderTreeEdit(RenderTreeEditType.RemoveFrame, siblingIndex);
 
-        internal static RenderTreeEdit StepIn(int siblingIndex) => new RenderTreeEdit
-        {
-            Type = RenderTreeEditType.StepIn,
-            SiblingIndex = siblingIndex
-        };
+        internal static RenderTreeEdit PrependFrame(int siblingIndex, int newTreeIndex)
+            => new RenderTreeEdit(RenderTreeEditType.PrependFrame, siblingIndex, newTreeIndex);
 
-        internal static RenderTreeEdit StepOut() => new RenderTreeEdit
-        {
-            Type = RenderTreeEditType.StepOut
-        };
+        internal static RenderTreeEdit UpdateText(int siblingIndex, int newTreeIndex)
+            => new RenderTreeEdit(RenderTreeEditType.UpdateText, siblingIndex, newTreeIndex);
+
+        internal static RenderTreeEdit SetAttribute(int siblingIndex, int newTreeIndex)
+            => new RenderTreeEdit(RenderTreeEditType.SetAttribute, siblingIndex, newTreeIndex);
+
+        internal static RenderTreeEdit RemoveAttribute(int siblingIndex, string name)
+            => new RenderTreeEdit(RenderTreeEditType.RemoveAttribute, siblingIndex, name);
+
+        internal static RenderTreeEdit StepIn(int siblingIndex)
+            => new RenderTreeEdit(RenderTreeEditType.StepIn, siblingIndex);
+
+        internal static RenderTreeEdit StepOut()
+            => new RenderTreeEdit(RenderTreeEditType.StepOut);
     }
 }
