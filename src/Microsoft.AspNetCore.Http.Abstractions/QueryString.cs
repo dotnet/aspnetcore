@@ -121,12 +121,12 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(name));
             }
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
 
-            return new QueryString($"?{UrlEncoder.Default.Encode(name)}={UrlEncoder.Default.Encode(value)}");
+            if (!string.IsNullOrEmpty(value))
+            {
+                value = UrlEncoder.Default.Encode(value);
+            }
+            return new QueryString($"?{UrlEncoder.Default.Encode(name)}={value}");
         }
 
         /// <summary>
@@ -140,11 +140,8 @@ namespace Microsoft.AspNetCore.Http
             bool first = true;
             foreach (var pair in parameters)
             {
-                builder.Append(first ? "?" : "&");
+                AppendKeyValuePair(builder, pair.Key, pair.Value, first);
                 first = false;
-                builder.Append(UrlEncoder.Default.Encode(pair.Key));
-                builder.Append("=");
-                builder.Append(UrlEncoder.Default.Encode(pair.Value));
             }
 
             return new QueryString(builder.ToString());
@@ -159,15 +156,21 @@ namespace Microsoft.AspNetCore.Http
         {
             var builder = new StringBuilder();
             bool first = true;
+
             foreach (var pair in parameters)
             {
+                // If nothing in this pair.Values, append null value and continue
+                if (StringValues.IsNullOrEmpty(pair.Value))
+                {
+                    AppendKeyValuePair(builder, pair.Key, null, first);
+                    first = false;
+                    continue;
+                }
+                // Otherwise, loop through values in pair.Value
                 foreach (var value in pair.Value)
                 {
-                    builder.Append(first ? "?" : "&");
+                    AppendKeyValuePair(builder, pair.Key, value, first);
                     first = false;
-                    builder.Append(UrlEncoder.Default.Encode(pair.Key));
-                    builder.Append("=");
-                    builder.Append(UrlEncoder.Default.Encode(value));
                 }
             }
 
@@ -195,10 +198,6 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(name));
             }
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
 
             if (!HasValue || Value.Equals("?", StringComparison.Ordinal))
             {
@@ -206,10 +205,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var builder = new StringBuilder(Value);
-            builder.Append("&");
-            builder.Append(UrlEncoder.Default.Encode(name));
-            builder.Append("=");
-            builder.Append(UrlEncoder.Default.Encode(value));
+            AppendKeyValuePair(builder, name, value, first: false);
             return new QueryString(builder.ToString());
         }
 
@@ -249,6 +245,17 @@ namespace Microsoft.AspNetCore.Http
         public static QueryString operator +(QueryString left, QueryString right)
         {
             return left.Add(right);
+        }
+
+        private static void AppendKeyValuePair(StringBuilder builder, string key, string value, bool first)
+        {
+            builder.Append(first ? "?" : "&");
+            builder.Append(UrlEncoder.Default.Encode(key));
+            builder.Append("=");
+            if (!string.IsNullOrEmpty(value))
+            {
+                builder.Append(UrlEncoder.Default.Encode(value));
+            }
         }
     }
 }

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Abstractions
@@ -54,8 +55,10 @@ namespace Microsoft.AspNetCore.Http.Abstractions
         [InlineData("name", "value", "?name=value")]
         [InlineData("na me", "val ue", "?na%20me=val%20ue")]
         [InlineData("name", "", "?name=")]
+        [InlineData("name", null, "?name=")]
         [InlineData("", "value", "?=value")]
         [InlineData("", "", "?=")]
+        [InlineData("", null, "?=")]
         public void CreateNameValue_Success(string name, string value, string exepcted)
         {
             var query = QueryString.Create(name, value);
@@ -70,8 +73,24 @@ namespace Microsoft.AspNetCore.Http.Abstractions
                 new KeyValuePair<string, string>("key1", "value1"),
                 new KeyValuePair<string, string>("key2", "value2"),
                 new KeyValuePair<string, string>("key3", "value3"),
+                new KeyValuePair<string, string>("key4", null),
+                new KeyValuePair<string, string>("key5", "")
             });
-            Assert.Equal("?key1=value1&key2=value2&key3=value3", query.Value);
+            Assert.Equal("?key1=value1&key2=value2&key3=value3&key4=&key5=", query.Value);
+        }
+
+        [Fact]
+        public void CreateFromListStringValues_Success()
+        {
+            var query = QueryString.Create(new[]
+            {
+                new KeyValuePair<string, StringValues>("key1", new StringValues("value1")),
+                new KeyValuePair<string, StringValues>("key2", new StringValues("value2")),
+                new KeyValuePair<string, StringValues>("key3", new StringValues("value3")),
+                new KeyValuePair<string, StringValues>("key4", new StringValues()),
+                new KeyValuePair<string, StringValues>("key5", new StringValues("")),
+            });
+            Assert.Equal("?key1=value1&key2=value2&key3=value3&key4=&key5=", query.Value);
         }
 
         [Theory]
@@ -94,11 +113,18 @@ namespace Microsoft.AspNetCore.Http.Abstractions
 
         [Theory]
         [InlineData("", "", "", "?=")]
+        [InlineData("", "", null, "?=")]
         [InlineData("?", "", "", "?=")]
+        [InlineData("?", "", null, "?=")]
         [InlineData("?", "name2", "value2", "?name2=value2")]
+        [InlineData("?", "name2", "", "?name2=")]
+        [InlineData("?", "name2", null, "?name2=")]
         [InlineData("?name1=value1", "name2", "value2", "?name1=value1&name2=value2")]
         [InlineData("?name1=value1", "na me2", "val ue2", "?name1=value1&na%20me2=val%20ue2")]
         [InlineData("?name1=value1", "", "", "?name1=value1&=")]
+        [InlineData("?name1=value1", "", null, "?name1=value1&=")]
+        [InlineData("?name1=value1", "name2", "", "?name1=value1&name2=")]
+        [InlineData("?name1=value1", "name2", null, "?name1=value1&name2=")]
         public void AddNameValue_Success(string query1, string name2, string value2, string expected)
         {
             var q1 = new QueryString(query1);
