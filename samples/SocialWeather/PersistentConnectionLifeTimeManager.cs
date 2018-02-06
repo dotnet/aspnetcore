@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Features;
 
 namespace SocialWeather
 {
@@ -22,7 +23,16 @@ namespace SocialWeather
         public void OnConnectedAsync(ConnectionContext connection)
         {
             connection.Metadata["groups"] = new HashSet<string>();
-            connection.Metadata["format"] = connection.GetHttpContext().Request.Query["formatType"].ToString();
+            var format = connection.GetHttpContext().Request.Query["formatType"].ToString();
+            connection.Metadata["format"] = format;
+            if (string.Equals(format, "protobuf", StringComparison.OrdinalIgnoreCase))
+            {
+                var transferModeFeature = connection.Features.Get<ITransferModeFeature>();
+                if (transferModeFeature != null)
+                {
+                    transferModeFeature.TransferMode = TransferMode.Binary;
+                }
+            }
             _connectionList.Add(connection);
         }
 
