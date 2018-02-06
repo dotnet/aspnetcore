@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,10 +17,6 @@ namespace Microsoft.AspNetCore.Identity
     /// <typeparam name="TUser">The type encapsulating a user.</typeparam>
     public class SecurityStampValidator<TUser> : ISecurityStampValidator where TUser : class
     {
-        private readonly SignInManager<TUser> _signInManager;
-        private readonly SecurityStampValidatorOptions _options;
-        private ISystemClock _clock;
-
         /// <summary>
         /// Creates a new instance of <see cref="SecurityStampValidator{TUser}"/>.
         /// </summary>
@@ -36,10 +33,61 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(signInManager));
             }
-            _signInManager = signInManager;
-            _options = options.Value;
-            _clock = clock;
+            SignInManager = signInManager;
+            Options = options.Value;
+            Clock = clock;
         }
+
+        /// <summary>
+        /// The SignInManager.
+        /// </summary>
+        public SignInManager<TUser> SignInManager { get; }
+
+        /// <summary>
+        /// The <see cref="SecurityStampValidatorOptions"/>.
+        /// </summary>
+        public SecurityStampValidatorOptions Options { get; }
+
+        /// <summary>
+        /// The <see cref="ISystemClock"/>.
+        /// </summary>
+        public ISystemClock Clock { get; }
+
+        /// <summary>
+        /// Called when the security stamp has been verified.
+        /// </summary>
+        /// <param name="user">The user who has been verified.</param>
+        /// <param name="context">The <see cref="CookieValidatePrincipalContext"/>.</param>
+        /// <returns>A task.</returns>
+        protected virtual async Task SecurityStampVerified(TUser user, CookieValidatePrincipalContext context)
+        {
+            var newPrincipal = await SignInManager.CreateUserPrincipalAsync(user);
+
+            if (Options.OnRefreshingPrincipal != null)
+            {
+                var replaceContext = new SecurityStampRefreshingPrincipalContext
+                {
+                    CurrentPrincipal = context.Principal,
+                    NewPrincipal = newPrincipal
+                };
+
+                // Note: a null principal is allowed and results in a failed authentication.
+                await Options.OnRefreshingPrincipal(replaceContext);
+                newPrincipal = replaceContext.NewPrincipal;
+            }
+
+            // REVIEW: note we lost login authentication method
+            context.ReplacePrincipal(newPrincipal);
+            context.ShouldRenew = true;
+        }
+
+        /// <summary>
+        /// Verifies the principal's security stamp, returns the matching user if successful
+        /// </summary>
+        /// <param name="principal">The principal to verify.</param>
+        /// <returns>The verified user or null if verification fails.</returns>
+        protected virtual Task<TUser> VerifySecurityStamp(ClaimsPrincipal principal)
+            => SignInManager.ValidateSecurityStampAsync(principal);
 
         /// <summary>
         /// Validates a security stamp of an identity as an asynchronous operation, and rebuilds the identity if the validation succeeds, otherwise rejects
@@ -51,9 +99,9 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             var currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && _clock != null)
+            if (context.Options != null && Clock != null)
             {
-                currentUtc = _clock.UtcNow;
+                currentUtc = Clock.UtcNow;
             }
             var issuedUtc = context.Properties.IssuedUtc;
 
@@ -62,36 +110,19 @@ namespace Microsoft.AspNetCore.Identity
             if (issuedUtc != null)
             {
                 var timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-                validate = timeElapsed > _options.ValidationInterval;
+                validate = timeElapsed > Options.ValidationInterval;
             }
             if (validate)
             {
-                var user = await _signInManager.ValidateSecurityStampAsync(context.Principal);
+                var user = await VerifySecurityStamp(context.Principal); 
                 if (user != null)
                 {
-                    var newPrincipal = await _signInManager.CreateUserPrincipalAsync(user);
-
-                    if (_options.OnRefreshingPrincipal != null)
-                    {
-                        var replaceContext = new SecurityStampRefreshingPrincipalContext
-                        {
-                            CurrentPrincipal = context.Principal,
-                            NewPrincipal = newPrincipal
-                        };
-
-                        // Note: a null principal is allowed and results in a failed authentication.
-                        await _options.OnRefreshingPrincipal(replaceContext);
-                        newPrincipal = replaceContext.NewPrincipal;
-                    }
-
-                    // REVIEW: note we lost login authentication method
-                    context.ReplacePrincipal(newPrincipal);
-                    context.ShouldRenew = true;
+                    await SecurityStampVerified(user, context);
                 }
                 else
                 {
                     context.RejectPrincipal();
-                    await _signInManager.SignOutAsync();
+                    await SignInManager.SignOutAsync();
                 }
             }
         }
@@ -105,19 +136,30 @@ namespace Microsoft.AspNetCore.Identity
     {
         /// <summary>
         /// Validates a principal against a user's stored security stamp.
-        /// the identity.
         /// </summary>
         /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
-        /// and <see cref="Http.Authentication.AuthenticationProperties"/> to validate.</param>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public static Task ValidatePrincipalAsync(CookieValidatePrincipalContext context)
+            => ValidateAsync<ISecurityStampValidator>(context);
+
+        /// <summary>
+        /// Used to validate the <see cref="IdentityConstants.TwoFactorUserIdScheme"/> and 
+        /// <see cref="IdentityConstants.TwoFactorRememberMeScheme"/> cookies against the user's 
+        /// stored security stamp.
+        /// </summary>
+        /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
+        /// <returns></returns>
+
+        public static Task ValidateAsync<TValidator>(CookieValidatePrincipalContext context) where TValidator : ISecurityStampValidator
         {
             if (context.HttpContext.RequestServices == null)
             {
                 throw new InvalidOperationException("RequestServices is null.");
             }
 
-            var validator = context.HttpContext.RequestServices.GetRequiredService<ISecurityStampValidator>();
+            var validator = context.HttpContext.RequestServices.GetRequiredService<TValidator>();
             return validator.ValidateAsync(context);
         }
     }

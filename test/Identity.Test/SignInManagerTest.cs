@@ -8,7 +8,6 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -17,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.Test
 {
-    public class SignManagerInTest
+    public class SignInManagerTest
     {
         //[Theory]
         //[InlineData(true)]

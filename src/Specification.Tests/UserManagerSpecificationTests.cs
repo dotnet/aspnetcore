@@ -290,7 +290,27 @@ namespace Microsoft.AspNetCore.Identity.Test
             var user = CreateTestUser(username, useNamePrefixAsUserName: true);
             var stamp = await manager.GetSecurityStampAsync(user);
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.NotNull(await manager.GetSecurityStampAsync(user));
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
+        public async Task ResetAuthenticatorKeyUpdatesSecurityStamp()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var username = "Create" + Guid.NewGuid().ToString();
+            var user = CreateTestUser(username, useNamePrefixAsUserName: true);
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var stamp = await manager.GetSecurityStampAsync(user);
+            IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
+            Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
         /// <summary>

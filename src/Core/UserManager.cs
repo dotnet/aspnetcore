@@ -2147,6 +2147,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(user));
             }
             await store.SetAuthenticatorKeyAsync(user, GenerateNewAuthenticatorKey(), CancellationToken);
+            await UpdateSecurityStampInternal(user);
             return await UpdateAsync(user);
         }
 

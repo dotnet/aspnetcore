@@ -23,13 +23,16 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
     internal class ResetAuthenticatorModel<TUser> : ResetAuthenticatorModel where TUser : IdentityUser
     {
         UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
         ILogger<ResetAuthenticatorModel> _logger;
 
         public ResetAuthenticatorModel(
             UserManager<TUser> userManager,
+            SignInManager<TUser> signInManager,
             ILogger<ResetAuthenticatorModel> logger)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _logger = logger;
         }
 
@@ -56,6 +59,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             await _userManager.ResetAuthenticatorKeyAsync(user);
             _logger.LogInformation("User with ID '{UserId}' has reset their authentication app key.", user.Id);
 
+            await _signInManager.SignInAsync(user, isPersistent: false);
             StatusMessage = "Your authenticator app key has been reset, you will need to configure your authenticator app using the new key.";
 
             return RedirectToPage("./EnableAuthenticator");

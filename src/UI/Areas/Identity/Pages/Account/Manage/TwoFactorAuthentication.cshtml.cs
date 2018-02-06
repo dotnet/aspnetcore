@@ -24,7 +24,10 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
         [TempData]
         public string StatusMessage { get; set; }
 
-        public virtual Task<IActionResult> OnGet() => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
+
     }
 
     internal class TwoFactorAuthenticationModel<TUser> : TwoFactorAuthenticationModel where TUser : IdentityUser
@@ -41,7 +44,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             _logger = logger;
         }
 
-        public override async Task<IActionResult> OnGet()
+        public override async Task<IActionResult> OnGetAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)
@@ -57,7 +60,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
             return Page();
         }
 
-        public async Task<IActionResult> OnPost()
+        public override async Task<IActionResult> OnPostAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null)

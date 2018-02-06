@@ -184,7 +184,8 @@ namespace Microsoft.AspNetCore.Identity.InMemory
         [Fact]
         public async Task TwoFactorRememberCookieVerification()
         {
-            var server = CreateServer();
+            var clock = new TestClock();
+            var server = CreateServer(services => services.AddSingleton<ISystemClock>(clock));
 
             var transaction1 = await SendAsync(server, "http://example.com/createMe");
             Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
@@ -199,6 +200,46 @@ namespace Microsoft.AspNetCore.Identity.InMemory
 
             var transaction3 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
             Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+
+            // Wait for validation interval
+            clock.Add(TimeSpan.FromMinutes(30));
+
+            var transaction4 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
+            Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
+        }
+
+        [Fact]
+        public async Task TwoFactorRememberCookieClearedBySecurityStampChange()
+        {
+            var clock = new TestClock();
+            var server = CreateServer(services => services.AddSingleton<ISystemClock>(clock));
+
+            var transaction1 = await SendAsync(server, "http://example.com/createMe");
+            Assert.Equal(HttpStatusCode.OK, transaction1.Response.StatusCode);
+            Assert.Null(transaction1.SetCookie);
+
+            var transaction2 = await SendAsync(server, "http://example.com/twofactorRememeber");
+            Assert.Equal(HttpStatusCode.OK, transaction2.Response.StatusCode);
+
+            var setCookie = transaction2.SetCookie;
+            Assert.Contains(IdentityConstants.TwoFactorRememberMeScheme + "=", setCookie);
+            Assert.Contains("; expires=", setCookie);
+
+            var transaction3 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
+            Assert.Equal(HttpStatusCode.OK, transaction3.Response.StatusCode);
+
+            var transaction4 = await SendAsync(server, "http://example.com/signoutEverywhere", transaction2.CookieNameValue);
+            Assert.Equal(HttpStatusCode.OK, transaction4.Response.StatusCode);
+
+            // Doesn't validate until after interval has passed
+            var transaction5 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
+            Assert.Equal(HttpStatusCode.OK, transaction5.Response.StatusCode);
+
+            // Wait for validation interval
+            clock.Add(TimeSpan.FromMinutes(30));
+
+            var transaction6 = await SendAsync(server, "http://example.com/isTwoFactorRememebered", transaction2.CookieNameValue);
+            Assert.Equal(HttpStatusCode.InternalServerError, transaction6.Response.StatusCode);
         }
 
         private static string FindClaimValue(Transaction transaction, string claimType)
@@ -249,9 +290,11 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             var result = await userManager.CreateAsync(new TestUser("simple"), "aaaaaa");
                             res.StatusCode = result.Succeeded ? 200 : 500;
                         }
-                        else if (req.Path == new PathString("/protected"))
+                        else if (req.Path == new PathString("/signoutEverywhere"))
                         {
-                            res.StatusCode = 401;
+                            var user = await userManager.FindByNameAsync("hao");
+                            var result = await userManager.UpdateSecurityStampAsync(user);
+                            res.StatusCode = result.Succeeded ? 200 : 500;
                         }
                         else if (req.Path.StartsWithSegments(new PathString("/pwdLogin"), out remainder))
                         {
@@ -271,8 +314,10 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                             var result = await signInManager.IsTwoFactorClientRememberedAsync(user);
                             res.StatusCode = result ? 200 : 500;
                         }
-                        else if (req.Path == new PathString("/twofactorSignIn"))
+                        else if (req.Path == new PathString("/hasTwoFactorUserId"))
                         {
+                            var result = await context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+                            res.StatusCode = result.Succeeded ? 200 : 500;
                         }
                         else if (req.Path == new PathString("/me"))
                         {
@@ -295,7 +340,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddIdentity<TestUser, TestRole>();
+                    services.AddIdentity<TestUser, TestRole>().AddDefaultTokenProviders();
                     services.AddSingleton<IUserStore<TestUser>, InMemoryStore<TestUser, TestRole>>();
                     services.AddSingleton<IRoleStore<TestRole>, InMemoryStore<TestUser, TestRole>>();
                     configureServices?.Invoke(services);
@@ -346,7 +391,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             };
             if (transaction.Response.Headers.Contains("Set-Cookie"))
             {
-                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").SingleOrDefault();
+                transaction.SetCookie = transaction.Response.Headers.GetValues("Set-Cookie").FirstOrDefault();
             }
             if (!string.IsNullOrEmpty(transaction.SetCookie))
             {

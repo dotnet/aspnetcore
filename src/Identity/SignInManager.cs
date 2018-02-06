@@ -220,17 +220,45 @@ namespace Microsoft.AspNetCore.Identity
                 return null;
             }
             var user = await UserManager.GetUserAsync(principal);
-            if (user != null && UserManager.SupportsUserSecurityStamp)
+            if (await ValidateSecurityStampAsync(user, principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType)))
             {
-                var securityStamp =
-                    principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType);
-                if (securityStamp == await UserManager.GetSecurityStampAsync(user))
-                {
-                    return user;
-                }
+                return user;
             }
             return null;
         }
+
+        /// <summary>
+        /// Validates the security stamp for the specified <paramref name="principal"/> from one of
+        /// the two factor principals (remember client or user id) against
+        /// the persisted stamp for the current user, as an asynchronous operation.
+        /// </summary>
+        /// <param name="principal">The principal whose stamp should be validated.</param>
+        /// <returns>The task object representing the asynchronous operation. The task will contain the <typeparamref name="TUser"/>
+        /// if the stamp matches the persisted value, otherwise it will return false.</returns>
+        public virtual async Task<TUser> ValidateTwoFactorSecurityStampAsync(ClaimsPrincipal principal)
+        {
+            if (principal == null || principal.Identity?.Name == null)
+            {
+                return null;
+            }
+            var user = await UserManager.FindByIdAsync(principal.Identity.Name);
+            if (await ValidateSecurityStampAsync(user, principal.FindFirstValue(Options.ClaimsIdentity.SecurityStampClaimType)))
+            {
+                return user;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Validates the security stamp for the specified <paramref name="user"/>. Will always return false
+        /// if the userManager does not support security stamps.
+        /// </summary>
+        /// <param name="user">The user whose stamp should be validated.</param>
+        /// <param name="securityStamp">The expected security stamp value.</param>
+        /// <returns>True if the stamp matches the persisted value, otherwise it will return false.</returns>
+        public virtual async Task<bool> ValidateSecurityStampAsync(TUser user, string securityStamp)
+            => user != null && UserManager.SupportsUserSecurityStamp 
+            && securityStamp == await UserManager.GetSecurityStampAsync(user);
 
         /// <summary>
         /// Attempts to sign in the specified <paramref name="user"/> and <paramref name="password"/> combination
@@ -343,11 +371,9 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual async Task RememberTwoFactorClientAsync(TUser user)
         {
-            var userId = await UserManager.GetUserIdAsync(user);
-            var rememberBrowserIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorRememberMeScheme);
-            rememberBrowserIdentity.AddClaim(new Claim(ClaimTypes.Name, userId));
+            var principal = await StoreRememberClient(user);
             await Context.SignInAsync(IdentityConstants.TwoFactorRememberMeScheme,
-                new ClaimsPrincipal(rememberBrowserIdentity),
+                principal,
                 new AuthenticationProperties { IsPersistent = true });
         }
 
@@ -653,6 +679,19 @@ namespace Microsoft.AspNetCore.Identity
                 identity.AddClaim(new Claim(ClaimTypes.AuthenticationMethod, loginProvider));
             }
             return new ClaimsPrincipal(identity);
+        }
+
+        internal async Task<ClaimsPrincipal> StoreRememberClient(TUser user)
+        {
+            var userId = await UserManager.GetUserIdAsync(user);
+            var rememberBrowserIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorRememberMeScheme);
+            rememberBrowserIdentity.AddClaim(new Claim(ClaimTypes.Name, userId));
+            if (UserManager.SupportsUserSecurityStamp)
+            {
+                var stamp = await UserManager.GetSecurityStampAsync(user);
+                rememberBrowserIdentity.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, stamp));
+            }
+            return new ClaimsPrincipal(rememberBrowserIdentity);
         }
 
         private ClaimsIdentity CreateIdentity(TwoFactorAuthenticationInfo info)
