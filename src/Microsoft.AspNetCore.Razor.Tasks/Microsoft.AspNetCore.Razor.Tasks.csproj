@@ -22,9 +22,6 @@
     <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\PlatformInformation.cs">
       <Link>Shared\PlatformInformation.cs</Link>
     </Compile>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\CommandLineUtilities.cs">
-      <Link>Shared\CommandLineUtilities.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\ServerProtocol\*.cs">
       <Link>Shared\ServerProtocol\%(FileName)</Link>
     </Compile>

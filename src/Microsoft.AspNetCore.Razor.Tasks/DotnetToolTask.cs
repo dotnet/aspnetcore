@@ -168,11 +168,10 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             return workingDirectory;
         }
 
-        private List<string> GetArguments(string responseFileCommands)
+        private IList<string> GetArguments(string responseFileCommands)
         {
-            var responseFileArguments =
-                CommandLineUtilities.SplitCommandLineIntoArguments(responseFileCommands, removeHashComments: true);
-            return responseFileArguments.ToList();
+            var list = responseFileCommands.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+            return list;
         }
 
         protected override bool HandleTaskExecutionErrors()

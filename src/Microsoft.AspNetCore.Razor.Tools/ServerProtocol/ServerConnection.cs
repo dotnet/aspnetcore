@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         public static Task<ServerResponse> RunOnServer(
             string pipeName,
-            List<string> arguments,
+            IList<string> arguments,
             ServerPaths buildPaths,
             CancellationToken cancellationToken,
             string keepAlive = null,
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         private static async Task<ServerResponse> RunOnServerCore(
-            List<string> arguments,
+            IList<string> arguments,
             ServerPaths buildPaths,
             string pipeName,
             string keepAlive,

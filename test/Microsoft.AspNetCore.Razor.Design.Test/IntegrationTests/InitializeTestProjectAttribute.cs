@@ -10,11 +10,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public class InitializeTestProjectAttribute : BeforeAfterTestAttribute
     {
         private readonly string _projectName;
+        private readonly string _baseDirectory;
         private readonly string[] _additionalProjects;
 
         public InitializeTestProjectAttribute(string projectName, params string[] additionalProjects)
+            : this (projectName, string.Empty, additionalProjects)
+        {
+        }
+
+        public InitializeTestProjectAttribute(string projectName, string baseDirectory, string[] additionalProjects)
         {
             _projectName = projectName;
+            _baseDirectory = baseDirectory;
             _additionalProjects = additionalProjects;
         }
 
@@ -25,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new InvalidOperationException($"This should be used on a class derived from {typeof(MSBuildIntegrationTestBase)}");
             }
 
-            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_projectName, _additionalProjects);
+            MSBuildIntegrationTestBase.Project = ProjectDirectory.Create(_projectName, _baseDirectory, _additionalProjects);
         }
 
         public override void After(MethodInfo methodUnderTest)

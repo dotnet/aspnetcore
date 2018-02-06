@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public bool PreserveWorkingDirectory { get; set; }
 #endif
 
-        public static ProjectDirectory Create(string projectName, string[] additionalProjects)
+        public static ProjectDirectory Create(string projectName, string baseDirectory, string[] additionalProjects)
         {
-            var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", Path.GetRandomFileName());
+            var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", baseDirectory, Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
 
             try

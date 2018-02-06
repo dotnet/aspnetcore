@@ -33,5 +33,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc", baseDirectory: "Whitespace in path", additionalProjects: new string[] { })]
+        public async Task Build_AppWithWhitespaceInPath_CanBuildSuccessfully()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName}");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
     }
 }
