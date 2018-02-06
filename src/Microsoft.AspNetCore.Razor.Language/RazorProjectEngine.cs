@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
@@ -71,8 +72,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var builder = new DefaultRazorProjectEngineBuilder(configuration, fileSystem);
 
+            // The intialization order is somewhat important.
+            //
+            // Defaults -> Extensions -> Additional customization
+            //
+            // This allows extensions to rely on default features, and customizations to override choices made by
+            // extensions.
             RazorEngine.AddDefaultPhases(builder.Phases);
             AddDefaultsFeatures(builder.Features);
+
+            LoadExtensions(builder, configuration.Extensions);
 
             configure?.Invoke(builder);
 
@@ -142,19 +151,38 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
         }
 
-        internal static void AddDefaultRuntimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
+        private static void LoadExtensions(RazorProjectEngineBuilder builder, IReadOnlyList<RazorExtension> extensions)
         {
-            // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion));
-            features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
-        }
+            for (var i = 0; i < extensions.Count; i++)
+            {
+                // For now we only handle AssemblyExtension - which is not user-constructable. We're keeping a tight
+                // lid on how things work until we add official support for extensibility everywhere. So, this is
+                // intentionally inflexible for the time being.
+                var extension = extensions[i] as AssemblyExtension;
+                if (extension == null)
+                {
+                    continue;
+                }
 
-        internal static void AddDefaultDesignTimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
-        {
-            // Configure options
-            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion));
-            features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
-            features.Add(new SuppressChecksumOptionsFeature());
+                // It's not an error to have an assembly with no initializers. This is useful to specify a dependency
+                // that doesn't really provide any Razor configuration.
+                var attributes = extension.Assembly.GetCustomAttributes<ProvideRazorExtensionInitializerAttribute>();
+                foreach (var attribute in attributes)
+                {
+                    // Using extension names and requiring them to line up allows a single assembly to ship multiple
+                    // extensions/initializers for different configurations.
+                    if (!string.Equals(attribute.ExtensionName, extension.ExtensionName, StringComparison.Ordinal))
+                    {
+                        continue;
+                    }
+
+                    // There's no real protection/exception handling here because this set isn't really user-extensible
+                    // right now. This would be a great place to add some additional diagnostics and hardening in the
+                    // future.
+                    var initializer = (RazorExtensionInitializer)Activator.CreateInstance(attribute.InitializerType);
+                    initializer.Initialize(builder);
+                }
+            }
         }
     }
 }

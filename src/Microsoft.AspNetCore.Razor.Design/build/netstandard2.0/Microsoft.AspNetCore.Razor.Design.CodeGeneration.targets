@@ -73,6 +73,9 @@
       UseServer="$(UseRazorBuildServer)"
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(ResolvedRazorConfiguration)"
+      Extensions="@(ResolvedRazorExtension)"
       Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
@@ -121,6 +124,9 @@
       UseServer="$(UseRazorBuildServer)"
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(ResolvedRazorConfiguration)"
+      Extensions="@(ResolvedRazorExtension)"
       Sources="@(RazorGenerateWithTargetPath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)" />

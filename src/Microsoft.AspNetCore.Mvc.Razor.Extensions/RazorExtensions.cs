@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             InheritsDirective.Register(builder);
             SectionDirective.Register(builder);
 
+            builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+
             builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
             builder.AddTargetExtension(new TemplateTargetExtension()
             {

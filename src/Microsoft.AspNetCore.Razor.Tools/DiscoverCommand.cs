@@ -8,7 +8,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -26,6 +25,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             Assemblies = Argument("assemblies", "assemblies to search for tag helpers", multipleValues: true);
             TagHelperManifest = Option("-o", "output file", CommandOptionType.SingleValue);
             ProjectDirectory = Option("-p", "project root directory", CommandOptionType.SingleValue);
+            Version = Option("-v|--version", "Razor language version", CommandOptionType.SingleValue);
+            Configuration = Option("-c", "Razor configuration name", CommandOptionType.SingleValue);
+            ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
+            ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
         }
 
         public CommandArgument Assemblies { get; }
@@ -33,6 +36,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public CommandOption TagHelperManifest { get; }
 
         public CommandOption ProjectDirectory { get; }
+
+        public CommandOption Version { get; }
+
+        public CommandOption Configuration { get; }
+
+        public CommandOption ExtensionNames { get; }
+
+        public CommandOption ExtensionFilePaths { get; }
 
         protected override bool ValidateArguments()
         {
@@ -53,12 +64,61 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 ProjectDirectory.Values.Add(Environment.CurrentDirectory);
             }
 
+            if (string.IsNullOrEmpty(Version.Value()))
+            {
+                Error.WriteLine($"{Version.ValueName} must be specified.");
+                return false;
+            }
+            else if (!RazorLanguageVersion.TryParse(Version.Value(), out _))
+            {
+                Error.WriteLine($"{Version.ValueName} is not a valid language version.");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(Configuration.Value()))
+            {
+                Error.WriteLine($"{Configuration.ValueName} must be specified.");
+                return false;
+            }
+
+            if (ExtensionNames.Values.Count != ExtensionFilePaths.Values.Count)
+            {
+                Error.WriteLine($"{ExtensionNames.ValueName} and {ExtensionFilePaths.ValueName} should have the same number of values.");
+            }
+
+            foreach (var filePath in ExtensionFilePaths.Values)
+            {
+                if (!Path.IsPathRooted(filePath))
+                {
+                    Error.WriteLine($"Extension file paths must be fully-qualified, absolute paths.");
+                    return false;
+                }
+            }
+
+            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
+            {
+                Error.WriteLine($"Extenions could not be loaded. See output for details.");
+                return false;
+            }
+
             return true;
         }
 
         protected override Task<int> ExecuteCoreAsync()
         {
+            // Loading all of the extensions should succeed as the dependency checker will have already
+            // loaded them.
+            var extensions = new RazorExtension[ExtensionNames.Values.Count];
+            for (var i = 0; i < ExtensionNames.Values.Count; i++)
+            {
+                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]));
+            }
+
+            var version = RazorLanguageVersion.Parse(Version.Value());
+            var configuration = new RazorConfiguration(version, Configuration.Value(), extensions);
+
             var result = ExecuteCore(
+                configuration: configuration,
                 projectDirectory: ProjectDirectory.Value(),
                 outputFilePath: TagHelperManifest.Value(),
                 assemblies: Assemblies.Values.ToArray());
@@ -66,7 +126,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return Task.FromResult(result);
         }
 
-        private int ExecuteCore(string projectDirectory, string outputFilePath, string[] assemblies)
+        private int ExecuteCore(RazorConfiguration configuration, string projectDirectory, string outputFilePath, string[] assemblies)
         {
             outputFilePath = Path.Combine(projectDirectory, outputFilePath);
 
@@ -76,19 +136,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 metadataReferences[i] = MetadataReference.CreateFromFile(assemblies[i]);
             }
 
-            var engine = RazorEngine.Create((b) =>
+            var engine = RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>
             {
-                RazorExtensions.Register(b);
-
                 b.Features.Add(new DefaultMetadataReferenceFeature() { References = metadataReferences });
                 b.Features.Add(new CompilationTagHelperFeature());
-
-                // TagHelperDescriptorProviders (actually do tag helper discovery)
                 b.Features.Add(new DefaultTagHelperDescriptorProvider());
-                b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
             });
 
-            var feature = engine.Features.OfType<ITagHelperFeature>().Single();
+            var feature = engine.Engine.Features.OfType<ITagHelperFeature>().Single();
             var tagHelpers = feature.GetDescriptors();
 
             using (var stream = new MemoryStream())

@@ -12,9 +12,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class Application : CommandLineApplication
     {
-        public Application(CancellationToken cancellationToken)
+        public Application(CancellationToken cancellationToken, ExtensionAssemblyLoader loader, ExtensionDependencyChecker checker)
         {
             CancellationToken = cancellationToken;
+            Checker = checker;
+            Loader = loader;
 
             Name = "rzc";
             FullName = "Microsoft ASP.NET Core Razor CLI tool";
@@ -30,6 +32,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         public CancellationToken CancellationToken { get; }
+
+        public ExtensionAssemblyLoader Loader { get; }
+
+        public ExtensionDependencyChecker Checker { get; }
 
         public new int Execute(params string[] args)
         {
