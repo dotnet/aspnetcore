@@ -1698,6 +1698,76 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             Assert.Equal(statusCode, result.StatusCode);
         }
 
+        [Fact]
+        public void ViewComponent_WithName()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = page.ViewComponent("TagCloud");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("TagCloud", result.ViewComponentName);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithType()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = page.ViewComponent(typeof(Guid));
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithArguments()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestPage
+            {
+                ViewContext = new ViewContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            var arguments = new { Arg1 = "Hi", Arg2 = "There" };
+
+            // Act
+            var result = page.ViewComponent(typeof(Guid), arguments);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(arguments, result.Arguments);
+            Assert.Same(viewData, result.ViewData);
+        }
+
         public static IEnumerable<object[]> RedirectTestData
         {
             get
