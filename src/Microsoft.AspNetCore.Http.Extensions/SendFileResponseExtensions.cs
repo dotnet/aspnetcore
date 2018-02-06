@@ -22,8 +22,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="response"></param>
         /// <param name="file">The file.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        public static Task SendFileAsync(this HttpResponse response, IFileInfo file,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public static Task SendFileAsync(this HttpResponse response, IFileInfo file, CancellationToken cancellationToken = default)
         {
             if (response == null)
             {
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Http
                 throw new ArgumentNullException(nameof(file));
             }
 
-            return response.SendFileAsync(file, 0, null, cancellationToken);
+            return SendFileAsyncCore(response, file, 0, null, cancellationToken);
         }
 
         /// <summary>
@@ -46,8 +45,7 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task SendFileAsync(this HttpResponse response, IFileInfo file, long offset, long? count,
-            CancellationToken cancellationToken = default(CancellationToken))
+        public static Task SendFileAsync(this HttpResponse response, IFileInfo file, long offset, long? count, CancellationToken cancellationToken = default)
         {
             if (response == null)
             {
@@ -57,10 +55,62 @@ namespace Microsoft.AspNetCore.Http
             {
                 throw new ArgumentNullException(nameof(file));
             }
-            CheckRange(offset, count, file.Length);
 
+            return SendFileAsyncCore(response, file, offset, count, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the given file using the SendFile extension.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileName">The full path to the file.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
+        /// <returns></returns>
+        public static Task SendFileAsync(this HttpResponse response, string fileName, CancellationToken cancellationToken = default)
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            return SendFileAsyncCore(response, fileName, 0, null, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends the given file using the SendFile extension.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="fileName">The full path to the file.</param>
+        /// <param name="offset">The offset in the file.</param>
+        /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
+        {
+            if (response == null)
+            {
+                throw new ArgumentNullException(nameof(response));
+            }
+
+            if (fileName == null)
+            {
+                throw new ArgumentNullException(nameof(fileName));
+            }
+
+            return SendFileAsyncCore(response, fileName, offset, count, cancellationToken);
+        }
+
+        private static async Task SendFileAsyncCore(HttpResponse response, IFileInfo file, long offset, long? count, CancellationToken cancellationToken)
+        {
             if (string.IsNullOrEmpty(file.PhysicalPath))
             {
+                CheckRange(offset, count, file.Length);
+
                 using (var fileContent = file.CreateReadStream())
                 {
                     if (offset > 0)
@@ -76,63 +126,19 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
-        /// <summary>
-        /// Sends the given file using the SendFile extension.
-        /// </summary>
-        /// <param name="response"></param>
-        /// <param name="fileName">The full path to the file.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/>.</param>
-        /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName,
-            CancellationToken cancellationToken = default(CancellationToken))
+        private static Task SendFileAsyncCore(HttpResponse response, string fileName, long offset, long? count, CancellationToken cancellationToken = default)
         {
-            if (response == null)
-            {
-                throw new ArgumentNullException(nameof(response));
-            }
-
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-
-            return response.SendFileAsync(fileName, 0, null, cancellationToken);
-        }
-
-        /// <summary>
-        /// Sends the given file using the SendFile extension.
-        /// </summary>
-        /// <param name="response"></param>
-        /// <param name="fileName">The full path to the file.</param>
-        /// <param name="offset">The offset in the file.</param>
-        /// <param name="count">The number of bytes to send, or null to send the remainder of the file.</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public static Task SendFileAsync(this HttpResponse response, string fileName, long offset, long? count,
-            CancellationToken cancellationToken = default(CancellationToken))
-        {
-            if (response == null)
-            {
-                throw new ArgumentNullException(nameof(response));
-            }
-
-            if (fileName == null)
-            {
-                throw new ArgumentNullException(nameof(fileName));
-            }
-
             var sendFile = response.HttpContext.Features.Get<IHttpSendFileFeature>();
             if (sendFile == null)
             {
-                return SendFileAsync(response.Body, fileName, offset, count, cancellationToken);
+                return SendFileAsyncCore(response.Body, fileName, offset, count, cancellationToken);
             }
 
             return sendFile.SendFileAsync(fileName, offset, count, cancellationToken);
         }
 
         // Not safe for overlapped writes.
-        private static async Task SendFileAsync(Stream outputStream, string fileName, long offset, long? count,
-            CancellationToken cancel = default(CancellationToken))
+        private static async Task SendFileAsyncCore(Stream outputStream, string fileName, long offset, long? count, CancellationToken cancel = default)
         {
             cancel.ThrowIfCancellationRequested();
 
@@ -140,7 +146,6 @@ namespace Microsoft.AspNetCore.Http
             CheckRange(offset, count, fileInfo.Length);
 
             int bufferSize = 1024 * 16;
-
             var fileStream = new FileStream(
                 fileName,
                 FileMode.Open,
@@ -151,7 +156,11 @@ namespace Microsoft.AspNetCore.Http
 
             using (fileStream)
             {
-                fileStream.Seek(offset, SeekOrigin.Begin);
+                if (offset > 0)
+                {
+                    fileStream.Seek(offset, SeekOrigin.Begin);
+                }
+
                 await StreamCopyOperation.CopyToAsync(fileStream, outputStream, count, cancel);
             }
         }
