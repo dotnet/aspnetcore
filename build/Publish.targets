@@ -3,6 +3,7 @@
   <PropertyGroup>
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
     <DependencyPackagesDir>$(RepositoryRoot).deps\packages\</DependencyPackagesDir>
+    <DependencySymbolsDir>$(RepositoryRoot).deps\symbols\</DependencySymbolsDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
     <BaseRuntimeVersionFile>$(IntermediateDir)$(BaseRuntimeVersionFileName)</BaseRuntimeVersionFile>
@@ -72,6 +73,8 @@
         <RelativeBlobPath>$(BlobBasePath)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)</RelativeBlobPath>
         <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
       </FilesToPublish>
+
+      <PackagesToPublishToTransport Include="$(DependencySymbolsDir)\**\*.symbols.nupkg" />
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
