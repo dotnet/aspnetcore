@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc", baseDirectory: "Whitespace in path", additionalProjects: new string[] { })]
+        [InitializeTestProject(originalProjectName: "SimpleMvc", targetProjectName: "SimpleMvc", baseDirectory: "Whitespace in path")]
         public async Task Build_AppWithWhitespaceInPath_CanBuildSuccessfully()
         {
             var result = await DotnetMSBuild(
@@ -47,6 +47,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+        }
+
+        [Fact]
+        [InitializeTestProject(originalProjectName: "SimpleMvc", targetProjectName: "Whitespace in name", baseDirectory: "")]
+        public async Task Build_AppWithWhitespaceInName_CanBuildSuccessfully()
+        {
+            var result = await DotnetMSBuild(
+                "Build",
+                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName}");
+
+            Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "Whitespace in name.dll");
+            Assert.FileExists(result, OutputPath, "Whitespace in name.pdb");
+            Assert.FileExists(result, OutputPath, "Whitespace in name.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "Whitespace in name.PrecompiledViews.pdb");
+
+            Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.RazorCoreGenerate.cache");
+            Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
         }
     }
 }

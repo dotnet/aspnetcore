@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public bool PreserveWorkingDirectory { get; set; }
 #endif
 
-        public static ProjectDirectory Create(string projectName, string baseDirectory, string[] additionalProjects)
+        public static ProjectDirectory Create(string originalProjectName, string targetProjectName, string baseDirectory, string[] additionalProjects)
         {
             var destinationPath = Path.Combine(Path.GetTempPath(), "Razor", baseDirectory, Path.GetRandomFileName());
             Directory.CreateDirectory(destinationPath);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
                 var binariesRoot = Path.GetDirectoryName(typeof(ProjectDirectory).Assembly.Location);
 
-                foreach (var project in new string[] { projectName, }.Concat(additionalProjects))
+                foreach (var project in new string[] { originalProjectName, }.Concat(additionalProjects))
                 {
                     var testAppsRoot = Path.Combine(solutionRoot, "test", "testapps");
                     var projectRoot = Path.Combine(testAppsRoot, project);
@@ -52,13 +52,19 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     CopyDirectory(new DirectoryInfo(projectRoot), projectDestinationDir);
                     SetupDirectoryBuildFiles(solutionRoot, binariesRoot, testAppsRoot, projectDestination);
                 }
-                
+
+                // Rename the csproj
+                var directoryPath = Path.Combine(destinationPath, originalProjectName);
+                var oldProjectFilePath = Path.Combine(directoryPath, originalProjectName + ".csproj");
+                var newProjectFilePath = Path.Combine(directoryPath, targetProjectName + ".csproj");
+                File.Move(oldProjectFilePath, newProjectFilePath);
+
                 CopyGlobalJson(solutionRoot, destinationPath);
 
                 return new ProjectDirectory(
                     destinationPath, 
-                    Path.Combine(destinationPath, projectName),
-                    Path.Combine(destinationPath, projectName, projectName + ".csproj"));
+                    directoryPath,
+                    newProjectFilePath);
             }
             catch
             {
