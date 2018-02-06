@@ -55,23 +55,27 @@ namespace RepoTasks
 
                 string packageVersion;
 
-                if(string.Equals(packageName, "Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(packageName, "Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase)
+                   || string.Equals(packageName, "Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase))
                 {
                     packageVersion = MetaPackageVersion;
                 }
                 else
                 {
-                    try
-                    {
-                        packageVersion = buildArtifacts
-                            .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                            .PackageInfo.Version.ToString();
-                    }
-                    catch (InvalidOperationException)
+                    var packageVersionCandidates = buildArtifacts.Where(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase));
+
+                    if (!packageVersionCandidates.Any())
                     {
                         Log.LogError($"Missing Package: {packageName} from artifacts archive.");
-                        throw;
+                        return false;
                     }
+                    else if (packageVersionCandidates.Count() > 1)
+                    {
+                        Log.LogError($"Duplicate Packages: {packageName} from artifacts archive.");
+                        return false;
+                    }
+
+                    packageVersion = packageVersionCandidates.Single().PackageInfo.Version.ToString();
                 }
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
 
@@ -99,18 +103,20 @@ namespace RepoTasks
             {
                 var packageName = package.ItemSpec;
 
-                string packageVersion;
+                var packageVersionCandidates = buildArtifacts.Where(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase));
 
-                try{
-                    packageVersion = buildArtifacts
-                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                        .PackageInfo.Version.ToString();
-                }
-                catch(InvalidOperationException)
+                if (!packageVersionCandidates.Any())
                 {
                     Log.LogError($"Missing Package: {packageName} from tools archive.");
-                    throw;
+                    return false;
                 }
+                else if (packageVersionCandidates.Count() > 1)
+                {
+                    Log.LogError($"Duplicate Packages: {packageName} from tools archive.");
+                    return false;
+                }
+
+                var packageVersion = packageVersionCandidates.Single().PackageInfo.Version.ToString();
 
                 Log.LogMessage(MessageImportance.High, $" - Tool: {packageName} Version: {packageVersion}");
 
