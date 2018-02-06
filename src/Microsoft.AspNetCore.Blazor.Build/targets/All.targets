@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BlazorBuildExe>dotnet $(MSBuildThisFileDirectory)..\tools\Microsoft.AspNetCore.Blazor.Build.dll</BlazorBuildExe>
+    <BlazorBuildExe>dotnet $(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll</BlazorBuildExe>
   </PropertyGroup>
 
   <Import Project="RazorCompilation.targets" />
