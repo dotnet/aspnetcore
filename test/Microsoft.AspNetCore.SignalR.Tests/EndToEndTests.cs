@@ -326,8 +326,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
             {
-                _serverFixture.SetTestLoggerFactory(loggerFactory);
-
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 var url = _serverFixture.Url + "/uncreatable";

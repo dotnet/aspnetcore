@@ -2,15 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -23,7 +26,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private IWebHost _host;
         private IApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
-        private AsyncForwardingLoggerProvider _asyncLoggerProvider;
+
+        private readonly LogSinkProvider _logSinkProvider;
 
         public string WebSocketsUrl => Url.Replace("http", "ws");
 
@@ -31,27 +35,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ServerFixture()
         {
-            _asyncLoggerProvider = new AsyncForwardingLoggerProvider();
+            _logSinkProvider = new LogSinkProvider();
 
             var testLog = AssemblyTestLog.ForAssembly(typeof(TStartup).Assembly);
             _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}", out _loggerFactory, "ServerFixture");
-            _loggerFactory.AddProvider(_asyncLoggerProvider);
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
+
+            StartServer();
+        }
+
+        private void StartServer()
+        {
             // We're using 127.0.0.1 instead of localhost to ensure that we use IPV4 across different OSes
-            Url = "http://127.0.0.1:" + GetNextPort();
+            var url = "http://127.0.0.1:0";
 
-            StartServer(Url);
-        }
-
-        public void SetTestLoggerFactory(ILoggerFactory loggerFactory)
-        {
-            _asyncLoggerProvider.SetLoggerFactory(loggerFactory);
-        }
-
-        private void StartServer(string url)
-        {
             _host = new WebHostBuilder()
-                .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
+                .ConfigureLogging(builder => builder
+                    .AddProvider(_logSinkProvider)
+                    .AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
                 .UseKestrel()
                 .UseUrls(url)
@@ -61,16 +62,23 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var t = Task.Run(() => _host.Start());
             _logger.LogInformation("Starting test server...");
             _lifetime = _host.Services.GetRequiredService<IApplicationLifetime>();
-            if (!_lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
+
+            // This only happens once per fixture, so we can afford to wait a little bit on it.
+            if (!_lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(20)))
             {
                 // t probably faulted
                 if (t.IsFaulted)
                 {
                     throw t.Exception.InnerException;
                 }
-                throw new TimeoutException("Timed out waiting for application to start.");
+
+                var logs = _logSinkProvider.GetLogs();
+                throw new TimeoutException($"Timed out waiting for application to start.{Environment.NewLine}Startup Logs:{Environment.NewLine}{RenderLogs(logs)}");
             }
             _logger.LogInformation("Test Server started");
+
+            // Get the URL from the server
+            Url = _host.ServerFeatures.Get<IServerAddressesFeature>().Addresses.Single();
 
             _lifetime.ApplicationStopped.Register(() =>
             {
@@ -79,67 +87,29 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             });
         }
 
+        private string RenderLogs(IList<LogRecord> logs)
+        {
+            var builder = new StringBuilder();
+            foreach (var log in logs)
+            {
+                builder.AppendLine($"{log.Timestamp:O} {log.Write.LoggerName} {log.Write.LogLevel}: {log.Write.Formatter(log.Write.State, log.Write.Exception)}");
+                if (log.Write.Exception != null)
+                {
+                    var message = log.Write.Exception.ToString();
+                    foreach (var line in message.Split(new[] { Environment.NewLine }, StringSplitOptions.None))
+                    {
+                        builder.AppendLine($"| {line}");
+                    }
+                }
+            }
+            return builder.ToString();
+        }
+
         public void Dispose()
         {
             _logger.LogInformation("Shutting down test server");
             _host.Dispose();
             _loggerFactory.Dispose();
-        }
-
-        private class AsyncForwardingLoggerProvider : ILoggerProvider
-        {
-            private AsyncLocal<ILoggerFactory> _localLogger = new AsyncLocal<ILoggerFactory>();
-
-            public ILogger CreateLogger(string categoryName)
-            {
-                return new AsyncLocalForwardingLogger(categoryName, _localLogger);
-            }
-
-            public void Dispose()
-            {
-            }
-
-            public void SetLoggerFactory(ILoggerFactory loggerFactory)
-            {
-                _localLogger.Value = loggerFactory;
-            }
-
-            private class AsyncLocalForwardingLogger : ILogger
-            {
-                private string _categoryName;
-                private AsyncLocal<ILoggerFactory> _localLoggerFactory;
-
-                public AsyncLocalForwardingLogger(string categoryName, AsyncLocal<ILoggerFactory> localLoggerFactory)
-                {
-                    _categoryName = categoryName;
-                    _localLoggerFactory = localLoggerFactory;
-                }
-
-                public IDisposable BeginScope<TState>(TState state)
-                {
-                    return GetLocalLogger().BeginScope(state);
-                }
-
-                public bool IsEnabled(LogLevel logLevel)
-                {
-                    return GetLocalLogger().IsEnabled(logLevel);
-                }
-
-                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-                {
-                    GetLocalLogger().Log(logLevel, eventId, state, exception, formatter);
-                }
-
-                private ILogger GetLocalLogger()
-                {
-                    var factory = _localLoggerFactory.Value;
-                    if (factory == null)
-                    {
-                        return NullLogger.Instance;
-                    }
-                    return factory.CreateLogger(_categoryName);
-                }
-            }
         }
 
         private class ForwardingLoggerProvider : ILoggerProvider
@@ -161,18 +131,63 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        // Copied from https://github.com/aspnet/KestrelHttpServer/blob/47f1db20e063c2da75d9d89653fad4eafe24446c/test/Microsoft.AspNetCore.Server.Kestrel.FunctionalTests/AddressRegistrationTests.cs#L508
-        private static int GetNextPort()
+        // TestSink doesn't seem to be thread-safe :(.
+        private class LogSinkProvider : ILoggerProvider
         {
-            using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+            private ConcurrentQueue<LogRecord> _logs = new ConcurrentQueue<LogRecord>();
+
+            public ILogger CreateLogger(string categoryName)
             {
-                // Let the OS assign the next available port. Unless we cycle through all ports
-                // on a test run, the OS will always increment the port number when making these calls.
-                // This prevents races in parallel test runs where a test is already bound to
-                // a given port, and a new test is able to bind to the same port due to port
-                // reuse being enabled by default by the OS.
-                socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
-                return ((IPEndPoint)socket.LocalEndPoint).Port;
+                return new LogSinkLogger(categoryName, this);
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public IList<LogRecord> GetLogs() => _logs.ToList();
+
+            public void Log<TState>(string categoryName, LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                var record = new LogRecord(
+                    DateTime.Now,
+                    new WriteContext()
+                    {
+                        LoggerName = categoryName,
+                        LogLevel = logLevel,
+                        EventId = eventId,
+                        State = state,
+                        Exception = exception,
+                        Formatter = (o, e) => formatter((TState)o, e),
+                    });
+                _logs.Enqueue(record);
+            }
+
+            private class LogSinkLogger : ILogger
+            {
+                private string _categoryName;
+                private LogSinkProvider _logSinkProvider;
+
+                public LogSinkLogger(string categoryName, LogSinkProvider logSinkProvider)
+                {
+                    _categoryName = categoryName;
+                    _logSinkProvider = logSinkProvider;
+                }
+
+                public IDisposable BeginScope<TState>(TState state)
+                {
+                    return null;
+                }
+
+                public bool IsEnabled(LogLevel logLevel)
+                {
+                    return true;
+                }
+
+                public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+                {
+                    _logSinkProvider.Log(_categoryName, logLevel, eventId, state, exception, formatter);
+                }
             }
         }
     }
