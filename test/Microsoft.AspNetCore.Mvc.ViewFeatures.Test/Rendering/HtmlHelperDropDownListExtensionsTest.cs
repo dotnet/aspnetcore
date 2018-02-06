@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.Mvc.Core
     {
         private static readonly List<SelectListItem> BasicSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Text = "Zero",  Value = "0"},
-            new SelectListItem { Text = "One",   Value = "1"},
-            new SelectListItem { Text = "Two",   Value = "2"},
-            new SelectListItem { Text = "Three", Value = "3"},
+            new SelectListItem("Zero", "0"),
+            new SelectListItem("One", "1"),
+            new SelectListItem("Two", "2"),
+            new SelectListItem("Three", "3"),
         };
 
         [Fact]
@@ -78,8 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
@@ -103,8 +103,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
@@ -130,8 +130,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
@@ -178,8 +178,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
@@ -204,8 +204,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));
@@ -230,8 +230,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
                 "</select>";
             var selectList = new List<SelectListItem>
             {
-                new SelectListItem { Text = "Four", Value = "4" },
-                new SelectListItem { Text = "Five", Value = "5" },
+                new SelectListItem("Four", "4"),
+                new SelectListItem("Five", "5"),
             };
             var metadataProvider = new EmptyModelMetadataProvider();
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(new ViewDataDictionary<TestModel>(metadataProvider));

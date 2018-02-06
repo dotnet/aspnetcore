@@ -31,38 +31,38 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 
         private static readonly List<SelectListItem> BasicSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Text = "Zero",  Value = "0"},
-            new SelectListItem { Text = "One",   Value = "1"},
-            new SelectListItem { Text = "Two",   Value = "2"},
-            new SelectListItem { Text = "Three", Value = "3"},
+            new SelectListItem("Zero", "0"),
+            new SelectListItem("One", "1"),
+            new SelectListItem("Two", "2"),
+            new SelectListItem("Three", "3"),
         };
         private static readonly List<SelectListItem> SomeDisabledOneSelectedSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Disabled = false, Selected = false, Text = "Zero",  Value = "0"},
-            new SelectListItem { Disabled = true,  Selected = true,  Text = "One",   Value = "1"},
-            new SelectListItem { Disabled = false, Selected = false, Text = "Two",  Value = "2"},
-            new SelectListItem { Disabled = true,  Selected = false, Text = "Three", Value = "3"},
+            new SelectListItem("Zero",  "0", false, false),
+            new SelectListItem("One",   "1", true, true),
+            new SelectListItem("Two",   "2", false, false),
+            new SelectListItem("Three", "3", false, true),
         };
         private static readonly List<SelectListItem> SomeGroupedSomeSelectedSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Group = GroupOne, Selected = true,  Text = "Zero",  Value = "0"},
-            new SelectListItem { Group = GroupTwo, Selected = false, Text = "One",   Value = "1"},
-            new SelectListItem { Group = GroupOne, Selected = true,  Text = "Two",   Value = "2"},
-            new SelectListItem { Group = null,     Selected = false, Text = "Three", Value = "3"},
+            new SelectListItem("Zero",  "0", true)  { Group = GroupOne },
+            new SelectListItem("One",   "1", false) { Group = GroupTwo },
+            new SelectListItem("Two",   "2", true)  { Group = GroupOne },
+            new SelectListItem("Three", "3", false) { Group = null },
         };
         private static readonly List<SelectListItem> OneGroupSomeSelectedSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Group = GroupOne, Selected = true,  Text = "Zero",  Value = "0"},
-            new SelectListItem { Group = GroupOne, Selected = true,  Text = "One",   Value = "1"},
-            new SelectListItem { Group = GroupOne, Selected = false, Text = "Two",   Value = "2"},
-            new SelectListItem { Group = GroupOne, Selected = false, Text = "Three", Value = "3"},
+            new SelectListItem("Zero",  "0", true)  { Group = GroupOne },
+            new SelectListItem("One",   "1", true)  { Group = GroupOne },
+            new SelectListItem("Two",   "2", false) { Group = GroupOne },
+            new SelectListItem("Three", "3", false) { Group = GroupOne },
         };
         private static readonly List<SelectListItem> OneDisabledGroupAllSelectedSelectList = new List<SelectListItem>
         {
-            new SelectListItem { Group = DisabledGroup, Selected = true, Text = "Zero",  Value = "0"},
-            new SelectListItem { Group = DisabledGroup, Selected = true, Text = "One",   Value = "1"},
-            new SelectListItem { Group = DisabledGroup, Selected = true, Text = "Two",   Value = "2"},
-            new SelectListItem { Group = DisabledGroup, Selected = true, Text = "Three", Value = "3"},
+            new SelectListItem("Zero",  "0", true)  { Group = DisabledGroup },
+            new SelectListItem("One",   "1", true)  { Group = DisabledGroup },
+            new SelectListItem("Two",   "2", true) { Group = DisabledGroup },
+            new SelectListItem("Three", "3", true) { Group = DisabledGroup },
         };
         private static readonly List<SelectListItem> SourcesSelectList = new List<SelectListItem>
         {

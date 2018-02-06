@@ -33,12 +33,23 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <param name="text">The display text of this <see cref="SelectListItem"/>.</param>
         /// <param name="value">The value of this <see cref="SelectListItem"/>.</param>
         /// <param name="selected">Value that indicates whether this <see cref="SelectListItem"/> is selected.</param>
-        /// <param name="disabled">Value that indicates whether this <see cref="SelectListItem"/> is disabled.</param>
-        public SelectListItem(string text, string value, bool selected, bool disabled)
+        public SelectListItem(string text, string value, bool selected)
             : this(text, value)
         {
-            Disabled = disabled;
             Selected = selected;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SelectListItem"/>.
+        /// </summary>
+        /// <param name="text">The display text of this <see cref="SelectListItem"/>.</param>
+        /// <param name="value">The value of this <see cref="SelectListItem"/>.</param>
+        /// <param name="selected">Value that indicates whether this <see cref="SelectListItem"/> is selected.</param>
+        /// <param name="disabled">Value that indicates whether this <see cref="SelectListItem"/> is disabled.</param>
+        public SelectListItem(string text, string value, bool selected, bool disabled)
+            : this(text, value, selected)
+        {
+            Disabled = disabled;
         }
 
         /// <summary>
