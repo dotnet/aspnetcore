@@ -202,10 +202,10 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             // Now locate any added/changed/removed properties
             var oldStartIndex = oldComponentIndex + 1;
             var newStartIndex = newComponentIndex + 1;
-            var oldEndIndexIncl = oldComponentFrame.ElementDescendantsEndIndex;
-            var newEndIndexIncl = newComponentFrame.ElementDescendantsEndIndex;
-            var hasMoreOld = oldEndIndexIncl >= oldStartIndex;
-            var hasMoreNew = newEndIndexIncl >= newStartIndex;
+            var oldEndIndexExcl = oldComponentIndex + oldComponentFrame.ComponentSubtreeLength;
+            var newEndIndexExcl = newComponentIndex + newComponentFrame.ComponentSubtreeLength;
+            var hasMoreOld = oldEndIndexExcl > oldStartIndex;
+            var hasMoreNew = newEndIndexExcl > newStartIndex;
             while (hasMoreOld || hasMoreNew)
             {
                 var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
@@ -240,8 +240,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                     oldStartIndex++;
                     newStartIndex++;
-                    hasMoreOld = oldEndIndexIncl >= oldStartIndex;
-                    hasMoreNew = newEndIndexIncl >= newStartIndex;
+                    hasMoreOld = oldEndIndexExcl > oldStartIndex;
+                    hasMoreNew = newEndIndexExcl > newStartIndex;
                 }
                 else
                 {
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         SetChildComponentProperty(componentInstance, newFrame.AttributeName, newFrame.AttributeValue);
                         hasSetAnyProperty = true;
                         newStartIndex++;
-                        hasMoreNew = newEndIndexIncl >= newStartIndex;
+                        hasMoreNew = newEndIndexExcl > newStartIndex;
                     }
                     else
                     {
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         RemoveChildComponentProperty(componentInstance, oldFrame.AttributeName);
                         hasSetAnyProperty = true;
                         oldStartIndex++;
-                        hasMoreOld = oldEndIndexIncl >= oldStartIndex;
+                        hasMoreOld = oldEndIndexExcl > oldStartIndex;
                     }
                 }
             }
@@ -312,10 +312,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             return property;
         }
 
-        private static int NextSiblingIndex(in RenderTreeFrame frame, int frameIndex)
+        private static int NextSiblingIndex(RenderTreeFrame frame, int frameIndex)
         {
-            var descendantsEndIndex = frame.ElementDescendantsEndIndex;
-            return (descendantsEndIndex == 0 ? frameIndex : descendantsEndIndex) + 1;
+            var subtreeLength = frame.ElementSubtreeLength;
+            var distanceToNextSibling = subtreeLength == 0
+                ? 1                 // For frames that don't have a subtree length set, such as text frames
+                : subtreeLength;    // For element or component frames
+            return frameIndex + distanceToNextSibling;
         }
 
         private void AppendDiffEntriesForFramesWithSameSequence(
@@ -360,8 +363,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                                 ref siblingIndex);
 
                             // Diff the children
-                            var oldFrameChildrenEndIndexExcl = oldFrame.ElementDescendantsEndIndex + 1;
-                            var newFrameChildrenEndIndexExcl = newFrame.ElementDescendantsEndIndex + 1;
+                            var oldFrameChildrenEndIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
+                            var newFrameChildrenEndIndexExcl = newFrameIndex + newFrame.ElementSubtreeLength;
                             var hasChildrenToProcess =
                                 oldFrameChildrenEndIndexExcl > oldFrameAttributesEndIndexExcl ||
                                 newFrameChildrenEndIndexExcl > newFrameAttributesEndIndexExcl;
@@ -450,9 +453,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         private int GetAttributesEndIndexExclusive(RenderTreeFrame[] tree, int rootIndex)
         {
-            var descendantsEndIndex = tree[rootIndex].ElementDescendantsEndIndex;
+            var descendantsEndIndexExcl = rootIndex + tree[rootIndex].ElementSubtreeLength;
             var index = rootIndex + 1;
-            for (; index <= descendantsEndIndex; index++)
+            for (; index < descendantsEndIndexExcl; index++)
             {
                 if (tree[index].FrameType != RenderTreeFrameType.Attribute)
                 {
@@ -481,8 +484,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         private void InstantiateChildComponents(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int elementOrComponentIndex)
         {
-            var endIndex = frames[elementOrComponentIndex].ElementDescendantsEndIndex;
-            for (var i = elementOrComponentIndex; i <= endIndex; i++)
+            var endIndexExcl = elementOrComponentIndex + frames[elementOrComponentIndex].ElementSubtreeLength;
+            for (var i = elementOrComponentIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
                 if (frame.FrameType == RenderTreeFrameType.Component)
@@ -496,8 +499,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     var childComponentInstance = frame.Component;
 
                     // All descendants of a component are its properties
-                    var componentDescendantsEndIndex = frame.ElementDescendantsEndIndex;
-                    for (var attributeFrameIndex = i + 1; attributeFrameIndex <= componentDescendantsEndIndex; attributeFrameIndex++)
+                    var componentDescendantsEndIndexExcl = i + frame.ComponentSubtreeLength;
+                    for (var attributeFrameIndex = i + 1; attributeFrameIndex < componentDescendantsEndIndexExcl; attributeFrameIndex++)
                     {
                         ref var attributeFrame = ref frames[attributeFrameIndex];
                         SetChildComponentProperty(
@@ -530,8 +533,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         private void DisposeChildComponents(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int elementOrComponentIndex)
         {
-            var endIndex = frames[elementOrComponentIndex].ElementDescendantsEndIndex;
-            for (var i = elementOrComponentIndex; i <= endIndex; i++)
+            var endIndexExcl = elementOrComponentIndex + frames[elementOrComponentIndex].ElementSubtreeLength;
+            for (var i = elementOrComponentIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
                 if (frame.FrameType == RenderTreeFrameType.Component)

@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Blazor.Test.Shared
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);
             Assert.Equal(textContent, frame.TextContent);
-            Assert.Equal(0, frame.ElementDescendantsEndIndex);
+            Assert.Equal(0, frame.ElementSubtreeLength);
             AssertFrame.Sequence(frame, sequence);
         }
 
-        public static void Element(RenderTreeFrame frame, string elementName, int descendantsEndIndex, int? sequence = null)
+        public static void Element(RenderTreeFrame frame, string elementName, int subtreeLength, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.Element, frame.FrameType);
             Assert.Equal(elementName, frame.ElementName);
-            Assert.Equal(descendantsEndIndex, frame.ElementDescendantsEndIndex);
+            Assert.Equal(subtreeLength, frame.ElementSubtreeLength);
             AssertFrame.Sequence(frame, sequence);
         }
 

@@ -313,7 +313,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange
             oldTree.OpenComponent<FakeComponent>(123);
+            oldTree.CloseComponent();
             newTree.OpenComponent<FakeComponent2>(123);
+            newTree.CloseComponent();
 
             // Act
             var renderBatch = GetRenderedBatch();

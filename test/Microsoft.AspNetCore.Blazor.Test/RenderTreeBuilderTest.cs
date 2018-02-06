@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void UnclosedElementsHaveNoEndDescendantIndex()
+        public void UnclosedElementsHaveNoSubtreeLength()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void ClosedEmptyElementsHaveSelfAsEndDescendantIndex()
+        public void ClosedEmptyElementsHaveSubtreeLengthOne()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void ClosedElementsHaveCorrectEndDescendantIndex()
+        public void ClosedElementsHaveCorrectSubtreeLength()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Assert
             var frames = builder.GetFrames();
             Assert.Equal(4, frames.Count);
-            AssertFrame.Element(frames.Array[0], "my element", 2);
+            AssertFrame.Element(frames.Array[0], "my element", 3);
         }
 
         [Fact]
@@ -152,13 +152,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 frame => AssertFrame.Element(frame, "root", 10),
                 frame => AssertFrame.Text(frame, "root text 1"),
                 frame => AssertFrame.Text(frame, "root text 2"),
-                frame => AssertFrame.Element(frame, "child", 8),
+                frame => AssertFrame.Element(frame, "child", 5),
                 frame => AssertFrame.Text(frame, "child text"),
-                frame => AssertFrame.Element(frame, "grandchild", 8),
+                frame => AssertFrame.Element(frame, "grandchild", 3),
                 frame => AssertFrame.Text(frame, "grandchild text 1"),
                 frame => AssertFrame.Text(frame, "grandchild text 2"),
                 frame => AssertFrame.Text(frame, "root text 3"),
-                frame => AssertFrame.Element(frame, "child 2", 10),
+                frame => AssertFrame.Element(frame, "child 2", 1),
                 frame => AssertFrame.Text(frame, "standalone text 2"));
         }
 
@@ -181,10 +181,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(builder.GetFrames(),
-                frame => AssertFrame.Element(frame, "myelement", 5),
+                frame => AssertFrame.Element(frame, "myelement", 6),
                 frame => AssertFrame.Attribute(frame, "attribute1", "value 1"),
                 frame => AssertFrame.Attribute(frame, "attribute2", "123"),
-                frame => AssertFrame.Element(frame, "child", 5),
+                frame => AssertFrame.Element(frame, "child", 3),
                 frame => AssertFrame.Attribute(frame, "childevent", eventHandler),
                 frame => AssertFrame.Text(frame, "some text"));
         }
@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(builder.GetFrames(),
-                frame => AssertFrame.Element(frame, "parent", 5),
+                frame => AssertFrame.Element(frame, "parent", 6),
                 frame => AssertFrame.Component<TestComponent>(frame),
                 frame => AssertFrame.Attribute(frame, "child1attribute1", "A"),
                 frame => AssertFrame.Attribute(frame, "child1attribute2", "B"),

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(renderer.Batches.Single().RenderTreesByComponentId[componentId],
-                frame => AssertFrame.Element(frame, "my element", 1),
+                frame => AssertFrame.Element(frame, "my element", 2),
                 frame => AssertFrame.Text(frame, "some text"));
         }
 

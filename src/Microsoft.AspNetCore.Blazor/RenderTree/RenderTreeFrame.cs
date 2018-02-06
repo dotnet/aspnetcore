@@ -45,11 +45,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         // --------------------------------------------------------------------------------
 
         /// <summary>
-        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
-        /// gets the index of the final descendant frame in the tree. The value is
-        /// zero if the frame has not yet been closed.
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>
+        /// gets the number of frames in the subtree for which this frame is the root.
+        /// The value is zero if the frame has not yet been closed.
         /// </summary>
-        [FieldOffset(8)] public readonly int ElementDescendantsEndIndex;
+        [FieldOffset(8)] public readonly int ElementSubtreeLength;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
@@ -88,11 +88,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         // --------------------------------------------------------------------------------
 
         /// <summary>
-        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
-        /// gets the index of the final descendant frame in the tree. The value is
-        /// zero if the frame has not yet been closed.
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>
+        /// gets the number of frames in the subtree for which this frame is the root.
+        /// The value is zero if the frame has not yet been closed.
         /// </summary>
-        [FieldOffset(8)] public readonly int ComponentDescendantsEndIndex;
+        [FieldOffset(8)] public readonly int ComponentSubtreeLength;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
@@ -112,26 +112,26 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         [FieldOffset(24)] public readonly IComponent Component;
 
-        private RenderTreeFrame(int sequence, string elementName, int descendantsEndIndex)
+        private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength)
             : this()
         {
             FrameType = RenderTreeFrameType.Element;
             Sequence = sequence;
             ElementName = elementName;
-            ElementDescendantsEndIndex = descendantsEndIndex;
+            ElementSubtreeLength = elementSubtreeLength;
         }
 
-        private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex)
+        private RenderTreeFrame(int sequence, Type componentType, int componentSubtreeLength)
             : this()
         {
             FrameType = RenderTreeFrameType.Component;
             Sequence = sequence;
             ComponentType = componentType;
-            ComponentDescendantsEndIndex = descendantsEndIndex;
+            ComponentSubtreeLength = componentSubtreeLength;
         }
 
-        private RenderTreeFrame(int sequence, Type componentType, int descendantsEndIndex, int componentId, IComponent component)
-            : this(sequence, componentType, descendantsEndIndex)
+        private RenderTreeFrame(int sequence, Type componentType, int subtreeLength, int componentId, IComponent component)
+            : this(sequence, componentType, subtreeLength)
         {
             ComponentId = componentId;
             Component = component;
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         internal static RenderTreeFrame Element(int sequence, string elementName)
-            => new RenderTreeFrame(sequence, elementName: elementName, descendantsEndIndex: 0);
+            => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0);
 
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, textContent: textContent);
@@ -169,16 +169,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal static RenderTreeFrame ChildComponent<T>(int sequence) where T : IComponent
             => new RenderTreeFrame(sequence, typeof(T), 0);
 
-        internal RenderTreeFrame WithElementDescendantsEndIndex(int descendantsEndIndex)
-            => new RenderTreeFrame(Sequence, elementName: ElementName, descendantsEndIndex: descendantsEndIndex);
+        internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
+            => new RenderTreeFrame(Sequence, elementName: ElementName, elementSubtreeLength: elementSubtreeLength);
 
-        internal RenderTreeFrame WithComponentDescendantsEndIndex(int descendantsEndIndex)
-            => new RenderTreeFrame(Sequence, componentType: ComponentType, descendantsEndIndex: descendantsEndIndex);
+        internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
+            => new RenderTreeFrame(Sequence, componentType: ComponentType, componentSubtreeLength: componentSubtreeLength);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
             => new RenderTreeFrame(sequence, attributeName: AttributeName, attributeValue: AttributeValue);
 
         internal RenderTreeFrame WithComponentInstance(int componentId, IComponent component)
-            => new RenderTreeFrame(Sequence, ComponentType, ComponentDescendantsEndIndex, componentId, component);
+            => new RenderTreeFrame(Sequence, ComponentType, ComponentSubtreeLength, componentId, component);
     }
 }

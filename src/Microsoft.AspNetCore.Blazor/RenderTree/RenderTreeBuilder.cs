@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithElementDescendantsEndIndex(_entries.Count - 1);
+            entry = entry.WithElementSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
 
         /// <summary>
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithComponentDescendantsEndIndex(_entries.Count - 1);
+            entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
 
         /// <summary>

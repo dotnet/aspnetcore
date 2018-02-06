@@ -115,15 +115,15 @@ export class BrowserRenderer {
     insertNodeIntoDOM(newDomElement, parent, childIndex);
 
     // Apply attributes
-    const descendantsEndIndex = renderTreeFrame.descendantsEndIndex(frame);
-    for (let descendantIndex = frameIndex + 1; descendantIndex <= descendantsEndIndex; descendantIndex++) {
+    const descendantsEndIndexExcl = frameIndex + renderTreeFrame.subtreeLength(frame);
+    for (let descendantIndex = frameIndex + 1; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
       const descendantFrame = getTreeFramePtr(frames, descendantIndex);
       if (renderTreeFrame.frameType(descendantFrame) === FrameType.attribute) {
         this.applyAttribute(componentId, newDomElement, descendantFrame, descendantIndex);
       } else {
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
-        this.insertFrameRange(componentId, newDomElement, 0, frames, descendantIndex, descendantsEndIndex);
+        this.insertFrameRange(componentId, newDomElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
         break;
       }
     }
@@ -197,16 +197,16 @@ export class BrowserRenderer {
     }
   }
 
-  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndex: number) {
-    for (let index = startIndex; index <= endIndex; index++) {
+  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndexExcl: number) {
+    for (let index = startIndex; index < endIndexExcl; index++) {
       const frame = getTreeFramePtr(frames, index);
       this.insertFrame(componentId, parent, childIndex, frames, frame, index);
       childIndex++;
 
       // Skip over any descendants, since they are already dealt with recursively
-      const descendantsEndIndex = renderTreeFrame.descendantsEndIndex(frame);
-      if (descendantsEndIndex > 0) {
-        index = descendantsEndIndex;
+      const subtreeLength = renderTreeFrame.subtreeLength(frame);
+      if (subtreeLength > 1) {
+        index += subtreeLength - 1;
       }
     }
   }
