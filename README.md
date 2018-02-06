@@ -2,6 +2,8 @@
 
 **An experimental web UI framework using C#/Razor and HTML, running in the browser via WebAssembly**
 
+[![Gitter](https://badges.gitter.im/aspnet/Blazor.svg)](https://gitter.im/aspnet/Blazor?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Blazor is a .NET web framework that runs in any browser. You author Blazor apps using C#/Razor and HTML.
 
 Blazor uses only the latest web standards. No plugins or transpilation needed. It runs in the browser on a real .NET runtime ([Mono](http://www.mono-project.com/news/2017/08/09/hello-webassembly/)) implemented in [WebAssembly](http://webassembly.org) that executes normal .NET assemblies. It works in older browsers too by falling back to an [asm.js](http://asmjs.org/) based .NET runtime.
