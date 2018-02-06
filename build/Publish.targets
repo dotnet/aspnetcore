@@ -1,5 +1,7 @@
 <Project>
 
+  <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
+
   <!-- Builds and uploads VSIX packages manifests to VS drop share -->
   <Target Name="RunVSDrop" DependsOnTargets="GetToolsets" Condition="'$(PublishToVSDrop)' == 'true'">
     <Error Text="Cannot publish unsigned files to VS drops. Set SignType to 'real' to ensuring files are signed first."
