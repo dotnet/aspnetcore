@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.DataProtection
                 // Not expired - split and return payload
                 byte[] retVal = new byte[plaintextWithHeader.Length - 8];
                 Buffer.BlockCopy(plaintextWithHeader, 8, retVal, 0, retVal.Length);
-                expiration = new DateTimeOffset((long)utcTicksExpiration, TimeSpan.Zero);
+                expiration = embeddedExpiration;
                 return retVal;
             }
             catch (Exception ex) when (ex.RequiresHomogenization())
