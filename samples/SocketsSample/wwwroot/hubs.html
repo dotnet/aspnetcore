@@ -97,12 +97,32 @@
 
     let connectButton = document.getElementById('connect');
     let disconnectButton = document.getElementById('disconnect');
-    disconnectButton.disabled = true;
+    let broadcastButton = document.getElementById('broadcast');
+    let broadcastExceptMeButton = document.getElementById('broadcast-exceptme');
+    let sendToConnectionButton = document.getElementById('connection-send');
+    let joinGroupButton = document.getElementById('join-group');
+    let leaveGroupButton = document.getElementById('leave-group');
+    let groupMsgButton = document.getElementById('groupmsg');
+    let othersGroupMsgButton = document.getElementById('others-groupmsg');
+    let sendButton = document.getElementById('send');
+
+    function updateButtonState(isConnected) {
+        broadcastButton.disabled = !isConnected;
+        broadcastExceptMeButton.disabled = !isConnected;
+        sendToConnectionButton.disabled = !isConnected;
+        joinGroupButton.disabled = !isConnected;
+        leaveGroupButton.disabled = !isConnected;
+        groupMsgButton.disabled = !isConnected;
+        othersGroupMsgButton.disabled = !isConnected;
+        sendButton.disabled = !isConnected;
+        disconnectButton.disabled = !isConnected;
+        connectButton.disabled = isConnected;
+    }
+
+    updateButtonState(false);
     var connection;
 
     click('connect', function (event) {
-        connectButton.disabled = true;
-        disconnectButton.disabled = false;
         console.log('http://' + document.location.host + '/' + hubRoute);
         connection = new signalR.HubConnection(hubRoute, { transport: transportType, logger: logger });
         connection.on('Send', function (msg) {
@@ -116,24 +136,26 @@
             else {
                 addLine('message-list', 'Disconnected', 'green');
             }
+            updateButtonState(false);
         });
 
         connection.start()
             .then(function () {
                 isConnected = true;
+                updateButtonState(true);
                 addLine('message-list', 'Connected successfully', 'green');
             })
             .catch(function (err) {
+                updateButtonState(false);
                 addLine('message-list', err, 'red');
             });
     });
 
     click('disconnect', function (event) {
-        connectButton.disabled = false;
-        disconnectButton.disabled = true;
         connection.stop()
             .then(function () {
                 isConnected = false;
+                updateButtonState(false);
             });
     });
 
