@@ -4,7 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
-    <RunArguments>run --project ..\..\src\Microsoft.AspNetCore.Blazor.DevHost serve</RunArguments>
+    <RunArguments>run --project ../../src/Microsoft.AspNetCore.Blazor.DevHost serve</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
