@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { LoggerFactory } from "../src/Loggers"
-import { ILogger, LogLevel } from "../src/ILogger"
+import { ILogger, LogLevel } from "../src/ILogger";
+import { LoggerFactory } from "../src/Loggers";
 
 describe("LoggerFactory", () => {
     it("creates ConsoleLogger when no logging specified", () => {
@@ -18,7 +18,7 @@ describe("LoggerFactory", () => {
     });
 
     it("does not create its own logger if the user provides one", () => {
-        let customLogger : ILogger = { log: LogLevel => {} };
+        const customLogger: ILogger = { log: (logLevel) => {} };
         expect(LoggerFactory.createLogger(customLogger)).toBe(customLogger);
     });
 });

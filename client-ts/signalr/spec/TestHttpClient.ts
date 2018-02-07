@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient"
+import { HttpClient, HttpRequest, HttpResponse } from "../src/HttpClient";
 
 type TestHttpHandlerResult = HttpResponse | string;
 export type TestHttpHandler = (request: HttpRequest, next?: (request: HttpRequest) => Promise<HttpResponse>) => Promise<TestHttpHandlerResult> | TestHttpHandlerResult;
@@ -16,28 +16,26 @@ export class TestHttpClient extends HttpClient {
 
     }
 
-    send(request: HttpRequest): Promise<HttpResponse> {
+    public send(request: HttpRequest): Promise<HttpResponse> {
         return this.handler(request);
     }
 
-    on(handler: TestHttpHandler): TestHttpClient;
-    on(method: string | RegExp, handler: TestHttpHandler): TestHttpClient;
-    on(method: string | RegExp, url: string, handler: TestHttpHandler): TestHttpClient;
-    on(method: string | RegExp, url: RegExp, handler: TestHttpHandler): TestHttpClient;
-    on(methodOrHandler: string | RegExp | TestHttpHandler, urlOrHandler?: string | RegExp | TestHttpHandler, handler?: TestHttpHandler): TestHttpClient {
+    public on(handler: TestHttpHandler): TestHttpClient;
+    public on(method: string | RegExp, handler: TestHttpHandler): TestHttpClient;
+    public on(method: string | RegExp, url: string, handler: TestHttpHandler): TestHttpClient;
+    public on(method: string | RegExp, url: RegExp, handler: TestHttpHandler): TestHttpClient;
+    public on(methodOrHandler: string | RegExp | TestHttpHandler, urlOrHandler?: string | RegExp | TestHttpHandler, handler?: TestHttpHandler): TestHttpClient {
         let method: string | RegExp;
         let url: string | RegExp;
         if ((typeof methodOrHandler === "string") || (methodOrHandler instanceof RegExp)) {
             method = methodOrHandler;
-        }
-        else if (methodOrHandler) {
+        } else if (methodOrHandler) {
             handler = methodOrHandler;
         }
 
         if ((typeof urlOrHandler === "string") || (urlOrHandler instanceof RegExp)) {
             url = urlOrHandler;
-        }
-        else if (urlOrHandler) {
+        } else if (urlOrHandler) {
             handler = urlOrHandler;
         }
 
@@ -46,10 +44,10 @@ export class TestHttpClient extends HttpClient {
             throw new Error("Missing required argument: 'handler'");
         }
 
-        let oldHandler = this.handler;
-        let newHandler = async (request: HttpRequest) => {
+        const oldHandler = this.handler;
+        const newHandler = async (request: HttpRequest) => {
             if (matches(method, request.method) && matches(url, request.url)) {
-                let promise = handler(request, oldHandler);
+                const promise = handler(request, oldHandler);
 
                 let val: TestHttpHandlerResult;
                 if (promise instanceof Promise) {
@@ -60,12 +58,10 @@ export class TestHttpClient extends HttpClient {
 
                 if (typeof val === "string") {
                     return new HttpResponse(200, "OK", val);
-                }
-                else {
+                } else {
                     return val;
                 }
-            }
-            else {
+            } else {
                 return await oldHandler(request);
             }
         };
@@ -83,8 +79,7 @@ function matches(pattern: string | RegExp, actual: string): boolean {
 
     if (typeof pattern === "string") {
         return actual === pattern;
-    }
-    else {
+    } else {
         return pattern.test(actual);
     }
 }

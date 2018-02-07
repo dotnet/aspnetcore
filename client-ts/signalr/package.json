@@ -12,7 +12,8 @@
   },
   "scripts": {
     "clean": "node ../node_modules/rimraf/bin.js ./dist ./.rpt2_cache",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build": "npm run clean && npm run build:lint && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:esm": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm --target ES2015 -d && node ./build/process-dts.js",
     "build:cjs": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs --target ES5",
     "build:browser": "node ../node_modules/rollup/bin/rollup -c",

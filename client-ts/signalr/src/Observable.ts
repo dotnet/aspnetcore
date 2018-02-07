@@ -11,8 +11,8 @@ export interface Observer<T> {
 }
 
 export class Subscription<T> {
-    subject: Subject<T>;
-    observer: Observer<T>;
+    private subject: Subject<T>;
+    private observer: Observer<T>;
 
     constructor(subject: Subject<T>, observer: Observer<T>) {
         this.subject = subject;
@@ -20,7 +20,7 @@ export class Subscription<T> {
     }
 
     public dispose(): void {
-        let index: number = this.subject.observers.indexOf(this.observer);
+        const index: number = this.subject.observers.indexOf(this.observer);
         if (index > -1) {
             this.subject.observers.splice(index, 1);
         }
@@ -36,8 +36,8 @@ export interface Observable<T> {
 }
 
 export class Subject<T> implements Observable<T> {
-    observers: Observer<T>[];
-    cancelCallback: () => Promise<void>;
+    public observers: Array<Observer<T>>;
+    public cancelCallback: () => Promise<void>;
 
     constructor(cancelCallback: () => Promise<void>) {
         this.observers = [];
@@ -45,13 +45,13 @@ export class Subject<T> implements Observable<T> {
     }
 
     public next(item: T): void {
-        for (let observer of this.observers) {
+        for (const observer of this.observers) {
             observer.next(item);
         }
     }
 
     public error(err: any): void {
-        for (let observer of this.observers) {
+        for (const observer of this.observers) {
             if (observer.error) {
                 observer.error(err);
             }
@@ -59,7 +59,7 @@ export class Subject<T> implements Observable<T> {
     }
 
     public complete(): void {
-        for (let observer of this.observers) {
+        for (const observer of this.observers) {
             if (observer.complete) {
                 observer.complete();
             }

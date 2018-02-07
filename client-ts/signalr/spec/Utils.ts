@@ -4,8 +4,8 @@
 export function asyncit(expectation: string, assertion?: () => Promise<any> | void, timeout?: number): void {
     let testFunction: (done: DoneFn) => void;
     if (assertion) {
-        testFunction = done => {
-            let promise = assertion();
+        testFunction = (done) => {
+            const promise = assertion();
             if (promise) {
                 promise.then(() => done())
                     .catch((err) => {
@@ -31,13 +31,13 @@ export async function captureException(fn: () => Promise<any>): Promise<Error> {
 }
 
 export function delay(durationInMilliseconds: number): Promise<void> {
-    let source = new PromiseSource<void>();
+    const source = new PromiseSource<void>();
     setTimeout(() => source.resolve(), durationInMilliseconds);
     return source.promise;
 }
 
 export class PromiseSource<T> {
-    public promise: Promise<T>
+    public promise: Promise<T>;
 
     private resolver: (value?: T | PromiseLike<T>) => void;
     private rejecter: (reason?: any) => void;
@@ -49,11 +49,11 @@ export class PromiseSource<T> {
         });
     }
 
-    resolve(value?: T | PromiseLike<T>) {
+    public resolve(value?: T | PromiseLike<T>) {
         this.resolver(value);
     }
 
-    reject(reason?: any) {
+    public reject(reason?: any) {
         this.rejecter(reason);
     }
 }

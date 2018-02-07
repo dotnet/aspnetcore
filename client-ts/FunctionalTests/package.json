@@ -10,7 +10,8 @@
   },
   "scripts": {
     "clean": "node ../node_modules/rimraf/bin.js ./wwwroot/dist",
-    "build": "npm run build:tsc && npm run build:rollup",
+    "build": "npm run build:lint && npm run build:tsc && npm run build:rollup",
+    "build:lint": "node ../node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:tsc": "node ../node_modules/typescript/bin/tsc --project ./tsconfig.json",
     "build:rollup": "node ../node_modules/rollup/bin/rollup -c"
   },

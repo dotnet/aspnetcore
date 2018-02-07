@@ -1,32 +1,32 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { IConnection } from "../src/IConnection"
-import { HubConnection } from "../src/HubConnection"
-import { DataReceived, ConnectionClosed } from "../src/Common"
-import { TransportType, ITransport, TransferMode } from "../src/Transports"
-import { Observer } from "../src/Observable"
-import { TextMessageFormat } from "../src/TextMessageFormat"
-import { ILogger, LogLevel } from "../src/ILogger"
-import { MessageType } from "../src/IHubProtocol"
+import { ConnectionClosed, DataReceived } from "../src/Common";
+import { HubConnection } from "../src/HubConnection";
+import { IConnection } from "../src/IConnection";
+import { MessageType } from "../src/IHubProtocol";
+import { ILogger, LogLevel } from "../src/ILogger";
+import { Observer } from "../src/Observable";
+import { TextMessageFormat } from "../src/TextMessageFormat";
+import { ITransport, TransferMode, TransportType } from "../src/Transports";
 
-import { asyncit as it, captureException, delay, PromiseSource } from './Utils';
 import { IHubConnectionOptions } from "../src/HubConnection";
+import { asyncit as it, captureException, delay, PromiseSource } from "./Utils";
 
 const commonOptions: IHubConnectionOptions = {
     logger: null,
-}
+};
 
 describe("HubConnection", () => {
 
     describe("start", () => {
         it("sends negotiation message", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             await hubConnection.start();
-            expect(connection.sentData.length).toBe(1)
+            expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
-                protocol: "json"
+                protocol: "json",
             });
             await hubConnection.stop();
         });
@@ -34,21 +34,21 @@ describe("HubConnection", () => {
 
     describe("send", () => {
         it("sends a non blocking invocation", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.send("testMethod", "arg", 42)
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.send("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
             // Verify the message is sent
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
-                type: MessageType.Invocation,
-                target: "testMethod",
                 arguments: [
                     "arg",
-                    42
-                ]
+                    42,
+                ],
+                target: "testMethod",
+                type: MessageType.Invocation,
             });
 
             // Close the connection
@@ -58,22 +58,22 @@ describe("HubConnection", () => {
 
     describe("invoke", () => {
         it("sends an invocation", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod", "arg", 42)
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
             // Verify the message is sent
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
-                type: MessageType.Invocation,
-                invocationId: connection.lastInvocationId,
-                target: "testMethod",
                 arguments: [
                     "arg",
-                    42
-                ]
+                    42,
+                ],
+                invocationId: connection.lastInvocationId,
+                target: "testMethod",
+                type: MessageType.Invocation,
             });
 
             // Close the connection
@@ -81,22 +81,22 @@ describe("HubConnection", () => {
         });
 
         it("rejects the promise when an error is received", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, error: "foo" });
 
-            let ex = await captureException(async () => invokePromise);
+            const ex = await captureException(async () => invokePromise);
             expect(ex.message).toBe("foo");
         });
 
         it("resolves the promise when a result is received", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
 
@@ -104,84 +104,84 @@ describe("HubConnection", () => {
         });
 
         it("completes pending invocations when stopped", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod");
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod");
             hubConnection.stop();
 
-            let ex = await captureException(async () => await invokePromise);
+            const ex = await captureException(async () => await invokePromise);
             expect(ex.message).toBe("Invocation canceled due to connection being closed.");
         });
 
         it("completes pending invocations when connection is lost", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod");
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod");
             // Typically this would be called by the transport
             connection.onclose(new Error("Connection lost"));
 
-            let ex = await captureException(async () => await invokePromise);
+            const ex = await captureException(async () => await invokePromise);
             expect(ex.message).toBe("Connection lost");
         });
     });
 
     describe("on", () => {
         it("invocations ignored in callbacks not registered", async () => {
-            let warnings: string[] = [];
-            let logger = <ILogger>{
-                log: function (logLevel: LogLevel, message: string) {
+            const warnings: string[] = [];
+            const logger = {
+                log: (logLevel: LogLevel, message: string) => {
                     if (logLevel === LogLevel.Warning) {
                         warnings.push(message);
                     }
-                }
-            };
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { logger: logger });
+                },
+            } as ILogger;
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger });
 
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: ["test"],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             expect(warnings).toEqual(["No client method with the name 'message' found."]);
         });
 
         it("callback invoked when servers invokes a method on the client", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             let value = "";
-            hubConnection.on("message", v => value = v);
+            hubConnection.on("message", (v) => value = v);
 
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: ["test"],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             expect(value).toBe("test");
         });
 
         it("can have multiple callbacks", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             let numInvocations1 = 0;
             let numInvocations2 = 0;
             hubConnection.on("message", () => numInvocations1++);
             hubConnection.on("message", () => numInvocations2++);
 
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: [],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             expect(numInvocations1).toBe(1);
@@ -189,56 +189,56 @@ describe("HubConnection", () => {
         });
 
         it("can unsubscribe from on", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
 
-            var numInvocations = 0;
-            var callback = () => numInvocations++;
+            let numInvocations = 0;
+            const callback = () => numInvocations++;
             hubConnection.on("message", callback);
 
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: [],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             hubConnection.off("message", callback);
 
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: [],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             expect(numInvocations).toBe(1);
         });
 
         it("unsubscribing from non-existing callbacks no-ops", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
 
             hubConnection.off("_", () => { });
-            hubConnection.on("message", t => { });
+            hubConnection.on("message", (t) => { });
             hubConnection.on("message", () => { });
         });
 
         it("using null/undefined for methodName or method no-ops", async () => {
-            let warnings: string[] = [];
-            let logger = <ILogger>{
-                log: function (logLevel: LogLevel, message: string) {
+            const warnings: string[] = [];
+            const logger = {
+                log(logLevel: LogLevel, message: string) {
                     if (logLevel === LogLevel.Warning) {
                         warnings.push(message);
                     }
 
-                }
-            };
+                },
+            } as ILogger;
 
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { logger: logger });
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger });
 
             hubConnection.on(null, undefined);
             hubConnection.on(undefined, null);
@@ -249,11 +249,11 @@ describe("HubConnection", () => {
 
             // invoke a method to make sure we are not trying to use null/undefined
             connection.receive({
-                type: MessageType.Invocation,
-                invocationId: 0,
-                target: "message",
                 arguments: [],
-                nonblocking: true
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
             });
 
             expect(warnings).toEqual(["No client method with the name 'message' found."]);
@@ -269,21 +269,21 @@ describe("HubConnection", () => {
 
     describe("stream", () => {
         it("sends an invocation", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.stream("testStream", "arg", 42);
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.stream("testStream", "arg", 42);
 
             // Verify the message is sent
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
-                type: MessageType.StreamInvocation,
-                invocationId: connection.lastInvocationId,
-                target: "testStream",
                 arguments: [
                     "arg",
-                    42
-                ]
+                    42,
+                ],
+                invocationId: connection.lastInvocationId,
+                target: "testStream",
+                type: MessageType.StreamInvocation,
             });
 
             // Close the connection
@@ -291,24 +291,24 @@ describe("HubConnection", () => {
         });
 
         it("completes with an error when an error is yielded", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
 
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, error: "foo" });
 
-            let ex = await captureException(async () => await observer.completed);
+            const ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: foo");
         });
 
         it("completes the observer when a completion is received", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
 
@@ -318,38 +318,38 @@ describe("HubConnection", () => {
         });
 
         it("completes pending streams when stopped", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
             hubConnection.stop();
 
-            let ex = await captureException(async () => await observer.completed);
+            const ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: Invocation canceled due to connection being closed.");
         });
 
         it("completes pending streams when connection is lost", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
 
             // Typically this would be called by the transport
             connection.onclose(new Error("Connection lost"));
 
-            let ex = await captureException(async () => await observer.completed);
+            const ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: Connection lost");
         });
 
         it("yields items as they arrive", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
             hubConnection.stream<any>("testMethod")
                 .subscribe(observer);
 
@@ -367,11 +367,11 @@ describe("HubConnection", () => {
         });
 
         it("does not require error function registered", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = hubConnection.stream("testMethod").subscribe({
-                next: val => { }
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = hubConnection.stream("testMethod").subscribe({
+                next: (val) => { },
             });
 
             // Typically this would be called by the transport
@@ -380,11 +380,11 @@ describe("HubConnection", () => {
         });
 
         it("does not require complete function registered", async () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = hubConnection.stream("testMethod").subscribe({
-                next: val => { }
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = hubConnection.stream("testMethod").subscribe({
+                next: (val) => { },
             });
 
             // Send completion to trigger observer.complete()
@@ -393,11 +393,11 @@ describe("HubConnection", () => {
         });
 
         it("can be canceled", () => {
-            let connection = new TestConnection();
+            const connection = new TestConnection();
 
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let observer = new TestObserver();
-            let subscription = hubConnection.stream("testMethod")
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const observer = new TestObserver();
+            const subscription = hubConnection.stream("testMethod")
                 .subscribe(observer);
 
             connection.receive({ type: MessageType.StreamItem, invocationId: connection.lastInvocationId, item: 1 });
@@ -412,29 +412,29 @@ describe("HubConnection", () => {
             // Verify the cancel is sent
             expect(connection.sentData.length).toBe(2);
             expect(JSON.parse(connection.sentData[1])).toEqual({
+                invocationId: connection.lastInvocationId,
                 type: MessageType.CancelInvocation,
-                invocationId: connection.lastInvocationId
             });
         });
     });
 
     describe("onClose", () => {
         it("can have multiple callbacks", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             let invocations = 0;
-            hubConnection.onclose(e => invocations++);
-            hubConnection.onclose(e => invocations++);
+            hubConnection.onclose((e) => invocations++);
+            hubConnection.onclose((e) => invocations++);
             // Typically this would be called by the transport
             connection.onclose();
             expect(invocations).toBe(2);
         });
 
         it("callbacks receive error", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             let error: Error;
-            hubConnection.onclose(e => error = e);
+            hubConnection.onclose((e) => error = e);
 
             // Typically this would be called by the transport
             connection.onclose(new Error("Test error."));
@@ -442,8 +442,8 @@ describe("HubConnection", () => {
         });
 
         it("ignores null callbacks", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
             hubConnection.onclose(null);
             hubConnection.onclose(undefined);
             // Typically this would be called by the transport
@@ -456,9 +456,9 @@ describe("HubConnection", () => {
         it("can receive ping messages", async () => {
             // Receive the ping mid-invocation so we can see that the rest of the flow works fine
 
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, commonOptions);
-            let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, commonOptions);
+            const invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: MessageType.Ping });
             connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
@@ -467,11 +467,11 @@ describe("HubConnection", () => {
         });
 
         it("does not terminate if messages are received", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
 
-            let p = new PromiseSource<Error>();
-            hubConnection.onclose(error => p.resolve(error));
+            const p = new PromiseSource<Error>();
+            hubConnection.onclose((e) => p.resolve(e));
 
             await hubConnection.start();
 
@@ -486,69 +486,67 @@ describe("HubConnection", () => {
 
             connection.stop();
 
-            let error = await p.promise;
+            const error = await p.promise;
 
             expect(error).toBeUndefined();
         });
 
         it("terminates if no messages received within timeout interval", async () => {
-            let connection = new TestConnection();
-            let hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { ...commonOptions, timeoutInMilliseconds: 100 });
 
-            let p = new PromiseSource<Error>();
-            hubConnection.onclose(error => p.resolve(error));
+            const p = new PromiseSource<Error>();
+            hubConnection.onclose((e) => p.resolve(e));
 
             await hubConnection.start();
 
-            let error = await p.promise;
+            const error = await p.promise;
 
             expect(error).toEqual(new Error("Server timeout elapsed without receiving a message from the server."));
         });
-    })
+    });
 });
 
 class TestConnection implements IConnection {
-    readonly features: any = {};
+    public readonly features: any = {};
 
-    start(): Promise<void> {
+    public start(): Promise<void> {
         return Promise.resolve();
-    };
+    }
 
-    send(data: any): Promise<void> {
-        let invocation = TextMessageFormat.parse(data)[0];
-        let invocationId = JSON.parse(invocation).invocationId;
+    public send(data: any): Promise<void> {
+        const invocation = TextMessageFormat.parse(data)[0];
+        const invocationId = JSON.parse(invocation).invocationId;
         if (invocationId) {
             this.lastInvocationId = invocationId;
         }
         if (this.sentData) {
             this.sentData.push(invocation);
-        }
-        else {
+        } else {
             this.sentData = [invocation];
         }
         return Promise.resolve();
-    };
+    }
 
-    stop(error?: Error): Promise<void> {
+    public stop(error?: Error): Promise<void> {
         if (this.onclose) {
             this.onclose(error);
         }
         return Promise.resolve();
-    };
+    }
 
-    receive(data: any): void {
-        let payload = JSON.stringify(data);
+    public receive(data: any): void {
+        const payload = JSON.stringify(data);
         this.onreceive(TextMessageFormat.write(payload));
     }
 
-    onreceive: DataReceived;
-    onclose: ConnectionClosed;
-    sentData: any[];
-    lastInvocationId: string;
-};
+    public onreceive: DataReceived;
+    public onclose: ConnectionClosed;
+    public sentData: any[];
+    public lastInvocationId: string;
+}
 
-class TestObserver implements Observer<any>
-{
+class TestObserver implements Observer<any> {
     public itemsReceived: [any];
     private itemsSource: PromiseSource<[any]>;
 
@@ -557,19 +555,19 @@ class TestObserver implements Observer<any>
     }
 
     constructor() {
-        this.itemsReceived = <[any]>[];
+        this.itemsReceived = [] as [any];
         this.itemsSource = new PromiseSource<[any]>();
     }
 
-    next(value: any) {
+    public next(value: any) {
         this.itemsReceived.push(value);
     }
 
-    error(err: any) {
+    public error(err: any) {
         this.itemsSource.reject(new Error(err));
     }
 
-    complete() {
+    public complete() {
         this.itemsSource.resolve(this.itemsReceived);
     }
-};
+}

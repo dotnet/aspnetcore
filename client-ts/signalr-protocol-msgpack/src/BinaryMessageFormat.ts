@@ -6,13 +6,12 @@ export class BinaryMessageFormat {
     // The length prefix of binary messages is encoded as VarInt. Read the comment in
     // the BinaryMessageParser.TryParseMessage for details.
 
-    static write(output: Uint8Array): ArrayBuffer {
+    public static write(output: Uint8Array): ArrayBuffer {
         // msgpack5 uses returns Buffer instead of Uint8Array on IE10 and some other browser
         //  in which case .byteLength does will be undefined
         let size = output.byteLength || output.length;
-        let lenBuffer = [];
-        do
-        {
+        const lenBuffer = [];
+        do {
             let sizePart = size & 0x7f;
             size = size >> 7;
             if (size > 0) {
@@ -26,15 +25,15 @@ export class BinaryMessageFormat {
         //  in which case .byteLength does will be undefined
         size = output.byteLength || output.length;
 
-        let buffer = new Uint8Array(lenBuffer.length + size);
+        const buffer = new Uint8Array(lenBuffer.length + size);
         buffer.set(lenBuffer, 0);
         buffer.set(output, lenBuffer.length);
         return buffer.buffer;
     }
 
-    static parse(input: ArrayBuffer): Uint8Array[] {
-        let result: Uint8Array[] = [];
-        let uint8Array = new Uint8Array(input);
+    public static parse(input: ArrayBuffer): Uint8Array[] {
+        const result: Uint8Array[] = [];
+        const uint8Array = new Uint8Array(input);
         const maxLengthPrefixSize = 5;
         const numBitsToShift = [0, 7, 14, 21, 28 ];
 
@@ -42,13 +41,12 @@ export class BinaryMessageFormat {
             let numBytes = 0;
             let size = 0;
             let byteRead;
-            do
-            {
+            do {
                 byteRead = uint8Array[offset + numBytes];
                 size = size | ((byteRead & 0x7f) << (numBitsToShift[numBytes]));
                 numBytes++;
             }
-            while (numBytes < Math.min(maxLengthPrefixSize, input.byteLength - offset) && (byteRead & 0x80) != 0);
+            while (numBytes < Math.min(maxLengthPrefixSize, input.byteLength - offset) && (byteRead & 0x80) !== 0);
 
             if ((byteRead & 0x80) !== 0 && numBytes < maxLengthPrefixSize) {
                 throw new Error("Cannot read message size.");
@@ -63,8 +61,7 @@ export class BinaryMessageFormat {
                 result.push(uint8Array.slice
                     ? uint8Array.slice(offset + numBytes, offset + numBytes + size)
                     : uint8Array.subarray(offset + numBytes, offset + numBytes + size));
-            }
-            else {
+            } else {
                 throw new Error("Incomplete message.");
             }
 

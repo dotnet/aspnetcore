@@ -6,7 +6,7 @@ export enum LogLevel {
     Information,
     Warning,
     Error,
-    None
+    None,
 }
 
 export interface ILogger {

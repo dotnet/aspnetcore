@@ -1,14 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { Base64EncodedHubProtocol } from "../src/Base64EncodedHubProtocol"
-import { IHubProtocol, HubMessage, ProtocolType } from "../src/IHubProtocol"
+import { Base64EncodedHubProtocol } from "../src/Base64EncodedHubProtocol";
+import { HubMessage, IHubProtocol, ProtocolType } from "../src/IHubProtocol";
 
 class FakeHubProtocol implements IHubProtocol {
-    name: "fakehubprotocol";
-    type: ProtocolType;
+    public name: "fakehubprotocol";
+    public type: ProtocolType;
 
-    parseMessages(input: any): HubMessage[] {
+    public parseMessages(input: any): HubMessage[] {
         let s = "";
 
         new Uint8Array(input).forEach((item: any) => {
@@ -18,9 +18,9 @@ class FakeHubProtocol implements IHubProtocol {
         return JSON.parse(s);
     }
 
-    writeMessage(message: HubMessage): any {
-        let s = JSON.stringify(message);
-        let payload = new Uint8Array(s.length);
+    public writeMessage(message: HubMessage): any {
+        const s = JSON.stringify(message);
+        const payload = new Uint8Array(s.length);
         for (let i = 0; i < payload.length; i++) {
             payload[i] = s.charCodeAt(i);
         }
@@ -36,9 +36,9 @@ describe("Base64EncodedHubProtocol", () => {
         ["1.0:A;", new Error("Invalid length: '1.0'")],
         ["2:A;", new Error("Invalid message size.")],
         ["2:ABC;", new Error("Invalid message size.")],
-    ] as [string, Error][]).forEach(([payload, expected_error]) => {
+    ] as Array<[string, Error]>).forEach(([payload, expectedError]) => {
         it(`should fail to parse '${payload}'`, () => {
-            expect(() => new Base64EncodedHubProtocol(new FakeHubProtocol()).parseMessages(payload)).toThrow(expected_error);
+            expect(() => new Base64EncodedHubProtocol(new FakeHubProtocol()).parseMessages(payload)).toThrow(expectedError);
         });
     });
 
@@ -47,10 +47,10 @@ describe("Base64EncodedHubProtocol", () => {
     ] as [[string, any]]).forEach(([payload, message]) => {
         it(`should be able to parse '${payload}'`, () => {
 
-            let globalAny: any = global;
-            globalAny.atob = function(input: any) { return input };
+            const globalAny: any = global;
+            globalAny.atob = (input: any) => input;
 
-            let result = new Base64EncodedHubProtocol(new FakeHubProtocol()).parseMessages(payload);
+            const result = new Base64EncodedHubProtocol(new FakeHubProtocol()).parseMessages(payload);
             expect(result).toEqual(message);
 
             delete globalAny.atob;
@@ -59,13 +59,13 @@ describe("Base64EncodedHubProtocol", () => {
 
     ([
         [{}, "2:{};"],
-    ] as [any, string][]).forEach(([message, payload]) => {
+    ] as Array<[any, string]>).forEach(([message, payload]) => {
         it(`should be able to write '${JSON.stringify(message)}'`, () => {
 
-            let globalAny: any = global;
-            globalAny.btoa = function(input: any) { return input };
+            const globalAny: any = global;
+            globalAny.btoa = (input: any) => input;
 
-            let result = new Base64EncodedHubProtocol(new FakeHubProtocol()).writeMessage(message);
+            const result = new Base64EncodedHubProtocol(new FakeHubProtocol()).writeMessage(message);
             expect(result).toEqual(payload);
 
             delete globalAny.btoa;

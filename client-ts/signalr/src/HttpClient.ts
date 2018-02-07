@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { TimeoutError, HttpError } from "./Errors";
 import { AbortSignal } from "./AbortController";
+import { HttpError, TimeoutError } from "./Errors";
 
 export interface HttpRequest {
-    method?: string,
-    url?: string,
-    content?: string | ArrayBuffer,
-    headers?: Map<string, string>,
-    responseType?: XMLHttpRequestResponseType,
-    abortSignal?: AbortSignal,
-    timeout?: number,
+    method?: string;
+    url?: string;
+    content?: string | ArrayBuffer;
+    headers?: Map<string, string>;
+    responseType?: XMLHttpRequestResponseType;
+    abortSignal?: AbortSignal;
+    timeout?: number;
 }
 
 export class HttpResponse {
@@ -25,33 +25,33 @@ export class HttpResponse {
 }
 
 export abstract class HttpClient {
-    get(url: string): Promise<HttpResponse>;
-    get(url: string, options: HttpRequest): Promise<HttpResponse>;
-    get(url: string, options?: HttpRequest): Promise<HttpResponse> {
+    public get(url: string): Promise<HttpResponse>;
+    public get(url: string, options: HttpRequest): Promise<HttpResponse>;
+    public get(url: string, options?: HttpRequest): Promise<HttpResponse> {
         return this.send({
             ...options,
             method: "GET",
-            url: url,
+            url,
         });
     }
 
-    post(url: string): Promise<HttpResponse>;
-    post(url: string, options: HttpRequest): Promise<HttpResponse>;
-    post(url: string, options?: HttpRequest): Promise<HttpResponse> {
+    public post(url: string): Promise<HttpResponse>;
+    public post(url: string, options: HttpRequest): Promise<HttpResponse>;
+    public post(url: string, options?: HttpRequest): Promise<HttpResponse> {
         return this.send({
             ...options,
             method: "POST",
-            url: url,
+            url,
         });
     }
 
-    abstract send(request: HttpRequest): Promise<HttpResponse>;
+    public abstract send(request: HttpRequest): Promise<HttpResponse>;
 }
 
 export class DefaultHttpClient extends HttpClient {
-    send(request: HttpRequest): Promise<HttpResponse> {
+    public send(request: HttpRequest): Promise<HttpResponse> {
         return new Promise<HttpResponse>((resolve, reject) => {
-            let xhr = new XMLHttpRequest();
+            const xhr = new XMLHttpRequest();
 
             xhr.open(request.method, request.url, true);
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
@@ -80,20 +80,19 @@ export class DefaultHttpClient extends HttpClient {
                 }
 
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText))
-                }
-                else {
+                    resolve(new HttpResponse(xhr.status, xhr.statusText, xhr.response || xhr.responseText));
+                } else {
                     reject(new HttpError(xhr.statusText, xhr.status));
                 }
             };
 
             xhr.onerror = () => {
                 reject(new HttpError(xhr.statusText, xhr.status));
-            }
+            };
 
             xhr.ontimeout = () => {
                 reject(new TimeoutError());
-            }
+            };
 
             xhr.send(request.content || "");
         });

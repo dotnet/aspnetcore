@@ -3,26 +3,26 @@
 
 import { ECHOENDPOINT_URL } from "./Common";
 
-if (typeof WebSocket !== 'undefined') {
-    describe('WebSockets', function () {
-        it('can be used to connect to SignalR', function (done) {
-            var message = "message";
+if (typeof WebSocket !== "undefined") {
+    describe("WebSockets", () => {
+        it("can be used to connect to SignalR", (done) => {
+            const message = "message";
 
-            var webSocket = new WebSocket(ECHOENDPOINT_URL.replace(/^http/, "ws"));
+            const webSocket = new WebSocket(ECHOENDPOINT_URL.replace(/^http/, "ws"));
 
-            webSocket.onopen = function () {
+            webSocket.onopen = () => {
                 webSocket.send(message);
             };
 
-            var received = "";
-            webSocket.onmessage = function (event) {
+            let received = "";
+            webSocket.onmessage = (event) => {
                 received += event.data;
                 if (received === message) {
                     webSocket.close();
                 }
             };
 
-            webSocket.onclose = function (event) {
+            webSocket.onclose = (event) => {
                 if (!event.wasClean) {
                     fail("connection closed with unexpected status code: " + event.code + " " + event.reason);
                 }

@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { asyncit as it } from "./Utils";
 import { AbortController } from "../src/AbortController";
+import { asyncit as it } from "./Utils";
 
 describe("AbortSignal", () => {
     describe("aborted", () => {
@@ -11,21 +11,21 @@ describe("AbortSignal", () => {
         });
 
         it("is true when aborted", () => {
-            let controller = new AbortController();
-            let signal = controller.signal;
+            const controller = new AbortController();
+            const signal = controller.signal;
             controller.abort();
             expect(signal.aborted).toBe(true);
-        })
+        });
     });
 
     describe("onabort", () => {
         it("is called when abort is called", () => {
-            let controller = new AbortController();
-            let signal = controller.signal;
+            const controller = new AbortController();
+            const signal = controller.signal;
             let abortCalled = false;
             signal.onabort = () => abortCalled = true;
             controller.abort();
             expect(abortCalled).toBe(true);
-        })
-    })
+        });
+    });
 });

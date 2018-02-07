@@ -10,7 +10,7 @@ export const enum MessageType {
     Ping = 6,
 }
 
-export type MessageHeaders = { [key: string]: string };
+export interface MessageHeaders { [key: string]: string; }
 
 export type HubMessage = InvocationMessage | StreamInvocationMessage | StreamItemMessage | CompletionMessage | CancelInvocationMessage | PingMessage;
 
@@ -26,13 +26,13 @@ export interface HubInvocationMessage extends HubMessageBase {
 export interface InvocationMessage extends HubInvocationMessage {
     readonly type: MessageType.Invocation;
     readonly target: string;
-    readonly arguments: Array<any>;
+    readonly arguments: any[];
 }
 
 export interface StreamInvocationMessage extends HubInvocationMessage {
     readonly type: MessageType.StreamInvocation;
     readonly target: string;
-    readonly arguments: Array<any>
+    readonly arguments: any[];
 }
 
 export interface StreamItemMessage extends HubInvocationMessage {
@@ -60,7 +60,7 @@ export interface CancelInvocationMessage extends HubInvocationMessage {
 
 export const enum ProtocolType {
     Text = 1,
-    Binary
+    Binary,
 }
 
 export interface IHubProtocol {

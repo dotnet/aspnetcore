@@ -1,13 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { TransportType, IHubProtocol, JsonHubProtocol } from "@aspnet/signalr"
-import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack"
+import { IHubProtocol, JsonHubProtocol, TransportType } from "@aspnet/signalr";
+import { MessagePackHubProtocol } from "@aspnet/signalr-protocol-msgpack";
 
 export const ECHOENDPOINT_URL = "http://" + document.location.host + "/echo";
 
 export function getTransportTypes(): TransportType[] {
-    var transportTypes = [];
+    const transportTypes = [];
     if (typeof WebSocket !== "undefined") {
         transportTypes.push(TransportType.WebSockets);
     }
@@ -20,13 +20,13 @@ export function getTransportTypes(): TransportType[] {
 }
 
 export function eachTransport(action: (transport: TransportType) => void) {
-    getTransportTypes().forEach(function (t) {
+    getTransportTypes().forEach((t) => {
         return action(t);
     });
 }
 
 export function eachTransportAndProtocol(action: (transport: TransportType, protocol: IHubProtocol) => void) {
-    var protocols : IHubProtocol[] = [new JsonHubProtocol()];
+    const protocols: IHubProtocol[] = [new JsonHubProtocol()];
     // IE9 does not support XmlHttpRequest advanced features so disable for now
     // This can be enabled if we fix: https://github.com/aspnet/SignalR/issues/742
     if (typeof new XMLHttpRequest().responseType === "string") {
@@ -35,8 +35,8 @@ export function eachTransportAndProtocol(action: (transport: TransportType, prot
         // Everything works fine in the module
         protocols.push(new MessagePackHubProtocol());
     }
-    getTransportTypes().forEach(function (t) {
-        return protocols.forEach(function (p) {
+    getTransportTypes().forEach((t) => {
+        return protocols.forEach((p) => {
             return action(t, p);
         });
     });

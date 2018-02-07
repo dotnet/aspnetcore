@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { ILogger, LogLevel } from "./ILogger"
+import { ILogger, LogLevel } from "./ILogger";
 
 export class NullLogger implements ILogger {
-    log(logLevel: LogLevel, message: string): void {
+    public log(logLevel: LogLevel, message: string): void {
     }
 }
 
@@ -15,7 +15,7 @@ export class ConsoleLogger implements ILogger {
         this.minimumLogLevel = minimumLogLevel;
     }
 
-    log(logLevel: LogLevel, message: string): void {
+    public log(logLevel: LogLevel, message: string): void {
         if (logLevel >= this.minimumLogLevel) {
             switch (logLevel) {
                 case LogLevel.Error:
@@ -35,8 +35,8 @@ export class ConsoleLogger implements ILogger {
     }
 }
 
-export namespace LoggerFactory {
-    export function createLogger(logging?: ILogger | LogLevel) {
+export class LoggerFactory {
+    public static createLogger(logging?: ILogger | LogLevel) {
         if (logging === undefined) {
             return new ConsoleLogger(LogLevel.Information);
         }
@@ -45,10 +45,10 @@ export namespace LoggerFactory {
             return new NullLogger();
         }
 
-        if ((<ILogger>logging).log) {
-            return <ILogger>logging;
+        if ((logging as ILogger).log) {
+            return logging as ILogger;
         }
 
-        return new ConsoleLogger(<LogLevel>logging);
+        return new ConsoleLogger(logging as LogLevel);
     }
 }
