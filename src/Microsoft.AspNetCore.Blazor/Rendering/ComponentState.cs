@@ -58,22 +58,16 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// <summary>
         /// Invokes the handler corresponding to an event.
         /// </summary>
-        /// <param name="renderTreeIndex">The index of the current render tree frame that holds the event handler to be invoked.</param>
+        /// <param name="referenceTreeIndex">The index of the frame in the latest diff reference tree that holds the event handler to be invoked.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        public void DispatchEvent(int renderTreeIndex, UIEventArgs eventArgs)
+        public void DispatchEvent(int referenceTreeIndex, UIEventArgs eventArgs)
         {
             if (eventArgs == null)
             {
                 throw new ArgumentNullException(nameof(eventArgs));
             }
 
-            var frames = _renderTreeBuilderCurrent.GetFrames();
-            var eventHandler = frames.Array[renderTreeIndex].AttributeValue as UIEventHandler;
-            if (eventHandler == null)
-            {
-                throw new ArgumentException($"The render tree frame at index {renderTreeIndex} does not specify a {nameof(UIEventHandler)}.");
-            }
-
+            var eventHandler = _diffComputer.TemporaryGetEventHandlerMethod(referenceTreeIndex);
             eventHandler.Invoke(eventArgs);
 
             // After any event, we synchronously re-render. Most of the time this means that

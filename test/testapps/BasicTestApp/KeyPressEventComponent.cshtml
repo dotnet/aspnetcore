@@ -1,6 +1,6 @@
 ﻿@using System.Collections.Generic
 @using Microsoft.AspNetCore.Blazor.RenderTree
-Type here: <input onkeypress=@OnKeyPressed />
+Type here: <input onkeypress=@CreateNewDelegateInstance() />
 <ul>
     @foreach (var key in keysPressed)
     {
@@ -11,7 +11,22 @@ Type here: <input onkeypress=@OnKeyPressed />
 @functions {
     List<string> keysPressed = new List<string>();
 
-    void OnKeyPressed(UIEventArgs eventArgs)
+    // TODO: Fix this
+    // Currently, you can only trigger an event handler whose value changed in the most
+    // recent render cycle. That's because we reference the event handlers by their index
+    // into the current diff's ReferenceFrames array. We need some better mechanism of
+    // locating the delegates that is independent of whether the corresponding attribute
+    // changed in the last diff, and not assuming the attribute in the original render
+    // tree is still at the same index.
+    // Once that's fixed, remove the 'CreateNewDelegateInstance' method entirely and
+    // the 'irrelevantObject' arg from below, and simplify to onkeypress=@OnKeyPressed
+    UIEventHandler CreateNewDelegateInstance()
+    {
+        var irrelevantObject = new object();
+        return args => OnKeyPressed(args, irrelevantObject);
+    }
+
+    void OnKeyPressed(UIEventArgs eventArgs, object irrelevantObject)
     {
         keysPressed.Add(((UIKeyboardEventArgs)eventArgs).Key);
     }

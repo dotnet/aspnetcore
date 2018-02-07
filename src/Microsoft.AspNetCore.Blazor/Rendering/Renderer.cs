@@ -106,10 +106,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Notifies the specified component that an event has occurred.
         /// </summary>
         /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
-        /// <param name="renderTreeIndex">The index into the component's current render tree that specifies which event handler to invoke.</param>
+        /// <param name="referenceTreeIndex">The index into the component's latest diff reference tree that specifies which event handler to invoke.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        protected void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs eventArgs)
-            => GetRequiredComponentState(componentId).DispatchEvent(renderTreeIndex, eventArgs);
+        protected void DispatchEvent(int componentId, int referenceTreeIndex, UIEventArgs eventArgs)
+            => GetRequiredComponentState(componentId).DispatchEvent(referenceTreeIndex, eventArgs);
 
         internal void InstantiateChildComponent(RenderTreeFrame[] frames, int componentFrameIndex)
         {

@@ -229,7 +229,7 @@ function removeAttributeFromDOM(parent: Element, childIndex: number, attributeNa
   element.removeAttribute(attributeName);
 }
 
-function raiseEvent(browserRendererId: number, componentId: number, renderTreeFrameIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
+function raiseEvent(browserRendererId: number, componentId: number, referenceTreeFrameIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
   if (!raiseEventMethod) {
     raiseEventMethod = platform.findMethod(
       'Microsoft.AspNetCore.Blazor.Browser', 'Microsoft.AspNetCore.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'DispatchEvent'
@@ -239,7 +239,7 @@ function raiseEvent(browserRendererId: number, componentId: number, renderTreeFr
   const eventDescriptor = {
     BrowserRendererId: browserRendererId,
     ComponentId: componentId,
-    RenderTreeFrameIndex: renderTreeFrameIndex,
+    ReferenceTreeFrameIndex: referenceTreeFrameIndex,
     EventArgsType: eventInfoType
   };
 

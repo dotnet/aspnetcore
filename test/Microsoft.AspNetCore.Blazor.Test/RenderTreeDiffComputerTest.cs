@@ -74,7 +74,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    AssertFrame.Text(result.ReferenceFrames.Array[0], "text1", 1);
                 });
         }
 
@@ -120,12 +121,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingSequenceWithinLoopBlockBeingAppended()
         {
             // Arrange
-            oldTree.AddText(0, "x"); // Loop start
-            oldTree.AddText(0, "x"); // Loop start
-            newTree.AddText(0, "x"); // Loop start
-            newTree.AddText(1, "x"); // Will be added
-            newTree.AddText(2, "x"); // Will be added
-            newTree.AddText(0, "x"); // Loop start
+            oldTree.AddText(10, "x"); // Loop start
+            oldTree.AddText(10, "x"); // Loop start
+            newTree.AddText(10, "x"); // Loop start
+            newTree.AddText(11, "x"); // Will be added
+            newTree.AddText(12, "x"); // Will be added
+            newTree.AddText(10, "x"); // Loop start
 
             // Act
             var result = GetSingleUpdatedComponent();
@@ -135,13 +136,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "x", 11),
+                frame => AssertFrame.Text(frame, "x", 12));
         }
 
         [Fact]
@@ -168,12 +172,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingLoopBlockBeingAdded()
         {
             // Arrange
-            oldTree.AddText(0, "x");
-            oldTree.AddText(1, "x");
-            newTree.AddText(0, "x");
-            newTree.AddText(1, "x");
-            newTree.AddText(0, "x"); // Will be added
-            newTree.AddText(1, "x"); // Will be added
+            oldTree.AddText(10, "x");
+            oldTree.AddText(11, "x");
+            newTree.AddText(10, "x");
+            newTree.AddText(11, "x");
+            newTree.AddText(10, "x"); // Will be added
+            newTree.AddText(11, "x"); // Will be added
 
             // Act
             var result = GetSingleUpdatedComponent();
@@ -183,25 +187,28 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 3);
-                    Assert.Equal(3, entry.NewTreeIndex);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "x", 10),
+                frame => AssertFrame.Text(frame, "x", 11));
         }
 
         [Fact]
         public void RecognizesLeadingLoopBlockItemsBeingAdded()
         {
             // Arrange
-            oldTree.AddText(2, "x");
-            oldTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
-            newTree.AddText(2, "x");
-            newTree.AddText(0, "x");
-            newTree.AddText(1, "x");
-            newTree.AddText(2, "x");
+            oldTree.AddText(12, "x");
+            oldTree.AddText(12, "x"); // Note that the '0' and '1' items are not present on this iteration
+            newTree.AddText(12, "x");
+            newTree.AddText(10, "x");
+            newTree.AddText(11, "x");
+            newTree.AddText(12, "x");
 
             // Act
             var result = GetSingleUpdatedComponent();
@@ -211,13 +218,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "x", 10),
+                frame => AssertFrame.Text(frame, "x", 11));
         }
 
         [Fact]
@@ -273,12 +283,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
-                    Assert.Equal(0, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
         }
 
@@ -303,7 +313,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(0, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
@@ -333,8 +343,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(0, entry.NewTreeIndex);
-                    Assert.IsType<FakeComponent2>(updatedComponent1.CurrentState.Array[0].Component);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.IsType<FakeComponent2>(updatedComponent1.ReferenceFrames.Array[0].Component);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
 
@@ -344,7 +354,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(0, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
         }
 
@@ -368,8 +378,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Attribute(frame, "added", "added value"));
         }
 
         [Fact]
@@ -417,8 +429,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Attribute(frame, "will change", "did change value"));
         }
 
         [Fact]
@@ -445,8 +459,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
-                    Assert.Equal(2, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Attribute(frame, "will change", addedHandler));
         }
 
         [Fact]
@@ -468,13 +484,15 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
                     Assert.Equal("oldname", entry.RemovedAttributeName);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Attribute(frame, "newname", "same value"));
         }
 
         [Fact]
@@ -510,11 +528,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
-                    Assert.Equal(4, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "grandchild new text", 13));
         }
 
         [Fact]
@@ -548,9 +568,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "Text that has changed", 11));
         }
 
         [Fact]
@@ -574,8 +596,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
-                    Assert.Equal(1, entry.NewTreeIndex);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
+            Assert.Collection(result.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "text2modified", 11));
         }
 
         [Fact]
@@ -606,35 +630,30 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(2, entry.NewTreeIndex);
-
-                    var newTreeFrame = newTree.GetFrames().Array[entry.NewTreeIndex];
-                    Assert.Equal(0, newTreeFrame.ComponentId);
-                    Assert.IsType<FakeComponent>(newTreeFrame.Component);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
-                    Assert.Equal(3, entry.NewTreeIndex);
-
-                    var newTreeFrame = newTree.GetFrames().Array[entry.NewTreeIndex];
-                    Assert.Equal(1, newTreeFrame.ComponentId);
-                    Assert.IsType<FakeComponent2>(newTreeFrame.Component);
+                    Assert.Equal(1, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
+            Assert.Collection(firstComponentDiff.ReferenceFrames,
+                frame => AssertFrame.ComponentWithInstance<FakeComponent>(frame, 0, 12),
+                frame => AssertFrame.ComponentWithInstance<FakeComponent2>(frame, 1, 13));
 
             // Second in batch is the first child component
             var secondComponentDiff = renderBatch.UpdatedComponents.Array[1];
             Assert.Equal(0, secondComponentDiff.ComponentId);
             Assert.Empty(secondComponentDiff.Edits); // Because FakeComponent produces no frames
-            Assert.Empty(secondComponentDiff.CurrentState); // Because FakeComponent produces no frames
+            Assert.Empty(secondComponentDiff.ReferenceFrames); // Because FakeComponent produces no frames
 
             // Third in batch is the second child component
             var thirdComponentDiff = renderBatch.UpdatedComponents.Array[2];
             Assert.Equal(1, thirdComponentDiff.ComponentId);
             Assert.Collection(thirdComponentDiff.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
-            Assert.Collection(thirdComponentDiff.CurrentState,
+            Assert.Collection(thirdComponentDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, $"Hello from {nameof(FakeComponent2)}"));
         }
 
@@ -776,7 +795,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var diffForChildComponent = batch.UpdatedComponents.Array[1];
 
             // Assert
-            Assert.Collection(diffForChildComponent.CurrentState,
+            Assert.Collection(diffForChildComponent.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Notifications: 1", 0));
         }
 
@@ -799,10 +818,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert 0: Initial render
             var batch0 = GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree);
             var diffForChildComponent0 = batch0.UpdatedComponents.Array[1];
-            var childComponentFrame = batch0.UpdatedComponents.Array[0].CurrentState.Array[0];
+            var childComponentFrame = batch0.UpdatedComponents.Array[0].ReferenceFrames.Array[0];
             var childComponentInstance = (HandlePropertiesChangedComponent)childComponentFrame.Component;
             Assert.Equal(1, childComponentInstance.NotificationsCount);
-            Assert.Collection(diffForChildComponent0.CurrentState,
+            Assert.Collection(diffForChildComponent0.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Notifications: 1", 0));
 
             // Act/Assert 1: If properties didn't change, we don't notify
@@ -813,7 +832,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var batch2 = GetRenderedBatch(newTree1, newTree2);
             var diffForChildComponent2 = batch2.UpdatedComponents.Array[1];
             Assert.Equal(2, childComponentInstance.NotificationsCount);
-            Assert.Collection(diffForChildComponent2.CurrentState,
+            Assert.Collection(diffForChildComponent2.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Notifications: 2", 0));
         }
 

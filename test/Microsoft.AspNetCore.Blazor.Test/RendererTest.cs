@@ -31,7 +31,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             renderer.RenderNewBatch(componentId);
 
             // Assert
-            Assert.Collection(renderer.Batches.Single().RenderTreesByComponentId[componentId],
+            var diff = renderer.Batches.Single().DiffsByComponentId[componentId].Single();
+            Assert.Collection(diff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(diff.ReferenceFrames,
                 frame => AssertFrame.Element(frame, "my element", 2),
                 frame => AssertFrame.Text(frame, "some text"));
         }
@@ -52,15 +59,23 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             var componentId = renderer.AssignComponentId(component);
             renderer.RenderNewBatch(componentId);
-            var componentFrame = renderer.Batches.Single().RenderTreesByComponentId[componentId]
+            var batch = renderer.Batches.Single();
+            var componentFrame = batch.DiffsByComponentId[componentId].Single().ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
             var nestedComponentId = componentFrame.ComponentId;
+            var nestedComponentDiff = batch.DiffsByComponentId[nestedComponentId].Single();
 
             // The nested component exists
             Assert.IsType<MessageComponent>(componentFrame.Component);
 
             // The nested component was rendered as part of the batch
-            Assert.Collection(renderer.Batches.Single().RenderTreesByComponentId[nestedComponentId],
+            Assert.Collection(nestedComponentDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(nestedComponentDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Nested component output"));
         }
 
@@ -74,13 +89,27 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act/Assert: first render
             renderer.RenderNewBatch(componentId);
-            Assert.Collection(renderer.Batches.Single().RenderTreesByComponentId[componentId],
+            var firstDiff = renderer.Batches.Single().DiffsByComponentId[componentId].Single();
+            Assert.Collection(firstDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(firstDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Initial message"));
 
             // Act/Assert: second render
             component.Message = "Modified message";
             renderer.RenderNewBatch(componentId);
-            Assert.Collection(renderer.Batches[1].RenderTreesByComponentId[componentId],
+            var secondDiff = renderer.Batches.Skip(1).Single().DiffsByComponentId[componentId].Single();
+            Assert.Collection(firstDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(firstDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Modified message"));
         }
 
@@ -96,21 +125,37 @@ namespace Microsoft.AspNetCore.Blazor.Test
             });
             var parentComponentId = renderer.AssignComponentId(parentComponent);
             renderer.RenderNewBatch(parentComponentId);
-            var nestedComponentFrame = renderer.Batches.Single().RenderTreesByComponentId[parentComponentId]
+            var nestedComponentFrame = renderer.Batches.Single().DiffsByComponentId[parentComponentId]
+                .Single()
+                .ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
             var nestedComponent = (MessageComponent)nestedComponentFrame.Component;
             var nestedComponentId = nestedComponentFrame.ComponentId;
 
-            // Act/Assert: inital render
+            // Assert: inital render
             nestedComponent.Message = "Render 1";
             renderer.RenderNewBatch(nestedComponentId);
-            Assert.Collection(renderer.Batches[1].RenderTreesByComponentId[nestedComponentId],
+            var firstDiff = renderer.Batches[1].DiffsByComponentId[nestedComponentId].Single();
+            Assert.Collection(firstDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(firstDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Render 1"));
 
             // Act/Assert: re-render
             nestedComponent.Message = "Render 2";
             renderer.RenderNewBatch(nestedComponentId);
-            Assert.Collection(renderer.Batches[2].RenderTreesByComponentId[nestedComponentId],
+            var secondDiff = renderer.Batches[2].DiffsByComponentId[nestedComponentId].Single();
+            Assert.Collection(firstDiff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(firstDiff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "Render 2"));
         }
 
@@ -129,7 +174,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             renderer.RenderNewBatch(componentId);
 
             var (eventHandlerFrameIndex, _) = FirstWithIndex(
-                renderer.Batches.Single().RenderTreesByComponentId[componentId],
+                renderer.Batches.Single().DiffsByComponentId[componentId].Single().ReferenceFrames,
                 frame => frame.AttributeValue != null);
 
             // Assert: Event not yet fired
@@ -157,7 +202,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             renderer.RenderNewBatch(parentComponentId);
 
             // Arrange: Render nested component
-            var nestedComponentFrame = renderer.Batches.Single().RenderTreesByComponentId[parentComponentId]
+            var nestedComponentFrame = renderer.Batches.Single().DiffsByComponentId[parentComponentId]
+                .Single()
+                .ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
             var nestedComponent = (EventComponent)nestedComponentFrame.Component;
             nestedComponent.Handler = args => { receivedArgs = args; };
@@ -166,7 +213,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Find nested component's event handler ndoe
             var (eventHandlerFrameIndex, _) = FirstWithIndex(
-                renderer.Batches[1].RenderTreesByComponentId[nestedComponentId],
+                renderer.Batches[1].DiffsByComponentId[nestedComponentId].Single().ReferenceFrames,
                 frame => frame.AttributeValue != null);
 
             // Assert: Event not yet fired
@@ -217,12 +264,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act/Assert: Render component in renderer1
             renderer1.RenderNewBatch(renderer1ComponentId);
-            Assert.True(renderer1.Batches.Single().RenderTreesByComponentId.ContainsKey(renderer1ComponentId));
+            Assert.True(renderer1.Batches.Single().DiffsByComponentId.ContainsKey(renderer1ComponentId));
             Assert.Empty(renderer2.Batches);
 
             // Act/Assert: Render same component in renderer2
             renderer2.RenderNewBatch(renderer2ComponentId);
-            Assert.True(renderer2.Batches.Single().RenderTreesByComponentId.ContainsKey(renderer2ComponentId));
+            Assert.True(renderer2.Batches.Single().DiffsByComponentId.ContainsKey(renderer2ComponentId));
         }
 
         [Fact]
@@ -313,18 +360,29 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var rootComponentId = renderer.AssignComponentId(component);
             renderer.RenderNewBatch(rootComponentId);
 
-            var nestedComponentInstance = (MessageComponent)renderer.Batches.Single().RenderTreesByComponentId[rootComponentId]
-                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
-                .Component;
+            var nestedComponentFrame = renderer.Batches.Single()
+                .DiffsByComponentId[rootComponentId]
+                .Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+            var nestedComponentInstance = (MessageComponent)nestedComponentFrame.Component;
 
             // Act: Second render
             message = "Modified message";
             renderer.RenderNewBatch(rootComponentId);
 
             // Assert
-            Assert.Collection(renderer.Batches[1].RenderTreesByComponentId[rootComponentId],
-                frame => AssertFrame.Text(frame, "Modified message"),
-                frame => Assert.Same(nestedComponentInstance, frame.Component));
+            var batch = renderer.Batches[1];
+            var diff = batch.DiffsByComponentId[rootComponentId].Single();
+            Assert.Collection(diff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(diff.ReferenceFrames,
+                frame => AssertFrame.Text(frame, "Modified message"));
+            Assert.False(batch.DiffsByComponentId.ContainsKey(nestedComponentFrame.ComponentId));
         }
 
         [Fact]
@@ -346,28 +404,25 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var rootComponentId = renderer.AssignComponentId(component);
             renderer.RenderNewBatch(rootComponentId);
 
-            var originalComponentInstance = (FakeComponent)renderer.Batches.Single().RenderTreesByComponentId[rootComponentId]
-                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
-                .Component;
+            var originalComponentFrame = renderer.Batches.Single().DiffsByComponentId[rootComponentId]
+                .Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+            var childComponentInstance = (FakeComponent)originalComponentFrame.Component;
 
             // Assert 1: properties were assigned
-            Assert.Equal(123, originalComponentInstance.IntProperty);
-            Assert.Equal("String that will change", originalComponentInstance.StringProperty);
-            Assert.Same(objectThatWillNotChange, originalComponentInstance.ObjectProperty);
+            Assert.Equal(123, childComponentInstance.IntProperty);
+            Assert.Equal("String that will change", childComponentInstance.StringProperty);
+            Assert.Same(objectThatWillNotChange, childComponentInstance.ObjectProperty);
 
             // Act: Second render
             firstRender = false;
             renderer.RenderNewBatch(rootComponentId);
 
-            var updatedComponentInstance = (FakeComponent)renderer.Batches[1].RenderTreesByComponentId[rootComponentId]
-                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
-                .Component;
-
             // Assert
-            Assert.Same(originalComponentInstance, updatedComponentInstance);
-            Assert.Equal(256, updatedComponentInstance.IntProperty);
-            Assert.Equal("String that did change", updatedComponentInstance.StringProperty);
-            Assert.Same(objectThatWillNotChange, updatedComponentInstance.ObjectProperty);
+            Assert.Equal(256, childComponentInstance.IntProperty);
+            Assert.Equal("String that did change", childComponentInstance.StringProperty);
+            Assert.Same(objectThatWillNotChange, childComponentInstance.ObjectProperty);
         }
 
         [Fact]
@@ -386,19 +441,25 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var rootComponentId = renderer.AssignComponentId(component);
             renderer.RenderNewBatch(rootComponentId);
 
-            var childComponentId = renderer.Batches.Single().RenderTreesByComponentId[rootComponentId]
+            var childComponentId = renderer.Batches.Single().DiffsByComponentId[rootComponentId]
+                .Single()
+                .ReferenceFrames
                 .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
                 .ComponentId;
 
             // Act: Second render
             firstRender = false;
             renderer.RenderNewBatch(rootComponentId);
-
-            var updatedComponentFrame = renderer.Batches[1].RenderTreesByComponentId[rootComponentId]
-                .Single(frame => frame.FrameType == RenderTreeFrameType.Component);
+            var diff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
 
             // Assert
-            Assert.Collection(renderer.Batches[1].RenderTreesByComponentId[updatedComponentFrame.ComponentId],
+            Assert.Collection(diff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            Assert.Collection(diff.ReferenceFrames,
                 frame => AssertFrame.Text(frame, "second"));
         }
 
@@ -427,7 +488,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Act/Assert 1: First render, capturing child component IDs
             renderer.RenderNewBatch(rootComponentId);
-            var childComponentIds = renderer.Batches.Single().RenderTreesByComponentId[rootComponentId]
+            var childComponentIds = renderer.Batches.Single().DiffsByComponentId[rootComponentId]
+                .Single()
+                .ReferenceFrames
                 .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
                 .Select(frame => frame.ComponentId)
                 .ToList();
@@ -476,8 +539,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 for (var i = 0; i < renderBatch.UpdatedComponents.Count; i++)
                 {
                     ref var renderTreeDiff = ref renderBatch.UpdatedComponents.Array[i];
-                    capturedBatch.RenderTreesByComponentId[renderTreeDiff.ComponentId] =
-                        renderTreeDiff.CurrentState.ToArray();
+                    capturedBatch.AddDiff(renderTreeDiff);
                 }
 
                 capturedBatch.DisposedComponentIDs = renderBatch.DisposedComponentIDs.ToList();
@@ -486,10 +548,20 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class CapturedBatch
         {
-            public IDictionary<int, RenderTreeFrame[]> RenderTreesByComponentId { get; }
-                = new Dictionary<int, RenderTreeFrame[]>();
+            public IDictionary<int, List<RenderTreeDiff>> DiffsByComponentId { get; }
+                = new Dictionary<int, List<RenderTreeDiff>>();
 
             public IList<int> DisposedComponentIDs { get; set; }
+
+            internal void AddDiff(RenderTreeDiff diff)
+            {
+                var componentId = diff.ComponentId;
+                if (!DiffsByComponentId.ContainsKey(componentId))
+                {
+                    DiffsByComponentId.Add(componentId, new List<RenderTreeDiff>());
+                }
+                DiffsByComponentId[componentId].Add(diff);
+            }
         }
 
         private class TestComponent : IComponent

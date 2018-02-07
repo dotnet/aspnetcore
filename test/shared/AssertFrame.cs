@@ -60,6 +60,13 @@ namespace Microsoft.AspNetCore.Blazor.Test.Shared
             AssertFrame.Sequence(frame, sequence);
         }
 
+        public static void ComponentWithInstance<T>(RenderTreeFrame frame, int componentId, int? sequence = null) where T : IComponent
+        {
+            AssertFrame.Component<T>(frame, sequence);
+            Assert.IsType<T>(frame.Component);
+            Assert.Equal(componentId, frame.ComponentId);
+        }
+
         public static void Whitespace(RenderTreeFrame frame, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);

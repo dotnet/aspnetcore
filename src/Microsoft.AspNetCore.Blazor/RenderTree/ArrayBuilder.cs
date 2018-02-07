@@ -51,15 +51,40 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// Appends a new item, automatically resizing the underlying array if necessary.
         /// </summary>
         /// <param name="item">The item to append.</param>
+        /// <returns>The index of the appended item.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)] // Just like System.Collections.Generic.List<T>
-        public void Append(in T item)
+        public int Append(in T item)
         {
             if (_itemsInUse == _items.Length)
             {
                 SetCapacity(_itemsInUse * 2, preserveContents: true);
             }
 
-            _items[_itemsInUse++] = item;
+            var indexOfAppendedItem = _itemsInUse++;
+            _items[indexOfAppendedItem] = item;
+            return indexOfAppendedItem;
+        }
+
+        internal int Append(T[] source, int startIndex, int length)
+        {
+            // Expand storage if needed. Using same doubling approach as would
+            // be used if you inserted the items one-by-one.
+            var requiredCapacity = _itemsInUse + length;
+            if (_items.Length < requiredCapacity)
+            {
+                var candidateCapacity = _itemsInUse * 2;
+                while (candidateCapacity < requiredCapacity)
+                {
+                    candidateCapacity *= 2;
+                }
+
+                SetCapacity(candidateCapacity, preserveContents: true);
+            }
+
+            Array.Copy(source, startIndex, _items, _itemsInUse, length);
+            var startIndexOfAppendedItems = _itemsInUse;
+            _itemsInUse += length;
+            return startIndexOfAppendedItems;
         }
 
         /// <summary>
@@ -94,9 +119,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             {
                 SetCapacity((previousItemsInUse + _items.Length) / 2, preserveContents: false);
             }
-            else
+            else if (previousItemsInUse > 0)
             {
-                Array.Clear(_items, 0, _itemsInUse); // Release to GC
+                Array.Clear(_items, 0, previousItemsInUse); // Release to GC
             }
         }
 

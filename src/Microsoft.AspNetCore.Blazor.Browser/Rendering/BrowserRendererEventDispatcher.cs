@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             var browserRenderer = BrowserRendererRegistry.Find(eventDescriptor.BrowserRendererId);
             browserRenderer.DispatchBrowserEvent(
                 eventDescriptor.ComponentId,
-                eventDescriptor.RenderTreeFrameIndex,
+                eventDescriptor.ReferenceTreeFrameIndex,
                 eventArgs);
         }
 
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         {
             public int BrowserRendererId { get; set; }
             public int ComponentId { get; set; }
-            public int RenderTreeFrameIndex { get; set; }
+            public int ReferenceTreeFrameIndex { get; set; }
             public string EventArgsType { get; set; }
         }
     }
