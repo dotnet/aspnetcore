@@ -10,11 +10,9 @@ branches:
     - /^rel\/.*/
 build_script:
   - ps: .\run.ps1 default-build
+on_finish:
   - ps: "7z a testlogs.zip testlogs"
-artifacts:
-  - path: testlogs.zip
-    name: TestLogs
-    type: Zip
+  - ps: "Push-AppveyorArtifact testlogs.zip"
 install:
   - ps: Install-Product node 8
 clone_depth: 1
