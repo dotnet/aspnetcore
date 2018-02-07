@@ -11,7 +11,7 @@
     <PrepareDependsOn>$(PrepareDependsOn);VerifyUnsignedPackages;ExtractInputs;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedSharedFxBinaries</VerifyDependsOn>
-    <PublishDependsOn>Build;RunVSDrop;$(PublishDependsOn);PushNuGetPackages;PushNPMPackages</PublishDependsOn>
+    <PublishDependsOn>Build;RunVSDrop;$(PublishDependsOn)</PublishDependsOn>
   </PropertyGroup>
 
   <Target Name="LocalBuild" DependsOnTargets="SetupLocalBuild;Package" />

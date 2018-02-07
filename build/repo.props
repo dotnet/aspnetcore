@@ -48,15 +48,12 @@
     <SkipBillOfMaterials>true</SkipBillOfMaterials>
   </PropertyGroup>
 
-  <!-- Properties for publishing -->
   <PropertyGroup>
     <PublishToVSDrop>false</PublishToVSDrop>
-    <PublishToMyGet>false</PublishToMyGet>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(LocalBuild)' != 'true' ">
     <PublishToVSDrop Condition=" $(PublishType.Contains('vsdrop')) ">true</PublishToVSDrop>
-    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
   </PropertyGroup>
 
 </Project>
