@@ -15,10 +15,6 @@
     <WebpackInputs Include="**\*.ts" Exclude="node_modules\**" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Common\Microsoft.AspNetCore.Blazor.Common.csproj" />
-  </ItemGroup>
-
   <Import Project="..\Microsoft.AspNetCore.Blazor.BuildTools\ReferenceFromSource.props" />
 
   <Target Name="EnsureNpmRestored" Condition="!Exists('node_modules')">

@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="Blazor.MonoRuntime.props" />
+</Project>

@@ -1,39 +1,73 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Internal.Common.FileProviders;
+using System;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.FileProviders;
+using System.IO;
 using System.Linq;
-using AngleSharp.Parser.Html;
+using System.Text;
 using AngleSharp;
 using AngleSharp.Html;
-using System;
+using AngleSharp.Parser.Html;
+using Mono.Cecil;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
+namespace Microsoft.AspNetCore.Blazor.Build
 {
-    internal class IndexHtmlFileProvider : InMemoryFileProvider
+    internal class IndexHtmlWriter
     {
-        public IndexHtmlFileProvider(
-            string htmlTemplate,
-            string assemblyName,
-            string assemblyEntryPoint,
-            IEnumerable<IFileInfo> binFiles) : base(ComputeContents(htmlTemplate, assemblyName, assemblyEntryPoint, binFiles))
+        public static void UpdateIndex(string path, string assemblyPath, IEnumerable<string> references, string outputPath)
         {
+            var template = GetTemplate(path);
+            if (template == null)
+            {
+                return;
+            }
+            var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+            var entryPoint = GetAssemblyEntryPoint(assemblyPath);
+            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, references);
+            var normalizedOutputPath = Normalize(outputPath);
+            Console.WriteLine("Writing index to: " + normalizedOutputPath);
+            File.WriteAllText(normalizedOutputPath, updatedContent);
         }
 
-        private static IEnumerable<(string, byte[])> ComputeContents(
-            string htmlTemplate,
-            string assemblyName,
-            string assemblyEntryPoint,
-            IEnumerable<IFileInfo> binFiles)
+        private static string Normalize(string outputPath) =>
+            Path.Combine(Path.GetDirectoryName(outputPath), Path.GetFileName(outputPath).ToLowerInvariant());
+
+        private static string GetTemplate(string path)
         {
-            if (htmlTemplate != null)
+            var fileName = Path.GetFileName(path);
+            if (File.Exists(path))
             {
-                var html = GetIndexHtmlContents(htmlTemplate, assemblyName, assemblyEntryPoint, binFiles);
-                var htmlBytes = Encoding.UTF8.GetBytes(html);
-                yield return ("/index.html", htmlBytes);
+                return File.ReadAllText(path);
+            }
+
+            if (Directory.Exists(Path.GetDirectoryName(path)))
+            {
+                var files = Directory.EnumerateFiles(Path.GetDirectoryName(path))
+                    .OrderBy(f => f);
+                foreach (var file in files)
+                {
+                    if (string.Equals(fileName, Path.GetFileName(file), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return File.ReadAllText(file);
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetAssemblyEntryPoint(string assemblyPath)
+        {
+            using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
+            {
+                var entryPoint = assemblyDefinition.EntryPoint;
+                if (entryPoint == null)
+                {
+                    throw new ArgumentException($"The assembly at {assemblyPath} has no specified entry point.");
+                }
+
+                return $"{entryPoint.DeclaringType.FullName}::{entryPoint.Name}";
             }
         }
 
@@ -55,11 +89,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
         /// responsible for completing the Blazor boot process.
         /// </para>
         /// </remarks>
-        private static string GetIndexHtmlContents(
+        public static string GetIndexHtmlContents(
             string htmlTemplate,
             string assemblyName,
             string assemblyEntryPoint,
-            IEnumerable<IFileInfo> binFiles)
+            IEnumerable<string> binFiles)
         {
             var resultBuilder = new StringBuilder();
 
@@ -107,7 +141,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
                             }
                             break;
                         }
-                    
+
                     case HtmlTokenType.EndTag:
                         // If this is an end tag corresponding to the Blazor boot script tag, we
                         // can switch back into the mode of emitting the original source text
@@ -136,14 +170,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
             StringBuilder resultBuilder,
             string assemblyName,
             string assemblyEntryPoint,
-            IEnumerable<IFileInfo> binFiles,
+            IEnumerable<string> binFiles,
             List<KeyValuePair<string, string>> attributes)
         {
             var assemblyNameWithExtension = $"{assemblyName}.dll";
-            var referenceNames = binFiles
-                .Where(file => !string.Equals(file.Name, assemblyNameWithExtension))
-                .Select(file => file.Name);
-            var referencesAttribute = string.Join(",", referenceNames.ToArray());
+
+            var referencesAttribute = string.Join(",", binFiles.ToArray());
 
             var attributesDict = attributes.ToDictionary(x => x.Key, x => x.Value);
             attributesDict.Remove("type");

@@ -1,4 +1,5 @@
 ﻿<Project>
+
   <!--
   Importing this file is equivalent to having:
     <PackageDependency Include="Microsoft.AspNetCore.Blazor.Build" />
@@ -7,8 +8,22 @@
   
   This is only intended for use by other projects in this repo.
   -->
-  
-  <Import Project="$(MSBuildThisFileDirectory)targets\All.targets" />
+  <PropertyGroup>
+    <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
+    <BlazorMonoRuntimeBasePath>$(MSBuildThisFileDirectory)../mono/</BlazorMonoRuntimeBasePath>
+    <MonoLinkerPath>$(BlazorMonoRuntimeBasePath)tools/binaries/illink/illink.dll</MonoLinkerPath>
+    <MonoBaseClassLibraryPath>$(BlazorMonoRuntimeBasePath)dist/optimized/bcl/</MonoBaseClassLibraryPath>
+    <MonoBaseClassLibraryFacadesPath>$(BlazorMonoRuntimeBasePath)dist/optimized/bcl/Facades/</MonoBaseClassLibraryFacadesPath>
+    <MonoAsmjsRuntimePath>$(BlazorMonoRuntimeBasePath)dist/optimized/asmjs/</MonoAsmjsRuntimePath>
+    <MonoWasmRuntimePath>$(BlazorMonoRuntimeBasePath)dist/optimized/wasm/</MonoWasmRuntimePath>
+    <BlazorJsPath>$(MSBuildThisFileDirectory)../Microsoft.AspNetCore.Blazor.Browser.JS/dist/blazor.js</BlazorJsPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />
+  <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)../mono/mono.targets" />
+
+  <Target Name="ProvisionMono" DependsOnTargets="OptimizeMono" BeforeTargets="BuildBlazorBuildBinary" />
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
