@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
+
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
     /// <summary>
@@ -11,12 +14,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// The HTTP method for the CORS preflight request.
         /// </summary>
-        public static readonly string PreflightHttpMethod = "OPTIONS";
+        public static readonly string PreflightHttpMethod = HttpMethods.Options;
 
         /// <summary>
         /// The Origin request header.
         /// </summary>
-        public static readonly string Origin = "Origin";
+        public static readonly string Origin = HeaderNames.Origin;
 
         /// <summary>
         /// The value for the Access-Control-Allow-Origin response header to allow all origins.
@@ -26,66 +29,67 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <summary>
         /// The Access-Control-Request-Method request header.
         /// </summary>
-        public static readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
+        public static readonly string AccessControlRequestMethod = HeaderNames.AccessControlRequestMethod;
 
         /// <summary>
         /// The Access-Control-Request-Headers request header.
         /// </summary>
-        public static readonly string AccessControlRequestHeaders = "Access-Control-Request-Headers";
+        public static readonly string AccessControlRequestHeaders = HeaderNames.AccessControlRequestHeaders;
 
         /// <summary>
         /// The Access-Control-Allow-Origin response header.
         /// </summary>
-        public static readonly string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
+        public static readonly string AccessControlAllowOrigin = HeaderNames.AccessControlAllowOrigin;
 
         /// <summary>
         /// The Access-Control-Allow-Headers response header.
         /// </summary>
-        public static readonly string AccessControlAllowHeaders = "Access-Control-Allow-Headers";
+        public static readonly string AccessControlAllowHeaders = HeaderNames.AccessControlAllowHeaders;
 
         /// <summary>
         /// The Access-Control-Expose-Headers response header.
         /// </summary>
-        public static readonly string AccessControlExposeHeaders = "Access-Control-Expose-Headers";
+        public static readonly string AccessControlExposeHeaders = HeaderNames.AccessControlExposeHeaders;
 
         /// <summary>
         /// The Access-Control-Allow-Methods response header.
         /// </summary>
-        public static readonly string AccessControlAllowMethods = "Access-Control-Allow-Methods";
+        public static readonly string AccessControlAllowMethods = HeaderNames.AccessControlAllowMethods;
 
         /// <summary>
         /// The Access-Control-Allow-Credentials response header.
         /// </summary>
-        public static readonly string AccessControlAllowCredentials = "Access-Control-Allow-Credentials";
+        public static readonly string AccessControlAllowCredentials = HeaderNames.AccessControlAllowCredentials;
 
         /// <summary>
         /// The Access-Control-Max-Age response header.
         /// </summary>
-        public static readonly string AccessControlMaxAge = "Access-Control-Max-Age";
+        public static readonly string AccessControlMaxAge = HeaderNames.AccessControlMaxAge;
+
 
         internal static readonly string[] SimpleRequestHeaders =
         {
-            "Origin",
-            "Accept",
-            "Accept-Language",
-            "Content-Language",
+            HeaderNames.Origin,
+            HeaderNames.Accept,
+            HeaderNames.AcceptLanguage,
+            HeaderNames.ContentLanguage,
         };
 
         internal static readonly string[] SimpleResponseHeaders =
         {
-            "Cache-Control",
-            "Content-Language",
-            "Content-Type",
-            "Expires",
-            "Last-Modified",
-            "Pragma"
+            HeaderNames.CacheControl,
+            HeaderNames.ContentLanguage,
+            HeaderNames.ContentType,
+            HeaderNames.Expires,
+            HeaderNames.LastModified,
+            HeaderNames.Pragma
         };
 
         internal static readonly string[] SimpleMethods =
         {
-            "GET",
-            "HEAD",
-            "POST"
+            HttpMethods.Get,
+            HttpMethods.Head,
+            HttpMethods.Post
         };
     }
 }
