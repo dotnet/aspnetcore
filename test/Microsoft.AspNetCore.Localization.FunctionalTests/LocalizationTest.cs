@@ -77,6 +77,15 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
                 "Bonjour from StartupResourcesAtRootFolder Bonjour from Test in root folder Bonjour from Customer in Models folder");
         }
 
+        [Fact]
+        public Task Localization_BuilderAPIs()
+        {
+            return RunTest(
+                typeof(StartupBuilderAPIs),
+                "ar-YE",
+                "Hello");
+        }
+
         private async Task RunTest(Type startupType, string culture, string expected)
         {
             var webHostBuilder = new WebHostBuilder().UseStartup(startupType);

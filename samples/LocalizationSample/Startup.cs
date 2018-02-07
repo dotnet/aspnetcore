@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -24,31 +23,19 @@ namespace LocalizationSample
 
         public void Configure(IApplicationBuilder app, IStringLocalizer<Startup> SR)
         {
-            var supportedCultures = new List<CultureInfo>
-            {
-                new CultureInfo("en-US"),
-                new CultureInfo("en-AU"),
-                new CultureInfo("en-GB"),
-                new CultureInfo("es-ES"),
-                new CultureInfo("ja-JP"),
-                new CultureInfo("fr-FR"),
-                new CultureInfo("zh"),
-                new CultureInfo("zh-CN")
-            };
-            var options = new RequestLocalizationOptions
-            {
-                DefaultRequestCulture = new RequestCulture("en-US"),
-                SupportedCultures = supportedCultures,
-                SupportedUICultures = supportedCultures
-            };
-            // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
-            // Inserting it as position 0 ensures it has priority over any of the default providers.
-            //options.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
-            //{
+            var supportedCultures = new [] { "en-US", "en-AU", "en-GB", "es-ES", "ja-JP", "fr-FR", "zh", "zh-CN" };
+            app.UseRequestLocalization(options =>
+                options
+                    .AddSupportedCultures(supportedCultures)
+                    .AddSupportedUICultures(supportedCultures)
+                    .SetDefaultCulture(supportedCultures[0])
+                  // Optionally create an app-specific provider with just a delegate, e.g. look up user preference from DB.
+                  // Inserting it as position 0 ensures it has priority over any of the default providers.
+                  //.RequestCultureProviders.Insert(0, new CustomRequestCultureProvider(async context =>
+                  //{
 
-            //}));
-
-            app.UseRequestLocalization(options);
+                 //}));
+            );
 
             app.Use(async (context, next) =>
             {
