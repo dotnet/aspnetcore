@@ -10,14 +10,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\RazorDiagnosticJsonConverter.cs">
-      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\TagHelperDescriptorJsonConverter.cs">
-      <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
+    <Compile Include="..\..\src\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\*.cs">
+      <Link>Serialization\%(FileName)%(Extension)</Link>
     </Compile>
   </ItemGroup>
 

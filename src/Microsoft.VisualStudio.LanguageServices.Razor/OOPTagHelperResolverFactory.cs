@@ -14,8 +14,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            var workspace = languageServices.WorkspaceServices.Workspace;
-            return new OOPTagHelperResolver(workspace);
+            return new OOPTagHelperResolver(
+                languageServices.GetRequiredService<RazorProjectEngineFactoryService>(),
+                languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>(),
+                languageServices.WorkspaceServices.Workspace);
         }
     }
 }

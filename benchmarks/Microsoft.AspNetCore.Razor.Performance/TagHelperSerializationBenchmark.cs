@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.VisualStudio.LanguageServices.Razor;
+using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Performance

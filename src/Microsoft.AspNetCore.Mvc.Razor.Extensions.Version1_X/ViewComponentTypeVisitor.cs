@@ -24,10 +24,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 var symbol = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
                 if (symbol != null)
                 {
-                    if (string.Equals(symbol.Identity.Name, ViewComponentTypes.Assembly, StringComparison.Ordinal) &&
-                        symbol.Identity.Version > ViewComponentTypes.AssemblyVersion)
+                    if (string.Equals(symbol.Identity.Name, ViewComponentTypes.Assembly, StringComparison.Ordinal))
                     {
-                        enabled = true;
+                        enabled = symbol.Identity.Version >= ViewComponentTypes.AssemblyVersion;
                         break;
                     }
                 }

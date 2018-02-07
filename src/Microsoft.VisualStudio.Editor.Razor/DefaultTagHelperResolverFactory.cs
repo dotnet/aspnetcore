@@ -14,7 +14,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTagHelperResolver();
+            return new DefaultTagHelperResolver(languageServices.GetRequiredService<RazorProjectEngineFactoryService>());
         }
     }
 }

@@ -10,31 +10,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     internal class ViewComponentTypeVisitor : SymbolVisitor
     {
-        private static readonly Version SupportedVCTHMvcVersion = new Version(1, 1);
-
         private readonly INamedTypeSymbol _viewComponentAttribute;
         private readonly INamedTypeSymbol _nonViewComponentAttribute;
         private readonly List<INamedTypeSymbol> _results;
 
         public static ViewComponentTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
         {
-            var enabled = false;
-            foreach (var reference in compilation.References)
-            {
-                var symbol = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-                if (symbol != null)
-                {
-                    if (string.Equals(symbol.Identity.Name, ViewComponentTypes.Assembly, StringComparison.Ordinal) &&
-                        symbol.Identity.Version > ViewComponentTypes.AssemblyVersion)
-                    {
-                        enabled = true;
-                        break;
-                    }
-                }
-            }
-
-            var vcAttribute = enabled ? compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute) : null;
-            var nonVCAttribute = enabled ? compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute) : null;
+            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
+            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
             return new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, results);
         }
 
