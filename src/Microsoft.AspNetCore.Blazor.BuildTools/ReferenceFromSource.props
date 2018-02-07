@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <BlazorBuildToolsExe>dotnet $(MSBuildThisFileDirectory)tools\Microsoft.AspNetCore.Blazor.BuildTools.dll</BlazorBuildToolsExe>
+    <BlazorBuildToolsExe>dotnet &quot;$(MSBuildThisFileDirectory)tools\Microsoft.AspNetCore.Blazor.BuildTools.dll&quot;</BlazorBuildToolsExe>
   </PropertyGroup>
 
   <ItemGroup>

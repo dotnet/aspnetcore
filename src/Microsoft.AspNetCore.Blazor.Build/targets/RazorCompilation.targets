@@ -4,8 +4,9 @@
       <BlazorComponentsNamespace>$(RootNamespace)</BlazorComponentsNamespace>
       <IsDesignTimeBuild Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">true</IsDesignTimeBuild>
       <GeneratedFilePath>$(IntermediateOutputPath)BlazorRazorComponents.g.cs</GeneratedFilePath>
+      <SourceDir>$(ProjectDir.TrimEnd('\'))</SourceDir>
     </PropertyGroup>
-    <Exec Command="$(BlazorBuildExe) buildrazor --source $(ProjectDir) --namespace $(BlazorComponentsNamespace) --output $(GeneratedFilePath)" />
+    <Exec Command="$(BlazorBuildExe) buildrazor --source &quot;$(SourceDir)&quot; --namespace $(BlazorComponentsNamespace) --output &quot;$(GeneratedFilePath)&quot;" />
     <ItemGroup>
       <Compile Include="$(GeneratedFilePath)" />
     </ItemGroup>

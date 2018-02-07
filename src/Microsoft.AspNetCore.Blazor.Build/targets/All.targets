@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <BlazorBuildExe>dotnet $(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll</BlazorBuildExe>
+    <BlazorBuildExe>dotnet &quot;$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
   </PropertyGroup>
 
   <Import Project="RazorCompilation.targets" />
@@ -21,9 +21,9 @@
     <PropertyGroup>
       <WebRootName>wwwroot</WebRootName>
       <WebRootPath>$(ProjectDir)$(WebRootName)</WebRootPath>
-      <WebRootParam Condition="Exists('$(WebRootPath)')">--webroot $(WebRootPath)</WebRootParam>
+      <WebRootParam Condition="Exists('$(WebRootPath)')">--webroot &quot;$(WebRootPath)&quot;</WebRootParam>
     </PropertyGroup>
     <!-- TODO: Find the correct time to run this (right after assemblies were written) -->
-    <Exec Command="$(BlazorBuildExe) build $(ProjectDir)$(OutDir)$(AssemblyName).dll $(WebRootParam)" />
+    <Exec Command="$(BlazorBuildExe) build &quot;$(ProjectDir)$(OutDir)$(AssemblyName).dll&quot; $(WebRootParam)" />
   </Target>
 </Project>
