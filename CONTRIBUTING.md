@@ -33,7 +33,7 @@ If you have an idea for a new feature or enhancement let us know by filing an [i
 
 ### Ask questions
 
-If you have a question be sure to first checkout our [documentation](https://github.com/aspnet/blazor/wiki). You can also ask your question on [Stack Overflow](https://stackoverflow.com/) with the [blazor](https://stackoverflow.com/questions/tagged/blazor) tag to get help from the community. But if your still stuck, file an [issue](https://github.com/aspnet/blazor/issues) and we'll do our best to answer it.
+If you have a question be sure to first checkout our [documentation](https://github.com/aspnet/blazor/wiki). You can also ask your question on [Stack Overflow](https://stackoverflow.com/) with the [blazor](https://stackoverflow.com/questions/tagged/blazor) tag to get help from the community. But if you're still stuck, file an [issue](https://github.com/aspnet/blazor/issues) and we'll do our best to answer it.
 
 ## Contributing code and content
 
