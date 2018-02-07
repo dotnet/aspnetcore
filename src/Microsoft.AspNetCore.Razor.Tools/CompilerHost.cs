@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -26,13 +26,33 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     return new RejectedServerResponse();
                 }
 
+                var exitCode = 0;
+                var output = string.Empty;
                 var app = new Application(cancellationToken);
                 var commandArgs = parsed.args.ToArray();
 
-                var exitCode = app.Execute(commandArgs);
-                var output = app.Out.ToString() ?? string.Empty;
+                if (ServerLogger.IsLoggingEnabled)
+                {
+                    using (var writer = new StringWriter())
+                    {
+                        app.Out = writer;
+                        app.Error = writer;
+                        exitCode = app.Execute(commandArgs);
+                        output = writer.ToString();
+                        ServerLogger.Log(output);
+                    }
+                }
+                else
+                {
+                    using (var writer = new StreamWriter(Stream.Null))
+                    {
+                        app.Out = writer;
+                        app.Error = writer;
+                        exitCode = app.Execute(commandArgs);
+                    }
+                }
 
-                return new CompletedServerResponse(exitCode, utf8output: false, output: output);
+                return new CompletedServerResponse(exitCode, utf8output: false, output: string.Empty);
             }
 
             private bool TryParseArguments(ServerRequest request, out (string workingDirectory, string tempDirectory, string[] args) parsed)
@@ -59,16 +79,16 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                 }
 
-                CompilerServerLogger.Log($"WorkingDirectory = '{workingDirectory}'");
-                CompilerServerLogger.Log($"TempDirectory = '{tempDirectory}'");
+                ServerLogger.Log($"WorkingDirectory = '{workingDirectory}'");
+                ServerLogger.Log($"TempDirectory = '{tempDirectory}'");
                 for (var i = 0; i < args.Count; i++)
                 {
-                    CompilerServerLogger.Log($"Argument[{i}] = '{request.Arguments[i]}'");
+                    ServerLogger.Log($"Argument[{i}] = '{request.Arguments[i]}'");
                 }
 
                 if (string.IsNullOrEmpty(workingDirectory))
                 {
-                    CompilerServerLogger.Log($"Rejecting build due to missing working directory");
+                    ServerLogger.Log($"Rejecting build due to missing working directory");
 
                     parsed = default;
                     return false;
@@ -76,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 if (string.IsNullOrEmpty(tempDirectory))
                 {
-                    CompilerServerLogger.Log($"Rejecting build due to missing temp directory");
+                    ServerLogger.Log($"Rejecting build due to missing temp directory");
 
                     parsed = default;
                     return false;
@@ -84,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 if (string.IsNullOrEmpty(tempDirectory))
                 {
-                    CompilerServerLogger.Log($"Rejecting build due to missing temp directory");
+                    ServerLogger.Log($"Rejecting build due to missing temp directory");
 
                     parsed = default;
                     return false;

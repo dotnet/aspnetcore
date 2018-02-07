@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -58,13 +57,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     PipeBufferSize, // Default input buffer
                     PipeBufferSize);// Default output buffer
 
-                CompilerServerLogger.Log("Waiting for new connection");
+                ServerLogger.Log("Waiting for new connection");
                 await pipeStream.WaitForConnectionAsync(cancellationToken);
-                CompilerServerLogger.Log("Pipe connection detected.");
+                ServerLogger.Log("Pipe connection detected.");
 
                 if (Environment.Is64BitProcess || Memory.IsMemoryAvailable())
                 {
-                    CompilerServerLogger.Log("Memory available - accepting connection");
+                    ServerLogger.Log("Memory available - accepting connection");
                     return new NamedPipeConnection(pipeStream, GetNextIdentifier());
                 }
 
@@ -96,9 +95,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                     try
                     {
-                        CompilerServerLogger.Log($"Before poking pipe {Identifier}.");
+                        ServerLogger.Log($"Before poking pipe {Identifier}.");
                         await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-                        CompilerServerLogger.Log($"After poking pipe {Identifier}.");
+                        ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)
                     {
@@ -107,14 +106,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     {
                         // It is okay for this call to fail.  Errors will be reflected in the
                         // IsConnected property which will be read on the next iteration.
-                        CompilerServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
+                        ServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
                     }
                 }
             }
 
             protected override void Dispose(bool disposing)
             {
-                CompilerServerLogger.Log($"Pipe {Identifier}: Closing.");
+                ServerLogger.Log($"Pipe {Identifier}: Closing.");
 
                 try
                 {
@@ -126,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     // for which we can no longer communicate and that's okay because the Close method indicates we are
                     // done with the client already.
                     var message = string.Format($"Pipe {Identifier}: Error closing pipe.");
-                    CompilerServerLogger.LogException(ex, message);
+                    ServerLogger.LogException(ex, message);
                 }
             }
         }

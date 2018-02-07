@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build", 
-                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName}",
+                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true",
                 msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName}");
+                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName}");
+                $"/p:RazorCompileOnBuild=true /p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "Whitespace in name.dll");

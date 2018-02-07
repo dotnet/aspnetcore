@@ -4,7 +4,6 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -49,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var totalBytesRead = 0;
             do
             {
-                CompilerServerLogger.Log("Attempting to read {0} bytes from the stream", count - totalBytesRead);
+                ServerLogger.Log("Attempting to read {0} bytes from the stream", count - totalBytesRead);
                 var bytesRead = await stream.ReadAsync(
                     buffer,
                     totalBytesRead,
@@ -59,13 +58,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 if (bytesRead == 0)
                 {
-                    CompilerServerLogger.Log("Unexpected -- read 0 bytes from the stream.");
+                    ServerLogger.Log("Unexpected -- read 0 bytes from the stream.");
                     throw new EndOfStreamException("Reached end of stream before end of read.");
                 }
-                CompilerServerLogger.Log("Read {0} bytes", bytesRead);
+                ServerLogger.Log("Read {0} bytes", bytesRead);
                 totalBytesRead += bytesRead;
             } while (totalBytesRead < count);
-            CompilerServerLogger.Log("Finished read");
+            ServerLogger.Log("Finished read");
         }
     }
 }

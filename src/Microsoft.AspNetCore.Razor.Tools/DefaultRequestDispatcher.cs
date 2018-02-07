@@ -8,7 +8,6 @@ using System.Linq;
 using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -318,7 +317,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 // Unable to establish a connection with the client.  The client is responsible for
                 // handling this case. Nothing else for us to do here.
-                CompilerServerLogger.LogException(ex, "Error creating client named pipe");
+                ServerLogger.LogException(ex, "Error creating client named pipe");
                 return new ConnectionResult(ConnectionResult.Reason.CompilationNotStarted);
             }
 
@@ -329,13 +328,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     ServerRequest request;
                     try
                     {
-                        CompilerServerLogger.Log("Begin reading request.");
+                        ServerLogger.Log("Begin reading request.");
                         request = await ServerRequest.ReadAsync(connection.Stream, cancellationToken).ConfigureAwait(false);
-                        CompilerServerLogger.Log("End reading request.");
+                        ServerLogger.Log("End reading request.");
                     }
                     catch (Exception e)
                     {
-                        CompilerServerLogger.LogException(e, "Error reading build request.");
+                        ServerLogger.LogException(e, "Error reading build request.");
                         return new ConnectionResult(ConnectionResult.Reason.CompilationNotStarted);
                     }
 
@@ -379,9 +378,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                             try
                             {
-                                CompilerServerLogger.Log("Begin writing response.");
+                                ServerLogger.Log("Begin writing response.");
                                 await response.WriteAsync(connection.Stream, cancellationToken);
-                                CompilerServerLogger.Log("End writing response.");
+                                ServerLogger.Log("End writing response.");
 
                                 reason = ConnectionResult.Reason.CompilationCompleted;
                             }
@@ -405,7 +404,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             catch (Exception ex)
             {
-                CompilerServerLogger.LogException(ex, "Error handling connection");
+                ServerLogger.LogException(ex, "Error handling connection");
                 return new ConnectionResult(ConnectionResult.Reason.ClientException);
             }
         }
@@ -414,11 +413,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             Func<ServerResponse> func = () =>
             {
-                CompilerServerLogger.Log("Begin processing request");
+                ServerLogger.Log("Begin processing request");
 
                 var response = _compilerHost.Execute(buildRequest, cancellationToken);
 
-                CompilerServerLogger.Log("End processing request");
+                ServerLogger.Log("End processing request");
                 return response;
             };
 

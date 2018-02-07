@@ -6,7 +6,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger;
 
 // After the server pipe is connected, it forks off a thread to handle the connection, and creates
 // a new instance of the pipe to listen for new clients. When it gets a request, it validates
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             using (var writer = new BinaryWriter(memoryStream, Encoding.Unicode))
             {
                 // Format the response
-                Log("Formatting Response");
+                ServerLogger.Log("Formatting Response");
                 writer.Write((int)Type);
 
                 AddResponseBody(writer);
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Write the length of the response
                 var length = checked((int)memoryStream.Length);
 
-                Log("Writing response length");
+                ServerLogger.Log("Writing response length");
                 // There is no way to know the number of bytes written to
                 // the pipe stream. We just have to assume all of them are written.
                 await outStream
@@ -76,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     .ConfigureAwait(false);
 
                 // Write the response
-                Log("Writing response of size {0}", length);
+                ServerLogger.Log("Writing response of size {0}", length);
                 memoryStream.Position = 0;
                 await memoryStream
                     .CopyToAsync(outStream, bufferSize: length, cancellationToken: cancellationToken)
@@ -94,14 +93,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <returns></returns>
         public static async Task<ServerResponse> ReadAsync(Stream stream, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Log("Reading response length");
+            ServerLogger.Log("Reading response length");
             // Read the response length
             var lengthBuffer = new byte[4];
             await ServerProtocol.ReadAllAsync(stream, lengthBuffer, 4, cancellationToken).ConfigureAwait(false);
             var length = BitConverter.ToUInt32(lengthBuffer, 0);
 
             // Read the response
-            Log("Reading response of length {0}", length);
+            ServerLogger.Log("Reading response of length {0}", length);
             var responseBuffer = new byte[length];
             await ServerProtocol.ReadAllAsync(
                 stream,

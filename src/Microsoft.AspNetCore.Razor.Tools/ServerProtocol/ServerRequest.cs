@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger;
 
 // After the server pipe is connected, it forks off a thread to handle the connection, and creates
 // a new instance of the pipe to listen for new clients. When it gets a request, it validates
@@ -84,9 +83,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
             IList<string> args,
             string keepAlive = null)
         {
-            Log("Creating ServerRequest");
-            Log($"Working directory: {workingDirectory}");
-            Log($"Temp directory: {tempDirectory}");
+            ServerLogger.Log("Creating ServerRequest");
+            ServerLogger.Log($"Working directory: {workingDirectory}");
+            ServerLogger.Log($"Temp directory: {tempDirectory}");
 
             var requestLength = args.Count + 1;
             var requestArgs = new List<RequestArgument>(requestLength)
@@ -103,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             for (var i = 0; i < args.Count; ++i)
             {
                 var arg = args[i];
-                Log($"argument[{i}] = {arg}");
+                ServerLogger.Log($"argument[{i}] = {arg}");
                 requestArgs.Add(new RequestArgument(RequestArgument.ArgumentId.CommandLineArgument, i, arg));
             }
 
@@ -130,14 +129,14 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             // Read the length of the request
             var lengthBuffer = new byte[4];
-            Log("Reading length of request");
+            ServerLogger.Log("Reading length of request");
             await ServerProtocol.ReadAllAsync(inStream, lengthBuffer, 4, cancellationToken).ConfigureAwait(false);
             var length = BitConverter.ToInt32(lengthBuffer, 0);
 
             // Back out if the request is > 1MB
             if (length > 0x100000)
             {
-                Log("Request is over 1MB in length, cancelling read.");
+                ServerLogger.Log("Request is over 1MB in length, cancelling read.");
                 return null;
             }
 
@@ -149,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            Log("Parsing request");
+            ServerLogger.Log("Parsing request");
             // Parse the request into the Request data structure.
             using (var reader = new BinaryReader(new MemoryStream(requestBuffer), Encoding.Unicode))
             {
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             using (var writer = new BinaryWriter(memoryStream, Encoding.Unicode))
             {
                 // Format the request.
-                Log("Formatting request");
+                ServerLogger.Log("Formatting request");
                 writer.Write(ProtocolVersion);
                 writer.Write(Arguments.Count);
                 foreach (var arg in Arguments)
@@ -195,17 +194,17 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Back out if the request is > 1 MB
                 if (memoryStream.Length > 0x100000)
                 {
-                    Log("Request is over 1MB in length, cancelling write");
+                    ServerLogger.Log("Request is over 1MB in length, cancelling write");
                     throw new ArgumentOutOfRangeException();
                 }
 
                 // Send the request to the server
-                Log("Writing length of request.");
+                ServerLogger.Log("Writing length of request.");
                 await outStream
                     .WriteAsync(BitConverter.GetBytes(length), 0, 4, cancellationToken)
                     .ConfigureAwait(false);
 
-                Log("Writing request of size {0}", length);
+                ServerLogger.Log("Writing request of size {0}", length);
                 // Write the request
                 memoryStream.Position = 0;
                 await memoryStream

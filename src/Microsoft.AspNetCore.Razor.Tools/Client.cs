@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Pipes;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CommandLine;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -39,12 +38,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Machine-local named pipes are named "\\.\pipe\<pipename>".
                 // We use the SHA1 of the directory the compiler exes live in as the pipe name.
                 // The NamedPipeClientStream class handles the "\\.\pipe\" part for us.
-                CompilerServerLogger.Log("Attempt to open named pipe '{0}'", pipeName);
+                ServerLogger.Log("Attempt to open named pipe '{0}'", pipeName);
 
                 var stream = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
                 cancellationToken.ThrowIfCancellationRequested();
 
-                CompilerServerLogger.Log("Attempt to connect named pipe '{0}'", pipeName);
+                ServerLogger.Log("Attempt to connect named pipe '{0}'", pipeName);
                 try
                 {
                     await stream.ConnectAsync(timeoutMilliseconds, cancellationToken);
@@ -55,11 +54,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     // From docs:
                     // - TimeoutException: Could not connect to the server within the specified timeout period.
                     // - IOException: The server is connected to another client and the  time-out period has expired.
-                    CompilerServerLogger.Log($"Connecting to server timed out after {timeoutMilliseconds} ms");
+                    ServerLogger.Log($"Connecting to server timed out after {timeoutMilliseconds} ms");
                     return null;
                 }
 
-                CompilerServerLogger.Log("Named pipe '{0}' connected", pipeName);
+                ServerLogger.Log("Named pipe '{0}' connected", pipeName);
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // The original code in Roslyn checks that the server pipe is owned by the same user for security.
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             catch (Exception e) when (!(e is TaskCanceledException || e is OperationCanceledException))
             {
-                CompilerServerLogger.LogException(e, "Exception while connecting to process");
+                ServerLogger.LogException(e, "Exception while connecting to process");
                 return null;
             }
         }
@@ -108,9 +107,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                     try
                     {
-                        CompilerServerLogger.Log($"Before poking pipe {Identifier}.");
+                        ServerLogger.Log($"Before poking pipe {Identifier}.");
                         await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-                        CompilerServerLogger.Log($"After poking pipe {Identifier}.");
+                        ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)
                     {
@@ -119,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     {
                         // It is okay for this call to fail.  Errors will be reflected in the
                         // IsConnected property which will be read on the next iteration.
-                        CompilerServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
+                        ServerLogger.LogException(e, $"Error poking pipe {Identifier}.");
                     }
                 }
             }

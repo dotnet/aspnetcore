@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Tools;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.CodeAnalysis.CommandLine;
 using Microsoft.Extensions.CommandLineUtils;
-using Roslyn.Utilities;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -28,6 +25,9 @@ namespace Microsoft.AspNetCore.Razor.Tasks
         public string ToolAssembly { get; set; }
 
         public bool UseServer { get; set; }
+
+        // Specifies whether we should fallback to in-process execution if server execution fails.
+        public bool ForceServer { get; set; }
 
         public string PipeName { get; set; }
 
@@ -115,11 +115,11 @@ namespace Microsoft.AspNetCore.Razor.Tasks
             string commandLineCommands,
             out int result)
         {
-            CompilerServerLogger.Log("Server execution started.");
+            Log.LogMessage(StandardOutputLoggingImportance, "Server execution started.");
             using (_razorServerCts = new CancellationTokenSource())
             {
-                CompilerServerLogger.Log($"CommandLine = '{commandLineCommands}'");
-                CompilerServerLogger.Log($"ServerResponseFile = '{responseFileCommands}'");
+                Log.LogMessage(StandardOutputLoggingImportance, $"CommandLine = '{commandLineCommands}'");
+                Log.LogMessage(StandardOutputLoggingImportance, $"ServerResponseFile = '{responseFileCommands}'");
 
                 // The server contains the tools for discovering tag helpers and generating Razor code.
                 var clientDir = Path.GetDirectoryName(ToolAssembly);
@@ -141,14 +141,35 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 {
                     result = completedResponse.ReturnCode;
 
-                    CompilerServerLogger.Log($"Server execution completed with return code {result}.");
+                    if (result == 0)
+                    {
+                        Log.LogMessage(StandardOutputLoggingImportance, $"Server execution completed with return code {result}.");
+                        return true;
+                    }
+                    else
+                    {
+                        Log.LogMessage(
+                            StandardOutputLoggingImportance,
+                            $"Server execution completed with return code {result}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
+                    }
+                }
+                else
+                {
+                    Log.LogMessage(
+                        StandardOutputLoggingImportance,
+                        $"Server execution failed with response {response.Type}. For more info, check the server log file in the location specified by the RAZORBUILDSERVER_LOG environment variable.");
+                }
 
+                result = -1;
+
+                if (ForceServer)
+                {
+                    // We don't want to fallback to in-process execution.
                     return true;
                 }
-            }
 
-            CompilerServerLogger.Log("Server execution failed.");
-            result = -1;
+                Log.LogMessage(StandardOutputLoggingImportance, "Fallback to in-process execution.");
+            }
 
             return false;
         }

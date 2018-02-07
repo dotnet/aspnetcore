@@ -16,12 +16,6 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(MicrosoftExtensionsCommandLineUtilsSourcesPackageVersion)" />
     
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\CompilerServerLogger.cs">
-      <Link>Shared\CompilerServerLogger.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\Roslyn\PlatformInformation.cs">
-      <Link>Shared\PlatformInformation.cs</Link>
-    </Compile>
     <Compile Include="..\Microsoft.AspNetCore.Razor.Tools\ServerProtocol\*.cs">
       <Link>Shared\ServerProtocol\%(FileName)</Link>
     </Compile>

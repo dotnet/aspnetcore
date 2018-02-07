@@ -8,8 +8,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Roslyn.Utilities;
-using static Microsoft.CodeAnalysis.CommandLine.CompilerServerLogger;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -204,26 +202,26 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // Write the request
                 try
                 {
-                    Log("Begin writing request");
+                    ServerLogger.Log("Begin writing request");
                     await request.WriteAsync(client.Stream, cancellationToken).ConfigureAwait(false);
-                    Log("End writing request");
+                    ServerLogger.Log("End writing request");
                 }
                 catch (Exception e)
                 {
-                    LogException(e, "Error writing build request.");
+                    ServerLogger.LogException(e, "Error writing build request.");
                     return new RejectedServerResponse();
                 }
 
                 // Wait for the compilation and a monitor to detect if the server disconnects
                 var serverCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-                Log("Begin reading response");
+                ServerLogger.Log("Begin reading response");
 
                 var responseTask = ServerResponse.ReadAsync(client.Stream, serverCts.Token);
                 var monitorTask = client.WaitForDisconnectAsync(serverCts.Token);
                 await Task.WhenAny(responseTask, monitorTask).ConfigureAwait(false);
 
-                Log("End reading response");
+                ServerLogger.Log("End reading response");
 
                 if (responseTask.IsCompleted)
                 {
@@ -234,13 +232,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
                     catch (Exception e)
                     {
-                        LogException(e, "Error reading response");
+                        ServerLogger.LogException(e, "Error reading response");
                         response = new RejectedServerResponse();
                     }
                 }
                 else
                 {
-                    Log("Server disconnect");
+                    ServerLogger.Log("Server disconnect");
                     response = new RejectedServerResponse();
                 }
 
@@ -282,7 +280,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 startInfo.dwFlags = NativeMethods.STARTF_USESTDHANDLES;
                 var dwCreationFlags = NativeMethods.NORMAL_PRIORITY_CLASS | NativeMethods.CREATE_NO_WINDOW;
 
-                Log("Attempting to create process '{0}'", expectedPath);
+                ServerLogger.Log("Attempting to create process '{0}'", expectedPath);
 
                 var builder = new StringBuilder($@"""{expectedPath}"" {processArguments}");
 
@@ -300,13 +298,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 if (success)
                 {
-                    Log("Successfully created process with process id {0}", processInfo.dwProcessId);
+                    ServerLogger.Log("Successfully created process with process id {0}", processInfo.dwProcessId);
                     NativeMethods.CloseHandle(processInfo.hProcess);
                     NativeMethods.CloseHandle(processInfo.hThread);
                 }
                 else
                 {
-                    Log("Failed to create process. GetLastError={0}", Marshal.GetLastWin32Error());
+                    ServerLogger.Log("Failed to create process. GetLastError={0}", Marshal.GetLastWin32Error());
                 }
                 return success;
             }
@@ -335,5 +333,16 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// This class provides simple properties for determining whether the current platform is Windows or Unix-based.
+    /// We intentionally do not use System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(...) because
+    /// it incorrectly reports 'true' for 'Windows' in desktop builds running on Unix-based platforms via Mono.
+    /// </summary>
+    internal static class PlatformInformation
+    {
+        public static bool IsWindows => Path.DirectorySeparatorChar == '\\';
+        public static bool IsUnix => Path.DirectorySeparatorChar == '/';
     }
 }
