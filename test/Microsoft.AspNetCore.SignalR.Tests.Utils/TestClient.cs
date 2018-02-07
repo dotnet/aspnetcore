@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _transport, Application);
 
             var claimValue = Interlocked.Increment(ref _id).ToString();
-            var claims = new List<Claim>{ new Claim(ClaimTypes.Name, claimValue) };
+            var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
             if (addClaimId)
             {
                 claims.Add(new Claim(ClaimTypes.NameIdentifier, claimValue));

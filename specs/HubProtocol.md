@@ -67,6 +67,10 @@ The `Target` of an `Invocation` message must refer to a specific method, overloa
 
 **NOTE**: `Invocation ID`s are arbitrarily chosen by the Caller and the Callee is expected to use the same string in all response messages. Callees may establish reasonable limits on `Invocation ID` lengths and terminate the connection when an `Invocation ID` that is too long is received.
 
+## Message Headers
+
+All messages, except the `Ping` message, can carry additional headers. Headers are transmitted as a dictionary with string keys and string values. Clients and servers should disregard headers they do not understand. Since there are no headers defined in this spec, a client or server is never expected to interpret headers. However, clients and servers are expected to be able to process messages containing headers and disregard the headers.
+
 ## Non-Blocking Invocations
 
 Invocations can be sent without an `Invocation ID` value. This indicates that the invocation is "non-blocking", and thus the caller does not expect a response. When a Callee receives an invocation without an `Invocation ID` value, it **must not** send any response to that invocation.
@@ -410,6 +414,26 @@ Example
 }
 ```
 
+### JSON Header Encoding
+
+Message headers are encoded into a JSON object, with string values, that are stored in the `headers` property. For example:
+
+```json
+{
+    "type": 1,
+    "headers": {
+        "Foo": "Bar"
+    },
+    "invocationId": "123",
+    "target": "Send",
+    "arguments": [
+        42,
+        "Test Message"
+    ]
+}
+```
+
+
 ### JSON Payload Encoding
 
 Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
@@ -427,10 +451,11 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 `Invocation` messages have the following structure:
 
 ```
-[1, InvocationId, NonBlocking, Target, [Arguments]]
+[1, Headers, InvocationId, NonBlocking, Target, [Arguments]]
 ```
 
 * `1` - Message Type - `1` indicates this is an `Invocation` message.
+* `Headers` - A MsgPack Map containing the headers, with string keys and string values (see MessagePack Headers Encoding below)
 * InvocationId - One of:
   * A `Nil`, indicating that there is no Invocation ID, OR
   * A `String` encoding the Invocation ID for the message.
@@ -442,13 +467,14 @@ MessagePack uses different formats to encode values. Refer to the [MsgPack forma
 The following payload
 
 ```
-0x94 0x01 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x94 0x01 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
 ```
 
 is decoded as follows:
 
-* `0x94` - 4-element array
+* `0x95` - 5-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -467,13 +493,14 @@ is decoded as follows:
 
 The following payload
 ```
-0x94 0x01 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x95 0x01 0x80 0xc0 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
 ```
 
 is decoded as follows:
 
-* `0x94` - 4-element array
+* `0x95` - 5-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xc0` - `nil` (Invocation ID)
 * `0xa6` - string of length 6 (Target)
 * `0x6d` - `m`
@@ -490,10 +517,11 @@ is decoded as follows:
 `StreamInvocation` messages have the following structure:
 
 ```
-[4, InvocationId, Target, [Arguments]]
+[4, Headers, InvocationId, Target, [Arguments]]
 ```
 
 * `4` - Message Type - `4` indicates this is a `StreamInvocation` message.
+* `Headers` - A MsgPack Map containing the headers, with string keys and string values (see MessagePack Headers Encoding below)
 * InvocationId - A `String` encoding the Invocation ID for the message.
 * Target - A `String` encoding the Target name, as expected by the Callee's Binder.
 * Arguments - An Array containing arguments to apply to the method referred to in Target.
@@ -503,13 +531,14 @@ Example:
 The following payload
 
 ```
-0x94 0x04 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+0x95 0x04 0x80 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
 ```
 
 is decoded as follows:
 
-* `0x94` - 4-element array
+* `0x95` - 5-element array
 * `0x04` - `4` (Message Type - `StreamInvocation` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -529,10 +558,11 @@ is decoded as follows:
 `StreamItem` messages have the following structure:
 
 ```
-[2, InvocationId, Item]
+[2, Headers, InvocationId, Item]
 ```
 
 * `2` - Message Type - `2` indicates this is a `StreamItem` message
+* `Headers` - A MsgPack Map containing the headers, with string keys and string values (see MessagePack Headers Encoding below)
 * InvocationId - A `String` encoding the Invocation ID for the message
 * Item - the value of the stream item
 
@@ -540,13 +570,14 @@ Example:
 
 The following payload:
 ```
-0x93 0x02 0xa3 0x78 0x79 0x7a 0x2a
+0x94 0x02 0x80 0xa3 0x78 0x79 0x7a 0x2a
 ```
 
 is decoded as follows:
 
-* `0x93` - 3-element array
+* `0x94` - 4-element array
 * `0x02` - `2` (Message Type - `StreamItem` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -558,10 +589,11 @@ is decoded as follows:
 `Completion` messages have the following structure
 
 ```
-[3, InvocationId, ResultKind, Result?]
+[3, Headers, InvocationId, ResultKind, Result?]
 ```
 
 * `3` - Message Type - `3` indicates this is a `Completion` message
+* `Headers` - A MsgPack Map containing the headers, with string keys and string values (see MessagePack Headers Encoding below)
 * InvocationId - A `String` encoding the Invocation ID for the message
 * ResultKind - A flag indicating the invocation result kind:
     * `1` - Error result - Result contains a `String` with the error message
@@ -575,13 +607,14 @@ Examples:
 
 The following payload:
 ```
-0x94 0x03 0xa3 0x78 0x79 0x7a 0x01 0xa5 0x45 0x72 0x72 0x6f 0x72
+0x95 0x03 0x80 0xa3 0x78 0x79 0x7a 0x01 0xa5 0x45 0x72 0x72 0x6f 0x72
 ```
 
 is decoded as follows:
 
 * `0x94` - 4-element array
 * `0x03` - `3` (Message Type - `Result` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -598,13 +631,14 @@ is decoded as follows:
 
 The following payload:
 ```
-0x93 0x03 0xa3 0x78 0x79 0x7a 0x02
+0x94 0x03 0x80 0xa3 0x78 0x79 0x7a 0x02
 ```
 
 is decoded as follows:
 
-* `0x93` - 3-element array
+* `0x94` - 4-element array
 * `0x03` - `3` (Message Type - `Result` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -615,13 +649,14 @@ is decoded as follows:
 
 The following payload:
 ```
-0x94 0x03 0xa3 0x78 0x79 0x7a 0x03 0x2a
+0x95 0x03 0x80 0xa3 0x78 0x79 0x7a 0x03 0x2a
 ```
 
 is decoded as follows:
 
-* `0x94` - 4-element array
+* `0x95` - 5-element array
 * `0x03` - `3` (Message Type - `Result` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -634,23 +669,25 @@ is decoded as follows:
 `CancelInvocation` messages have the following structure
 
 ```
-[5, InvocationId]
+[5, Headers, InvocationId]
 ```
 
 * `5` - Message Type - `5` indicates this is a `CancelInvocation` message
+* `Headers` - A MsgPack Map containing the headers, with string keys and string values (see MessagePack Headers Encoding below)
 * InvocationId - A `String` encoding the Invocation ID for the message
 
 Example:
 
 The following payload:
 ```
-0x92 0x05 0xa3 0x78 0x79 0x7a
+0x93 0x05 0x80 0xa3 0x78 0x79 0x7a
 ```
 
 is decoded as follows:
 
-* `0x92` - 2-element array
+* `0x93` - 3-element array
 * `0x05` - `5` (Message Type `CancelInvocation` message)
+* `0x80` - Map of length 0 (Headers)
 * `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
@@ -677,8 +714,50 @@ The following payload:
 
 is decoded as follows:
 
-* `0x91` - 1-element array
+* `0x92` - 2-element array
 * `0x06` - `6` (Message Type - `Ping` message)
+
+### MessagePack Headers Encoding
+
+Headers are encoded in MessagePack messages as a Map that immediately follows the type value. The Map can be empty, in which case it is represented by the byte `0x80`. If there are items in the map,
+both the keys and values must be String values.
+
+Headers are not valid in a Ping message. The Ping message is **always exactly encoded** as `0x91 0x06`
+
+Below shows an example encoding of a message containing headers:
+
+```
+0x95 0x01 0x82 0xa1 0x78 0xa1 0x79 0xa1 0x7a 0xa1 0x7a 0xa3 0x78 0x79 0x7a 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
+
+and is decoded as follows:
+
+* `0x95` - 5-element array
+* `0x01` - `1` (Message Type - `Invocation` message)
+* `0x82` - Map of length 2
+* `0xa1` - string of length 1 (Key)
+* `0x78` - `x`
+* `0xa1` - string of length 1 (Value)
+* `0x79` - `y`
+* `0xa1` - string of length 1 (Key)
+* `0x7a` - `z`
+* `0xa1` - string of length 1 (Value)
+* `0x7a` - `z`
+* `0xa3` - string of length 3 (InvocationId)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0xa6` - string of length 6 (Target)
+* `0x6d` - `m`
+* `0x65` - `e`
+* `0x74` - `t`
+* `0x68` - `h`
+* `0x6f` - `o`
+* `0x64` - `d`
+* `0x91` - 1-element array (Arguments)
+* `0x2a` - `42` (Argument value)
+
+and interpreted as an Invocation message with headers: `'x' = 'y'` and `'z' = 'z'`.
 
 ## Type Mappings
 

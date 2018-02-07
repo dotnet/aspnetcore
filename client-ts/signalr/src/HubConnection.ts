@@ -6,7 +6,7 @@ import { IConnection } from "./IConnection"
 import { HttpConnection, IHttpConnectionOptions } from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage, CancelInvocation } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, StreamItemMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage, CancelInvocationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./TextMessageFormat"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -26,7 +26,7 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
-    private callbacks: Map<string, (invocationEvent: HubMessage, error?: Error) => void>;
+    private callbacks: Map<string, (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => void>;
     private methods: Map<string, ((...args: any[]) => void)[]>;
     private id: number;
     private closedCallbacks: ConnectionClosed[];
@@ -72,14 +72,14 @@ export class HubConnection {
 
             switch (message.type) {
                 case MessageType.Invocation:
-                    this.invokeClientMethod(<InvocationMessage>message);
+                    this.invokeClientMethod(message);
                     break;
                 case MessageType.StreamItem:
                 case MessageType.Completion:
-                    let callback = this.callbacks.get((<any>message).invocationId);
+                    let callback = this.callbacks.get(message.invocationId);
                     if (callback != null) {
                         if (message.type === MessageType.Completion) {
-                            this.callbacks.delete((<any>message).invocationId);
+                            this.callbacks.delete(message.invocationId);
                         }
                         callback(message);
                     }
@@ -168,7 +168,7 @@ export class HubConnection {
         let invocationDescriptor = this.createStreamInvocation(methodName, args);
 
         let subject = new Subject<T>(() => {
-            let cancelInvocation: CancelInvocation = this.createCancelInvocation(invocationDescriptor.invocationId);
+            let cancelInvocation: CancelInvocationMessage = this.createCancelInvocation(invocationDescriptor.invocationId);
             let message: any = this.protocol.writeMessage(cancelInvocation);
 
             this.callbacks.delete(invocationDescriptor.invocationId);
@@ -176,23 +176,22 @@ export class HubConnection {
             return this.connection.send(message);
         });
 
-        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: HubMessage, error?: Error) => {
+        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | StreamItemMessage, error?: Error) => {
             if (error) {
                 subject.error(error);
                 return;
             }
 
             if (invocationEvent.type === MessageType.Completion) {
-                let completionMessage = <CompletionMessage>invocationEvent;
-                if (completionMessage.error) {
-                    subject.error(new Error(completionMessage.error));
+                if (invocationEvent.error) {
+                    subject.error(new Error(invocationEvent.error));
                 }
                 else {
                     subject.complete();
                 }
             }
             else {
-                subject.next(<T>(<ResultMessage>invocationEvent).item);
+                subject.next(<T>(invocationEvent.item));
             }
         });
 
@@ -219,7 +218,7 @@ export class HubConnection {
         let invocationDescriptor = this.createInvocation(methodName, args, false);
 
         let p = new Promise<any>((resolve, reject) => {
-            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: HubMessage, error?: Error) => {
+            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: StreamItemMessage | CompletionMessage, error?: Error) => {
                 if (error) {
                     reject(error);
                     return;
@@ -324,7 +323,7 @@ export class HubConnection {
         };
     }
 
-    private createCancelInvocation(id: string): CancelInvocation {
+    private createCancelInvocation(id: string): CancelInvocationMessage {
         return {
             type: MessageType.CancelInvocation,
             invocationId: id,

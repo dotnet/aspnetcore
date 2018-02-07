@@ -10,29 +10,38 @@ export const enum MessageType {
     Ping = 6,
 }
 
-export interface HubMessage {
+export type MessageHeaders = { [key: string]: string };
+
+export type HubMessage = InvocationMessage | StreamInvocationMessage | StreamItemMessage | CompletionMessage | CancelInvocationMessage | PingMessage;
+
+export interface HubMessageBase {
     readonly type: MessageType;
 }
 
-export interface InvocationMessage extends HubMessage {
+export interface HubInvocationMessage extends HubMessageBase {
+    readonly headers?: MessageHeaders;
     readonly invocationId?: string;
+}
+
+export interface InvocationMessage extends HubInvocationMessage {
+    readonly type: MessageType.Invocation;
     readonly target: string;
     readonly arguments: Array<any>;
 }
 
-export interface StreamInvocationMessage extends HubMessage {
-    readonly invocationId: string;
+export interface StreamInvocationMessage extends HubInvocationMessage {
+    readonly type: MessageType.StreamInvocation;
     readonly target: string;
     readonly arguments: Array<any>
 }
 
-export interface ResultMessage extends HubMessage {
-    readonly invocationId: string;
+export interface StreamItemMessage extends HubInvocationMessage {
+    readonly type: MessageType.StreamItem;
     readonly item?: any;
 }
 
-export interface CompletionMessage extends HubMessage {
-    readonly invocationId: string;
+export interface CompletionMessage extends HubInvocationMessage {
+    readonly type: MessageType.Completion;
     readonly error?: string;
     readonly result?: any;
 }
@@ -41,8 +50,12 @@ export interface NegotiationMessage {
     readonly protocol: string;
 }
 
-export interface CancelInvocation extends HubMessage {
-    readonly invocationId: string;
+export interface PingMessage extends HubInvocationMessage {
+    readonly type: MessageType.Ping;
+}
+
+export interface CancelInvocationMessage extends HubInvocationMessage {
+    readonly type: MessageType.CancelInvocation;
 }
 
 export const enum ProtocolType {

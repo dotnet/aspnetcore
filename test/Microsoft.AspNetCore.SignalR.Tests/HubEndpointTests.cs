@@ -1766,7 +1766,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 while ((message = await client.ReadAsync().OrTimeout()) != null)
                 {
                     counter += 1;
-                    Assert.Same(PingMessage.Instance, message);
+                    Assert.IsType<PingMessage>(message);
                 }
                 Assert.InRange(counter, 1, Int32.MaxValue);
             }

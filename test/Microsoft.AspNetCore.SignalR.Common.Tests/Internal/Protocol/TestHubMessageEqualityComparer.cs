@@ -44,7 +44,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private bool CompletionMessagesEqual(CompletionMessage x, CompletionMessage y)
         {
-            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+            return SequenceEqual(x.Headers, y.Headers) &&
+                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 string.Equals(x.Error, y.Error, StringComparison.Ordinal) &&
                 x.HasResult == y.HasResult &&
                 (Equals(x.Result, y.Result) || SequenceEqual(x.Result, y.Result));
@@ -52,20 +53,23 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private bool StreamItemMessagesEqual(StreamItemMessage x, StreamItemMessage y)
         {
-            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+            return SequenceEqual(x.Headers, y.Headers) &&
+                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 (Equals(x.Item, y.Item) || SequenceEqual(x.Item, y.Item));
         }
 
         private bool InvocationMessagesEqual(InvocationMessage x, InvocationMessage y)
         {
-            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+            return SequenceEqual(x.Headers, y.Headers) &&
+                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
                 ArgumentListsEqual(x.Arguments, y.Arguments);
         }
 
         private bool StreamInvocationMessagesEqual(StreamInvocationMessage x, StreamInvocationMessage y)
         {
-            return string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
+            return SequenceEqual(x.Headers, y.Headers) &&
+                string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal) &&
                 string.Equals(x.Target, y.Target, StringComparison.Ordinal) &&
                 ArgumentListsEqual(x.Arguments, y.Arguments);
         }
