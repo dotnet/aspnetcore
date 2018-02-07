@@ -6,7 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
@@ -18,7 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     public abstract class TagHelperComponentTagHelper : TagHelper
     {
         private readonly ILogger _logger;
-
         private readonly IEnumerable<ITagHelperComponent> _components;
 
         /// <summary>
@@ -49,11 +51,28 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
             _logger = loggerFactory.CreateLogger(GetType());
         }
 
+        /// <summary>
+        /// Activates the <see cref="ViewContext"/> property of all the <see cref="ITagHelperComponentManager.Components"/>.
+        /// </summary>
+        [HtmlAttributeNotBound]
+        public ITagHelperComponentPropertyActivator PropertyActivator { get; set; }
+
+        [ViewContext]
+        [HtmlAttributeNotBound]
+        public ViewContext ViewContext { get; set; }
+
         /// <inheritdoc />
         public override void Init(TagHelperContext context)
         {
+            if (PropertyActivator == null)
+            {
+                var serviceProvider = ViewContext.HttpContext.RequestServices;
+                PropertyActivator = serviceProvider.GetRequiredService<ITagHelperComponentPropertyActivator>();
+            }
+
             foreach (var component in _components)
             {
+                PropertyActivator.Activate(ViewContext, component);
                 component.Init(context);
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
