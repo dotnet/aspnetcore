@@ -6,8 +6,9 @@
   <Target Name="BuildAzureIntegration" DependsOnTargets="GeneratePropsFiles">
     <PropertyGroup>
       <AzureIntegrationProjProperties>
+        AspNetUniverseBuildOffline=true;
         RepositoryRoot=$(AzureIntegrationProjectRoot);
-        DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);
