@@ -113,7 +113,7 @@
     "copyrightYear": {
       "type": "generated",
       "generator": "now",
-      "replaces": "1975",
+      "replaces": "copyrightYear",
       "parameters": {
         "format": "yyyy"
       }
