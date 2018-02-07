@@ -12,7 +12,6 @@
     <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
 
     <SubmoduleRoot>$(RepositoryRoot)modules\</SubmoduleRoot>
-    <LineupBuildDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))lineups\</LineupBuildDir>
 
     <DependencyPackageDir>$(RepositoryRoot).deps\build\</DependencyPackageDir>
     <DependencyMirrorPackageDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorPackageDir>
@@ -49,9 +48,13 @@
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
 
+  <!-- Properties for publishing -->
   <PropertyGroup>
+    <!-- myget = non-orchestrated builds -->
+    <PublishToMyGet Condition=" $(PublishType.Contains('myget')) ">true</PublishToMyGet>
     <!-- azure = non-orchestrated builds -->
     <PublishToAzureFeed Condition="$(PublishType.Contains('azure'))">true</PublishToAzureFeed>
+
     <!-- blob = orchestrated builds -->
     <PublishToTransportFeed Condition="$(PublishType.Contains('blob'))">true</PublishToTransportFeed>
   </PropertyGroup>

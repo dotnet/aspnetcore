@@ -22,11 +22,11 @@
     <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);BuildMetapackages;BuildTemplates;SplitPackages</PackageDependsOn>
     <TestDependsOn>$(TestDependsOn);_TestRepositories</TestDependsOn>
     <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
-    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo</GetArtifactInfoDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);ResolveRepoInfo;GetLineupPackageInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(ArtifactsDir);$(BuildDir);$(LineupBuildDir)" />
+    <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
   </Target>
 
   <Target Name="RestoreExternalDependencies">
@@ -88,12 +88,22 @@
     <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="GeneratePropsFiles" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="GetLineupPackageInfo">
+    <ItemGroup>
+      <ArtifactInfo Include="$(BuildDir)Internal.AspNetCore.Universe.Lineup.$(Version).nupkg">
+        <ArtifactType>NuGetPackage</ArtifactType>
+        <PackageId>Internal.AspNetCore.Universe.Lineup</PackageId>
+        <Version>$(Version)</Version>
+        <Category>noship</Category>
+        <IsLineup>true</IsLineup>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GeneratePropsFiles" DependsOnTargets="GetArtifactInfo">
     <ItemGroup>
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
-      <_LineupPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
-      <_LineupPackages Include="Microsoft.AspNetCore.App" Version="$(PackageVersion)" />
 
       <_RestoreSources Include="$(DotNetAdditionalRestoreSources)" Condition="'$(DotNetAdditionalRestoreSources)' != ''" />
       <_RestoreSources Include="$(DependencyPackageDir)" Condition="'$(DependencyPackageDir)' != '' AND Exists('$(DependencyPackageDir)')" />
@@ -113,7 +123,7 @@
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
-                DestinationFolder="$(LineupBuildDir)"
+                DestinationFolder="$(BuildDir)"
                 Overwrite="true"
                 Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />

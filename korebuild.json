@@ -1,4 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
-  "channel": "dev"
+  "channel": "dev",
+  "toolsets": {
+    "nodejs": {
+      "minVersion": "8.0",
+      "required": true
+    }
+  }
 }

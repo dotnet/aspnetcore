@@ -196,7 +196,7 @@ namespace RepoTasks
                     };
 
                     var packages = artifacts
-                        .Where(a => a.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase))
+                        .Where(a => string.Equals(a.RepoName, repoName, StringComparison.OrdinalIgnoreCase))
                         .ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
 
                     foreach (var proj in s.Projects)
