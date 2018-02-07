@@ -4,7 +4,7 @@ There are lots of ways to contribute to Blazor and we appreciate the help from t
 
 ## Code of conduct
 
-To better foster an open, innovative and inclusive community please refer to our [Code of Conduct](https://github.com/aspnet/Home/blob/dev/CODE_OF_CONDUCT.md) when contributing.
+To better foster an open, innovative and inclusive community please refer to our [Code of Conduct](https://github.com/aspnet/Blazor/blob/dev/CODE_OF_CONDUCT.md) when contributing.
 
 ## Provide feedback
 
