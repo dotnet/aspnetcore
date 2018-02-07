@@ -24,29 +24,32 @@
   </Target>
 
   <PropertyGroup>
-    <PackageDependsOn>$(PackageDependsOn);PublishNPMPackages</PackageDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);PackNPMPackages</PackageDependsOn>
+    <GetArtifactInfoDependsOn>$(GetArtifactInfoDependsOn);GetNpmArtifactInfo</GetArtifactInfoDependsOn>
   </PropertyGroup>
-  <Target Name="PublishNPMPackages" AfterTargets="Package">
+
+  <Target Name="GetNpmArtifactInfo">
     <ItemGroup>
       <NPMPackage Update="%(NPMPackage)">
         <PackageJson>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), 'package.json'))</PackageJson>
         <OutputTar>$([System.IO.Path]::Combine(%(NPMPackage.FullPath), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</OutputTar>
         <ArtifactPath>$([System.IO.Path]::Combine($(BuildDir), '%(NPMPackage.TarName)-$(PackageVersion).tgz'))</ArtifactPath>
       </NPMPackage>
-    </ItemGroup>
 
-    <ItemGroup>
       <ArtifactInfo Include="%(NPMPackage.ArtifactPath)">
         <ArtifactType>NpmPackage</ArtifactType>
         <PackageId>%(NPMPackage.PackageId)</PackageId>
         <Version>$(PackageVersion)</Version>
+        <Category>ship</Category>
       </ArtifactInfo>
     </ItemGroup>
 
     <ItemGroup>
       <FilesToExcludeFromSigning Include="%(NPMPackage.ArtifactPath)" />
     </ItemGroup>
+  </Target>
 
+  <Target Name="PackNPMPackages" AfterTargets="Package">
     <Copy SourceFiles="%(NPMPackage.PackageJson)" DestinationFiles="%(NPMPackage.PackageJson).bak" />
     <Exec Command="npm --no-git-tag-version --allow-same-version version $(PackageVersion)" WorkingDirectory="%(NPMPackage.FullPath)" />
     <Exec Command="npm run build" WorkingDirectory="%(NPMPackage.FullPath)" />
