@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <summary>
         /// Gets the underlying array instance.
         /// </summary>
-        public T[] Array { get; }
+        public readonly T[] Array;
 
         /// <summary>
         /// Gets the number of items in the array that are considered to be in use.
         /// </summary>
-        public int Count { get; }
+        public readonly int Count;
 
         /// <summary>
         /// Constructs an instance of <see cref="ArrayRange{T}"/>.

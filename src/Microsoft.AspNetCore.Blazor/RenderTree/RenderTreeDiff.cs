@@ -11,19 +11,19 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <summary>
         /// Gets the ID of the component.
         /// </summary>
-        public int ComponentId { get; }
+        public readonly int ComponentId;
 
         /// <summary>
         /// Gets the changes to the render tree since a previous state.
         /// </summary>
-        public ArrayRange<RenderTreeEdit> Edits { get; }
+        public readonly ArrayRange<RenderTreeEdit> Edits;
 
         /// <summary>
         /// Gets render frames that may be referenced by entries in <see cref="Edits"/>.
         /// For example, edit entries of type <see cref="RenderTreeEditType.PrependFrame"/>
         /// will point to an entry in this array to specify the subtree to be prepended.
         /// </summary>
-        public ArrayRange<RenderTreeFrame> ReferenceFrames { get; }
+        public readonly ArrayRange<RenderTreeFrame> ReferenceFrames;
 
         internal RenderTreeDiff(
             int componentId,
