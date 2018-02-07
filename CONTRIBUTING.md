@@ -12,7 +12,7 @@ Since Blazor is currently an experimental project, it's primary focus at this ti
 
 ### Report a bug
 
-If you think you've found a non-security related bug, please log a new issue in the [Blazor GitHub issue tracker] (https://github.com/aspnet/blazor). When filing issues, please use our [bug filing template](https://github.com/aspnet/Home/wiki/Functional-bug-template).
+If you think you've found a non-security related bug, please log a new issue in the [Blazor GitHub issue tracker](https://github.com/aspnet/Blazor/issues). When filing issues, please use our [bug filing template](https://github.com/aspnet/Home/wiki/Functional-bug-template).
 The best way to get your bug fixed is to be as detailed as you can be about the problem.
 Providing a minimal project with steps to reproduce the problem is ideal.
 Here are questions you can answer before you file a bug to make sure you're not missing any important information.
