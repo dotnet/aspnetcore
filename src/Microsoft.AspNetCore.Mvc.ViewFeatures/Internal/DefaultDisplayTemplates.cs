@@ -64,24 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             return new List<SelectListItem>
             {
-                new SelectListItem
-                {
-                    Text = Resources.Common_TriState_NotSet,
-                    Value = string.Empty,
-                    Selected = !value.HasValue
-                },
-                new SelectListItem
-                {
-                    Text = Resources.Common_TriState_True,
-                    Value = "true",
-                    Selected = (value == true),
-                },
-                new SelectListItem
-                {
-                    Text = Resources.Common_TriState_False,
-                    Value = "false",
-                    Selected = (value == false),
-                },
+                new SelectListItem(Resources.Common_TriState_NotSet, string.Empty, !value.HasValue),
+                new SelectListItem(Resources.Common_TriState_True, "true", (value == true)),
+                new SelectListItem(Resources.Common_TriState_False, "false", (value == false)),
             };
         }
 
