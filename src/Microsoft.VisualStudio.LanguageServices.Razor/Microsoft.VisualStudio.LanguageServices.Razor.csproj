@@ -4,6 +4,7 @@
     <TargetFrameworks>net46</TargetFrameworks>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure for Visual Studio.</Description>
     <EnableApiCheck>false</EnableApiCheck>
+    <RulesDirectory>..\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\</RulesDirectory>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -11,6 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(MicrosoftVisualStudioComponentModelHostPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(MicrosoftVisualStudioEditorPackageVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(MicrosoftVisualStudioLanguageIntellisensePackageVersion)" />
@@ -36,4 +39,79 @@
     <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="System.Xaml"/>
+  </ItemGroup>
+
+  <!--
+    The ProjectSystem.SDK tasks that handle XamlPropertyRule don't work on the dotnet core version
+    of MSBuild. The workaround here is to only hardcode the generated code location such that it gets
+    checked in. Then we don't need to generate it at build time.
+    If you make changes to the rule files, then you need to update them using Desktop MSBuild :(
+  -->
+  <ItemGroup Condition="'$(MSBuildRuntimeType)'=='Core'">
+    <None Include="$(RulesDirectory)RazorConfiguration.xaml">
+      <Link>ProjectSystem\Rules\RazorConfiguration.xaml</Link>
+    </None>
+    <None Include="$(RulesDirectory)RazorExtension.xaml">
+      <Link>ProjectSystem\Rules\RazorExtension.xaml</Link>
+    </None>
+    <None Include="$(RulesDirectory)RazorGeneral.xaml">
+      <Link>ProjectSystem\Rules\RazorGeneral.xaml</Link>
+    </None>
+    <EmbeddedResource Include="$(RulesDirectory)RazorConfiguration.xaml">
+      <LogicalName>XamlRuleToCode:RazorConfiguration.xaml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(RulesDirectory)RazorExtension.xaml">
+      <LogicalName>XamlRuleToCode:RazorExtension.xaml</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(RulesDirectory)RazorGeneral.xaml">
+      <LogicalName>XamlRuleToCode:RazorGeneral.xaml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup Condition="'$(MSBuildRuntimeType)'!='Core'">
+    <XamlPropertyRule Include="$(RulesDirectory)RazorConfiguration.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:GenerateRuleSourceFromXaml</Generator>
+      <Namespace>Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules</Namespace>
+      <RuleInjectionClassName>RazorProjectProperties</RuleInjectionClassName>
+      <Context></Context>
+      <OutputPath>ProjectSystem\Rules\</OutputPath>
+    </XamlPropertyRule>
+    <XamlPropertyRule Include="$(RulesDirectory)RazorExtension.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:GenerateRuleSourceFromXaml</Generator>
+      <Namespace>Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules</Namespace>
+      <RuleInjectionClassName>RazorProjectProperties</RuleInjectionClassName>
+      <OutputPath>ProjectSystem\Rules\</OutputPath>
+    </XamlPropertyRule>
+    <XamlPropertyRule Include="$(RulesDirectory)RazorGeneral.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:GenerateRuleSourceFromXaml</Generator>
+      <Namespace>Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules</Namespace>
+      <RuleInjectionClassName>RazorProjectProperties</RuleInjectionClassName>
+      <OutputPath>ProjectSystem\Rules\</OutputPath>
+    </XamlPropertyRule>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="ProjectSystem\Rules\RazorConfiguration.cs">
+      <DependentUpon>ProjectSystem\Rules\RazorConfiguration.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ProjectSystem\Rules\RazorExtension.cs">
+      <DependentUpon>ProjectSystem\Rules\RazorExtension.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ProjectSystem\Rules\RazorGeneral.cs">
+      <DependentUpon>ProjectSystem\Rules\RazorGeneral.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <!--
+    Despite us specifying %(XamlPropertyRule.OutputPath), the ProjectSystem.SDK targets still add files in the 
+    obj folder to the Compile group. This is a workaround to remove them.
+  -->
+  <Target Name="GrossProjectSystemSDKWorkaround" AfterTargets="GenerateRulePrep">
+    <ItemGroup>
+      <Compile Remove="@(XamlPropertyRule->'$(IntermediateOutputPath)%(FileName)$(DefaultLanguageSourceExtension)')" />
+    </ItemGroup>
+  </Target>
 </Project>

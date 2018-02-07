@@ -39,6 +39,14 @@
     <_RazorToolAssembly Condition="'$(_RazorToolAssembly)'==''">$(_RazorMSBuildRoot)tools\rzc.dll</_RazorToolAssembly>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!--
+      Defines the ability to understand the configuration for the Razor language service provided by
+      the runtime/toolset packages. Introduced in 2.1
+    -->
+    <ProjectCapability Include="DotNetCoreRazorConfiguration"/>
+  </ItemGroup>
+
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorGenerate" AssemblyFile="$(_RazorTaskAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.Razor.Tasks.RazorTagHelper" AssemblyFile="$(_RazorTaskAssembly)" />
 </Project>

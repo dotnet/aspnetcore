@@ -14,6 +14,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!-- Redirect the SDK to use the targets from the current package -->
-    <RazorSdkTargetsPath>$(MSBuildFileDirectory)Sdk.Razor.CurrentVersion.targets</RazorSdkTargetsPath>
+    <RazorSdkTargetsPath>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.targets</RazorSdkTargetsPath>
   </PropertyGroup>
 </Project>
