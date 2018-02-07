@@ -52,7 +52,7 @@ export class BrowserRenderer {
           const frame = getTreeFramePtr(referenceTree, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           const element = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as HTMLElement;
-          this.applyAttribute(componentId, element, frame, frameIndex);
+          this.applyAttribute(componentId, element, frame);
           break;
         }
         case EditType.removeAttribute: {
@@ -119,7 +119,7 @@ export class BrowserRenderer {
     for (let descendantIndex = frameIndex + 1; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
       const descendantFrame = getTreeFramePtr(frames, descendantIndex);
       if (renderTreeFrame.frameType(descendantFrame) === FrameType.attribute) {
-        this.applyAttribute(componentId, newDomElement, descendantFrame, descendantIndex);
+        this.applyAttribute(componentId, newDomElement, descendantFrame);
       } else {
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
@@ -160,16 +160,17 @@ export class BrowserRenderer {
     insertNodeIntoDOM(newDomTextNode, parent, childIndex);
   }
 
-  applyAttribute(componentId: number, toDomElement: Element, attributeFrame: RenderTreeFramePointer, attributeFrameIndex: number) {
+  applyAttribute(componentId: number, toDomElement: Element, attributeFrame: RenderTreeFramePointer) {
     const attributeName = renderTreeFrame.attributeName(attributeFrame)!;
     const browserRendererId = this.browserRendererId;
+    const eventHandlerId = renderTreeFrame.attributeEventHandlerId(attributeFrame);
 
     // TODO: Instead of applying separate event listeners to each DOM element, use event delegation
     // and remove all the _blazor*Listener hacks
     switch (attributeName) {
       case 'onclick': {
         toDomElement.removeEventListener('click', toDomElement['_blazorClickListener']);
-        const listener = () => raiseEvent(browserRendererId, componentId, attributeFrameIndex, 'mouse', { Type: 'click' });
+        const listener = () => raiseEvent(browserRendererId, componentId, eventHandlerId, 'mouse', { Type: 'click' });
         toDomElement['_blazorClickListener'] = listener;
         toDomElement.addEventListener('click', listener);
         break;
@@ -181,7 +182,7 @@ export class BrowserRenderer {
           // just to establish that we can pass parameters when raising events.
           // We use C#-style PascalCase on the eventInfo to simplify deserialization, but this could
           // change if we introduced a richer JSON library on the .NET side.
-          raiseEvent(browserRendererId, componentId, attributeFrameIndex, 'keyboard', { Type: evt.type, Key: (evt as any).key });
+          raiseEvent(browserRendererId, componentId, eventHandlerId, 'keyboard', { Type: evt.type, Key: (evt as any).key });
         };
         toDomElement['_blazorKeypressListener'] = listener;
         toDomElement.addEventListener('keypress', listener);
@@ -229,7 +230,7 @@ function removeAttributeFromDOM(parent: Element, childIndex: number, attributeNa
   element.removeAttribute(attributeName);
 }
 
-function raiseEvent(browserRendererId: number, componentId: number, referenceTreeFrameIndex: number, eventInfoType: EventInfoType, eventInfo: any) {
+function raiseEvent(browserRendererId: number, componentId: number, eventHandlerId: number, eventInfoType: EventInfoType, eventInfo: any) {
   if (!raiseEventMethod) {
     raiseEventMethod = platform.findMethod(
       'Microsoft.AspNetCore.Blazor.Browser', 'Microsoft.AspNetCore.Blazor.Browser.Rendering', 'BrowserRendererEventDispatcher', 'DispatchEvent'
@@ -239,7 +240,7 @@ function raiseEvent(browserRendererId: number, componentId: number, referenceTre
   const eventDescriptor = {
     BrowserRendererId: browserRendererId,
     ComponentId: componentId,
-    ReferenceTreeFrameIndex: referenceTreeFrameIndex,
+    EventHandlerId: eventHandlerId,
     EventArgsType: eventInfoType
   };
 

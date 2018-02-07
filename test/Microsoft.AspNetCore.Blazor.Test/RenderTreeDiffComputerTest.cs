@@ -310,12 +310,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0),
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
-                },
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+                });
         }
 
         [Fact]
@@ -324,14 +324,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             oldTree.OpenComponent<FakeComponent>(123);
             oldTree.CloseComponent();
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree); // Assign initial IDs
             newTree.OpenComponent<FakeComponent2>(123);
             newTree.CloseComponent();
 
             // Act
             var renderBatch = GetRenderedBatch();
 
-            // Assert: Even though we didn't assign IDs to the components, this
-            // shows that FakeComponent was disposed
+            // Assert
             Assert.Collection(renderBatch.DisposedComponentIDs,
                 disposedComponentId => Assert.Equal(0, disposedComponentId));
 
@@ -340,13 +340,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(2, renderBatch.UpdatedComponents.Count);
             var updatedComponent1 = renderBatch.UpdatedComponents.Array[0];
             Assert.Collection(updatedComponent1.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0),
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                     Assert.IsType<FakeComponent2>(updatedComponent1.ReferenceFrames.Array[0].Component);
-                },
-                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+                });
 
             // Assert: Second updated component is the new FakeComponent2
             var updatedComponent2 = renderBatch.UpdatedComponents.Array[1];
@@ -483,13 +483,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Collection(result.Edits,
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
-                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
+                    Assert.Equal("oldname", entry.RemovedAttributeName);
                 },
                 entry =>
                 {
-                    AssertEdit(entry, RenderTreeEditType.RemoveAttribute, 0);
-                    Assert.Equal("oldname", entry.RemovedAttributeName);
+                    AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
             Assert.Collection(result.ReferenceFrames,
                 frame => AssertFrame.Attribute(frame, "newname", "same value"));

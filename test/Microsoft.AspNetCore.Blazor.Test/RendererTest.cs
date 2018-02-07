@@ -173,16 +173,17 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var componentId = renderer.AssignComponentId(component);
             renderer.RenderNewBatch(componentId);
 
-            var (eventHandlerFrameIndex, _) = FirstWithIndex(
-                renderer.Batches.Single().DiffsByComponentId[componentId].Single().ReferenceFrames,
-                frame => frame.AttributeValue != null);
+            var eventHandlerId = renderer.Batches.Single().DiffsByComponentId[componentId].Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
 
             // Assert: Event not yet fired
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            renderer.DispatchEvent(componentId, eventHandlerFrameIndex, eventArgs);
+            renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
             Assert.Same(eventArgs, receivedArgs);
         }
 
@@ -211,17 +212,18 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var nestedComponentId = nestedComponentFrame.ComponentId;
             renderer.RenderNewBatch(nestedComponentId);
 
-            // Find nested component's event handler ndoe
-            var (eventHandlerFrameIndex, _) = FirstWithIndex(
-                renderer.Batches[1].DiffsByComponentId[nestedComponentId].Single().ReferenceFrames,
-                frame => frame.AttributeValue != null);
+            // Find nested component's event handler ID
+            var eventHandlerId = renderer.Batches[1].DiffsByComponentId[nestedComponentId].Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
 
             // Assert: Event not yet fired
             Assert.Null(receivedArgs);
 
             // Act/Assert: Event can be fired
             var eventArgs = new UIEventArgs();
-            renderer.DispatchEvent(nestedComponentId, eventHandlerFrameIndex, eventArgs);
+            renderer.DispatchEvent(nestedComponentId, eventHandlerId, eventArgs);
             Assert.Same(eventArgs, receivedArgs);
         }
 
@@ -474,9 +476,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.OpenElement(7, "some element");
                 if (firstRender)
                 {
-                    builder.OpenComponent<FakeComponent>(100);
-                    builder.CloseComponent();
-                    builder.OpenComponent<FakeComponent>(150);
+                    // Nested descendants
+                    builder.OpenComponent<ConditionalParentComponent<FakeComponent>>(100);
+                    builder.AddAttribute(101, nameof(ConditionalParentComponent<FakeComponent>.IncludeChild), true);
                     builder.CloseComponent();
                 }
                 builder.OpenComponent<FakeComponent>(200);
@@ -494,14 +496,162 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 .Where(frame => frame.FrameType == RenderTreeFrameType.Component)
                 .Select(frame => frame.ComponentId)
                 .ToList();
-            Assert.Equal(childComponentIds, new[] { 1, 2, 3 });
+            Assert.Equal(new[] { 1, 3 }, childComponentIds);
 
             // Act: Second render
             firstRender = false;
             renderer.RenderNewBatch(rootComponentId);
 
             // Assert: Applicable children are included in disposal list
-            Assert.Equal(renderer.Batches[1].DisposedComponentIDs, new[] { 1, 2 });
+            Assert.Equal(new[] { 2, 1 }, renderer.Batches[1].DisposedComponentIDs);
+        }
+
+        [Fact]
+        public void DisposesEventHandlersWhenAttributeValueChanged()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var eventCount = 0;
+            UIEventHandler origEventHandler = args => { eventCount++; };
+            var component = new EventComponent { Handler = origEventHandler };
+            var componentId = renderer.AssignComponentId(component);
+            renderer.RenderNewBatch(componentId);
+            var origEventHandlerId = renderer.Batches.Single().DiffsByComponentId[componentId].Single()
+                .ReferenceFrames
+                .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+                .Single(f => f.AttributeEventHandlerId != 0)
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: Event handler fires when we trigger it
+            Assert.Equal(0, eventCount);
+            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            Assert.Equal(1, eventCount);
+
+            // Now change the attribute value
+            var newEventCount = 0;
+            component.Handler = args => { newEventCount++; };
+            renderer.RenderNewBatch(componentId);
+
+            // Act/Assert 2: Can no longer fire the original event, but can fire the new event
+            Assert.Throws<ArgumentException>(() =>
+            {
+                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            });
+            Assert.Equal(1, eventCount);
+            Assert.Equal(0, newEventCount);
+            renderer.DispatchEvent(componentId, origEventHandlerId + 1, args: null);
+            Assert.Equal(1, newEventCount);
+        }
+
+        [Fact]
+        public void DisposesEventHandlersWhenAttributeRemoved()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var eventCount = 0;
+            UIEventHandler origEventHandler = args => { eventCount++; };
+            var component = new EventComponent { Handler = origEventHandler };
+            var componentId = renderer.AssignComponentId(component);
+            renderer.RenderNewBatch(componentId);
+            var origEventHandlerId = renderer.Batches.Single().DiffsByComponentId[componentId].Single()
+                .ReferenceFrames
+                .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+                .Single(f => f.AttributeEventHandlerId != 0)
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: Event handler fires when we trigger it
+            Assert.Equal(0, eventCount);
+            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            Assert.Equal(1, eventCount);
+
+            // Now remove the event attribute
+            component.Handler = null;
+            renderer.RenderNewBatch(componentId);
+
+            // Act/Assert 2: Can no longer fire the original event
+            Assert.Throws<ArgumentException>(() =>
+            {
+                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            });
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void DisposesEventHandlersWhenOwnerComponentRemoved()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var eventCount = 0;
+            UIEventHandler origEventHandler = args => { eventCount++; };
+            var component = new ConditionalParentComponent<EventComponent>
+            {
+                IncludeChild = true,
+                ChildParameters = new Dictionary<string, object>
+                {
+                    { nameof(EventComponent.Handler), origEventHandler }
+                }
+            };
+            var rootComponentId = renderer.AssignComponentId(component);
+            renderer.RenderNewBatch(rootComponentId);
+            var childComponentId = renderer.Batches.Single().DiffsByComponentId[rootComponentId].Single()
+                .ReferenceFrames
+                .Where(f => f.FrameType == RenderTreeFrameType.Component)
+                .Single()
+                .ComponentId;
+            var eventHandlerId = renderer.Batches.Single().DiffsByComponentId[childComponentId].Single()
+                .ReferenceFrames
+                .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+                .Single(f => f.AttributeEventHandlerId != 0)
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: Event handler fires when we trigger it
+            Assert.Equal(0, eventCount);
+            renderer.DispatchEvent(childComponentId, eventHandlerId, args: null);
+            Assert.Equal(1, eventCount);
+
+            // Now remove the EventComponent
+            component.IncludeChild = false;
+            renderer.RenderNewBatch(rootComponentId);
+
+            // Act/Assert 2: Can no longer fire the original event
+            Assert.Throws<ArgumentException>(() =>
+            {
+                renderer.DispatchEvent(eventHandlerId, eventHandlerId, args: null);
+            });
+            Assert.Equal(1, eventCount);
+        }
+
+        [Fact]
+        public void DisposesEventHandlersWhenAncestorElementRemoved()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var eventCount = 0;
+            UIEventHandler origEventHandler = args => { eventCount++; };
+            var component = new EventComponent { Handler = origEventHandler };
+            var componentId = renderer.AssignComponentId(component);
+            renderer.RenderNewBatch(componentId);
+            var origEventHandlerId = renderer.Batches.Single().DiffsByComponentId[componentId].Single()
+                .ReferenceFrames
+                .Where(f => f.FrameType == RenderTreeFrameType.Attribute)
+                .Single(f => f.AttributeEventHandlerId != 0)
+                .AttributeEventHandlerId;
+
+            // Act/Assert 1: Event handler fires when we trigger it
+            Assert.Equal(0, eventCount);
+            renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            Assert.Equal(1, eventCount);
+
+            // Now remove the ancestor element
+            component.SkipElement = true;
+            renderer.RenderNewBatch(componentId);
+
+            // Act/Assert 2: Can no longer fire the original event
+            Assert.Throws<ArgumentException>(() =>
+            {
+                renderer.DispatchEvent(componentId, origEventHandlerId, args: null);
+            });
+            Assert.Equal(1, eventCount);
         }
 
         private class NoOpRenderer : Renderer
@@ -528,8 +678,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public new void RenderNewBatch(int componentId)
                 => base.RenderNewBatch(componentId);
 
-            public new void DispatchEvent(int componentId, int renderTreeIndex, UIEventArgs args)
-                => base.DispatchEvent(componentId, renderTreeIndex, args);
+            public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
+                => base.DispatchEvent(componentId, eventHandlerId, args);
 
             protected internal override void UpdateDisplay(RenderBatch renderBatch)
             {
@@ -601,12 +751,48 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class EventComponent : IComponent
         {
             public UIEventHandler Handler { get; set; }
+            public bool SkipElement { get; set; }
 
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.OpenElement(0, "some element");
-                builder.AddAttribute(1, "some event", Handler);
+                builder.OpenElement(0, "grandparent");
+                if (!SkipElement)
+                {
+                    builder.OpenElement(1, "parent");
+                    builder.OpenElement(2, "some element");
+                    if (Handler != null)
+                    {
+                        builder.AddAttribute(3, "some event", Handler);
+                    }
+                    builder.CloseElement();
+                    builder.CloseElement();
+                }
                 builder.CloseElement();
+            }
+        }
+
+        private class ConditionalParentComponent<T> : IComponent where T : IComponent
+        {
+            public bool IncludeChild { get; set; }
+            public IDictionary<string, object> ChildParameters { get; set; }
+
+            public void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddText(0, "Parent here");
+                
+                if (IncludeChild)
+                {
+                    builder.OpenComponent<T>(1);
+                    if (ChildParameters != null)
+                    {
+                        var sequence = 2;
+                        foreach (var kvp in ChildParameters)
+                        {
+                            builder.AddAttribute(sequence++, kvp.Key, kvp.Value);
+                        }
+                    }
+                    builder.CloseComponent();
+                }
             }
         }
 

@@ -56,35 +56,17 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         /// <summary>
-        /// Invokes the handler corresponding to an event.
-        /// </summary>
-        /// <param name="referenceTreeIndex">The index of the frame in the latest diff reference tree that holds the event handler to be invoked.</param>
-        /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        public void DispatchEvent(int referenceTreeIndex, UIEventArgs eventArgs)
-        {
-            if (eventArgs == null)
-            {
-                throw new ArgumentNullException(nameof(eventArgs));
-            }
-
-            var eventHandler = _diffComputer.TemporaryGetEventHandlerMethod(referenceTreeIndex);
-            eventHandler.Invoke(eventArgs);
-
-            // After any event, we synchronously re-render. Most of the time this means that
-            // developers don't need to call Render() on their components explicitly.
-            _renderer.RenderNewBatch(_componentId);
-        }
-
-        /// <summary>
         /// Notifies the component that it is being disposed.
         /// </summary>
-        public void NotifyDisposed()
+        public void NotifyDisposed(RenderBatchBuilder batchBuilder)
         {
             // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
             if (_component is IDisposable disposable)
             {
                 disposable.Dispose();
             }
+
+            _diffComputer.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
         }
     }
 }

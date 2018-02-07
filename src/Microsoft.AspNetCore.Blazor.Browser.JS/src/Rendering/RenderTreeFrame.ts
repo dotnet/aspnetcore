@@ -19,6 +19,7 @@ export const renderTreeFrame = {
   textContent: (frame: RenderTreeFramePointer) => platform.readStringField(frame, 16),
   attributeName: (frame: RenderTreeFramePointer) => platform.readStringField(frame, 16),
   attributeValue: (frame: RenderTreeFramePointer) => platform.readStringField(frame, 24),
+  attributeEventHandlerId: (frame: RenderTreeFramePointer) => platform.readInt32Field(frame, 8),
 };
 
 export enum FrameType {

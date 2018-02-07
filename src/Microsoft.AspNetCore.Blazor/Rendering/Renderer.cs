@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 
@@ -29,6 +30,10 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         // same RenderBatchBuilder instance to avoid reallocating
         private readonly RenderBatchBuilder _sharedRenderBatchBuilder = new RenderBatchBuilder();
         private int _renderBatchLock = 0;
+
+        private int _lastEventHandlerId = 0;
+        private readonly Dictionary<int, UIEventHandler> _eventHandlersById
+            = new Dictionary<int, UIEventHandler>();
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
@@ -83,6 +88,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             {
                 RenderInExistingBatch(_sharedRenderBatchBuilder, componentId);
                 UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
+                RemoveEventHandlerIds(_sharedRenderBatchBuilder.GetDisposedEventHandlerIds());
             }
             finally
             {
@@ -98,7 +104,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         internal void DisposeInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
         {
-            GetRequiredComponentState(componentId).NotifyDisposed();
+            GetRequiredComponentState(componentId).NotifyDisposed(batchBuilder);
             batchBuilder.AddDisposedComponent(componentId);
         }
 
@@ -106,14 +112,26 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Notifies the specified component that an event has occurred.
         /// </summary>
         /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
-        /// <param name="referenceTreeIndex">The index into the component's latest diff reference tree that specifies which event handler to invoke.</param>
+        /// <param name="eventHandlerId">The <see cref="RenderTreeFrame.AttributeEventHandlerId"/> value from the original event attribute.</param>
         /// <param name="eventArgs">Arguments to be passed to the event handler.</param>
-        protected void DispatchEvent(int componentId, int referenceTreeIndex, UIEventArgs eventArgs)
-            => GetRequiredComponentState(componentId).DispatchEvent(referenceTreeIndex, eventArgs);
-
-        internal void InstantiateChildComponent(RenderTreeFrame[] frames, int componentFrameIndex)
+        protected void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
         {
-            ref var frame = ref frames[componentFrameIndex];
+            if (_eventHandlersById.TryGetValue(eventHandlerId, out var handler))
+            {
+                handler.Invoke(eventArgs);
+
+                // After any event, we synchronously re-render. Most of the time this means that
+                // developers don't need to call Render() on their components explicitly.
+                RenderNewBatch(componentId);
+            }
+            else
+            {
+                throw new ArgumentException($"There is no event handler with ID {eventHandlerId}");
+            }
+        }
+
+        internal void InstantiateChildComponent(ref RenderTreeFrame frame)
+        {
             if (frame.FrameType != RenderTreeFrameType.Component)
             {
                 throw new ArgumentException($"The frame's {nameof(RenderTreeFrame.FrameType)} property must equal {RenderTreeFrameType.Component}", nameof(frame));
@@ -127,6 +145,23 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var newComponent = (IComponent)Activator.CreateInstance(frame.ComponentType);
             var newComponentId = AssignComponentId(newComponent);
             frame = frame.WithComponentInstance(newComponentId, newComponent);
+        }
+
+        internal void AssignEventHandlerId(ref RenderTreeFrame frame)
+        {
+            var id = ++_lastEventHandlerId;
+            _eventHandlersById.Add(id, (UIEventHandler)frame.AttributeValue);
+            frame = frame.WithAttributeEventHandlerId(id);
+        }
+
+        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds)
+        {
+            var array = eventHandlerIds.Array;
+            var count = eventHandlerIds.Count;
+            for (var i = 0; i < count; i++)
+            {
+                _eventHandlersById.Remove(array[i]);
+            }
         }
 
         private ComponentState GetRequiredComponentState(int componentId)

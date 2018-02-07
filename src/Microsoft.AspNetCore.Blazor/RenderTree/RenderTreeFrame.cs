@@ -72,6 +72,12 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         // --------------------------------------------------------------------------------
 
         /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>
+        /// gets the ID of the corresponding event handler, if any.
+        /// </summary>
+        [FieldOffset(8)] public readonly int AttributeEventHandlerId;
+
+        /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is <see langword="null"/>.
         /// </summary>
@@ -154,6 +160,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             AttributeValue = attributeValue;
         }
 
+        private RenderTreeFrame(int sequence, string attributeName, object attributeValue, int eventHandlerId)
+            : this()
+        {
+            FrameType = RenderTreeFrameType.Attribute;
+            Sequence = sequence;
+            AttributeName = attributeName;
+            AttributeValue = attributeValue;
+            AttributeEventHandlerId = eventHandlerId;
+        }
+
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0);
 
@@ -180,5 +196,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         internal RenderTreeFrame WithComponentInstance(int componentId, IComponent component)
             => new RenderTreeFrame(Sequence, ComponentType, ComponentSubtreeLength, componentId, component);
+
+        internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
+            => new RenderTreeFrame(Sequence, AttributeName, AttributeValue, eventHandlerId);
     }
 }

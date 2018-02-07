@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             _browserRendererId = BrowserRendererRegistry.Add(this);
         }
 
-        internal void DispatchBrowserEvent(int componentId, int referenceTreeIndex, UIEventArgs eventArgs)
-            => DispatchEvent(componentId, referenceTreeIndex, eventArgs);
+        internal void DispatchBrowserEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
+            => DispatchEvent(componentId, eventHandlerId, eventArgs);
 
         internal void RenderNewBatchInternal(int componentId)
             => RenderNewBatch(componentId);
