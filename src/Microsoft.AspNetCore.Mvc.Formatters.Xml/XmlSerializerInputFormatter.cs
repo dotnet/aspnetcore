@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml;
 using Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
-                // XmlSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously 
-                // read everything into a buffer, and then seek back to the beginning. 
-                BufferingHelper.EnableRewind(request);
+                // XmlSerializer does synchronous reads. In order to avoid blocking on the stream, we asynchronously
+                // read everything into a buffer, and then seek back to the beginning.
+                request.EnableBuffering();
                 Debug.Assert(request.Body.CanSeek);
 
                 await request.Body.DrainAsync(CancellationToken.None);

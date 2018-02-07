@@ -9,7 +9,7 @@ using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.WebUtilities;
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             ObjectPoolProvider objectPoolProvider) :
             this(logger, serializerSettings, charPool, objectPoolProvider, suppressInputFormatterBuffering: false)
         {
-            // This constructor by default buffers the request body as its the most secure setting 
+            // This constructor by default buffers the request body as its the most secure setting
         }
 
         /// <summary>
@@ -240,9 +240,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             if (!request.Body.CanSeek && !suppressInputFormatterBuffering)
             {
-                // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously 
-                // read everything into a buffer, and then seek back to the beginning. 
-                BufferingHelper.EnableRewind(request);
+                // JSON.Net does synchronous reads. In order to avoid blocking on the stream, we asynchronously
+                // read everything into a buffer, and then seek back to the beginning.
+                request.EnableBuffering();
                 Debug.Assert(request.Body.CanSeek);
 
                 await request.Body.DrainAsync(CancellationToken.None);
