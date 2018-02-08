@@ -72,7 +72,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" Category="noship" Metapackage="false" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -89,14 +89,14 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Identity" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.UI" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" Category="ship" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Core" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Mvc" Category="ship" AppMetapackage="true" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Specification.Tests" Category="ship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Abstractions" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Core" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Mvc" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Identity.Service.Specification.Tests" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Identity.Specification.Tests" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore.JsonPatch" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Localization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
