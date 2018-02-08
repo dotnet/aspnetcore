@@ -2,12 +2,27 @@
   <PropertyGroup>
     <VersionPrefix>2.1.0</VersionPrefix>
     <VersionSuffix>preview2</VersionSuffix>
+
     <ExperimentalVersionPrefix>0.1.0</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>alpha2</ExperimentalVersionSuffix>
-    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
-    <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
-    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+
+
+    <PackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' != 'rtm' ">$(VersionPrefix)-$(VersionSuffix)-final</PackageVersion>
+
+    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+
+    <PackageVersion Condition=" '$(IsFinalBuild)' != 'true' ">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition=" '$(IsFinalBuild)' != 'true' AND '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+
+    <!-- Add metadata to the suffix last so it does not appear in package versions. -->
+    <VersionMetadata Condition=" '$(DotNetProductBuildId)' != '' ">pb-$(DotNetProductBuildId)</VersionMetadata>
+    <VersionSuffix Condition=" '$(VersionSuffix)' != '' AND '$(VersionMetadata)' != '' ">$(VersionSuffix)+$(VersionMetadata)</VersionSuffix>
+
+    <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' == 'rtm' ">$(ExperimentalVersionPrefix)</ExperimentalPackageVersion>
+    <ExperimentalPackageVersion Condition=" '$(IsFinalBuild)' == 'true' AND '$(ExperimentalVersionSuffix)' != 'rtm' ">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
+    <ExperimentalVersionSuffix Condition=" '$(ExperimentalVersionSuffix)' != '' AND '$(BuildNumber)' != '' ">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
+
     <!-- Even though we build from 'dev', this is set to 'master' to align with the dotnet-CLI channel name for their 'dev' branch. -->
     <SharedFxCliBlobChannel>master</SharedFxCliBlobChannel>
   </PropertyGroup>
