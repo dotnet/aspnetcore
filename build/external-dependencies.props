@@ -217,6 +217,7 @@
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
   </PropertyGroup>
   <ItemGroup>
+    <ExternalDependency Include="AngleSharp" Version="$(AngleSharpPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="BuildBundlerMinifier" Version="$(BuildBundlerMinifierPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
