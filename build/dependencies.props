@@ -12,7 +12,6 @@
     <MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreDataProtectionAzureKeyVaultPackageVersion>
     <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
     <MicrosoftAspNetCoreHostingPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreHostingPackageVersion>
-    <MicrosoftAspNetCoreIdentityServiceAzureKeyVaultPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreIdentityServiceAzureKeyVaultPackageVersion>
     <MicrosoftAspNetCoreMvcPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreMvcPackageVersion>
     <MicrosoftAspNetCoreRazorRuntimePackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreRazorRuntimePackageVersion>
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-28193</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
