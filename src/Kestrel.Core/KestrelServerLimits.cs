@@ -43,12 +43,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Gets or sets the maximum size of the response buffer before write
         /// calls begin to block or return tasks that don't complete until the
         /// buffer size drops below the configured limit.
+        /// Defaults to 65,536 bytes (64 KB).
         /// </summary>
         /// <remarks>
         /// When set to null, the size of the response buffer is unlimited.
         /// When set to zero, all write calls will block or return tasks that
         /// don't complete until the entire response buffer is flushed.
-        /// Defaults to 65,536 bytes (64 KB).
         /// </remarks>
         public long? MaxResponseBufferSize
         {
@@ -65,10 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum size of the request buffer.
+        /// Defaults to 1,048,576 bytes (1 MB).
         /// </summary>
         /// <remarks>
         /// When set to null, the size of the request buffer is unlimited.
-        /// Defaults to 1,048,576 bytes (1 MB).
         /// </remarks>
         public long? MaxRequestBufferSize
         {
@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum allowed size for the HTTP request line.
+        /// Defaults to 8,192 bytes (8 KB).
         /// </summary>
         /// <remarks>
-        /// Defaults to 8,192 bytes (8 KB).
         /// </remarks>
         public int MaxRequestLineSize
         {
@@ -104,9 +104,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum allowed size for the HTTP request headers.
+        /// Defaults to 32,768 bytes (32 KB).
         /// </summary>
         /// <remarks>
-        /// Defaults to 32,768 bytes (32 KB).
         /// </remarks>
         public int MaxRequestHeadersTotalSize
         {
@@ -123,9 +123,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum allowed number of headers per HTTP request.
+        /// Defaults to 100.
         /// </summary>
         /// <remarks>
-        /// Defaults to 100.
         /// </remarks>
         public int MaxRequestHeaderCount
         {
@@ -145,9 +145,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// When set to null, the maximum request body size is unlimited.
         /// This limit has no effect on upgraded connections which are always unlimited.
         /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
         /// </summary>
         /// <remarks>
-        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
         /// </remarks>
         public long? MaxRequestBodySize
         {
@@ -164,9 +164,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the keep-alive timeout.
+        /// Defaults to 2 minutes.
         /// </summary>
         /// <remarks>
-        /// Defaults to 2 minutes.
         /// </remarks>
         public TimeSpan KeepAliveTimeout
         {
@@ -183,9 +183,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum amount of time the server will spend receiving request headers.
+        /// Defaults to 30 seconds.
         /// </summary>
         /// <remarks>
-        /// Defaults to 30 seconds.
         /// </remarks>
         public TimeSpan RequestHeadersTimeout
         {
@@ -202,11 +202,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         /// <summary>
         /// Gets or sets the maximum number of open connections. When set to null, the number of connections is unlimited.
-        /// </summary>
-        /// <remarks>
         /// <para>
         /// Defaults to null.
         /// </para>
+        /// </summary>
+        /// <remarks>
         /// <para>
         /// When a connection is upgraded to another protocol, such as WebSockets, its connection is counted against the
         /// <see cref="MaxConcurrentUpgradedConnections" /> limit instead of <see cref="MaxConcurrentConnections" />.
@@ -228,11 +228,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// <summary>
         /// Gets or sets the maximum number of open, upgraded connections. When set to null, the number of upgraded connections is unlimited.
         /// An upgraded connection is one that has been switched from HTTP to another protocol, such as WebSockets.
-        /// </summary>
-        /// <remarks>
         /// <para>
         /// Defaults to null.
         /// </para>
+        /// </summary>
+        /// <remarks>
         /// <para>
         /// When a connection is upgraded to another protocol, such as WebSockets, its connection is counted against the
         /// <see cref="MaxConcurrentUpgradedConnections" /> limit instead of <see cref="MaxConcurrentConnections" />.
@@ -256,9 +256,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Setting this property to null indicates no minimum data rate should be enforced.
         /// This limit has no effect on upgraded connections which are always unlimited.
         /// This can be overridden per-request via <see cref="IHttpMinRequestBodyDataRateFeature"/>.
+        /// Defaults to 240 bytes/second with a 5 second grace period.
         /// </summary>
         /// <remarks>
-        /// Defaults to 240 bytes/second with a 5 second grace period.
         /// </remarks>
         public MinDataRate MinRequestBodyDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
@@ -269,11 +269,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Setting this property to null indicates no minimum data rate should be enforced.
         /// This limit has no effect on upgraded connections which are always unlimited.
         /// This can be overridden per-request via <see cref="IHttpMinResponseDataRateFeature"/>.
-        /// </summary>
-        /// <remarks>
         /// <para>
         /// Defaults to 240 bytes/second with a 5 second grace period.
         /// </para>
+        /// </summary>
+        /// <remarks>
         /// <para>
         /// Contrary to the request body minimum data rate, this rate applies to the response status line and headers as well.
         /// </para>
