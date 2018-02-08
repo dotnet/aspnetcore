@@ -8,9 +8,9 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class FileSystemRazorProject : RazorProjectFileSystem
+    internal class DefaultRazorProjectFileSystem : RazorProjectFileSystem
     {
-        public FileSystemRazorProject(string root)
+        public DefaultRazorProjectFileSystem(string root)
         {
             if (string.IsNullOrEmpty(root))
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
                     var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');
 
-                    return new FileSystemRazorProjectItem(basePath, filePath, relativePhysicalPath, file);
+                    return new DefaultRazorProjectItem(basePath, filePath, relativePhysicalPath, file);
                 });
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
             var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');
 
-            return new FileSystemRazorProjectItem("/", filePath, relativePhysicalPath, new FileInfo(absolutePath));
+            return new DefaultRazorProjectItem("/", filePath, relativePhysicalPath, new FileInfo(absolutePath));
         }
 
         protected override string NormalizeAndEnsureValidPath(string path)

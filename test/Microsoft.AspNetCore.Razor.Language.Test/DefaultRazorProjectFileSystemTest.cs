@@ -8,12 +8,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class FileSystemRazorProjectTest
+    public class DefaultRazorProjectFileSystemTest
     {
         private static string TestFolder { get; } = Path.Combine(
-            TestProject.GetProjectDirectory(typeof(FileSystemRazorProjectTest)),
-            "TestFiles", 
-            "FileSystemRazorProject");
+            TestProject.GetProjectDirectory(typeof(DefaultRazorProjectFileSystemTest)),
+            "TestFiles",
+            "DefaultRazorProjectFileSystem");
 
         [Theory]
         [InlineData(null)]
@@ -21,20 +21,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void NormalizeAndEnsureValidPath_ThrowsIfPathIsNullOrEmpty(string path)
         {
             // Arrange
-            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+            var fileSystem = new TestRazorProjectFileSystem("C:/some/test/path/root");
 
             // Act and Assert
-            ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => project.NormalizeAndEnsureValidPath(path), "path");
+            ExceptionAssert.ThrowsArgumentNullOrEmptyString(() => fileSystem.NormalizeAndEnsureValidPath(path), "path");
         }
 
         [Fact]
         public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePath()
         {
             // Arrange
-            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+            var fileSystem = new TestRazorProjectFileSystem("C:/some/test/path/root");
 
             // Act
-            var absolutePath = project.NormalizeAndEnsureValidPath("file.cshtml");
+            var absolutePath = fileSystem.NormalizeAndEnsureValidPath("file.cshtml");
 
             // Assert
             Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void NormalizeAndEnsureValidPath_NormalizesToAbsolutePathWithoutForwardSlash()
         {
             // Arrange
-            var project = new TestFileSystemRazorProject("C:/some/test/path/root");
+            var fileSystem = new TestRazorProjectFileSystem("C:/some/test/path/root");
 
             // Act
-            var absolutePath = project.NormalizeAndEnsureValidPath("/file.cshtml");
+            var absolutePath = fileSystem.NormalizeAndEnsureValidPath("/file.cshtml");
 
             // Assert
             Assert.Equal("C:/some/test/path/root/file.cshtml", absolutePath);
@@ -57,10 +57,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void NormalizeAndEnsureValidPath_NormalizesToForwardSlashes()
         {
             // Arrange
-            var project = new TestFileSystemRazorProject(@"C:\some\test\path\root");
+            var fileSystem = new TestRazorProjectFileSystem(@"C:\some\test\path\root");
 
             // Act
-            var absolutePath = project.NormalizeAndEnsureValidPath(@"something\file.cshtml");
+            var absolutePath = fileSystem.NormalizeAndEnsureValidPath(@"something\file.cshtml");
 
             // Assert
             Assert.Equal("C:/some/test/path/root/something/file.cshtml", absolutePath);
@@ -70,10 +70,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void EnumerateItems_DiscoversAllCshtmlFiles()
         {
             // Arrange
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var items = fileSystemProject.EnumerateItems("/");
+            var items = fileSystem.EnumerateItems("/");
 
             // Assert
             Assert.Collection(
@@ -130,10 +130,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void EnumerateItems_DiscoversAllCshtmlFiles_UnderSpecifiedBasePath()
         {
             // Arrange
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var items = fileSystemProject.EnumerateItems("/Views");
+            var items = fileSystem.EnumerateItems("/Views");
 
             // Assert
             Assert.Collection(
@@ -172,10 +172,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void EnumerateItems_ReturnsEmptySequence_WhenBasePathDoesNotExist()
         {
             // Arrange
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var items = fileSystemProject.EnumerateItems("/Does-Not-Exist");
+            var items = fileSystem.EnumerateItems("/Does-Not-Exist");
 
             // Assert
             Assert.Empty(items);
@@ -185,10 +185,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void FindHierarchicalItems_FindsItemsWithMatchingNames()
         {
             // Arrange
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var items = fileSystemProject.FindHierarchicalItems("/Views/Home/Index.cshtml", "_ViewImports.cshtml");
+            var items = fileSystem.FindHierarchicalItems("/Views/Home/Index.cshtml", "_ViewImports.cshtml");
 
             // Assert
             Assert.Collection(
@@ -224,10 +224,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var filePath = "/Views/About/About.cshtml";
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var item = fileSystemProject.GetItem(filePath);
+            var item = fileSystem.GetItem(filePath);
 
             // Assert
             Assert.True(item.Exists);
@@ -242,18 +242,18 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var path = "/NotFound.cshtml";
-            var fileSystemProject = new FileSystemRazorProject(TestFolder);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestFolder);
 
             // Act
-            var item = fileSystemProject.GetItem(path);
+            var item = fileSystem.GetItem(path);
 
             // Assert
             Assert.False(item.Exists);
         }
 
-        private class TestFileSystemRazorProject : FileSystemRazorProject
+        private class TestRazorProjectFileSystem : DefaultRazorProjectFileSystem
         {
-            public TestFileSystemRazorProject(string root) : base(root)
+            public TestRazorProjectFileSystem(string root) : base(root)
             {
             }
 

@@ -73,7 +73,7 @@ Examples:
         public static IList<RazorPageGeneratorResult> MainCore(RazorEngine razorEngine, string targetProjectDirectory)
         {
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
-            var razorProject = RazorProject.Create(targetProjectDirectory);
+            var razorProject = RazorProjectFileSystem.Create(targetProjectDirectory);
             var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
             templateEngine.Options.DefaultImports = RazorSourceDocument.Create(@"
 @using System

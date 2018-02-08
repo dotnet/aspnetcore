@@ -24,10 +24,10 @@ namespace Microsoft.AspNetCore.Razor.Performance
 
             var engine = RazorEngine.Create(b => { RazorExtensions.Register(b); });
 
-            var project = RazorProject.Create(root.FullName);
+            var fileSystem = RazorProjectFileSystem.Create(root.FullName);
 
-            DesignTimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.CreateDesignTime(b => { RazorExtensions.Register(b); }), project);
-            RuntimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.Create(b => { RazorExtensions.Register(b); }), project);
+            DesignTimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.CreateDesignTime(b => { RazorExtensions.Register(b); }), fileSystem);
+            RuntimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.Create(b => { RazorExtensions.Register(b); }), fileSystem);
 
             var codeDocument = RuntimeTemplateEngine.CreateCodeDocument(Path.Combine(root.FullName, "MSN.cshtml"));
 

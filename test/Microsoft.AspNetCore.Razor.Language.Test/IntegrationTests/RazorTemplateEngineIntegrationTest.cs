@@ -12,12 +12,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithDefaults()
         {
             // Arrange
-            var project = new FileSystemRazorProject(TestProjectRoot);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
             var razorEngine = RazorEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
             });
-            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+            var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
             var cSharpDocument = templateEngine.GenerateCode($"{FileName}.cshtml");
@@ -30,14 +30,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithBaseType()
         {
             // Arrange
-            var project = new FileSystemRazorProject(TestProjectRoot);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
             var razorEngine = RazorEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
 
                 engine.SetBaseType("MyBaseType");
             });
-            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+            var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
             var cSharpDocument = templateEngine.GenerateCode($"{FileName}.cshtml");
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithConfigureClass()
         {
             // Arrange
-            var project = new FileSystemRazorProject(TestProjectRoot);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
             var razorEngine = RazorEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     @class.BaseType = "CustomBaseType";
                 });
             });
-            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+            var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
             var cSharpDocument = templateEngine.GenerateCode($"{FileName}.cshtml");
@@ -83,14 +83,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithSetNamespace()
         {
             // Arrange
-            var project = new FileSystemRazorProject(TestProjectRoot);
+            var fileSystem = new DefaultRazorProjectFileSystem(TestProjectRoot);
             var razorEngine = RazorEngine.Create(engine =>
             {
                 engine.Features.Add(new SuppressChecksumOptionsFeature());
 
                 engine.SetNamespace("MyApp.Razor.Views");
             });
-            var templateEngine = new RazorTemplateEngine(razorEngine, project);
+            var templateEngine = new RazorTemplateEngine(razorEngine, fileSystem);
 
             // Act
             var cSharpDocument = templateEngine.GenerateCode($"{FileName}.cshtml");
