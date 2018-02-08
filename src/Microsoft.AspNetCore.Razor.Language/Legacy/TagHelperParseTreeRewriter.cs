@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
         {
-            if (HasAllowedChildren())
+            if (child.Kind == SpanKindInternal.Comment || HasAllowedChildren())
             {
                 var content = child.Content;
                 if (!string.IsNullOrWhiteSpace(content))
