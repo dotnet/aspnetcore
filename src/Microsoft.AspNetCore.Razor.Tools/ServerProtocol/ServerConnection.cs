@@ -269,9 +269,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             if (PlatformInformation.IsWindows)
             {
-                // As far as I can tell, there isn't a way to use the Process class to
-                // create a process with no stdin/stdout/stderr, so we use P/Invoke.
-                // This code was taken from MSBuild task starting code.
+                // Currently, there isn't a way to use the Process class to create a process without
+                // inheriting handles(stdin/stdout/stderr) from its parent. This might cause the parent process
+                // to block on those handles. So we use P/Invoke. This code was taken from MSBuild task starting code.
+                // The work to customize this behavior is being tracked by https://github.com/dotnet/corefx/issues/306.
 
                 var startInfo = new STARTUPINFO();
                 startInfo.cb = Marshal.SizeOf(startInfo);
