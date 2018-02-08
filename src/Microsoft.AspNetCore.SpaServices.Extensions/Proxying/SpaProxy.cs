@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int DefaultWebSocketBufferSize = 4096;
         private const int StreamCopyBufferSize = 81920;
 
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
+        // Don't forward User-Agent because of https://github.com/aspnet/JavaScriptServices/issues/1469
+        // Others just aren't applicable in proxy scenarios
+        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
 
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
