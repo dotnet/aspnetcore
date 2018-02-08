@@ -127,6 +127,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorDebugSymbolsProduced Condition="'$(DebugType)'=='embedded'">false</_RazorDebugSymbolsProduced>
   </PropertyGroup>
 
+  <!-- Resolve the toolset to use -->
+  <PropertyGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true'">
+    <!-- Default value for the property 'MvcRazorCompileOnPublish' is empty. If it has been explicitly enabled, continue using precompilation. -->
+    <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
+
+    <!-- The default value for 'RazorCompileToolset' was not modified. In this case, infer the toolset to use as RazorSdk. -->
+    <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'Implicit'">RazorSdk</ResolvedRazorCompileToolset>
+
+    <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'PrecompilationTool'">$(RazorCompileToolset)</ResolvedRazorCompileToolset>
+    <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == '' AND '$(RazorCompileToolset)' == 'RazorSdk'">$(RazorCompileToolset)</ResolvedRazorCompileToolset>
+
+    <!-- If RazorSdk is not referenced, fall-back to Precompilation tool -->
+    <ResolvedRazorCompileToolset Condition="'$(ResolvedRazorCompileToolset)' == 'RazorSdk' And '$(IsRazorCompilerReferenced)' != 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
+
+    <!-- Previous versions of the precompilation tool still depends on the msbuild property 'MvcRazorCompileOnPublish'. Hence, setting it to the old default value -->
+    <MvcRazorCompileOnPublish Condition="'$(MvcRazorCompileOnPublish)' == ''">true</MvcRazorCompileOnPublish>
+  </PropertyGroup>
+
   <!--
     Properties that configure Razor SDK, but need to be defined in targets due to evaluation order.
   -->

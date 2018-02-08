@@ -39,8 +39,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <CopyRefAssembliesToPublishDirectory Condition="'$(CopyRefAssembliesToPublishDirectory)'==''">false</CopyRefAssembliesToPublishDirectory>
 
+    <!--
+    Determines the toolset to use to compile Razor (.cshtml) files. Defaults to 'Implicit' to let the Razor Sdk determine the toolset to use.
+    Valid values include 'Implicit', 'RazorSdk', and 'PrecompilationTool'.
+    -->
+    <RazorCompileToolset>Implicit</RazorCompileToolset>
+
+    <!--
+    Set to true to allow a Razor code generation to use a persistent build server process.
+    -->
     <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true' AND '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
+    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <None Remove="**\*.cshtml" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- 
