@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly int _componentId; // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
         private readonly IComponent _component;
         private readonly Renderer _renderer;
-        private readonly RenderTreeDiffComputer _diffComputer;
+        private readonly RenderTreeDiffBuilder _diffBuilder;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _componentId = componentId;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            _diffComputer = new RenderTreeDiffComputer(renderer);
+            _diffBuilder = new RenderTreeDiffBuilder(renderer);
             _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             _renderTreeBuilderCurrent.Clear();
             _component.BuildRenderTree(_renderTreeBuilderCurrent);
-            _diffComputer.ApplyNewRenderTreeVersion(
+            _diffBuilder.ApplyNewRenderTreeVersion(
                 batchBuilder,
                 _componentId,
                 _renderTreeBuilderPrevious.GetFrames(),
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 disposable.Dispose();
             }
 
-            _diffComputer.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
+            _diffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
         }
     }
 }

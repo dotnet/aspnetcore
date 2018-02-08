@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Blazor.Rendering;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
-    internal class RenderTreeDiffComputer
+    internal class RenderTreeDiffBuilder
     {
         private readonly Renderer _renderer;
         private readonly ArrayBuilder<RenderTreeEdit> _entries = new ArrayBuilder<RenderTreeEdit>(10);
         private readonly ArrayBuilder<RenderTreeFrame> _referenceFrames = new ArrayBuilder<RenderTreeFrame>(10);
 
-        public RenderTreeDiffComputer(Renderer renderer)
+        public RenderTreeDiffBuilder(Renderer renderer)
         {
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
         }

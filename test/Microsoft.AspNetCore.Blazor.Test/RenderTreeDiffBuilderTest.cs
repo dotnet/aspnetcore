@@ -12,19 +12,19 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Test
 {
-    public class RenderTreeDiffComputerTest
+    public class RenderTreeDiffBuilderTest
     {
         private readonly Renderer renderer;
         private readonly RenderTreeBuilder oldTree;
         private readonly RenderTreeBuilder newTree;
-        private RenderTreeDiffComputer diff;
+        private RenderTreeDiffBuilder diff;
 
-        public RenderTreeDiffComputerTest()
+        public RenderTreeDiffBuilderTest()
         {
             renderer = new FakeRenderer();
             oldTree = new RenderTreeBuilder(renderer);
             newTree = new RenderTreeBuilder(renderer);
-            diff = new RenderTreeDiffComputer(renderer);
+            diff = new RenderTreeDiffBuilder(renderer);
         }
 
         [Theory]
