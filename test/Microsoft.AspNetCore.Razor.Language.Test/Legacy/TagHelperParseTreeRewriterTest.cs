@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build(),
             };
-            
+
             // Act & Assert
             EvaluateData(
                 descriptors,
@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("strong")
                         .RequireAttributeDescriptor(attribute => attribute.Name("required")))
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("BRTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("br")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -1109,6 +1109,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void Rewrite_AllowsCommentsAsChildren()
+        {
+            // Arrangestring documentContent,
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string literalPrefix = "";
+            string commentOutput = $"<!--Hello World-->";
+            string expectedOutput = $"<p>{literalPrefix}{commentOutput}<b>asdf</b></p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                    pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    factory.Markup($"{literalPrefix}{commentOutput}")));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                Array.Empty<RazorDiagnostic>());
+        }
+
+        [Fact]
         public void Rewrite_UnderstandsNullTagNameWithAllowedChildrenForCatchAll()
         {
             // Arrange
@@ -1173,7 +1210,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -1646,7 +1683,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("pTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("p")
                         .RequireAttributeDescriptor(attribute => attribute.Name("class")))
