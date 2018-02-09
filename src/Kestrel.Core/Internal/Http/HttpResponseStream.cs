@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case HttpStreamState.Closed:
-                    throw new ObjectDisposedException(nameof(HttpResponseStream));
+                    throw new ObjectDisposedException(nameof(HttpResponseStream), CoreStrings.WritingToResponseBodyAfterResponseCompleted);
                 case HttpStreamState.Aborted:
                     if (cancellationToken.IsCancellationRequested)
                     {
