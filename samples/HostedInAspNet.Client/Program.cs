@@ -14,7 +14,7 @@ namespace HostedInAspNet.Client
         {
             // Temporarily render this test component until there's a proper mechanism
             // for testing this.
-            new BrowserRenderer().AddComponent("app", new MyComponent());
+            new BrowserRenderer().AddComponent<MyComponent>("app");
         }
     }
 

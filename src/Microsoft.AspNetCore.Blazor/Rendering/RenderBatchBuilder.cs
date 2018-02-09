@@ -6,24 +6,26 @@ using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
+    /// <summary>
+    /// Collects the data produced by the rendering system during the course
+    /// of rendering a single batch. This tracks both the final output data
+    /// and the intermediate states (such as the queue of components still to
+    /// be rendered).
+    /// </summary>
     internal class RenderBatchBuilder
     {
+        // Primary result data
+        public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; } = new ArrayBuilder<RenderTreeDiff>();
+        public ArrayBuilder<int> DisposedComponentIds { get; } = new ArrayBuilder<int>();
+        public ArrayBuilder<int> DisposedEventHandlerIds { get; } = new ArrayBuilder<int>();
+
+        // Buffers referenced by UpdatedComponentDiffs
         public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>();
         public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>();
 
+        // State of render pipeline
         public Queue<int> ComponentRenderQueue { get; } = new Queue<int>();
-
         public Queue<int> ComponentDisposalQueue { get; } = new Queue<int>();
-
-        public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; set; }
-            = new ArrayBuilder<RenderTreeDiff>();
-
-        private readonly ArrayBuilder<int> _disposedComponentIds = new ArrayBuilder<int>();
-
-        private readonly ArrayBuilder<int> _disposedEventHandlerIds = new ArrayBuilder<int>();
-
-        public ArrayRange<int> GetDisposedEventHandlerIds()
-            => _disposedEventHandlerIds.ToRange();
 
         public void Clear()
         {
@@ -31,20 +33,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             ReferenceFramesBuffer.Clear();
             ComponentRenderQueue.Clear();
             UpdatedComponentDiffs.Clear();
-            _disposedComponentIds.Clear();
-            _disposedEventHandlerIds.Clear();
+            DisposedComponentIds.Clear();
+            DisposedEventHandlerIds.Clear();
         }
 
         public RenderBatch ToBatch()
             => new RenderBatch(
                 UpdatedComponentDiffs.ToRange(),
                 ReferenceFramesBuffer.ToRange(),
-                _disposedComponentIds.ToRange());
-
-        public void AddDisposedComponentId(int componentId)
-            => _disposedComponentIds.Append(componentId);
-
-        public void AddDisposedEventHandlerId(int attributeEventHandlerId)
-            => _disposedEventHandlerIds.Append(attributeEventHandlerId);
+                DisposedComponentIds.ToRange());
     }
 }

@@ -35,11 +35,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
 
-        /// <summary>
-        /// Regenerates the <see cref="RenderTree"/> and adds the changes to the
-        /// <paramref name="batchBuilder"/>.
-        /// </summary>
-        public void Render(Renderer renderer, RenderBatchBuilder batchBuilder)
+        public void RenderIntoBatch(RenderBatchBuilder batchBuilder)
         {
             if (_component is IHandlePropertiesChanged notifyableComponent)
             {
@@ -59,19 +55,9 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 _renderTreeBuilderPrevious.GetFrames(),
                 _renderTreeBuilderCurrent.GetFrames());
             batchBuilder.UpdatedComponentDiffs.Append(diff);
-
-            // Process disposal queue now in case it causes further component renders to be enqueued
-            while (batchBuilder.ComponentDisposalQueue.Count > 0)
-            {
-                var disposeComponentId = batchBuilder.ComponentDisposalQueue.Dequeue();
-                renderer.DisposeInExistingBatch(batchBuilder, disposeComponentId);
-            }
         }
 
-        /// <summary>
-        /// Notifies the component that it is being disposed.
-        /// </summary>
-        public void NotifyDisposed(RenderBatchBuilder batchBuilder)
+        public void DisposeInBatch(RenderBatchBuilder batchBuilder)
         {
             // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
             if (_component is IDisposable disposable)

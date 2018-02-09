@@ -10,36 +10,6 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
     internal static class RenderTreeDiffBuilder
     {
-        private struct DiffContext
-        {
-            // Exists only so that the various methods in this class can call each other without
-            // constantly building up long lists of parameters. Is private to this class, so the
-            // fact that it's a mutable struct is manageable.
-            // Always pass by ref to avoid copying, and because the 'SiblingIndex' is mutable.
-
-            public readonly Renderer Renderer;
-            public readonly RenderBatchBuilder BatchBuilder;
-            public readonly RenderTreeFrame[] OldTree;
-            public readonly RenderTreeFrame[] NewTree;
-            public readonly ArrayBuilder<RenderTreeEdit> Edits;
-            public readonly ArrayBuilder<RenderTreeFrame> ReferenceFrames;
-            public int SiblingIndex;
-
-            public DiffContext(
-                Renderer renderer,
-                RenderBatchBuilder batchBuilder,
-                RenderTreeFrame[] oldTree, RenderTreeFrame[] newTree)
-            {
-                Renderer = renderer;
-                BatchBuilder = batchBuilder;
-                OldTree = oldTree;
-                NewTree = newTree;
-                Edits = batchBuilder.EditsBuffer;
-                ReferenceFrames = batchBuilder.ReferenceFramesBuffer;
-                SiblingIndex = 0;
-            }
-        }
-
         public static RenderTreeDiff ComputeDiff(
             Renderer renderer,
             RenderBatchBuilder batchBuilder,
@@ -419,7 +389,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                             {
                                 if (oldFrame.AttributeEventHandlerId > 0)
                                 {
-                                    diffContext.BatchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
+                                    diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
                                 }
                                 InitializeNewAttributeFrame(ref diffContext, ref newFrame);
                                 var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -490,7 +460,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         diffContext.Edits.Append(RenderTreeEdit.RemoveAttribute(diffContext.SiblingIndex, oldFrame.AttributeName));
                         if (oldFrame.AttributeEventHandlerId > 0)
                         {
-                            diffContext.BatchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
+                            diffContext.BatchBuilder.DisposedEventHandlerIds.Append(oldFrame.AttributeEventHandlerId);
                         }
                         break;
                     }
@@ -568,7 +538,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 throw new InvalidOperationException($"Child component already exists during {nameof(InitializeNewComponentFrame)}");
             }
 
-            diffContext.Renderer.InstantiateChildComponent(ref frame);
+            diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame);
             var childComponentInstance = frame.Component;
 
             // All descendants of a component are its properties
@@ -604,8 +574,41 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 }
                 else if (frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
                 {
-                    batchBuilder.AddDisposedEventHandlerId(frame.AttributeEventHandlerId);
+                    batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerId);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Exists only so that the various methods in this class can call each other without
+        /// constantly building up long lists of parameters. Is private to this class, so the
+        /// fact that it's a mutable struct is manageable.
+        /// 
+        /// Always pass by ref to avoid copying, and because the 'SiblingIndex' is mutable.
+        /// </summary>
+        private struct DiffContext
+        {
+            public readonly Renderer Renderer;
+            public readonly RenderBatchBuilder BatchBuilder;
+            public readonly RenderTreeFrame[] OldTree;
+            public readonly RenderTreeFrame[] NewTree;
+            public readonly ArrayBuilder<RenderTreeEdit> Edits;
+            public readonly ArrayBuilder<RenderTreeFrame> ReferenceFrames;
+            public int SiblingIndex;
+
+            public DiffContext(
+                Renderer renderer,
+                RenderBatchBuilder batchBuilder,
+                RenderTreeFrame[] oldTree,
+                RenderTreeFrame[] newTree)
+            {
+                Renderer = renderer;
+                BatchBuilder = batchBuilder;
+                OldTree = oldTree;
+                NewTree = newTree;
+                Edits = batchBuilder.EditsBuffer;
+                ReferenceFrames = batchBuilder.ReferenceFramesBuffer;
+                SiblingIndex = 0;
             }
         }
     }

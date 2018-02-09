@@ -785,7 +785,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class FakeRenderer : Renderer
         {
-            internal protected override void UpdateDisplay(RenderBatch renderBatch)
+            protected override void UpdateDisplay(RenderBatch renderBatch)
             {
             }
         }

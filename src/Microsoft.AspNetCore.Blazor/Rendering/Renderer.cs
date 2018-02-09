@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
@@ -16,15 +15,9 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     /// </summary>
     public abstract class Renderer
     {
-        // Methods for tracking associations between component IDs, instances, and states,
-        // without pinning any of them in memory here. The explictly GC rooted items are the
-        // components explicitly added to the renderer (i.e., top-level components). In turn
-        // these reference descendant components and associated ComponentState instances.
-        private readonly WeakValueDictionary<int, ComponentState> _componentStateById
-            = new WeakValueDictionary<int, ComponentState>();
-        private readonly ConditionalWeakTable<IComponent, ComponentState> _componentStateByComponent
-            = new ConditionalWeakTable<IComponent, ComponentState>();
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
+        private readonly Dictionary<int, ComponentState> _componentStateById
+            = new Dictionary<int, ComponentState>();
 
         // Because rendering is currently synchronous and single-threaded, we can keep re-using the
         // same RenderBatchBuilder instance to avoid reallocating
@@ -36,34 +29,45 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             = new Dictionary<int, UIEventHandler>();
 
         /// <summary>
+        /// Constructs a new component of the specified type.
+        /// </summary>
+        /// <param name="componentType">The type of the component to instantiate.</param>
+        /// <returns>The component instance.</returns>
+        protected IComponent InstantiateComponent(Type componentType)
+        {
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
+            {
+                throw new ArgumentException($"Must implement {nameof(IComponent)}", nameof(componentType));
+            }
+
+            return (IComponent)Activator.CreateInstance(componentType);
+        }
+
+        /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
         /// an identifier that is unique within the scope of the <see cref="Renderer"/>.
         /// </summary>
-        /// <param name="component">The <see cref="IComponent"/>.</param>
-        /// <returns>The assigned identifier for the <see cref="IComponent"/>.</returns>
+        /// <param name="component">The component.</param>
+        /// <returns>The component's assigned identifier.</returns>
         protected int AssignComponentId(IComponent component)
         {
-            lock (_componentStateById)
-            {
-                var componentId = _nextComponentId++;
-                var componentState = new ComponentState(this, componentId, component);
-                _componentStateById.Add(componentId, componentState);
-                _componentStateByComponent.Add(component, componentState); // Ensure the componentState lives for at least as long as the component
-                return componentId;
-            }
+            var componentId = _nextComponentId++;
+            var componentState = new ComponentState(this, componentId, component);
+            _componentStateById.Add(componentId, componentState);
+            return componentId;
         }
 
         /// <summary>
         /// Updates the visible UI.
         /// </summary>
         /// <param name="renderBatch">The changes to the UI since the previous call.</param>
-        internal protected abstract void UpdateDisplay(RenderBatch renderBatch);
+        protected abstract void UpdateDisplay(RenderBatch renderBatch);
 
         /// <summary>
         /// Updates the rendered state of the specified <see cref="IComponent"/>.
         /// </summary>
         /// <param name="componentId">The identifier of the <see cref="IComponent"/> to render.</param>
-        protected internal void RenderNewBatch(int componentId)
+        protected void RenderNewBatch(int componentId)
         {
             // It's very important that components' rendering logic has no side-effects, and in particular
             // components must *not* trigger Render from inside their render logic, otherwise you could
@@ -84,11 +88,11 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                     "Render logic must not have side-effects such as manually triggering other rendering.");
             }
 
+            _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
+
             try
             {
-                RenderInExistingBatch(_sharedRenderBatchBuilder, componentId);
-
-                // Process 
+                // Process render queue until empty
                 while (_sharedRenderBatchBuilder.ComponentRenderQueue.Count > 0)
                 {
                     var nextComponentIdToRender = _sharedRenderBatchBuilder.ComponentRenderQueue.Dequeue();
@@ -96,22 +100,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 }
 
                 UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
-                RemoveEventHandlerIds(_sharedRenderBatchBuilder.GetDisposedEventHandlerIds());
             }
             finally
             {
+                RemoveEventHandlerIds(_sharedRenderBatchBuilder.DisposedEventHandlerIds.ToRange());
                 _sharedRenderBatchBuilder.Clear();
                 Interlocked.Exchange(ref _renderBatchLock, 0);
             }            
-        }
-
-        internal void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
-            => GetRequiredComponentState(componentId).Render(this, batchBuilder);
-
-        internal void DisposeInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
-        {
-            GetRequiredComponentState(componentId).NotifyDisposed(batchBuilder);
-            batchBuilder.AddDisposedComponentId(componentId);
         }
 
         /// <summary>
@@ -136,7 +131,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
         }
 
-        internal void InstantiateChildComponent(ref RenderTreeFrame frame)
+        internal void InstantiateChildComponentOnFrame(ref RenderTreeFrame frame)
         {
             if (frame.FrameType != RenderTreeFrameType.Component)
             {
@@ -148,7 +143,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 throw new ArgumentException($"The frame already has a non-null component instance", nameof(frame));
             }
 
-            var newComponent = (IComponent)Activator.CreateInstance(frame.ComponentType);
+            var newComponent = InstantiateComponent(frame.ComponentType);
             var newComponentId = AssignComponentId(newComponent);
             frame = frame.WithComponentInstance(newComponentId, newComponent);
         }
@@ -160,6 +155,25 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             frame = frame.WithAttributeEventHandlerId(id);
         }
 
+        private ComponentState GetRequiredComponentState(int componentId)
+            => _componentStateById.TryGetValue(componentId, out var componentState)
+                ? componentState
+                : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
+
+        private void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
+        {
+            GetRequiredComponentState(componentId).RenderIntoBatch(batchBuilder);
+
+            // Process disposal queue now in case it causes further component renders to be enqueued
+            while (batchBuilder.ComponentDisposalQueue.Count > 0)
+            {
+                var disposeComponentId = batchBuilder.ComponentDisposalQueue.Dequeue();
+                GetRequiredComponentState(disposeComponentId).DisposeInBatch(batchBuilder);
+                _componentStateById.Remove(disposeComponentId);
+                batchBuilder.DisposedComponentIds.Append(disposeComponentId);
+            }
+        }
+
         private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds)
         {
             var array = eventHandlerIds.Array;
@@ -169,10 +183,5 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 _eventHandlersById.Remove(array[i]);
             }
         }
-
-        private ComponentState GetRequiredComponentState(int componentId)
-            => _componentStateById.TryGetValue(componentId, out var componentState)
-                ? componentState
-                : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
     }
 }

@@ -18,12 +18,6 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
     {
         private readonly int _browserRendererId;
 
-        // Ensures the explicitly-added components aren't GCed, because the browser
-        // will still send events referencing them by ID. We only need to store the
-        // top-level components, because the associated ComponentState will reference
-        // all the reachable descendant components of each.
-        private IList<IComponent> _rootComponents = new List<IComponent>();
-
         /// <summary>
         /// Constructs an instance of <see cref="BrowserRenderer"/>.
         /// </summary>
@@ -39,21 +33,32 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             => RenderNewBatch(componentId);
 
         /// <summary>
+        /// Attaches a new root component to the renderer,
+        /// causing it to be displayed in the specified DOM element.
+        /// </summary>
+        /// <typeparam name="TComponent">The type of the component.</typeparam>
+        /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
+        public void AddComponent<TComponent>(string domElementSelector)
+            where TComponent: IComponent
+        {
+            AddComponent(typeof(TComponent), domElementSelector);
+        }
+
+        /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="BrowserRenderer"/>,
         /// causing it to be displayed in the specified DOM element.
         /// </summary>
+        /// <param name="componentType">The type of the component.</param>
         /// <param name="domElementSelector">A CSS selector that uniquely identifies a DOM element.</param>
-        /// <param name="component">The <see cref="IComponent"/>.</param>
-        public void AddComponent(string domElementSelector, IComponent component)
+        public void AddComponent(Type componentType, string domElementSelector)
         {
+            var component = InstantiateComponent(componentType);
             var componentId = AssignComponentId(component);
             RegisteredFunction.InvokeUnmarshalled<int, string, int, object>(
                 "attachComponentToElement",
                 _browserRendererId,
                 domElementSelector,
                 componentId);
-            _rootComponents.Add(component);
-
             RenderNewBatch(componentId);
         }
 
