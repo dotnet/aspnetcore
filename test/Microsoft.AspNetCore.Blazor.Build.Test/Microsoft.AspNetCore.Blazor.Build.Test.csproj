@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj" ReferenceOutputAssembly="false" />
-    <Reference Include="AngleSharp" HintPath="..\..\src\anglesharp\AngleSharpBuilder\dist\AngleSharp.dll" />
+    <Reference Include="Microsoft.AspNetCore.Blazor.AngleSharp" HintPath="..\..\src\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
   </ItemGroup>
 
 </Project>

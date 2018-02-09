@@ -18,6 +18,10 @@ namespace AngleSharpBuilder
      * specifies [InternalsVisibleTo("Microsoft.AspNetCore.Blazor.Build")]. Longer term we can ask
      * AngleSharp to expose HtmlTokenizer as a public API, and if that's not viable, possibly
      * replace AngleSharp with a different library for HTML tokenization.
+     * 
+     * Similarly, we have build-process reasons for needing the assembly not to be strong
+     * named and be called Microsoft.AspNetCore.Blazor.AngleSharp. These requirements will
+     * not be permanent but it enables progress in the short term.
      */
 
     public static class Program
@@ -25,20 +29,41 @@ namespace AngleSharpBuilder
         public static void Main()
         {
             var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "dist");
-            var angleSharpAssembly = Assembly.GetAssembly(typeof(HtmlParser));
-            WriteWithInternalsVisibleTo(
-                angleSharpAssembly,
-                "Microsoft.AspNetCore.Blazor.Build",
-                outputDir);
+            var inputAssembly = Assembly.GetAssembly(typeof(HtmlParser));
+            WriteModifiedAssembly(inputAssembly, outputDir);
         }
 
-        private static void WriteWithInternalsVisibleTo(Assembly assembly, string internalVisibleToArg, string outputDir)
+        private static void WriteModifiedAssembly(Assembly assembly, string outputDir)
         {
             Directory.CreateDirectory(outputDir);
 
             var assemblyLocation = assembly.Location;
             var moduleDefinition = ModuleDefinition.ReadModule(assemblyLocation);
 
+            AddInternalsVisibleTo(moduleDefinition, "Microsoft.AspNetCore.Blazor.Build");
+            RemoveStrongName(moduleDefinition);
+            SetAssemblyName(moduleDefinition, "Microsoft.AspNetCore.Blazor.AngleSharp");
+
+            moduleDefinition.Write(
+                Path.Combine(outputDir, $"{moduleDefinition.Name}.dll"));
+        }
+
+        private static void SetAssemblyName(ModuleDefinition moduleDefinition, string name)
+        {
+            moduleDefinition.Name = name;
+            moduleDefinition.Assembly.Name.Name = name;
+        }
+
+        private static void RemoveStrongName(ModuleDefinition moduleDefinition)
+        {
+            var assemblyName = moduleDefinition.Assembly.Name;
+            assemblyName.HasPublicKey = false;
+            assemblyName.PublicKey = new byte[0];
+            moduleDefinition.Attributes &= ~ModuleAttributes.StrongNameSigned;
+        }
+
+        private static void AddInternalsVisibleTo(ModuleDefinition moduleDefinition, string internalVisibleToArg)
+        {
             var internalsVisibleToCtor = moduleDefinition.ImportReference(
                 typeof(InternalsVisibleToAttribute).GetConstructor(new[] { typeof(string) }));
 
@@ -47,8 +72,6 @@ namespace AngleSharpBuilder
                 new CustomAttributeArgument(moduleDefinition.TypeSystem.String, internalVisibleToArg));
 
             moduleDefinition.Assembly.CustomAttributes.Add(customAttribute);
-
-            moduleDefinition.Write(Path.Combine(outputDir, Path.GetFileName(assemblyLocation)));
         }
     }
 }
