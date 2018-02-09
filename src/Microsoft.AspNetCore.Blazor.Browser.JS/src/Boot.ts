@@ -6,10 +6,10 @@ import './GlobalExports';
 async function boot() {
   // Read startup config from the <script> element that's importing this file
   const allScriptElems = document.getElementsByTagName('script');
-  const thisScriptElem = allScriptElems[allScriptElems.length - 1];
+  const thisScriptElem = document.currentScript || allScriptElems[allScriptElems.length - 1];
   const entryPoint = thisScriptElem.getAttribute('main');
   if (!entryPoint) {
-    throw new Error('Missing "main" attribute on Blazor script tag.');
+    throw new Error('Missing "main" attribute on Blazor Config script tag.');
   }
   const entryPointAssemblyName = getAssemblyNameFromUrl(entryPoint);
   const referenceAssembliesCommaSeparated = thisScriptElem.getAttribute('references') || '';

@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         {
             // Arrange
             var htmlTemplate = "test";
+            var htmlOutput = $"<html><head></head><body>{htmlTemplate}</body></html>";
             var instance = new IndexHtmlFileProvider(
                 htmlTemplate, "fakeassembly", Enumerable.Empty<IFileInfo>());
 
@@ -43,8 +44,8 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             Assert.False(file.IsDirectory);
             Assert.Equal("/index.html", file.PhysicalPath);
             Assert.Equal("index.html", file.Name);
-            Assert.Equal(htmlTemplate, ReadString(file));
-            Assert.Equal(htmlTemplate.Length, file.Length);
+            Assert.Equal(htmlOutput, ReadString(file));
+            Assert.Equal(htmlOutput.Length, file.Length);
         }
 
         [Fact]
@@ -65,7 +66,36 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         }
 
         [Fact]
-        public void InsertsScriptTagReferencingAssemblyAndDependencies()
+        public void InjectsScriptTagReferencingAssemblyAndDependencies()
+        {
+            // Arrange
+            var htmlTemplate = "<html><body><h1>Hello</h1>Some text</body><script type='blazor-boot'></script></html>";
+            var dependencies = new IFileInfo[]
+            {
+                new TestFileInfo("System.Abc.dll"),
+                new TestFileInfo("MyApp.ClassLib.dll"),
+            };
+            var instance = new IndexHtmlFileProvider(
+                htmlTemplate, "MyApp.Entrypoint", dependencies);
+
+            // Act
+            var file = instance.GetFileInfo("/index.html");
+            var parsedHtml = new HtmlParser().Parse(ReadString(file));
+            var firstElem = parsedHtml.Body.FirstElementChild;
+            var scriptElem = parsedHtml.Body.QuerySelector("script");
+
+            // Assert
+            Assert.Equal("h1", firstElem.TagName.ToLowerInvariant());
+            Assert.Equal("script", scriptElem.TagName.ToLowerInvariant());
+            Assert.False(scriptElem.HasChildNodes);
+            Assert.Equal("/_framework/blazor.js", scriptElem.GetAttribute("src"));
+            Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
+            Assert.Equal("System.Abc.dll,MyApp.ClassLib.dll", scriptElem.GetAttribute("references"));
+            Assert.False(scriptElem.HasAttribute("type"));
+        }
+
+        [Fact]
+        public void MissingBootScriptTagReferencingAssemblyAndDependencies()
         {
             // Arrange
             var htmlTemplate = "<html><body><h1>Hello</h1>Some text</body></html>";
@@ -80,14 +110,13 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             // Act
             var file = instance.GetFileInfo("/index.html");
             var parsedHtml = new HtmlParser().Parse(ReadString(file));
-            var scriptElem = parsedHtml.Body.FirstElementChild;
+            var firstElem = parsedHtml.Body.FirstElementChild;
+            var scriptElem = parsedHtml.Body.QuerySelector("script");
+
 
             // Assert
-            Assert.Equal("script", scriptElem.TagName.ToLowerInvariant());
-            Assert.False(scriptElem.HasChildNodes);
-            Assert.Equal("/_framework/blazor.js", scriptElem.GetAttribute("src"));
-            Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
-            Assert.Equal("System.Abc.dll,MyApp.ClassLib.dll", scriptElem.GetAttribute("references"));
+            Assert.Equal("h1", firstElem.TagName.ToLowerInvariant());
+            Assert.Null(scriptElem);
         }
 
         private static string ReadString(IFileInfo file)
