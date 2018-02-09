@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData WithoutEndTagElementData
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData TagStructureCompatibilityData
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData MalformedTagHelperAttributeBlockData
@@ -343,11 +343,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                                          "end tag or be self closing.";
-                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
-                var errorFormatNoCSharp = "The tag helper '{0}' must not have C# in the element's attribute " +
-                                           "declaration area.";
                 Func<string, Block> createInvalidDoBlock = extraCode =>
                 {
                     return new MarkupBlock(
@@ -362,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.Code("do {" + extraCode).AsStatement())));
                 };
 
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<p class='",
@@ -377,14 +372,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -397,10 +388,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -416,14 +405,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -441,14 +426,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -464,18 +445,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                "TagHelper attributes must be well-formed.",
-                                new SourceLocation(12, 0, 12),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperAttributeListMustBeWellFormed(
+                                new SourceSpan(12, 0, 12, 1))
                         }
                     },
                     {
@@ -490,14 +465,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -514,14 +485,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -536,18 +503,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupTagHelperBlock("strong"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(11, 0, 11),
-                                length: 6)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 6), "strong"),
                         }
                     },
                     {
@@ -560,10 +521,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -576,10 +535,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -596,18 +553,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupTagHelperBlock("strong"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(24, 0, 24),
-                                length: 6)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(24, 0, 24), contentLength: 6), "strong")
                         }
                     },
                     {
@@ -621,7 +572,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar="))),
                                     new TagHelperAttributeNode("foo", null, AttributeStructure.Minimized),
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p @DateTime.Now class=\"btn\"></p>",
@@ -629,9 +580,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 13)
+                            RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(new SourceSpan(3, 0, 3, 13), "p")
                         }
                     },
                     {
@@ -640,9 +589,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 13)
+                            RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(new SourceSpan(3, 0, 3, 13), "p")
                         }
                     },
                     {
@@ -669,10 +616,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -687,17 +632,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 1), "do", "}", "{"),
                         }
                     },
                     {
@@ -710,20 +650,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 1),
-                            new RazorError(
-                                LegacyResources.ParseError_Unterminated_String_Literal,
-                                absoluteIndex: 15, lineIndex: 0, columnIndex: 15, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 1), "do", "}", "{"),
+                            RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                                new SourceSpan(filePath: null, absoluteIndex: 15, lineIndex: 0, characterIndex: 15, length: 1))
                         }
                     },
                     {
@@ -732,23 +666,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCSharp, "p"),
-                                absoluteIndex: 3, lineIndex: 0 , columnIndex: 3, length: 30),
-                            new RazorError(
-                                LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("do", "}", "{"),
-                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4, length: 1),
-                            new RazorError(
-                                LegacyResources.FormatParseError_UnexpectedEndTag("p"),
-                                absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelpersCannotHaveCSharpInTagDeclaration(new SourceSpan(3, 0, 3, 30), "p"),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "do", "}", "{"),
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                        new SourceSpan(filePath: null, absoluteIndex: 31, lineIndex: 0, characterIndex: 31, length: 1), "p")
                         }
                     },
                     {
@@ -761,10 +687,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new []
                         {
-                            new RazorError(
-                                "TagHelper attributes must be well-formed.",
-                                new SourceLocation(13, 0, 13),
-                                length: 13)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperAttributeListMustBeWellFormed(new SourceSpan(13, 0, 13, 13))
                         }
                     },
                 };
@@ -778,7 +701,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
         public static TheoryData MalformedTagHelperBlockData
@@ -787,11 +710,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                                          "end tag or be self closing.";
-                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
 
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<p",
@@ -799,14 +719,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -815,9 +731,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                absoluteIndex: 5, lineIndex: 0, columnIndex: 5, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(absoluteIndex: 5, lineIndex: 0, characterIndex: 5, length: 1), "p")
                         }
                     },
                     {
@@ -827,18 +742,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupTagHelperBlock("strong"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                new SourceLocation(4, 0, 4),
-                                length: 6),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(4, 0, 4),
-                                length: 6)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 6), "strong")
                         }
                     },
                     {
@@ -848,18 +757,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupTagHelperBlock("p"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                new SourceLocation(1, 0, 1),
-                                length: 6),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(1, 0, 1),
-                                length: 6),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(9, 0, 9),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(9, 0, 9), contentLength: 1), "p")
                         }
                     },
                     {
@@ -868,14 +771,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("strong")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                new SourceLocation(1, 0, 1),
-                                length: 6),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "strong"),
-                                new SourceLocation(10, 0, 10),
-                                length: 6)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 6), "strong")
                         }
                     },
                     {
@@ -889,14 +788,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(4, 0, 4),
-                                length: 6),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(14, 0, 14),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 1), "p")
                         }
                     },
                     {
@@ -911,10 +806,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.Markup(">"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "strong"),
-                                new SourceLocation(3, 0, 3),
-                                length: 6)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(3, 0, 3), contentLength: 6), "strong")
                         }
                     },
                     {
@@ -925,10 +818,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.MarkupTagBlock("</p>"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(14, 0, 14),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(14, 0, 14), contentLength: 1), "p")
                         }
                     }
                 };
@@ -942,7 +833,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
         public static TheoryData CodeTagHelperAttributesData
@@ -1219,7 +1110,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 descriptors,
                 documentContent,
                 (MarkupBlock)expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>());
+                expectedErrors: Enumerable.Empty<RazorDiagnostic>());
         }
 
         public static IEnumerable<object[]> IncompleteHelperBlockData
@@ -1228,8 +1119,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var malformedErrorFormat = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                                           "end tag or be self closing.";
 
                 yield return new object[]
                 {
@@ -1258,14 +1147,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             },
                             new MarkupTagHelperBlock("strong")),
                             blockFactory.MarkupTagBlock("</strong>")),
-                    new RazorError[]
+                    new RazorDiagnostic[]
                     {
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 53, lineIndex: 0, columnIndex: 53, length: 6),
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 66, lineIndex: 0, columnIndex: 66, length: 6)
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(absoluteIndex: 53, lineIndex: 0, characterIndex: 53, length: 6), "strong"),
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(absoluteIndex: 66, lineIndex: 0, characterIndex: 66, length: 6), "strong")
                     }
                 };
                 yield return new object[]
@@ -1278,11 +1165,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("strong",
                                 factory.Markup("World")),
                             blockFactory.MarkupTagBlock("</div>"))),
-                    new RazorError[]
+                    new RazorDiagnostic[]
                     {
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 1)
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(absoluteIndex: 6, lineIndex: 0, characterIndex: 6, length: 1), "p")
                     }
                 };
                 yield return new object[]
@@ -1295,14 +1181,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("strong",
                                 factory.Markup("World"),
                                 blockFactory.MarkupTagBlock("</div>")))),
-                    new RazorError[]
+                    new RazorDiagnostic[]
                     {
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 1),
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "strong"),
-                            absoluteIndex: 15, lineIndex: 0, columnIndex: 15, length: 6)
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(absoluteIndex: 6, lineIndex: 0, characterIndex: 6, length: 1), "p"),
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(absoluteIndex: 15, lineIndex: 0, characterIndex: 15, length: 6), "strong")
                     }
                 };
                 yield return new object[]
@@ -1321,12 +1205,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode("style", factory.Markup("color:red;"))
                                 },
                                 factory.Markup("World")))),
-                    new RazorError[]
+                    new RazorDiagnostic[]
                     {
-                        new RazorError(
-                            string.Format(CultureInfo.InvariantCulture, malformedErrorFormat, "p"),
-                            new SourceLocation(1, 0, 1),
-                            length: 1)
+                        RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                            new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                     }
                 };
             }
@@ -1339,7 +1221,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
 
@@ -1917,7 +1799,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [MemberData(nameof(EmptyAttributeTagHelperData))]
         public void Rewrite_UnderstandsEmptyAttributeTagHelpers(string documentContent, object expectedOutput)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, new RazorError[0], "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, new RazorDiagnostic[0], "p");
         }
 
         public static TheoryData EmptyTagHelperBoundAttributeData
@@ -1925,13 +1807,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-                var emptyAttributeError =
-                    "Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound attributes of " +
-                    "type '{2}' cannot be empty or contain only whitespace.";
                 var boolTypeName = typeof(bool).FullName;
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<myth bound='' />",
@@ -1945,9 +1824,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName)
                         }
                     },
                     {
@@ -1963,7 +1844,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.CodeMarkup("    true").With(new ExpressionChunkGenerator()),
                                         AttributeStructure.SingleQuotes)
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<myth bound='    ' />",
@@ -1980,9 +1861,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -1998,12 +1881,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 16, lineIndex: 0, columnIndex: 16, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(16, 0, 16, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2024,12 +1911,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(17, 0, 17, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2051,9 +1942,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 19, lineIndex: 0, columnIndex: 19, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(19, 0, 19, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2072,9 +1965,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2093,9 +1988,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2122,9 +2019,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bound", "myth", boolTypeName),
-                                absoluteIndex: 31, lineIndex: 0, columnIndex: 31, length: 5),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(31, 0, 31, 5),
+                                "bound",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2139,9 +2038,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "BouND", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "BouND",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2157,12 +2058,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "BOUND", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5),
-                            new RazorError(
-                                string.Format(emptyAttributeError, "bOUnd", "myth", boolTypeName),
-                                absoluteIndex: 18, lineIndex: 0, columnIndex: 18, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "BOUND",
+                                "myth",
+                                boolTypeName),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(18, 0, 18, 5),
+                                "bOUnd",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2180,9 +2085,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(emptyAttributeError, "BOUND", "myth", boolTypeName),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 5)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 5),
+                                "BOUND",
+                                "myth",
+                                boolTypeName),
                         }
                     },
                     {
@@ -2207,7 +2114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             AttributeStructure.SingleQuotes)
                                     }
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<myth bound='    @(true)  ' />",
@@ -2233,7 +2140,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             AttributeStructure.SingleQuotes)
                                     }
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                 };
             }
@@ -2265,7 +2172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors);
         }
 
         public static IEnumerable<object[]> ScriptBlockData
@@ -2861,7 +2768,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput)
         {
             // Act & Assert
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, Enumerable.Empty<RazorError>(), "input");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, Enumerable.Empty<RazorDiagnostic>(), "input");
         }
 
         public static TheoryData MinimizedAttributeData_Document
@@ -2869,11 +2776,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-                var noErrors = new RazorError[0];
-                var errorFormat = "Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound " +
-                    "attributes of type '{2}' cannot be empty or contain only whitespace.";
-                var emptyKeyFormat = "The tag helper attribute '{0}' in element '{1}' is missing a key. The " +
-                    "syntax is '<{1} {0}{{ key }}=\"value\">'.";
+                var noErrors = new RazorDiagnostic[0];
                 var stringType = typeof(string).FullName;
                 var intType = typeof(int).FullName;
                 var expressionString = "@DateTime.Now + 1";
@@ -2900,7 +2803,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 value: new LocationTagged<string>("1", index + 16, 0, index + 16)))));
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<input unbound-required />",
@@ -2926,8 +2829,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-string", "p", stringType), 3, 0, 3, 12)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -2942,8 +2848,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType), 7, 0, 7, 21)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -2958,8 +2867,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-int", "input", intType), 7, 0, 7, 18)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -2972,7 +2884,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 {
                                     new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
                                 })),
-                        new[] { new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 3, 0, 3, 9) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                        }
                     },
                     {
                         "<input int-dictionary/>",
@@ -2986,12 +2905,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "int-dictionary", "input", typeof(IDictionary<string, int>).Namespace + ".IDictionary<System.String, System.Int32>"),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 14),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 14),
+                                "int-dictionary",
+                                "input",
+                                typeof(IDictionary<string, int>).Namespace + ".IDictionary<System.String, System.Int32>"),
                         }
                     },
                     {
@@ -3006,12 +2924,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "string-dictionary", "input", typeof(IDictionary<string, string>).Namespace + ".IDictionary<System.String, System.String>"),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 17),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 17),
+                                "string-dictionary",
+                                "input",
+                                typeof(IDictionary<string, string>).Namespace + ".IDictionary<System.String, System.String>"),
                         }
                     },
                     {
@@ -3026,18 +2943,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "int-prefix-", "input", typeof(int).FullName),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 11),
-                            new RazorError(
-                                string.Format(emptyKeyFormat, "int-prefix-", "input"),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 11),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 11),
+                                "int-prefix-",
+                                "input",
+                                intType),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(
+                                new SourceSpan(7, 0, 7, 11),
+                                "int-prefix-", 
+                                "input"),
                         }
                     },
                     {
@@ -3052,18 +2966,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "string-prefix-", "input", typeof(string).FullName),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 14),
-                            new RazorError(
-                                string.Format(emptyKeyFormat, "string-prefix-", "input"),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 14),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 14),
+                                "string-prefix-",
+                                "input",
+                                stringType),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperIndexerAttributeNameMustIncludeKey(
+                                new SourceSpan(7, 0, 7, 14),
+                                "string-prefix-", 
+                                "input"),
                         }
                     },
                     {
@@ -3078,12 +2989,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "int-prefix-value", "input", typeof(int).FullName),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 16),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 16),
+                                "int-prefix-value",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3098,12 +3008,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "string-prefix-value", "input", typeof(string).FullName),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 19),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 19),
+                                "string-prefix-value",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3118,12 +3027,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "int-prefix-value", "input", typeof(int).FullName),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 16),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 16),
+                                "int-prefix-value",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3136,7 +3044,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 {
                                     new TagHelperAttributeNode("string-prefix-value", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<input int-prefix-value='3'/>",
@@ -3151,7 +3059,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.CodeMarkup("3").With(new ExpressionChunkGenerator()),
                                         AttributeStructure.SingleQuotes),
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<input string-prefix-value='some string' />",
@@ -3168,7 +3076,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.Markup(" string")),
                                         AttributeStructure.SingleQuotes),
                                 })),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<input unbound-required bound-required-string />",
@@ -3183,12 +3091,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType),
-                                absoluteIndex: 24,
-                                lineIndex: 0,
-                                columnIndex: 24,
-                                length: 21)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(24, 0, 24, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3204,8 +3111,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 3, 0, 3, 9),
-                            new RazorError(string.Format(errorFormat, "bound-string", "p", stringType), 13, 0, 13, 12),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(13, 0, 13, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3222,14 +3137,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-int", "input", intType), 7, 0, 7, 18),
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType),
-                                absoluteIndex: 43,
-                                lineIndex: 0,
-                                columnIndex: 43,
-                                length: 21)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(43, 0, 43, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3246,9 +3163,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 3, 0, 3, 9),
-                            new RazorError(string.Format(errorFormat, "bound-string", "p", stringType), 13, 0, 13, 12),
-                            new RazorError(string.Format(errorFormat, "bound-string", "p", stringType), 26, 0, 26, 12),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(13, 0, 13, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(26, 0, 26, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3277,12 +3206,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-string", "p", stringType),
-                                absoluteIndex: 3,
-                                lineIndex: 0,
-                                columnIndex: 3,
-                                length: 12)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3311,12 +3239,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-string", "p", stringType),
-                                absoluteIndex: 15,
-                                lineIndex: 0,
-                                columnIndex: 15,
-                                length: 12)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(15, 0, 15, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3332,12 +3259,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 21)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3353,12 +3279,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType),
-                                absoluteIndex: 19,
-                                lineIndex: 0,
-                                columnIndex: 19,
-                                length: 21)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(19, 0, 19, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3374,8 +3299,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-int", "input", intType), 7, 0, 7, 18)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3391,7 +3319,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 3, 0, 3, 9)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
                         }
                     },
                     {
@@ -3407,7 +3339,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-required-int", "input", intType), 19, 0, 19, 18)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(19, 0, 19, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3423,7 +3359,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 15, 0, 15, 9)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(15, 0, 15, 9),
+                                "bound-int",
+                                "p",
+                                intType),
                         }
                     },
                     {
@@ -3439,8 +3379,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-int", "input", intType), 33, 0, 33, 18)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(33, 0, 33, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3456,7 +3399,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 29, 0, 29, 9)
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(29, 0, 29, 9),
+                                "bound-int",
+                                "p",
+                                intType),
                         }
                     },
                     {
@@ -3476,14 +3423,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-int", "input", intType), 10, 0, 10, 18),
-                            new RazorError(
-                                string.Format(errorFormat, "bound-required-string", "input", stringType),
-                                absoluteIndex: 57,
-                                lineIndex: 0,
-                                columnIndex: 57,
-                                length: 21),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(10, 0, 10, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(57, 0, 57, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3503,9 +3452,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 6, 0, 6, 9),
-                            new RazorError(string.Format(errorFormat, "bound-string", "p", stringType), 44, 0, 44, 12),
-                            new RazorError(string.Format(errorFormat, "bound-string", "p", stringType), 84, 0, 84, 12),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(6, 0, 6, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(44, 0, 44, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(84, 0, 84, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                 };
@@ -3612,12 +3573,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     data[1] = buildStatementBlock(() => data[1] as MarkupBlock);
 
-                    var errors = data[2] as RazorError[];
+                    var errors = data[2] as RazorDiagnostic[];
 
                     for (var i = 0; i < errors.Length; i++)
                     {
-                        var error = errors[i];
-                        error.Location = SourceLocationTracker.Advance(error.Location, "@{");
+                        var error = errors[i] as DefaultRazorDiagnostic;
+                        var currentErrorLocation = new SourceLocation(error.Span.AbsoluteIndex, error.Span.LineIndex, error.Span.CharacterIndex);
+                        var newErrorLocation = SourceLocationTracker.Advance(currentErrorLocation, "@{");
+                        var copiedDiagnostic = new DefaultRazorDiagnostic(error.Descriptor, new SourceSpan(newErrorLocation, error.Span.Length), error.Args);
+                        errors[i] = copiedDiagnostic;
                     }
                 }
 
@@ -3630,17 +3594,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-                var noErrors = new RazorError[0];
-                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                    "end tag or be self closing.";
-                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
-                var errorFormatNoValue = "Attribute '{0}' on tag helper element '{1}' requires a value. Tag helper bound " +
-                    "attributes of type '{2}' cannot be empty or contain only whitespace.";
+                var noErrors = new RazorDiagnostic[0];
                 var stringType = typeof(string).FullName;
                 var intType = typeof(int).FullName;
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<input unbound-required",
@@ -3654,14 +3613,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
                         }
                     },
                     {
@@ -3676,20 +3631,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-string", "input", stringType),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 21),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 21),
+                                "bound-required-string",
+                                "input", 
+                                stringType),
                         }
                     },
                     {
@@ -3704,20 +3654,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-int", "input", intType),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 18),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
                         }
                     },
                     {
@@ -3734,26 +3679,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-int", "input", intType),
-                                absoluteIndex: 7,
-                                lineIndex: 0,
-                                columnIndex: 7,
-                                length: 18),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-string", "input", stringType),
-                                absoluteIndex: 43,
-                                lineIndex: 0,
-                                columnIndex: 43,
-                                length: 21),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(43, 0, 43, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
                         }
                     },
                     {
@@ -3768,16 +3707,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-string", "p", stringType), 3, 0, 3, 12),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3792,15 +3730,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 3, 0, 3, 9),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
                         }
                     },
                     {
@@ -3816,17 +3754,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 3, 0, 3, 9),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-string", "p", stringType), 13, 0, 13, 12),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(3, 0, 3, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(13, 0, 13, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                     {
@@ -3851,37 +3792,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     }))),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "input"),
-                                new SourceLocation(1, 0, 1),
-                                length: 5),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-int", "input", intType), 7, 0, 7, 18),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-required-string", "input", stringType),
-                                absoluteIndex: 43,
-                                lineIndex: 0,
-                                columnIndex: 43,
-                                length: 21),
-                            new RazorError(
-                                string.Format(errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(65, 0, 65),
-                                length: 1),
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p"),
-                                new SourceLocation(65, 0, 65),
-                                length: 1),
-                            new RazorError(string.Format(errorFormatNoValue, "bound-int", "p", intType), 67, 0, 67, 9),
-                            new RazorError(
-                                string.Format(errorFormatNoValue, "bound-string", "p", stringType),
-                                absoluteIndex: 77,
-                                lineIndex: 0,
-                                columnIndex: 77,
-                                length: 12),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 5), "input"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(7, 0, 7, 18),
+                                "bound-required-int",
+                                "input",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(43, 0, 43, 21),
+                                "bound-required-string",
+                                "input",
+                                stringType),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(65, 0, 65), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(65, 0, 65), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(67, 0, 67, 9),
+                                "bound-int",
+                                "p",
+                                intType),
+                            RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                                new SourceSpan(77, 0, 77, 12),
+                                "bound-string",
+                                "p",
+                                stringType),
                         }
                     },
                 };
@@ -3957,7 +3895,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors);
         }
 
         [Fact]
@@ -3996,7 +3934,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     }));
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, expectedOutput, new RazorError[] { });
+            EvaluateData(descriptors, documentContent, expectedOutput, new RazorDiagnostic[] { });
         }
 
         [Fact]
@@ -4038,14 +3976,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var expectedErrors = new[]
             {
-                new RazorError(
-                    "Attribute 'boundbool' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.",
-                    new SourceLocation(7, 0, 7),
-                    length: 9),
-                new RazorError(
-                    "Attribute 'boundbooldict-key' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.",
-                    new SourceLocation(17, 0, 17),
-                    length: 17),
+                RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                    new SourceSpan(7, 0, 7, 9),
+                    "boundbool",
+                    "input",
+                    "System.Boolean"),
+                RazorDiagnosticFactory.CreateTagHelper_EmptyBoundAttribute(
+                    new SourceSpan(17, 0, 17, 17),
+                    "boundbooldict-key",
+                    "input",
+                    "System.Boolean"),
             };
 
             // Act & Assert

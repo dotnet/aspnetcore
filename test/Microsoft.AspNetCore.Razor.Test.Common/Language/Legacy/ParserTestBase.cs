@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
 
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             markupParser.ParseDocument();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             var codeDocument = RazorCodeDocument.Create(source);
 
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             parser.ParseBlock();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
-            var source = TestRazorSourceDocument.Create(document, fileName: null);
+            var source = TestRazorSourceDocument.Create(document, filePath: null);
             var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             parser.ParseBlock();
 
             var root = context.Builder.Build();
-            var diagnostics = context.ErrorSink.Errors?.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             return RazorSyntaxTree.Create(root, source, diagnostics, options);
         }
@@ -134,20 +134,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void ParseBlockTest(string document)
         {
-            ParseBlockTest(document, null, false, new RazorError[0]);
+            ParseBlockTest(document, null, false, new RazorDiagnostic[0]);
         }
 
         internal virtual void ParseBlockTest(string document, bool designTime)
         {
-            ParseBlockTest(document, null, designTime, new RazorError[0]);
+            ParseBlockTest(document, null, designTime, new RazorDiagnostic[0]);
         }
 
-        internal virtual void ParseBlockTest(string document, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, false, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, null, designTime, expectedErrors);
         }
@@ -167,22 +167,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, expectedRoot, designTime, null);
         }
 
-        internal virtual void ParseBlockTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, expectedRoot, false, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, directives, expectedRoot, false, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             ParseBlockTest(document, null, expected, designTime, expectedErrors);
         }
 
-        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseBlock(document, directives, designTime);
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
+                EvaluateResults(result, expected, expectedErrors);
             }
         }
 
@@ -213,22 +213,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             SingleSpanBlockTest(document, spanContent, blockKind, spanType, acceptedCharacters, expectedErrors: null);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, expectedError);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, params RazorDiagnostic[] expectedErrors)
         {
-            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorError[0]);
+            SingleSpanBlockTest(document, spanContent, blockKind, spanType, AcceptedCharactersInternal.Any, expectedErrors ?? new RazorDiagnostic[0]);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedError)
+        internal virtual void SingleSpanBlockTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedError)
         {
             SingleSpanBlockTest(document, document, blockKind, spanType, acceptedCharacters, expectedError);
         }
 
-        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorError[] expectedErrors)
+        internal virtual void SingleSpanBlockTest(string document, string spanContent, BlockKindInternal blockKind, SpanKindInternal spanType, AcceptedCharactersInternal acceptedCharacters, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseBlock(document, designTime: false);
 
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
+                EvaluateResults(result, expected, expectedErrors);
             }
         }
 
@@ -263,12 +263,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, expectedRoot, false, null);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expectedRoot, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, Block expectedRoot, params RazorDiagnostic[] expectedErrors)
         {
             ParseDocumentTest(document, expectedRoot, false, expectedErrors);
         }
 
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, params RazorDiagnostic[] expectedErrors)
         {
             ParseDocumentTest(document, directives, expected, false, expectedErrors);
         }
@@ -283,12 +283,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, expectedRoot, designTime, null);
         }
 
-        internal virtual void ParseDocumentTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             ParseDocumentTest(document, null, expected, designTime, expectedErrors);
         }
 
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorError[] expectedErrors)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorDiagnostic[] expectedErrors)
         {
             var result = ParseDocument(document, directives, designTime);
 
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (!ReferenceEquals(expected, IgnoreOutput))
             {
-                EvaluateResults(result, expected, expectedErrors?.Select(error => RazorDiagnostic.Create(error)).ToList());
+                EvaluateResults(result, expected, expectedErrors);
             }
         }
 

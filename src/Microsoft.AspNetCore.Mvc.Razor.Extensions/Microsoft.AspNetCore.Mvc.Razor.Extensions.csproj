@@ -13,7 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsHashCodeCombinerSourcesPackageVersion)" />
+    <Content Include="build\**\*.props" PackagePath="build\" />
+    <Content Include="build\**\*.targets" PackagePath="build\" />
   </ItemGroup>
 
   <ItemGroup>

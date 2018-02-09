@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TransitionsInTagHelperAttributes_Runtime -  - 
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - test - HtmlAttributeValueStyle.DoubleQuotes
             DefaultTagHelperRuntime - 

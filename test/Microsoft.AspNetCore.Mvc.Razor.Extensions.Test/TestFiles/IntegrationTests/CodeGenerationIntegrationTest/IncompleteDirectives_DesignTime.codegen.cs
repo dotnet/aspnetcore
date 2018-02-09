@@ -11,7 +11,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -59,9 +59,9 @@ MyService<TModel> __typeHelper = default(MyService<TModel>);
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml> Html { get; private set; }
-        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml>)PageContext?.ViewData;
-        public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml Model => ViewData.Model;
+        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives> Html { get; private set; }
+        public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives>)PageContext?.ViewData;
+        public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives Model => ViewData.Model;
     }
 }
 #pragma warning restore 1591

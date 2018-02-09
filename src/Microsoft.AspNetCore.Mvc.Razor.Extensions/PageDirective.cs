@@ -32,8 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public IntermediateNode DirectiveNode { get; }
 
-        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        public static RazorProjectEngineBuilder Register(RazorProjectEngineBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             builder.AddDirective(Directive);
             return builder;
         }
@@ -98,5 +103,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
         }
+
+        #region Obsolete
+        public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.AddDirective(Directive);
+            return builder;
+        }
+        #endregion
     }
 }

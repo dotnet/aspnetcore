@@ -148,5 +148,67 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Same(expected, codeDocument.Items[typeof(TagHelperDocumentContext)]);
         }
+
+        [Fact]
+        public void GetParserOptions_ReturnsSyntaxTree()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = RazorParserOptions.CreateDefault();
+            codeDocument.Items[typeof(RazorParserOptions)] = expected;
+
+            // Act
+            var actual = codeDocument.GetParserOptions();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void SetParserOptions_SetsSyntaxTree()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = RazorParserOptions.CreateDefault();
+
+            // Act
+            codeDocument.SetParserOptions(expected);
+
+            // Assert
+            Assert.Same(expected, codeDocument.Items[typeof(RazorParserOptions)]);
+        }
+
+        [Fact]
+        public void GetCodeGenerationOptions_ReturnsSyntaxTree()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = RazorCodeGenerationOptions.CreateDefault();
+            codeDocument.Items[typeof(RazorCodeGenerationOptions)] = expected;
+
+            // Act
+            var actual = codeDocument.GetCodeGenerationOptions();
+
+            // Assert
+            Assert.Same(expected, actual);
+        }
+
+        [Fact]
+        public void SetCodeGenerationOptions_SetsSyntaxTree()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+
+            var expected = RazorCodeGenerationOptions.CreateDefault();
+
+            // Act
+            codeDocument.SetCodeGenerationOptions(expected);
+
+            // Assert
+            Assert.Same(expected, codeDocument.Items[typeof(RazorCodeGenerationOptions)]);
+        }
     }
 }

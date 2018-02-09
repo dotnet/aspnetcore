@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (Context == null)
                 {
-                    throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                    throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
                 }
 
                 Span.Start = CurrentLocation;
@@ -296,10 +296,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     StringComparison.Ordinal))
                                 {
                                     Context.ErrorSink.OnError(
-                                        CurrentStart,
-                                        LegacyResources.FormatParseError_HelperDirectiveNotAvailable(
-                                            SyntaxConstants.CSharp.HelperKeyword),
-                                        CurrentSymbol.Content.Length);
+                                        RazorDiagnosticFactory.CreateParsing_HelperDirectiveNotAvailable(
+                                            new SourceSpan(CurrentStart, CurrentSymbol.Content.Length)));
                                 }
 
                                 Context.Builder.CurrentBlock.Type = BlockKindInternal.Expression;
@@ -344,24 +342,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine))
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            LegacyResources.ParseError_Unexpected_WhiteSpace_At_Start_Of_CodeBlock_CS,
-                            CurrentSymbol.Content.Length);
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
+                                new SourceSpan(CurrentStart, CurrentSymbol.Content.Length)));
                     }
                     else if (EndOfFile)
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                            length: 1 /* end of file */);
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
+                                new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
                     }
                     else
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS(
-                                CurrentSymbol.Content),
-                            CurrentSymbol.Content.Length);
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                                new SourceSpan(CurrentStart, CurrentSymbol.Content.Length),
+                                CurrentSymbol.Content));
                     }
                 }
                 finally
@@ -375,7 +370,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private void VerbatimBlock()
         {
             Assert(CSharpSymbolType.LeftBrace);
-            var block = new Block(LegacyResources.BlockName_Code, CurrentStart);
+            var block = new Block(Resources.BlockName_Code, CurrentStart);
             AcceptAndMoveNext();
 
             // Set up the "{" span and output
@@ -614,7 +609,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ExplicitExpression()
         {
-            var block = new Block(LegacyResources.BlockName_ExplicitExpression, CurrentStart);
+            var block = new Block(Resources.BlockName_ExplicitExpression, CurrentStart);
             Assert(CSharpSymbolType.LeftParenthesis);
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
@@ -634,9 +629,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     AcceptUntil(CSharpSymbolType.LessThan);
                     Context.ErrorSink.OnError(
-                        block.Start,
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, ")", "("),
-                        length: 1 /* ( */);
+                        RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                            new SourceSpan(block.Start, contentLength: 1 /* ( */), block.Name, ")", "("));
                 }
 
                 // If necessary, put an empty-content marker symbol here
@@ -664,9 +658,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (Context.Builder.ActiveBlocks.Any(block => block.Type == BlockKindInternal.Template))
             {
                 Context.ErrorSink.OnError(
-                    CurrentStart,
-                    LegacyResources.ParseError_InlineMarkup_Blocks_Cannot_Be_Nested,
-                    length: 1 /* @ */);
+                    RazorDiagnosticFactory.CreateParsing_InlineMarkupBlocksCannotBeNested(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* @ */)));
             }
             Output(SpanKindInternal.Code);
             using (Context.Builder.StartBlock(BlockKindInternal.Template))
@@ -767,9 +760,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected virtual void ReservedDirective(bool topLevel)
         {
             Context.ErrorSink.OnError(
-                CurrentStart,
-                LegacyResources.FormatParseError_ReservedWord(CurrentSymbol.Content),
-                CurrentSymbol.Content.Length);
+                RazorDiagnosticFactory.CreateParsing_ReservedWord(
+                    new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), CurrentSymbol.Content));
+                
             AcceptAndMoveNext();
             Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
             Span.ChunkGenerator = SpanChunkGenerator.Null;
@@ -850,9 +843,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (!topLevel)
                 {
                     Context.ErrorSink.OnError(
-                        block.Start,
-                        LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
-                        block.Name.Length);
+                        RazorDiagnosticFactory.CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(
+                            new SourceSpan(block.Start, block.Name.Length)));
                     StandardStatement();
                 }
                 else
@@ -1170,11 +1162,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (!At(CSharpSymbolType.LeftBrace))
                 {
                     Context.ErrorSink.OnError(
-                        CurrentStart,
-                        LegacyResources.FormatParseError_SingleLine_ControlFlowStatements_Not_Allowed(
+                        RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
+                            new SourceSpan(CurrentStart, CurrentSymbol.Content.Length),
                             Language.GetSample(CSharpSymbolType.LeftBrace),
-                            CurrentSymbol.Content),
-                        CurrentSymbol.Content.Length);
+                            CurrentSymbol.Content));
                 }
 
                 // Parse the statement and then we're done
@@ -1333,9 +1324,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (type == CSharpSymbolType.Transition && !isSingleLineMarkup)
                 {
                     Context.ErrorSink.OnError(
-                        loc,
-                        LegacyResources.ParseError_AtInCode_Must_Be_Followed_By_Colon_Paren_Or_Identifier_Start,
-                        length: 1 /* @ */);
+                        RazorDiagnosticFactory.CreateParsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart(
+                            new SourceSpan(loc, contentLength: 1 /* @ */)));
                 }
 
                 // Markup block
@@ -1365,7 +1355,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     break;
                 case CSharpSymbolType.LeftBrace:
                     // Verbatim Block
-                    block = block ?? new Block(LegacyResources.BlockName_Code, CurrentStart);
+                    block = block ?? new Block(Resources.BlockName_Code, CurrentStart);
                     AcceptAndMoveNext();
                     CodeBlock(block);
                     break;
@@ -1417,9 +1407,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (At(CSharpSymbolType.LeftBrace))
                 {
                     Context.ErrorSink.OnError(
-                        CurrentStart,
-                        LegacyResources.ParseError_Unexpected_Nested_CodeBlock,
-                        length: 1  /* { */);
+                        RazorDiagnosticFactory.CreateParsing_UnexpectedNestedCodeBlock(
+                            new SourceSpan(CurrentStart, contentLength: 1 /* { */)));
                 }
 
                 // @( or @foo - Nested expression, parse a child block
@@ -1513,9 +1502,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (EndOfFile)
             {
                 Context.ErrorSink.OnError(
-                    block.Start,
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(block.Name, '}', '{'),
-                    length: 1  /* { OR } */);
+                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                        new SourceSpan(block.Start, contentLength: 1 /* { OR } */), block.Name, "}", "{"));
             }
             else if (acceptTerminatingBrace)
             {
@@ -1624,9 +1612,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         var currentDirective = CurrentSymbol.Content;
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            Resources.FormatDirectiveMustAppearAtStartOfLine(currentDirective),
-                            length: currentDirective.Length);
+                            RazorDiagnosticFactory.CreateParsing_DirectiveMustAppearAtStartOfLine(
+                                new SourceSpan(CurrentStart, currentDirective.Length), currentDirective));
                         break;
                     }
                 }
@@ -1662,9 +1649,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         !EndOfFile)
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            Resources.FormatDirectiveTokensMustBeSeparatedByWhitespace(descriptor.Directive),
-                            length: CurrentSymbol.Content.Length);
+                            RazorDiagnosticFactory.CreateParsing_DirectiveTokensMustBeSeparatedByWhitespace(
+                                new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), descriptor.Directive));
                         return;
                     }
 
@@ -1700,9 +1686,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     else if (EndOfFile)
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, tokenDescriptor.Kind.ToString().ToLowerInvariant()),
-                            length: 1);
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
+                                new SourceSpan(CurrentStart, contentLength: 1),
+                                descriptor.Directive,
+                                tokenDescriptor.Kind.ToString().ToLowerInvariant()));
                         return;
                     }
 
@@ -1712,9 +1699,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             if (!NamespaceOrTypeName())
                             {
                                 Context.ErrorSink.OnError(
-                                    CurrentStart,
-                                    LegacyResources.FormatDirectiveExpectsTypeName(descriptor.Directive),
-                                    CurrentSymbol.Content.Length);
+                                    RazorDiagnosticFactory.CreateParsing_DirectiveExpectsTypeName(
+                                        new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), descriptor.Directive));
 
                                 return;
                             }
@@ -1724,9 +1710,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             if (!QualifiedIdentifier(out var identifierLength))
                             {
                                 Context.ErrorSink.OnError(
-                                    CurrentStart,
-                                    LegacyResources.FormatDirectiveExpectsNamespace(descriptor.Directive),
-                                    identifierLength);
+                                    RazorDiagnosticFactory.CreateParsing_DirectiveExpectsNamespace(
+                                        new SourceSpan(CurrentStart, identifierLength), descriptor.Directive));
 
                                 return;
                             }
@@ -1740,9 +1725,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             else
                             {
                                 Context.ErrorSink.OnError(
-                                    CurrentStart,
-                                    LegacyResources.FormatDirectiveExpectsIdentifier(descriptor.Directive),
-                                    CurrentSymbol.Content.Length);
+                                    RazorDiagnosticFactory.CreateParsing_DirectiveExpectsIdentifier(
+                                        new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), descriptor.Directive));
                                 return;
                             }
                             break;
@@ -1755,9 +1739,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             else
                             {
                                 Context.ErrorSink.OnError(
-                                    CurrentStart,
-                                    LegacyResources.FormatDirectiveExpectsQuotedStringLiteral(descriptor.Directive),
-                                    CurrentSymbol.Content.Length);
+                                    RazorDiagnosticFactory.CreateParsing_DirectiveExpectsQuotedStringLiteral(
+                                        new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), descriptor.Directive));
                                 return;
                             }
                             break;
@@ -1789,9 +1772,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         else if (!EndOfFile)
                         {
                             Context.ErrorSink.OnError(
-                                CurrentStart,
-                                LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, LegacyResources.ErrorComponent_Newline),
-                                CurrentSymbol.Content.Length);
+                                RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
+                                    new SourceSpan(CurrentStart, CurrentSymbol.Content.Length),
+                                    descriptor.Directive,
+                                    Resources.ErrorComponent_Newline));
                         }
 
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
@@ -1840,8 +1824,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (directiveErrorSink.Errors.Count > 0)
                 {
-                    var directiveDiagnostics = directiveErrorSink.Errors.Select(error => RazorDiagnostic.Create(error));
-                    directiveChunkGenerator.Diagnostics.AddRange(directiveDiagnostics);
+                    directiveChunkGenerator.Diagnostics.AddRange(directiveErrorSink.Errors);
                 }
 
                 Context.ErrorSink = savedErrorSink;
@@ -1855,17 +1838,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (Context.SeenDirectives.Contains(descriptor.Directive))
                 {
-                    UsageError(Resources.FormatDuplicateDirective(descriptor.Directive));
+                    // There will always be at least 1 child because of the `@` transition.
+                    var directiveStart = Context.Builder.CurrentBlock.Children.First().Start;
+                    var errorLength = /* @ */ 1 + descriptor.Directive.Length;
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
+                            new SourceSpan(directiveStart, errorLength), descriptor.Directive));
+
                     return;
                 }
-            }
-
-            void UsageError(string message)
-            {
-                // There wil always be at least 1 child because of the `@` transition.
-                var directiveStart = Context.Builder.CurrentBlock.Children.First().Start;
-                var errorLength = /* @ */ 1 + descriptor.Directive.Length;
-                Context.ErrorSink.OnError(directiveStart, message, errorLength);
             }
         }
 
@@ -1874,16 +1855,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (EndOfFile)
             {
                 Context.ErrorSink.OnError(
-                    CurrentStart,
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(descriptor.Directive, "{"),
-                    length: 1 /* { */);
+                    RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* { */), descriptor.Directive, "{"));
             }
             else if (!At(CSharpSymbolType.LeftBrace))
             {
                 Context.ErrorSink.OnError(
-                    CurrentStart,
-                    LegacyResources.FormatUnexpectedDirectiveLiteral(descriptor.Directive, "{"),
-                    CurrentSymbol.Content.Length);
+                    RazorDiagnosticFactory.CreateParsing_UnexpectedDirectiveLiteral(
+                        new SourceSpan(CurrentStart, CurrentSymbol.Content.Length), descriptor.Directive, "{"));
             }
             else
             {
@@ -1901,9 +1880,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     editHandler.AutoCompleteString = "}";
                     Context.ErrorSink.OnError(
-                        startingBraceLocation,
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF(descriptor.Directive, "}", "{"),
-                        length: 1 /* } */);
+                        RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                            new SourceSpan(startingBraceLocation, contentLength: 1 /* } */), descriptor.Directive, "}", "{"));
                 }
                 else
                 {
@@ -1924,8 +1902,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var directiveStart = Context.Builder.CurrentBlock.Children.First().Start;
                 var errorLength = /* @ */ 1 + SyntaxConstants.CSharp.TagHelperPrefixKeyword.Length;
                 duplicateDiagnostic = RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
-                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                    new SourceSpan(directiveStart, errorLength));
+                    new SourceSpan(directiveStart, errorLength),
+                    SyntaxConstants.CSharp.TagHelperPrefixKeyword);
             }
 
             TagHelperDirective(
@@ -1958,11 +1936,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (char.IsWhiteSpace(character) || InvalidNonWhitespaceNameCharacters.Contains(character))
                 {
                     diagnostics.Add(
-                        RazorDiagnostic.Create(
-                            new RazorError(
-                                Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, character, prefix),
-                                directiveLocation,
-                                prefix.Length)));
+                        RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
+                            new SourceSpan(directiveLocation, prefix.Length),
+                            SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                            character,
+                            prefix));
 
                     return;
                 }
@@ -2037,11 +2015,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 text.EndsWith("'"))
             {
                 errors.Add(
-                    RazorDiagnostic.Create(
-                        new RazorError(
-                            Resources.FormatInvalidTagHelperLookupText(text),
-                            directiveLocation,
-                            Math.Max(text.Length, 1))));
+                    RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
+                        new SourceSpan(directiveLocation, Math.Max(text.Length, 1)), text));
 
                 return directive;
             }
@@ -2100,59 +2075,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Debug.Assert(string.Equals(CurrentSymbol.Content, directive, StringComparison.Ordinal));
         }
 
-        protected void BaseTypeDirective(string noTypeNameError, Func<string, SpanChunkGenerator> createChunkGenerator)
-        {
-            var keywordStartLocation = Span.Start;
-
-            // Set the block type
-            Context.Builder.CurrentBlock.Type = BlockKindInternal.Directive;
-
-            var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
-
-            // Accept whitespace
-            var remainingWhitespace = AcceptSingleWhiteSpaceCharacter();
-
-            if (Span.Symbols.Count > 1)
-            {
-                Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.None;
-            }
-
-            Output(SpanKindInternal.MetaCode);
-
-            if (remainingWhitespace != null)
-            {
-                Accept(remainingWhitespace);
-            }
-
-            AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
-
-            if (EndOfFile || At(CSharpSymbolType.WhiteSpace) || At(CSharpSymbolType.NewLine))
-            {
-                Context.ErrorSink.OnError(
-                    keywordStartLocation,
-                    noTypeNameError,
-                    keywordLength);
-            }
-
-            // Parse to the end of the line
-            AcceptUntil(CSharpSymbolType.NewLine);
-            if (!Context.DesignTimeMode)
-            {
-                // We want the newline to be treated as code, but it causes issues at design-time.
-                Optional(CSharpSymbolType.NewLine);
-            }
-
-            // Pull out the type name
-            var baseType = string.Concat(Span.Symbols.Select(s => s.Content));
-
-            // Set up chunk generation
-            Span.ChunkGenerator = createChunkGenerator(baseType.Trim());
-
-            // Output the span and finish the block
-            CompleteBlock();
-            Output(SpanKindInternal.Code, AcceptedCharactersInternal.AnyExceptNewline);
-        }
-
         private void TagHelperDirective(string keyword, Func<string, List<RazorDiagnostic>, ISpanChunkGenerator> chunkGeneratorFactory)
         {
             AssertDirective(keyword);
@@ -2190,9 +2112,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 if (EndOfFile || At(CSharpSymbolType.NewLine))
                 {
                     Context.ErrorSink.OnError(
-                        keywordStartLocation,
-                        LegacyResources.FormatParseError_DirectiveMustHaveValue(keyword),
-                        keywordLength);
+                        RazorDiagnosticFactory.CreateParsing_DirectiveMustHaveValue(
+                            new SourceSpan(keywordStartLocation, keywordLength), keyword));
 
                     directiveValue = string.Empty;
                 }
@@ -2213,9 +2134,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (startsWithQuote != endsWithQuote)
                     {
                         Context.ErrorSink.OnError(
-                            startLocation,
-                            LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(keyword),
-                            rawValue.Length);
+                            RazorDiagnosticFactory.CreateParsing_IncompleteQuotesAroundDirective(
+                                new SourceSpan(startLocation, rawValue.Length), keyword));
                     }
 
                     directiveValue = rawValue;
@@ -2223,17 +2143,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             finally
             {
-                List<RazorDiagnostic> directiveErrors;
-                if (directiveErrorSink.Errors.Count > 0)
-                {
-                    directiveErrors = directiveErrorSink.Errors.Select(RazorDiagnostic.Create).ToList();
-                }
-                else
-                {
-                    directiveErrors = new List<RazorDiagnostic>();
-                }
-
-                Span.ChunkGenerator = chunkGeneratorFactory(directiveValue, directiveErrors);
+                Span.ChunkGenerator = chunkGeneratorFactory(directiveValue, directiveErrorSink.Errors.ToList());
                 Context.ErrorSink = savedErrorSink;
             }
 

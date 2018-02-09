@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
@@ -15,33 +17,33 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Create(configure: null);
         }
 
-        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, configure);
+        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, false, configure);
 
         public static RazorEngine CreateDesignTime()
         {
             return CreateDesignTime(configure: null);
         }
 
-        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultDesignTime, configure);
+        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, true, configure);
 
         // Internal since RazorEngine APIs are going to be obsolete.
-        internal static RazorEngine CreateCore(RazorConfiguration configuration, Action<IRazorEngineBuilder> configure)
+        internal static RazorEngine CreateCore(RazorConfiguration configuration, bool designTime, Action<IRazorEngineBuilder> configure)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var builder = new DefaultRazorEngineBuilder(configuration.DesignTime);
+            var builder = new DefaultRazorEngineBuilder(designTime);
             AddDefaults(builder);
 
-            if (configuration.DesignTime)
+            if (designTime)
             {
-                AddDesignTimeDefaults(configuration, builder);
+                AddDefaultDesignTimeFeatures(configuration, builder.Features);
             }
             else
             {
-                AddRuntimeDefaults(configuration, builder);
+                AddDefaultRuntimeFeatures(configuration, builder.Features);
             }
 
             configure?.Invoke(builder);
@@ -50,37 +52,66 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static RazorEngine CreateEmpty(Action<IRazorEngineBuilder> configure)
         {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
             var builder = new DefaultRazorEngineBuilder(designTime: false);
-            configure?.Invoke(builder);
+            configure(builder);
+            return builder.Build();
+        }
+
+        public static RazorEngine CreateDesignTimeEmpty(Action<IRazorEngineBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            var builder = new DefaultRazorEngineBuilder(designTime: true);
+            configure(builder);
             return builder.Build();
         }
 
         internal static void AddDefaults(IRazorEngineBuilder builder)
         {
-            builder.Phases.Add(new DefaultRazorParsingPhase());
-            builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
-            builder.Phases.Add(new DefaultRazorTagHelperBinderPhase());
-            builder.Phases.Add(new DefaultRazorIntermediateNodeLoweringPhase());
-            builder.Phases.Add(new DefaultRazorDocumentClassifierPhase());
-            builder.Phases.Add(new DefaultRazorDirectiveClassifierPhase());
-            builder.Phases.Add(new DefaultRazorOptimizationPhase());
-            builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
+            AddDefaultPhases(builder.Phases);
+            AddDefaultFeatures(builder.Features);
+        }
 
+        internal static void AddDefaultPhases(IList<IRazorEnginePhase> phases)
+        {
+            phases.Add(new DefaultRazorParsingPhase());
+            phases.Add(new DefaultRazorSyntaxTreePhase());
+            phases.Add(new DefaultRazorTagHelperBinderPhase());
+            phases.Add(new DefaultRazorIntermediateNodeLoweringPhase());
+            phases.Add(new DefaultRazorDocumentClassifierPhase());
+            phases.Add(new DefaultRazorDirectiveClassifierPhase());
+            phases.Add(new DefaultRazorOptimizationPhase());
+            phases.Add(new DefaultRazorCSharpLoweringPhase());
+        }
+
+        internal static void AddDefaultFeatures(ICollection<IRazorEngineFeature> features)
+        {
             // General extensibility
-            builder.Features.Add(new DefaultRazorDirectiveFeature());
-            builder.Features.Add(new DefaultRazorTargetExtensionFeature());
+            features.Add(new DefaultRazorDirectiveFeature());
+            var targetExtensionFeature = new DefaultRazorTargetExtensionFeature();
+            features.Add(targetExtensionFeature);
+            features.Add(new DefaultMetadataIdentifierFeature());
 
             // Syntax Tree passes
-            builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
-            builder.Features.Add(new HtmlNodeOptimizationPass());
+            features.Add(new DefaultDirectiveSyntaxTreePass());
+            features.Add(new HtmlNodeOptimizationPass());
 
             // Intermediate Node Passes
-            builder.Features.Add(new DefaultDocumentClassifierPass());
-            builder.Features.Add(new DirectiveRemovalOptimizationPass());
-            builder.Features.Add(new DefaultTagHelperOptimizationPass());
+            features.Add(new DefaultDocumentClassifierPass());
+            features.Add(new MetadataAttributePass());
+            features.Add(new DirectiveRemovalOptimizationPass());
+            features.Add(new DefaultTagHelperOptimizationPass());
 
             // Default Code Target Extensions
-            // (currently none)
+            targetExtensionFeature.TargetExtensions.Add(new MetadataAttributeTargetExtension());
 
             // Default configuration
             var configurationFeature = new DefaultDocumentClassifierPassFeature();
@@ -105,36 +136,42 @@ namespace Microsoft.AspNetCore.Razor.Language
                 method.Modifiers.Add("override");
             });
 
-            builder.Features.Add(configurationFeature);
+            features.Add(configurationFeature);
         }
 
-        internal static void AddRuntimeDefaults(RazorConfiguration configuration, IRazorEngineBuilder builder)
+        internal static void AddDefaultRuntimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion));
-            builder.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: false, version: configuration.LanguageVersion));
+            features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
 
             // Intermediate Node Passes
-            builder.Features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
+            features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
 
             // Code Target Extensions
-            builder.AddTargetExtension(new DefaultTagHelperTargetExtension() { DesignTime = false });
-            builder.AddTargetExtension(new PreallocatedAttributeTargetExtension());
+            var targetExtension = features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
+            Debug.Assert(targetExtension != null);
+
+            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension());
+            targetExtension.TargetExtensions.Add(new PreallocatedAttributeTargetExtension());
         }
 
-        internal static void AddDesignTimeDefaults(RazorConfiguration configuration, IRazorEngineBuilder builder)
+        internal static void AddDefaultDesignTimeFeatures(RazorConfiguration configuration, ICollection<IRazorEngineFeature> features)
         {
             // Configure options
-            builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion));
-            builder.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
-            builder.Features.Add(new SuppressChecksumOptionsFeature());
+            features.Add(new DefaultRazorParserOptionsFeature(designTime: true, version: configuration.LanguageVersion));
+            features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
+            features.Add(new SuppressChecksumOptionsFeature());
 
             // Intermediate Node Passes
-            builder.Features.Add(new DesignTimeDirectivePass());
+            features.Add(new DesignTimeDirectivePass());
 
             // Code Target Extensions
-            builder.AddTargetExtension(new DefaultTagHelperTargetExtension() { DesignTime = true });
-            builder.AddTargetExtension(new DesignTimeDirectiveTargetExtension());
+            var targetExtension = features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
+            Debug.Assert(targetExtension != null);
+
+            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension());
+            targetExtension.TargetExtensions.Add(new DesignTimeDirectiveTargetExtension());
         }
 
         public abstract IReadOnlyList<IRazorEngineFeature> Features { get; }
@@ -144,3 +181,4 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract void Process(RazorCodeDocument document);
     }
 }
+

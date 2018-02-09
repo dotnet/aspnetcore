@@ -8,7 +8,7 @@ Document -
         UsingDirective - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html

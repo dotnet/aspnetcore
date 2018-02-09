@@ -14,26 +14,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             get
             {
-                var noErrors = new RazorError[0];
-                Func<int, RazorError[]> missingEndParenError = (index) =>
-                    new RazorError[1]
+                var noErrors = new RazorDiagnostic[0];
+                Func<int, RazorDiagnostic[]> missingEndBracketError = (index) =>
+                    new RazorDiagnostic[1]
                     {
-                        new RazorError(
-                            "An opening \"(\" is missing the corresponding closing \")\".",
-                            new SourceLocation(index, 0, index),
-                            length: 1)
-                    };
-                Func<int, RazorError[]> missingEndBracketError = (index) =>
-                    new RazorError[1]
-                    {
-                        new RazorError(
-                            "An opening \"[\" is missing the corresponding closing \"]\".",
-                            new SourceLocation(index, 0, index),
-                            length: 1)
+                        RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                            new SourceSpan(new SourceLocation(index, 0, index), contentLength: 1), "[", "]"),
                     };
 
                 // implicitExpression, expectedImplicitExpression, acceptedCharacters, expectedErrors
-                return new TheoryData<string, string, AcceptedCharactersInternal, RazorError[]>
+                return new TheoryData<string, string, AcceptedCharactersInternal, RazorDiagnostic[]>
                 {
                     { "val??[", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
                     { "val??[0", "val", AcceptedCharactersInternal.NonWhiteSpace, noErrors },
@@ -68,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 implicitExpresison,
                 expectedImplicitExpression,
                 (AcceptedCharactersInternal)acceptedCharacters,
-                (RazorError[])expectedErrors);
+                (RazorDiagnostic[])expectedErrors);
         }
 
         public static TheoryData NullConditionalOperatorData_Dot
@@ -135,10 +125,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
-                               LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
-                               new SourceLocation(1, 0, 1),
-                               length: 1));
+                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
+                                "/"));
         }
 
         [Fact]
@@ -150,10 +139,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(KeywordSet)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
-                               LegacyResources.ParseError_Unexpected_EndOfFile_At_Start_Of_CodeBlock,
-                               new SourceLocation(1, 0, 1),
-                               length: 1));
+                           RazorDiagnosticFactory.CreateParsing_UnexpectedEndOfFileAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1)));
         }
 
         [Fact]
@@ -253,10 +240,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ImplicitExpressionTest(
                 "foo(()", "foo(()",
                 acceptedCharacters: AcceptedCharactersInternal.Any,
-                errors: new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(4, 0, 4),
-                    length: 1));
+                errors: RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(4, 0, 4), contentLength: 1), "(", ")"));
         }
 
         [Fact]

@@ -39,10 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     BlockFactory.MarkupTagBlock("<p>", AcceptedCharactersInternal.None),
                     BlockFactory.MarkupTagBlock("</>", AcceptedCharactersInternal.None),
                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("p"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"));
         }
 
         [Fact]

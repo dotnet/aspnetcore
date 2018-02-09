@@ -343,7 +343,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return base.GetSymbolContent(type);
         }
 
-        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
         {
             return new CSharpSymbol(content, type, errors);
         }
@@ -547,10 +547,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else if (EndOfFile)
             {
                 CurrentErrors.Add(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        CurrentStart,
-                        length: 1 /* end of file */));
+                    RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
             }
             return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.StringLiteral));
         }
@@ -576,10 +574,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else if (EndOfFile || ParserHelpers.IsNewLine(CurrentCharacter))
             {
                 CurrentErrors.Add(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        CurrentStart,
-                        length: 1 /* " */));
+                    RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* " */)));
             }
             else
             {
@@ -595,10 +591,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (EndOfFile)
             {
                 CurrentErrors.Add(
-                    new RazorError(
-                        LegacyResources.ParseError_BlockComment_Not_Terminated,
-                        CurrentStart,
-                        length: 1 /* end of file */));
+                    RazorDiagnosticFactory.CreateParsing_BlockCommentNotTerminated(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
+                    
                 return Transition(CSharpTokenizerState.Data, EndSymbol(CSharpSymbolType.Comment));
             }
             if (CurrentCharacter == '*')

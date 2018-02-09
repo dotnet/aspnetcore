@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public DefaultProjectSnapshotManagerTest()
         {
-            Workspace = new AdhocWorkspace();
+            Workspace = TestWorkspace.Create();
             ProjectManager = new TestProjectSnapshotManager(Enumerable.Empty<ProjectSnapshotChangeTrigger>(), Workspace);
         }
 
@@ -201,6 +201,38 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Act
             ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project));
+
+            // Assert
+            Assert.Empty(ProjectManager.Projects);
+
+            Assert.False(ProjectManager.ListenersNotified);
+            Assert.False(ProjectManager.WorkerStarted);
+        }
+
+        [Fact]
+        public void ProjectBuildComplete_KnownProject_NotifiesBackgroundWorker()
+        {
+            // Arrange
+            var project = Workspace.CurrentSolution.AddProject("Test", "Test", LanguageNames.CSharp);
+            ProjectManager.ProjectAdded(project);
+            ProjectManager.Reset();
+
+            // Act
+            ProjectManager.ProjectBuildComplete(project);
+
+            // Assert
+            Assert.False(ProjectManager.ListenersNotified);
+            Assert.True(ProjectManager.WorkerStarted);
+        }
+
+        [Fact]
+        public void ProjectBuildComplete_IgnoresUnknownProject()
+        {
+            // Arrange
+            var project = Workspace.CurrentSolution.AddProject("Test", "Test", LanguageNames.CSharp);
+
+            // Act
+            ProjectManager.ProjectBuildComplete(project);
 
             // Assert
             Assert.Empty(ProjectManager.Projects);

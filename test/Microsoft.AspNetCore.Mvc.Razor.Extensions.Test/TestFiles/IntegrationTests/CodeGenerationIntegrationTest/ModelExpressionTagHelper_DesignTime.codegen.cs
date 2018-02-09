@@ -11,7 +11,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
         private global::InputTestTagHelper __InputTestTagHelper;
         #pragma warning disable 219

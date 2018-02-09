@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorDiagnostic : IEquatable<RazorDiagnostic>, IFormattable
     {
+        internal static readonly RazorDiagnostic[] EmptyArray = new RazorDiagnostic[0];
         internal static readonly object[] EmptyArgs = new object[0];
 
         public abstract string Id { get; }
@@ -42,16 +42,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return new DefaultRazorDiagnostic(descriptor, span, args);
-        }
-
-        internal static RazorDiagnostic Create(RazorError error)
-        {
-            if (error == null)
-            {
-                throw new ArgumentNullException(nameof(error));
-            }
-
-            return new LegacyRazorDiagnostic(error);
         }
 
         public override string ToString()

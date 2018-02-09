@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.CreateDesignTime(builder =>
             {
-                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.ConfigureDocumentClassifier();
 
                 builder.AddDirective(DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken()));
             });

@@ -36,3 +36,5 @@ global.json
 BenchmarkDotNet.Artifacts/
 Microsoft.VisualStudio.RazorExtension.nuget.props
 Microsoft.VisualStudio.RazorExtension.nuget.targets
+msbuild.binlog
+msbuild.log

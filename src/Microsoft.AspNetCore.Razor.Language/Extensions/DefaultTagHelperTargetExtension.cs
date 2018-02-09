@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     {
         private static readonly string[] PrivateModifiers = new string[] { "private" };
 
-        public bool DesignTime { get; set; }
-
         public string RunnerVariableName { get; set; } = "__tagHelperRunner";
 
         public string StringValueBufferVariableName { get; set; } = "__tagHelperStringValueBuffer";
@@ -82,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new InvalidOperationException(message);
             }
 
-            if (DesignTime)
+            if (context.Options.DesignTime)
             {
                 context.RenderChildren(node);
             }
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(CreateTagHelperMethodName)
                 .WriteLine("<global::" + node.TypeName + ">();");
 
-            if (!DesignTime)
+            if (!context.Options.DesignTime)
             {
                 context.CodeWriter.WriteInstanceMethodInvocation(
                     ExecutionContextVariableName,
@@ -153,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new InvalidOperationException(message);
             }
 
-            if (!DesignTime)
+            if (!context.Options.DesignTime)
             {
                 context.CodeWriter
                     .Write("await ")
@@ -200,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new InvalidOperationException(message);
             }
 
-            if (DesignTime)
+            if (context.Options.DesignTime)
             {
                 context.RenderChildren(node);
             }
@@ -284,7 +282,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new InvalidOperationException(message);
             }
 
-            if (!DesignTime)
+            if (!context.Options.DesignTime)
             {
                 // Ensure that the property we're trying to set has initialized its dictionary bound properties.
                 if (node.IsIndexerNameMatch &&
@@ -338,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // If we get there, this is the first time seeing this property so we need to evaluate the expression.
             if (node.BoundAttribute.ExpectsStringValue(node.AttributeName))
             {
-                if (DesignTime)
+                if (context.Options.DesignTime)
                 {
                     context.RenderChildren(node);
 
@@ -370,7 +368,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
             else
             {
-                if (DesignTime)
+                if (context.Options.DesignTime)
                 {
                     var firstMappedChild = node.Children.FirstOrDefault(child => child.Source != null) as IntermediateNode;
                     var valueStart = firstMappedChild?.Source;
@@ -456,7 +454,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 }
             }
 
-            if (!DesignTime)
+            if (!context.Options.DesignTime)
             {
                 // We need to inform the context of the attribute value.
                 context.CodeWriter
@@ -474,7 +472,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperRuntime(CodeRenderingContext context, DefaultTagHelperRuntimeIntermediateNode node)
         {
-            if (!DesignTime)
+            if (!context.Options.DesignTime)
             {
                 context.CodeWriter.WriteLine("#line hidden");
 
@@ -550,7 +548,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        private void RenderTagHelperAttributeInline(
+        // Internal for testing
+        internal void RenderTagHelperAttributeInline(
             CodeRenderingContext context,
             DefaultTagHelperPropertyIntermediateNode property,
             IntermediateNode node,
@@ -565,7 +564,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
             else if (node is IntermediateToken token)
             {
-                if (DesignTime && node.Source != null)
+                if (context.Options.DesignTime && node.Source != null)
                 {
                     context.AddSourceMappingFor(node);
                 }
@@ -574,20 +573,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
             else if (node is CSharpCodeIntermediateNode)
             {
-                var error = new RazorError(
-                    LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
-                    SourceLocation.FromSpan(span),
-                    span == null ? -1 : span.Value.Length);
-                context.Diagnostics.Add(RazorDiagnostic.Create(error));
+                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_CodeBlocksNotSupportedInAttributes(span ?? SourceSpan.Undefined);
+                context.Diagnostics.Add(diagnostic);
             }
             else if (node is TemplateIntermediateNode)
             {
                 var expectedTypeName = property.IsIndexerNameMatch ? property.BoundAttribute.IndexerTypeName : property.BoundAttribute.TypeName;
-                var error = new RazorError(
-                    LegacyResources.FormatTagHelpers_InlineMarkupBlocks_NotSupported_InAttributes(expectedTypeName),
-                    SourceLocation.FromSpan(span),
-                    span == null ? -1 : span.Value.Length);
-                context.Diagnostics.Add(RazorDiagnostic.Create(error));
+                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(span ?? SourceSpan.Undefined, expectedTypeName);
+                context.Diagnostics.Add(diagnostic);
             }
         }
 

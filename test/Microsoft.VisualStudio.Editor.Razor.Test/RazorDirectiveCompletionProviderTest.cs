@@ -108,13 +108,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public async Task ProvideCompletionAsync_DoesNotProvideCompletionsForDocumentWithoutPath()
         {
             // Arrange
-            var project = ProjectInfo
+            Document document = null;
+            TestWorkspace.Create(workspace =>
+            {
+                var project = ProjectInfo
                 .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
                 .WithFilePath("/TestProject.csproj");
-            var workspace = new AdhocWorkspace();
-            workspace.AddProject(project);
-            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
-            var document = workspace.AddDocument(documentInfo);
+                workspace.AddProject(project);
+                var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
+                document = workspace.AddDocument(documentInfo);
+            });
 
             var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
             var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
@@ -325,14 +328,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static Document CreateDocument()
         {
-            var project = ProjectInfo
+            Document document = null;
+            TestWorkspace.Create(workspace =>
+            {
+                var project = ProjectInfo
                 .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
                 .WithFilePath("/TestProject.csproj");
-            var workspace = new AdhocWorkspace();
-            workspace.AddProject(project);
-            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
-            var document = workspace.AddDocument(documentInfo);
-            document = document.WithFilePath("Test.cshtml");
+                workspace.AddProject(project);
+                var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
+                document = workspace.AddDocument(documentInfo);
+                document = document.WithFilePath("Test.cshtml");
+            });
 
             return document;
         }

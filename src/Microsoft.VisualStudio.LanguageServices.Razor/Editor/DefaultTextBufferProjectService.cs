@@ -3,7 +3,8 @@
 
 using System;
 using System.ComponentModel.Composition;
-using Microsoft.CodeAnalysis;
+using System.Diagnostics;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
@@ -13,6 +14,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     /// <summary>
     /// Infrastructure methods to find project information from an <see cref="ITextBuffer"/>.
     /// </summary>
+    [System.Composition.Shared]
     [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
@@ -24,8 +26,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         [ImportingConstructor]
         public DefaultTextBufferProjectService(
             [Import(typeof(SVsServiceProvider))] IServiceProvider services,
-            ITextDocumentFactoryService documentFactory,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+            ITextDocumentFactoryService documentFactory)
         {
             if (services == null)
             {
@@ -41,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _documentTable = new RunningDocumentTable(services);
         }
 
-        public override IVsHierarchy GetHierarchy(ITextBuffer textBuffer)
+        public override object GetHostProject(ITextBuffer textBuffer)
         {
             if (textBuffer == null)
             {
@@ -63,23 +64,29 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return hierarchy;
         }
 
-        public override string GetProjectPath(IVsHierarchy hierarchy)
+        public override string GetProjectPath(object project)
         {
-            if (hierarchy == null)
+            if (project == null)
             {
-                throw new ArgumentNullException(nameof(hierarchy));
+                throw new ArgumentNullException(nameof(project));
             }
+
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
 
             ErrorHandler.ThrowOnFailure(((IVsProject)hierarchy).GetMkDocument((uint)VSConstants.VSITEMID.Root, out var path), VSConstants.E_NOTIMPL);
             return path;
         }
 
-        public override bool IsSupportedProject(IVsHierarchy hierarchy)
+        public override bool IsSupportedProject(object project)
         {
-            if (hierarchy == null)
+            if (project == null)
             {
-                throw new ArgumentNullException(nameof(hierarchy));
+                throw new ArgumentNullException(nameof(project));
             }
+
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
 
             try
             {
@@ -95,6 +102,24 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             return false;
+        }
+
+        public override string GetProjectName(object project)
+        {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
+            var hierarchy = project as IVsHierarchy;
+            Debug.Assert(hierarchy != null);
+
+            if (ErrorHandler.Failed(hierarchy.GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out var name)))
+            {
+                return null;
+            }
+
+            return (string)name;
         }
     }
 }

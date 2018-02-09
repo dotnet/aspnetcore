@@ -43,5 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public abstract int GetEquivalenceHash();
 
         public abstract void Accept(ParserVisitor visitor);
+
+        public abstract SyntaxTreeNode Clone();
     }
 }

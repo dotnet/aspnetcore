@@ -8,6 +8,7 @@
     <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
     <VSIXManifestOutputPath>$(BuildDir)$(VSIXName).json</VSIXManifestOutputPath>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
+    <VSIXSymbolsOutputPath>$(BuildDir)$(VSIXName).pdb</VSIXSymbolsOutputPath>
     <VSIXArtifactCategory>shipoob</VSIXArtifactCategory>
   </PropertyGroup>
 
@@ -27,6 +28,13 @@
         <PackageId>$(VSIXName)</PackageId>
       </ArtifactInfo>
 
+      <ArtifactInfo Include="$(VSIXSymbolsOutputPath)">
+        <ArtifactType>SymbolsFile</ArtifactType>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <Dependencies>$(VSIXName).vsix</Dependencies>
+        <DebugType>full</DebugType>
+      </ArtifactInfo>
+
       <ArtifactInfo Include="$(VSIXManifestOutputPath)">
         <ArtifactType>VsixPackageManifestFile</ArtifactType>
         <Category>$(VSIXArtifactCategory)</Category>
@@ -36,6 +44,7 @@
 
       <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
       <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
+      <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
 
     </ItemGroup>
   </Target>
@@ -93,6 +102,7 @@
         /flp:LogFile=$(VSIXLogFilePath);
         /p:DeployExtension=false;
         /p:TargetVSIXContainer=$(VSIXOutputPath);
+        /p:SymbolsPublishDir=$(BuildDir);
         /p:Configuration=$(Configuration);" />
     </ItemGroup>
 

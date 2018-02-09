@@ -28,10 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MarkupTransition("<text foo bar>").Accepts(AcceptedCharactersInternal.Any)),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text>"))),
-                new RazorError(
-                    LegacyResources.ParseError_TextTagCannotContainAttributes,
-                    new SourceLocation(1, 0, 1),
-                    length: 4));
+                RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 4)));
         }
 
         [Fact]
@@ -43,10 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MarkupTransition("<text>")),
                     new MarkupTagBlock(
                         Factory.MarkupTransition("</text foo bar>").Accepts(AcceptedCharactersInternal.Any))),
-                new RazorError(
-                    LegacyResources.ParseError_TextTagCannotContainAttributes,
-                    new SourceLocation(8, 0, 8),
-                    length: 4));
+                RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 4)));
         }
 
         [Fact]
@@ -54,10 +50,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseBlockTest("foo bar <baz>",
                 new MarkupBlock(),
-                new RazorError(
-                    LegacyResources.ParseError_MarkupBlock_Must_Start_With_Tag,
-                    SourceLocation.Zero,
-                    length: 3));
+                RazorDiagnosticFactory.CreateParsing_MarkupBlockMustStartWithTag(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 3)));
         }
 
         [Fact]
@@ -68,10 +62,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup(" ").Accepts(AcceptedCharactersInternal.None)),
-                new RazorError(
-                    LegacyResources.FormatParseError_UnexpectedEndTag("foo"),
-                    new SourceLocation(2, 0, 2),
-                    length: 3));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 3), "foo"));
         }
 
         [Fact]
@@ -85,10 +77,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
                     new MarkupTagBlock(
                         Factory.Markup("</bar>").Accepts(AcceptedCharactersInternal.None))),
-                new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("p"),
-                    new SourceLocation(1, 0, 1),
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"));
         }
 
         [Fact]
@@ -99,10 +89,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
                     Factory.Markup("blah blah blah blah blah")),
-                new RazorError(
-                    LegacyResources.FormatParseError_MissingEndTag("foo"),
-                    new SourceLocation(1, 0, 1),
-                    length: 3));
+                RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
         }
 
         [Fact]
@@ -115,10 +103,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(new AttributeBlockChunkGenerator("bar", new LocationTagged<string>(" bar=", 4, 0, 4), new LocationTagged<string>(string.Empty, 12, 0, 12)),
                             Factory.Markup(" bar=").With(SpanChunkGenerator.Null),
                             Factory.Markup("baz").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 9, 0, 9), new LocationTagged<string>("baz", 9, 0, 9)))))),
-                new RazorError(
-                    LegacyResources.FormatParseError_UnfinishedTag("foo"),
-                    new SourceLocation(1, 0, 1),
-                    length: 3));
+                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 3), "foo"));
         }
     }
 }

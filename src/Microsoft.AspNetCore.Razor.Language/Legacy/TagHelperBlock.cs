@@ -159,6 +159,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return null;
         }
 
+        public override SyntaxTreeNode Clone()
+        {
+            var tagHelperBlockBuilder = new TagHelperBlockBuilder(this);
+
+            tagHelperBlockBuilder.Children.Clear();
+            for (var i = 0; i < Children.Count; i++)
+            {
+                var clonedChild = Children[i].Clone();
+                tagHelperBlockBuilder.Children.Add(clonedChild);
+            }
+
+            tagHelperBlockBuilder.Attributes.Clear();
+            for (var i = 0; i < Attributes.Count; i++)
+            {
+                var existingAttribute = Attributes[i];
+                var clonedValue = existingAttribute.Value != null ? existingAttribute.Value.Clone() : null;
+                tagHelperBlockBuilder.Attributes.Add(
+                    new TagHelperAttributeNode(existingAttribute.Name, clonedValue, existingAttribute.AttributeStructure));
+            }
+
+            if (SourceStartTag != null)
+            {
+                var clonedStartTag = (Block)SourceStartTag.Clone();
+                tagHelperBlockBuilder.SourceStartTag = clonedStartTag;
+            }
+
+            if (SourceEndTag != null)
+            {
+                var clonedEndTag = (Block)SourceEndTag.Clone();
+                tagHelperBlockBuilder.SourceEndTag = clonedEndTag;
+            }
+
+            return tagHelperBlockBuilder.Build();
+        }
+
         /// <inheritdoc />
         public override string ToString()
         {

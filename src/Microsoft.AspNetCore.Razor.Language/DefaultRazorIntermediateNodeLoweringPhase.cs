@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DefaultRazorIntermediateNodeLoweringPhase : RazorEnginePhaseBase, IRazorIntermediateNodeLoweringPhase
     {
         private IRazorCodeGenerationOptionsFeature _optionsFeature;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new DocumentIntermediateNode();
             var builder = IntermediateNodeBuilder.Create(document);
 
-            document.Options = _optionsFeature.GetOptions();
+            document.Options = codeDocument.GetCodeGenerationOptions() ?? _optionsFeature.GetOptions();
 
             var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
 
@@ -785,4 +786,5 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static bool IsMalformed(List<RazorDiagnostic> diagnostics)
             => diagnostics.Count > 0 && diagnostics.Any(diagnostic => diagnostic.Severity == RazorDiagnosticSeverity.Error);
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

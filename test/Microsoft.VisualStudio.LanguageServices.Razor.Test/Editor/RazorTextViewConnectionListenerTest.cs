@@ -22,13 +22,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(p => p.Projects == new List<ProjectSnapshot>());
 
         private TextBufferProjectService ProjectService { get; } = Mock.Of<TextBufferProjectService>(
-            s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
+            s => s.GetHostProject(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
             s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true &&
                 s.GetProjectPath(It.IsAny<IVsHierarchy>()) == "C:/Some/Path/TestProject.csproj");
 
-        private EditorSettingsManagerInternal EditorSettingsManager => new DefaultEditorSettingsManagerInternal();
+        private EditorSettingsManager EditorSettingsManager => new DefaultEditorSettingsManager(Mock.Of<ForegroundDispatcher>());
 
-        private Workspace Workspace { get; } = new AdhocWorkspace();
+        private Workspace Workspace { get; } = TestWorkspace.Create();
 
         private IContentType RazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(RazorLanguage.ContentType) == true);
 

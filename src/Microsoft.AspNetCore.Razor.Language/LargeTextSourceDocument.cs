@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly int _length;
         private byte[] _checksum;
 
-        public LargeTextSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, string fileName)
+        public LargeTextSourceDocument(StreamReader reader, int chunkMaxLength, Encoding encoding, RazorSourceDocumentProperties properties)
         {
             if (reader == null)
             {
@@ -32,9 +32,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(encoding));
             }
 
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             _chunkMaxLength = chunkMaxLength;
             Encoding = encoding;
-            FilePath = fileName;
+            FilePath = properties.FilePath;
+            RelativePath = properties.RelativePath;
 
             ReadChunks(reader, _chunkMaxLength, out _length, out _chunks);
             _lines = new DefaultRazorSourceLineCollection(this);
@@ -58,6 +64,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int Length => _length;
 
         public override RazorSourceLineCollection Lines => _lines;
+
+        public override string RelativePath { get; }
 
         public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
         {

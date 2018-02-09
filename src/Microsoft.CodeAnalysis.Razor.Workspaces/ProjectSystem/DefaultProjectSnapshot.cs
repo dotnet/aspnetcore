@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -92,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             return new DefaultProjectSnapshot(update, this);
         }
 
-        public bool HasChangesComparedTo(ProjectSnapshot original)
+        public bool HasConfigurationChanged(ProjectSnapshot original)
         {
             if (original == null)
             {

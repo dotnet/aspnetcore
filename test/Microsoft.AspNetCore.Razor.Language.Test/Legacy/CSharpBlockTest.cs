@@ -148,10 +148,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ImplicitExpressionTest(
                 "Html.En(code()", "Html.En(code()",
                 AcceptedCharactersInternal.Any,
-                new RazorError(
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF("(", ")"),
-                    new SourceLocation(8, 0, 8),
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                    new SourceSpan(new SourceLocation(8, 0, 8), contentLength: 1), "(", ")"));
         }
 
         [Fact]
@@ -499,10 +497,8 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
                 document,
                 BlockKindInternal.Statement,
                 SpanKindInternal.Code,
-                new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
-                    SourceLocation.Zero,
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
         }
 
         [Fact]
@@ -514,14 +510,10 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
                 document,
                 BlockKindInternal.Statement,
                 SpanKindInternal.Code,
-                new RazorError(
-                    LegacyResources.ParseError_BlockComment_Not_Terminated,
-                    new SourceLocation(24, 0, 24),
-                    length: 1),
-                new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
-                    SourceLocation.Zero,
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_BlockCommentNotTerminated(
+                    new SourceSpan(new SourceLocation(24, 0, 24), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
         }
 
         [Fact]
@@ -533,10 +525,8 @@ while(true);", BlockKindInternal.Statement, SpanKindInternal.Code, acceptedChara
                 document,
                 BlockKindInternal.Statement,
                 SpanKindInternal.Code,
-                new RazorError(
-                    LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("foreach", '}', '{'),
-                    SourceLocation.Zero,
-                    length: 1));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 1), "foreach", "}", "{"));
         }
 
         [Fact]
@@ -1151,16 +1141,12 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                             Factory.Markup("@").With(new LiteralAttributeChunkGenerator(new LocationTagged<string>(string.Empty, 12, 0, 12), new LocationTagged<string>("@", 12, 0, 12))).Accepts(AcceptedCharactersInternal.None),
                             Factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)))),
                 Factory.EmptyHtml()));
-            var expectedErrors = new RazorError[]
+            var expectedErrors = new RazorDiagnostic[]
             {
-                new RazorError(
-                    @"End of file or an unexpected character was reached before the ""span"" tag could be parsed.  Elements inside markup blocks must be complete. They must either be self-closing (""<br />"") or have matching end tags (""<p>Hello</p>"").  If you intended to display a ""<"" character, use the ""&lt;"" HTML entity.",
-                    new SourceLocation(2, 0, 2),
-                    length: 4),
-                new RazorError(
-                    @"The code block is missing a closing ""}"" character.  Make sure you have a matching ""}"" character for all the ""{"" characters within this block, and that none of the ""}"" characters are being interpreted as markup.",
-                    SourceLocation.Zero,
-                    length: 1),
+                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                    new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 4), "span"),
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(SourceLocation.Zero, contentLength: 1), Resources.BlockName_Code, "}", "{"),
             };
 
             // Act & Assert
@@ -1194,16 +1180,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
                     Factory.Markup(" />").Accepts(AcceptedCharactersInternal.None))),
                 Factory.EmptyCSharp().AsStatement(),
                 Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None));
-            var expectedErrors = new RazorError[]
+            var expectedErrors = new RazorDiagnostic[]
             {
-                new RazorError(
-                    @"A space or line break was encountered after the ""@"" character.  Only valid identifiers, keywords, comments, ""("" and ""{"" are valid at the start of a code block and they must occur immediately following ""@"" with no space in between.",
-                    new SourceLocation(13, 0, 13),
-                    length: 1),
-                new RazorError(
-                    @"""' />}"" is not valid at the start of a code block.  Only identifiers, keywords, comments, ""("" and ""{"" are valid.",
-                    new SourceLocation(15, 0, 15),
-                    length: 5),
+                RazorDiagnosticFactory.CreateParsing_UnexpectedWhiteSpaceAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(13, 0, 13), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                    new SourceSpan(new SourceLocation(15, 0, 15), contentLength: 5),
+                    "' />}"),
             };
 
             // Act & Assert
@@ -1251,22 +1234,13 @@ catch(bar) { baz(); }", BlockKindInternal.Statement, SpanKindInternal.Code);
             ParseBlockTest(prefix + markup + suffix, expected);
         }
 
-        private void NamespaceImportTest(string content, string expectedNS, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.None, string errorMessage = null, SourceLocation? location = null)
+        private void NamespaceImportTest(string content, string expectedNS, AcceptedCharactersInternal acceptedCharacters = AcceptedCharactersInternal.None, SourceLocation? location = null)
         {
-            var errors = new RazorError[0];
-            if (!string.IsNullOrEmpty(errorMessage) && location.HasValue)
-            {
-                errors = new RazorError[]
-                {
-                    new RazorError(errorMessage, location.Value, length: 1)
-                };
-            }
             ParseBlockTest(content,
                            new DirectiveBlock(
                                Factory.Code(content)
                                    .AsNamespaceImport(expectedNS)
-                                   .Accepts(acceptedCharacters)),
-                           errors);
+                                   .Accepts(acceptedCharacters)));
         }
 
         private static StatementBlock CreateStatementBlock(MarkupBlock block)

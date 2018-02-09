@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteTagHelperBody_DesignTime_WritesChildren()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteTagHelperCreate_DesignTime_RendersCorrectly_UsesSpecifiedTagHelperType()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -190,7 +190,7 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
         public void WriteTagHelperExecute_DesignTime_WritesNothing()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -243,7 +243,7 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
         public void WriteTagHelperHtmlAttribute_DesignTime_WritesNothing()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -360,10 +360,78 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
         }
 
         [Fact]
+        public void RenderTagHelperAttributeInline_NonString_StatementInAttribute_Errors()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+            var node = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
+                IsIndexerNameMatch = false,
+            };
+            var expectedLocation = new SourceSpan(100, 10);
+            var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_CodeBlocksNotSupportedInAttributes(expectedLocation);
+
+            // Act
+            extension.RenderTagHelperAttributeInline(context, node, new CSharpCodeIntermediateNode(), expectedLocation);
+
+            // Assert
+            var diagnostic = Assert.Single(context.Diagnostics);
+            Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
+        public void RenderTagHelperAttributeInline_NonStringIndexerMatch_TemplateInAttribute_Errors()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+            var node = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
+                IsIndexerNameMatch = true,
+            };
+            var expectedLocation = new SourceSpan(100, 10);
+            var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(expectedLocation, "System.Int32");
+
+            // Act
+            extension.RenderTagHelperAttributeInline(context, node, new TemplateIntermediateNode(), expectedLocation);
+
+            // Assert
+            var diagnostic = Assert.Single(context.Diagnostics);
+            Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
+        public void RenderTagHelperAttributeInline_NonString_TemplateInAttribute_Errors()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+            var node = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
+                IsIndexerNameMatch = false,
+            };
+            var expectedLocation = new SourceSpan(100, 10);
+            var expectedDiagnostic = RazorDiagnosticFactory.CreateTagHelper_InlineMarkupBlocksNotSupportedInAttributes(
+                expectedLocation,
+                "System.Collections.Generic.Dictionary<System.String, System.Int32>");
+
+            // Act
+            extension.RenderTagHelperAttributeInline(context, node, new TemplateIntermediateNode(), expectedLocation);
+
+            // Assert
+            var diagnostic = Assert.Single(context.Diagnostics);
+            Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
         public void WriteTagHelperProperty_DesignTime_StringProperty_HtmlContent_RendersCorrectly()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -404,7 +472,7 @@ __InputTagHelper.StringProp = ""value"";
         public void WriteTagHelperProperty_DesignTime_StringProperty_NonHtmlContent_RendersCorrectly()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -445,7 +513,7 @@ __InputTagHelper.StringProp = string.Empty;
         public void WriteTagHelperProperty_DesignTime_NonStringProperty_RendersCorrectly()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -492,7 +560,7 @@ __InputTagHelper.IntProp = 32;
         public void WriteTagHelperProperty_DesignTime_NonStringProperty_SecondUseOfAttribute()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -534,7 +602,7 @@ __InputTagHelper.IntProp = 32;
         public void WriteTagHelperProperty_DesignTime_NonStringProperty_RendersCorrectly_WithoutLocation()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -574,7 +642,7 @@ __InputTagHelper.IntProp = 32;
         public void WriteTagHelperProperty_DesignTime_NonStringIndexer_RendersCorrectly()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -619,7 +687,7 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
         public void WriteTagHelperProperty_DesignTime_NonStringIndexer_RendersCorrectly_WithoutLocation()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
 
             var tagHelperNode = new TagHelperIntermediateNode();
@@ -996,7 +1064,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
         public void WriteTagHelperRuntime_DesignTime_WritesNothing()
         {
             // Arrange
-            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateDesignTime();
             
             var node = new DefaultTagHelperRuntimeIntermediateNode();

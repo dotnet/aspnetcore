@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HiddenSpansInCode_Runtime -  - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [6] HiddenSpansInCode.cshtml)

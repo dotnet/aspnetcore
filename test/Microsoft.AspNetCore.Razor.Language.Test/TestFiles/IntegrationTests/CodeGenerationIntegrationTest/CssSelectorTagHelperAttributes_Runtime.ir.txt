@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CssSelectorTagHelperAttributes_Runtime -  - 
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - href - ~/ - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - href - ~/hello - HtmlAttributeValueStyle.DoubleQuotes

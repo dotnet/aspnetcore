@@ -9,7 +9,7 @@ Document -
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingDirective - (55:4,1 [41] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             DesignTimeDirective - 

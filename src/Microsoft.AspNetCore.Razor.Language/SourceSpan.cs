@@ -30,6 +30,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             FilePath = filePath;
         }
 
+        public SourceSpan(int absoluteIndex, int lineIndex, int characterIndex, int length) 
+            : this(filePath: null, absoluteIndex: absoluteIndex, lineIndex: lineIndex, characterIndex: characterIndex, length: length)
+        {
+        }
+
         public int Length { get; }
 
         public int AbsoluteIndex { get; }

@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicTagHelpers_Prefixed_Runtime -  - 
             PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
             PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes

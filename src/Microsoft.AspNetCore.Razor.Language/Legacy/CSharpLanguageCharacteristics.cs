@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CSharpTokenizer(source);
         }
 
-        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override CSharpSymbol CreateSymbol(string content, CSharpSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
         {
             return new CSharpSymbol(content, type, errors);
         }
@@ -87,25 +87,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 switch (type)
                 {
                     case CSharpSymbolType.Identifier:
-                        return LegacyResources.CSharpSymbol_Identifier;
+                        return Resources.CSharpSymbol_Identifier;
                     case CSharpSymbolType.Keyword:
-                        return LegacyResources.CSharpSymbol_Keyword;
+                        return Resources.CSharpSymbol_Keyword;
                     case CSharpSymbolType.IntegerLiteral:
-                        return LegacyResources.CSharpSymbol_IntegerLiteral;
+                        return Resources.CSharpSymbol_IntegerLiteral;
                     case CSharpSymbolType.NewLine:
-                        return LegacyResources.CSharpSymbol_Newline;
+                        return Resources.CSharpSymbol_Newline;
                     case CSharpSymbolType.WhiteSpace:
-                        return LegacyResources.CSharpSymbol_Whitespace;
+                        return Resources.CSharpSymbol_Whitespace;
                     case CSharpSymbolType.Comment:
-                        return LegacyResources.CSharpSymbol_Comment;
+                        return Resources.CSharpSymbol_Comment;
                     case CSharpSymbolType.RealLiteral:
-                        return LegacyResources.CSharpSymbol_RealLiteral;
+                        return Resources.CSharpSymbol_RealLiteral;
                     case CSharpSymbolType.CharacterLiteral:
-                        return LegacyResources.CSharpSymbol_CharacterLiteral;
+                        return Resources.CSharpSymbol_CharacterLiteral;
                     case CSharpSymbolType.StringLiteral:
-                        return LegacyResources.CSharpSymbol_StringLiteral;
+                        return Resources.CSharpSymbol_StringLiteral;
                     default:
-                        return LegacyResources.Symbol_Unknown;
+                        return Resources.Symbol_Unknown;
                 }
             }
             return sample;

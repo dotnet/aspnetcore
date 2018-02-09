@@ -74,20 +74,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                Func<int, string, RazorError> errorFormatUnclosed = (location, tagName) =>
-                    new RazorError(
-                        $"Found a malformed '{tagName}' tag helper. Tag helpers must have a start and end tag or be " +
-                        "self closing.",
-                        new SourceLocation(location, 0, location),
-                        tagName.Length);
-                Func<int, string, RazorError> errorFormatNoCloseAngle = (location, tagName) =>
-                    new RazorError(
-                        $"Missing close angle for tag helper '{tagName}'.",
-                        new SourceLocation(location, 0, location),
-                        tagName.Length);
+                Func<int, string, RazorDiagnostic> errorFormatUnclosed = (location, tagName) =>
+                    RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                        new SourceSpan(new SourceLocation(location, 0, location), tagName.Length), tagName);
+
+                Func<int, string, RazorDiagnostic> errorFormatNoCloseAngle = (location, tagName) =>
+                   RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                       new SourceSpan(new SourceLocation(location, 0, location), tagName.Length), tagName);
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<p><strong>",
@@ -173,7 +169,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors);
         }
 
         public static TheoryData NestedVoidSelfClosingRequiredParentData
@@ -279,7 +275,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData NestedRequiredParentData
@@ -354,7 +350,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         [Fact]
@@ -381,7 +377,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 descriptors,
                 documentContent,
                 expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>(),
+                expectedErrors: Enumerable.Empty<RazorDiagnostic>(),
                 tagHelperPrefix: "th:");
         }
 
@@ -409,7 +405,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 descriptors,
                 documentContent,
                 expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>(),
+                expectedErrors: Enumerable.Empty<RazorDiagnostic>(),
                 tagHelperPrefix: "th:");
         }
 
@@ -433,12 +429,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     .Build(),
             };
             var expectedErrors = new[] {
-                new RazorError(
-                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("th:strong"),
-                    absoluteIndex: 8,
-                    lineIndex: 0,
-                    columnIndex: 8,
-                    length: 9),
+                RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                    new SourceSpan(filePath: null, absoluteIndex: 8, lineIndex: 0, characterIndex: 8, length: 9),
+                    "th:strong"),
             };
 
             // Act & Assert
@@ -474,7 +467,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 descriptors,
                 documentContent,
                 expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>(),
+                expectedErrors: Enumerable.Empty<RazorDiagnostic>(),
                 tagHelperPrefix: "th:");
         }
 
@@ -755,12 +748,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 $"{Environment.NewLine}    </strong>{Environment.NewLine}</p>";
             var newLineLength = Environment.NewLine.Length;
             var expectedErrors = new[] {
-                new RazorError(
-                    LegacyResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "p", "br"),
-                    absoluteIndex: 8 + newLineLength,
-                    lineIndex: 1,
-                    columnIndex: 5,
-                    length: 6),
+                RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                    new SourceSpan(absoluteIndex: 8 + newLineLength, lineIndex: 1, characterIndex: 5, length: 6), "strong", "p", "br"),
             };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
@@ -790,12 +779,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var documentContent = "<strong required><strong></strong></strong>";
 
             var expectedErrors = new[] {
-                new RazorError(
-                    LegacyResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag("strong", "strong", "br"),
-                    absoluteIndex: 18,
-                    lineIndex: 0,
-                    columnIndex: 18,
-                    length: 6)
+                RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                    new SourceSpan(absoluteIndex: 18, lineIndex: 0, characterIndex: 18, length: 6), "strong", "strong", "br")
             };
             var expectedOutput = new MarkupBlock(
                 new MarkupTagHelperBlock("strong",
@@ -853,7 +838,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         [Fact]
@@ -889,7 +874,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData AllowedChildrenData
@@ -898,25 +883,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                Func<string, string, string, int, int, RazorError> nestedTagError =
-                    (childName, parentName, allowed, location, length) => new RazorError(
-                        LegacyResources.FormatTagHelperParseTreeRewriter_InvalidNestedTag(
-                            childName,
-                            parentName,
-                            allowed),
-                        absoluteIndex: location,
-                        lineIndex: 0,
-                        columnIndex: location,
-                        length: length);
-                Func<string, string, int, int, RazorError> nestedContentError =
-                    (parentName, allowed, location, length) => new RazorError(
-                        LegacyResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent(parentName, allowed),
-                        absoluteIndex: location,
-                        lineIndex: 0,
-                        columnIndex: location,
-                        length: length);
+                Func<string, string, string, int, int, RazorDiagnostic> nestedTagError =
+                    (childName, parentName, allowed, location, length) =>
+                    RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                        new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), childName, parentName, allowed);
+                Func<string, string, int, int, RazorDiagnostic> nestedContentError =
+                    (parentName, allowed, location, length) =>
+                    RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                        new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), parentName, allowed);
 
-                return new TheoryData<string, IEnumerable<string>, MarkupBlock, RazorError[]>
+                return new TheoryData<string, IEnumerable<string>, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<p><br /></p>",
@@ -924,7 +900,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagHelperBlock("p",
                                 new MarkupTagHelperBlock("br", TagMode.SelfClosing))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         $"<p>{Environment.NewLine}<br />{Environment.NewLine}</p>",
@@ -934,7 +910,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.Markup(Environment.NewLine),
                                 new MarkupTagHelperBlock("br", TagMode.SelfClosing),
                                 factory.Markup(Environment.NewLine))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p><br></p>",
@@ -1129,7 +1105,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors);
         }
 
         [Fact]
@@ -1152,12 +1128,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     BlockFactory.MarkupTagBlock("</")));
             var expectedErrors = new[]
             {
-                new RazorError(
-                    LegacyResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("p", "custom"),
-                    absoluteIndex: 3,
-                    lineIndex: 0,
-                    columnIndex: 3,
-                    length: 2)
+                RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                    new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 2), "p", "custom")
             };
 
             // Act & Assert
@@ -1184,12 +1156,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     BlockFactory.MarkupTagBlock("</")));
             var expectedErrors = new[]
             {
-                new RazorError(
-                    LegacyResources.FormatTagHelperParseTreeRewriter_CannotHaveNonTagContent("th:p", "custom"),
-                    absoluteIndex: 6,
-                    lineIndex: 0,
-                    columnIndex: 6,
-                    length: 2)
+                RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                    new SourceSpan(absoluteIndex: 6, lineIndex: 0, characterIndex: 6, length: 2), "th:p", "custom")
             };
 
             // Act & Assert
@@ -1213,7 +1181,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         [Fact]
@@ -1222,15 +1190,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var factory = new SpanFactory();
             var blockFactory = new BlockFactory(factory);
-            var expectedError = new RazorError(
-                LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
-                    "input",
-                    "InputTagHelper",
-                    TagStructure.WithoutEndTag),
-                absoluteIndex: 2,
-                lineIndex: 0,
-                columnIndex: 2,
-                length: 5);
+            var expectedError = RazorDiagnosticFactory.CreateParsing_TagHelperMustNotHaveAnEndTag(
+                new SourceSpan(filePath: null, absoluteIndex: 2, lineIndex: 0, characterIndex: 2, length: 5),
+                "input",
+                "InputTagHelper",
+                TagStructure.WithoutEndTag);
             var documentContent = "</input>";
             var expectedOutput = new MarkupBlock(blockFactory.MarkupTagBlock("</input>"));
             var descriptors = new TagHelperDescriptor[]
@@ -1253,16 +1217,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var factory = new SpanFactory();
             var blockFactory = new BlockFactory(factory);
-            var expectedError = new RazorError(
-                LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
-                    "InputTagHelper1",
-                    "InputTagHelper2",
-                    "input",
-                    nameof(TagMatchingRuleDescriptor.TagStructure)),
-                absoluteIndex: 0,
-                lineIndex: 0,
-                columnIndex: 0,
-                length: 7);
+            var expectedError = RazorDiagnosticFactory.CreateTagHelper_InconsistentTagStructure(
+                new SourceSpan(absoluteIndex: 0, lineIndex: 0, characterIndex: 0, length: 7), "InputTagHelper1", "InputTagHelper2", "input");
             var documentContent = "<input>";
             var expectedOutput = new MarkupBlock(new MarkupTagHelperBlock("input", TagMode.StartTagOnly));
             var descriptors = new TagHelperDescriptor[]
@@ -1711,7 +1667,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData NestedRequiredAttributeData
@@ -1964,7 +1920,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorError[0]);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, expectedErrors: new RazorDiagnostic[0]);
         }
 
         public static TheoryData MalformedRequiredAttributeData
@@ -1973,17 +1929,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                                          "end tag or be self closing.";
-                var errorFormatNoCloseAngle = "Missing close angle for tag helper '{0}'.";
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<p",
                         new MarkupBlock(blockFactory.MarkupTagBlock("<p")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p class=\"btn\"",
@@ -1996,14 +1949,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -2018,14 +1967,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -2033,7 +1978,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             blockFactory.MarkupTagBlock("<p>"),
                             blockFactory.MarkupTagBlock("</p")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p class=\"btn\"></p",
@@ -2046,10 +1991,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(17, 0, 17),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 1), "p")
                         }
                     },
                     {
@@ -2064,10 +2007,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(34, 0, 34),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(34, 0, 34), contentLength: 1), "p")
                         }
                     },
                     {
@@ -2081,14 +2022,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 children: blockFactory.MarkupTagBlock("<p>"))),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
                         }
                     },
                     {
@@ -2103,14 +2040,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 children: blockFactory.MarkupTagBlock("<p>"))),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatUnclosed, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
                         }
                     },
                     {
@@ -2124,14 +2057,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(17, 0, 17),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(17, 0, 17), contentLength: 1), "p")
                         }
                     },
                     {
@@ -2146,14 +2075,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 })),
                         new[]
                         {
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(1, 0, 1),
-                                length: 1),
-                            new RazorError(
-                                string.Format(CultureInfo.InvariantCulture, errorFormatNoCloseAngle, "p"),
-                                new SourceLocation(34, 0, 34),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperMissingCloseAngle(
+                                new SourceSpan(new SourceLocation(34, 0, 34), contentLength: 1), "p")
                         }
                     },
                 };
@@ -2179,7 +2104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             };
 
             // Act & Assert
-            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+            EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors);
         }
 
         public static TheoryData PrefixedTagHelperBoundData
@@ -2333,7 +2258,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 (IEnumerable<TagHelperDescriptor>)availableDescriptors,
                 documentContent,
                 (MarkupBlock)expectedOutput,
-                expectedErrors: Enumerable.Empty<RazorError>(),
+                expectedErrors: Enumerable.Empty<RazorDiagnostic>(),
                 tagHelperPrefix: "th:");
         }
 
@@ -2343,13 +2268,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatNormalUnclosed =
-                    "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
-                    "matching end tag.";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -2365,7 +2283,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!text class=\"btn\">}",
@@ -2394,12 +2312,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!text"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 5), "!text"),
                         }
                     },
                     {
@@ -2423,7 +2339,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!text class=\"btn\">words with spaces</!text>}",
@@ -2447,7 +2363,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 factory.Markup("words with spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!text class='btn1 btn2' class2=btn></!text>}",
@@ -2484,7 +2400,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     value: new LocationTagged<string>("btn", 34, 0, 34)))),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!text class='btn1 @DateTime.Now btn2'></!text>}",
@@ -2520,7 +2436,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("'").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                 };
             }
@@ -2532,19 +2448,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatMalformed =
-                    "Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self " +
-                    "closing.";
-                var errorFormatNormalUnclosed =
-                    "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
-                    "matching end tag.";
-                var errorFormatNormalNotStarted =
-                    "Encountered end tag \"{0}\" with no matching start tag.  Are your start/end tags properly " +
-                    "balanced?";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
+
+                RazorDiagnostic MissingEndTagError(string tagName)
+                {
+                    return RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                        new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: tagName.Length), tagName);
+                }
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -2560,7 +2469,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!text>}",
@@ -2574,12 +2483,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            MissingEndTagError("!text"),
                         }
                     },
                     {
@@ -2589,9 +2495,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "!text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4, length: 5),
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 4, lineIndex: 0, characterIndex: 4, length: 5), "!text"),
                         }
                     },
                     {
@@ -2600,7 +2505,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(
                                 blockFactory.EscapedMarkupTagBlock("<", "text>", AcceptedCharactersInternal.None),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!text>words and spaces</!text>}",
@@ -2609,7 +2514,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("<", "text>", AcceptedCharactersInternal.None),
                                 factory.Markup("words and spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!text></text>}",
@@ -2619,12 +2524,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.MarkupTagBlock("</text>", AcceptedCharactersInternal.None))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 11, lineIndex: 0, columnIndex: 11, length: 4)
+                            MissingEndTagError("!text"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 11, lineIndex: 0, characterIndex: 11, length: 4), "text")
                         }
                     },
                     {
@@ -2638,9 +2540,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("text>").Accepts(AcceptedCharactersInternal.None)))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 4)
+                            MissingEndTagError("text"),
                         }
                     },
                     {
@@ -2650,7 +2550,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("<", "text>", AcceptedCharactersInternal.None),
                                 new MarkupTagHelperBlock("text"),
                                 blockFactory.EscapedMarkupTagBlock("</", "text>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<text><!text></!text>}",
@@ -2669,12 +2569,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 4)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            MissingEndTagError("text"),
                         }
                     },
                     {
@@ -2694,12 +2591,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory.EmptyHtml()),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 19, lineIndex: 0, columnIndex: 19, length: 4),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "text", CultureInfo.InvariantCulture),
-                                absoluteIndex: 19, lineIndex: 0, columnIndex: 19, length: 4)
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 19, lineIndex: 0, characterIndex: 19, length: 4), "text"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                        new SourceSpan(absoluteIndex: 19, lineIndex: 0, characterIndex: 19, length: 4), "text")
                         }
                     },
                 };
@@ -2714,7 +2609,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "p", "text");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "p", "text");
         }
 
         public static TheoryData OptOut_WithPartialTextTagData
@@ -2723,15 +2618,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
-                var errorEOFMatchingBrace =
-                    "End of file or an unexpected character was reached before the \"{0}\" tag could be parsed.  " +
-                    "Elements inside markup blocks must be complete. They must either be self-closing " +
-                    "(\"<br />\") or have matching end tags (\"<p>Hello</p>\").  If you intended " +
-                    "to display a \"<\" character, use the \"&lt;\" HTML entity.";
+
+                RazorDiagnostic UnfinishedTagError(string tagName, int length)
+                {
+                    return RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                        new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: length),
+                        tagName);
+                }
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildPartialStatementBlock = (insideBuilder) =>
                 {
@@ -2744,7 +2637,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!text}",
@@ -2752,12 +2645,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "text}"))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!text}"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 6)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!text}", 6),
                         }
                     },
                     {
@@ -2770,12 +2660,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new MarkupBlock(factory.Markup("}"))))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!text"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!text", 5),
                         }
                     },
                     {
@@ -2798,12 +2685,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 15, 0, 15))))))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!text"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!text", 5),
                         }
                     },
                     {
@@ -2826,12 +2710,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("btn}", 16, 0, 16))))))),
                             new []
                             {
-                                new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                new RazorError(
-                                    string.Format(errorEOFMatchingBrace, "!text"),
-                                    absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                UnfinishedTagError("!text", 5),
                             }
                     },
                     {
@@ -2857,12 +2738,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                    new RazorError(
-                                        string.Format(errorEOFMatchingBrace, "!text"),
-                                        absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                    UnfinishedTagError("!text", 5),
                                 }
                     },
                     {
@@ -2889,12 +2767,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                    new RazorError(
-                                        string.Format(errorEOFMatchingBrace, "!text"),
-                                        absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 5)
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                    UnfinishedTagError("!text", 5),
                                 }
                     }
                 };
@@ -2908,7 +2783,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "text");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "text");
         }
 
         public static TheoryData OptOut_WithPartialData_CSharp
@@ -2917,15 +2792,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
-                var errorEOFMatchingBrace =
-                    "End of file or an unexpected character was reached before the \"{0}\" tag could be parsed.  " +
-                    "Elements inside markup blocks must be complete. They must either be self-closing " +
-                    "(\"<br />\") or have matching end tags (\"<p>Hello</p>\").  If you intended " +
-                    "to display a \"<\" character, use the \"&lt;\" HTML entity.";
+
+                RazorDiagnostic UnfinishedTagError(string tagName)
+                {
+                    return RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                        new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: tagName.Length),
+                        tagName);
+                }
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildPartialStatementBlock = (insideBuilder) =>
                 {
@@ -2938,7 +2811,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!}",
@@ -2946,12 +2819,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "}"))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!}"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!}"),
                         }
                     },
                     {
@@ -2960,12 +2830,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(blockFactory.EscapedMarkupTagBlock("<", "p}"))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!p}"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 3)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!p}"),
                         }
                     },
                     {
@@ -2975,12 +2842,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("<", "p /", new MarkupBlock(factory.Markup("}"))))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!p"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!p"),
                         }
                     },
                     {
@@ -3003,12 +2867,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 12, 0, 12))))))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorEOFMatchingBrace, "!p"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            UnfinishedTagError("!p"),
                         }
                     },
                     {
@@ -3031,12 +2892,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("btn}", 13, 0, 13))))))),
                             new []
                             {
-                                new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                new RazorError(
-                                    string.Format(errorEOFMatchingBrace, "!p"),
-                                    absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                UnfinishedTagError("!p"),
                             }
                     },
                     {
@@ -3066,12 +2924,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("}", 18, 0, 18))))))),
                             new []
                             {
-                                new RazorError(
-                                    errorMatchingBrace,
-                                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                new RazorError(
-                                    string.Format(errorEOFMatchingBrace, "!p"),
-                                    absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                    new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                UnfinishedTagError("!p"),
                             }
                     },
                     {
@@ -3097,12 +2952,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(factory.Markup("}"))))),
                                 new []
                                 {
-                                    new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                    new RazorError(
-                                        string.Format(errorEOFMatchingBrace, "!p"),
-                                        absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                        new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                    UnfinishedTagError("!p"),
                                 }
                     },
                     {
@@ -3130,12 +2982,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.Markup("}"))))),
                                 new []
                                 {
-                                    new RazorError(
-                                        errorMatchingBrace,
-                                        absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                                    new RazorError(
-                                        string.Format(errorEOFMatchingBrace, "!p"),
-                                        absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                                    RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                       new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                                    UnfinishedTagError("!p"),
                                 }
                     }
                 };
@@ -3149,7 +2998,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
         public static TheoryData OptOut_WithPartialData_HTML
@@ -3256,7 +3105,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string documentContent,
             object expectedOutput)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, new RazorError[0], "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, new RazorDiagnostic[0], "strong", "p");
         }
 
         public static TheoryData OptOut_WithBlockData_CSharp
@@ -3265,19 +3114,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatMalformed =
-                    "Found a malformed '{0}' tag helper. Tag helpers must have a start and end tag or be self " +
-                    "closing.";
-                var errorFormatNormalUnclosed =
-                    "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
-                    "matching end tag.";
-                var errorFormatNormalNotStarted =
-                    "Encountered end tag \"{0}\" with no matching start tag.  Are your start/end tags properly " +
-                    "balanced?";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
+
+                RazorDiagnostic MissingEndTagError(string tagName, int index = 3)
+                {
+                    return RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                        new SourceSpan(filePath: null, absoluteIndex: index, lineIndex: 0, characterIndex: index, length: tagName.Length), tagName);
+                }
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -3293,7 +3135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!p>}",
@@ -3307,12 +3149,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2),
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            MissingEndTagError("!p"),
                         }
                     },
                     {
@@ -3322,9 +3161,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "!p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 4, lineIndex: 0, columnIndex: 4, length: 2),
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 4, lineIndex: 0, characterIndex: 4, length: 2), "!p"),
                         }
                     },
                     {
@@ -3333,7 +3171,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             () => new MarkupBlock(
                                 blockFactory.EscapedMarkupTagBlock("<", "p>", AcceptedCharactersInternal.None),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!p>words and spaces</!p>}",
@@ -3342,7 +3180,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("<", "p>", AcceptedCharactersInternal.None),
                                 factory.Markup("words and spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!p></p>}",
@@ -3352,12 +3190,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.MarkupTagBlock("</p>", AcceptedCharactersInternal.None))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 8, lineIndex: 0, columnIndex: 8, length: 1)
+                            MissingEndTagError("!p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 8, lineIndex: 0, characterIndex: 8, length: 1), "p")
                         }
                     },
                     {
@@ -3368,12 +3203,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None)))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1)
+                            MissingEndTagError("p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 1), "p")
                         }
                     },
                     {
@@ -3383,7 +3215,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new MarkupTagHelperBlock("p",
                                     blockFactory.EscapedMarkupTagBlock("<", "p>", AcceptedCharactersInternal.None),
                                     blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None)))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<p><!p></!p>}",
@@ -3399,15 +3231,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("}"))))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            MissingEndTagError("p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 1), "p")
                         }
                     },
                     {
@@ -3427,12 +3255,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory.EmptyHtml()),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 13, lineIndex: 0, columnIndex: 13, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 13, lineIndex: 0, columnIndex: 13, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 13, lineIndex: 0, characterIndex: 13, length: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 13, lineIndex: 0, characterIndex: 13, length: 1), "p")
                         }
                     },
                     {
@@ -3452,18 +3278,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         factory.EmptyHtml()),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 6),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 6),
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 6),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 6)
+                            MissingEndTagError("strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 17, lineIndex: 0, characterIndex: 17, length: 6), "strong")
                         }
                     },
                     {
@@ -3481,7 +3302,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.EmptyCSharp().AsStatement(),
                                 factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)),
                             factory.EmptyHtml()),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<p><strong></!strong><!p></strong></!p>}",
@@ -3504,24 +3325,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.EmptyHtml()),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 6),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 24, lineIndex: 0, columnIndex: 24, length: 2),
-                            new RazorError(
-                                string.Format(errorFormatMalformed, "strong", CultureInfo.InvariantCulture),
-                                absoluteIndex: 29, lineIndex: 0, columnIndex: 29, length: 6),
-                            new RazorError(
-                                string.Format(errorFormatNormalNotStarted, "!p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 38, lineIndex: 0, columnIndex: 38, length: 2),
+                            MissingEndTagError("p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 1), "p"),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 6, lineIndex: 0, characterIndex: 6, length: 6), "strong"),
+                            MissingEndTagError("!p", index: 24),
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 29, lineIndex: 0, characterIndex: 29, length: 6), "strong"),
+                            RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 38, lineIndex: 0, characterIndex: 38, length: 2), "!p"),
                         }
                     },
                 };
@@ -3534,13 +3347,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatNormalUnclosed =
-                    "The \"{0}\" element was not closed.  All elements must be either self-closing or have a " +
-                    "matching end tag.";
-                var errorMatchingBrace =
-                    "The code block is missing a closing \"}\" character.  Make sure you have a matching \"}\" " +
-                    "character for all the \"{\" characters within this block, and that none of the \"}\" " +
-                    "characters are being interpreted as markup.";
 
                 Func<Func<MarkupBlock>, MarkupBlock> buildStatementBlock = (insideBuilder) =>
                 {
@@ -3556,7 +3362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 };
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "@{<!p class=\"btn\">}",
@@ -3585,12 +3391,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("}")))),
                         new []
                         {
-                            new RazorError(
-                                errorMatchingBrace,
-                                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 1),
-                            new RazorError(
-                                string.Format(errorFormatNormalUnclosed, "!p"),
-                                absoluteIndex: 3, lineIndex: 0, columnIndex: 3, length: 2)
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), Resources.BlockName_Code, "}", "{"),
+                            RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                                new SourceSpan(filePath: null, absoluteIndex: 3, lineIndex: 0, characterIndex: 3, length: 2), "!p"),
                         }
                     },
                     {
@@ -3614,7 +3418,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!p class=\"btn\">words with spaces</!p>}",
@@ -3638,7 +3442,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 factory.Markup("words with spaces"),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!p class='btn1 btn2' class2=btn></!p>}",
@@ -3675,7 +3479,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     value: new LocationTagged<string>("btn", 31, 0, 31)))),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "@{<!p class='btn1 @DateTime.Now btn2'></!p>}",
@@ -3711,7 +3515,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         factory.Markup("'").With(SpanChunkGenerator.Null)),
                                     factory.Markup(">").Accepts(AcceptedCharactersInternal.None)),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>", AcceptedCharactersInternal.None))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                 };
             }
@@ -3725,7 +3529,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
         public static TheoryData OptOut_WithBlockData_HTML
@@ -3734,30 +3538,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 var factory = new SpanFactory();
                 var blockFactory = new BlockFactory(factory);
-                var errorFormatUnclosed = "Found a malformed '{0}' tag helper. Tag helpers must have a start and " +
-                                          "end tag or be self closing.";
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<!p>",
                         new MarkupBlock(
                             blockFactory.EscapedMarkupTagBlock("<", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "</!p>",
                         new MarkupBlock(
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p></!p>",
                         new MarkupBlock(
                             blockFactory.EscapedMarkupTagBlock("<", "p>"),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p>words and spaces</!p>",
@@ -3765,7 +3567,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             blockFactory.EscapedMarkupTagBlock("<", "p>"),
                             factory.Markup("words and spaces"),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p></p>",
@@ -3774,9 +3576,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             blockFactory.MarkupTagBlock("</p>")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p", CultureInfo.InvariantCulture),
-                                absoluteIndex: 6, lineIndex: 0, columnIndex: 6, length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(absoluteIndex: 6, lineIndex: 0, characterIndex: 6, length: 1), "p")
                         }
                     },
                     {
@@ -3785,10 +3586,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p", blockFactory.EscapedMarkupTagBlock("</", "p>"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p", CultureInfo.InvariantCulture),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -3797,7 +3596,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 blockFactory.EscapedMarkupTagBlock("<", "p>"),
                                 blockFactory.EscapedMarkupTagBlock("</", "p>"))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p><!p></!p>",
@@ -3807,10 +3606,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("</", "p>"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p", CultureInfo.InvariantCulture),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                     {
@@ -3821,10 +3618,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             blockFactory.MarkupTagBlock("</p>")),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p", CultureInfo.InvariantCulture),
-                                new SourceLocation(11, 0, 11),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(11, 0, 11), contentLength: 1), "p")
                         }
                     },
                     {
@@ -3832,7 +3627,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupBlock(
                             new MarkupTagHelperBlock("strong",
                                 blockFactory.EscapedMarkupTagBlock("</", "p>"))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<strong></strong><!p></!p>",
@@ -3840,7 +3635,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("strong"),
                             blockFactory.EscapedMarkupTagBlock("<", "p>"),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<p><strong></!strong><!p></strong></!p>",
@@ -3852,10 +3647,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 blockFactory.EscapedMarkupTagBlock("</", "p>"))),
                         new []
                         {
-                            new RazorError(
-                                string.Format(errorFormatUnclosed, "p", CultureInfo.InvariantCulture),
-                                new SourceLocation(1, 0, 1),
-                                length: 1)
+                            RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1), "p")
                         }
                     },
                 };
@@ -3870,7 +3663,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var blockFactory = new BlockFactory(factory);
 
                 // documentContent, expectedOutput, expectedErrors
-                return new TheoryData<string, MarkupBlock, RazorError[]>
+                return new TheoryData<string, MarkupBlock, RazorDiagnostic[]>
                 {
                     {
                         "<!p class=\"btn\">",
@@ -3891,7 +3684,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             value: new LocationTagged<string>("btn", 11, 0, 11))),
                                     factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">"))),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p class=\"btn\"></!p>",
@@ -3913,7 +3706,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("\"").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p class=\"btn\">words and spaces</!p>",
@@ -3936,7 +3729,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 factory.Markup(">")),
                             factory.Markup("words and spaces"),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p class='btn1 btn2' class2=btn></!p>",
@@ -3972,7 +3765,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                 value: new LocationTagged<string>("btn", 29, 0, 29)))),
                                 factory.Markup(">")),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                     {
                         "<!p class='btn1 @DateTime.Now btn2'></!p>",
@@ -4007,7 +3800,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     factory.Markup("'").With(SpanChunkGenerator.Null)),
                                 factory.Markup(">")),
                             blockFactory.EscapedMarkupTagBlock("</", "p>")),
-                        new RazorError[0]
+                        new RazorDiagnostic[0]
                     },
                 };
             }
@@ -4021,7 +3814,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             object expectedOutput,
             object expectedErrors)
         {
-            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors, "strong", "p");
+            RunParseTreeRewriterTest(documentContent, (MarkupBlock)expectedOutput, (RazorDiagnostic[])expectedErrors, "strong", "p");
         }
 
         public static IEnumerable<object[]> TextTagsBlockData
@@ -4305,10 +4098,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 Factory.EmptyHtml());
             var expectedErrors = new[]
             {
-                new RazorError(
-                    "Encountered end tag \"div\" with no matching start tag.  Are your start/end tags properly balanced?",
-                    new SourceLocation(9, 0, 9),
-                    3),
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                    new SourceSpan(new SourceLocation(9, 0, 9), contentLength: 3), "div"),
             };
 
             RunParseTreeRewriterTest(documentContent, expectedOutput, expectedErrors);

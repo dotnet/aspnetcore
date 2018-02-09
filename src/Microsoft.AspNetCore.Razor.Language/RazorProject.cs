@@ -129,9 +129,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="rootDirectoryPath">The directory to root the file system at.</param>
         /// <returns>A <see cref="RazorProject"/></returns>
+        [Obsolete("This method is obsolete and will be removed in a future version. Please use " + nameof(RazorProjectFileSystem) + "." + nameof(RazorProjectFileSystem.Create) + " instead.")]
         public static RazorProject Create(string rootDirectoryPath)
         {
-            return new FileSystemRazorProject(rootDirectoryPath);
+            return new DefaultRazorProjectFileSystem(rootDirectoryPath);
         }
     }
 }

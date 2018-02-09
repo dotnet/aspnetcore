@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected SymbolBase(
             string content,
             TType type,
-            IReadOnlyList<RazorError> errors)
+            IReadOnlyList<RazorDiagnostic> errors)
         {
             if (content == null)
             {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public Span Parent { get; set; }
 
-        public IReadOnlyList<RazorError> Errors { get; }
+        public IReadOnlyList<RazorDiagnostic> Errors { get; }
 
         public string Content { get; }
 

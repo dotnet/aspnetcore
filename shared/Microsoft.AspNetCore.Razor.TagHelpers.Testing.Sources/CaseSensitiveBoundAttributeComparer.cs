@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.AspNetCore.Html;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.TagHelpers.Testing
 {
@@ -35,11 +34,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers.Testing
 
         public int GetHashCode(TagHelperAttribute attribute)
         {
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(attribute.GetHashCode());
-            hashCodeCombiner.Add(attribute.Name, StringComparer.Ordinal);
-
-            return hashCodeCombiner.CombinedHash;
+            return attribute.GetHashCode();
         }
 
         private string GetString(object value)

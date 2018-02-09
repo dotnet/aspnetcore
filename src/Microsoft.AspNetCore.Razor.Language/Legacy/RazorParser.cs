@@ -43,8 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             
             var root = context.Builder.Build();
 
-            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
-            var diagnostics = context.ErrorSink.Errors.Select(error => RazorDiagnostic.Create(error));
+            var diagnostics = context.ErrorSink.Errors;
 
             return RazorSyntaxTree.Create(root, source, diagnostics, Options);
         }

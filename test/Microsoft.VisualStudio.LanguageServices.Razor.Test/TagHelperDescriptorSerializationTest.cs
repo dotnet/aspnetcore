@@ -88,8 +88,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     builder.AllowChildTag("allowed-child-one")
                         .AddMetadata("foo", "bar")
                         .AddDiagnostic(RazorDiagnostic.Create(
-                            new RazorDiagnosticDescriptor("id", () => "Test Message 1", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40)))
-                        .AddDiagnostic(RazorDiagnostic.Create(new RazorError("Test Message 2", 10, 20, 30, 40)));
+                            new RazorDiagnosticDescriptor("id", () => "Test Message", RazorDiagnosticSeverity.Error), new SourceSpan(null, 10, 20, 30, 40)));
                 });
 
             // Act

@@ -11,7 +11,7 @@ namespace Test.Namespace
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class ViewWithNamespace_View : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewWithNamespace : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {

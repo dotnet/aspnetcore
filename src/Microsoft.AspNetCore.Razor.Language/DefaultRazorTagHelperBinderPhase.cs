@@ -58,9 +58,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var root = syntaxTree.Root;
             root = rewriter.Rewrite(root, errorSink);
 
-            // Temporary code while we're still using legacy diagnostics in the SyntaxTree.
             var errorList = new List<RazorDiagnostic>();
-            errorList.AddRange(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
+            errorList.AddRange(errorSink.Errors);
 
             errorList.AddRange(descriptors.SelectMany(d => d.GetAllDiagnostics()));
 

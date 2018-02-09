@@ -144,7 +144,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             Assert.Collection(
                 feature.TargetExtensions,
-                extension => Assert.False(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<MetadataAttributeTargetExtension>(extension),
+                extension => Assert.IsType<DefaultTagHelperTargetExtension>(extension),
                 extension => Assert.IsType<PreallocatedAttributeTargetExtension>(extension));
         }
 
@@ -154,9 +155,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 features,
                 feature => Assert.IsType<DefaultRazorDirectiveFeature>(feature),
                 feature => Assert.IsType<DefaultRazorTargetExtensionFeature>(feature),
+                feature => Assert.IsType<DefaultMetadataIdentifierFeature>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
+                feature => Assert.IsType<MetadataAttributePass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultTagHelperOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
@@ -186,7 +189,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             Assert.Collection(
                 feature.TargetExtensions,
-                extension => Assert.True(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<MetadataAttributeTargetExtension>(extension),
+                extension => Assert.IsType<DefaultTagHelperTargetExtension>(extension),
                 extension => Assert.IsType<DesignTimeDirectiveTargetExtension>(extension));
         }
 
@@ -196,9 +200,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 features,
                 feature => Assert.IsType<DefaultRazorDirectiveFeature>(feature),
                 feature => Assert.IsType<DefaultRazorTargetExtensionFeature>(feature),
+                feature => Assert.IsType<DefaultMetadataIdentifierFeature>(feature),
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
+                feature => Assert.IsType<MetadataAttributePass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultTagHelperOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),

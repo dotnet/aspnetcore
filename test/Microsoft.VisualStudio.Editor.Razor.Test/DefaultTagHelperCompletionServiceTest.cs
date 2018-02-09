@@ -995,7 +995,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static DefaultTagHelperCompletionService CreateTagHelperCompletionFactsService()
         {
-            var tagHelperFactsService = new DefaultTagHelperFactsServiceInternal();
+            var tagHelperFactsService = new DefaultTagHelperFactsService();
             var completionFactService = new DefaultTagHelperCompletionService(tagHelperFactsService);
 
             return completionFactService;

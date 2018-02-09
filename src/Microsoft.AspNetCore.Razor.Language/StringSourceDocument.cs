@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly RazorSourceLineCollection _lines;
         private byte[] _checksum;
 
-        public StringSourceDocument(string content, Encoding encoding, string filePath)
+        public StringSourceDocument(string content, Encoding encoding, RazorSourceDocumentProperties properties)
         {
             if (content == null)
             {
@@ -25,9 +25,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(encoding));
             }
 
+            if (properties == null)
+            {
+                throw new ArgumentNullException(nameof(properties));
+            }
+
             _content = content;
             Encoding = encoding;
-            FilePath = filePath;
+            FilePath = properties.FilePath;
+            RelativePath = properties.RelativePath;
 
             _lines = new DefaultRazorSourceLineCollection(this);
         }
@@ -37,10 +43,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override Encoding Encoding { get; }
 
         public override string FilePath { get; }
-
+        
         public override int Length => _content.Length;
 
         public override RazorSourceLineCollection Lines => _lines;
+
+        public override string RelativePath { get; }
 
         public override void CopyTo(int sourceIndex, char[] destination, int destinationIndex, int count)
         {

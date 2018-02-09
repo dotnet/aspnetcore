@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -18,10 +19,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private MainThreadState _main;
         private BackgroundThread _bg;
 
-        public BackgroundParser(RazorTemplateEngine templateEngine, string filePath)
+        public BackgroundParser(RazorProjectEngine projectEngine, string filePath, string projectDirectory)
         {
             _main = new MainThreadState(filePath);
-            _bg = new BackgroundThread(_main, templateEngine, filePath);
+            _bg = new BackgroundThread(_main, projectEngine, filePath, projectDirectory);
 
             _main.ResultsReady += (sender, args) => OnResultsReady(args);
         }
@@ -233,22 +234,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class BackgroundThread : ThreadStateBase
         {
+            private readonly string _filePath;
+            private readonly string _relativeFilePath;
+            private readonly string _projectDirectory;
             private MainThreadState _main;
             private Thread _backgroundThread;
             private CancellationToken _shutdownToken;
-            private RazorTemplateEngine _templateEngine;
-            private string _filePath;
+            private RazorProjectEngine _projectEngine;
             private RazorSyntaxTree _currentSyntaxTree;
             private IList<Edit> _previouslyDiscarded = new List<Edit>();
 
-            public BackgroundThread(MainThreadState main, RazorTemplateEngine templateEngine, string fileName)
+            public BackgroundThread(MainThreadState main, RazorProjectEngine projectEngine, string filePath, string projectDirectory)
             {
                 // Run on MAIN thread!
                 _main = main;
                 _shutdownToken = _main.CancelToken;
-                _templateEngine = templateEngine;
-                _filePath = fileName;
-
+                _projectEngine = projectEngine;
+                _filePath = filePath;
+                _relativeFilePath = GetNormalizedRelativeFilePath(filePath, projectDirectory);
+                _projectDirectory = projectDirectory;
                 _backgroundThread = new Thread(WorkerLoop);
                 SetThreadId(_backgroundThread.ManagedThreadId);
             }
@@ -262,8 +266,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // **** BACKGROUND THREAD ****
             private void WorkerLoop()
             {
-                var fileNameOnly = Path.GetFileName(_filePath);
-
                 try
                 {
                     EnsureOnThread();
@@ -347,13 +349,30 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 EnsureOnThread();
 
-                var sourceDocument = new TextSnapshotSourceDocument(snapshot, _filePath);
-                var imports = _templateEngine.GetImports(_filePath);
+                var projectItem = new TextSnapshotProjectItem(snapshot, _projectDirectory, _relativeFilePath, _filePath);
+                var codeDocument = _projectEngine.ProcessDesignTime(projectItem);
 
-                var codeDocument = RazorCodeDocument.Create(sourceDocument, imports);
-
-                _templateEngine.GenerateCode(codeDocument);
                 return codeDocument;
+            }
+
+            private string GetNormalizedRelativeFilePath(string filePath, string projectDirectory)
+            {
+                if (filePath.StartsWith(projectDirectory, StringComparison.OrdinalIgnoreCase))
+                {
+                    filePath = filePath.Substring(projectDirectory.Length);
+                }
+
+                if (filePath.Length > 1)
+                {
+                    filePath = filePath.Replace('\\', '/');
+
+                    if (filePath[0] != '/')
+                    {
+                        filePath = "/" + filePath;
+                    }
+                }
+
+                return filePath;
             }
         }
 

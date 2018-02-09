@@ -885,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.CreateDesignTime(builder => 
             {
-                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.ConfigureDocumentClassifier();
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
@@ -911,7 +911,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.Create(builder =>
             {
-                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.ConfigureDocumentClassifier();
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
@@ -936,7 +936,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.Create(builder =>
             {
-                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.ConfigureDocumentClassifier();
                 builder.AddTagHelpers(descriptors);
 
                 // Some of these tests use templates
@@ -962,7 +962,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Arrange
             var engine = RazorEngine.CreateDesignTime(builder =>
             {
-                builder.Features.Add(new ApiSetsIRTestAdapter());
+                builder.ConfigureDocumentClassifier();
                 builder.AddTagHelpers(descriptors);
 
                 // Some of these tests use templates

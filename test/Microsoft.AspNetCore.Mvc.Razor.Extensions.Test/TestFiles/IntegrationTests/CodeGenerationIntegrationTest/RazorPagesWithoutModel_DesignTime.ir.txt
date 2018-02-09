@@ -9,7 +9,7 @@ Document -
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingDirective - (38:3,1 [41] RazorPagesWithoutModel.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             DesignTimeDirective - 
@@ -138,6 +138,6 @@ Document -
             Inject - 
             Inject - 
             CSharpCode - 
-                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml>)PageContext?.ViewData;
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel>)PageContext?.ViewData;
             CSharpCode - 
-                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml Model => ViewData.Model;
+                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel Model => ViewData.Model;

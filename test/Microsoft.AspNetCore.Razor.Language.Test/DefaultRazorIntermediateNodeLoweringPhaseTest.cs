@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
-            var importSource = TestRazorSourceDocument.Create("@custom \"hello\"", fileName: "import.cshtml");
+            var importSource = TestRazorSourceDocument.Create("@custom \"hello\"", filePath: "import.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("<p>NonDirective</p>");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource, options) });
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
-            var importSource = TestRazorSourceDocument.Create("@custom \"hello\"", fileName: "import.cshtml");
+            var importSource = TestRazorSourceDocument.Create("@custom \"hello\"", filePath: "import.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("@custom \"world\"");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource, options) });
@@ -100,8 +100,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
-            var importSource1 = TestRazorSourceDocument.Create("@custom \"hello\"", fileName: "import1.cshtml");
-            var importSource2 = TestRazorSourceDocument.Create("@custom \"world\"", fileName: "import2.cshtml");
+            var importSource1 = TestRazorSourceDocument.Create("@custom \"hello\"", filePath: "import1.cshtml");
+            var importSource2 = TestRazorSourceDocument.Create("@custom \"world\"", filePath: "import2.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("<p>NonDirective</p>");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource1, options), RazorSyntaxTree.Parse(importSource2, options) });
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var importSource = TestRazorSourceDocument.Create(
 @"@code ""code block"" { }
 @razor ""razor block"" { }",
-                fileName: "testImports.cshtml");
+                filePath: "testImports.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("<p>NonDirective</p>");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource, options) });
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
-            var importSource = TestRazorSourceDocument.Create("@custom { }", fileName: "import.cshtml");
+            var importSource = TestRazorSourceDocument.Create("@custom { }", filePath: "import.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("<p>NonDirective</p>");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource, options) });
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
-            var importSource = TestRazorSourceDocument.Create("@custom { }", fileName: "import.cshtml");
+            var importSource = TestRazorSourceDocument.Create("@custom { }", filePath: "import.cshtml");
             var codeDocument = TestRazorCodeDocument.Create("<p>NonDirective</p>");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source, options));
             codeDocument.SetImportSyntaxTrees(new[] { RazorSyntaxTree.Parse(importSource, options) });

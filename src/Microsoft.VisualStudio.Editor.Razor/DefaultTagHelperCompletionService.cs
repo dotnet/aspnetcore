@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -15,34 +14,31 @@ namespace Microsoft.VisualStudio.Editor.Razor
     [Export(typeof(TagHelperCompletionService))]
     internal class DefaultTagHelperCompletionService : TagHelperCompletionService
     {
-        private readonly TagHelperFactsServiceInternal _tagHelperFactsService;
+        private readonly TagHelperFactsService _tagHelperFactsService;
         private static readonly HashSet<TagHelperDescriptor> _emptyHashSet = new HashSet<TagHelperDescriptor>();
 
         [ImportingConstructor]
-        public DefaultTagHelperCompletionService(VisualStudioWorkspaceAccessor workspaceAccessor)
+        public DefaultTagHelperCompletionService(TagHelperFactsService tagHelperFactsService)
         {
-            var razorLanguageServices = workspaceAccessor.Workspace.Services.GetLanguageServices(RazorLanguage.Name);
-            _tagHelperFactsService = razorLanguageServices.GetRequiredService<TagHelperFactsServiceInternal>();
-        }
+            if (tagHelperFactsService == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperFactsService));
+            }
 
-        // Internal for testing
-        internal DefaultTagHelperCompletionService(TagHelperFactsServiceInternal tagHelperFactsService)
-        {
             _tagHelperFactsService = tagHelperFactsService;
         }
 
-        /*
-         * This API attempts to understand a users context as they're typing in a Razor file to provide TagHelper based attribute IntelliSense.
-         * 
-         * Scenarios for TagHelper attribute IntelliSense follows:
-         * 1. TagHelperDescriptor's have matching required attribute names
-         *  -> Provide IntelliSense for the required attributes of those descriptors to lead users towards a TagHelperified element.
-         * 2. TagHelperDescriptor entirely applies to current element. Tag name, attributes, everything is fulfilled.
-         *  -> Provide IntelliSense for the bound attributes for the applied descriptors.
-         *  
-         *  Within each of the above scenarios if an attribute completion has a corresponding bound attribute we associate it with the corresponding
-         *  BoundAttributeDescriptor. By doing this a user can see what C# type a TagHelper expects for the attribute.
-         */
+        // This API attempts to understand a users context as they're typing in a Razor file to provide TagHelper based attribute IntelliSense.
+        // 
+        // Scenarios for TagHelper attribute IntelliSense follows:
+        // 1. TagHelperDescriptor's have matching required attribute names
+        //  -> Provide IntelliSense for the required attributes of those descriptors to lead users towards a TagHelperified element.
+        // 2. TagHelperDescriptor entirely applies to current element. Tag name, attributes, everything is fulfilled.
+        //  -> Provide IntelliSense for the bound attributes for the applied descriptors.
+        //  
+        //  Within each of the above scenarios if an attribute completion has a corresponding bound attribute we associate it with the corresponding
+        //  BoundAttributeDescriptor. By doing this a user can see what C# type a TagHelper expects for the attribute.
+        // 
         public override AttributeCompletionResult GetAttributeCompletions(AttributeCompletionContext completionContext)
         {
             if (completionContext == null)
@@ -212,7 +208,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 foreach (var completionTagName in elementCompletions.Keys)
                 {
-                    if (elementCompletions[completionTagName].Count > 0 || 
+                    if (elementCompletions[completionTagName].Count > 0 ||
                         !string.IsNullOrEmpty(prefix) && completionTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         // The current completion either has other TagHelper's associated with it or is prefixed with a non-empty

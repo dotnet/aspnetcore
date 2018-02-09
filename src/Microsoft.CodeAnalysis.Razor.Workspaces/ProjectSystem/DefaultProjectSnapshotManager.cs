@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 // Now we need to know if the changes that we applied are significant. If that's the case then 
                 // we need to notify listeners.
-                if (snapshot.HasChangesComparedTo(original))
+                if (snapshot.HasConfigurationChanged(original))
                 {
                     NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Changed));
                 }
@@ -172,6 +172,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
+        public override void ProjectBuildComplete(Project underlyingProject)
+        {
+            if (underlyingProject == null)
+            {
+                throw new ArgumentNullException(nameof(underlyingProject));
+            }
+
+            if (_projects.TryGetValue(underlyingProject.Id, out var original))
+            {
+                // Doing an update to the project should keep computed values, but mark the project as dirty if the
+                // underlying project is newer.
+                var snapshot = original.WithProjectChange(underlyingProject);
+                _projects[underlyingProject.Id] = snapshot;
+
+                // Notify the background worker so it can trigger tag helper discovery.
+                NotifyBackgroundWorker(underlyingProject);
+            }
+        }
+
         public override void ProjectsCleared()
         {
             foreach (var kvp in _projects.ToArray())
@@ -186,12 +205,16 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // virtual so it can be overridden in tests
         protected virtual void NotifyBackgroundWorker(Project project)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             _workerQueue.Enqueue(project);
         }
 
         // virtual so it can be overridden in tests
         protected virtual void NotifyListeners(ProjectChangeEventArgs e)
         {
+            _foregroundDispatcher.AssertForegroundThread();
+
             var handler = Changed;
             if (handler != null)
             {

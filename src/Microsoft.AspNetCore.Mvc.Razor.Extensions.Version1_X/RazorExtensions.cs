@@ -9,8 +9,54 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
     public static class RazorExtensions
     {
+        public static void Register(RazorProjectEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            InjectDirective.Register(builder);
+            ModelDirective.Register(builder);
+
+            FunctionsDirective.Register(builder);
+            InheritsDirective.Register(builder);
+
+            // Register section directive with the 1.x compatible target extension.
+            builder.AddDirective(SectionDirective.Directive);
+            builder.Features.Add(new SectionDirectivePass());
+            builder.AddTargetExtension(new LegacySectionTargetExtension());
+
+            builder.AddTargetExtension(new TemplateTargetExtension()
+            {
+                TemplateTypeName = "global::Microsoft.AspNetCore.Mvc.Razor.HelperResult",
+            });
+
+            builder.Features.Add(new ModelExpressionPass());
+            builder.Features.Add(new MvcViewDocumentClassifierPass());
+
+            builder.SetImportFeature(new MvcImportProjectFeature());
+        }
+
+        public static void RegisterViewComponentTagHelpers(RazorProjectEngineBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Features.Add(new ViewComponentTagHelperPass());
+            builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
+        }
+
+        #region Obsolete
         public static void Register(IRazorEngineBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             EnsureDesignTime(builder);
 
             InjectDirective.Register(builder);
@@ -35,6 +81,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         public static void RegisterViewComponentTagHelpers(IRazorEngineBuilder builder)
         {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
             EnsureDesignTime(builder);
 
             builder.Features.Add(new ViewComponentTagHelperPass());
@@ -50,5 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             throw new NotSupportedException(Resources.RuntimeCodeGenerationNotSupported);
         }
+        #endregion
     }
 }

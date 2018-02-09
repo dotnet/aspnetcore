@@ -31,8 +31,8 @@ Examples:
 
             var rootNamespace = args[0];
             var targetProjectDirectory = args.Length > 1 ? args[1] : Directory.GetCurrentDirectory();
-            var razorEngine = CreateRazorEngine(rootNamespace);
-            var results = MainCore(razorEngine, targetProjectDirectory);
+            var projectEngine = CreateProjectEngine(rootNamespace, targetProjectDirectory);
+            var results = MainCore(projectEngine, targetProjectDirectory);
 
             foreach (var result in results)
             {
@@ -45,9 +45,10 @@ Examples:
             return 0;
         }
 
-        public static RazorEngine CreateRazorEngine(string rootNamespace, Action<IRazorEngineBuilder> configure = null)
+        public static RazorProjectEngine CreateProjectEngine(string rootNamespace, string targetProjectDirectory, Action<RazorProjectEngineBuilder> configure = null)
         {
-            var razorEngine = RazorEngine.Create(builder =>
+            var fileSystem = RazorProjectFileSystem.Create(targetProjectDirectory);
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
                 builder
                     .SetNamespace(rootNamespace)
@@ -60,24 +61,21 @@ Examples:
                     });
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());
+                builder.Features.Add(new SuppressMetadataAttributesFeature());
+
                 if (configure != null)
                 {
                     configure(builder);
                 }
+
+                builder.AddDefaultImports(DefaultImportItem.Instance);
             });
-            return razorEngine;
+            return projectEngine;
         }
 
-        public static IList<RazorPageGeneratorResult> MainCore(RazorEngine razorEngine, string targetProjectDirectory)
+        public static IList<RazorPageGeneratorResult> MainCore(RazorProjectEngine projectEngine, string targetProjectDirectory)
         {
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
-            var razorProject = RazorProject.Create(targetProjectDirectory);
-            var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
-            templateEngine.Options.DefaultImports = RazorSourceDocument.Create(@"
-@using System
-@using System.Threading.Tasks
-", fileName: null);
-
             var fileCount = 0;
 
             var results = new List<RazorPageGeneratorResult>();
@@ -86,7 +84,7 @@ Examples:
                 Console.WriteLine();
                 Console.WriteLine("  Generating code files for views in {0}", viewDir);
                 var viewDirPath = viewDir.Substring(targetProjectDirectory.Length).Replace('\\', '/');
-                var cshtmlFiles = razorProject.EnumerateItems(viewDirPath);
+                var cshtmlFiles = projectEngine.FileSystem.EnumerateItems(viewDirPath);
 
                 if (!cshtmlFiles.Any())
                 {
@@ -97,7 +95,7 @@ Examples:
                 foreach (var item in cshtmlFiles)
                 {
                     Console.WriteLine("    Generating code file for view {0}...", item.FileName);
-                    results.Add(GenerateCodeFile(templateEngine, item));
+                    results.Add(GenerateCodeFile(projectEngine, item));
                     Console.WriteLine("      Done!");
                     fileCount++;
                 }
@@ -106,10 +104,11 @@ Examples:
             return results;
         }
 
-        private static RazorPageGeneratorResult GenerateCodeFile(RazorTemplateEngine templateEngine, RazorProjectItem projectItem)
+        private static RazorPageGeneratorResult GenerateCodeFile(RazorProjectEngine projectEngine, RazorProjectItem projectItem)
         {
             var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
-            var cSharpDocument = templateEngine.GenerateCode(projectItemWrapper);
+            var codeDocument = projectEngine.Process(projectItemWrapper);
+            var cSharpDocument = codeDocument.GetCSharpDocument();
             if (cSharpDocument.Diagnostics.Any())
             {
                 var diagnostics = string.Join(Environment.NewLine, cSharpDocument.Diagnostics);
@@ -137,6 +136,52 @@ Examples:
 
                 options.SuppressChecksum = true;
             }
+        }
+
+        private class SuppressMetadataAttributesFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.SuppressMetadataAttributes = true;
+            }
+        }
+
+        private class DefaultImportItem : RazorProjectItem
+        {
+            private readonly byte[] _defaultImportBytes;
+
+            private DefaultImportItem()
+            {
+                var preamble = Encoding.UTF8.GetPreamble();
+                var content = @"
+@using System
+@using System.Threading.Tasks
+";
+                var contentBytes = Encoding.UTF8.GetBytes(content);
+
+                _defaultImportBytes = new byte[preamble.Length + contentBytes.Length];
+                preamble.CopyTo(_defaultImportBytes, 0);
+                contentBytes.CopyTo(_defaultImportBytes, preamble.Length);
+            }
+
+            public override string BasePath => null;
+
+            public override string FilePath => null;
+
+            public override string PhysicalPath => null;
+
+            public override bool Exists => true;
+
+            public static DefaultImportItem Instance { get; } = new DefaultImportItem();
+
+            public override Stream Read() => new MemoryStream(_defaultImportBytes);
         }
 
         private class FileSystemRazorProjectItemWrapper : RazorProjectItem

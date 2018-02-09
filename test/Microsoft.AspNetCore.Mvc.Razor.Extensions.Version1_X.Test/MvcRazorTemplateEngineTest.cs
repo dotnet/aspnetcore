@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
@@ -28,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -72,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -82,28 +80,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 .Split(new[] { Environment.NewLine }, StringSplitOptions.None)
                 .Where(line => line.StartsWith("@addTagHelper"));
             Assert.Contains("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor", importContent);
-        }
-
-        [Fact]
-        public void CreateCodeDocument_SetsRelativePathOnOutput()
-        {
-            // Arrange
-            var path = "/Views/Home/Index.cshtml";
-            var item = new TestRazorProjectItem(path)
-            {
-                Content = "Hello world",
-            };
-            var project = new TestRazorProject(new List<RazorProjectItem>() { item, });
-
-            var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
-                RazorEngine.Create(),
-                project);
-
-            // Act
-            var codeDocument = mvcRazorTemplateEngine.CreateCodeDocument(path);
-
-            // Assert
-            Assert.Equal(path, codeDocument.GetRelativePath());
         }
 
         private string GetContent(RazorSourceDocument imports)

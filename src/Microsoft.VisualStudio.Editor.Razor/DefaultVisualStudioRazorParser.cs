@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,13 +29,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal ChangeReference _latestChangeReference;
 
         private readonly object IdleLock = new object();
-        private readonly ICompletionBroker _completionBroker;
+        private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorTemplateEngineFactoryService _templateEngineFactory;
+        private readonly RazorProjectEngineFactoryService _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
         private RazorSyntaxTreePartialParser _partialParser;
-        private RazorTemplateEngine _templateEngine;
+        private RazorProjectEngine _projectEngine;
+        private DelegatingTemplateEngine _templateEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
         private bool _disposed;
@@ -48,9 +50,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public DefaultVisualStudioRazorParser(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
-            RazorTemplateEngineFactoryService templateEngineFactory,
+            RazorProjectEngineFactoryService projectEngineFactory,
             ErrorReporter errorReporter,
-            ICompletionBroker completionBroker)
+            VisualStudioCompletionBroker completionBroker)
         {
             if (dispatcher == null)
             {
@@ -62,9 +64,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(documentTracker));
             }
 
-            if (templateEngineFactory == null)
+            if (projectEngineFactory == null)
             {
-                throw new ArgumentNullException(nameof(templateEngineFactory));
+                throw new ArgumentNullException(nameof(projectEngineFactory));
             }
 
             if (errorReporter == null)
@@ -78,7 +80,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _dispatcher = dispatcher;
-            _templateEngineFactory = templateEngineFactory;
+            _projectEngineFactory = projectEngineFactory;
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
             _documentTracker = documentTracker;
@@ -171,8 +173,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _dispatcher.AssertForegroundThread();
 
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
-            _templateEngine = _templateEngineFactory.Create(projectDirectory, ConfigureTemplateEngine);
-            _parser = new BackgroundParser(TemplateEngine, FilePath);
+            _projectEngine = _projectEngineFactory.Create(projectDirectory, ConfigureProjectEngine);
+
+            // Make sure any tests use the real thing or a good mock. These tests can cause failures
+            // that are hard to understand when this throws.
+            Debug.Assert(_projectEngine != null); 
+            Debug.Assert(_projectEngine.Engine != null);
+            Debug.Assert(_projectEngine.FileSystem != null);
+
+            // This is still exposed and used by WTE in 15.7
+            _templateEngine = new DelegatingTemplateEngine(_projectEngine);
+
+            _parser = new BackgroundParser(_projectEngine, FilePath, projectDirectory);
             _parser.ResultsReady += OnResultsReady;
             _parser.Start();
 
@@ -384,7 +396,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             DocumentStructureChanged?.Invoke(this, args);
         }
 
-        private void ConfigureTemplateEngine(IRazorEngineBuilder builder)
+        private void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(TextBuffer));

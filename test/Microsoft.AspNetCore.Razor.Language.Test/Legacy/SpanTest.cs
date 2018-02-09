@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert.Equal(2, span.Length);
         }
 
-
         // Note: This is more of an integration-like test. However, it's valuable to determine
         // that the Span's ReplaceWith code is properly propogating change notifications to parents.
         [Fact]
@@ -53,6 +52,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Assert
             Assert.Equal(5, originalBlockLength);
             Assert.Equal(2, block.Length);
+        }
+
+        [Fact]
+        public void Clone_ClonesSpan()
+        {
+            // Arrange
+            var spanBuilder = new SpanBuilder(new SourceLocation(1, 2, 3))
+            {
+                EditHandler = new SpanEditHandler(CSharpLanguageCharacteristics.Instance.TokenizeString),
+                Kind = SpanKindInternal.Transition,
+                ChunkGenerator = new ExpressionChunkGenerator(),
+            };
+            spanBuilder.Accept(new CSharpSymbol("@", CSharpSymbolType.Transition));
+            var span = spanBuilder.Build();
+
+            // Act
+            var copy = (Span)span.Clone();
+
+            // Assert
+            Assert.Equal(span, copy);
+            Assert.NotSame(span, copy);
         }
     }
 }

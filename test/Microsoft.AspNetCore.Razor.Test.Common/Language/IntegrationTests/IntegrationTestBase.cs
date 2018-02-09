@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var source = TestRazorSourceDocument.CreateResource(sourceFileName, GetType(), normalizeNewLines: true);
 
             var imports = new List<RazorSourceDocument>();
+            var importIdentifiers = new List<string>();
             while (true)
             {
                 var importsFileName = Path.ChangeExtension(normalizedFileName + "_Imports" + imports.Count.ToString(), ".cshtml");
@@ -87,6 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     break;
                 }
 
+                importIdentifiers.Add(normalizedFileName + "_Imports" + imports.Count.ToString());
                 imports.Add(TestRazorSourceDocument.CreateResource(importsFileName, GetType(), normalizeNewLines: true));
             }
 
@@ -226,46 +228,6 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var actual = serializedMappings.Replace("\r", "").Replace("\n", "\r\n");
 
             Assert.Equal(baseline, actual);
-        }
-
-        protected class ApiSetsIRTestAdapter : IntermediateNodePassBase, IRazorOptimizationPass
-        {
-            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
-            {
-                var walker = new ApiSetsIRWalker();
-                walker.Visit(documentNode);
-            }
-
-            private class ApiSetsIRWalker : IntermediateNodeWalker
-            {
-                public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
-                {
-                    node.ClassName = FileName.Replace('/', '_');
-
-                    node.Modifiers.Clear();
-                    node.Modifiers.Add("public");
-
-                    VisitDefault(node);
-                }
-
-                public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
-                {
-                    node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles";
-
-                    VisitDefault(node);
-                }
-
-                public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
-                {
-                    node.Modifiers.Clear();
-                    node.Modifiers.Add("public");
-                    node.Modifiers.Add("async");
-                    node.MethodName = "ExecuteAsync";
-                    node.ReturnType = typeof(Task).FullName;
-
-                    VisitDefault(node);
-                }
-            }
         }
     }
 }

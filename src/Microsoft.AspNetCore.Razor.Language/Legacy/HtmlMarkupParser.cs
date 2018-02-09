@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))
@@ -310,9 +310,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     else
                     {
                         Context.ErrorSink.OnError(
-                            CurrentStart,
-                            LegacyResources.ParseError_MarkupBlock_Must_Start_With_Tag,
-                            CurrentSymbol.Content.Length);
+                            RazorDiagnosticFactory.CreateParsing_MarkupBlockMustStartWithTag(
+                                new SourceSpan(CurrentStart, CurrentSymbol.Content.Length)));
                     }
                     Output(SpanKindInternal.Markup);
                 }
@@ -472,9 +471,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (tags.Count == 0)
             {
                 Context.ErrorSink.OnError(
-                    CurrentStart,
-                    LegacyResources.ParseError_OuterTagMissingName,
-                    length: 1  /* end of file */);
+                    RazorDiagnosticFactory.CreateParsing_OuterTagMissingName(
+                        new SourceSpan(CurrentStart, contentLength: 1 /* end of file */)));
             }
             return false;
         }
@@ -634,9 +632,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!seenCloseAngle)
             {
                 Context.ErrorSink.OnError(
-                    textLocation,
-                    LegacyResources.ParseError_TextTagCannotContainAttributes,
-                    length: 4 /* text */);
+                    RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                        new SourceSpan(textLocation, contentLength: 4 /* text */)));
 
                 Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
                 RecoverTextTag();
@@ -1089,9 +1086,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Context.Source.Position = bookmark;
                     NextToken();
                     Context.ErrorSink.OnError(
-                        textLocation,
-                        LegacyResources.ParseError_TextTagCannotContainAttributes,
-                        length: 4 /* text */);
+                        RazorDiagnosticFactory.CreateParsing_TextTagCannotContainAttributes(
+                            new SourceSpan(textLocation, contentLength: 4 /* text */)));
 
                     RecoverTextTag();
                 }
@@ -1142,9 +1138,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (!seenClose)
             {
                 Context.ErrorSink.OnError(
-                    SourceLocationTracker.Advance(tag.Item2, "<"),
-                    LegacyResources.FormatParseError_UnfinishedTag(tag.Item1.Content),
-                    Math.Max(tag.Item1.Content.Length, 1));
+                    RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                        new SourceSpan(
+                            SourceLocationTracker.Advance(tag.Item2, "<"),
+                            Math.Max(tag.Item1.Content.Length, 1)),
+                        tag.Item1.Content));
             }
             else
             {
@@ -1277,9 +1275,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         if (!Optional(HtmlSymbolType.CloseAngle))
                         {
                             Context.ErrorSink.OnError(
-                                SourceLocationTracker.Advance(tagStart, "</"),
-                                LegacyResources.FormatParseError_UnfinishedTag(ScriptTagName),
-                                ScriptTagName.Length);
+                                RazorDiagnosticFactory.CreateParsing_UnfinishedTag(
+                                    new SourceSpan(SourceLocationTracker.Advance(tagStart, "</"), ScriptTagName.Length),
+                                    ScriptTagName));
                         }
                         Output(SpanKindInternal.Markup);
                     }
@@ -1335,16 +1333,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (currentTag != null)
             {
                 Context.ErrorSink.OnError(
-                    SourceLocationTracker.Advance(currentTag.Item2, "<"),
-                    LegacyResources.FormatParseError_MissingEndTag(currentTag.Item1.Content),
-                    currentTag.Item1.Content.Length);
+                    RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                        new SourceSpan(
+                            SourceLocationTracker.Advance(currentTag.Item2, "<"),
+                            currentTag.Item1.Content.Length),
+                        currentTag.Item1.Content));
             }
             else
             {
                 Context.ErrorSink.OnError(
-                    SourceLocationTracker.Advance(tagStart, "</"),
-                    LegacyResources.FormatParseError_UnexpectedEndTag(tagName),
-                    tagName.Length);
+                    RazorDiagnosticFactory.CreateParsing_UnexpectedEndTag(
+                        new SourceSpan(SourceLocationTracker.Advance(tagStart, "</"), tagName.Length), tagName));
             }
             return false;
         }
@@ -1360,9 +1359,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 var tag = tags.Pop();
                 Context.ErrorSink.OnError(
-                    SourceLocationTracker.Advance(tag.Item2, "<"),
-                    LegacyResources.FormatParseError_MissingEndTag(tag.Item1.Content),
-                    tag.Item1.Content.Length);
+                    RazorDiagnosticFactory.CreateParsing_MissingEndTag(
+                        new SourceSpan(
+                            SourceLocationTracker.Advance(tag.Item2, "<"),
+                            tag.Item1.Content.Length),
+                        tag.Item1.Content));
             }
             else if (complete)
             {
@@ -1439,7 +1440,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))
@@ -1591,7 +1592,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Context == null)
             {
-                throw new InvalidOperationException(LegacyResources.Parser_Context_Not_Set);
+                throw new InvalidOperationException(Resources.Parser_Context_Not_Set);
             }
 
             using (PushSpanConfig(DefaultMarkupSpan))

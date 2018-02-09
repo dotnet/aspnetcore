@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+
+    <!--
+      MVC will generally want to add support for runtime compilation, but only for applications. 
+    -->
+    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'=='' and '$(OutputType)'=='Exe'">true</GenerateRazorAssemblyInfo>
+  </PropertyGroup>
+</Project>

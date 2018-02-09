@@ -16,10 +16,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public ProjectSnapshotWorkerQueueTest()
         {
-            Workspace = new AdhocWorkspace();
+            Project project1 = null;
+            Project project2 = null;
 
-            Project1 = Workspace.CurrentSolution.AddProject("Test1", "Test1", LanguageNames.CSharp);
-            Project2 = Workspace.CurrentSolution.AddProject("Test2", "Test2", LanguageNames.CSharp);
+            Workspace = TestWorkspace.Create(workspace =>
+            {
+                project1 = workspace.CurrentSolution.AddProject("Test1", "Test1", LanguageNames.CSharp);
+                project2 = workspace.CurrentSolution.AddProject("Test2", "Test2", LanguageNames.CSharp);
+            });
+
+            Project1 = project1;
+            Project2 = project2;
         }
 
         public Project Project1 { get; }

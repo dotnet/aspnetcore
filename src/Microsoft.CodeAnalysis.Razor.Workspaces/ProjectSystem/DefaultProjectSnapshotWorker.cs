@@ -40,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             // Don't block the main thread
             if (_foregroundDispatcher.IsForegroundThread)
             {
-                return Task.Factory.StartNew(ProjectUpdatesCoreAsync, update, CancellationToken.None, TaskCreationOptions.None, _foregroundDispatcher.BackgroundScheduler);
+                return Task.Factory.StartNew(ProjectUpdatesCoreAsync, update, cancellationToken, TaskCreationOptions.None, _foregroundDispatcher.BackgroundScheduler);
             }
 
             return ProjectUpdatesCoreAsync(update);

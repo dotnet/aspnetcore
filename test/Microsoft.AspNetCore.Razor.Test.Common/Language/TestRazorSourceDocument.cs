@@ -11,12 +11,35 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class TestRazorSourceDocument
     {
-        public static RazorSourceDocument CreateResource(string path, Type type, Encoding encoding = null, bool normalizeNewLines = false)
+        public static RazorSourceDocument CreateResource(string resourcePath, Type type, Encoding encoding = null, bool normalizeNewLines = false)
         {
-            return CreateResource(path, type.GetTypeInfo().Assembly, encoding, normalizeNewLines);
+            return CreateResource(resourcePath, type.GetTypeInfo().Assembly, encoding, normalizeNewLines);
         }
 
-        public static RazorSourceDocument CreateResource(string path, Assembly assembly, Encoding encoding = null, bool normalizeNewLines = false)
+        public static RazorSourceDocument CreateResource(string resourcePath, Assembly assembly, Encoding encoding = null, bool normalizeNewLines = false)
+        {
+            var file = TestFile.Create(resourcePath, assembly);
+
+            using (var input = file.OpenRead())
+            using (var reader = new StreamReader(input))
+            {
+                var content = reader.ReadToEnd();
+                if (normalizeNewLines)
+                {
+                    content = NormalizeNewLines(content);
+                }
+
+                var properties = new RazorSourceDocumentProperties(resourcePath, resourcePath);
+                return new StringSourceDocument(content, encoding ?? Encoding.UTF8, properties);
+            }
+        }
+
+        public static RazorSourceDocument CreateResource(
+            string path,
+            Assembly assembly,
+            Encoding encoding,
+            RazorSourceDocumentProperties properties,
+            bool normalizeNewLines = false)
         {
             var file = TestFile.Create(path, assembly);
 
@@ -28,8 +51,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     content = NormalizeNewLines(content);
                 }
-
-                return new StringSourceDocument(content, encoding ?? Encoding.UTF8, path);
+                
+                return new StringSourceDocument(content, encoding ?? Encoding.UTF8, properties);
             }
         }
 
@@ -52,14 +75,34 @@ namespace Microsoft.AspNetCore.Razor.Language
             return stream;
         }
 
-        public static RazorSourceDocument Create(string content = "Hello, world!", Encoding encoding = null, bool normalizeNewLines = false, string fileName = "test.cshtml")
+        public static RazorSourceDocument Create(
+            string content = "Hello, world!",
+            Encoding encoding = null,
+            bool normalizeNewLines = false,
+            string filePath = "test.cshtml",
+            string relativePath = "test.cshtml")
         {
             if (normalizeNewLines)
             {
                 content = NormalizeNewLines(content);
             }
 
-            return new StringSourceDocument(content, encoding ?? Encoding.UTF8, fileName);
+            var properties = new RazorSourceDocumentProperties(filePath, relativePath);
+            return new StringSourceDocument(content, encoding ?? Encoding.UTF8, properties);
+        }
+
+        public static RazorSourceDocument Create(
+            string content, 
+            RazorSourceDocumentProperties properties,
+            Encoding encoding = null, 
+            bool normalizeNewLines = false)
+        {
+            if (normalizeNewLines)
+            {
+                content = NormalizeNewLines(content);
+            }
+            
+            return new StringSourceDocument(content, encoding ?? Encoding.UTF8, properties);
         }
 
         private static string NormalizeNewLines(string content)

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
@@ -16,10 +15,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(InheritsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatUnexpectedEOFAfterDirective(InheritsDirective.Directive.Directive, "type"),
-                        new SourceLocation(9, 0, 9), 1)));
+                RazorDiagnosticFactory.CreateParsing_UnexpectedEOFAfterDirective(
+                    new SourceSpan(new SourceLocation(9, 0, 9), 1), InheritsDirective.Directive.Directive, "type"));
 
             // Act & Assert
             ParseDocumentTest(
@@ -57,10 +54,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(InheritsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatDirectiveExpectsTypeName(InheritsDirective.Directive.Directive),
-                        25, 0, 25, Environment.NewLine.Length)));
+                RazorDiagnosticFactory.CreateParsing_DirectiveExpectsTypeName(
+                    new SourceSpan(new SourceLocation(25, 0, 25), Environment.NewLine.Length),
+                    InheritsDirective.Directive.Directive));
 
             // Act & Assert
             ParseDocumentTest(
@@ -88,10 +84,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
-                               LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
-                               new SourceLocation(2, 0, 2),
-                               length: 5));
+                           RazorDiagnosticFactory.CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(
+                               new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 5)));
         }
 
         [Fact]
@@ -105,10 +99,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                    .AutoCompleteWith(autoCompleteString: null),
                                Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)
                                ),
-                           new RazorError(
-                               LegacyResources.ParseError_NamespaceImportAndTypeAlias_Cannot_Exist_Within_CodeBlock,
-                               new SourceLocation(2, 0, 2),
-                               length: 5));
+                           RazorDiagnosticFactory.CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(
+                               new SourceSpan(new SourceLocation(2, 0, 2), contentLength: 5)));
         }
 
         [Fact]
@@ -192,11 +184,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrange
             var chunkGenerator = new DirectiveChunkGenerator(FunctionsDirective.Directive);
             chunkGenerator.Diagnostics.Add(
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.FormatParseError_Expected_EndOfBlock_Before_EOF("functions", "}", "{"),
-                        new SourceLocation(10, 0, 10),
-                        length: 1)));
+                RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                    new SourceSpan(new SourceLocation(10, 0, 10), contentLength: 1), "functions", "}", "{"));
 
             // Act & Assert
             ParseBlockTest(
@@ -228,10 +217,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                Factory.EmptyCSharp()
                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                           new RazorError(
-                               LegacyResources.FormatParseError_Unexpected_Character_At_Start_Of_CodeBlock_CS("/"),
-                               new SourceLocation(1, 0, 1),
-                               length: 1));
+                           RazorDiagnosticFactory.CreateParsing_UnexpectedCharacterAtStartOfCodeBlock(
+                                new SourceSpan(new SourceLocation(1, 0, 1), contentLength: 1),
+                                "/"));
         }
 
         [Fact]

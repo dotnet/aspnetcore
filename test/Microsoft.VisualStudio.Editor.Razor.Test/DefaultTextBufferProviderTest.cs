@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
@@ -92,13 +93,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static Document CreateDocumentWithoutText()
         {
-            var project = ProjectInfo
-                .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
-                .WithFilePath("/TestProject.csproj");
-            var workspace = new AdhocWorkspace();
-            workspace.AddProject(project);
-            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
-            var document = workspace.AddDocument(documentInfo);
+            Document document = null;
+            TestWorkspace.Create(workspace =>
+            {
+                var project = ProjectInfo
+                    .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
+                    .WithFilePath("/TestProject.csproj");
+                workspace.AddProject(project);
+                var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
+                document = workspace.AddDocument(documentInfo);
+            });
 
             return document;
         }
@@ -114,28 +118,36 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static ITextBuffer CreateTextBuffer()
         {
             var textBuffer = new Mock<ITextBuffer>();
-            textBuffer.Setup(buffer => buffer.Properties)
+            textBuffer
+                .Setup(buffer => buffer.Properties)
                 .Returns(new PropertyCollection());
 
             var textImage = new Mock<ITextImage>();
             var textVersion = new Mock<ITextVersion>();
             var textBufferSnapshot = new Mock<ITextSnapshot2>();
-            textBufferSnapshot.Setup(snapshot => snapshot.TextImage)
+            textBufferSnapshot
+                .Setup(snapshot => snapshot.TextImage)
                 .Returns(textImage.Object);
-            textBufferSnapshot.Setup(snapshot => snapshot.Length)
+            textBufferSnapshot
+                .Setup(snapshot => snapshot.Length)
                 .Returns(0);
-            textBufferSnapshot.Setup(snapshot => snapshot.Version)
+            textBufferSnapshot
+                .Setup(snapshot => snapshot.Version)
                 .Returns(textVersion.Object);
-            textBufferSnapshot.Setup(snapshot => snapshot.TextBuffer)
+            textBufferSnapshot
+                .Setup(snapshot => snapshot.TextBuffer)
                 .Returns(() => textBuffer.Object);
 
-            textBuffer.Setup(buffer => buffer.CurrentSnapshot)
+            textBuffer
+                .Setup(buffer => buffer.CurrentSnapshot)
                 .Returns(() => textBufferSnapshot.Object);
 
             var contentType = new Mock<IContentType>();
-            contentType.Setup(type => type.IsOfType(It.IsAny<string>()))
+            contentType
+                .Setup(type => type.IsOfType(It.IsAny<string>()))
                 .Returns<string>(val => val == RazorLanguage.ContentType);
-            textBuffer.Setup(buffer => buffer.ContentType)
+            textBuffer
+                .Setup(buffer => buffer.ContentType)
                 .Returns(contentType.Object);
 
             return textBuffer.Object;
@@ -144,10 +156,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private static IBufferGraphFactoryService CreateBufferGraphService(ITextBuffer buffer)
         {
             var bufferGraph = new Mock<IBufferGraph>();
-            bufferGraph.Setup(graph => graph.GetTextBuffers(It.IsAny<Predicate<ITextBuffer>>()))
+            bufferGraph
+                .Setup(graph => graph.GetTextBuffers(It.IsAny<Predicate<ITextBuffer>>()))
                 .Returns<Predicate<ITextBuffer>>(predicate => predicate(buffer) ? new Collection<ITextBuffer>() { buffer } : new Collection<ITextBuffer>());
             var bufferGraphService = new Mock<IBufferGraphFactoryService>();
-            bufferGraphService.Setup(service => service.CreateBufferGraph(buffer))
+            bufferGraphService
+                .Setup(service => service.CreateBufferGraph(buffer))
                 .Returns(bufferGraph.Object);
 
             return bufferGraphService.Object;

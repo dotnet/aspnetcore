@@ -1,5 +1,7 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersInSection_Runtime -  - 
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::TestNamespace.MyTagHelper - __TestNamespace_MyTagHelper

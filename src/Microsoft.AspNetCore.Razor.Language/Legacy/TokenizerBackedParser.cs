@@ -168,11 +168,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (EndOfFile && ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure))
             {
                 Context.ErrorSink.OnError(
-                    start,
-                    LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF(
+                    RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                        new SourceSpan(start, contentLength: 1 /* { OR } */),
                         Language.GetSample(left),
-                        Language.GetSample(right)),
-                    length: 1 /* { OR } */);
+                        Language.GetSample(right)));
             }
 
             return Balance(mode, left, right, start);
@@ -218,11 +217,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if ((mode & BalancingModes.NoErrorOnFailure) != BalancingModes.NoErrorOnFailure)
                     {
                         Context.ErrorSink.OnError(
-                            start,
-                            LegacyResources.FormatParseError_Expected_CloseBracket_Before_EOF(
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(start, contentLength: 1 /* { OR } */),
                                 Language.GetSample(left),
-                                Language.GetSample(right)),
-                            length: 1 /* { OR } */);
+                                Language.GetSample(right)));
                     }
                     if ((mode & BalancingModes.BacktrackOnFailure) == BalancingModes.BacktrackOnFailure)
                     {
@@ -435,44 +433,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        protected internal bool Required(TSymbolType expected, bool errorIfNotFound, Func<string, string> errorBase)
-        {
-            var found = At(expected);
-            if (!found && errorIfNotFound)
-            {
-                string error;
-                if (Language.IsNewLine(CurrentSymbol))
-                {
-                    error = LegacyResources.ErrorComponent_Newline;
-                }
-                else if (Language.IsWhiteSpace(CurrentSymbol))
-                {
-                    error = LegacyResources.ErrorComponent_Whitespace;
-                }
-                else if (EndOfFile)
-                {
-                    error = LegacyResources.ErrorComponent_EndOfFile;
-                }
-                else
-                {
-                    error = LegacyResources.FormatErrorComponent_Character(CurrentSymbol.Content);
-                }
-
-                int errorLength;
-                if (CurrentSymbol == null || CurrentSymbol.Content == null)
-                {
-                    errorLength = 1;
-                }
-                else
-                {
-                    errorLength = Math.Max(CurrentSymbol.Content.Length, 1);
-                }
-
-                Context.ErrorSink.OnError(CurrentStart, errorBase(error), errorLength);
-            }
-            return found;
-        }
-
         protected bool EnsureCurrent()
         {
             if (CurrentSymbol == null)
@@ -594,7 +554,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected virtual void OutputSpanBeforeRazorComment()
         {
-            throw new InvalidOperationException(LegacyResources.Language_Does_Not_Support_RazorComment);
+            throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
         }
 
         private void CommentSpanConfig(SpanBuilder span)
@@ -609,7 +569,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 !Language.KnowsSymbolType(KnownSymbolType.CommentStar) ||
                 !Language.KnowsSymbolType(KnownSymbolType.CommentBody))
             {
-                throw new InvalidOperationException(LegacyResources.Language_Does_Not_Support_RazorComment);
+                throw new InvalidOperationException(Resources.Language_Does_Not_Support_RazorComment);
             }
             OutputSpanBeforeRazorComment();
             using (PushSpanConfig(CommentSpanConfig))
@@ -634,9 +594,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         errorReported = true;
                         Context.ErrorSink.OnError(
-                            start,
-                            LegacyResources.ParseError_RazorComment_Not_Terminated,
-                            length: 2 /* @* */);
+                            RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                                new SourceSpan(start, contentLength: 2 /* @* */)));
                     }
                     else
                     {
@@ -649,9 +608,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         {
                             errorReported = true;
                             Context.ErrorSink.OnError(
-                                start,
-                                LegacyResources.ParseError_RazorComment_Not_Terminated,
-                                length: 2 /* @* */);
+                            RazorDiagnosticFactory.CreateParsing_RazorCommentNotTerminated(
+                                new SourceSpan(start, contentLength: 2 /* @* */)));
                         }
                     }
                     else

@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             Source = source;
             Buffer = new StringBuilder();
-            CurrentErrors = new List<RazorError>();
+            CurrentErrors = new List<RazorDiagnostic>();
             StartSymbol();
         }
 
-        protected List<RazorError> CurrentErrors { get; }
+        protected List<RazorDiagnostic> CurrentErrors { get; }
 
         protected abstract int StartState { get; }
 
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SourceLocation CurrentStart { get; private set; }
 
-        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorError> errors);
+        protected abstract TSymbol CreateSymbol(string content, TSymbolType type, IReadOnlyList<RazorDiagnostic> errors);
 
         protected abstract StateResult Dispatch();
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (HaveContent)
             {
                 // Perf: Don't allocate a new errors array unless necessary.
-                var errors = CurrentErrors.Count == 0 ? RazorError.EmptyArray : new RazorError[CurrentErrors.Count];
+                var errors = CurrentErrors.Count == 0 ? RazorDiagnostic.EmptyArray : new RazorDiagnostic[CurrentErrors.Count];
                 for (var i = 0; i < CurrentErrors.Count; i++)
                 {
                     errors[i] = CurrentErrors[i];

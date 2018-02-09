@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DefaultRazorCodeGenerationOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly bool _designTime;
         private IConfigureRazorCodeGenerationOptionsFeature[] _configureOptions;
@@ -22,15 +24,15 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RazorCodeGenerationOptions GetOptions()
         {
-            var builder = new DefaultRazorCodeGenerationOptionsBuilder(_designTime);
+            return _designTime ? RazorCodeGenerationOptions.CreateDesignTime(ConfigureOptions) : RazorCodeGenerationOptions.Create(ConfigureOptions);
+        }
+
+        private void ConfigureOptions(RazorCodeGenerationOptionsBuilder builder)
+        {
             for (var i = 0; i < _configureOptions.Length; i++)
             {
                 _configureOptions[i].Configure(builder);
             }
-
-            var options = builder.Build();
-
-            return options;
         }
     }
 }

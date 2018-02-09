@@ -27,22 +27,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
-                        length: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(14 + Environment.NewLine.Length, 1, 14),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
+                    new SourceSpan(new SourceLocation(14 + Environment.NewLine.Length, 1, 14), contentLength: 1), "\"")
             };
 
             var content =
             @"
 @addTagHelper """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -72,22 +66,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperLookupText("\""),
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperLookupText(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "\"")
             };
 
             var content =
             @"
 @removeTagHelper """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -117,22 +105,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
             var expectedDiagnostics = new[]
             {
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        LegacyResources.ParseError_Unterminated_String_Literal,
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1)),
-                RazorDiagnostic.Create(
-                    new RazorError(
-                        Resources.FormatInvalidTagHelperPrefixValue("tagHelperPrefix", "\"", "\""),
-                        new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
-                        length: 1))
+                RazorDiagnosticFactory.CreateParsing_UnterminatedStringLiteral(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1)),
+                RazorDiagnosticFactory.CreateParsing_InvalidTagHelperPrefixValue(
+                    new SourceSpan(new SourceLocation(17 + Environment.NewLine.Length, 1, 17), contentLength: 1), "tagHelperPrefix", '\"', "\""),
             };
 
             var content =
             @"
 @tagHelperPrefix """;
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
             codeDocument.SetSyntaxTree(originalTree);
@@ -431,17 +413,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 @addTagHelper *, TestAssembly
 <form>
     <input value='Hello' type='text' />";
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
 
             var originalTree = RazorSyntaxTree.Parse(sourceDocument);
 
-            var initialError = RazorDiagnostic.Create(new RazorError("Initial test error", SourceLocation.Zero, length: 1));
-            var expectedRewritingError = RazorDiagnostic.Create(
-                new RazorError(
-                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("form"),
-                    new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1),
-                    length: 4));
+            var initialError = RazorDiagnostic.Create(
+                new RazorDiagnosticDescriptor("RZ9999", () => "Initial test error", RazorDiagnosticSeverity.Error),
+                new SourceSpan(SourceLocation.Zero, contentLength: 1));
+            var expectedRewritingError = RazorDiagnosticFactory.CreateParsing_TagHelperFoundMalformedTagHelper(
+                new SourceSpan(new SourceLocation(Environment.NewLine.Length * 2 + 30, 2, 1), contentLength: 4), "form");
 
             var erroredOriginalTree = RazorSyntaxTree.Create(originalTree.Root, originalTree.Source, new[] { initialError }, originalTree.Options);
             codeDocument.SetSyntaxTree(erroredOriginalTree);
@@ -559,7 +540,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string expectedPrefix)
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor(tagHelpers: new List<TagHelperDescriptor>());
@@ -725,7 +706,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var expected = (TagHelperDescriptor[])expectedDescriptors;
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
@@ -869,7 +850,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             object tagHelpers)
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var sourceDocument = TestRazorSourceDocument.Create(source, filePath: "TestFile");
             var parser = new RazorParser();
             var syntaxTree = parser.Parse(sourceDocument);
             var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
@@ -904,7 +885,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 <form>
     <input value='Hello' type='text' />
 </form>";
-            var sourceDocument = TestRazorSourceDocument.Create(content, fileName: null);
+            var sourceDocument = TestRazorSourceDocument.Create(content, filePath: null);
             return sourceDocument;
         }
 

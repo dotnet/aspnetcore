@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             switch (type)
             {
                 case HtmlSymbolType.Text:
-                    return LegacyResources.HtmlSymbol_Text;
+                    return Resources.HtmlSymbol_Text;
                 case HtmlSymbolType.WhiteSpace:
-                    return LegacyResources.HtmlSymbol_WhiteSpace;
+                    return Resources.HtmlSymbol_WhiteSpace;
                 case HtmlSymbolType.NewLine:
-                    return LegacyResources.HtmlSymbol_NewLine;
+                    return Resources.HtmlSymbol_NewLine;
                 case HtmlSymbolType.OpenAngle:
                     return "<";
                 case HtmlSymbolType.Bang:
@@ -56,13 +56,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 case HtmlSymbolType.Colon:
                     return ":";
                 case HtmlSymbolType.RazorComment:
-                    return LegacyResources.HtmlSymbol_RazorComment;
+                    return Resources.HtmlSymbol_RazorComment;
                 case HtmlSymbolType.RazorCommentStar:
                     return "*";
                 case HtmlSymbolType.RazorCommentTransition:
                     return "@";
                 default:
-                    return LegacyResources.Symbol_Unknown;
+                    return Resources.Symbol_Unknown;
             }
         }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
         }
 
-        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorError> errors)
+        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
         {
             return new HtmlSymbol(content, type, errors);
         }

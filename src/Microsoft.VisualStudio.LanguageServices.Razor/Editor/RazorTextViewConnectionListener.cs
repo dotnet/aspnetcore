@@ -28,34 +28,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         [ImportingConstructor]
         public RazorTextViewConnectionListener(
-            TextBufferProjectService projectService,
-            RazorEditorFactoryService editorFactoryService,
-            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
-        {
-            if (projectService == null)
-            {
-                throw new ArgumentNullException(nameof(projectService));
-            }
-
-            if (editorFactoryService == null)
-            {
-                throw new ArgumentNullException(nameof(editorFactoryService));
-            }
-
-            if (workspace == null)
-            {
-                throw new ArgumentNullException(nameof(workspace));
-            }
-
-            _projectService = projectService;
-            _editorFactoryService = editorFactoryService;
-            _workspace = workspace;
-
-            _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
-        }
-
-        // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
-        internal RazorTextViewConnectionListener(
             ForegroundDispatcher foregroundDispatcher,
             TextBufferProjectService projectService,
             RazorEditorFactoryService editorFactoryService,
@@ -85,6 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _projectService = projectService;
             _editorFactoryService = editorFactoryService;
             _workspace = workspace;
+
         }
 
         public Workspace Workspace => _workspace;
@@ -111,8 +84,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                     continue;
                 }
 
-                var hierarchy = _projectService.GetHierarchy(textBuffer);
-                if (!_projectService.IsSupportedProject(hierarchy))
+                var hostProject = _projectService.GetHostProject(textBuffer);
+                if (!_projectService.IsSupportedProject(hostProject))
                 {
                     return;
                 }

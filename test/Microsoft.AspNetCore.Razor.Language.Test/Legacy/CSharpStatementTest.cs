@@ -248,13 +248,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-                var unbalancedParenErrorString = "An opening \"(\" is missing the corresponding closing \")\".";
-                var unbalancedBracketCatchErrorString = "The catch block is missing a closing \"}\" character.  " +
-                    "Make sure you have a matching \"}\" character for all the \"{\" characters within this block, " +
-                    "and that none of the \"}\" characters are being interpreted as markup.";
 
                 // document, expectedStatement, expectedErrors
-                return new TheoryData<string, StatementBlock, RazorError[]>
+                return new TheoryData<string, StatementBlock, RazorDiagnostic[]>
                 {
                     {
                         "@try { someMethod(); } catch(Exception) when (",
@@ -263,7 +259,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
+                        }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (someMethod(",
@@ -272,7 +272,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (someMethod(")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedParenErrorString, 45, 0, 45, 1) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedCloseBracketBeforeEOF(
+                                new SourceSpan(new SourceLocation(45, 0, 45), contentLength: 1), "(", ")"),
+                        }
                     },
                     {
                         "@try { someMethod(); } catch(Exception) when (true) {",
@@ -281,7 +285,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             factory
                                 .Code("try { someMethod(); } catch(Exception) when (true) {")
                                 .AsStatement()),
-                        new[] { new RazorError(unbalancedBracketCatchErrorString, 23, 0, 23, 1) }
+                        new[]
+                        {
+                            RazorDiagnosticFactory.CreateParsing_ExpectedEndOfBlockBeforeEOF(
+                                new SourceSpan(new SourceLocation(23, 0, 23), contentLength: 1), "catch", "}", "{"),
+                        }
                     },
                 };
             }
@@ -297,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             FixupSpans = true;
 
             // Act & Assert
-            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorError[])expectedErrors);
+            ParseBlockTest(document, (StatementBlock)expectedStatement, (RazorDiagnostic[])expectedErrors);
         }
 
         [Fact]

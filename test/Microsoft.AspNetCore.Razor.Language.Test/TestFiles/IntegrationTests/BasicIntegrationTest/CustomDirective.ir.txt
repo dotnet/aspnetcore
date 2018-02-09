@@ -1,4 +1,6 @@
 Document - 
+    RazorCompiledItemAttribute - 
     NamespaceDeclaration -  - Razor
+        RazorSourceChecksumAttribute - 
         ClassDeclaration -  - public - Template -  - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync

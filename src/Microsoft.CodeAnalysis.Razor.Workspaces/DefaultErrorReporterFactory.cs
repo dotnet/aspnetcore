@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Host.Mef;
 namespace Microsoft.CodeAnalysis.Razor
 {
     [Shared]
-    [ExportWorkspaceServiceFactory(typeof(ErrorReporter))]
+    [ExportWorkspaceServiceFactory(typeof(ErrorReporter), ServiceLayer.Default)]
     internal class DefaultErrorReporterFactory : IWorkspaceServiceFactory
     {
         public IWorkspaceService CreateService(HostWorkspaceServices workspaceServices)

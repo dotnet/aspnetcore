@@ -526,34 +526,34 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return new TestParserManager(parser);
         }
 
-        private static RazorTemplateEngineFactoryService CreateTemplateEngineFactory(
+        private static RazorProjectEngineFactoryService CreateTemplateEngineFactory(
             string path = TestLinePragmaFileName,
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
-            var engine = RazorEngine.CreateDesignTime(builder =>
-            {
-                RazorExtensions.Register(builder);
-
-                if (tagHelpers != null)
-                {
-                    builder.AddTagHelpers(tagHelpers);
-                }
-            });
-
             // GetImports on RazorTemplateEngine will at least check that the item exists, so we need to pretend
             // that it does.
             var items = new List<RazorProjectItem>();
             items.Add(new TestRazorProjectItem(path));
+            var fileSystem = new TestRazorProjectFileSystem(items);
 
-            var project = new TestRazorProject(items);
+            var engine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, b =>
+            {
+                RazorExtensions.Register(b);
 
-            var templateEngine = new RazorTemplateEngine(engine, project);
-            templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");
+                if (tagHelpers != null)
+                {
+                    b.AddTagHelpers(tagHelpers);
+                }
 
-            var templateEngineFactory = Mock.Of<RazorTemplateEngineFactoryService>(
-                service => service.Create(It.IsAny<string>(), It.IsAny<Action<IRazorEngineBuilder>>()) == templateEngine);
+                b.AddDefaultImports(new TestRazorProjectItem("_TestImports.cshtml") { Content = "@addTagHelper *, Test" });
+            });
 
-            return templateEngineFactory;
+            var factory = new Mock<RazorProjectEngineFactoryService>();
+            factory
+                .Setup(f => f.Create(It.IsAny<string>(), It.IsAny<Action<RazorProjectEngineBuilder>>()))
+                .Returns(engine);
+
+            return factory.Object;
         }
 
         private async Task RunTypeKeywordTestAsync(string keyword)
@@ -711,37 +711,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        private class TestCompletionBroker : ICompletionBroker
+        private class TestCompletionBroker : VisualStudioCompletionBroker
         {
-            public ICompletionSession CreateCompletionSession(ITextView textView, ITrackingPoint triggerPoint, bool trackCaret)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void DismissAllSessions(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ReadOnlyCollection<ICompletionSession> GetSessions(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsCompletionActive(ITextView textView)
-            {
-                return false;
-            }
-
-            public ICompletionSession TriggerCompletion(ITextView textView)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ICompletionSession TriggerCompletion(ITextView textView, ITrackingPoint triggerPoint, bool trackCaret)
-            {
-                throw new NotImplementedException();
-            }
+            public override bool IsCompletionActive(ITextView textView) => false;
         }
     }
 }

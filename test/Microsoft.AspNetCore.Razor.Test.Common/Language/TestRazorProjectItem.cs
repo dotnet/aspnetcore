@@ -9,12 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class TestRazorProjectItem : RazorProjectItem
     {
         public TestRazorProjectItem(
-            string path, 
+            string filePath, 
             string physicalPath = null,
+            string relativePhysicalPath = null,
             string basePath = "/")
         {
-            FilePath = path;
+            FilePath = filePath;
             PhysicalPath = physicalPath;
+            RelativePhysicalPath = relativePhysicalPath;
             BasePath = basePath;
         }
 
@@ -24,7 +26,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string PhysicalPath { get; }
 
-        public override bool Exists => true;
+        public override string RelativePhysicalPath { get; }
+
+        public override bool Exists { get; } = true;
 
         public string Content { get; set; } = "Default content";
 

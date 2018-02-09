@@ -1,1 +1,1 @@
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml(7,12): Error RZ9999: "class" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml(7,12): Error RZ1007: "class" is a reserved word and cannot be used in implicit expressions.  An explicit expression ("@()") must be used.

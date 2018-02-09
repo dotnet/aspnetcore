@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -13,7 +12,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public static readonly RazorDiagnosticJsonConverter Instance = new RazorDiagnosticJsonConverter();
         private const string RazorDiagnosticMessageKey = "Message";
-        private const string RazorDiagnosticTypeNameKey = "TypeName";
 
         public override bool CanConvert(Type objectType)
         {
@@ -35,26 +33,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var length = span[nameof(SourceSpan.Length)].Value<int>();
             var filePath = span[nameof(SourceSpan.FilePath)].Value<string>();
             var message = diagnostic[RazorDiagnosticMessageKey].Value<string>();
-            var typeName = diagnostic[RazorDiagnosticTypeNameKey].Value<string>();
+            var id = diagnostic[nameof(RazorDiagnostic.Id)].Value<string>();
+            var severity = diagnostic[nameof(RazorDiagnostic.Severity)].Value<int>();
 
-            if (string.Equals(typeName, typeof(DefaultRazorDiagnostic).FullName, StringComparison.Ordinal))
-            {
-                var id = diagnostic[nameof(RazorDiagnostic.Id)].Value<string>();
-                var severity = diagnostic[nameof(RazorDiagnostic.Severity)].Value<int>();
+            var descriptor = new RazorDiagnosticDescriptor(id, () => message, (RazorDiagnosticSeverity)severity);
+            var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
 
-                var descriptor = new RazorDiagnosticDescriptor(id, () => message, (RazorDiagnosticSeverity)severity);
-                var sourceSpan = new SourceSpan(filePath, absoluteIndex, lineIndex, characterIndex, length);
-
-                return RazorDiagnostic.Create(descriptor, sourceSpan);
-            }
-            else if (string.Equals(typeName, typeof(LegacyRazorDiagnostic).FullName, StringComparison.Ordinal))
-            {
-                var error = new RazorError(message, absoluteIndex, lineIndex, characterIndex, length);
-
-                return RazorDiagnostic.Create(error);
-            }
-
-            return null;
+            return RazorDiagnostic.Create(descriptor, sourceSpan);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
@@ -65,7 +50,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             WriteProperty(writer, nameof(RazorDiagnostic.Id), diagnostic.Id);
             WriteProperty(writer, nameof(RazorDiagnostic.Severity), (int)diagnostic.Severity);
             WriteProperty(writer, RazorDiagnosticMessageKey, diagnostic.GetMessage());
-            WriteProperty(writer, RazorDiagnosticTypeNameKey, diagnostic.GetType().FullName);
 
             writer.WritePropertyName(nameof(RazorDiagnostic.Span));
             serializer.Serialize(writer, diagnostic.Span);

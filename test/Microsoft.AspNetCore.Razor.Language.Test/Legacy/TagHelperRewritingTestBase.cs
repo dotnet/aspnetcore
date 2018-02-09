@@ -16,14 +16,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             RunParseTreeRewriterTest(
                 documentContent,
                 expectedOutput,
-                errors: Enumerable.Empty<RazorError>(),
+                errors: Enumerable.Empty<RazorDiagnostic>(),
                 tagNames: tagNames);
         }
 
         internal void RunParseTreeRewriterTest(
             string documentContent,
             MarkupBlock expectedOutput,
-            IEnumerable<RazorError> errors,
+            IEnumerable<RazorDiagnostic> errors,
             params string[] tagNames)
         {
             var descriptors = BuildDescriptors(tagNames);
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             IEnumerable<TagHelperDescriptor> descriptors,
             string documentContent,
             MarkupBlock expectedOutput,
-            IEnumerable<RazorError> expectedErrors,
+            IEnumerable<RazorDiagnostic> expectedErrors,
             string tagHelperPrefix = null,
             RazorParserFeatureFlags featureFlags = null)
         {
@@ -63,12 +63,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
-            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));
+            var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors);
             var actualErrors = allErrors
                 .OrderBy(error => error.Span.AbsoluteIndex)
                 .ToList();
 
-            EvaluateRazorErrors(actualErrors, expectedErrors.Select(error => RazorDiagnostic.Create(error)).ToList());
+            EvaluateRazorErrors(actualErrors, expectedErrors.ToList());
             EvaluateParseTree(actualTree, expectedOutput);
         }
     }

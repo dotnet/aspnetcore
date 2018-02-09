@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -26,13 +27,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private ProjectSnapshotManager ProjectManager => Mock.Of<ProjectSnapshotManager>(p => p.Projects == new List<ProjectSnapshot>());
 
         private TextBufferProjectService ProjectService => Mock.Of<TextBufferProjectService>(
-            s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
+            s => s.GetHostProject(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
                 s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true &&
                 s.GetProjectPath(It.IsAny<IVsHierarchy>()) == "C:/Some/Path/TestProject.csproj");
 
-        private EditorSettingsManagerInternal EditorSettingsManager => new DefaultEditorSettingsManagerInternal();
+        private EditorSettingsManager EditorSettingsManager => new DefaultEditorSettingsManager(Mock.Of<ForegroundDispatcher>());
 
-        private Workspace Workspace => new AdhocWorkspace();
+        private Workspace Workspace => TestWorkspace.Create();
 
         [Fact]
         public void EditorSettingsManager_Changed_TriggersContextChanged()
