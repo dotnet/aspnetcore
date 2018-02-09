@@ -21,25 +21,38 @@ function Invoke-Block([scriptblock]$cmd) {
 function Get-Submodules {
     param(
         [Parameter(Mandatory = $true)]
-        [string]$RepoRoot
+        [string]$RepoRoot,
+        [switch]$Shipping
     )
-
-    Invoke-Block { & git submodule update --init } | Out-Null
 
     $moduleConfigFile = Join-Path $RepoRoot ".gitmodules"
     $submodules = @()
 
-    Get-ChildItem "$RepoRoot/modules/*" -Directory | % {
+    [xml] $submoduleConfig = Get-Content "$RepoRoot/build/submodules.props"
+    $repos = $submoduleConfig.Project.ItemGroup.Repository | % { $_.Include }
+
+    Get-ChildItem "$RepoRoot/modules/*" -Directory `
+    | ? { (-not $Shipping) -or $($repos -contains $($_.Name)) -or $_.Name -eq 'Templating' } `
+    | % {
         Push-Location $_ | Out-Null
         Write-Verbose "Attempting to get submodule info for $_"
+
+        if (Test-Path 'version.props') {
+            [xml] $versionXml = Get-Content 'version.props'
+            $versionPrefix = $versionXml.Project.PropertyGroup.VersionPrefix
+        } else {
+            $versionPrefix = ''
+        }
+
         try {
-            $data = @{
+            $data = [PSCustomObject] @{
                 path      = $_
                 module    = $_.Name
                 commit    = $(git rev-parse HEAD)
                 newCommit = $null
                 changed   = $false
                 branch    = $(git config -f $moduleConfigFile --get submodule.modules/$($_.Name).branch )
+                versionPrefix = $versionPrefix
             }
 
             $submodules += $data
@@ -50,4 +63,45 @@ function Get-Submodules {
     }
 
     return $submodules
+}
+
+function SaveXml([xml]$xml, [string]$path) {
+    Write-Verbose "Saving to $path"
+    $ErrorActionPreference = 'stop'
+
+    $settings = New-Object System.XML.XmlWriterSettings
+    $settings.OmitXmlDeclaration = $true
+    $settings.Encoding = New-Object System.Text.UTF8Encoding( $true )
+    $writer = [System.XML.XMLTextWriter]::Create($path, $settings)
+    $xml.Save($writer)
+    $writer.Close()
+}
+
+function LoadXml([string]$path) {
+    Write-Verbose "Reading from $path"
+
+    $ErrorActionPreference = 'stop'
+    $obj = new-object xml
+    $obj.PreserveWhitespace = $true
+    $obj.Load($path)
+    return $obj
+}
+
+function PackageIdVarName([string]$packageId) {
+    $canonicalVarName = ''
+    $upperCaseNext = $true
+    for ($i = 0; $i -lt $packageId.Length; $i++) {
+        $ch = $packageId[$i]
+        if (-not [System.Char]::IsLetterOrDigit(($ch))) {
+            $upperCaseNext = $true
+            continue
+        }
+        if ($upperCaseNext) {
+            $ch = [System.Char]::ToUpperInvariant($ch)
+            $upperCaseNext = $false
+        }
+        $canonicalVarName += $ch
+    }
+    $canonicalVarName += "PackageVersion"
+    return $canonicalVarName
 }
