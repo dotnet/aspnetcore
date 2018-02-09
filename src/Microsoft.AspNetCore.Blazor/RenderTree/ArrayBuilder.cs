@@ -132,6 +132,15 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         public ArrayRange<T> ToRange()
             => new ArrayRange<T>(_items, _itemsInUse);
 
+        /// <summary>
+        /// Produces an <see cref="ArraySegment{T}"/> structure describing the selected contents.
+        /// </summary>
+        /// <param name="fromIndexInclusive">The index of the first item in the segment.</param>
+        /// <param name="toIndexExclusive">One plus the index of the last item in the segment.</param>
+        /// <returns>The <see cref="ArraySegment{T}"/>.</returns>
+        public ArraySegment<T> ToSegment(int fromIndexInclusive, int toIndexExclusive)
+            => new ArraySegment<T>(_items, fromIndexInclusive, toIndexExclusive - fromIndexInclusive);
+
         private void SetCapacity(int desiredCapacity, bool preserveContents)
         {
             if (desiredCapacity < _itemsInUse)

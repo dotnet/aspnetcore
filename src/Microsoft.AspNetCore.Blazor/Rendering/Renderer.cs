@@ -87,6 +87,14 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             try
             {
                 RenderInExistingBatch(_sharedRenderBatchBuilder, componentId);
+
+                // Process 
+                while (_sharedRenderBatchBuilder.ComponentRenderQueue.Count > 0)
+                {
+                    var nextComponentIdToRender = _sharedRenderBatchBuilder.ComponentRenderQueue.Dequeue();
+                    RenderInExistingBatch(_sharedRenderBatchBuilder, nextComponentIdToRender);
+                }
+
                 UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
                 RemoveEventHandlerIds(_sharedRenderBatchBuilder.GetDisposedEventHandlerIds());
             }
@@ -98,14 +106,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         }
 
         internal void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
-        {
-            GetRequiredComponentState(componentId).Render(batchBuilder);
-        }
+            => GetRequiredComponentState(componentId).Render(this, batchBuilder);
 
         internal void DisposeInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
         {
             GetRequiredComponentState(componentId).NotifyDisposed(batchBuilder);
-            batchBuilder.AddDisposedComponent(componentId);
+            batchBuilder.AddDisposedComponentId(componentId);
         }
 
         /// <summary>

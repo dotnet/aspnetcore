@@ -8,50 +8,69 @@ using Microsoft.AspNetCore.Blazor.Rendering;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
-    internal class RenderTreeDiffBuilder
+    internal static class RenderTreeDiffBuilder
     {
-        private readonly Renderer _renderer;
-        private readonly ArrayBuilder<RenderTreeEdit> _entries = new ArrayBuilder<RenderTreeEdit>(10);
-        private readonly ArrayBuilder<RenderTreeFrame> _referenceFrames = new ArrayBuilder<RenderTreeFrame>(10);
-
-        public RenderTreeDiffBuilder(Renderer renderer)
+        private struct DiffContext
         {
-            _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
+            // Exists only so that the various methods in this class can call each other without
+            // constantly building up long lists of parameters. Is private to this class, so the
+            // fact that it's a mutable struct is manageable.
+            // Always pass by ref to avoid copying, and because the 'SiblingIndex' is mutable.
+
+            public readonly Renderer Renderer;
+            public readonly RenderBatchBuilder BatchBuilder;
+            public readonly RenderTreeFrame[] OldTree;
+            public readonly RenderTreeFrame[] NewTree;
+            public readonly ArrayBuilder<RenderTreeEdit> Edits;
+            public readonly ArrayBuilder<RenderTreeFrame> ReferenceFrames;
+            public int SiblingIndex;
+
+            public DiffContext(
+                Renderer renderer,
+                RenderBatchBuilder batchBuilder,
+                RenderTreeFrame[] oldTree, RenderTreeFrame[] newTree)
+            {
+                Renderer = renderer;
+                BatchBuilder = batchBuilder;
+                OldTree = oldTree;
+                NewTree = newTree;
+                Edits = batchBuilder.EditsBuffer;
+                ReferenceFrames = batchBuilder.ReferenceFramesBuffer;
+                SiblingIndex = 0;
+            }
         }
 
-        /// <summary>
-        /// As well as computing the diff between the two trees, this method also has the side-effect
-        /// of instantiating child components on newly-inserted Component frames, and copying the existing
-        /// component instances onto retained Component frames. It's particularly convenient to do that
-        /// here because we have the right information and are already walking the trees to do the diff.
-        /// </summary>
-        public void ApplyNewRenderTreeVersion(
+        public static RenderTreeDiff ComputeDiff(
+            Renderer renderer,
             RenderBatchBuilder batchBuilder,
             int componentId,
             ArrayRange<RenderTreeFrame> oldTree,
             ArrayRange<RenderTreeFrame> newTree)
         {
-            _entries.Clear();
-            _referenceFrames.Clear();
-            var siblingIndex = 0;
+            var editsBuffer = batchBuilder.EditsBuffer;
+            var editsBufferStartLength = editsBuffer.Count;
 
-            var slotId = batchBuilder.ReserveUpdatedComponentSlotId();
-            AppendDiffEntriesForRange(batchBuilder, oldTree.Array, 0, oldTree.Count, newTree.Array, 0, newTree.Count, ref siblingIndex);
-            batchBuilder.SetUpdatedComponent(
-                slotId,
-                new RenderTreeDiff(componentId, _entries.ToRange(), _referenceFrames.ToRange()));
+            var diffContext = new DiffContext(renderer, batchBuilder, oldTree.Array, newTree.Array);
+            AppendDiffEntriesForRange(ref diffContext, 0, oldTree.Count, 0, newTree.Count);
+
+            var editsSegment = editsBuffer.ToSegment(editsBufferStartLength, editsBuffer.Count);
+            return new RenderTreeDiff(componentId, editsSegment);
         }
 
-        private void AppendDiffEntriesForRange(
-            RenderBatchBuilder batchBuilder,
-            RenderTreeFrame[] oldTree, int oldStartIndex, int oldEndIndexExcl,
-            RenderTreeFrame[] newTree, int newStartIndex, int newEndIndexExcl,
-            ref int siblingIndex)
+        public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
+            => DisposeFramesInRange(batchBuilder, frames.Array, 0, frames.Count);
+
+        private static void AppendDiffEntriesForRange(
+            ref DiffContext diffContext,
+            int oldStartIndex, int oldEndIndexExcl,
+            int newStartIndex, int newEndIndexExcl)
         {
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
             var prevOldSeq = -1;
             var prevNewSeq = -1;
+            var oldTree = diffContext.OldTree;
+            var newTree = diffContext.NewTree;
             while (hasMoreOld || hasMoreNew)
             {
                 var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
@@ -59,7 +78,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                 if (oldSeq == newSeq)
                 {
-                    AppendDiffEntriesForFramesWithSameSequence(batchBuilder, oldTree, oldStartIndex, newTree, newStartIndex, ref siblingIndex);
+                    AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, newStartIndex);
                     oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
                     newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
                     hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -134,14 +153,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                     if (treatAsInsert)
                     {
-                        InsertNewFrame(batchBuilder, newTree, newStartIndex, ref siblingIndex);
+                        InsertNewFrame(ref diffContext, newStartIndex);
                         newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
                         hasMoreNew = newEndIndexExcl > newStartIndex;
                         prevNewSeq = newSeq;
                     }
                     else
                     {
-                        RemoveOldFrame(batchBuilder, oldTree, oldStartIndex, siblingIndex);
+                        RemoveOldFrame(ref diffContext, oldStartIndex);
                         oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
                         hasMoreOld = oldEndIndexExcl > oldStartIndex;
                         prevOldSeq = oldSeq;
@@ -150,16 +169,18 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             }
         }
 
-        private void UpdateRetainedChildComponent(
-            RenderBatchBuilder batchBuilder,
-            RenderTreeFrame[] oldTree, int oldComponentIndex,
-            RenderTreeFrame[] newTree, int newComponentIndex)
+        private static void UpdateRetainedChildComponent(
+            ref DiffContext diffContext,
+            int oldComponentIndex,
+            int newComponentIndex)
         {
             // The algorithm here is the same as in AppendDiffEntriesForRange, except that
             // here we don't optimise for loops - we assume that both sequences are forward-only.
             // That's because this is true for all currently supported scenarios, and it means
             // fewer steps here.
 
+            var oldTree = diffContext.OldTree;
+            var newTree = diffContext.NewTree;
             ref var oldComponentFrame = ref oldTree[oldComponentIndex];
             ref var newComponentFrame = ref newTree[newComponentIndex];
             var componentId = oldComponentFrame.ComponentId;
@@ -241,7 +262,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
             if (hasSetAnyProperty)
             {
-                TriggerChildComponentRender(batchBuilder, newComponentFrame);
+                diffContext.BatchBuilder.ComponentRenderQueue.Enqueue(newComponentFrame.ComponentId);
             }
         }
 
@@ -291,12 +312,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             return frameIndex + distanceToNextSibling;
         }
 
-        private void AppendDiffEntriesForFramesWithSameSequence(
-            RenderBatchBuilder batchBuilder,
-            RenderTreeFrame[] oldTree, int oldFrameIndex,
-            RenderTreeFrame[] newTree, int newFrameIndex,
-            ref int siblingIndex)
+        private static void AppendDiffEntriesForFramesWithSameSequence(
+            ref DiffContext diffContext,
+            int oldFrameIndex,
+            int newFrameIndex)
         {
+            var oldTree = diffContext.OldTree;
+            var newTree = diffContext.NewTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
@@ -304,7 +326,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             // to the same sequence number (and if not, the behaviour is undefined).
             // TODO: Consider supporting dissimilar types at same sequence for custom IComponent implementations.
             //       It should only be a matter of calling RemoveOldFrame+InsertNewFrame
-            switch (newTree[newFrameIndex].FrameType)
+            switch (newFrame.FrameType)
             {
                 case RenderTreeFrameType.Text:
                     {
@@ -312,10 +334,10 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         var newText = newFrame.TextContent;
                         if (!string.Equals(oldText, newText, StringComparison.Ordinal))
                         {
-                            var referenceFrameIndex = _referenceFrames.Append(newFrame);
-                            _entries.Append(RenderTreeEdit.UpdateText(siblingIndex, referenceFrameIndex));
+                            var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
+                            diffContext.Edits.Append(RenderTreeEdit.UpdateText(diffContext.SiblingIndex, referenceFrameIndex));
                         }
-                        siblingIndex++;
+                        diffContext.SiblingIndex++;
                         break;
                     }
 
@@ -330,10 +352,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
                             // Diff the attributes
                             AppendDiffEntriesForRange(
-                                batchBuilder,
-                                oldTree, oldFrameIndex + 1, oldFrameAttributesEndIndexExcl,
-                                newTree, newFrameIndex + 1, newFrameAttributesEndIndexExcl,
-                                ref siblingIndex);
+                                ref diffContext,
+                                oldFrameIndex + 1, oldFrameAttributesEndIndexExcl,
+                                newFrameIndex + 1, newFrameAttributesEndIndexExcl);
 
                             // Diff the children
                             var oldFrameChildrenEndIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
@@ -343,26 +364,26 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                                 newFrameChildrenEndIndexExcl > newFrameAttributesEndIndexExcl;
                             if (hasChildrenToProcess)
                             {
-                                _entries.Append(RenderTreeEdit.StepIn(siblingIndex));
-                                var childSiblingIndex = 0;
+                                diffContext.Edits.Append(RenderTreeEdit.StepIn(diffContext.SiblingIndex));
+                                var prevSiblingIndex = diffContext.SiblingIndex;
+                                diffContext.SiblingIndex = 0;
                                 AppendDiffEntriesForRange(
-                                    batchBuilder,
-                                    oldTree, oldFrameAttributesEndIndexExcl, oldFrameChildrenEndIndexExcl,
-                                    newTree, newFrameAttributesEndIndexExcl, newFrameChildrenEndIndexExcl,
-                                    ref childSiblingIndex);
-                                AppendStepOut();
-                                siblingIndex++;
+                                    ref diffContext,
+                                    oldFrameAttributesEndIndexExcl, oldFrameChildrenEndIndexExcl,
+                                    newFrameAttributesEndIndexExcl, newFrameChildrenEndIndexExcl);
+                                AppendStepOut(ref diffContext);
+                                diffContext.SiblingIndex = prevSiblingIndex + 1;
                             }
                             else
                             {
-                                siblingIndex++;
+                                diffContext.SiblingIndex++;
                             }
                         }
                         else
                         {
                             // Elements with different names are treated as completely unrelated
-                            RemoveOldFrame(batchBuilder, oldTree, oldFrameIndex, siblingIndex);
-                            InsertNewFrame(batchBuilder, newTree, newFrameIndex, ref siblingIndex);
+                            RemoveOldFrame(ref diffContext, oldFrameIndex);
+                            InsertNewFrame(ref diffContext, newFrameIndex);
                         }
                         break;
                     }
@@ -372,16 +393,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         if (oldFrame.ComponentType == newFrame.ComponentType)
                         {
                             UpdateRetainedChildComponent(
-                                batchBuilder,
-                                oldTree, oldFrameIndex,
-                                newTree, newFrameIndex);
-                            siblingIndex++;
+                                ref diffContext,
+                                oldFrameIndex,
+                                newFrameIndex);
+                            diffContext.SiblingIndex++;
                         }
                         else
                         {
                             // Child components of different types are treated as completely unrelated
-                            RemoveOldFrame(batchBuilder, oldTree, oldFrameIndex, siblingIndex);
-                            InsertNewFrame(batchBuilder, newTree, newFrameIndex, ref siblingIndex);
+                            RemoveOldFrame(ref diffContext, oldFrameIndex);
+                            InsertNewFrame(ref diffContext, newFrameIndex);
                         }
                         break;
                     }
@@ -398,11 +419,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                             {
                                 if (oldFrame.AttributeEventHandlerId > 0)
                                 {
-                                    batchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
+                                    diffContext.BatchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
                                 }
-                                InitializeNewAttributeFrame(ref newFrame);
-                                var referenceFrameIndex = _referenceFrames.Append(newFrame);
-                                _entries.Append(RenderTreeEdit.SetAttribute(siblingIndex, referenceFrameIndex));
+                                InitializeNewAttributeFrame(ref diffContext, ref newFrame);
+                                var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
+                                diffContext.Edits.Append(RenderTreeEdit.SetAttribute(diffContext.SiblingIndex, referenceFrameIndex));
                             }
                             else if (oldFrame.AttributeEventHandlerId > 0)
                             {
@@ -415,8 +436,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                             // Since this code path is never reachable for Razor components (because you
                             // can't have two different attribute names from the same source sequence), we
                             // could consider removing the 'name equality' check entirely for perf
-                            RemoveOldFrame(batchBuilder, oldTree, oldFrameIndex, siblingIndex);
-                            InsertNewFrame(batchBuilder, newTree, newFrameIndex, ref siblingIndex);
+                            RemoveOldFrame(ref diffContext, oldFrameIndex);
+                            InsertNewFrame(ref diffContext, newFrameIndex);
                         }
                         break;
                     }
@@ -426,48 +447,50 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             }
         }
 
-        private void InsertNewFrame(RenderBatchBuilder batchBuilder, RenderTreeFrame[] newTree, int newFrameIndex, ref int siblingIndex)
+        private static void InsertNewFrame(ref DiffContext diffContext, int newFrameIndex)
         {
+            var newTree = diffContext.NewTree;
             ref var newFrame = ref newTree[newFrameIndex];
             switch (newFrame.FrameType)
             {
                 case RenderTreeFrameType.Attribute:
                     {
-                        InitializeNewAttributeFrame(ref newFrame);
-                        var referenceFrameIndex = _referenceFrames.Append(newFrame);
-                        _entries.Append(RenderTreeEdit.SetAttribute(siblingIndex, referenceFrameIndex));
+                        InitializeNewAttributeFrame(ref diffContext, ref newFrame);
+                        var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
+                        diffContext.Edits.Append(RenderTreeEdit.SetAttribute(diffContext.SiblingIndex, referenceFrameIndex));
                         break;
                     }
                 case RenderTreeFrameType.Component:
                 case RenderTreeFrameType.Element:
                     {
-                        InitializeNewSubtree(batchBuilder, newTree, newFrameIndex);
-                        var referenceFrameIndex = _referenceFrames.Append(newTree, newFrameIndex, newFrame.ElementSubtreeLength);
-                        _entries.Append(RenderTreeEdit.PrependFrame(siblingIndex, referenceFrameIndex));
-                        siblingIndex++;
+                        InitializeNewSubtree(ref diffContext, newFrameIndex);
+                        var referenceFrameIndex = diffContext.ReferenceFrames.Append(newTree, newFrameIndex, newFrame.ElementSubtreeLength);
+                        diffContext.Edits.Append(RenderTreeEdit.PrependFrame(diffContext.SiblingIndex, referenceFrameIndex));
+                        diffContext.SiblingIndex++;
                         break;
                     }
                 case RenderTreeFrameType.Text:
                     {
-                        var referenceFrameIndex = _referenceFrames.Append(newFrame);
-                        _entries.Append(RenderTreeEdit.PrependFrame(siblingIndex, referenceFrameIndex));
-                        siblingIndex++;
+                        var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
+                        diffContext.Edits.Append(RenderTreeEdit.PrependFrame(diffContext.SiblingIndex, referenceFrameIndex));
+                        diffContext.SiblingIndex++;
                         break;
                     }
             }
         }
 
-        private void RemoveOldFrame(RenderBatchBuilder batchBuilder, RenderTreeFrame[] oldTree, int oldFrameIndex, int siblingIndex)
+        private static void RemoveOldFrame(ref DiffContext diffContext, int oldFrameIndex)
         {
+            var oldTree = diffContext.OldTree;
             ref var oldFrame = ref oldTree[oldFrameIndex];
             switch (oldFrame.FrameType)
             {
                 case RenderTreeFrameType.Attribute:
                     {
-                        _entries.Append(RenderTreeEdit.RemoveAttribute(siblingIndex, oldFrame.AttributeName));
+                        diffContext.Edits.Append(RenderTreeEdit.RemoveAttribute(diffContext.SiblingIndex, oldFrame.AttributeName));
                         if (oldFrame.AttributeEventHandlerId > 0)
                         {
-                            batchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
+                            diffContext.BatchBuilder.AddDisposedEventHandlerId(oldFrame.AttributeEventHandlerId);
                         }
                         break;
                     }
@@ -475,13 +498,13 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 case RenderTreeFrameType.Element:
                     {
                         var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
-                        DisposeFramesInRange(batchBuilder, oldTree, oldFrameIndex, endIndexExcl);
-                        _entries.Append(RenderTreeEdit.RemoveFrame(siblingIndex));
+                        DisposeFramesInRange(diffContext.BatchBuilder, oldTree, oldFrameIndex, endIndexExcl);
+                        diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                         break;
                     }
                 case RenderTreeFrameType.Text:
                     {
-                        _entries.Append(RenderTreeEdit.RemoveFrame(siblingIndex));
+                        diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                         break;
                     }
             }
@@ -502,22 +525,23 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             return index;
         }
 
-        private void AppendStepOut()
+        private static void AppendStepOut(ref DiffContext diffContext)
         {
             // If the preceding frame is a StepIn, then the StepOut cancels it out
-            var previousIndex = _entries.Count - 1;
-            if (previousIndex >= 0 && _entries.Buffer[previousIndex].Type == RenderTreeEditType.StepIn)
+            var previousIndex = diffContext.Edits.Count - 1;
+            if (previousIndex >= 0 && diffContext.Edits.Buffer[previousIndex].Type == RenderTreeEditType.StepIn)
             {
-                _entries.RemoveLast();
+                diffContext.Edits.RemoveLast();
             }
             else
             {
-                _entries.Append(RenderTreeEdit.StepOut());
+                diffContext.Edits.Append(RenderTreeEdit.StepOut());
             }
         }
 
-        private void InitializeNewSubtree(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int frameIndex)
+        private static void InitializeNewSubtree(ref DiffContext diffContext, int frameIndex)
         {
+            var frames = diffContext.NewTree;
             var endIndexExcl = frameIndex + frames[frameIndex].ElementSubtreeLength;
             for (var i = frameIndex; i < endIndexExcl; i++)
             {
@@ -525,17 +549,18 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 switch (frame.FrameType)
                 {
                     case RenderTreeFrameType.Component:
-                        InitializeNewComponentFrame(batchBuilder, frames, i);
+                        InitializeNewComponentFrame(ref diffContext, i);
                         break;
                     case RenderTreeFrameType.Attribute:
-                        InitializeNewAttributeFrame(ref frame);
+                        InitializeNewAttributeFrame(ref diffContext, ref frame);
                         break;
                 }
             }
         }
 
-        private void InitializeNewComponentFrame(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int frameIndex)
+        private static void InitializeNewComponentFrame(ref DiffContext diffContext, int frameIndex)
         {
+            var frames = diffContext.NewTree;
             ref var frame = ref frames[frameIndex];
 
             if (frame.Component != null)
@@ -543,7 +568,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                 throw new InvalidOperationException($"Child component already exists during {nameof(InitializeNewComponentFrame)}");
             }
 
-            _renderer.InstantiateChildComponent(ref frame);
+            diffContext.Renderer.InstantiateChildComponent(ref frame);
             var childComponentInstance = frame.Component;
 
             // All descendants of a component are its properties
@@ -557,45 +582,25 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                     attributeFrame.AttributeValue);
             }
 
-            TriggerChildComponentRender(batchBuilder, frame);
+            diffContext.BatchBuilder.ComponentRenderQueue.Enqueue(frame.ComponentId);
         }
 
-        private void InitializeNewAttributeFrame(ref RenderTreeFrame newFrame)
+        private static void InitializeNewAttributeFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)
         {
             if (newFrame.AttributeValue is UIEventHandler)
             {
-                _renderer.AssignEventHandlerId(ref newFrame);
+                diffContext.Renderer.AssignEventHandlerId(ref newFrame);
             }
         }
 
-        private void TriggerChildComponentRender(RenderBatchBuilder batchBuilder, in RenderTreeFrame frame)
-        {
-            if (frame.Component is IHandlePropertiesChanged notifyableComponent)
-            {
-                // TODO: Ensure any exceptions thrown here are handled equivalently to
-                // unhandled exceptions during rendering.
-                notifyableComponent.OnPropertiesChanged();
-            }
-
-            // TODO: Consider moving the responsibility for triggering re-rendering
-            // into the OnPropertiesChanged handler (if implemented) so that components
-            // can control whether any given set of property changes cause re-rendering.
-            // Not doing so yet because it's unclear that the usage patterns would be
-            // good to use.
-            _renderer.RenderInExistingBatch(batchBuilder, frame.ComponentId);
-        }
-
-        internal void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
-            => DisposeFramesInRange(batchBuilder, frames.Array, 0, frames.Count);
-
-        private void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
+        private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
         {
             for (var i = startIndex; i < endIndexExcl; i++)
             {
                 ref var frame = ref frames[i];
                 if (frame.FrameType == RenderTreeFrameType.Component && frame.Component != null)
                 {
-                    _renderer.DisposeInExistingBatch(batchBuilder, frame.ComponentId);
+                    batchBuilder.ComponentDisposalQueue.Enqueue(frame.ComponentId);
                 }
                 else if (frame.FrameType == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerId > 0)
                 {

@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly int _componentId; // TODO: Change the type to 'long' when the Mono runtime has more complete support for passing longs in .NET->JS calls
         private readonly IComponent _component;
         private readonly Renderer _renderer;
-        private readonly RenderTreeDiffBuilder _diffBuilder;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
 
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _componentId = componentId;
             _component = component ?? throw new ArgumentNullException(nameof(component));
             _renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
-            _diffBuilder = new RenderTreeDiffBuilder(renderer);
             _renderTreeBuilderCurrent = new RenderTreeBuilder(renderer);
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
@@ -41,18 +39,33 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         /// Regenerates the <see cref="RenderTree"/> and adds the changes to the
         /// <paramref name="batchBuilder"/>.
         /// </summary>
-        public void Render(RenderBatchBuilder batchBuilder)
+        public void Render(Renderer renderer, RenderBatchBuilder batchBuilder)
         {
+            if (_component is IHandlePropertiesChanged notifyableComponent)
+            {
+                notifyableComponent.OnPropertiesChanged();
+            }
+
             // Swap the old and new tree builders
             (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 
             _renderTreeBuilderCurrent.Clear();
             _component.BuildRenderTree(_renderTreeBuilderCurrent);
-            _diffBuilder.ApplyNewRenderTreeVersion(
+
+            var diff = RenderTreeDiffBuilder.ComputeDiff(
+                _renderer,
                 batchBuilder,
                 _componentId,
                 _renderTreeBuilderPrevious.GetFrames(),
                 _renderTreeBuilderCurrent.GetFrames());
+            batchBuilder.UpdatedComponentDiffs.Append(diff);
+
+            // Process disposal queue now in case it causes further component renders to be enqueued
+            while (batchBuilder.ComponentDisposalQueue.Count > 0)
+            {
+                var disposeComponentId = batchBuilder.ComponentDisposalQueue.Dequeue();
+                renderer.DisposeInExistingBatch(batchBuilder, disposeComponentId);
+            }
         }
 
         /// <summary>
@@ -66,7 +79,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 disposable.Dispose();
             }
 
-            _diffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
+            RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
         }
     }
 }

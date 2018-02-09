@@ -17,14 +17,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private readonly Renderer renderer;
         private readonly RenderTreeBuilder oldTree;
         private readonly RenderTreeBuilder newTree;
-        private RenderTreeDiffBuilder diff;
 
         public RenderTreeDiffBuilderTest()
         {
             renderer = new FakeRenderer();
             oldTree = new RenderTreeBuilder(renderer);
             newTree = new RenderTreeBuilder(renderer);
-            diff = new RenderTreeDiffBuilder(renderer);
         }
 
         [Theory]
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             appendAction(newTree);
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Empty(result.Edits);
@@ -67,7 +65,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(2, "text2");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
-                    AssertFrame.Text(result.ReferenceFrames.Array[0], "text1", 1);
+                    AssertFrame.Text(referenceFrames[0], "text1", 1);
                 });
         }
 
@@ -90,7 +88,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(2, "text2");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -109,7 +107,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(0, "x"); // Loop start
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -129,7 +127,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(10, "x"); // Loop start
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -143,9 +141,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
                     Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "x", 11),
-                frame => AssertFrame.Text(frame, "x", 12));
+            AssertFrame.Text(referenceFrames[0], "x", 11);
+            AssertFrame.Text(referenceFrames[1], "x", 12);
         }
 
         [Fact]
@@ -160,7 +157,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(1, "x");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -180,7 +177,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(11, "x"); // Will be added
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -194,9 +191,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 3);
                     Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "x", 10),
-                frame => AssertFrame.Text(frame, "x", 11));
+            AssertFrame.Text(referenceFrames[0], "x", 10);
+            AssertFrame.Text(referenceFrames[1], "x", 11);
         }
 
         [Fact]
@@ -211,7 +207,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(12, "x");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -225,9 +221,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
                     Assert.Equal(1, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "x", 10),
-                frame => AssertFrame.Text(frame, "x", 11));
+            AssertFrame.Text(referenceFrames[0], "x", 10);
+            AssertFrame.Text(referenceFrames[1], "x", 11);
         }
 
         [Fact]
@@ -242,7 +237,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -258,7 +253,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(1, "text");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -276,7 +271,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(182, "new text 2");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -306,7 +301,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -327,34 +322,22 @@ namespace Microsoft.AspNetCore.Blazor.Test
             GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree); // Assign initial IDs
             newTree.OpenComponent<FakeComponent2>(123);
             newTree.CloseComponent();
+            var batchBuilder = new RenderBatchBuilder();
 
             // Act
-            var renderBatch = GetRenderedBatch();
+            var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
 
-            // Assert
-            Assert.Collection(renderBatch.DisposedComponentIDs,
-                disposedComponentId => Assert.Equal(0, disposedComponentId));
+            // Assert: We're going to dispose the old component, and render the new one
+            Assert.Equal(new[] { 0 }, batchBuilder.ComponentDisposalQueue);
+            Assert.Equal(new[] { 1 }, batchBuilder.ComponentRenderQueue);
 
-            // Assert: First updated component is the root with one child being
-            // prepended, and its earlier incarnation being removed
-            Assert.Equal(2, renderBatch.UpdatedComponents.Count);
-            var updatedComponent1 = renderBatch.UpdatedComponents.Array[0];
-            Assert.Collection(updatedComponent1.Edits,
+            // Assert: Got correct info in diff
+            Assert.Collection(diff.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0),
                 entry =>
                 {
                     AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(0, entry.ReferenceFrameIndex);
-                    Assert.IsType<FakeComponent2>(updatedComponent1.ReferenceFrames.Array[0].Component);
-                });
-
-            // Assert: Second updated component is the new FakeComponent2
-            var updatedComponent2 = renderBatch.UpdatedComponents.Array[1];
-            Assert.Collection(updatedComponent2.Edits,
-                entry =>
-                {
-                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
-                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.IsType<FakeComponent2>(batchBuilder.ReferenceFramesBuffer.Buffer[entry.ReferenceFrameIndex].Component);
                 });
         }
 
@@ -371,7 +354,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -380,8 +363,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Attribute(frame, "added", "added value"));
+            AssertFrame.Attribute(referenceFrames[0], "added", "added value");
         }
 
         [Fact]
@@ -397,7 +379,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -422,7 +404,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -431,8 +413,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Attribute(frame, "will change", "did change value"));
+            AssertFrame.Attribute(referenceFrames[0], "will change", "did change value");
         }
 
         [Fact]
@@ -452,7 +433,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -461,8 +442,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Attribute(frame, "will change", addedHandler));
+            AssertFrame.Attribute(referenceFrames[0], "will change", addedHandler);
         }
 
         [Fact]
@@ -477,7 +457,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -491,8 +471,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.SetAttribute, 0);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Attribute(frame, "newname", "same value"));
+            AssertFrame.Attribute(referenceFrames[0], "newname", "same value");
         }
 
         [Fact]
@@ -518,7 +497,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -533,8 +512,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "grandchild new text", 13));
+            AssertFrame.Text(referenceFrames[0], "grandchild new text", 13);
         }
 
         [Fact]
@@ -560,7 +538,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseElement();
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -571,8 +549,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "Text that has changed", 11));
+            AssertFrame.Text(referenceFrames[0], "Text that has changed", 11);
         }
 
         [Fact]
@@ -589,7 +566,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddText(13, "text4");
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
 
             // Assert
             Assert.Collection(result.Edits,
@@ -598,8 +575,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
                     Assert.Equal(0, entry.ReferenceFrameIndex);
                 });
-            Assert.Collection(result.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "text2modified", 11));
+            AssertFrame.Text(referenceFrames[0], "text2modified", 11);
         }
 
         [Fact]
@@ -621,11 +597,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var renderBatch = GetRenderedBatch();
 
             // Assert
-            Assert.Equal(3, renderBatch.UpdatedComponents.Count);
-
-            // First component is the root one
-            var firstComponentDiff = renderBatch.UpdatedComponents.Array[0];
-            Assert.Collection(firstComponentDiff.Edits,
+            var diff = renderBatch.UpdatedComponents.Single();
+            Assert.Collection(diff.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.StepIn, 1),
                 entry =>
                 {
@@ -638,23 +611,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(1, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
-            Assert.Collection(firstComponentDiff.ReferenceFrames,
-                frame => AssertFrame.ComponentWithInstance<FakeComponent>(frame, 0, 12),
-                frame => AssertFrame.ComponentWithInstance<FakeComponent2>(frame, 1, 13));
-
-            // Second in batch is the first child component
-            var secondComponentDiff = renderBatch.UpdatedComponents.Array[1];
-            Assert.Equal(0, secondComponentDiff.ComponentId);
-            Assert.Empty(secondComponentDiff.Edits); // Because FakeComponent produces no frames
-            Assert.Empty(secondComponentDiff.ReferenceFrames); // Because FakeComponent produces no frames
-
-            // Third in batch is the second child component
-            var thirdComponentDiff = renderBatch.UpdatedComponents.Array[2];
-            Assert.Equal(1, thirdComponentDiff.ComponentId);
-            Assert.Collection(thirdComponentDiff.Edits,
-                entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
-            Assert.Collection(thirdComponentDiff.ReferenceFrames,
-                frame => AssertFrame.Text(frame, $"Hello from {nameof(FakeComponent2)}"));
+            AssertFrame.ComponentWithInstance<FakeComponent>(renderBatch.ReferenceFrames.Array[0], 0, 12);
+            AssertFrame.ComponentWithInstance<FakeComponent2>(renderBatch.ReferenceFrames.Array[1], 1, 13);
         }
 
         [Fact]
@@ -673,8 +631,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var componentInstance = newTree.GetFrames().First().Component as FakeComponent;
 
             // Assert
-            Assert.Equal(2, renderBatch.UpdatedComponents.Count);
-
+            Assert.Equal(1, renderBatch.UpdatedComponents.Count);
             var rootComponentDiff = renderBatch.UpdatedComponents.Array[0];
             AssertEdit(rootComponentDiff.Edits.Single(), RenderTreeEditType.PrependFrame, 0);
             Assert.NotNull(componentInstance);
@@ -695,7 +652,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
+                RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
             });
             Assert.Equal($"Component of type '{typeof(FakeComponent).FullName}' does not have a property matching the name 'SomeUnknownProperty'.", ex.Message);
         }
@@ -712,7 +669,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
+                RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, oldTree.GetFrames(), newTree.GetFrames());
             });
             Assert.StartsWith($"Unable to set property '{nameof(FakeComponent.ReadonlyProperty)}' on " +
                 $"component of type '{typeof(FakeComponent).FullName}'.", ex.Message);
@@ -735,14 +692,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.CloseComponent();                           //       </FakeComponent>
             newTree.OpenComponent<FakeComponent2>(13);          //  3:   <FakeComponent2>
             newTree.CloseComponent();                           //       </FakeComponent2>
-            newTree.CloseElement();                             //     </container
+            newTree.CloseElement();                             //     </container>
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
             var originalFakeComponentInstance = oldTree.GetFrames().Array[2].Component;
             var originalFakeComponent2Instance = oldTree.GetFrames().Array[3].Component;
 
             // Act
-            var result = GetSingleUpdatedComponent();
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
             var newFrame1 = newTree.GetFrames().Array[2];
             var newFrame2 = newTree.GetFrames().Array[3];
 
@@ -768,7 +725,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.AddAttribute(14, nameof(FakeComponent.ObjectProperty), objectWillNotChange);
             newTree.CloseComponent();
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
             var originalComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
             originalComponentInstance.ObjectProperty = null; // So we can see it doesn't get reassigned 
 
@@ -777,67 +734,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var newComponentInstance = (FakeComponent)oldTree.GetFrames().Array[0].Component;
 
             // Assert
-            Assert.Equal(2, renderBatch.UpdatedComponents.Count);
+            Assert.Equal(1, renderBatch.UpdatedComponents.Count); // Because the diff builder only queues child component renders; it doesn't actually perfom them itself
             Assert.Same(originalComponentInstance, newComponentInstance);
             Assert.Equal("String did change", newComponentInstance.StringProperty);
             Assert.Null(newComponentInstance.ObjectProperty); // To observe that the property wasn't even written, we nulled it out on the original
         }
 
         [Fact]
-        public void NotifiesIHandlePropertiesChangedBeforeFirstRender()
-        {
-            // Arrange
-            newTree.OpenComponent<HandlePropertiesChangedComponent>(0);
-            newTree.CloseComponent();
-
-            // Act
-            var batch = GetRenderedBatch();
-            var diffForChildComponent = batch.UpdatedComponents.Array[1];
-
-            // Assert
-            Assert.Collection(diffForChildComponent.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "Notifications: 1", 0));
-        }
-
-        [Fact]
-        public void NotifiesIHandlePropertiesChangedWhenChanged()
-        {
-            // Arrange
-            var newTree1 = new RenderTreeBuilder(renderer);
-            var newTree2 = new RenderTreeBuilder(renderer);
-            oldTree.OpenComponent<HandlePropertiesChangedComponent>(0);
-            oldTree.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
-            oldTree.CloseComponent();
-            newTree1.OpenComponent<HandlePropertiesChangedComponent>(0);
-            newTree1.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 123);
-            newTree1.CloseComponent();
-            newTree2.OpenComponent<HandlePropertiesChangedComponent>(0);
-            newTree2.AddAttribute(1, nameof(HandlePropertiesChangedComponent.IntProperty), 456);
-            newTree2.CloseComponent();
-
-            // Act/Assert 0: Initial render
-            var batch0 = GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree);
-            var diffForChildComponent0 = batch0.UpdatedComponents.Array[1];
-            var childComponentFrame = batch0.UpdatedComponents.Array[0].ReferenceFrames.Array[0];
-            var childComponentInstance = (HandlePropertiesChangedComponent)childComponentFrame.Component;
-            Assert.Equal(1, childComponentInstance.NotificationsCount);
-            Assert.Collection(diffForChildComponent0.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "Notifications: 1", 0));
-
-            // Act/Assert 1: If properties didn't change, we don't notify
-            GetRenderedBatch(oldTree, newTree1);
-            Assert.Equal(1, childComponentInstance.NotificationsCount);
-
-            // Act/Assert 2: If properties did change, we do notify
-            var batch2 = GetRenderedBatch(newTree1, newTree2);
-            var diffForChildComponent2 = batch2.UpdatedComponents.Array[1];
-            Assert.Equal(2, childComponentInstance.NotificationsCount);
-            Assert.Collection(diffForChildComponent2.ReferenceFrames,
-                frame => AssertFrame.Text(frame, "Notifications: 2", 0));
-        }
-
-        [Fact]
-        public void CallsDisposeOnlyOnRemovedChildComponents()
+        public void QueuesRemovedChildComponentsForDisposal()
         {
             // Arrange
             oldTree.OpenComponent<DisposableComponent>(10);       // <DisposableComponent>
@@ -849,29 +753,23 @@ namespace Microsoft.AspNetCore.Blazor.Test
             newTree.OpenComponent<DisposableComponent>(30);       // <DisposableComponent>
             newTree.CloseComponent();                             // </DisposableComponent>
 
-            diff.ApplyNewRenderTreeVersion(new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
-            var disposableComponent1 = (DisposableComponent)oldTree.GetFrames().Array[0].Component;
-            var nonDisposableComponent = (NonDisposableComponent)oldTree.GetFrames().Array[1].Component;
-            var disposableComponent2 = (DisposableComponent)oldTree.GetFrames().Array[2].Component;
+            var batchBuilder = new RenderBatchBuilder();
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
 
-            // Act
-            var renderedBatch = GetRenderedBatch();
-
-            // Assert: We track NonDisposableComponent was disposed even though it's not IDisposable
-            Assert.Equal(renderedBatch.DisposedComponentIDs, new[] { 0, 1 });
-
-            // Assert: We did call Dispose on the disposed DisposableComponent
-            Assert.Equal(1, disposableComponent1.DisposalCount);
-
-            // Assert: We didn't dispose the retained component
-            Assert.Equal(0, disposableComponent2.DisposalCount);
+            // Act/Assert
+            // Note that we track NonDisposableComponent was disposed even though it's not IDisposable,
+            // because it's up to the upstream renderer to decide what "disposing" a component means
+            Assert.Empty(batchBuilder.ComponentDisposalQueue);
+            RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, oldTree.GetFrames(), newTree.GetFrames());
+            Assert.Equal(new[] { 0, 1 }, batchBuilder.ComponentDisposalQueue);
         }
 
-        private RenderTreeDiff GetSingleUpdatedComponent()
+        private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent()
         {
-            var diffsInBatch = GetRenderedBatch().UpdatedComponents;
+            var batch = GetRenderedBatch();
+            var diffsInBatch = batch.UpdatedComponents;
             Assert.Equal(1, diffsInBatch.Count);
-            return diffsInBatch.Array[0];
+            return (diffsInBatch.Array[0], batch.ReferenceFrames.ToArray());
         }
 
         private RenderBatch GetRenderedBatch()
@@ -880,7 +778,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private RenderBatch GetRenderedBatch(RenderTreeBuilder from, RenderTreeBuilder to)
         {
             var batchBuilder = new RenderBatchBuilder();
-            diff.ApplyNewRenderTreeVersion(batchBuilder, 0, from.GetFrames(), to.GetFrames());
+            var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, batchBuilder, 0, from.GetFrames(), to.GetFrames());
+            batchBuilder.UpdatedComponentDiffs.Append(diff);
             return batchBuilder.ToBatch();
         }
 
@@ -909,23 +808,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(100, $"Hello from {nameof(FakeComponent2)}");
-            }
-        }
-
-        private class HandlePropertiesChangedComponent : IComponent, IHandlePropertiesChanged
-        {
-            public int NotificationsCount { get; private set; }
-
-            public int IntProperty { get; set; }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddText(0, $"Notifications: {NotificationsCount}");
-            }
-
-            public void OnPropertiesChanged()
-            {
-                NotificationsCount++;
             }
         }
 

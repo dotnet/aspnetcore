@@ -1,6 +1,6 @@
 ﻿import { System_Object, System_String, System_Array, MethodHandle, Pointer } from '../Platform/Platform';
 import { platform } from '../Environment';
-import { renderBatch as renderBatchStruct, arrayRange, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
+import { renderBatch as renderBatchStruct, arrayRange, arraySegment, renderTreeDiffStructLength, renderTreeDiff, RenderBatchPointer, RenderTreeDiffPointer } from './RenderBatch';
 import { BrowserRenderer } from './BrowserRenderer';
 
 type BrowserRendererRegistry = { [browserRendererId: number]: BrowserRenderer };
@@ -30,17 +30,19 @@ export function renderBatch(browserRendererId: number, batch: RenderBatchPointer
   const updatedComponents = renderBatchStruct.updatedComponents(batch);
   const updatedComponentsLength = arrayRange.count(updatedComponents);
   const updatedComponentsArray = arrayRange.array(updatedComponents);
+  const referenceFramesStruct = renderBatchStruct.referenceFrames(batch);
+  const referenceFrames = arrayRange.array(referenceFramesStruct);
+
   for (let i = 0; i < updatedComponentsLength; i++) {
     const diff = platform.getArrayEntryPtr(updatedComponentsArray, i, renderTreeDiffStructLength);
     const componentId = renderTreeDiff.componentId(diff);
 
-    const editsArrayRange = renderTreeDiff.edits(diff);
-    const currentStateArrayRange = renderTreeDiff.currentState(diff);
+    const editsArraySegment = renderTreeDiff.edits(diff);
+    const edits = arraySegment.array(editsArraySegment);
+    const editsOffset = arraySegment.offset(editsArraySegment);
+    const editsLength = arraySegment.count(editsArraySegment);
 
-    const edits = arrayRange.array(editsArrayRange);
-    const editsLength = arrayRange.count(editsArrayRange);
-    const tree = arrayRange.array(currentStateArrayRange);
-    browserRenderer.updateComponent(componentId, edits, editsLength, tree);
+    browserRenderer.updateComponent(componentId, edits, editsOffset, editsLength, referenceFrames);
   }
 
   const disposedComponentIds = renderBatchStruct.disposedComponentIds(batch);

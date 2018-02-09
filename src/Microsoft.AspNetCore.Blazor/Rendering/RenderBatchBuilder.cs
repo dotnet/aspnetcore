@@ -1,43 +1,47 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
     internal class RenderBatchBuilder
     {
-        private ArrayBuilder<RenderTreeDiff> _updatedComponentDiffs = new ArrayBuilder<RenderTreeDiff>();
-        private ArrayBuilder<int> _disposedComponentIds = new ArrayBuilder<int>();
-        private ArrayBuilder<int> _disposedEventHandlerIds = new ArrayBuilder<int>();
+        public ArrayBuilder<RenderTreeEdit> EditsBuffer { get; } = new ArrayBuilder<RenderTreeEdit>();
+        public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>();
 
-        public int ReserveUpdatedComponentSlotId()
-        {
-            int id = _updatedComponentDiffs.Count;
-            _updatedComponentDiffs.Append(default);
-            return id;
-        }
+        public Queue<int> ComponentRenderQueue { get; } = new Queue<int>();
 
-        public void SetUpdatedComponent(int updatedComponentSlotId, RenderTreeDiff diff)
-            => _updatedComponentDiffs.Overwrite(updatedComponentSlotId, diff);
+        public Queue<int> ComponentDisposalQueue { get; } = new Queue<int>();
+
+        public ArrayBuilder<RenderTreeDiff> UpdatedComponentDiffs { get; set; }
+            = new ArrayBuilder<RenderTreeDiff>();
+
+        private readonly ArrayBuilder<int> _disposedComponentIds = new ArrayBuilder<int>();
+
+        private readonly ArrayBuilder<int> _disposedEventHandlerIds = new ArrayBuilder<int>();
 
         public ArrayRange<int> GetDisposedEventHandlerIds()
             => _disposedEventHandlerIds.ToRange();
 
         public void Clear()
         {
-            _updatedComponentDiffs.Clear();
+            EditsBuffer.Clear();
+            ReferenceFramesBuffer.Clear();
+            ComponentRenderQueue.Clear();
+            UpdatedComponentDiffs.Clear();
             _disposedComponentIds.Clear();
             _disposedEventHandlerIds.Clear();
         }
 
         public RenderBatch ToBatch()
             => new RenderBatch(
-                _updatedComponentDiffs.ToRange(),
+                UpdatedComponentDiffs.ToRange(),
+                ReferenceFramesBuffer.ToRange(),
                 _disposedComponentIds.ToRange());
 
-        public void AddDisposedComponent(int componentId)
+        public void AddDisposedComponentId(int componentId)
             => _disposedComponentIds.Append(componentId);
 
         public void AddDisposedEventHandlerId(int attributeEventHandlerId)

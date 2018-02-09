@@ -15,31 +15,32 @@ export class BrowserRenderer {
     this.childComponentLocations[componentId] = element;
   }
 
-  public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeFramePointer>) {
+  public updateComponent(componentId: number, edits: System_Array<RenderTreeEditPointer>, editsOffset: number, editsLength: number, referenceFrames: System_Array<RenderTreeFramePointer>) {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
     }
 
-    this.applyEdits(componentId, element, 0, edits, editsLength, referenceTree);
+    this.applyEdits(componentId, element, 0, edits, editsOffset, editsLength, referenceFrames);
   }
 
   public disposeComponent(componentId: number) {
     delete this.childComponentLocations[componentId];
   }
 
-  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsLength: number, referenceTree: System_Array<RenderTreeFramePointer>) {
+  applyEdits(componentId: number, parent: Element, childIndex: number, edits: System_Array<RenderTreeEditPointer>, editsOffset: number, editsLength: number, referenceFrames: System_Array<RenderTreeFramePointer>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
-    for (let editIndex = 0; editIndex < editsLength; editIndex++) {
+    const maxEditIndexExcl = editsOffset + editsLength;
+    for (let editIndex = editsOffset; editIndex < maxEditIndexExcl; editIndex++) {
       const edit = getRenderTreeEditPtr(edits, editIndex);
       const editType = renderTreeEdit.type(edit);
       switch (editType) {
         case EditType.prependFrame: {
           const frameIndex = renderTreeEdit.newTreeIndex(edit);
-          const frame = getTreeFramePtr(referenceTree, frameIndex);
+          const frame = getTreeFramePtr(referenceFrames, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
-          this.insertFrame(componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceTree, frame, frameIndex);
+          this.insertFrame(componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceFrames, frame, frameIndex);
           break;
         }
         case EditType.removeFrame: {
@@ -49,7 +50,7 @@ export class BrowserRenderer {
         }
         case EditType.setAttribute: {
           const frameIndex = renderTreeEdit.newTreeIndex(edit);
-          const frame = getTreeFramePtr(referenceTree, frameIndex);
+          const frame = getTreeFramePtr(referenceFrames, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           const element = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as HTMLElement;
           this.applyAttribute(componentId, element, frame);
@@ -62,7 +63,7 @@ export class BrowserRenderer {
         }
         case EditType.updateText: {
           const frameIndex = renderTreeEdit.newTreeIndex(edit);
-          const frame = getTreeFramePtr(referenceTree, frameIndex);
+          const frame = getTreeFramePtr(referenceFrames, frameIndex);
           const siblingIndex = renderTreeEdit.siblingIndex(edit);
           const domTextNode = parent.childNodes[childIndexAtCurrentDepth + siblingIndex] as Text;
           domTextNode.textContent = renderTreeFrame.textContent(frame);
