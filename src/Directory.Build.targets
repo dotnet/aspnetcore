@@ -3,4 +3,8 @@
 
   <Import Project="..\Directory.Build.targets" />
   <Import Project="PackGlobalTool.targets" />
+
+  <Target Name="CleanPublishDir" AfterTargets="CoreClean">
+    <RemoveDir Directories="$(PublishDir)" />
+  </Target>
 </Project>
