@@ -76,10 +76,27 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:IsFinalBuild=$(IsFinalBuild)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
+
+      <SourceLockFile>$(RepositoryRoot)korebuild-lock.txt</SourceLockFile>
+      <RepoLockFile>$(BuildRepositoryRoot)korebuild-lock.txt</RepoLockFile>
+      <BackupRepoLockFile>$(IntermediateDir)$(RepositoryToBuild)-korebuild-lock.txt</BackupRepoLockFile>
     </PropertyGroup>
   </Target>
 
-  <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps">
+  <Target Name="_UpdateRepoLockFile">
+    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
+    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
+    <Move SourceFiles="$(RepoLockFile)" DestinationFiles="$(BackupRepoLockFile)" Condition="Exists($(RepoLockFile))" />
+    <Copy SourceFiles="$(SourceLockFile)" DestinationFiles="$(RepoLockFile)" />
+  </Target>
+
+  <Target Name="_RestoreOriginalRepoLockFile">
+    <!-- Restore original Korebuild lock file -->
+    <Delete Files="$(RepoLockFile)" ContinueOnError="true" />
+    <Move SourceFiles="$(BackupRepoLockFile)" DestinationFiles="$(RepoLockFile)" Condition="Exists($(BackupRepoLockFile))"  />
+  </Target>
+
+  <Target Name="_BuildRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile">
     <PropertyGroup>
       <BuildArguments>/t:CleanArtifacts /t:Build /p:SkipTests=true $(RepositoryBuildArguments)</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
@@ -89,18 +106,23 @@
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
-    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
-    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
-    <Copy SourceFiles="$(RepositoryRoot)korebuild-lock.txt" DestinationFolder="$(BuildRepositoryRoot)" />
-
     <Exec
       Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
-      WorkingDirectory="$(RepositoryRoot)" />
+      WorkingDirectory="$(RepositoryRoot)"
+      IgnoreExitCode="true"
+      ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="ExitCode" PropertyName="BuildExitCode" />
+    </Exec>
+
+    <CallTarget Targets="_RestoreOriginalRepoLockFile" />
+
+    <!-- Fail if build.cmd didn't exit code 0 or process failed to start. -->
+    <Error Text="Building $(RepositoryToBuild) failed: $(_BuildScriptToExecute) exited code $(BuildExitCode)" Condition=" '$(BuildExitCode)' != '0' " />
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
-      <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*.*" />
+      <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*" />
     </ItemGroup>
 
     <Copy
@@ -114,7 +136,7 @@
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>
 
-  <Target Name="_TestRepository" DependsOnTargets="GetRepoBuildProps" Returns="@(RepositoryTestResult)">
+  <Target Name="_TestRepository" DependsOnTargets="GetRepoBuildProps;_UpdateRepoLockFile" Returns="@(RepositoryTestResult)">
     <PropertyGroup>
       <BuildArguments>/t:Test /p:NoBuild=$(_NoBuildRepos) $(RepositoryBuildArguments)</BuildArguments>
     </PropertyGroup>
@@ -125,10 +147,6 @@
 
     <Message Text="============ Testing $(RepositoryToBuild) ============" Importance="High" />
 
-    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
-    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
-    <Copy SourceFiles="$(RepositoryRoot)korebuild-lock.txt" DestinationFolder="$(BuildRepositoryRoot)" />
-
     <Exec
       Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
@@ -136,6 +154,8 @@
       IgnoreExitCode="true">
       <Output TaskParameter="ExitCode" PropertyName="TestExitCode" />
     </Exec>
+
+    <CallTarget Targets="_RestoreOriginalRepoLockFile" />
 
     <ItemGroup>
       <RepositoryTestResult Update="$(RepositoryToBuild)" Success="true" Condition="'$(TestExitCode)' == '0'" />
