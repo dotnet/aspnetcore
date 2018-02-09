@@ -117,5 +117,35 @@ namespace Microsoft.AspNetCore.Rewrite
             options.Rules.Add(new RedirectToHttpsRule { StatusCode = statusCode, SSLPort = sslPort });
             return options;
         }
+
+        /// <summary>
+        /// Permanently redirects the request to the www subdomain if the request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <returns></returns>
+        public static RewriteOptions AddRedirectToWwwPermanent(this RewriteOptions options)
+        {
+            return AddRedirectToWww(options, statusCode: StatusCodes.Status308PermanentRedirect);
+        }
+
+        /// <summary>
+        /// Redirect the request to the www subdomain if the incoming request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        public static RewriteOptions AddRedirectToWww(this RewriteOptions options)
+        {
+            return AddRedirectToWww(options, statusCode: StatusCodes.Status307TemporaryRedirect);
+        }
+
+        /// <summary>
+        /// Redirect the request to the www subdomain if the incoming request is non-www.
+        /// </summary>
+        /// <param name="options">The <see cref="RewriteOptions"/>.</param>
+        /// <param name="statusCode">The status code to add to the response.</param>
+        public static RewriteOptions AddRedirectToWww(this RewriteOptions options, int statusCode)
+        {
+            options.Rules.Add(new RedirectToWwwRule(statusCode));
+            return options;
+        }
     }
 }

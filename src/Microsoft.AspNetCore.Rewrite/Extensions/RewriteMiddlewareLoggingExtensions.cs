@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         private static readonly Action<ILogger, Exception> _modRewriteDidNotMatchRule;
         private static readonly Action<ILogger, Exception> _modRewriteMatchedRule;
         private static readonly Action<ILogger, Exception> _redirectedToHttps;
+        private static readonly Action<ILogger, Exception> _redirectedToWww;
         private static readonly Action<ILogger, string, Exception> _redirectSummary;
         private static readonly Action<ILogger, string, Exception> _rewriteSummary;
         private static readonly Action<ILogger, string, Exception> _abortedRequest;
@@ -82,6 +83,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
                             LogLevel.Debug,
                             12,
                             "Request to {requestedUrl} was ended");
+
+            _redirectedToWww = LoggerMessage.Define(
+                            LogLevel.Information,
+                            13,
+                            "Request redirected to www");
         }
 
         public static void RewriteMiddlewareRequestContinueResults(this ILogger logger, string currentUrl)
@@ -122,6 +128,11 @@ namespace Microsoft.AspNetCore.Rewrite.Logging
         public static void RedirectedToHttps(this ILogger logger)
         {
             _redirectedToHttps(logger, null);
+        }
+
+        public static void RedirectedToWww(this ILogger logger)
+        {
+            _redirectedToWww(logger, null);
         }
 
         public static void RedirectedSummary(this ILogger logger, string redirectedUrl)
