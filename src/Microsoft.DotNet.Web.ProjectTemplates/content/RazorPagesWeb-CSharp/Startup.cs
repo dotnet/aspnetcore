@@ -14,9 +14,6 @@ using Microsoft.AspNetCore.Builder;
 #if (IndividualLocalAuth)
 using Microsoft.AspNetCore.Identity;
 #endif
-#if (OrganizationalAuth || IndividualAuth)
-using Microsoft.AspNetCore.Http;
-#endif
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
