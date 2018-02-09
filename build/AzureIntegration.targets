@@ -3,7 +3,7 @@
     <AzureIntegrationProjectRoot>$(MSBuildThisFileDirectory)..\modules\AzureIntegration\</AzureIntegrationProjectRoot>
   </PropertyGroup>
 
-  <Target Name="BuildAzureIntegration" DependsOnTargets="PrepareOutputPaths;GeneratePropsFiles">
+  <Target Name="BuildAzureIntegration" DependsOnTargets="PrepareOutputPaths;GeneratePropsFiles;RestoreExternalDependencies">
     <PropertyGroup>
       <AzureIntegrationProjProperties>
         AspNetUniverseBuildOffline=true;
