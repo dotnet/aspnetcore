@@ -24,7 +24,7 @@ Blazor will have all the features of a modern web framework, including:
 
 > Note: Blazor is an *experimental* project. It's not (yet) a committed product. This is to allow time to fully investigate the technical issues associated with running .NET in the browser and to ensure we can build something that developers love and can be productive with. During this experimental phase, we expect to engage deeply with early Blazor adopters like you to hear your feedback and suggestions.
 
-To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo](https://www.youtube.com/watch?v=MiLAE6HMr10&feature=youtu.be&t=31m45s) last year. You can also try out a [simple Blazor app running in Azure](https://blazor-demo.azurewebsites.net/).
+To see Blazor in action, check out [Steve Sanderson's prototype demo at NDC Oslo](https://www.youtube.com/watch?v=MiLAE6HMr10&feature=youtu.be&t=31m45s) last year. You can also try out a [simple live Blazor app](https://blazor-demo.github.io/).
 
 ## Getting Started
 
