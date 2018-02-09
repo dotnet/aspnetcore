@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Http.Abstractions;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -73,11 +75,9 @@ namespace Microsoft.AspNetCore.Http
         {
             get
             {
-                string host, port;
+                GetParts(_value, out var host, out var port);
 
-                GetParts(out host, out port);
-
-                return host;
+                return host.ToString();
             }
         }
 
@@ -89,17 +89,15 @@ namespace Microsoft.AspNetCore.Http
         {
             get
             {
-                string host, port;
-                int p;
+                GetParts(_value, out var host, out var port);
 
-                GetParts(out host, out port);
-
-                if (string.IsNullOrEmpty(port) || !int.TryParse(port, out p))
+                if (!StringSegment.IsNullOrEmpty(port)
+                    && int.TryParse(port.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var p))
                 {
-                    return null;
+                    return p;
                 }
 
-                return p;
+                return null;
             }
         }
 
@@ -135,15 +133,14 @@ namespace Microsoft.AspNetCore.Http
 
             if (i != _value.Length)
             {
-                string host, port;
-                GetParts(out host, out port);
+                GetParts(_value, out var host, out var port);
 
                 var mapping = new IdnMapping();
-                host = mapping.GetAscii(host);
+                var encoded = mapping.GetAscii(host.Buffer, host.Offset, host.Length);
 
-                return string.IsNullOrEmpty(port)
-                    ? host
-                    : string.Concat(host, ":", port);
+                return StringSegment.IsNullOrEmpty(port)
+                    ? encoded
+                    : string.Concat(encoded, ":", port.ToString());
             }
 
             return _value;
@@ -209,6 +206,74 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
+        /// Matches the host portion of a host header value against a list of patterns.
+        /// The host may be the encoded punycode or decoded unicode form so long as the pattern
+        /// uses the same format.
+        /// </summary>
+        /// <param name="value">Host header value with or without a port.</param>
+        /// <param name="patterns">A set of pattern to match, without ports.</param>
+        /// <remarks>
+        /// The port on the given value is ignored. The patterns should not have ports.
+        /// The patterns may be exact matches like "example.com", a top level wildcard "*"
+        /// that matches all hosts, or a subdomain wildcard like "*.example.com" that matches
+        /// "abc.example.com:443" but not "example.com:443".
+        /// Matching is case insensitive.
+        /// </remarks>
+        /// <returns></returns>
+        public static bool MatchesAny(StringSegment value, IList<StringSegment> patterns)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+            if (patterns == null)
+            {
+                throw new ArgumentNullException(nameof(patterns));
+            }
+
+            // Drop the port
+            GetParts(value, out var host, out var port);
+
+            for (int i = 0; i < port.Length; i++)
+            {
+                if (port[i] < '0' || '9' < port[i])
+                {
+                    throw new FormatException($"The given host value '{value}' has a malformed port.");
+                }
+            }
+
+            for (int i = 0; i < patterns.Count; i++)
+            {
+                var pattern = patterns[i];
+
+                if (pattern == "*")
+                {
+                    return true;
+                }
+
+                if (StringSegment.Equals(pattern, host, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                // Sub-domain wildcards: *.example.com
+                if (pattern.StartsWith("*.", StringComparison.Ordinal) && host.Length >= pattern.Length)
+                {
+                    // .example.com
+                    var allowedRoot = pattern.Subsegment(1);
+
+                    var hostRoot = host.Subsegment(host.Length - allowedRoot.Length);
+                    if (hostRoot.Equals(allowedRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Compares the equality of the Value property, ignoring case.
         /// </summary>
         /// <param name="other"></param>
@@ -270,43 +335,43 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Parses the current value. IPv6 addresses will have brackets added if they are missing.
         /// </summary>
-        private void GetParts(out string host, out string port)
+        private static void GetParts(StringSegment value, out StringSegment host, out StringSegment port)
         {
             int index;
             port = null;
             host = null;
 
-            if (string.IsNullOrEmpty(_value))
+            if (StringSegment.IsNullOrEmpty(value))
             {
                 return;
             }
-            else if ((index = _value.IndexOf(']')) >= 0)
+            else if ((index = value.IndexOf(']')) >= 0)
             {
                 // IPv6 in brackets [::1], maybe with port
-                host = _value.Substring(0, index + 1);
-
-                if ((index = _value.IndexOf(':', index + 1)) >= 0)
+                host = value.Subsegment(0, index + 1);
+                // Is there a colon and at least one character?
+                if (index + 2 < value.Length && value[index + 1] == ':')
                 {
-                    port = _value.Substring(index + 1);
+                    port = value.Subsegment(index + 2);
                 }
             }
-            else if ((index = _value.IndexOf(':')) >= 0
-                && index < _value.Length - 1
-                && _value.IndexOf(':', index + 1) >= 0)
+            else if ((index = value.IndexOf(':')) >= 0
+                && index < value.Length - 1
+                && value.IndexOf(':', index + 1) >= 0)
             {
                 // IPv6 without brackets ::1 is the only type of host with 2 or more colons
-                host = $"[{_value}]";
+                host = $"[{value}]";
                 port = null;
             }
             else if (index >= 0)
             {
                 // Has a port
-                host = _value.Substring(0, index);
-                port = _value.Substring(index + 1);
+                host = value.Subsegment(0, index);
+                port = value.Subsegment(index + 1);
             }
             else
             {
-                host = _value;
+                host = value;
                 port = null;
             }
         }

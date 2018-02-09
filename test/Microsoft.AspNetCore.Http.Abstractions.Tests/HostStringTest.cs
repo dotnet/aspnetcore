@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http
@@ -122,6 +124,52 @@ namespace Microsoft.AspNetCore.Http
 
             // Act and Assert
             Assert.NotEqual(hostString, new HostString(string.Empty));
+        }
+
+        [Theory]
+        [InlineData("localHost", "localhost")]
+        [InlineData("localHost", "*")] // Any - Used by HttpSys
+        [InlineData("localhost:9090", "localHost")]
+        [InlineData("example.com:443", "example.com")]
+        [InlineData("foo.eXample.com:443", "*.exampLe.com")]
+        [InlineData("f.eXample.com:443", "*.exampLe.com")]
+        [InlineData("a.b.c.eXample.com:443", "*.exampLe.com")]
+        [InlineData("127.0.0.1", "127.0.0.1")]
+        [InlineData("127.0.0.1:443", "127.0.0.1")]
+        [InlineData("xn--c1yn36f:443", "xn--c1yn36f")]
+        [InlineData("點看", "點看")]
+        [InlineData("[::ABC]", "[::aBc]")]
+        [InlineData("[::1]:80", "[::1]")]
+        [InlineData("[::1]:", "[::1]")]
+        [InlineData("::1", "[::1]")]
+        public void HostMatches(string host, string pattern)
+        {
+            Assert.True(HostString.MatchesAny(host, new StringSegment[] { pattern }));
+        }
+
+        [Theory]
+        [InlineData("example.com", "localhost")]
+        [InlineData("localhost:9090", "example.com")]
+        [InlineData(":80", "localhost")]
+        [InlineData(":", "localhost")]
+        [InlineData("example.com:443", "*.example.com")]
+        [InlineData(".example.com:443", "*.example.com")]
+        [InlineData("foo.com:443", "*.example.com")]
+        [InlineData("foo.example.com.bar:443", "*.example.com")]
+        [InlineData(".com:443", "*.com")]
+        [InlineData("xn--c1yn36f:443", "點看")]
+        [InlineData("[::1", "[::1]")]
+        [InlineData("[::1:80", "[::1]")]
+        [InlineData("::1", "::1")] // Brackets are added to the host before the comparison
+        public void HostDoesntMatch(string host, string pattern)
+        {
+            Assert.False(HostString.MatchesAny(host, new StringSegment[] { pattern }));
+        }
+
+        [Fact]
+        public void HostMatchThrowsForBadPort()
+        {
+            Assert.Throws<FormatException>(() => HostString.MatchesAny("example.com:1abc", new StringSegment[] { "example.com" }));
         }
     }
 }
