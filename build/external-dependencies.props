@@ -212,6 +212,13 @@
   <ItemGroup>
     <ExternalDependency Include="MonoDevelop.Sdk" Version="$(MonoDevelopSdkPackageVersion)" Source="$(VSForMacFeed)" Private="true" Mirror="true" />
   </ItemGroup>
+  <!-- xunit preview version -->
+  <PropertyGroup>
+    <XunitPreviewFeed>https://www.myget.org/F/xunit/api/v3/index.json</XunitPreviewFeed>
+  </PropertyGroup>
+  <ItemGroup>
+    <ExternalDependency Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" Source="$(XunitPreviewFeed)" Private="true" Mirror="true" />
+  </ItemGroup>
   <!-- nuget.org -->
   <PropertyGroup>
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
@@ -364,7 +371,6 @@
     <ExternalDependency Include="xunit.assert" Version="$(XunitAssertPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="xunit.core" Version="$(XunitCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="xunit.extensibility.core" Version="$(XunitExtensibilityCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualstudioPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="xunit" Version="$(XunitPackageVersion)" Source="$(DefaultNuGetFeed)" />
   </ItemGroup>
 
