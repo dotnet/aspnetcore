@@ -36,7 +36,7 @@
     <NativeInstaller Include="osx-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="linux-x64" FileExt=".tar.gz" />
     <NativeInstaller Include="x64" FileExt=".deb" />
-    <NativeInstaller Include="rhel.7-x64" FileExt=".rpm" />
+    <NativeInstaller Include="x64" FileExt=".rpm" />
     <NativeInstaller Include="rh.rhel.7-x64" FileExt=".rpm" />
   </ItemGroup>
 

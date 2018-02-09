@@ -159,7 +159,7 @@
       <RpmCommonArguments>$(RpmCommonArguments);RpmLicense=$(LicenseType)</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmInstallerPrefix=$(SharedFxInstallerName);SharedFxArchive=$(SharedFxIntermediateArchiveFilePrefix)-linux-x64.tar.gz</RpmCommonArguments>
       <RpmCommonArguments>$(RpmCommonArguments);RpmMSummary=$(SharedFxSummary);RpmDescription=$(SharedFxDescription)</RpmCommonArguments>
-      <RpmCommonGenericArguments>RpmFileSuffix=rhel.7-x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
+      <RpmCommonGenericArguments>RpmFileSuffix=x64.rpm;RpmInstallRoot=$(InstallRoot)</RpmCommonGenericArguments>
       <RpmCommonRHArguments>RpmFileSuffix=rh.rhel.7-x64.rpm;RpmInstallRoot=$(RHInstallRoot)</RpmCommonRHArguments>
 
       <RpmSharedFxProps>$(RpmCommonArguments);$(RpmCommonGenericArguments);RpmArguments=$(RpmGenericSharedFxArguments)</RpmSharedFxProps>
