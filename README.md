@@ -67,7 +67,7 @@ Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-m
 [linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
 [osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
 [debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-rhel.7-x64.rpm
+[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
 
 Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
