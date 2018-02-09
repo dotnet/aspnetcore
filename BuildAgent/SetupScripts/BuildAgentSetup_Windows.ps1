@@ -1,27 +1,27 @@
 param(
-    [string]$buildAgentName=$env:COMPUTERNAME,
+    [string]$buildAgentName = $env:COMPUTERNAME,
 
-    [string]$teamAgentServiceAccountName="redmond\asplab",
+    [string]$teamAgentServiceAccountName = "redmond\asplab",
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$teamAgentServiceAccountPassword,
 
-    [string]$setupFilesShare="\\aspnetci\share\BuildAgentSetupFiles"
+    [string]$setupFilesShare = "\\aspnetci\share\BuildAgentSetupFiles"
 )
 
-$firewallPort=9090
+$firewallPort = 9090
 
-$buildAgentFolder="c:\buildagent"
+$buildAgentFolder = "c:\buildagent"
 Write-Host "Copying TeamCity build agent files..."
 Copy "$setupFilesShare\buildAgent" "c:\" -Recurse
 
-$buildAgentExe="$buildAgentFolder\launcher\bin\TeamCityAgentService-windows-x86-32.exe"
+$buildAgentExe = "$buildAgentFolder\launcher\bin\TeamCityAgentService-windows-x86-32.exe"
 Write-Host "Adding Inbound and Outbound rules for port $firewallPort..."
 New-NetFirewallRule -DisplayName "Allow TeamCityBuildAgent In for $firewallPort" -Direction Inbound -Program $buildAgentExe -Action Allow -Protocol TCP -LocalPort $firewallPort
 New-NetFirewallRule -DisplayName "Allow TeamCityBuildAgent Out for $firewallPort" -Direction Outbound -Program $buildAgentExe -Action Allow -Protocol TCP -LocalPort $firewallPort
 
 Write-Host "`nUpdating build agent name and server url..."
-$agentPropertiesFile="$buildAgentFolder\conf\buildAgent.properties"
+$agentPropertiesFile = "$buildAgentFolder\conf\buildAgent.properties"
 (Get-Content $agentPropertiesFile).replace('#AGENT_NAME#', $buildAgentName).replace('#SERVER_URL#', "http://aspnetci/").replace('#WORK_DIR#', "C\:\\b\\w").replace('#TEMP_DIR#', "C\:\\b\\t").replace('#SYSTEM_DIR#', "C\:\\BuildAgent\\system") | Set-Content $agentPropertiesFile
 
 Write-Host "Enable File and Printer sharing firewall rule..."
@@ -29,19 +29,19 @@ netsh advfirewall firewall set rule group="File and Printer Sharing" new enable=
 
 Write-Host "Installing Java SDK 1.8..."
 Copy "$setupFilesShare\javasdk18" "c:\" -Recurse
-$args="INSTALLCFG=c:\javasdk18\InstallConfig"
+$args = "INSTALLCFG=c:\javasdk18\InstallConfig"
 Start-Process -FilePath "c:\javasdk18\jdk-8u91-windows-x64.exe" -ArgumentList $args -Wait
 Del "c:\javasdk18" -Force -Recurse
 
 Write-Host "`nInstalling Node..."
 Copy "$setupFilesShare\node-v4.4.5-x64.msi" "c:\"
-$args="/i c:\node-v4.4.5-x64.msi /qn"
+$args = "/i c:\node-v4.4.5-x64.msi /qn"
 Start-Process -FilePath msiexec.exe -ArgumentList $args -Wait
 Del "c:\node-v4.4.5-x64.msi" -Force
 
 # Reload the environment variables so that 'npm' is in the path
 Write-Host "`nReloading Path environment variable..."
-$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User") 
 
 Write-Host "`nInstalling Bower globally..."
 npm install -g bower
@@ -57,10 +57,10 @@ npm install -g typescript
 npm install -g tsd
 
 Write-Host "`nInstalling Git..."
-Copy "$setupFilesShare\Git-2.8.4-64-bit.exe" "c:\"
-$args="/SILENT /COMPONENTS='icons,ext\reg\shellhere,assoc,assoc_sh'"
-Start-Process -FilePath "c:\Git-2.8.4-64-bit.exe" -ArgumentList $args -Wait
-del "c:\Git-2.8.4-64-bit.exe" -Force
+Copy "$setupFilesShare\Git-2.16.1.4-64-bit.exe" "c:\"
+$args = "/SILENT /COMPONENTS='icons,ext\reg\shellhere,assoc,assoc_sh'"
+Start-Process -FilePath "c:\Git-2.16.1.4-64-bit.exe" -ArgumentList $args -Wait
+del "c:\Git-2.16.1.4-64-bit.exe" -Force
 
 #TODO: Visual Studio's WTE install should install ANCM and following should not be required. 
 
@@ -83,10 +83,10 @@ git clone http://github.com/aspnet/coherence-signed
 cd coherence-signed
 git checkout dev
 
-$changePasswordScript="c:\coherence-signed\tools\ChangePassword.ps1"
+$changePasswordScript = "c:\coherence-signed\tools\ChangePassword.ps1"
 
 Write-Host "`nInstalling TeamCity build agent service..."
-$binFolder="$buildAgentFolder\bin"
+$binFolder = "$buildAgentFolder\bin"
 cd $binFolder
 & .\service.install.bat
 & .\service.start.bat
