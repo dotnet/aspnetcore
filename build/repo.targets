@@ -191,9 +191,6 @@
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). PackageArtifact must have the 'Category' metadata."
            Condition="'%(PackageArtifact.Category)' == '' " />
 
-    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as Metapackage='true' must be Category='ship'."
-           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.Metapackage)' == 'true' " />
-
     <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as LZMA='true' must be Category='ship'."
            Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.LZMA)' == 'true' " />
 
