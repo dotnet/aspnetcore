@@ -21,7 +21,7 @@ namespace Company.WebApplication1.Controllers
         [HttpGet]
         public IActionResult SignIn()
         {
-            var redirectUrl =  Url.Action(nameof(HomeController.Index), "Home");
+            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
                 OpenIdConnectDefaults.AuthenticationScheme
@@ -60,7 +60,7 @@ namespace Company.WebApplication1.Controllers
         [HttpGet]
         public IActionResult SignIn()
         {
-            var redirectUrl =  Url.Action(nameof(HomeController.Index), "Home");
+            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
                 OpenIdConnectDefaults.AuthenticationScheme
@@ -70,7 +70,7 @@ namespace Company.WebApplication1.Controllers
         [HttpGet]
         public IActionResult ResetPassword()
         {
-            var redirectUrl =  Url.Action(nameof(HomeController.Index), "Home");
+            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = _options.ResetPasswordPolicyId;
             return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
@@ -79,7 +79,7 @@ namespace Company.WebApplication1.Controllers
         [HttpGet]
         public IActionResult EditProfile()
         {
-            var redirectUrl =  Url.Action(nameof(HomeController.Index), "Home");
+            var redirectUrl = Url.Action(nameof(HomeController.Index), "Home");
             var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
             properties.Items[AzureAdB2COptions.PolicyAuthenticationProperty] = _options.EditProfilePolicyId;
             return Challenge(properties, OpenIdConnectDefaults.AuthenticationScheme);
@@ -95,7 +95,7 @@ namespace Company.WebApplication1.Controllers
                 OpenIdConnectDefaults.AuthenticationScheme);
         }
 
-         [HttpGet]
+        [HttpGet]
         public IActionResult SignedOut()
         {
             if (User.Identity.IsAuthenticated)
