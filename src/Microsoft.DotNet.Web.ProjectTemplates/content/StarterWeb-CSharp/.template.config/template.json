@@ -33,7 +33,7 @@
           ]
         },
         {
-          "condition": "(!IndividualAuth && !OrganizationalAuth)",
+          "condition": "(!IndividualAuth && !OrganizationalAuth && !IndividualB2CAuth)",
           "exclude": [
             "Controllers/AccountController.cs",
             "Views/Account/**",

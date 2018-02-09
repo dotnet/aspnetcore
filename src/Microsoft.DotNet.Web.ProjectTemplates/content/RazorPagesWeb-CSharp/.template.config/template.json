@@ -34,7 +34,7 @@
           ]
         },
         {
-          "condition": "(!OrganizationalAuth)",
+          "condition": "(!OrganizationalAuth && !IndividualB2CAuth)",
           "exclude": [
             "Controllers/**",
             "Pages/Account/**",
@@ -77,12 +77,6 @@
           "condition": "(!IndividualB2CAuth)",
           "exclude": [
             "Extensions/AzureAdB2C*.cs"
-          ]
-        },
-        {
-          "condition": "(!OrganizationalAuth || !IndividualB2CAuth)",
-          "exclude": [
-            "Controllers/AccountController.cs"
           ]
         }
       ]
