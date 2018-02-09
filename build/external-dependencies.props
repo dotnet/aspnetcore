@@ -18,7 +18,7 @@
 
   <!-- .NET Core feed -->
   <PropertyGroup>
-    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
+    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180208-05/final/index.json</DotNetCoreFeed>
   </PropertyGroup>
   <ItemGroup>
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
@@ -104,6 +104,12 @@
     <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
   <!-- CoreFX labs -->
   <PropertyGroup>
@@ -111,9 +117,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.Collections.Sequences" Version="$(SystemCollectionsSequencesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Extensions" Version="$(SystemIOPipelinesExtensionsPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Text.Primitives" Version="$(SystemIOPipelinesTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipelines.Testing" Version="$(SystemIOPipelinesTestingPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
@@ -233,11 +236,6 @@
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="$(MicrosoftAzureServicesAppAuthenticationPackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" Source="$(DefaultNuGetFeed)">
       <NoWarn>KRB2004</NoWarn>
@@ -317,15 +315,10 @@
       <NoWarn>KRB2004</NoWarn>
       <VariableName>NETStandard16PackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="$(NETStandard20PackageVersion)" Source="$(DefaultNuGetFeed)">
+    <ExternalDependency Include="NETStandard.Library" Version="$(NETStandardLibrary20PackageVersion)" Source="$(DefaultNuGetFeed)">
       <!-- netstandard2.0 -->
       <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandard20PackageVersion</VariableName>
-    </ExternalDependency>
-    <ExternalDependency Include="NETStandard.Library" Version="$(NETStandard201PackageVersion)" Source="$(DefaultNuGetFeed)">
-      <!-- netstandard2.0.1 -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>NETStandard201PackageVersion</VariableName>
+      <VariableName>NETStandardLibrary20PackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="$(NewtonsoftJsonBsonPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" Source="$(DefaultNuGetFeed)">
@@ -338,7 +331,6 @@
       <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" Source="$(DefaultNuGetFeed)" />
