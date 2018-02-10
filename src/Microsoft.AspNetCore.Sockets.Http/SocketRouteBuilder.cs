@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -21,15 +20,15 @@ namespace Microsoft.AspNetCore.Sockets
             _dispatcher = dispatcher;
         }
 
-        public void MapSocket(string path, Action<IConnectionBuilder> socketConfig) =>
+        public void MapSocket(string path, Action<ISocketBuilder> socketConfig) =>
             MapSocket(new PathString(path), new HttpSocketOptions(), socketConfig);
 
-        public void MapSocket(PathString path, Action<IConnectionBuilder> socketConfig) =>
+        public void MapSocket(PathString path, Action<ISocketBuilder> socketConfig) =>
             MapSocket(path, new HttpSocketOptions(), socketConfig);
 
-        public void MapSocket(PathString path, HttpSocketOptions options, Action<IConnectionBuilder> socketConfig)
+        public void MapSocket(PathString path, HttpSocketOptions options, Action<ISocketBuilder> socketConfig)
         {
-            var socketBuilder = new ConnectionBuilder(_routes.ServiceProvider);
+            var socketBuilder = new SocketBuilder(_routes.ServiceProvider);
             socketConfig(socketBuilder);
             var socket = socketBuilder.Build();
             _routes.MapRoute(path, c => _dispatcher.ExecuteAsync(c, options, socket));

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
 
@@ -24,9 +23,9 @@ namespace SocialWeather
 
         public void OnConnectedAsync(ConnectionContext connection)
         {
-            connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"] = new HashSet<string>();
+            connection.Metadata["groups"] = new HashSet<string>();
             var format = connection.GetHttpContext().Request.Query["formatType"].ToString();
-            connection.Features.Get<IConnectionMetadataFeature>().Metadata["format"] = format;
+            connection.Metadata["format"] = format;
             if (string.Equals(format, "protobuf", StringComparison.OrdinalIgnoreCase))
             {
                 var transferModeFeature = connection.Features.Get<ITransferModeFeature>();
@@ -48,7 +47,7 @@ namespace SocialWeather
             foreach (var connection in _connectionList)
             {
                 var context = connection.GetHttpContext();
-                var formatter = _formatterResolver.GetFormatter<T>((string)connection.Features.Get<IConnectionMetadataFeature>().Metadata["format"]);
+                var formatter = _formatterResolver.GetFormatter<T>((string)connection.Metadata["format"]);
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
 
@@ -73,7 +72,7 @@ namespace SocialWeather
 
         public void AddGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = (HashSet<string>)connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"];
+            var groups = (HashSet<string>)connection.Metadata["groups"];
             lock (groups)
             {
                 groups.Add(groupName);
@@ -82,7 +81,7 @@ namespace SocialWeather
 
         public void RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = (HashSet<string>)connection.Features.Get<IConnectionMetadataFeature>().Metadata["groups"];
+            var groups = (HashSet<string>)connection.Metadata["groups"];
             if (groups != null)
             {
                 lock (groups)

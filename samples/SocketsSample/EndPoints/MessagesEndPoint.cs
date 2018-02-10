@@ -5,9 +5,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Features;
 
 namespace SocketsSample.EndPoints
 {
@@ -19,7 +17,7 @@ namespace SocketsSample.EndPoints
         {
             Connections.Add(connection);
 
-            await Broadcast($"{connection.ConnectionId} connected ({connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport]})");
+            await Broadcast($"{connection.ConnectionId} connected ({connection.Metadata[ConnectionMetadataNames.Transport]})");
 
             try
             {
@@ -52,7 +50,7 @@ namespace SocketsSample.EndPoints
             {
                 Connections.Remove(connection);
 
-                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport]})");
+                await Broadcast($"{connection.ConnectionId} disconnected ({connection.Metadata[ConnectionMetadataNames.Transport]})");
             }
         }
 

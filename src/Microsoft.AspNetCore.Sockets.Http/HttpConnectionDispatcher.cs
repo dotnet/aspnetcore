@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets
             _logger = _loggerFactory.CreateLogger<HttpConnectionDispatcher>();
         }
 
-        public async Task ExecuteAsync(HttpContext context, HttpSocketOptions options, ConnectionDelegate ConnectionDelegate)
+        public async Task ExecuteAsync(HttpContext context, HttpSocketOptions options, SocketDelegate socketDelegate)
         {
             // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
             // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
@@ -54,7 +53,7 @@ namespace Microsoft.AspNetCore.Sockets
                 else if (HttpMethods.IsGet(context.Request.Method))
                 {
                     // GET /{path}
-                    await ExecuteEndpointAsync(context, ConnectionDelegate, options, logScope);
+                    await ExecuteEndpointAsync(context, socketDelegate, options, logScope);
                 }
                 else
                 {
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private async Task ExecuteEndpointAsync(HttpContext context, ConnectionDelegate ConnectionDelegate, HttpSocketOptions options, ConnectionLogScope logScope)
+        private async Task ExecuteEndpointAsync(HttpContext context, SocketDelegate socketDelegate, HttpSocketOptions options, ConnectionLogScope logScope)
         {
             var supportedTransports = options.Transports;
 
@@ -120,7 +119,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // We only need to provide the Input channel since writing to the application is handled through /send.
                 var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
-                await DoPersistentConnection(ConnectionDelegate, sse, context, connection);
+                await DoPersistentConnection(socketDelegate, sse, context, connection);
             }
             else if (context.WebSockets.IsWebSocketRequest)
             {
@@ -142,7 +141,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
-                await DoPersistentConnection(ConnectionDelegate, ws, context, connection);
+                await DoPersistentConnection(socketDelegate, ws, context, connection);
             }
             else
             {
@@ -203,7 +202,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                         connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
 
-                        connection.ApplicationTask = ExecuteApplication(ConnectionDelegate, connection);
+                        connection.ApplicationTask = ExecuteApplication(socketDelegate, connection);
                     }
                     else
                     {
@@ -292,7 +291,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private async Task DoPersistentConnection(ConnectionDelegate ConnectionDelegate,
+        private async Task DoPersistentConnection(SocketDelegate socketDelegate,
                                                   IHttpTransport transport,
                                                   HttpContext context,
                                                   DefaultConnectionContext connection)
@@ -324,7 +323,7 @@ namespace Microsoft.AspNetCore.Sockets
                 connection.Status = DefaultConnectionContext.ConnectionStatus.Active;
 
                 // Call into the end point passing the connection
-                connection.ApplicationTask = ExecuteApplication(ConnectionDelegate, connection);
+                connection.ApplicationTask = ExecuteApplication(socketDelegate, connection);
 
                 // Start the transport
                 connection.TransportTask = transport.ProcessRequestAsync(context, context.RequestAborted);
@@ -340,12 +339,12 @@ namespace Microsoft.AspNetCore.Sockets
             await _manager.DisposeAndRemoveAsync(connection);
         }
 
-        private async Task ExecuteApplication(ConnectionDelegate ConnectionDelegate, ConnectionContext connection)
+        private async Task ExecuteApplication(SocketDelegate socketDelegate, ConnectionContext connection)
         {
             // Verify some initialization invariants
             // We want to be positive that the IConnectionInherentKeepAliveFeature is initialized before invoking the application, if the long polling transport is in use.
-            Debug.Assert(connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
-            Debug.Assert((TransportType?)connection.Features.Get<IConnectionMetadataFeature>().Metadata[ConnectionMetadataNames.Transport] != TransportType.LongPolling ||
+            Debug.Assert(connection.Metadata[ConnectionMetadataNames.Transport] != null, "Transport has not been initialized yet");
+            Debug.Assert((TransportType?)connection.Metadata[ConnectionMetadataNames.Transport] != TransportType.LongPolling ||
                 connection.Features.Get<IConnectionInherentKeepAliveFeature>() != null, "Long-polling transport is in use but IConnectionInherentKeepAliveFeature as not configured");
 
             // Jump onto the thread pool thread so blocking user code doesn't block the setup of the
@@ -353,7 +352,7 @@ namespace Microsoft.AspNetCore.Sockets
             await AwaitableThreadPool.Yield();
 
             // Running this in an async method turns sync exceptions into async ones
-            await ConnectionDelegate(connection);
+            await socketDelegate(connection);
         }
 
         private Task ProcessNegotiate(HttpContext context, HttpSocketOptions options, ConnectionLogScope logScope)
