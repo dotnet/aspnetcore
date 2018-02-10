@@ -3,12 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.Sockets
 {
     public static class SocketBuilderExtensions
     {
-        public static ISocketBuilder Use(this ISocketBuilder socketBuilder, Func<ConnectionContext, Func<Task>, Task> middleware)
+        public static IConnectionBuilder Use(this IConnectionBuilder socketBuilder, Func<ConnectionContext, Func<Task>, Task> middleware)
         {
             return socketBuilder.Use(next =>
             {
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets
             });
         }
 
-        public static ISocketBuilder Run(this ISocketBuilder socketBuilder, Func<ConnectionContext, Task> middleware)
+        public static IConnectionBuilder Run(this IConnectionBuilder socketBuilder, Func<ConnectionContext, Task> middleware)
         {
             return socketBuilder.Use(next =>
             {

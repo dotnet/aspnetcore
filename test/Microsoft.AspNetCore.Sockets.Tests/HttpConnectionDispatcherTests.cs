@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Request.Query = qs;
                     SetTransport(context, transportType);
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
                     await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -151,7 +152,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
                     await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -188,7 +189,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
                     await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -233,7 +234,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var qs = new QueryCollection(values);
                     context.Request.Query = qs;
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
 
@@ -268,7 +269,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                     SetTransport(context, transportType);
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
                     await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     context.Request.Path = "/foo";
                     context.Request.Method = "POST";
 
-                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    var builder = new ConnectionBuilder(services.BuildServiceProvider());
                     builder.UseEndPoint<TestEndPoint>();
                     var app = builder.Build();
                     await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -370,7 +371,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
                 await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -396,7 +397,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<SynchronusExceptionEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<SynchronusExceptionEndPoint>();
                 var app = builder.Build();
                 await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -422,7 +423,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
                 await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
@@ -448,7 +449,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -474,7 +475,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -506,7 +507,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -545,7 +546,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -583,7 +584,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -608,7 +609,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -643,7 +644,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<BlockingEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<BlockingEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -676,7 +677,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<BlockingEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<BlockingEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -707,7 +708,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -751,7 +752,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<ImmediatelyCompleteEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
 
@@ -795,7 +796,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -840,7 +841,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -892,7 +893,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 context.Response.Body = new MemoryStream();
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -952,7 +953,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 context.Response.Body = new MemoryStream();
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -1030,7 +1031,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 context.Response.Body = new MemoryStream();
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -1086,7 +1087,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.Request.Query = qs;
                 context.Response.Body = new MemoryStream();
 
-                var builder = new SocketBuilder(sp);
+                var builder = new ConnectionBuilder(sp);
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -1116,7 +1117,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 var services = new ServiceCollection();
                 services.AddEndPoint<TestEndPoint>();
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<TestEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();
@@ -1196,7 +1197,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var qs = new QueryCollection(values);
                 context.Request.Query = qs;
 
-                var builder = new SocketBuilder(services.BuildServiceProvider());
+                var builder = new ConnectionBuilder(services.BuildServiceProvider());
                 builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
                 var app = builder.Build();
                 var options = new HttpSocketOptions();

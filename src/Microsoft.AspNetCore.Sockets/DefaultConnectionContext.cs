@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Internal;
 
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         public ClaimsPrincipal User { get; set; }
 
-        public override IDictionary<object, object> Metadata { get; set; } = new ConnectionMetadata();
+        public IDictionary<object, object> Metadata { get; set; } = new ConnectionMetadata();
 
         public IDuplexPipe Application { get; }
 
@@ -72,6 +74,8 @@ namespace Microsoft.AspNetCore.Sockets
         public TransferMode TransportCapabilities { get; set; }
 
         public TransferMode TransferMode { get; set; }
+
+        public override MemoryPool MemoryPool { get; }
 
         public void OnHeartbeat(Action<object> action, object state)
         {
