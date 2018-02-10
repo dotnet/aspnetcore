@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -525,13 +524,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return new TestParserManager(parser);
         }
 
-        private static RazorTemplateEngineFactoryService CreateTemplateEngineFactory(
+        private static RazorProjectEngineFactoryService CreateTemplateEngineFactory(
             string path = TestLinePragmaFileName,
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
-            var engine = RazorEngine.CreateDesignTime(builder =>
+            var fileSystem = new TestRazorProjectFileSystem();
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
                 RazorExtensions.Register(builder);
+
+                builder.AddDefaultImports(RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml"));
 
                 if (tagHelpers != null)
                 {
@@ -539,20 +541,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
             });
 
-            // GetImports on RazorTemplateEngine will at least check that the item exists, so we need to pretend
-            // that it does.
-            var items = new List<RazorProjectItem>();
-            items.Add(new TestRazorProjectItem(path));
+            var projectEngineFactoryService = Mock.Of<RazorProjectEngineFactoryService>(
+                service => service.Create(It.IsAny<string>(), It.IsAny<Action<RazorProjectEngineBuilder>>()) == projectEngine);
 
-            var project = new TestRazorProjectFileSystem(items);
-
-            var templateEngine = new RazorTemplateEngine(engine, project);
-            templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");
-
-            var templateEngineFactory = Mock.Of<RazorTemplateEngineFactoryService>(
-                service => service.Create(It.IsAny<string>(), It.IsAny<Action<IRazorEngineBuilder>>()) == templateEngine);
-
-            return templateEngineFactory;
+            return projectEngineFactoryService;
         }
 
         private async Task RunTypeKeywordTestAsync(string keyword)

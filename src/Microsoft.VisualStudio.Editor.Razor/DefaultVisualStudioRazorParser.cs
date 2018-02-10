@@ -31,9 +31,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorTemplateEngineFactoryService _templateEngineFactory;
+        private readonly RazorProjectEngineFactoryService _projectEngineFactory;
         private readonly ErrorReporter _errorReporter;
-        private RazorTemplateEngine _templateEngine;
+        private RazorProjectEngine _projectEngine;
         private RazorCodeDocument _codeDocument;
         private ITextSnapshot _snapshot;
         private bool _disposed;
@@ -47,7 +47,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public DefaultVisualStudioRazorParser(
             ForegroundDispatcher dispatcher,
             VisualStudioDocumentTracker documentTracker,
-            RazorTemplateEngineFactoryService templateEngineFactory,
+            RazorProjectEngineFactoryService projectEngineFactory,
             ErrorReporter errorReporter,
             VisualStudioCompletionBroker completionBroker)
         {
@@ -61,9 +61,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(documentTracker));
             }
 
-            if (templateEngineFactory == null)
+            if (projectEngineFactory == null)
             {
-                throw new ArgumentNullException(nameof(templateEngineFactory));
+                throw new ArgumentNullException(nameof(projectEngineFactory));
             }
 
             if (errorReporter == null)
@@ -77,7 +77,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _dispatcher = dispatcher;
-            _templateEngineFactory = templateEngineFactory;
+            _projectEngineFactory = projectEngineFactory;
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
             _documentTracker = documentTracker;
@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
         }
 
-        public override RazorTemplateEngine TemplateEngine => _templateEngine;
+        public override RazorProjectEngine ProjectEngine => _projectEngine;
 
         public override string FilePath => _documentTracker.FilePath;
 
@@ -170,8 +170,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _dispatcher.AssertForegroundThread();
 
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
-            _templateEngine = _templateEngineFactory.Create(projectDirectory, ConfigureTemplateEngine);
-            _parser = new BackgroundParser(TemplateEngine, FilePath);
+            _projectEngine = _projectEngineFactory.Create(projectDirectory, ConfigureProjectEngine);
+            _parser = new BackgroundParser(ProjectEngine, FilePath, projectDirectory);
             _parser.ResultsReady += OnResultsReady;
             _parser.Start();
 
@@ -383,7 +383,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             DocumentStructureChanged?.Invoke(this, args);
         }
 
-        private void ConfigureTemplateEngine(IRazorEngineBuilder builder)
+        private void ConfigureProjectEngine(RazorProjectEngineBuilder builder)
         {
             builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(_documentTracker.TagHelpers));

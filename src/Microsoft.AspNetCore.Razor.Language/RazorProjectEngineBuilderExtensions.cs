@@ -2,13 +2,77 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class RazorProjectEngineBuilderExtensions
     {
+        /// <summary>
+        /// Registers a class configuration delegate that gets invoked during code generation.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder ConfigureClass(
+            this RazorProjectEngineBuilder builder,
+            Action<RazorCodeDocument, ClassDeclarationIntermediateNode> configureClass)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configureClass == null)
+            {
+                throw new ArgumentNullException(nameof(configureClass));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add(configureClass);
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the base type for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="baseType">The name of the base type.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetBaseType(this RazorProjectEngineBuilder builder, string baseType)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add((document, @class) => @class.BaseType = baseType);
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the namespace for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="namespaceName">The name of the namespace.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetNamespace(this RazorProjectEngineBuilder builder, string namespaceName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureNamespace.Add((document, @namespace) => @namespace.Content = namespaceName);
+            return builder;
+        }
+
         public static void SetImportFeature(this RazorProjectEngineBuilder builder, IImportProjectFeature feature)
         {
             if (builder == null)
@@ -79,6 +143,27 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        /// <summary>
+        /// Adds the provided <see cref="RazorSourceDocument" /> documents as imports to all documents processed
+        /// by the <see cref="RazorProjectEngine"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="imports">The collection of imports.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params RazorSourceDocument[] imports)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var existingImportFeature = builder.Features.OfType<IImportProjectFeature>().First();
+            var testImportFeature = new AdditionalImportsProjectFeature(existingImportFeature, imports);
+            builder.SetImportFeature(testImportFeature);
+
+            return builder;
+        }
+
         private static IRazorDirectiveFeature GetDirectiveFeature(RazorProjectEngineBuilder builder)
         {
             var directiveFeature = builder.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault();
@@ -101,6 +186,48 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return targetExtensionFeature;
+        }
+
+        private static DefaultDocumentClassifierPassFeature GetDefaultDocumentClassifierPassFeature(RazorProjectEngineBuilder builder)
+        {
+            var configurationFeature = builder.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
+            if (configurationFeature == null)
+            {
+                configurationFeature = new DefaultDocumentClassifierPassFeature();
+                builder.Features.Add(configurationFeature);
+            }
+
+            return configurationFeature;
+        }
+
+        private class AdditionalImportsProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
+        {
+            private readonly IImportProjectFeature _existingImportFeature;
+            private readonly RazorSourceDocument[] _imports;
+
+            public override RazorProjectEngine ProjectEngine
+            {
+                get => base.ProjectEngine;
+                set
+                {
+                    _existingImportFeature.ProjectEngine = value;
+                    base.ProjectEngine = value;
+                }
+            }
+
+            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params RazorSourceDocument[] imports)
+            {
+                _existingImportFeature = existingImportFeature;
+                _imports = imports;
+            }
+
+            public IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem)
+            {
+                var imports = _existingImportFeature.GetImports(projectItem).ToList();
+                imports.AddRange(_imports);
+
+                return imports;
+            }
         }
     }
 }

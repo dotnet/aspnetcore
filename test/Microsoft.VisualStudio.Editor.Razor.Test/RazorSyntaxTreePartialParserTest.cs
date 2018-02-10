@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Xunit;
-using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -44,12 +42,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 builder.Build()
             };
-            var templateEngine = CreateTemplateEngine(tagHelpers: descriptors);
-            var document = TestRazorCodeDocument.Create(
-                TestRazorSourceDocument.Create(edit.OldSnapshot.GetText()),
-                new[] { templateEngine.Options.DefaultImports });
-            templateEngine.Engine.Process(document);
-            var syntaxTree = document.GetSyntaxTree();
+            var projectEngine = CreateProjectEngine(tagHelpers: descriptors);
+            var projectItem = new TestRazorProjectItem("Index.cshtml")
+            {
+                Content = edit.OldSnapshot.GetText()
+            };
+            var codeDocument = projectEngine.Process(projectItem);
+            var syntaxTree = codeDocument.GetSyntaxTree();
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
             // Act
@@ -115,12 +114,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 attribute.SetPropertyName("StringAttribute");
             });
             var descriptors = new[] { builder.Build() };
-            var templateEngine = CreateTemplateEngine(tagHelpers: descriptors);
-            var document = TestRazorCodeDocument.Create(
-                TestRazorSourceDocument.Create(edit.OldSnapshot.GetText()),
-                new[] { templateEngine.Options.DefaultImports });
-            templateEngine.Engine.Process(document);
-            var syntaxTree = document.GetSyntaxTree();
+            var projectEngine = CreateProjectEngine(tagHelpers: descriptors);
+            var sourceDocument = new TestRazorProjectItem("Index.cshtml")
+            {
+                Content = edit.OldSnapshot.GetText()
+            };
+            var codeDocument = projectEngine.Process(sourceDocument);
+            var syntaxTree = codeDocument.GetSyntaxTree();
             var parser = new RazorSyntaxTreePartialParser(syntaxTree);
 
             // Act
@@ -548,7 +548,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private void RunPartialParseRejectionTest(TestEdit edit, PartialParseResultInternal additionalFlags = 0)
         {
-            var templateEngine = CreateTemplateEngine();
+            var templateEngine = CreateProjectEngine();
             var document = TestRazorCodeDocument.Create(edit.OldSnapshot.GetText());
             templateEngine.Engine.Process(document);
             var syntaxTree = document.GetSyntaxTree();
@@ -560,7 +560,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private static void RunPartialParseTest(TestEdit edit, Block expectedTree, PartialParseResultInternal additionalFlags = 0)
         {
-            var templateEngine = CreateTemplateEngine();
+            var templateEngine = CreateProjectEngine();
             var document = TestRazorCodeDocument.Create(edit.OldSnapshot.GetText());
             templateEngine.Engine.Process(document);
             var syntaxTree = document.GetSyntaxTree();
@@ -580,13 +580,16 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return new TestEdit(sourceChange, oldSnapshot, changedSnapshot);
         }
 
-        private static RazorTemplateEngine CreateTemplateEngine(
+        private static RazorProjectEngine CreateProjectEngine(
             string path = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml",
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
-            var engine = RazorEngine.CreateDesignTime(builder =>
+            var fileSystem = new TestRazorProjectFileSystem();
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
                 RazorExtensions.Register(builder);
+
+                builder.AddDefaultImports(RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml"));
 
                 if (tagHelpers != null)
                 {
@@ -594,16 +597,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
             });
 
-            // GetImports on RazorTemplateEngine will at least check that the item exists, so we need to pretend
-            // that it does.
-            var items = new List<RazorProjectItem>();
-            items.Add(new TestRazorProjectItem(path));
-
-            var project = new TestRazorProjectFileSystem(items);
-
-            var templateEngine = new RazorTemplateEngine(engine, project);
-            templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");
-            return templateEngine;
+            return projectEngine;
         }
     }
 }

@@ -12,7 +12,7 @@ using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    internal class DefaultTemplateEngineFactoryService : RazorTemplateEngineFactoryService
+    internal class DefaultProjectEngineFactoryService : RazorProjectEngineFactoryService
     {
         private readonly static MvcExtensibilityConfiguration DefaultConfiguration = new MvcExtensibilityConfiguration(
             RazorLanguageVersion.Version_2_0,
@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private readonly ProjectSnapshotManager _projectManager;
 
-        public DefaultTemplateEngineFactoryService(ProjectSnapshotManager projectManager)
+        public DefaultProjectEngineFactoryService(ProjectSnapshotManager projectManager)
         {
             if (projectManager == null)
             {
@@ -32,7 +32,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _projectManager = projectManager;
         }
 
-        public override RazorTemplateEngine Create(string projectPath, Action<IRazorEngineBuilder> configure)
+        public override RazorProjectEngine Create(string projectPath, Action<RazorProjectEngineBuilder> configure)
         {
             if (projectPath == null)
             {
@@ -43,12 +43,14 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var project = FindProject(projectPath);
             var configuration = (project?.Configuration as MvcExtensibilityConfiguration) ?? DefaultConfiguration;
             var razorLanguageVersion = configuration.LanguageVersion;
-            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>());
 
-            RazorEngine engine;
+            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>());
+            var fileSystem = RazorProjectFileSystem.Create(projectPath);
+
+            RazorProjectEngine projectEngine;
             if (razorLanguageVersion.Major == 1)
             {
-                engine = RazorEngine.CreateCore(razorConfiguration, true, b =>
+                projectEngine = RazorProjectEngine.Create(razorConfiguration, fileSystem, b =>
                 {
                     configure?.Invoke(b);
 
@@ -59,24 +61,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         Mvc1_X.RazorExtensions.RegisterViewComponentTagHelpers(b);
                     }
                 });
-
-                var templateEngine = new Mvc1_X.MvcRazorTemplateEngine(engine, RazorProjectFileSystem.Create(projectPath));
-                templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
-                return templateEngine;
             }
             else
             {
-                engine = RazorEngine.CreateCore(razorConfiguration, true, b =>
+                projectEngine = RazorProjectEngine.Create(razorConfiguration, fileSystem, b =>
                 {
                     configure?.Invoke(b);
 
                     MvcLatest.RazorExtensions.Register(b);
                 });
-
-                var templateEngine = new MvcLatest.MvcRazorTemplateEngine(engine, RazorProjectFileSystem.Create(projectPath));
-                templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
-                return templateEngine;
             }
+
+            return projectEngine;
         }
 
         private ProjectSnapshot FindProject(string directory)

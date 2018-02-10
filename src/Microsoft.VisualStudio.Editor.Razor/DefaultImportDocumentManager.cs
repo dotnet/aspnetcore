@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 
@@ -15,7 +16,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private readonly FileChangeTrackerFactory _fileChangeTrackerFactory;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ErrorReporter _errorReporter;
-        private readonly RazorTemplateEngineFactoryService _templateEngineFactoryService;
+        private readonly RazorProjectEngineFactoryService _projectEngineFactoryService;
         private readonly Dictionary<string, ImportTracker> _importTrackerCache;
 
         public override event EventHandler<ImportChangedEventArgs> Changed;
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ForegroundDispatcher foregroundDispatcher,
             ErrorReporter errorReporter,
             FileChangeTrackerFactory fileChangeTrackerFactory,
-            RazorTemplateEngineFactoryService templateEngineFactoryService)
+            RazorProjectEngineFactoryService projectEngineFactoryService)
         {
             if (foregroundDispatcher == null)
             {
@@ -41,15 +42,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(fileChangeTrackerFactory));
             }
 
-            if (templateEngineFactoryService == null)
+            if (projectEngineFactoryService == null)
             {
-                throw new ArgumentNullException(nameof(templateEngineFactoryService));
+                throw new ArgumentNullException(nameof(projectEngineFactoryService));
             }
 
             _foregroundDispatcher = foregroundDispatcher;
             _errorReporter = errorReporter;
             _fileChangeTrackerFactory = fileChangeTrackerFactory;
-            _templateEngineFactoryService = templateEngineFactoryService;
+            _projectEngineFactoryService = projectEngineFactoryService;
             _importTrackerCache = new Dictionary<string, ImportTracker>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -115,10 +116,26 @@ namespace Microsoft.VisualStudio.Editor.Razor
         private IEnumerable<RazorProjectItem> GetImportItems(VisualStudioDocumentTracker tracker)
         {
             var projectDirectory = Path.GetDirectoryName(tracker.ProjectPath);
-            var templateEngine = _templateEngineFactoryService.Create(projectDirectory, _ => { });
-            var imports = templateEngine.GetImportItems(tracker.FilePath);
+            var projectEngine = _projectEngineFactoryService.Create(projectDirectory, _ => { });
+            var trackerItem = projectEngine.FileSystem.GetItem(tracker.FilePath);
+            var importFeature = projectEngine.ProjectFeatures.OfType<IImportProjectFeature>().FirstOrDefault();
 
-            return imports;
+            // There should always be an import feature unless someone has misconfigured their RazorProjectEngine.
+            // In that case once we attempt to parse the Razor file we'll explode and give the a user a decent
+            // error message; for now, lets just be extra protective and assume 0 imports to not give a bad error.
+            var imports = importFeature?.GetImports(trackerItem) ?? Enumerable.Empty<RazorSourceDocument>();
+            var physicalImports = imports.Where(import => import.FilePath != null);
+
+            // Now that we have non-dynamic imports we need to get their RazorProjectItem equivalents so we have their
+            // physical file paths (according to the FileSystem).
+            var projectItems = new List<RazorProjectItem>();
+            foreach (var physicalImport in physicalImports)
+            {
+                var projectItem = projectEngine.FileSystem.GetItem(physicalImport.FilePath);
+                projectItems.Add(projectItem);
+            }
+
+            return projectItems;
         }
 
         private void OnChanged(ImportTracker importTracker, FileChangeKind changeKind)

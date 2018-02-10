@@ -14,9 +14,9 @@ using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class DefaultTemplateEngineFactoryServiceTest
+    public class DefaultProjectEngineFactoryServiceTest
     {
-        public DefaultTemplateEngineFactoryServiceTest()
+        public DefaultProjectEngineFactoryServiceTest()
         {
             Project project = null;
 
@@ -35,7 +35,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public Workspace Workspace { get; }
 
         [Fact]
-        public void Create_CreatesDesignTimeTemplateEngine_ForLatest()
+        public void Create_CreatesTemplateEngine_ForLatest()
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
@@ -49,13 +49,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("2.0.0.0")))),
             });
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
             {
                 b.Features.Add(new MyCoolNewFeature());
-                Assert.True(b.DesignTime);
             });
 
             // Assert
@@ -65,7 +64,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
-        public void Create_CreatesDesignTimeTemplateEngine_ForVersion1_1()
+        public void Create_CreatesTemplateEngine_ForVersion1_1()
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
@@ -79,13 +78,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.1.3.0")))),
             });
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
             {
                 b.Features.Add(new MyCoolNewFeature());
-                Assert.True(b.DesignTime);
             });
 
             // Assert
@@ -109,7 +107,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.0.0.0")))),
             });
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -138,13 +136,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
                     new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("3.0.0.0")))),
             });
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
             {
                 b.Features.Add(new MyCoolNewFeature());
-                Assert.True(b.DesignTime);
             });
 
             // Assert
@@ -159,13 +156,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
             {
                 b.Features.Add(new MyCoolNewFeature());
-                Assert.True(b.DesignTime);
             });
 
             // Assert
@@ -181,13 +177,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var projectManager = new TestProjectSnapshotManager(Workspace);
             projectManager.ProjectAdded(Project);
 
-            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
             {
                 b.Features.Add(new MyCoolNewFeature());
-                Assert.True(b.DesignTime);
             });
 
             // Assert

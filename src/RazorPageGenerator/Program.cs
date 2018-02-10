@@ -31,8 +31,8 @@ Examples:
 
             var rootNamespace = args[0];
             var targetProjectDirectory = args.Length > 1 ? args[1] : Directory.GetCurrentDirectory();
-            var razorEngine = CreateRazorEngine(rootNamespace);
-            var results = MainCore(razorEngine, targetProjectDirectory);
+            var projectEngine = CreateProjectEngine(rootNamespace, targetProjectDirectory);
+            var results = MainCore(projectEngine, targetProjectDirectory);
 
             foreach (var result in results)
             {
@@ -45,9 +45,10 @@ Examples:
             return 0;
         }
 
-        public static RazorEngine CreateRazorEngine(string rootNamespace, Action<IRazorEngineBuilder> configure = null)
+        public static RazorProjectEngine CreateProjectEngine(string rootNamespace, string targetProjectDirectory, Action<RazorProjectEngineBuilder> configure = null)
         {
-            var razorEngine = RazorEngine.Create(builder =>
+            var fileSystem = RazorProjectFileSystem.Create(targetProjectDirectory);
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
                 builder
                     .SetNamespace(rootNamespace)
@@ -66,20 +67,18 @@ Examples:
                 {
                     configure(builder);
                 }
-            });
-            return razorEngine;
-        }
 
-        public static IList<RazorPageGeneratorResult> MainCore(RazorEngine razorEngine, string targetProjectDirectory)
-        {
-            var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
-            var razorProject = RazorProjectFileSystem.Create(targetProjectDirectory);
-            var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
-            templateEngine.Options.DefaultImports = RazorSourceDocument.Create(@"
+                builder.AddDefaultImports(RazorSourceDocument.Create(@"
 @using System
 @using System.Threading.Tasks
-", fileName: null);
+", fileName: null));
+            });
+            return projectEngine;
+        }
 
+        public static IList<RazorPageGeneratorResult> MainCore(RazorProjectEngine projectEngine, string targetProjectDirectory)
+        {
+            var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
             var fileCount = 0;
 
             var results = new List<RazorPageGeneratorResult>();
@@ -88,7 +87,7 @@ Examples:
                 Console.WriteLine();
                 Console.WriteLine("  Generating code files for views in {0}", viewDir);
                 var viewDirPath = viewDir.Substring(targetProjectDirectory.Length).Replace('\\', '/');
-                var cshtmlFiles = razorProject.EnumerateItems(viewDirPath);
+                var cshtmlFiles = projectEngine.FileSystem.EnumerateItems(viewDirPath);
 
                 if (!cshtmlFiles.Any())
                 {
@@ -99,7 +98,7 @@ Examples:
                 foreach (var item in cshtmlFiles)
                 {
                     Console.WriteLine("    Generating code file for view {0}...", item.FileName);
-                    results.Add(GenerateCodeFile(templateEngine, item));
+                    results.Add(GenerateCodeFile(projectEngine, item));
                     Console.WriteLine("      Done!");
                     fileCount++;
                 }
@@ -108,10 +107,11 @@ Examples:
             return results;
         }
 
-        private static RazorPageGeneratorResult GenerateCodeFile(RazorTemplateEngine templateEngine, RazorProjectItem projectItem)
+        private static RazorPageGeneratorResult GenerateCodeFile(RazorProjectEngine projectEngine, RazorProjectItem projectItem)
         {
             var projectItemWrapper = new FileSystemRazorProjectItemWrapper(projectItem);
-            var cSharpDocument = templateEngine.GenerateCode(projectItemWrapper);
+            var codeDocument = projectEngine.Process(projectItemWrapper);
+            var cSharpDocument = codeDocument.GetCSharpDocument();
             if (cSharpDocument.Diagnostics.Any())
             {
                 var diagnostics = string.Join(Environment.NewLine, cSharpDocument.Diagnostics);

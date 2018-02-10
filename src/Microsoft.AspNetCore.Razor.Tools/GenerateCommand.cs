@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -90,26 +91,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
             tagHelperManifest = Path.Combine(projectDirectory, tagHelperManifest);
 
             var tagHelpers = GetTagHelpers(tagHelperManifest);
-
-            var engine = RazorEngine.Create(b =>
+            var inputItems = GetInputItems(projectDirectory, sources, outputs, relativePaths);
+            var compositeFileSystem = new CompositeRazorProjectFileSystem(new[]
+            {
+                GetVirtualRazorProjectSystem(inputItems),
+                RazorProjectFileSystem.Create(projectDirectory),
+            });
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, compositeFileSystem, b =>
             {
                 RazorExtensions.Register(b);
 
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
             });
 
-
-            var inputItems = GetInputItems(projectDirectory, sources, outputs, relativePaths);
-            var compositeProject = new CompositeRazorProjectFileSystem(
-                new[]
-                {
-                    GetVirtualRazorProjectSystem(inputItems),
-                    RazorProjectFileSystem.Create(projectDirectory),
-                });
-
-            var templateEngine = new MvcRazorTemplateEngine(engine, compositeProject);
-
-            var results = GenerateCode(templateEngine, inputItems);
+            var results = GenerateCode(projectEngine, inputItems);
 
             var success = true;
 
@@ -180,14 +175,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return items;
         }
 
-        private OutputItem[] GenerateCode(RazorTemplateEngine templateEngine, SourceItem[] inputs)
+        private OutputItem[] GenerateCode(RazorProjectEngine projectEngine, SourceItem[] inputs)
         {
             var outputs = new OutputItem[inputs.Length];
-            Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, i =>
+            Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = Debugger.IsAttached ? 1 : 4 }, i =>
             {
                 var inputItem = inputs[i];
-
-                var csharpDocument = templateEngine.GenerateCode(inputItem.FilePath);
+                var projectItem = projectEngine.FileSystem.GetItem(inputItem.FilePath);
+                var codeDocument = projectEngine.Process(projectItem);
+                var csharpDocument = codeDocument.GetCSharpDocument();
                 outputs[i] = new OutputItem(inputItem, csharpDocument);
             });
 
