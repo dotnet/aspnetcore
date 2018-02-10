@@ -7,27 +7,40 @@ using Microsoft.Extensions.FileProviders;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Mime;
+using System;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class BlazorAppBuilderExtensions
     {
+        /// <summary>
+        /// Configures the middleware pipeline to work with Blazor.
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        /// <param name="clientAssemblyName"
+        ///     >The name of the client assembly relative to the current bin directory.</param>
         public static void UseBlazor(
             this IApplicationBuilder applicationBuilder,
             string clientAssemblyName)
         {
             var binDir = Path.GetDirectoryName(typeof(BlazorConfig).Assembly.Location);
             var clientAssemblyPath = Path.Combine(binDir, $"{clientAssemblyName}.dll");
-            applicationBuilder.UseBlazorInternal(clientAssemblyPath);
+            applicationBuilder.UseBlazor(new BlazorOptions
+            {
+                ClientAssemblyPath = clientAssemblyPath,
+            });
         }
-        
-        // TODO: Change this combination of APIs to make it possible to supply either
-        // an assembly name (resolved to current bin dir) or full assembly path
-        internal static void UseBlazorInternal(
+
+        /// <summary>
+        /// Configures the middleware pipeline to work with Blazor.
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        /// <param name="options"></param>
+        public static void UseBlazor(
             this IApplicationBuilder applicationBuilder,
-            string clientAssemblyPath)
+            BlazorOptions options)
         {
-            var config = BlazorConfig.Read(clientAssemblyPath);
+            var config = BlazorConfig.Read(options.ClientAssemblyPath);
             var clientAppBinDir = Path.GetDirectoryName(config.SourceOutputAssemblyPath);
             var clientAppDistDir = Path.Combine(clientAppBinDir, "dist");
             var distFileProvider = new PhysicalFileProvider(clientAppDistDir);
