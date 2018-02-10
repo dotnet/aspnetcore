@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
@@ -36,7 +38,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         private Task _writingTask = Task.CompletedTask;
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
-        private byte[] _pingMessage;
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual HubProtocolReaderWriter ProtocolReaderWriter { get; set; }
 
-        public virtual ChannelReader<byte[]> Input => _connectionContext.Transport.Reader;
+        public virtual PipeReader Input => _connectionContext.Transport.Input;
 
         public string UserIdentifier { get; private set; }
 
@@ -125,37 +126,54 @@ namespace Microsoft.AspNetCore.SignalR
                 using (var cts = new CancellationTokenSource())
                 {
                     cts.CancelAfter(timeout);
-                    while (await _connectionContext.Transport.Reader.WaitToReadAsync(cts.Token))
+
+                    while (true)
                     {
-                        while (_connectionContext.Transport.Reader.TryRead(out var buffer))
+                        var result = await _connectionContext.Transport.Input.ReadAsync(cts.Token);
+                        var buffer = result.Buffer;
+                        var consumed = buffer.End;
+                        var examined = buffer.End;
+
+                        try
                         {
-                            if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
+                            if (!buffer.IsEmpty)
                             {
-                                var protocol = protocolResolver.GetProtocol(negotiationMessage.Protocol, this);
+                                if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage, out consumed, out examined))
+                                {
+                                    var protocol = protocolResolver.GetProtocol(negotiationMessage.Protocol, this);
 
-                                var transportCapabilities = Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
-                                    ?? throw new InvalidOperationException("Unable to read transport capabilities.");
+                                    var transportCapabilities = Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
+                                        ?? throw new InvalidOperationException("Unable to read transport capabilities.");
 
-                                var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
-                                    ? (IDataEncoder)Base64Encoder
-                                    : PassThroughEncoder;
+                                    var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
+                                        ? (IDataEncoder)Base64Encoder
+                                        : PassThroughEncoder;
 
-                                var transferModeFeature = Features.Get<ITransferModeFeature>() ??
-                                    throw new InvalidOperationException("Unable to read transfer mode.");
+                                    var transferModeFeature = Features.Get<ITransferModeFeature>() ??
+                                        throw new InvalidOperationException("Unable to read transfer mode.");
 
-                                transferModeFeature.TransferMode =
-                                    (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) != 0)
-                                        ? TransferMode.Binary
-                                        : TransferMode.Text;
+                                    transferModeFeature.TransferMode =
+                                        (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) != 0)
+                                            ? TransferMode.Binary
+                                            : TransferMode.Text;
 
-                                ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
+                                    ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
-                                _logger.UsingHubProtocol(protocol.Name);
+                                    _logger.UsingHubProtocol(protocol.Name);
 
-                                UserIdentifier = userIdProvider.GetUserId(this);
+                                    UserIdentifier = userIdProvider.GetUserId(this);
 
-                                return true;
+                                    return true;
+                                }
                             }
+                            else if (result.IsCompleted)
+                            {
+                                break;
+                            }
+                        }
+                        finally
+                        {
+                            _connectionContext.Transport.Input.AdvanceTo(consumed, examined);
                         }
                     }
                 }
@@ -186,7 +204,6 @@ namespace Microsoft.AspNetCore.SignalR
             if (Features.Get<IConnectionInherentKeepAliveFeature>() == null)
             {
                 Debug.Assert(ProtocolReaderWriter != null, "Expected the ProtocolReaderWriter to be set before StartAsync is called");
-                _pingMessage = ProtocolReaderWriter.WriteMessage(PingMessage.Instance);
                 _connectionContext.Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
             }
 
@@ -197,14 +214,10 @@ namespace Microsoft.AspNetCore.SignalR
                     while (Output.Reader.TryRead(out var hubMessage))
                     {
                         var buffer = ProtocolReaderWriter.WriteMessage(hubMessage);
-                        while (await _connectionContext.Transport.Writer.WaitToWriteAsync())
-                        {
-                            if (_connectionContext.Transport.Writer.TryWrite(buffer))
-                            {
-                                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
-                                break;
-                            }
-                        }
+
+                        await _connectionContext.Transport.Output.WriteAsync(buffer);
+
+                        Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
                     }
                 }
             }
@@ -221,7 +234,6 @@ namespace Microsoft.AspNetCore.SignalR
             // If it is, we send a ping frame, if not, we no-op on this tick. This means that in the worst case, the
             // true "ping rate" of the server could be (_hubOptions.KeepAliveInterval + HubEndPoint.KeepAliveTimerInterval),
             // because if the interval elapses right after the last tick of this timer, it won't be detected until the next tick.
-            Debug.Assert(_pingMessage != null, "Expected the ping message to be prepared before the first heartbeat tick");
 
             if (Stopwatch.GetTimestamp() - Interlocked.Read(ref _lastSendTimestamp) > _keepAliveDuration)
             {
@@ -229,7 +241,8 @@ namespace Microsoft.AspNetCore.SignalR
                 // If the transport channel is full, this will fail, but that's OK because
                 // adding a Ping message when the transport is full is unnecessary since the
                 // transport is still in the process of sending frames.
-                if (_connectionContext.Transport.Writer.TryWrite(_pingMessage))
+
+                if (Output.Writer.TryWrite(PingMessage.Instance))
                 {
                     _logger.SentPing();
                 }

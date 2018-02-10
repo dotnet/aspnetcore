@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -20,14 +21,28 @@ namespace SocketsSample.EndPoints
 
             try
             {
-                while (await connection.Transport.Reader.WaitToReadAsync())
+                while (true)
                 {
-                    if (connection.Transport.Reader.TryRead(out var buffer))
+                    var result = await connection.Transport.Input.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    try
                     {
-                        // We can avoid the copy here but we'll deal with that later
-                        var text = Encoding.UTF8.GetString(buffer);
-                        text = $"{connection.ConnectionId}: {text}";
-                        await Broadcast(Encoding.UTF8.GetBytes(text));
+                        if (!buffer.IsEmpty)
+                        {
+                            // We can avoid the copy here but we'll deal with that later
+                            var text = Encoding.UTF8.GetString(buffer.ToArray());
+                            text = $"{connection.ConnectionId}: {text}";
+                            await Broadcast(Encoding.UTF8.GetBytes(text));
+                        }
+                        else if (result.IsCompleted)
+                        {
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        connection.Transport.Input.AdvanceTo(buffer.End);
                     }
                 }
             }
@@ -50,7 +65,7 @@ namespace SocketsSample.EndPoints
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Transport.Writer.WriteAsync(payload));
+                tasks.Add(c.Transport.Output.WriteAsync(payload));
             }
 
             return Task.WhenAll(tasks);

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.Collections;
 using System.IO;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
@@ -52,6 +54,28 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 }
             }
             return true;
+        }
+
+        public static bool TryParseMessage(ReadOnlyBuffer<byte> buffer, out NegotiationMessage negotiationMessage, out SequencePosition consumed, out SequencePosition examined)
+        {
+            var separator = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
+            if (separator == null)
+            {
+                // Haven't seen the entire negotiate message so bail
+                consumed = buffer.Start;
+                examined = buffer.End;
+                negotiationMessage = null;
+                return false;
+            }
+            else
+            {
+                consumed = buffer.GetPosition(separator.Value, 1);
+                examined = consumed;
+            }
+
+            var memory = buffer.IsSingleSegment ? buffer.First : buffer.ToArray();
+
+            return TryParseMessage(memory.Span, out negotiationMessage);
         }
     }
 }

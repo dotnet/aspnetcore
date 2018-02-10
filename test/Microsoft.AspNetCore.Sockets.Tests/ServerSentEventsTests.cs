@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
-using System.Threading.Channels;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -18,14 +19,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSESetsContentType()
         {
-            var toApplication = Channel.CreateUnbounded<byte[]>();
-            var toTransport = Channel.CreateUnbounded<byte[]>();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
-            var connection = new DefaultConnectionContext("foo", toTransport, toApplication);
 
-            var sse = new ServerSentEventsTransport(toTransport.Reader, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
-            Assert.True(toTransport.Writer.TryComplete());
+            connection.Transport.Output.Complete();
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -36,16 +36,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSETurnsResponseBufferingOff()
         {
-            var toApplication = Channel.CreateUnbounded<byte[]>();
-            var toTransport = Channel.CreateUnbounded<byte[]>();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
-            var connection = new DefaultConnectionContext("foo", toTransport, toApplication);
 
             var feature = new HttpBufferingFeature();
             context.Features.Set<IHttpBufferingFeature>(feature);
-            var sse = new ServerSentEventsTransport(toTransport.Reader, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: connection.ConnectionId, loggerFactory: new LoggerFactory());
 
-            Assert.True(toTransport.Writer.TryComplete());
+            connection.Transport.Output.Complete();
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
@@ -55,25 +54,22 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [Fact]
         public async Task SSEWritesMessages()
         {
-            var toApplication = Channel.CreateUnbounded<byte[]>();
-            var toTransport = Channel.CreateUnbounded<byte[]>(new UnboundedChannelOptions
-            {
-                AllowSynchronousContinuations = true
-            });
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, new PipeOptions(readerScheduler: PipeScheduler.Inline));
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
-            var connection = new DefaultConnectionContext("foo", toTransport, toApplication);
 
+            
             var ms = new MemoryStream();
             context.Response.Body = ms;
-            var sse = new ServerSentEventsTransport(toTransport.Reader, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
             var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
-            await toTransport.Writer.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
+            await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
 
             Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
 
-            toTransport.Writer.TryComplete();
+            connection.Transport.Output.Complete();
 
             await task.OrTimeout();
         }
@@ -84,18 +80,17 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         [InlineData("Hello\r\nWorld", ":\r\ndata: Hello\r\ndata: World\r\n\r\n")]
         public async Task SSEAddsAppropriateFraming(string message, string expected)
         {
-            var toApplication = Channel.CreateUnbounded<byte[]>();
-            var toTransport = Channel.CreateUnbounded<byte[]>();
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
-            var connection = new DefaultConnectionContext("foo", toTransport, toApplication);
 
-            var sse = new ServerSentEventsTransport(toTransport.Reader, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+            var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
-            await toTransport.Writer.WriteAsync(Encoding.UTF8.GetBytes(message));
+            await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes(message));
 
-            Assert.True(toTransport.Writer.TryComplete());
+            connection.Transport.Output.Complete();
 
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 

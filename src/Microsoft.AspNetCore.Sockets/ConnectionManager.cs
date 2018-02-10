@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Channels;
@@ -63,13 +64,9 @@ namespace Microsoft.AspNetCore.Sockets
             _logger.CreatedNewConnection(id);
             var connectionTimer = SocketEventSource.Log.ConnectionStart(id);
 
-            var transportToApplication = Channel.CreateUnbounded<byte[]>();
-            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
-
-            var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport);
-
-            var connection = new DefaultConnectionContext(id, applicationSide, transportSide);
+            var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+            
+            var connection = new DefaultConnectionContext(id, pair.Application, pair.Transport);
             connection.ConnectionTimer = connectionTimer;
 
             _connections.TryAdd(id, connection);

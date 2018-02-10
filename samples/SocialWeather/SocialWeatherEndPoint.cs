@@ -34,15 +34,29 @@ namespace SocialWeather
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
                 (string)connection.Metadata["format"]);
 
-            while (await connection.Transport.Reader.WaitToReadAsync())
+            while (true)
             {
-                if (connection.Transport.Reader.TryRead(out var buffer))
+                var result = await connection.Transport.Input.ReadAsync();
+                var buffer = result.Buffer;
+                try
                 {
-                    var stream = new MemoryStream();
-                    await stream.WriteAsync(buffer, 0, buffer.Length);
-                    stream.Position = 0;
-                    var weatherReport = await formatter.ReadAsync(stream);
-                    await _lifetimeManager.SendToAllAsync(weatherReport);
+                    if (!buffer.IsEmpty)
+                    {
+                        var stream = new MemoryStream();
+                        var data = buffer.ToArray();
+                        await stream.WriteAsync(data, 0, data.Length);
+                        stream.Position = 0;
+                        var weatherReport = await formatter.ReadAsync(stream);
+                        await _lifetimeManager.SendToAllAsync(weatherReport);
+                    }
+                    else if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(buffer.End);
                 }
             }
         }

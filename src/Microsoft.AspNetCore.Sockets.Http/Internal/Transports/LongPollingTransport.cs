@@ -2,24 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO.Pipelines;
+using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public class LongPollingTransport : IHttpTransport
     {
-        private readonly ChannelReader<byte[]> _application;
+        private readonly PipeReader _application;
         private readonly ILogger _logger;
         private readonly CancellationToken _timeoutToken;
         private readonly string _connectionId;
 
-        public LongPollingTransport(CancellationToken timeoutToken, ChannelReader<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
+        public LongPollingTransport(CancellationToken timeoutToken, PipeReader application, string connectionId, ILoggerFactory loggerFactory)
         {
             _timeoutToken = timeoutToken;
             _application = application;
@@ -31,33 +31,38 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
         {
             try
             {
-                if (!await _application.WaitToReadAsync(token))
+                var result = await _application.ReadAsync(token);
+                var buffer = result.Buffer;
+
+                if (buffer.IsEmpty && result.IsCompleted)
                 {
-                    await _application.Completion;
                     _logger.LongPolling204();
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
                 }
 
-                var contentLength = 0;
-                var buffers = new List<byte[]>();
                 // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
                 // but it's too late to emit the 204 required by being cancelled.
-                while (_application.TryRead(out var buffer))
-                {
-                    contentLength += buffer.Length;
-                    buffers.Add(buffer);
 
-                    _logger.LongPollingWritingMessage(buffer.Length);
-                }
+                _logger.LongPollingWritingMessage(buffer.Length);
 
-                context.Response.ContentLength = contentLength;
+                context.Response.ContentLength = buffer.Length;
                 context.Response.ContentType = "application/octet-stream";
 
-                foreach (var buffer in buffers)
+                try
                 {
-                    await context.Response.Body.WriteAsync(buffer, 0, buffer.Length);
+                    foreach (var segment in buffer)
+                    {
+                        var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
+                        // We're using the managed memory pool which is backed by managed buffers
+                        Debug.Assert(isArray);
+                        await context.Response.Body.WriteAsync(arraySegment.Array, 0, arraySegment.Count);
+                    }
+                }
+                finally
+                {
+                    _application.AdvanceTo(buffer.End);
                 }
             }
             catch (OperationCanceledException)

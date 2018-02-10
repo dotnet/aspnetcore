@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -30,15 +29,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -54,10 +51,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         cancellationToken: CancellationToken.None);
                     await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
-                    var buffer = await applicationSide.Reader.ReadAsync();
-                    Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
+                    var result = await connection.Transport.Input.ReadAsync();
+                    var buffer = result.Buffer;
+                    Assert.Equal("Hello", Encoding.UTF8.GetString(buffer.ToArray()));
+                    connection.Transport.Input.AdvanceTo(buffer.End);
 
-                    Assert.True(applicationSide.Writer.TryComplete());
+                    connection.Transport.Output.Complete();
 
                     // The transport should finish now
                     await transport;
@@ -77,15 +76,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null) { TransferMode = transferMode };
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -94,8 +91,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                     // Write to the output channel, and then complete it
-                    await applicationSide.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-                    Assert.True(applicationSide.Writer.TryComplete());
+                    await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                    connection.Transport.Output.Complete();
 
                     // The client should finish now, as should the server
                     var clientSummary = await client;
@@ -115,24 +112,23 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     async Task CompleteApplicationAfterTransportCompletes()
                     {
                         // Wait until the transport completes so that we can end the application
-                        await applicationSide.Reader.WaitToReadAsync();
+                        var result = await connection.Transport.Input.ReadAsync();
+                        connection.Transport.Input.AdvanceTo(result.Buffer.End);
 
                         // Complete the application so that the connection unwinds without aborting
-                        applicationSide.Writer.TryComplete();
+                        connection.Transport.Output.Complete();
                     }
 
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -150,8 +146,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     // Wait for the transport
                     await Assert.ThrowsAsync<WebSocketException>(() => transport).OrTimeout();
 
-                    var summary = await client.OrTimeout();
-                    Assert.Equal(WebSocketCloseStatus.InternalServerError, summary.CloseResult.CloseStatus);
+                    await client.OrTimeout();
                 }
             }
         }
@@ -161,15 +156,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(new WebSocketOptions(), connection.Application, connectionContext, loggerFactory);
 
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -178,7 +171,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                     // Fail in the app
-                    Assert.True(applicationSide.Writer.TryComplete(new InvalidOperationException("Catastrophic failure.")));
+                    connection.Transport.Output.Complete(new InvalidOperationException("Catastrophic failure."));
                     var clientSummary = await client.OrTimeout();
                     Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.CloseStatus);
 
@@ -196,11 +189,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var options = new WebSocketOptions()
@@ -209,14 +200,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     };
 
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
                     var transport = ws.ProcessSocketAsync(serverSocket);
 
                     // End the app
-                    applicationSide.Dispose();
+                    connection.Transport.Output.Complete();
 
                     await transport.OrTimeout(TimeSpan.FromSeconds(10));
 
@@ -233,11 +224,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var options = new WebSocketOptions
@@ -246,7 +235,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     };
 
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -256,7 +245,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                     // fail the client to server channel
-                    applicationToTransport.Writer.TryComplete(new Exception());
+                    connection.Transport.Output.Complete(new Exception());
 
                     await Assert.ThrowsAsync<Exception>(() => transport).OrTimeout();
 
@@ -270,11 +259,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var options = new WebSocketOptions
@@ -284,7 +271,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     };
 
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -294,7 +281,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                     // close the client to server channel
-                    applicationToTransport.Writer.TryComplete();
+                    connection.Transport.Output.Complete();
 
                     _ = await client.OrTimeout();
 
@@ -312,11 +299,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             using (StartLog(out var loggerFactory, LogLevel.Debug))
             {
-                var transportToApplication = Channel.CreateUnbounded<byte[]>();
-                var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
 
-                using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
-                using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
                 using (var feature = new TestWebSocketConnectionFeature())
                 {
                     var options = new WebSocketOptions
@@ -325,7 +310,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                         CloseTimeout = TimeSpan.FromSeconds(20)
                     };
                     var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
-                    var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory);
+                    var ws = new WebSocketsTransport(options, connection.Application, connectionContext, loggerFactory);
 
                     var serverSocket = await feature.AcceptAsync();
                     // Give the server socket to the transport and run it
@@ -337,7 +322,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     await feature.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).OrTimeout();
 
                     // close the client to server channel
-                    applicationToTransport.Writer.TryComplete();
+                    connection.Transport.Output.Complete();
 
                     _ = await client.OrTimeout();
 

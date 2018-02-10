@@ -3,9 +3,9 @@
 
 using System;
 using System.IO;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
@@ -15,11 +15,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public class ServerSentEventsTransport : IHttpTransport
     {
-        private readonly ChannelReader<byte[]> _application;
+        private readonly PipeReader _application;
         private readonly string _connectionId;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(ChannelReader<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(PipeReader application, string connectionId, ILoggerFactory loggerFactory)
         {
             _application = application;
             _connectionId = connectionId;
@@ -44,21 +44,32 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             try
             {
-                while (await _application.WaitToReadAsync(token))
+                while (true)
                 {
-                    var ms = new MemoryStream();
-                    while (_application.TryRead(out var buffer))
+                    var result = await _application.ReadAsync(token);
+                    var buffer = result.Buffer;
+
+                    try
                     {
-                        _logger.SSEWritingMessage(buffer.Length);
-
-                        ServerSentEventsMessageFormatter.WriteMessage(buffer, ms);
+                        if (!buffer.IsEmpty)
+                        {
+                            var ms = new MemoryStream();
+                            _logger.SSEWritingMessage(buffer.Length);
+                            // Don't create a copy using ToArray every time
+                            ServerSentEventsMessageFormatter.WriteMessage(buffer.ToArray(), ms);
+                            ms.Seek(0, SeekOrigin.Begin);
+                            await ms.CopyToAsync(context.Response.Body);
+                        }
+                        else if (result.IsCompleted)
+                        {
+                            break;
+                        }
                     }
-
-                    ms.Seek(0, SeekOrigin.Begin);
-                    await ms.CopyToAsync(context.Response.Body);
+                    finally
+                    {
+                        _application.AdvanceTo(buffer.End);
+                    }
                 }
-
-                await _application.Completion;
             }
             catch (OperationCanceledException)
             {

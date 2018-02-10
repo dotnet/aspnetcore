@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, Exception> _pollTimedOut =
             LoggerMessage.Define(LogLevel.Information, new EventId(2, nameof(PollTimedOut)), "Poll request timed out. Sending 200 response to connection.");
 
-        private static readonly Action<ILogger, int, Exception> _longPollingWritingMessage =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, nameof(LongPollingWritingMessage)), "Writing a {count} byte message to connection.");
+        private static readonly Action<ILogger, long, Exception> _longPollingWritingMessage =
+            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(3, nameof(LongPollingWritingMessage)), "Writing a {count} byte message to connection.");
 
         private static readonly Action<ILogger, Exception> _longPollingDisconnected =
             LoggerMessage.Define(LogLevel.Debug, new EventId(4, nameof(LongPollingDisconnected)), "Client disconnected from Long Polling endpoint for connection.");
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, Exception> _resumingConnection =
             LoggerMessage.Define(LogLevel.Debug, new EventId(5, nameof(ResumingConnection)), "Resuming existing connection.");
 
-        private static readonly Action<ILogger, int, Exception> _receivedBytes =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(6, nameof(ReceivedBytes)), "Received {count} bytes.");
+        private static readonly Action<ILogger, long, Exception> _receivedBytes =
+            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(6, nameof(ReceivedBytes)), "Received {count} bytes.");
 
         private static readonly Action<ILogger, TransportType, Exception> _transportNotSupported =
             LoggerMessage.Define<TransportType>(LogLevel.Debug, new EventId(7, nameof(TransportNotSupported)), "{transportType} transport not supported by this endpoint type.");
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, int, Exception> _messageToApplication =
             LoggerMessage.Define<int>(LogLevel.Debug, new EventId(10, nameof(MessageToApplication)), "Passing message to application. Payload size: {size}.");
 
-        private static readonly Action<ILogger, int, Exception> _sendPayload =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(11, nameof(SendPayload)), "Sending payload: {size} bytes.");
+        private static readonly Action<ILogger, long, Exception> _sendPayload =
+            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(11, nameof(SendPayload)), "Sending payload: {size} bytes.");
 
         private static readonly Action<ILogger, Exception> _errorWritingFrame =
             LoggerMessage.Define(LogLevel.Error, new EventId(12, nameof(ErrorWritingFrame)), "Error writing frame.");
@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             LoggerMessage.Define(LogLevel.Trace, new EventId(13, nameof(SendFailed)), "Socket failed to send.");
 
         // Category: ServerSentEventsTransport
-        private static readonly Action<ILogger, int, Exception> _sseWritingMessage =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, nameof(SSEWritingMessage)), "Writing a {count} byte message.");
+        private static readonly Action<ILogger, long, Exception> _sseWritingMessage =
+            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(1, nameof(SSEWritingMessage)), "Writing a {count} byte message.");
 
         public static void LongPolling204(this ILogger logger)
         {
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             _pollTimedOut(logger, null);
         }
 
-        public static void LongPollingWritingMessage(this ILogger logger, int count)
+        public static void LongPollingWritingMessage(this ILogger logger, long count)
         {
             _longPollingWritingMessage(logger, count, null);
         }
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             _resumingConnection(logger, null);
         }
 
-        public static void ReceivedBytes(this ILogger logger, int count)
+        public static void ReceivedBytes(this ILogger logger, long count)
         {
             _receivedBytes(logger, count, null);
         }
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             _messageToApplication(logger, size, null);
         }
 
-        public static void SendPayload(this ILogger logger, int size)
+        public static void SendPayload(this ILogger logger, long size)
         {
             _sendPayload(logger, size, null);
         }
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             _sendFailed(logger, ex);
         }
 
-        public static void SSEWritingMessage(this ILogger logger, int count)
+        public static void SSEWritingMessage(this ILogger logger, long count)
         {
             _sseWritingMessage(logger, count, null);
         }

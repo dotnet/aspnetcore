@@ -81,12 +81,29 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             connection.ApplicationTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Transport.Reader.WaitToReadAsync());
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    Assert.True(result.IsCompleted);
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);    
+                }
             });
 
             connection.TransportTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Application.Reader.WaitToReadAsync());
+                var result = await connection.Application.Input.ReadAsync();
+                try
+                {
+                    Assert.True(result.IsCompleted);
+                }
+                finally
+                {
+                    connection.Application.Input.AdvanceTo(result.Buffer.End);
+                }
             });
 
             connectionManager.CloseConnections();
@@ -188,15 +205,22 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var appLifetime = new TestApplicationLifetime();
             var connectionManager = CreateConnectionManager(appLifetime);
+            var tcs = new TaskCompletionSource<object>();
 
             appLifetime.Start();
 
             var connection = connectionManager.CreateConnection();
 
+            connection.Application.Output.OnReaderCompleted((error, state) =>
+            {
+                tcs.TrySetResult(null);
+            },
+            null);
+
             appLifetime.StopApplication();
 
             // Connection should be disposed so this should complete immediately
-            Assert.False(await connection.Application.Writer.WaitToWriteAsync().OrTimeout());
+            await tcs.Task.OrTimeout();
         }
 
         private static ConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)

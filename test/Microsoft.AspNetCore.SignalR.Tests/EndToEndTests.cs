@@ -92,6 +92,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     Assert.Equal(bytes, buffer.Array.AsSpan().Slice(0, result.Count).ToArray());
 
+                    logger.LogInformation("Waiting for close");
+                    result = await ws.ReceiveAsync(buffer, CancellationToken.None).OrTimeout();
+                    Assert.Equal(WebSocketMessageType.Close, result.MessageType);
                     logger.LogInformation("Closing socket");
                     await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
                     logger.LogInformation("Closed socket");

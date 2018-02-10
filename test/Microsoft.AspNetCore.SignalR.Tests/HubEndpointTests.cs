@@ -234,13 +234,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await waitForSubscribe.Task.OrTimeout();
 
-                observable.OnNext(1);
-
                 await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).OrTimeout();
 
                 await waitForDispose.Task.OrTimeout();
 
-                Assert.Equal(1L, ((StreamItemMessage)await client.ReadAsync().OrTimeout()).Item);
+                var message = await client.ReadAsync().OrTimeout();
+
+                Assert.IsType<CompletionMessage>(message);
 
                 client.Dispose();
 
@@ -257,7 +257,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
-                client.Connection.Transport.Reader.TryRead(out var item);
+                client.Connection.Transport.Input.TryRead(out var item);
+                client.Connection.Transport.Input.AdvanceTo(item.Buffer.End);
 
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
@@ -283,7 +284,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
-                client.Connection.Transport.Reader.TryRead(out var item);
+                client.Connection.Transport.Input.TryRead(out var item);
+                client.Connection.Transport.Input.AdvanceTo(item.Buffer.End);
 
                 await endPoint.OnConnectedAsync(client.Connection).OrTimeout();
             }
@@ -567,7 +569,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 // Nothing should have been written
-                Assert.False(client.Application.Reader.TryRead(out var buffer));
+                Assert.False(client.Connection.Application.Input.TryRead(out var buffer));
 
                 await endPointTask.OrTimeout();
             }
@@ -1720,6 +1722,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await endPointLifetime.OrTimeout();
 
+                client.Connection.Transport.Output.Complete();
+
                 // We shouldn't have any ping messages
                 HubMessage message;
                 var counter = 0;
@@ -1759,6 +1763,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 await endPointLifetime.OrTimeout();
+
+                client.Connection.Transport.Output.Complete();
 
                 // We should have all pings
                 HubMessage message;

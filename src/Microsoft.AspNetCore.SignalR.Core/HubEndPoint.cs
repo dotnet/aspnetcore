@@ -171,58 +171,74 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                while (await connection.Input.WaitToReadAsync(connection.ConnectionAbortedToken))
+                while (true)
                 {
-                    while (connection.Input.TryRead(out var buffer))
+                    var result = await connection.Input.ReadAsync(connection.ConnectionAbortedToken);
+                    var buffer = result.Buffer;
+                    var consumed = buffer.End;
+                    var examined = buffer.End;
+
+                    try
                     {
-                        if (connection.ProtocolReaderWriter.ReadMessages(buffer, this, out var hubMessages))
+                        if (!buffer.IsEmpty)
                         {
-                            foreach (var hubMessage in hubMessages)
+                            if (connection.ProtocolReaderWriter.ReadMessages(buffer, this, out var hubMessages, out consumed, out examined))
                             {
-                                switch (hubMessage)
+                                foreach (var hubMessage in hubMessages)
                                 {
-                                    case InvocationMessage invocationMessage:
-                                        _logger.ReceivedHubInvocation(invocationMessage);
+                                    switch (hubMessage)
+                                    {
+                                        case InvocationMessage invocationMessage:
+                                            _logger.ReceivedHubInvocation(invocationMessage);
 
-                                        // Don't wait on the result of execution, continue processing other
-                                        // incoming messages on this connection.
-                                        _ = ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
-                                        break;
+                                            // Don't wait on the result of execution, continue processing other
+                                            // incoming messages on this connection.
+                                            _ = ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
+                                            break;
 
-                                    case StreamInvocationMessage streamInvocationMessage:
-                                        _logger.ReceivedStreamHubInvocation(streamInvocationMessage);
+                                        case StreamInvocationMessage streamInvocationMessage:
+                                            _logger.ReceivedStreamHubInvocation(streamInvocationMessage);
 
-                                        // Don't wait on the result of execution, continue processing other
-                                        // incoming messages on this connection.
-                                        _ = ProcessInvocation(connection, streamInvocationMessage, isStreamedInvocation: true);
-                                        break;
+                                            // Don't wait on the result of execution, continue processing other
+                                            // incoming messages on this connection.
+                                            _ = ProcessInvocation(connection, streamInvocationMessage, isStreamedInvocation: true);
+                                            break;
 
-                                    case CancelInvocationMessage cancelInvocationMessage:
-                                        // Check if there is an associated active stream and cancel it if it exists.
-                                        // The cts will be removed when the streaming method completes executing
-                                        if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId, out var cts))
-                                        {
-                                            _logger.CancelStream(cancelInvocationMessage.InvocationId);
-                                            cts.Cancel();
-                                        }
-                                        else
-                                        {
-                                            // Stream can be canceled on the server while client is canceling stream.
-                                            _logger.UnexpectedCancel();
-                                        }
-                                        break;
+                                        case CancelInvocationMessage cancelInvocationMessage:
+                                            // Check if there is an associated active stream and cancel it if it exists.
+                                            // The cts will be removed when the streaming method completes executing
+                                            if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId, out var cts))
+                                            {
+                                                _logger.CancelStream(cancelInvocationMessage.InvocationId);
+                                                cts.Cancel();
+                                            }
+                                            else
+                                            {
+                                                // Stream can be canceled on the server while client is canceling stream.
+                                                _logger.UnexpectedCancel();
+                                            }
+                                            break;
 
-                                    case PingMessage _:
-                                        // We don't care about pings
-                                        break;
+                                        case PingMessage _:
+                                            // We don't care about pings
+                                            break;
 
-                                    // Other kind of message we weren't expecting
-                                    default:
-                                        _logger.UnsupportedMessageReceived(hubMessage.GetType().FullName);
-                                        throw new NotSupportedException($"Received unsupported message: {hubMessage}");
+                                        // Other kind of message we weren't expecting
+                                        default:
+                                            _logger.UnsupportedMessageReceived(hubMessage.GetType().FullName);
+                                            throw new NotSupportedException($"Received unsupported message: {hubMessage}");
+                                    }
                                 }
                             }
                         }
+                        else if (result.IsCompleted)
+                        {
+                            break;
+                        }
+                    }
+                    finally
+                    {
+                        connection.Input.AdvanceTo(consumed, examined);
                     }
                 }
             }

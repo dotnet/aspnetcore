@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Internal;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -23,22 +22,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private readonly HubProtocolReaderWriter _protocolReaderWriter;
         private readonly IInvocationBinder _invocationBinder;
         private CancellationTokenSource _cts;
-        private ChannelConnection<byte[]> _transport;
+        private Queue<HubMessage> _messages = new Queue<HubMessage>();
 
         public DefaultConnectionContext Connection { get; }
-        public Channel<byte[]> Application { get; }
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Metadata["ConnectedTask"]).Task;
 
         public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
-            var options = new UnboundedChannelOptions { AllowSynchronousContinuations = synchronousCallbacks };
-            var transportToApplication = Channel.CreateUnbounded<byte[]>(options);
-            var applicationToTransport = Channel.CreateUnbounded<byte[]>(options);
-
-            Application = ChannelConnection.Create<byte[]>(input: applicationToTransport, output: transportToApplication);
-            _transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
-
-            Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _transport, Application);
+            var options = new PipeOptions(readerScheduler: synchronousCallbacks ? PipeScheduler.Inline : null);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), pair.Transport, pair.Application);
 
             var claimValue = Interlocked.Increment(ref _id).ToString();
             var claims = new List<Claim> { new Claim(ClaimTypes.Name, claimValue) };
@@ -59,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var memoryStream = new MemoryStream())
             {
                 NegotiationProtocol.WriteMessage(new NegotiationMessage(protocol.Name), memoryStream);
-                Application.Writer.TryWrite(memoryStream.ToArray());
+                Connection.Application.Output.WriteAsync(memoryStream.ToArray());
             }
         }
 
@@ -151,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<string> SendHubMessageAsync(HubMessage message)
         {
             var payload = _protocolReaderWriter.WriteMessage(message);
-            await Application.Writer.WriteAsync(payload);
+            await Connection.Application.Output.WriteAsync(payload);
             return message is HubInvocationMessage hubMessage ? hubMessage.InvocationId : null;
         }
 
@@ -163,9 +156,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 if (message == null)
                 {
-                    if (!await Application.Reader.WaitToReadAsync())
+                    var result = await Connection.Application.Input.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    try
                     {
-                        return null;
+                        if (!buffer.IsEmpty)
+                        {
+                            continue;
+                        }
+
+                        if (result.IsCompleted)
+                        {
+                            return null;
+                        }
+                    }
+                    finally
+                    {
+                        Connection.Application.Input.AdvanceTo(buffer.Start);
                     }
                 }
                 else
@@ -177,18 +185,45 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public HubMessage TryRead()
         {
-            if (Application.Reader.TryRead(out var buffer) &&
-                _protocolReaderWriter.ReadMessages(buffer, _invocationBinder, out var messages))
+            if (_messages.Count > 0)
             {
-                return messages[0];
+                return _messages.Dequeue();
             }
+
+            if (!Connection.Application.Input.TryRead(out var result))
+            {
+                return null;
+            }
+
+            var buffer = result.Buffer;
+            var consumed = buffer.End;
+            var examined = consumed;
+
+            try
+            {
+                if (_protocolReaderWriter.ReadMessages(result.Buffer, _invocationBinder, out var messages, out consumed, out examined))
+                {
+                    foreach (var m in messages)
+                    {
+                        _messages.Enqueue(m);
+                    }
+
+                    return _messages.Dequeue();
+                }
+            }
+            finally
+            {
+                Connection.Application.Input.AdvanceTo(consumed, examined);
+            }
+
             return null;
         }
 
         public void Dispose()
         {
             _cts.Cancel();
-            _transport.Dispose();
+
+            Connection.Application.Output.Complete();
         }
 
         private static string GetInvocationId()

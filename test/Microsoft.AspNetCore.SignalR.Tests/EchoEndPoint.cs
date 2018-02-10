@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO.Pipelines;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -11,7 +11,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
-            await connection.Transport.Writer.WriteAsync(await connection.Transport.Reader.ReadAsync());
+            var result = await connection.Transport.Input.ReadAsync();
+            var buffer = result.Buffer;
+
+            try
+            {
+                if (!buffer.IsEmpty)
+                {
+                    await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                }
+            }
+            finally
+            {
+                connection.Transport.Input.AdvanceTo(buffer.End);
+            }
         }
     }
 }

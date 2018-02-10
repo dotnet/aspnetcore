@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,7 +117,7 @@ namespace Microsoft.AspNetCore.Sockets
                 connection.TransportCapabilities = TransferMode.Text;
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
-                var sse = new ServerSentEventsTransport(connection.Application.Reader, connection.ConnectionId, _loggerFactory);
+                var sse = new ServerSentEventsTransport(connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
                 await DoPersistentConnection(socketDelegate, sse, context, connection);
             }
@@ -218,7 +219,7 @@ namespace Microsoft.AspNetCore.Sockets
                     context.Response.RegisterForDispose(timeoutSource);
                     context.Response.RegisterForDispose(tokenSource);
 
-                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Reader, connection.ConnectionId, _loggerFactory);
+                    var longPolling = new LongPollingTransport(timeoutSource.Token, connection.Application.Input, connection.ConnectionId, _loggerFactory);
 
                     // Start the transport
                     connection.TransportTask = longPolling.ProcessRequestAsync(context, tokenSource.Token);
@@ -239,7 +240,7 @@ namespace Microsoft.AspNetCore.Sockets
                 if (resultTask == connection.ApplicationTask)
                 {
                     // Complete the transport (notifying it of the application error if there is one)
-                    connection.Transport.Writer.TryComplete(connection.ApplicationTask.Exception);
+                    connection.Transport.Output.Complete(connection.ApplicationTask.Exception);
 
                     // Wait for the transport to run
                     await connection.TransportTask;
@@ -440,13 +441,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
 
             _logger.ReceivedBytes(buffer.Length);
-            while (!connection.Application.Writer.TryWrite(buffer))
-            {
-                if (!await connection.Application.Writer.WaitToWriteAsync())
-                {
-                    return;
-                }
-            }
+            await connection.Application.Output.WriteAsync(buffer);
         }
 
         private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpSocketOptions options)

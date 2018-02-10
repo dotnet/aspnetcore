@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Security.Claims;
 using System.Text;
@@ -195,6 +196,52 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     Assert.Equal(StatusCodes.Status405MethodNotAllowed, context.Response.StatusCode);
                     await strm.FlushAsync();
                     Assert.Equal("POST requests are not allowed for WebSocket connections.", Encoding.UTF8.GetString(strm.ToArray()));
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.ServerSentEvents)]
+        public async Task PostSendsToConnection(TransportType transportType)
+        {
+            using (StartLog(out var loggerFactory, LogLevel.Debug))
+            {
+                var manager = CreateConnectionManager(loggerFactory);
+                var dispatcher = new HttpConnectionDispatcher(manager, loggerFactory);
+                var connection = manager.CreateConnection();
+                connection.Metadata[ConnectionMetadataNames.Transport] = transportType;
+
+                using (var requestBody = new MemoryStream())
+                using (var responseBody = new MemoryStream())
+                {
+                    var bytes = Encoding.UTF8.GetBytes("Hello World");
+                    requestBody.Write(bytes, 0, bytes.Length);
+                    requestBody.Seek(0, SeekOrigin.Begin);
+
+                    var context = new DefaultHttpContext();
+                    context.Request.Body = requestBody;
+                    context.Response.Body = responseBody;
+
+                    var services = new ServiceCollection();
+                    services.AddEndPoint<TestEndPoint>();
+                    services.AddOptions();
+                    context.Request.Path = "/foo";
+                    context.Request.Method = "POST";
+                    var values = new Dictionary<string, StringValues>();
+                    values["id"] = connection.ConnectionId;
+                    var qs = new QueryCollection(values);
+                    context.Request.Query = qs;
+
+                    var builder = new SocketBuilder(services.BuildServiceProvider());
+                    builder.UseEndPoint<TestEndPoint>();
+                    var app = builder.Build();
+
+                    await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                    Assert.True(connection.Transport.Input.TryRead(out var result));
+                    Assert.Equal("Hello World", Encoding.UTF8.GetString(result.Buffer.ToArray()));
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
                 }
             }
         }
@@ -570,7 +617,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var buffer = Encoding.UTF8.GetBytes("Hello World");
 
                 // Write to the transport so the poll yields
-                await connection.Transport.Writer.WriteAsync(buffer);
+                await connection.Transport.Output.WriteAsync(buffer);
 
                 await task;
 
@@ -605,7 +652,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var buffer = Encoding.UTF8.GetBytes("Hello World");
 
                 // Write to the application
-                await connection.Application.Writer.WriteAsync(buffer);
+                await connection.Application.Output.WriteAsync(buffer);
 
                 await task;
 
@@ -638,7 +685,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var buffer = Encoding.UTF8.GetBytes("Hello World");
 
                 // Write to the application
-                await connection.Application.Writer.WriteAsync(buffer);
+                await connection.Application.Output.WriteAsync(buffer);
 
                 await task;
 
@@ -674,7 +721,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 await task1.OrTimeout();
 
                 // Send a message from the app to complete Task 2
-                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World"));
 
                 await task2.OrTimeout();
 
@@ -855,7 +902,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
                 await endPointTask.OrTimeout();
 
@@ -936,7 +983,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
                 await endPointTask.OrTimeout();
 
@@ -993,7 +1040,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Writer.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
 
                 await endPointTask.OrTimeout();
 
@@ -1229,7 +1276,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     {
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
-            connection.Transport.Reader.WaitToReadAsync().Wait();
+            var waitHandle = new ManualResetEventSlim();
+            var awaiter = connection.Transport.Input.ReadAsync();
+            awaiter.OnCompleted(waitHandle.Set);
+            waitHandle.Wait();
+
+            var result = awaiter.GetResult();
+            connection.Transport.Input.AdvanceTo(result.Buffer.End);
+
             return Task.CompletedTask;
         }
     }
@@ -1254,8 +1308,21 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     {
         public override async Task OnConnectedAsync(ConnectionContext connection)
         {
-            while (await connection.Transport.Reader.WaitToReadAsync())
+            while (true)
             {
+                var result = await connection.Transport.Input.ReadAsync();
+
+                try
+                {
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+                }
+                finally
+                {
+                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                }
             }
         }
     }
