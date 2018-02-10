@@ -36,10 +36,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
             // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, connectionContext.MemoryPool, transportFeature.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, connectionContext.MemoryPool, transportFeature.OutputReaderScheduler);
+            var inputOptions = GetInputPipeOptions(_serviceContext, transportFeature.MemoryPool, transportFeature.InputWriterScheduler);
+            var outputOptions = GetOutputPipeOptions(_serviceContext, transportFeature.MemoryPool, transportFeature.OutputReaderScheduler);
 
-            var pair = PipeFactory.CreateConnectionPair(inputOptions, outputOptions);
+            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
             connectionContext.ConnectionId = CorrelationIdGenerator.GetNextId();

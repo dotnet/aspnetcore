@@ -1,8 +1,4 @@
-﻿using System;
-using System.Buffers;
-using System.IO.Pipelines;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Protocols
@@ -14,7 +10,5 @@ namespace Microsoft.AspNetCore.Protocols
         public abstract IFeatureCollection Features { get; }
 
         public abstract IDuplexPipe Transport { get; set; }
-
-        public abstract MemoryPool MemoryPool { get; }
     }
 }

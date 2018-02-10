@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
-                MemoryPool = connectionContext.MemoryPool,
+                MemoryPool = transportFeature.MemoryPool,
                 ConnectionAdapters = _connectionAdapters,
                 Transport = connectionContext.Transport,
                 Application = transportFeature.Application

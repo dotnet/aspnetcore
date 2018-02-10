@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Protocols
 
         public override IFeatureCollection Features => _features.Collection;
 
-        public override MemoryPool MemoryPool => ConnectionTransportFeature.MemoryPool;
-
         public override IDuplexPipe Transport
         {
             get => ConnectionTransportFeature.Transport;

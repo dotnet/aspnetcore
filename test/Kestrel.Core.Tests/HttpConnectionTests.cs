@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public HttpConnectionTests()
         {
             _memoryPool = new MemoryPool();
-            var pair = PipeFactory.CreateConnectionPair(_memoryPool);
+            var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
 
             _httpConnectionContext = new HttpConnectionContext
             {

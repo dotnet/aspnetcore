@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
         {
             var connectionContext = new DefaultConnectionContext(features);
 
-            Input = new Pipe(InputOptions(connectionContext.MemoryPool));
-            Output = new Pipe(OutputOptions(connectionContext.MemoryPool));
-
             var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
 
-            connectionContext.Transport = new PipeConnection(Input.Reader, Output.Writer);
-            feature.Application = new PipeConnection(Output.Reader, Input.Writer);
+            Input = new Pipe(InputOptions(feature.MemoryPool));
+            Output = new Pipe(OutputOptions(feature.MemoryPool));
+
+            connectionContext.Transport = new DuplexPipe(Input.Reader, Output.Writer);
+            feature.Application = new DuplexPipe(Output.Reader, Input.Writer);
         }
 
         public Pipe Input { get; private set; }

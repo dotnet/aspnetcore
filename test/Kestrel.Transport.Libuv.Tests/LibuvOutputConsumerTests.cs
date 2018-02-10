@@ -695,7 +695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         private Http1OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
-            var pair = PipeFactory.CreateConnectionPair(pipeOptions, pipeOptions);
+            var pair = DuplexPipe.CreateConnectionPair(pipeOptions, pipeOptions);
 
             var logger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext
