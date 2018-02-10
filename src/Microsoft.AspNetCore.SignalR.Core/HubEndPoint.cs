@@ -275,19 +275,9 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
+        private Task SendMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            while (await connection.Output.Writer.WaitToWriteAsync())
-            {
-                if (connection.Output.Writer.TryWrite(hubMessage))
-                {
-                    return;
-                }
-            }
-
-            // Output is closed. Cancel this invocation completely
-            _logger.OutboundChannelClosed();
-            throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
+            return connection.WriteAsync(hubMessage, throwOnFailure: true);
         }
 
         private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection,
