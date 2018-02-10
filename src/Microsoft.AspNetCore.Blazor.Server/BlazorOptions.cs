@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Blazor.Server
+namespace Microsoft.AspNetCore.Builder
 {
     public class BlazorOptions
     {

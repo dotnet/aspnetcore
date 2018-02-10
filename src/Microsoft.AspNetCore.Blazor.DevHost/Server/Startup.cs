@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.DevHost.Server
             app.UseDeveloperExceptionPage();
 
             var clientAssemblyPath = FindClientAssemblyPath(app);
-            app.UseBlazorInternal(clientAssemblyPath);
+            app.UseBlazor(new BlazorOptions { ClientAssemblyPath = clientAssemblyPath });
         }
 
         private static string FindClientAssemblyPath(IApplicationBuilder app)
