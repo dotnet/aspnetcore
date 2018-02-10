@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private RazorProjectEngine _projectEngine;
 
-        public RazorProjectEngine ProjectEngine
+        public virtual RazorProjectEngine ProjectEngine
         {
             get => _projectEngine;
             set

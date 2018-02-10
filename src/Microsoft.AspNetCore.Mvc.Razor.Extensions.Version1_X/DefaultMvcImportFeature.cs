@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
     {
         private const string ImportsFileName = "_ViewImports.cshtml";
 
-        public IReadOnlyList<RazorSourceDocument> GetImports(string sourceFilePath)
+        public IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem)
         {
-            if (string.IsNullOrEmpty(sourceFilePath))
+            if (projectItem == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpy, nameof(sourceFilePath));
+                throw new ArgumentNullException(nameof(projectItem));
             }
 
             var imports = new List<RazorSourceDocument>();
             AddDefaultDirectivesImport(imports);
 
             // We add hierarchical imports second so any default directive imports can be overridden.
-            AddHierarchicalImports(sourceFilePath, imports);
+            AddHierarchicalImports(projectItem, imports);
 
             return imports;
         }
@@ -58,10 +58,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         }
 
         // Internal for testing
-        internal void AddHierarchicalImports(string sourceFilePath, List<RazorSourceDocument> imports)
+        internal void AddHierarchicalImports(RazorProjectItem projectItem, List<RazorSourceDocument> imports)
         {
             // We want items in descending order. FindHierarchicalItems returns items in ascending order.
-            var importProjectItems = ProjectEngine.FileSystem.FindHierarchicalItems(sourceFilePath, ImportsFileName).Reverse();
+            var importProjectItems = ProjectEngine.FileSystem.FindHierarchicalItems(projectItem.FilePath, ImportsFileName).Reverse();
             foreach (var importProjectItem in importProjectItems)
             {
                 RazorSourceDocument importSourceDocument;

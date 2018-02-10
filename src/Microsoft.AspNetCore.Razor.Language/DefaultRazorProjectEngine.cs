@@ -45,29 +45,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override IReadOnlyList<IRazorProjectEngineFeature> Features { get; }
 
-        public override RazorCodeDocument Process(string filePath)
+        public override RazorCodeDocument Process(RazorProjectItem projectItem)
         {
-            if (string.IsNullOrEmpty(filePath))
+            if (projectItem == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
-            }
-
-            var projectItem = FileSystem.GetItem(filePath);
-            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-            var codeDocument = Process(sourceDocument);
-
-            return codeDocument;
-        }
-
-        public override RazorCodeDocument Process(RazorSourceDocument sourceDocument)
-        {
-            if (sourceDocument == null)
-            {
-                throw new ArgumentNullException(nameof(sourceDocument));
+                throw new ArgumentNullException(nameof(projectItem));
             }
 
             var importFeature = GetRequiredFeature<IRazorImportFeature>();
-            var imports = importFeature.GetImports(sourceDocument.FilePath);
+            var imports = importFeature.GetImports(projectItem);
+            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
 
             var codeDocument = RazorCodeDocument.Create(sourceDocument, imports);
 
