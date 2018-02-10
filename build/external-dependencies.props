@@ -107,7 +107,7 @@
     <CoreFxLabFeed>https://dotnet.myget.org/f/dotnet-corefxlab/api/v3/index.json</CoreFxLabFeed>
   </PropertyGroup>
   <ItemGroup>
-    <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.Collections.Sequences" Version="$(SystemCollectionsSequencesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipelines.Extensions" Version="$(SystemIOPipelinesExtensionsPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipelines.Text.Primitives" Version="$(SystemIOPipelinesTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
