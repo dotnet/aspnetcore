@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Sockets.Features;
+using Microsoft.AspNetCore.Sockets.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
@@ -431,18 +432,14 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
-            // TODO: Use a pool here
+            // Until the parsers are incremental, we buffer the entire request body before
+            // flushing the buffer. Using CopyToAsync allows us to avoid allocating a single giant
+            // buffer before writing.
+            var pipeWriterStream = new PipeWriterStream(connection.Application.Output);
+            await context.Request.Body.CopyToAsync(pipeWriterStream);
 
-            byte[] buffer;
-            using (var stream = new MemoryStream())
-            {
-                await context.Request.Body.CopyToAsync(stream);
-                await stream.FlushAsync();
-                buffer = stream.ToArray();
-            }
-
-            _logger.ReceivedBytes(buffer.Length);
-            await connection.Application.Output.WriteAsync(buffer);
+            _logger.ReceivedBytes(pipeWriterStream.Length);
+            await connection.Application.Output.FlushAsync();
         }
 
         private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope, HttpSocketOptions options)
