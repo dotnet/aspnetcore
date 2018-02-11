@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Sockets
         public void MapSocket(PathString path, Action<IConnectionBuilder> socketConfig) =>
             MapSocket(path, new HttpSocketOptions(), socketConfig);
 
-        public void MapSocket(PathString path, HttpSocketOptions options, Action<IConnectionBuilder> socketConfig)
+        public void MapSocket(PathString path, HttpSocketOptions options, Action<IConnectionBuilder> connectionConfig)
         {
-            var socketBuilder = new ConnectionBuilder(_routes.ServiceProvider);
-            socketConfig(socketBuilder);
-            var socket = socketBuilder.Build();
+            var connectionBuilder = new ConnectionBuilder(_routes.ServiceProvider);
+            connectionConfig(connectionBuilder);
+            var socket = connectionBuilder.Build();
             _routes.MapRoute(path, c => _dispatcher.ExecuteAsync(c, options, socket));
             _routes.MapRoute(path + "/negotiate", c => _dispatcher.ExecuteNegotiateAsync(c, options));
         }

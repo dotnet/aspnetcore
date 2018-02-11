@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public static class SocketBuilderExtensions
+    public static class ConnectionBuilderExtensions
     {
-        public static IConnectionBuilder Use(this IConnectionBuilder socketBuilder, Func<ConnectionContext, Func<Task>, Task> middleware)
+        public static IConnectionBuilder Use(this IConnectionBuilder connectionBuilder, Func<ConnectionContext, Func<Task>, Task> middleware)
         {
-            return socketBuilder.Use(next =>
+            return connectionBuilder.Use(next =>
             {
                 return context =>
                 {
@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Sockets
             });
         }
 
-        public static IConnectionBuilder Run(this IConnectionBuilder socketBuilder, Func<ConnectionContext, Task> middleware)
+        public static IConnectionBuilder Run(this IConnectionBuilder connectionBuilder, Func<ConnectionContext, Task> middleware)
         {
-            return socketBuilder.Use(next =>
+            return connectionBuilder.Use(next =>
             {
                 return context =>
                 {
