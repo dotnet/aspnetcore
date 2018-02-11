@@ -15,16 +15,23 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
 {
     internal class IndexHtmlFileProvider : InMemoryFileProvider
     {
-        public IndexHtmlFileProvider(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
-            : base(ComputeContents(htmlTemplate, assemblyName, binFiles))
+        public IndexHtmlFileProvider(
+            string htmlTemplate,
+            string assemblyName,
+            string assemblyEntryPoint,
+            IEnumerable<IFileInfo> binFiles) : base(ComputeContents(htmlTemplate, assemblyName, assemblyEntryPoint, binFiles))
         {
         }
 
-        private static IEnumerable<(string, byte[])> ComputeContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static IEnumerable<(string, byte[])> ComputeContents(
+            string htmlTemplate,
+            string assemblyName,
+            string assemblyEntryPoint,
+            IEnumerable<IFileInfo> binFiles)
         {
             if (htmlTemplate != null)
             {
-                var html = GetIndexHtmlContents(htmlTemplate, assemblyName, binFiles);
+                var html = GetIndexHtmlContents(htmlTemplate, assemblyName, assemblyEntryPoint, binFiles);
                 var htmlBytes = Encoding.UTF8.GetBytes(html);
                 yield return ("/index.html", htmlBytes);
             }
@@ -48,7 +55,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
         /// responsible for completing the Blazor boot process.
         /// </para>
         /// </remarks>
-        private static string GetIndexHtmlContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static string GetIndexHtmlContents(
+            string htmlTemplate,
+            string assemblyName,
+            string assemblyEntryPoint,
+            IEnumerable<IFileInfo> binFiles)
         {
             var resultBuilder = new StringBuilder();
 
@@ -86,6 +97,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
                                 AppendScriptTagWithBootConfig(
                                     resultBuilder,
                                     assemblyName,
+                                    assemblyEntryPoint,
                                     binFiles,
                                     tag.Attributes);
 
@@ -123,6 +135,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
         private static void AppendScriptTagWithBootConfig(
             StringBuilder resultBuilder,
             string assemblyName,
+            string assemblyEntryPoint,
             IEnumerable<IFileInfo> binFiles,
             List<KeyValuePair<string, string>> attributes)
         {
@@ -136,6 +149,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
             attributesDict.Remove("type");
             attributesDict["src"] = "/_framework/blazor.js";
             attributesDict["main"] = assemblyNameWithExtension;
+            attributesDict["entry-point"] = assemblyEntryPoint;
             attributesDict["references"] = referencesAttribute;
 
             resultBuilder.Append("<script");

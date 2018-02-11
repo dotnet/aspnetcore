@@ -5,7 +5,15 @@ using Microsoft.AspNetCore.Blazor.Browser.Rendering;
 
 namespace StandaloneApp
 {
-    public class Program
+    public class ProgramX
+    {
+        public static void Main(string[] args)
+        {
+            new BrowserRenderer().AddComponent<Home>("app");
+        }
+    }
+
+    public class ProgramY
     {
         public static void Main(string[] args)
         {

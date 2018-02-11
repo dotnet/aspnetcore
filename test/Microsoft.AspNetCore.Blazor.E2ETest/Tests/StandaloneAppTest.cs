@@ -11,9 +11,9 @@ using Xunit;
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class StandaloneAppTest
-        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>
+        : ServerTestBase<DevHostServerFixture<StandaloneApp.ProgramY>>
     {
-        public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.Program> serverFixture)
+        public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.ProgramY> serverFixture)
             : base(browserFixture, serverFixture)
         {
             Navigate("/", noReload: true);

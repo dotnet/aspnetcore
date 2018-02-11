@@ -6,6 +6,7 @@
     <!-- Local alternative to <RunArguments>blazor serve</RunArguments> -->
     <RunCommand>dotnet</RunCommand>
     <RunArguments>run --project ../../src/Microsoft.AspNetCore.Blazor.DevHost serve</RunArguments>
+    <StartupObject>StandaloneApp.ProgramY</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

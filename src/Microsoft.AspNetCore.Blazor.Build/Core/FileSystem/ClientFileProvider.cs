@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Blazor.Internal.Common.FileProviders;
 using Microsoft.Extensions.FileProviders;
+using Mono.Cecil;
 using System.Collections.Generic;
 using System.IO;
 
@@ -50,8 +51,17 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
                 {
                     var template = File.ReadAllText(path);
                     var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
+                    var assemblyEntryPoint = string.Empty;
                     var binFiles = frameworkFileProvider.GetDirectoryContents("/_bin");
-                    result = new IndexHtmlFileProvider(template, assemblyName, binFiles);
+
+                    using (var asmDef = AssemblyDefinition.ReadAssembly(assemblyPath))
+                    {
+                        var ep = asmDef.EntryPoint;
+                        if (ep != null)
+                            assemblyEntryPoint = $"{ep.DeclaringType.FullName}::{ep.Name}";
+                    }
+
+                    result = new IndexHtmlFileProvider(template, assemblyName, assemblyEntryPoint, binFiles);
                     return true;
                 }
             }

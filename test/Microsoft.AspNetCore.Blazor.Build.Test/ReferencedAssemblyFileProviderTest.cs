@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         public void FindsReferencedAssemblyGraphRealistic()
         {
             // Arrange
-            var standaloneAppAssembly = typeof(StandaloneApp.Program).Assembly;
+            var standaloneAppAssembly = typeof(StandaloneApp.ProgramY).Assembly;
             var provider = new ReferencedAssemblyFileProvider(
                 standaloneAppAssembly.GetName().Name,
                 new ReferencedAssemblyResolver(

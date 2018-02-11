@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         {
             // Arrange
             var instance = new IndexHtmlFileProvider(
-                null, "fakeassembly", Enumerable.Empty<IFileInfo>());
+                null, "fakeassembly", null, Enumerable.Empty<IFileInfo>());
 
             // Act
             var file = instance.GetFileInfo("/index.html");
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             // Arrange
             var htmlTemplate = "test";
             var instance = new IndexHtmlFileProvider(
-                htmlTemplate, "fakeassembly", Enumerable.Empty<IFileInfo>());
+                htmlTemplate, "fakeassembly", null, Enumerable.Empty<IFileInfo>());
 
             // Act
             var file = instance.GetFileInfo("/index.html");
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             // Arrange
             var htmlTemplate = "test";
             var instance = new IndexHtmlFileProvider(
-                htmlTemplate, "fakeassembly", Enumerable.Empty<IFileInfo>());
+                htmlTemplate, "fakeassembly", null, Enumerable.Empty<IFileInfo>());
 
             // Act
             var directory = instance.GetDirectoryContents(string.Empty);
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
                 new TestFileInfo("MyApp.ClassLib.dll"),
             };
             var instance = new IndexHtmlFileProvider(
-                htmlTemplate, "MyApp.Entrypoint", dependencies);
+                htmlTemplate, "MyApp.Entrypoint", null, dependencies);
 
             // Act
             var file = instance.GetFileInfo("/index.html");
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
                 new TestFileInfo("MyApp.ClassLib.dll"),
             };
             var instance = new IndexHtmlFileProvider(
-                htmlTemplate, "MyApp.Entrypoint", dependencies);
+                htmlTemplate, "MyApp.Entrypoint", null, dependencies);
 
             // Act
             var file = instance.GetFileInfo("/index.html");
