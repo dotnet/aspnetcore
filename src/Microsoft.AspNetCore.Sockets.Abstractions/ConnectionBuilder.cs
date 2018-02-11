@@ -6,29 +6,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Protocols;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class SocketBuilder : ISocketBuilder
+    public class ConnectionBuilder : IConnectionBuilder
     {
-        private readonly IList<Func<SocketDelegate, SocketDelegate>> _components = new List<Func<SocketDelegate, SocketDelegate>>();
+        private readonly IList<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         public IServiceProvider ApplicationServices { get; }
 
-        public SocketBuilder(IServiceProvider applicationServices)
+        public ConnectionBuilder(IServiceProvider applicationServices)
         {
             ApplicationServices = applicationServices;
         }
 
-        public ISocketBuilder Use(Func<SocketDelegate, SocketDelegate> middleware)
+        public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
         {
             _components.Add(middleware);
             return this;
         }
 
-        public SocketDelegate Build()
+        public ConnectionDelegate Build()
         {
-            SocketDelegate app = features =>
+            ConnectionDelegate app = features =>
             {
                 return Task.CompletedTask;
             };

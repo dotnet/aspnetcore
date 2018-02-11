@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual IFeatureCollection Features => _connectionContext.Features;
 
-        public virtual IDictionary<object, object> Metadata => _connectionContext.Metadata;
+        public virtual IDictionary<object, object> Metadata => Features.Get<IConnectionMetadataFeature>().Metadata;
 
         public virtual PipeReader Input => _connectionContext.Transport.Input;
 
