@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
@@ -61,10 +62,19 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _logger.WriteLine($"{DateTime.Now}: process start: '{_process.StartInfo.FileName} {_process.StartInfo.Arguments}'");
         }
 
-        public Task<string> GetOutputLineAsync(string message)
-            => GetOutputLineAsync(m => message == m);
+        public async Task<string> GetOutputLineAsync(string message, TimeSpan timeout)
+        {
+            _logger.WriteLine($"Waiting for output line [msg == '{message}']. Will wait for {timeout.TotalSeconds} sec.");
+            return await GetOutputLineAsync(m => message == m).TimeoutAfter(timeout);
+        }
 
-        public async Task<string> GetOutputLineAsync(Predicate<string> predicate)
+        public async Task<string> GetOutputLineStartsWithAsync(string message, TimeSpan timeout)
+        {
+            _logger.WriteLine($"Waiting for output line [msg.StartsWith('{message}')]. Will wait for {timeout.TotalSeconds} sec.");
+            return await GetOutputLineAsync(m => m.StartsWith(message)).TimeoutAfter(timeout);
+        }
+
+        private async Task<string> GetOutputLineAsync(Predicate<string> predicate)
         {
             while (!_source.Completion.IsCompleted)
             {

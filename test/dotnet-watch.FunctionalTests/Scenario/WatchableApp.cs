@@ -7,7 +7,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit.Abstractions;
 
@@ -41,16 +40,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
-            => Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(DefaultMessageTimeOut);
+            => Process.GetOutputLineAsync(StartedMessage, DefaultMessageTimeOut);
 
         public Task HasExited()
-            => Process.GetOutputLineAsync(ExitingMessage).TimeoutAfter(DefaultMessageTimeOut);
+            => Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
 
         public bool UsePollingWatcher { get; set; }
 
         public async Task<int> GetProcessId()
         {
-            var line = await Process.GetOutputLineAsync(l => l.StartsWith("PID =")).TimeoutAfter(DefaultMessageTimeOut);
+            var line = await Process.GetOutputLineStartsWithAsync("PID =", DefaultMessageTimeOut);
             var pid = line.Split('=').Last();
             return int.Parse(pid);
         }
@@ -106,7 +105,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             // Make this timeout long because it depends much on the MSBuild compilation speed.
             // Slow machines may take a bit to compile and boot test apps
-            await Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(TimeSpan.FromMinutes(2));
+            await Process.GetOutputLineAsync(StartedMessage, TimeSpan.FromMinutes(2));
         }
 
         public virtual void Dispose()

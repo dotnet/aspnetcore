@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Tools.Tests;
 using Xunit;
 using Xunit.Abstractions;
@@ -129,7 +128,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             public async Task<int> GetCompiledAppDefinedTypes()
             {
-                var definedTypesMessage = await Process.GetOutputLineAsync(m => m.StartsWith("Defined types = ")).TimeoutAfter(TimeSpan.FromSeconds(30));
+                var definedTypesMessage = await Process.GetOutputLineStartsWithAsync("Defined types = ", TimeSpan.FromSeconds(30));
                 return int.Parse(definedTypesMessage.Split('=').Last());
             }
         }

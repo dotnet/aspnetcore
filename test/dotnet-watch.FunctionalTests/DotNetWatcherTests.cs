@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             await _app.StartWatcherAsync();
             const string messagePrefix = "DOTNET_WATCH = ";
-            var message = await _app.Process.GetOutputLineAsync(m => m.StartsWith(messagePrefix));
+            var message = await _app.Process.GetOutputLineStartsWithAsync(messagePrefix, TimeSpan.FromMinutes(2));
             var envValue = message.Substring(messagePrefix.Length);
             Assert.Equal("1", envValue);
         }
