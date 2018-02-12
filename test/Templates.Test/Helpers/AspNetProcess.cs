@@ -1,14 +1,18 @@
-﻿using OpenQA.Selenium;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.Extensions.CommandLineUtils;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Edge;
 using Xunit;
 using Xunit.Abstractions;
-using Microsoft.AspNetCore.Certificates.Generation;
 
 namespace Templates.Test.Helpers
 {
@@ -137,6 +141,30 @@ namespace Templates.Test.Helpers
             _output.WriteLine($"Opening browser at {_listeningUri}...");
             var driver = WebDriverFactory.CreateWebDriver();
             driver.Navigate().GoToUrl(_listeningUri);
+
+            if (driver is EdgeDriver)
+            {
+                // Workaround for untrusted ASP.NET Core development certificates.
+                // The edge driver doesn't supported skipping the SSL warning page.
+
+                if (driver.Title.Contains("Certificate error", StringComparison.OrdinalIgnoreCase))
+                {
+                    _output.WriteLine("Page contains certificate error. Attempting to get around this...");
+                    driver.Click(By.Id("moreInformationDropdownSpan"));
+                    var continueLink = driver.FindElement(By.Id("invalidcert_continue"));
+                    if (continueLink != null)
+                    {
+                        _output.WriteLine($"Clicking on link '{continueLink.Text}' to skip invalid certificate error page.");
+                        continueLink.Click();
+                        driver.Navigate().GoToUrl(_listeningUri);
+                    }
+                    else
+                    {
+                        _output.WriteLine("Could not find link to skip certificate error page.");
+                    }
+                }
+            }
+
             return driver;
         }
 
