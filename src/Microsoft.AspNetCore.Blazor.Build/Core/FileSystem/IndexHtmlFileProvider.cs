@@ -2,14 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Internal.Common.FileProviders;
-using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.FileProviders;
 using System.Linq;
 using AngleSharp.Parser.Html;
-using AngleSharp.Dom;
 using AngleSharp;
+using AngleSharp.Html;
+using System;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
 {
@@ -50,38 +50,81 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
         /// </remarks>
         private static string GetIndexHtmlContents(string htmlTemplate, string assemblyName, IEnumerable<IFileInfo> binFiles)
         {
-            var parser = new HtmlParser();
-            var dom = parser.Parse(htmlTemplate);
+            var resultBuilder = new StringBuilder();
 
-            // First see if the user has declared a 'boot' script,
-            // then it's their responsibility to load blazor.js
-            var bootScript = dom.Body?.QuerySelectorAll("script")
-                   .Where(x => x.Attributes["type"]?.Value == "blazor-boot").FirstOrDefault();
-
-            // If we find a script tag that is decorated with a type="blazor-boot"
-            // this will be the point at which we start the Blazor boot process
-            if (bootScript != null)
+            // Search for a tag of the form <script type="boot-blazor"></script>, and replace
+            // it with a fully-configured Blazor boot script tag
+            var tokenizer = new HtmlTokenizer(
+                new TextSource(htmlTemplate),
+                HtmlEntityService.Resolver);
+            var currentRangeStartPos = 0;
+            var isInBlazorBootTag = false;
+            var resumeOnNextToken = false;
+            while (true)
             {
-                // We need to remove the 'type="blazor-boot"' so that
-                // it reverts to being processed as JS by the browser
-                bootScript.RemoveAttribute("type");
+                var token = tokenizer.Get();
+                if (resumeOnNextToken)
+                {
+                    resumeOnNextToken = false;
+                    currentRangeStartPos = token.Position.Position;
+                }
 
-                // Leave any user-specified attributes on the tag as-is
-                // and add/overwrite the config data needed to boot Blazor
-                InjectBootConfig(bootScript, assemblyName, binFiles);
-            }
+                switch (token.Type)
+                {
+                    case HtmlTokenType.StartTag:
+                        {
+                            // Only do anything special if this is a Blazor boot tag
+                            var tag = token.AsTag();
+                            if (IsBlazorBootTag(tag))
+                            {
+                                // First, emit the original source text prior to this special tag, since
+                                // we want that to be unchanged
+                                resultBuilder.Append(htmlTemplate, currentRangeStartPos, token.Position.Position - currentRangeStartPos - 1);
 
-            // If no blazor-boot script tag was found, we skip it and
-            // leave it up to the user to handle kicking off the boot
+                                // Instead of emitting the source text for this special tag, emit a fully-
+                                // configured Blazor boot script tag
+                                AppendScriptTagWithBootConfig(
+                                    resultBuilder,
+                                    assemblyName,
+                                    binFiles,
+                                    tag.Attributes);
 
-            using (var writer = new StringWriter())
-            {
-                dom.ToHtml(writer, new AutoSelectedMarkupFormatter());
-                return writer.ToString();
+                                // Set a flag so we know not to emit anything else until the special
+                                // tag is closed
+                                isInBlazorBootTag = true;
+                            }
+                            break;
+                        }
+                    
+                    case HtmlTokenType.EndTag:
+                        // If this is an end tag corresponding to the Blazor boot script tag, we
+                        // can switch back into the mode of emitting the original source text
+                        if (isInBlazorBootTag)
+                        {
+                            isInBlazorBootTag = false;
+                            resumeOnNextToken = true;
+                        }
+                        break;
+
+                    case HtmlTokenType.EndOfFile:
+                        // Finally, emit any remaining text from the original source file
+                        resultBuilder.Append(htmlTemplate, currentRangeStartPos, htmlTemplate.Length - currentRangeStartPos);
+                        return resultBuilder.ToString();
+                }
             }
         }
 
-        private static void InjectBootConfig(IElement script, string assemblyName, IEnumerable<IFileInfo> binFiles)
+        private static bool IsBlazorBootTag(HtmlTagToken tag)
+            => string.Equals(tag.Name, "script", StringComparison.Ordinal)
+            && tag.Attributes.Any(pair =>
+                string.Equals(pair.Key, "type", StringComparison.Ordinal)
+                && string.Equals(pair.Value, "blazor-boot", StringComparison.Ordinal));
+
+        private static void AppendScriptTagWithBootConfig(
+            StringBuilder resultBuilder,
+            string assemblyName,
+            IEnumerable<IFileInfo> binFiles,
+            List<KeyValuePair<string, string>> attributes)
         {
             var assemblyNameWithExtension = $"{assemblyName}.dll";
             var referenceNames = binFiles
@@ -89,9 +132,28 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
                 .Select(file => file.Name);
             var referencesAttribute = string.Join(",", referenceNames.ToArray());
 
-            script.SetAttribute("src", "/_framework/blazor.js");
-            script.SetAttribute("main", assemblyNameWithExtension);
-            script.SetAttribute("references", referencesAttribute);
+            var attributesDict = attributes.ToDictionary(x => x.Key, x => x.Value);
+            attributesDict.Remove("type");
+            attributesDict["src"] = "/_framework/blazor.js";
+            attributesDict["main"] = assemblyNameWithExtension;
+            attributesDict["references"] = referencesAttribute;
+
+            resultBuilder.Append("<script");
+            foreach (var attributePair in attributesDict)
+            {
+                if (!string.IsNullOrEmpty(attributePair.Value))
+                {
+                    resultBuilder.AppendFormat(" {0}=\"{1}\"",
+                        attributePair.Key,
+                        attributePair.Value); // TODO: HTML attribute encode
+                }
+                else
+                {
+                    resultBuilder.AppendFormat(" {0}",
+                        attributePair.Key);
+                }
+            }
+            resultBuilder.Append("></script>");
         }
     }
 }

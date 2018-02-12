@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         {
             // Arrange
             var htmlTemplate = "test";
-            var htmlOutput = $"<html><head></head><body>{htmlTemplate}</body></html>";
             var instance = new IndexHtmlFileProvider(
                 htmlTemplate, "fakeassembly", Enumerable.Empty<IFileInfo>());
 
@@ -44,8 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             Assert.False(file.IsDirectory);
             Assert.Equal("/index.html", file.PhysicalPath);
             Assert.Equal("index.html", file.Name);
-            Assert.Equal(htmlOutput, ReadString(file));
-            Assert.Equal(htmlOutput.Length, file.Length);
+            Assert.Equal(htmlTemplate, ReadString(file));
         }
 
         [Fact]
@@ -69,7 +67,19 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
         public void InjectsScriptTagReferencingAssemblyAndDependencies()
         {
             // Arrange
-            var htmlTemplate = "<html><body><h1>Hello</h1>Some text</body><script type='blazor-boot'></script></html>";
+            var htmlTemplatePrefix = @"
+                <html>
+                <body>
+                    <h1>Hello</h1>
+                    Some text
+                    <script>alert(1)</script>";
+            var htmlTemplateSuffix = @"
+                </body>
+                </html>";
+            var htmlTemplate =
+                $@"{htmlTemplatePrefix}
+                    <script type='blazor-boot' custom1 custom2=""value"">some text that should be removed</script>
+                {htmlTemplateSuffix}";
             var dependencies = new IFileInfo[]
             {
                 new TestFileInfo("System.Abc.dll"),
@@ -80,25 +90,30 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
 
             // Act
             var file = instance.GetFileInfo("/index.html");
-            var parsedHtml = new HtmlParser().Parse(ReadString(file));
-            var firstElem = parsedHtml.Body.FirstElementChild;
-            var scriptElem = parsedHtml.Body.QuerySelector("script");
+            var fileContents = ReadString(file);
 
-            // Assert
-            Assert.Equal("h1", firstElem.TagName.ToLowerInvariant());
-            Assert.Equal("script", scriptElem.TagName.ToLowerInvariant());
+            // Assert: Start and end is not modified (including formatting)
+            Assert.StartsWith(htmlTemplatePrefix, fileContents);
+            Assert.EndsWith(htmlTemplateSuffix, fileContents);
+
+            // Assert: Boot tag is correct
+            var scriptTagText = fileContents.Substring(htmlTemplatePrefix.Length, fileContents.Length - htmlTemplatePrefix.Length - htmlTemplateSuffix.Length);
+            var parsedHtml = new HtmlParser().Parse("<html><body>" + scriptTagText + "</body></html>");
+            var scriptElem = parsedHtml.Body.QuerySelector("script");
             Assert.False(scriptElem.HasChildNodes);
             Assert.Equal("/_framework/blazor.js", scriptElem.GetAttribute("src"));
             Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
             Assert.Equal("System.Abc.dll,MyApp.ClassLib.dll", scriptElem.GetAttribute("references"));
             Assert.False(scriptElem.HasAttribute("type"));
+            Assert.Equal(string.Empty, scriptElem.Attributes["custom1"].Value);
+            Assert.Equal("value", scriptElem.Attributes["custom2"].Value);
         }
 
         [Fact]
-        public void MissingBootScriptTagReferencingAssemblyAndDependencies()
+        public void SuppliesHtmlTemplateUnchangedIfNoBootScriptPresent()
         {
             // Arrange
-            var htmlTemplate = "<html><body><h1>Hello</h1>Some text</body></html>";
+            var htmlTemplate = "<!DOCTYPE html><html><body><h1 style='color:red'>Hello</h1>Some text<script type='irrelevant'>blah</script></body></html>";
             var dependencies = new IFileInfo[]
             {
                 new TestFileInfo("System.Abc.dll"),
@@ -109,14 +124,9 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
 
             // Act
             var file = instance.GetFileInfo("/index.html");
-            var parsedHtml = new HtmlParser().Parse(ReadString(file));
-            var firstElem = parsedHtml.Body.FirstElementChild;
-            var scriptElem = parsedHtml.Body.QuerySelector("script");
-
 
             // Assert
-            Assert.Equal("h1", firstElem.TagName.ToLowerInvariant());
-            Assert.Null(scriptElem);
+            Assert.Equal(htmlTemplate, ReadString(file));
         }
 
         private static string ReadString(IFileInfo file)
