@@ -181,8 +181,7 @@
   </Target>
 
   <Target Name="CopyToPublishArtifacts" DependsOnTargets="_CheckFilesToPublish">
-    <MakeDir Directories="$(ArtifactsDir)files\" />
-    <Copy SourceFiles="@(FilesToPublish)" DestinationFolder="$(ArtifactsDir)files\" />
+    <Copy SourceFiles="%(FilesToPublish.Identity)" DestinationFiles="$(ArtifactsDir)%(FilesToPublish.RelativeBlobPath)" Condition="'%(FilesToPublish.RelativeBlobPath)' != ''" />
   </Target>
 
   <Target Name="PublishToMyGet"
@@ -271,8 +270,6 @@
         Condition=" '%(FilesToPublish.IsDuplicateUpload)' != 'true' " />
     </ItemGroup>
 
-    <Message Text="Publishing %(PackageToPublishToTransport.FullPath)" Importance="high" />
-    <Message Text="@(FilesToPublishToTransport -> '%(FullPath) -> %(RelativeBlobPath)','%0A')" Importance="high" />
 
     <PushToBlobFeed ExpectedFeedUrl="$(PublishBlobFeedUrl)"
                     AccountKey="$(PublishBlobFeedKey)"
