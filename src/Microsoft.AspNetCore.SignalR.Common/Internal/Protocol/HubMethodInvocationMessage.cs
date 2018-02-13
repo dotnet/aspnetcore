@@ -69,7 +69,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public override string ToString()
         {
-            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty } ] }}";
+            string args;
+            try
+            {
+                args = string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                args = $"Error: {ex.Message}";
+            }
+            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ] }}";
         }
     }
 
@@ -86,7 +95,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public override string ToString()
         {
-            return $"StreamInvocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty} ] }}";
+            string args;
+            try
+            {
+                args = string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty;
+            }
+            catch (Exception ex)
+            {
+                args = $"Error: {ex.Message}";
+            }
+            return $"StreamInvocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {args} ] }}";
         }
     }
 }
