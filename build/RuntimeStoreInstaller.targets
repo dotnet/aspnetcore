@@ -168,7 +168,7 @@
         <DependentArchive>Build.RS.osx.tar.gz</DependentArchive>
         <RSArchive>$(TimestampRSArchivePrefix)osx-x64.tar.gz</RSArchive>
       </TargzArchives>
-      <ZipArchives Include="Build.RS.winx64.zip"></ZipArchives>
+      <ZipArchives Include="Build.RS.winx64.zip">
         <DependentArchive>Build.RS.winx64.zip</DependentArchive>
         <RSArchive>$(TimestampRSArchivePrefix)win7-x64.zip</RSArchive>
       </ZipArchives>
