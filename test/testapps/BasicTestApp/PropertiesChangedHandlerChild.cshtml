@@ -1,11 +1,13 @@
 ﻿<div class="supplied">You supplied: @SuppliedValue</div>
-<div class="computed">I computed: @ComputedValue</div>
+<div class="computed">I computed: @computedValue</div>
 
 @functions {
     public int SuppliedValue { get; set; }
 
-    // TODO: Instead of computing this in the getter, override OnParametersChanged or whatever
-    // it ends up being called when that's implemented on BlazorComponent
-    private int ComputedValue
-        => SuppliedValue * 2;
+    private int computedValue;
+
+    protected override void OnParametersSet()
+    {
+        computedValue = SuppliedValue * 2;
+    }
 }

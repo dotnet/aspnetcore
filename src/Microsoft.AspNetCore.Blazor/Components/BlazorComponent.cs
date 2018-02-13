@@ -14,6 +14,50 @@ namespace Microsoft.AspNetCore.Blazor.Components
     public abstract class BlazorComponent : IComponent
     {
         private RenderHandle _renderHandle;
+        private bool _hasNeverRendered = true;
+        private bool _hasPendingQueuedRender;
+
+        /// <inheritdoc />
+        public virtual void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            // Developers can either override this method in derived classes, or can use Razor
+            // syntax to define a derived class and have the compiler generate the method.
+            _hasPendingQueuedRender = false;
+            _hasNeverRendered = false;
+        }
+
+        /// <summary>
+        /// Method invoked when the component has received parameters from its parent in
+        /// the render tree, and the incoming values have been assigned to properties.
+        /// </summary>
+        protected virtual void OnParametersSet()
+        {
+        }
+
+        /// <summary>
+        /// Notifies the component that its state has changed. When applicable, this will
+        /// cause the component to be re-rendered.
+        /// </summary>
+        protected void StateHasChanged()
+        {
+            if (_hasPendingQueuedRender)
+            {
+                return;
+            }
+
+            if (_hasNeverRendered || ShouldRender())
+            {
+                _hasPendingQueuedRender = true;
+                _renderHandle.Render();
+            }
+        }
+
+        /// <summary>
+        /// Returns a flag to indicate whether the component should render.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual bool ShouldRender()
+            => true;
 
         void IComponent.Init(RenderHandle renderHandle)
         {
@@ -34,17 +78,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
             // TODO: If we know conclusively that the parameters have not changed since last
             // time (because they are all primitives and equal to the existing property values)
-            // then don't re-render. Can put an "out bool" parameter on AssignToProperties.
-            _renderHandle.Render();
-        }
-
-        /// <inheritdoc />
-        public virtual void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            // This is virtual rather than abstract so that 'code behind' classes don't have to
-            // be marked abstract.
-            // Developers can either override this method in derived classes, or can use Razor
-            // syntax to define a derived class and have the compiler generate the method.
+            // then skip the following. Can put an "out bool" parameter on AssignToProperties.
+            OnParametersSet();
+            StateHasChanged();
         }
 
         // At present, if you have a .cshtml file in a project with <Project Sdk="Microsoft.NET.Sdk.Web">,
