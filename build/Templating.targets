@@ -28,7 +28,7 @@
       <_BuildTemplateProjProperties>
         $(TemplateProjProperties);
         SkipAspNetCoreRuntimeInstall=true;
-        DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         SkipTests=true;
       </_BuildTemplateProjProperties>
@@ -60,18 +60,18 @@
     <Warning Text="Skipping template tests because InstallSharedRuntimeFromPreviousBuild != 'true'." Condition="'$(InstallSharedRuntimeFromPreviousBuild)' != 'true'"/>
 
     <PropertyGroup>
-      <_BuildTemplateProjProperties>
+      <_TestTemplateProjProperties>
         $(TemplateProjProperties);
         SkipAspNetCoreRuntimeInstall=true;
-        DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
+        DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath);
         DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
         NoBuild=true;
-      </_BuildTemplateProjProperties>
+      </_TestTemplateProjProperties>
     </PropertyGroup>
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="Build"
-             Properties="$(_BuildTemplateProjProperties)"
+             Properties="$(_TestTemplateProjProperties)"
              Condition="'$(InstallSharedRuntimeFromPreviousBuild)' == 'true'" />
   </Target>
 
