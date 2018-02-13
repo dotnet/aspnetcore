@@ -54,48 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override IReadOnlyList<IRazorProjectEngineFeature> ProjectFeatures { get; }
 
-        protected override void ConfigureParserOptions(RazorParserOptionsBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-        }
-
-        protected override void ConfigureDesignTimeParserOptions(RazorParserOptionsBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.SetDesignTime(true);
-        }
-
-        protected override void ConfigureCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-        }
-
-        protected override void ConfigureDesignTimeCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.SetDesignTime(true);
-            builder.SuppressChecksum = true;
-            builder.SuppressMetadataAttributes = true;
-        }
-
-        protected override RazorCodeDocument ProcessCore(
-            RazorProjectItem projectItem,
-            Action<RazorParserOptionsBuilder> configureParser,
-            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
+        protected override RazorCodeDocument CreateCodeDocumentCore(RazorProjectItem projectItem)
         {
             if (projectItem == null)
             {
@@ -107,14 +66,38 @@ namespace Microsoft.AspNetCore.Razor.Language
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var imports = importFeature.GetImports(projectItem);
 
-            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(configureParser);
-            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(configureCodeGeneration);
+            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureParserOptions);
+            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureCodeGenerationOptions);
 
-            var codeDocument = RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
+            return RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
+        }
+
+        protected override RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem)
+        {
+            if (projectItem == null)
+            {
+                throw new ArgumentNullException(nameof(projectItem));
+            }
+
+            var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
+
+            var importFeature = GetRequiredFeature<IImportProjectFeature>();
+            var imports = importFeature.GetImports(projectItem);
+
+            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
+            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
+
+            return RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
+        }
+
+        protected override void ProcessCore(RazorCodeDocument codeDocument)
+        {
+            if (codeDocument == null)
+            {
+                throw new ArgumentNullException(nameof(codeDocument));
+            }
 
             Engine.Process(codeDocument);
-
-            return codeDocument;
         }
 
         private TFeature GetRequiredFeature<TFeature>() where TFeature : IRazorProjectEngineFeature
@@ -129,6 +112,26 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return feature;
+        }
+
+        private void ConfigureParserOptions(RazorParserOptionsBuilder builder)
+        {
+        }
+
+        private void ConfigureDesignTimeParserOptions(RazorParserOptionsBuilder builder)
+        {
+            builder.SetDesignTime(true);
+        }
+
+        private void ConfigureCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
+        {
+        }
+
+        private void ConfigureDesignTimeCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
+        {
+            builder.SetDesignTime(true);
+            builder.SuppressChecksum = true;
+            builder.SuppressMetadataAttributes = true;
         }
     }
 }

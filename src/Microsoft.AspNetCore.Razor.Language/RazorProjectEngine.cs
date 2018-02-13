@@ -22,14 +22,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract IReadOnlyList<IRazorProjectEngineFeature> ProjectFeatures { get; }
 
-        protected abstract void ConfigureParserOptions(RazorParserOptionsBuilder builder);
-
-        protected abstract void ConfigureDesignTimeParserOptions(RazorParserOptionsBuilder builder);
-
-        protected abstract void ConfigureCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder);
-
-        protected abstract void ConfigureDesignTimeCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder);
-
         public virtual RazorCodeDocument Process(RazorProjectItem projectItem)
         {
             if (projectItem == null)
@@ -37,7 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            return ProcessCore(projectItem, ConfigureParserOptions, ConfigureCodeGenerationOptions);
+            var codeDocument = CreateCodeDocumentCore(projectItem);
+            ProcessCore(codeDocument);
+            return codeDocument;
         }
 
         public virtual RazorCodeDocument ProcessDesignTime(RazorProjectItem projectItem)
@@ -47,13 +41,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            return ProcessCore(projectItem, ConfigureDesignTimeParserOptions, ConfigureDesignTimeCodeGenerationOptions);
+            var codeDocument = CreateCodeDocumentDesignTimeCore(projectItem);
+            ProcessCore(codeDocument);
+            return codeDocument;
         }
 
-        protected abstract RazorCodeDocument ProcessCore(
-            RazorProjectItem projectItem,
-            Action<RazorParserOptionsBuilder> configureParser,
-            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration);
+        protected abstract RazorCodeDocument CreateCodeDocumentCore(RazorProjectItem projectItem);
+
+        protected abstract RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem);
+
+        protected abstract void ProcessCore(RazorCodeDocument codeDocument);
 
         public static RazorProjectEngine Create(RazorConfiguration configuration, RazorProjectFileSystem fileSystem) => Create(configuration, fileSystem, configure: null);
 
