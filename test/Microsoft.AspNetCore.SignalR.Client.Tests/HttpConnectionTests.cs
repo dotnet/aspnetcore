@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -62,20 +63,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     await connection.StartAsync().OrTimeout();
 
                     // This will trigger the received callback
-                    testTransport.Application.Writer.TryWrite(Array.Empty<byte>());
+                    await testTransport.Application.Output.WriteAsync(new byte[] { 1 });
 
                     // Wait to hit the sync point. We are now blocking up the TaskQueue
                     await onReceived.WaitForSyncPoint().OrTimeout();
 
                     // Now we write something else and we want to test that the HttpConnection receive loop is still
                     // removing items from the channel even though OnReceived is blocked up.
-                    testTransport.Application.Writer.TryWrite(Array.Empty<byte>());
+                    await testTransport.Application.Output.WriteAsync(new byte[] { 1 });
 
                     // Now that we've written, we wait for WaitToReadAsync to return an INCOMPLETE task. It will do so
                     // once HttpConnection reads the message. We also use a CTS to timeout in case the loop is indeed blocked
                     var cts = new CancellationTokenSource();
                     cts.CancelAfter(TimeSpan.FromSeconds(5));
-                    while (testTransport.Application.Reader.WaitToReadAsync().IsCompleted && !cts.IsCancellationRequested)
+                    while (testTransport.Application.Input.WaitToReadAsync().IsCompleted && !cts.IsCancellationRequested)
                     {
                         // Yield to allow the HttpConnection to dequeue the message
                         await Task.Yield();
@@ -109,7 +110,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         await connection.StartAsync().OrTimeout();
                         logger.LogInformation("Started connection");
 
-                        testTransport.Application.Writer.TryWrite(Array.Empty<byte>());
+                        await testTransport.Application.Output.WriteAsync(new byte[] { 1 });
                         await onReceived.WaitForSyncPoint().OrTimeout();
 
                         // Dispose should complete, even though the receive callbacks are completely blocked up.

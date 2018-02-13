@@ -251,10 +251,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             public ProtocolType Type => ProtocolType.Binary;
 
-            public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
+            public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
             {
-                messages = new List<HubMessage>();
-
                 ParseCalls += 1;
                 if (_error != null)
                 {

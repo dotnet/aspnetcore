@@ -349,9 +349,10 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // Parse the input fully now.
             bytes = Frame(bytes);
             var protocol = new MessagePackHubProtocol();
-            Assert.True(protocol.TryParseMessages(bytes, new TestBinder(testData.Message), out var messages));
+            var messages = new List<HubMessage>();
+            Assert.True(protocol.TryParseMessages(bytes, new TestBinder(testData.Message), messages));
 
-            Assert.Equal(1, messages.Count);
+            Assert.Single(messages);
             Assert.Equal(testData.Message, messages[0], TestHubMessageEqualityComparer.Instance);
         }
 
@@ -419,7 +420,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var buffer = Frame(Pack(testData.Encoded));
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessages(buffer, binder, out var messages));
+            var messages = new List<HubMessage>();
+            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessages(buffer, binder, messages));
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
         }
@@ -447,7 +449,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var buffer = Frame(Pack(testData.Encoded));
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            _hubProtocol.TryParseMessages(buffer, binder, out var messages);
+            var messages = new List<HubMessage>();
+            _hubProtocol.TryParseMessages(buffer, binder, messages);
             var exception = Assert.Throws<FormatException>(() => ((HubMethodInvocationMessage)messages[0]).Arguments);
 
             Assert.Equal(testData.ErrorMessage, exception.Message);
@@ -458,7 +461,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         public void ParserDoesNotConsumePartialData(byte[] payload, int expectedMessagesCount)
         {
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var result = _hubProtocol.TryParseMessages(payload, binder, out var messages);
+            var messages = new List<HubMessage>();
+            var result = _hubProtocol.TryParseMessages(payload, binder, messages);
             Assert.True(result || messages.Count == 0);
             Assert.Equal(expectedMessagesCount, messages.Count);
         }

@@ -47,8 +47,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, int, Exception> _messageToApp =
             LoggerMessage.Define<int>(LogLevel.Debug, new EventId(12, nameof(MessageToApp)), "Passing message to application. Payload size: {count}.");
 
-        private static readonly Action<ILogger, int, Exception> _receivedFromApp =
-            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(13, nameof(ReceivedFromApp)), "Received message from application. Payload size: {count}.");
+        private static readonly Action<ILogger, long, Exception> _receivedFromApp =
+            LoggerMessage.Define<long>(LogLevel.Debug, new EventId(13, nameof(ReceivedFromApp)), "Received message from application. Payload size: {count}.");
 
         private static readonly Action<ILogger, Exception> _sendMessageCanceled =
             LoggerMessage.Define(LogLevel.Information, new EventId(14, nameof(SendMessageCanceled)), "Sending a message canceled.");
@@ -66,8 +66,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             LoggerMessage.Define(LogLevel.Debug, new EventId(18, nameof(CancelMessage)), "Canceled passing message to application.");
 
         // Category: ServerSentEventsTransport and LongPollingTransport
-        private static readonly Action<ILogger, int, Uri, Exception> _sendingMessages =
-            LoggerMessage.Define<int, Uri>(LogLevel.Debug, new EventId(10, nameof(SendingMessages)), "Sending {count} message(s) to the server using url: {url}.");
+        private static readonly Action<ILogger, long, Uri, Exception> _sendingMessages =
+            LoggerMessage.Define<long, Uri>(LogLevel.Debug, new EventId(10, nameof(SendingMessages)), "Sending {count} bytes to the server using url: {url}.");
 
         private static readonly Action<ILogger, Exception> _sentSuccessfully =
             LoggerMessage.Define(LogLevel.Debug, new EventId(11, nameof(SentSuccessfully)), "Message(s) sent successfully.");
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             _sendStarted(logger, null);
         }
 
-        public static void ReceivedFromApp(this ILogger logger, int count)
+        public static void ReceivedFromApp(this ILogger logger, long count)
         {
             _receivedFromApp(logger, count, null);
         }
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             _cancelMessage(logger, null);
         }
 
-        public static void SendingMessages(this ILogger logger, int count, Uri url)
+        public static void SendingMessages(this ILogger logger, long count, Uri url)
         {
             _sendingMessages(logger, count, url, null);
         }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -12,7 +13,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client.Tests;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Internal;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -41,10 +41,8 @@ namespace Microsoft.AspNetCore.Client.Tests
 
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
                     transportActiveTask = longPollingTransport.Running;
 
@@ -77,13 +75,14 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = ChannelConnection.Create(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
                     await longPollingTransport.Running.OrTimeout();
-                    Assert.True(transportToConnection.Reader.Completion.IsCompleted);
+
+                    Assert.True(pair.Transport.Input.TryRead(out var result));
+                    Assert.True(result.IsCompleted);
+                    pair.Transport.Input.AdvanceTo(result.Buffer.End);
                 }
                 finally
                 {
@@ -130,17 +129,12 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
-                    var data = await transportToConnection.Reader.ReadAllAsync().OrTimeout();
+                    var data = await pair.Transport.Input.ReadAllAsync().OrTimeout();
                     await longPollingTransport.Running.OrTimeout();
-                    Assert.True(transportToConnection.Reader.Completion.IsCompleted);
-                    Assert.Equal(2, data.Count);
-                    Assert.Equal(Encoding.UTF8.GetBytes("Hello"), data[0]);
-                    Assert.Equal(Encoding.UTF8.GetBytes("World"), data[1]);
+                    Assert.Equal(Encoding.UTF8.GetBytes("HelloWorld"), data);
                 }
                 finally
                 {
@@ -166,13 +160,19 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
                     var exception =
-                        await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.Reader.Completion.OrTimeout());
+                        await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                        {
+                            async Task ReadAsync()
+                            {
+                                await pair.Transport.Input.ReadAsync();
+                            }
+
+                            await ReadAsync().OrTimeout();
+                        });
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
@@ -202,21 +202,14 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
-                    await connectionToTransport.Writer.WriteAsync(new SendMessage());
+                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello World"));
 
                     await Assert.ThrowsAsync<HttpRequestException>(async () => await longPollingTransport.Running.OrTimeout());
 
-                    // The channel needs to be drained for the Completion task to be completed
-                    while (transportToConnection.Reader.TryRead(out var message))
-                    {
-                    }
-
-                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await transportToConnection.Reader.Completion);
+                    var exception = await Assert.ThrowsAsync<HttpRequestException>(async () => await pair.Transport.Input.ReadAllAsync().OrTimeout());
                     Assert.Contains(" 500 ", exception.Message);
                 }
                 finally
@@ -243,17 +236,14 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
-                    connectionToTransport.Writer.Complete();
+                    pair.Transport.Output.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
 
-                    await longPollingTransport.Running.OrTimeout();
-                    await connectionToTransport.Reader.Completion.OrTimeout();
+                    await pair.Transport.Input.ReadAllAsync().OrTimeout();
                 }
                 finally
                 {
@@ -292,32 +282,22 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                     // Start the transport
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
                     // Wait for the transport to finish
                     await longPollingTransport.Running.OrTimeout();
 
                     // Pull Messages out of the channel
-                    var messages = new List<byte[]>();
-                    while (await transportToConnection.Reader.WaitToReadAsync())
-                    {
-                        while (transportToConnection.Reader.TryRead(out var message))
-                        {
-                            messages.Add(message);
-                        }
-                    }
+                    var message = await pair.Transport.Input.ReadAllAsync();
 
                     // Check the provided request
                     Assert.Equal(2, sentRequests.Count);
 
                     // Check the messages received
-                    Assert.Single(messages);
-                    Assert.Equal(message1Payload, messages[0]);
+                    Assert.Equal(message1Payload, message);
                 }
                 finally
                 {
@@ -350,24 +330,19 @@ namespace Microsoft.AspNetCore.Client.Tests
                 var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
-                    var tcs1 = new TaskCompletionSource<object>();
-                    var tcs2 = new TaskCompletionSource<object>();
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                     // Pre-queue some messages
-                    await connectionToTransport.Writer.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("Hello"), tcs1)).OrTimeout();
-                    await connectionToTransport.Writer.WriteAsync(new SendMessage(Encoding.UTF8.GetBytes("World"), tcs2)).OrTimeout();
+                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                    await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("World"));
 
                     // Start the transport
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
-                    connectionToTransport.Writer.Complete();
+                    pair.Transport.Output.Complete();
 
                     await longPollingTransport.Running.OrTimeout();
-                    await connectionToTransport.Reader.Completion.OrTimeout();
+                    await pair.Transport.Input.ReadAllAsync();
 
                     Assert.Single(sentRequests);
                     Assert.Equal(new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'
@@ -400,12 +375,10 @@ namespace Microsoft.AspNetCore.Client.Tests
 
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
 
                     Assert.Null(longPollingTransport.Mode);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, transferMode, connection: new TestConnection());
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, transferMode, connection: new TestConnection());
                     Assert.Equal(transferMode, longPollingTransport.Mode);
                 }
                 finally
@@ -466,10 +439,8 @@ namespace Microsoft.AspNetCore.Client.Tests
 
                 try
                 {
-                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connection: new TestConnection());
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Binary, connection: new TestConnection());
 
                     var completedTask = await Task.WhenAny(completionTcs.Task, longPollingTransport.Running).OrTimeout();
                     Assert.Equal(completionTcs.Task, completedTask);

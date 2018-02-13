@@ -214,7 +214,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var httpHandler = new TestHttpMessageHandler();
 
                     var longPollResult = new TaskCompletionSource<HttpResponseMessage>();
-                    httpHandler.OnLongPoll(cancellationToken => longPollResult.Task.OrTimeout());
+                    httpHandler.OnLongPoll(cancellationToken => 
+                    { 
+                        cancellationToken.Register(() => 
+                        {
+                            longPollResult.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                        });
+                        return longPollResult.Task;
+                    });
 
                     httpHandler.OnSocketSend((data, _) =>
                     {
@@ -227,9 +234,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         async (connection, closed) =>
                     {
                         await connection.StartAsync().OrTimeout();
-                        await Assert.ThrowsAsync<HttpRequestException>(() => connection.SendAsync(new byte[] { 0x42 }).OrTimeout());
-
-                        longPollResult.TrySetResult(ResponseUtils.CreateResponse(HttpStatusCode.NoContent));
+                        await connection.SendAsync(new byte[] { 0x42 }).OrTimeout();
 
                         // Wait for the connection to close, because the send failed.
                         await Assert.ThrowsAsync<HttpRequestException>(() => closed.OrTimeout());
@@ -318,7 +323,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 async (connection, closed) =>
                 {
                     await connection.StartAsync().OrTimeout();
-                    testTransport.Application.Writer.TryComplete(expected);
+                    testTransport.Application.Output.Complete(expected);
                     var actual = await Assert.ThrowsAsync<Exception>(() => closed.OrTimeout());
                     Assert.Same(expected, actual);
 

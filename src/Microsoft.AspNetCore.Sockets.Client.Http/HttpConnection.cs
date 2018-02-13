@@ -3,12 +3,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Threading.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private volatile ConnectionState _connectionState = ConnectionState.Disconnected;
         private readonly object _stateChangeLock = new object();
 
-        private volatile ChannelConnection<byte[], SendMessage> _transportChannel;
+        private volatile IDuplexPipe _transportChannel;
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
         private volatile ITransport _transport;
@@ -43,8 +42,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private string _connectionId;
         private Exception _abortException;
         private readonly TimeSpan _eventQueueDrainTimeout = TimeSpan.FromSeconds(5);
-        private ChannelReader<byte[]> Input => _transportChannel.Input;
-        private ChannelWriter<SendMessage> Output => _transportChannel.Output;
+        private PipeReader Input => _transportChannel.Input;
+        private PipeWriter Output => _transportChannel.Output;
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
         private readonly TransportType _requestedTransportType = TransportType.All;
         private readonly ConnectionLogScope _logScope;
@@ -187,7 +186,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _closeTcs = new TaskCompletionSource<object>();
 
-                _ = Input.Completion.ContinueWith(async t =>
+                Input.OnWriterCompleted(async (exception, state) =>
                 {
                     // Grab the exception and then clear it.
                     // See comment at AbortAsync for more discussion on the thread-safety
@@ -221,9 +220,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     try
                     {
-                        if (t.IsFaulted)
+                        if (exception != null)
                         {
-                            Closed?.Invoke(t.Exception.InnerException);
+                            Closed?.Invoke(exception);
                         }
                         else
                         {
@@ -237,7 +236,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         // Suppress (but log) the exception, this is user code
                         _logger.ErrorDuringClosedEvent(ex);
                     }
-                });
+
+                }, null);
 
                 _receiveLoopTask = ReceiveAsync();
             }
@@ -325,15 +325,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task StartTransport(Uri connectUrl)
         {
-            var applicationToTransport = Channel.CreateUnbounded<SendMessage>();
-            var transportToApplication = Channel.CreateUnbounded<byte[]>();
-            var applicationSide = ChannelConnection.Create(applicationToTransport, transportToApplication);
-            _transportChannel = ChannelConnection.Create(transportToApplication, applicationToTransport);
+            var options = new PipeOptions(readerScheduler: PipeScheduler.ThreadPool);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            _transportChannel = pair.Transport;
 
             // Start the transport, giving it one end of the pipeline
             try
             {
-                await _transport.StartAsync(connectUrl, applicationSide, GetTransferMode(), this);
+                await _transport.StartAsync(connectUrl, pair.Application, GetTransferMode(), this);
 
                 // actual transfer mode can differ from the one that was requested so set it on the feature
                 if (!_transport.Mode.HasValue)
@@ -379,56 +378,71 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _logger.HttpReceiveStarted();
 
-                while (await Input.WaitToReadAsync())
+                while (true)
                 {
                     if (_connectionState != ConnectionState.Connected)
                     {
                         _logger.SkipRaisingReceiveEvent();
-                        // drain
-                        Input.TryRead(out _);
-                        continue;
+
+                        break;
                     }
 
-                    if (Input.TryRead(out var buffer))
+                    var result = await Input.ReadAsync();
+                    var buffer = result.Buffer;
+
+                    try
                     {
-                        _logger.ScheduleReceiveEvent();
-                        _ = _eventQueue.Enqueue(async () =>
+                        if (!buffer.IsEmpty)
                         {
-                            _logger.RaiseReceiveEvent();
+                            _logger.ScheduleReceiveEvent();
+                            var data = buffer.ToArray();
 
-                            // Copying the callbacks to avoid concurrency issues
-                            ReceiveCallback[] callbackCopies;
-                            lock (_callbacks)
+                            _ = _eventQueue.Enqueue(async () =>
                             {
-                                callbackCopies = new ReceiveCallback[_callbacks.Count];
-                                _callbacks.CopyTo(callbackCopies);
-                            }
+                                _logger.RaiseReceiveEvent();
 
-                            foreach (var callbackObject in callbackCopies)
-                            {
-                                try
+                                // Copying the callbacks to avoid concurrency issues
+                                ReceiveCallback[] callbackCopies;
+                                lock (_callbacks)
                                 {
-                                    await callbackObject.InvokeAsync(buffer);
+                                    callbackCopies = new ReceiveCallback[_callbacks.Count];
+                                    _callbacks.CopyTo(callbackCopies);
                                 }
-                                catch (Exception ex)
+
+                                foreach (var callbackObject in callbackCopies)
                                 {
-                                    _logger.ExceptionThrownFromCallback(nameof(OnReceived), ex);
+                                    try
+                                    {
+                                        await callbackObject.InvokeAsync(data);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        _logger.ExceptionThrownFromCallback(nameof(OnReceived), ex);
+                                    }
                                 }
-                            }
-                        });
+                            });
+
+                        }
+                        else if (result.IsCompleted)
+                        {
+                            break;
+                        }
                     }
-                    else
+                    finally
                     {
-                        _logger.FailedReadingMessage();
+                        Input.AdvanceTo(buffer.End);
                     }
                 }
-
-                await Input.Completion;
             }
             catch (Exception ex)
             {
-                Output.TryComplete(ex);
+                Input.Complete(ex);
+
                 _logger.ErrorReceiving(ex);
+            }
+            finally
+            {
+                Input.Complete();
             }
 
             _logger.EndReceive();
@@ -450,23 +464,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     "Cannot send messages when the connection is not in the Connected state.");
             }
 
-            // TaskCreationOptions.RunContinuationsAsynchronously ensures that continuations awaiting
-            // SendAsync (i.e. user's code) are not running on the same thread as the code that sets
-            // TaskCompletionSource result. This way we prevent from user's code blocking our channel
-            // send loop.
-            var sendTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            var message = new SendMessage(data, sendTcs);
-
             _logger.SendingMessage();
 
-            while (await Output.WaitToWriteAsync(cancellationToken))
-            {
-                if (Output.TryWrite(message))
-                {
-                    await sendTcs.Task;
-                    break;
-                }
-            }
+            cancellationToken.ThrowIfCancellationRequested();
+
+            await Output.WriteAsync(data);
         }
 
         // AbortAsync creates a few thread-safety races that we are OK with.
@@ -539,7 +541,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             if (_transportChannel != null)
             {
-                Output.TryComplete();
+                Output.Complete();
             }
 
             if (transport != null)

@@ -7,9 +7,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 {
     public class PassThroughEncoder : IDataEncoder
     {
-        public ReadOnlySpan<byte> Decode(byte[] payload)
+        public bool TryDecode(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> data)
         {
-            return payload;
+            data = buffer;
+            buffer = Array.Empty<byte>();
+            return true;
         }
 
         public byte[] Encode(byte[] payload)

@@ -43,10 +43,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public ProtocolType Type => ProtocolType.Text;
 
-        public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
+        public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages)
         {
-            messages = new List<HubMessage>();
-
             while (TextMessageParser.TryParseMessage(ref input, out var payload))
             {
                 // TODO: Need a span-native JSON parser!

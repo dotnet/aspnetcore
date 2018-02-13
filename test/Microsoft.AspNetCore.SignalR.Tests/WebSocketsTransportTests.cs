@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Channels;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
-using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -36,12 +35,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
                     TransferMode.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
@@ -54,14 +50,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
                     TransferMode.Binary, connection: Mock.Of<IConnection>());
-                connectionToTransport.Writer.TryComplete();
+                pair.Transport.Output.Complete();
                 await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
             }
         }
@@ -74,33 +67,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, transferMode, connection: Mock.Of<IConnection>());
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application, transferMode, connection: Mock.Of<IConnection>());
 
-                var sendTcs = new TaskCompletionSource<object>();
-                connectionToTransport.Writer.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
-                try
-                {
-                    await sendTcs.Task;
-                }
-                catch (OperationCanceledException)
-                {
-                    // Because the server and client are run in the same process there is a race where websocket.SendAsync
-                    // can send a message but before returning be suspended allowing the server to run the EchoEndpoint and
-                    // send a close frame which triggers a cancellation token on the client and cancels the websocket.SendAsync.
-                    // Our solution to this is to just catch OperationCanceledException from the sent message if the race happens
-                    // because we know the send went through, and its safe to check the response.
-                }
+                await pair.Transport.Output.WriteAsync(new byte[] { 0x42 });
 
                 // The echo endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
-                Assert.True(transportToConnection.Reader.TryRead(out var buffer));
-                Assert.Equal(new byte[] { 0x42 }, buffer);
+                Assert.True(pair.Transport.Input.TryRead(out var result));
+                Assert.Equal(new byte[] { 0x42 }, result.Buffer.ToArray());
+                pair.Transport.Input.AdvanceTo(result.Buffer.End);
             }
         }
 
@@ -112,14 +90,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
 
                 Assert.Null(webSocketsTransport.Mode);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), pair.Application,
                     transferMode, connection: Mock.Of<IConnection>()).OrTimeout();
                 Assert.Equal(transferMode, webSocketsTransport.Mode);
 
@@ -134,13 +109,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             using (StartLog(out var loggerFactory))
             {
-                var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
-                var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
-
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
                 var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Text | TransferMode.Binary, connection: Mock.Of<IConnection>()));
+                    webSocketsTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text | TransferMode.Binary, connection: Mock.Of<IConnection>()));
 
                 Assert.Contains("Invalid transfer mode.", exception.Message);
                 Assert.Equal("requestedTransferMode", exception.ParamName);

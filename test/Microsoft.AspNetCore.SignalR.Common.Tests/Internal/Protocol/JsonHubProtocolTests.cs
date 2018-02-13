@@ -125,7 +125,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(expectedMessage);
             var protocol = new JsonHubProtocol(Options.Create(protocolOptions));
-            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
+            var messages = new List<HubMessage>();
+            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages);
 
             Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
         }
@@ -174,7 +175,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(Array.Empty<Type>(), typeof(object));
             var protocol = new JsonHubProtocol();
-            var ex = Assert.Throws<InvalidDataException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages));
+            var messages = new List<HubMessage>();
+            var ex = Assert.Throws<InvalidDataException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages));
             Assert.Equal(expectedMessage, ex.Message);
         }
 
@@ -189,7 +191,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
             var protocol = new JsonHubProtocol();
-            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
+            var messages = new List<HubMessage>();
+            protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, messages);
             var ex = Assert.Throws<InvalidDataException>(() => ((HubMethodInvocationMessage)messages[0]).Arguments);
             Assert.Equal(expectedMessage, ex.Message);
         }

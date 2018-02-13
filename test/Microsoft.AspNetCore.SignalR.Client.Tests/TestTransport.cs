@@ -1,4 +1,5 @@
 using System;
+using System.IO.Pipelines;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
@@ -12,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private readonly Func<Task> _startHandler;
 
         public TransferMode? Mode { get; }
-        public Channel<byte[], SendMessage> Application { get; private set; }
+        public IDuplexPipe Application { get; private set; }
 
         public TestTransport(Func<Task> onTransportStop = null, Func<Task> onTransportStart = null, TransferMode transferMode = TransferMode.Text)
         {
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Mode = transferMode;
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, IConnection connection)
+        public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
         {
             Application = application;
             return _startHandler();
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task StopAsync()
         {
             await _stopHandler();
-            Application.Writer.TryComplete();
+            Application.Output.Complete();
         }
     }
 }

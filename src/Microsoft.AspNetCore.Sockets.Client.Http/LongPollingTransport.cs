@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
         private readonly ILogger _logger;
-        private Channel<byte[], SendMessage> _application;
+        private IDuplexPipe _application;
         private Task _sender;
         private Task _poller;
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, IConnection connection)
+        public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
         {
             if (requestedTransferMode != TransferMode.Binary && requestedTransferMode != TransferMode.Text)
             {
@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
                 _logger.TransportStopped(t.Exception?.InnerException);
-                _application.Writer.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Output.Complete(t.Exception?.InnerException);
+                _application.Input.Complete();
                 return t;
             }).Unwrap();
 
@@ -122,17 +123,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _logger.ReceivedMessages();
 
-                        // Until Pipeline starts natively supporting BytesReader, this is the easiest way to do this.
+                        // TODO: Use CopyToAsync here
                         var payload = await response.Content.ReadAsByteArrayAsync();
                         if (payload.Length > 0)
                         {
-                            while (!_application.Writer.TryWrite(payload))
-                            {
-                                if (cancellationToken.IsCancellationRequested || !await _application.Writer.WaitToWriteAsync(cancellationToken))
-                                {
-                                    return;
-                                }
-                            }
+                            await _application.Output.WriteAsync(payload);
                         }
                     }
                 }

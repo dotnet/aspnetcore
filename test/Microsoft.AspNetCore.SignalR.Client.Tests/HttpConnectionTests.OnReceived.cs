@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         }, receiveTcs);
 
                         await connection.StartAsync().OrTimeout();
-                        Assert.Equal("42", await receiveTcs.Task.OrTimeout());
+                        Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                     });
             }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         }, receiveTcs);
 
                         await connection.StartAsync().OrTimeout();
-                        Assert.Equal("42", await receiveTcs.Task.OrTimeout());
+                        Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                         Assert.True(receivedRaised);
                     });
             }
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         }, receiveTcs);
 
                         await connection.StartAsync().OrTimeout();
-                        Assert.Equal("42", await receiveTcs.Task.OrTimeout());
+                        Assert.Contains("42", await receiveTcs.Task.OrTimeout());
                         Assert.True(receivedRaised);
                     });
             }

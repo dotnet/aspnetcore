@@ -3,13 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
-using System.Threading.Channels;
+using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface ITransport
     {
-        Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, IConnection connection);
+        Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection);
         Task StopAsync();
         TransferMode? Mode { get; }
     }

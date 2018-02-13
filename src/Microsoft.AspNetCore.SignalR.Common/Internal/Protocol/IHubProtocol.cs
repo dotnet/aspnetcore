@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         ProtocolType Type { get; }
 
-        bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages);
+        bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, IList<HubMessage> messages);
 
         void WriteMessage(HubMessage message, Stream output);
     }

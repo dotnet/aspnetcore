@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
     public interface IDataEncoder
     {
         byte[] Encode(byte[] payload);
-        ReadOnlySpan<byte> Decode(byte[] payload);
+        bool TryDecode(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> data);
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
@@ -32,8 +33,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public bool ReadMessages(byte[] input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
-            var buffer = _dataEncoder.Decode(input);
-            return _hubProtocol.TryParseMessages(buffer, binder, out messages);
+            messages = new List<HubMessage>();
+            ReadOnlySpan<byte> span = input;
+            while (span.Length > 0 && _dataEncoder.TryDecode(ref span, out var data))
+            {
+                _hubProtocol.TryParseMessages(data, binder, messages);
+            }
+            return messages.Count > 0;
         }
 
         public byte[] WriteMessage(HubMessage hubMessage)

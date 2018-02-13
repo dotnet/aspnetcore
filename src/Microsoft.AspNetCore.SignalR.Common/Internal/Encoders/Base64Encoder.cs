@@ -10,16 +10,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 {
     public class Base64Encoder : IDataEncoder
     {
-        public ReadOnlySpan<byte> Decode(byte[] payload)
+        public bool TryDecode(ref ReadOnlySpan<byte> buffer, out ReadOnlySpan<byte> data)
         {
-            ReadOnlySpan<byte> buffer = payload;
-            LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message);
-
-            Span<byte> decoded = new byte[Base64.GetMaxDecodedFromUtf8Length(message.Length)];
-            var status = Base64.DecodeFromUtf8(message, decoded, out _, out var written);
-            Debug.Assert(status == OperationStatus.Done);
-
-            return decoded.Slice(0, written);
+            if (LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message))
+            {
+                Span<byte> decoded = new byte[Base64.GetMaxDecodedFromUtf8Length(message.Length)];
+                var status = Base64.DecodeFromUtf8(message, decoded, out _, out var written);
+                Debug.Assert(status == OperationStatus.Done);
+                data = decoded.Slice(0, written);
+                return true;
+            }
+            return false;
         }
 
         private const int Int32OverflowLength = 10;

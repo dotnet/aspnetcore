@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return;
             }
 
-            //TODO: Optimize this!
+            // TODO: Optimize this!
             // Copying the callbacks to avoid concurrency issues
             InvocationHandler[] copiedHandlers;
             lock (handlers)

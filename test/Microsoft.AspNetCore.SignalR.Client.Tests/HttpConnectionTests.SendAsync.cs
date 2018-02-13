@@ -92,13 +92,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task CallerReceivesExceptionsFromSendAsync()
+            public async Task ExceptionOnSendAsyncClosesWithError()
             {
                 var testHttpHandler = new TestHttpMessageHandler();
 
-                var longPollTcs = new TaskCompletionSource<HttpResponseMessage>();
+                var longPollTcs = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-                testHttpHandler.OnLongPoll(cancellationToken => longPollTcs.Task);
+                testHttpHandler.OnLongPoll(cancellationToken =>
+                {
+                    cancellationToken.Register(() => longPollTcs.TrySetResult(null));
+
+                    return longPollTcs.Task;
+                });
 
                 testHttpHandler.OnSocketSend((buf, cancellationToken) =>
                 {
@@ -111,10 +116,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         await connection.StartAsync().OrTimeout();
 
-                        var exception = await Assert.ThrowsAsync<HttpRequestException>(
-                            async () => await connection.SendAsync(new byte[0]).OrTimeout());
+                        await connection.SendAsync(new byte[] { 0 }).OrTimeout();
 
-                        longPollTcs.TrySetResult(null);
+                        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => closed.OrTimeout());
                     });
             }
         }
