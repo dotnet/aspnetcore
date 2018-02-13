@@ -1113,9 +1113,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrangestring documentContent,
             IEnumerable<string> allowedChildren = new List<string> { "b" };
-            string literalPrefix = "";
+            string literal = "asdf";
             string commentOutput = $"<!--Hello World-->";
-            string expectedOutput = $"<p>{literalPrefix}{commentOutput}<b>asdf</b></p>";
+            string expectedOutput = $"<p><b>{literal}</b>{commentOutput}</p>";
 
             var pTagHelperBuilder = TagHelperDescriptorBuilder
                 .Create("PTagHelper", "SomeAssembly")
@@ -1127,7 +1127,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var descriptors = new TagHelperDescriptor[]
             {
-                    pTagHelperBuilder.Build()
+                pTagHelperBuilder.Build()
             };
 
             var factory = new SpanFactory();
@@ -1135,7 +1135,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var expectedMarkup = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
-                    factory.Markup($"{literalPrefix}{commentOutput}")));
+                    blockFactory.MarkupTagBlock("<b>"),
+                    factory.Markup(literal),
+                    blockFactory.MarkupTagBlock("</b>"),
+                    factory.Markup(commentOutput)));
 
             // Act & Assert
             EvaluateData(
