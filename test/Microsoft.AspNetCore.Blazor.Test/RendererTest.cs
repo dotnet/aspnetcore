@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Test
 {
-    public class RendererTest
+    public partial class RendererTest
     {
         [Fact]
         public void CanRenderTopLevelComponents()
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(0, edit.ReferenceFrameIndex);
                 });
             AssertFrame.Text(batch.ReferenceFrames[0], "Modified message");
-            Assert.False(batch.DiffsByComponentId.ContainsKey(nestedComponentFrame.ComponentId));
+            Assert.Empty(batch.DiffsByComponentId[nestedComponentFrame.ComponentId].Single().Edits);
         }
 
         [Fact]
@@ -386,66 +386,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(0, edit.ReferenceFrameIndex);
                 });
             AssertFrame.Text(renderer.Batches[1].ReferenceFrames[0], "second");
-        }
-
-        [Fact]
-        public void NotifiesIHandlePropertiesChangedBeforeFirstRender()
-        {
-            // Arrange
-            var renderer = new TestRenderer();
-            var component = new HandlePropertiesChangedComponent();
-            var rootComponentId = renderer.AssignComponentId(component);
-
-            // Act
-            renderer.RenderNewBatch(rootComponentId);
-
-            // Assert
-            AssertFrame.Text(renderer.Batches.Single().ReferenceFrames[0], "Notifications: 1", 0);
-        }
-        
-        [Fact]
-        public void NotifiesIHandlePropertiesChangedWhenChanged()
-        {
-            // Arrange
-            var renderer = new TestRenderer();
-            var component = new ConditionalParentComponent<HandlePropertiesChangedComponent>
-            {
-                IncludeChild = true,
-                ChildParameters = new Dictionary<string, object>
-                {
-                    { nameof(HandlePropertiesChangedComponent.IntProperty), 123 }
-                }
-            };
-            var rootComponentId = renderer.AssignComponentId(component);
-
-            // Act/Assert 0: Initial render
-            renderer.RenderNewBatch(rootComponentId);
-            var batch1 = renderer.Batches.Single();
-            var childComponentFrame = batch1
-                .ReferenceFrames.Where(frame => frame.FrameType == RenderTreeFrameType.Component).Single();
-            var childComponentId = childComponentFrame.ComponentId;
-            var diffForChildComponent0 = batch1.DiffsByComponentId[childComponentId].Single();
-            var childComponentInstance = (HandlePropertiesChangedComponent)childComponentFrame.Component;
-            Assert.Equal(1, childComponentInstance.NotificationsCount);
-            Assert.Collection(diffForChildComponent0.Edits,
-                edit =>
-                {
-                    Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
-                    AssertFrame.Text(batch1.ReferenceFrames[edit.ReferenceFrameIndex], "Notifications: 1", 0);
-                });
-
-            // Act/Assert 1: If properties didn't change, we don't notify
-            renderer.RenderNewBatch(rootComponentId);
-            Assert.Equal(1, childComponentInstance.NotificationsCount);
-
-            // Act/Assert 2: If properties did change, we do notify
-            component.ChildParameters[nameof(HandlePropertiesChangedComponent.IntProperty)] = 456;
-            renderer.RenderNewBatch(rootComponentId);
-            Assert.Equal(2, childComponentInstance.NotificationsCount);
-            var batch3 = renderer.Batches.Skip(2).Single();
-            var diffForChildComponent2 = batch3.DiffsByComponentId[childComponentId].Single();
-            Assert.Equal(2, childComponentInstance.NotificationsCount);
-            AssertFrame.Text(batch3.ReferenceFrames[0], "Notifications: 2", 0);
         }
 
         [Fact]
@@ -708,7 +648,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             // Assert
             var batch = renderer.Batches.Single();
-            Assert.Equal(3, batch.DiffsInOrder.Count);
+            Assert.Equal(4, batch.DiffsInOrder.Count);
 
             // First is the parent component's initial render
             var diff1 = batch.DiffsInOrder[0];
@@ -743,15 +683,17 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(RenderTreeEditType.UpdateText, diff3edit.Type);
             AssertFrame.Text(batch.ReferenceFrames[diff3edit.ReferenceFrameIndex],
                 "Parent render count: 2");
+
+            // Fourth is child's rerender due to parent rendering
+            var diff4 = batch.DiffsInOrder[3];
+            Assert.NotEqual(parentComponentId, diff4.ComponentId);
+            Assert.Empty(diff4.Edits);
         }
 
         private class NoOpRenderer : Renderer
         {
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
-
-            public new void RenderNewBatch(int componentId)
-                => base.RenderNewBatch(componentId);
 
             protected override void UpdateDisplay(RenderBatch renderBatch)
             {
@@ -832,6 +774,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 _renderHandle = renderHandle;
             }
 
+            public void SetParameters(ParameterCollection parameters)
+                => _renderHandle.Render();
+
             public void BuildRenderTree(RenderTreeBuilder builder)
                 => _renderAction(builder);
 
@@ -839,15 +784,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 => _renderHandle.Render();
         }
 
-        private class MessageComponent : IComponent
+        private class MessageComponent : AutoRenderComponent
         {
             public string Message { get; set; }
 
-            public void Init(RenderHandle renderHandle)
-            {
-            }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
+            public override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, Message);
             }
@@ -859,25 +800,24 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public string StringProperty { get; set; }
             public object ObjectProperty { get; set; }
 
+            public void BuildRenderTree(RenderTreeBuilder builder)
+            {
+            }
+
             public void Init(RenderHandle renderHandle)
             {
             }
 
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-            }
+            public void SetParameters(ParameterCollection parameters)
+                => parameters.AssignToProperties(this);
         }
 
-        private class EventComponent : IComponent
+        private class EventComponent : AutoRenderComponent, IComponent
         {
             public UIEventHandler Handler { get; set; }
             public bool SkipElement { get; set; }
 
-            public void Init(RenderHandle renderHandle)
-            {
-            }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
+            public override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "grandparent");
                 if (!SkipElement)
@@ -895,16 +835,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             }
         }
 
-        private class ConditionalParentComponent<T> : IComponent where T : IComponent
+        private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent
         {
             public bool IncludeChild { get; set; }
             public IDictionary<string, object> ChildParameters { get; set; }
 
-            public void Init(RenderHandle renderHandle)
-            {
-            }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
+            public override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, "Parent here");
                 
@@ -923,36 +859,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 }
             }
         }
-
-        private class HandlePropertiesChangedComponent : IComponent, IHandlePropertiesChanged
-        {
-            public int NotificationsCount { get; private set; }
-
-            public int IntProperty { get; set; }
-
-            public void Init(RenderHandle renderHandle)
-            {
-            }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddText(0, $"Notifications: {NotificationsCount}");
-            }
-
-            public void OnPropertiesChanged()
-            {
-                NotificationsCount++;
-            }
-        }
         
-        private class ReRendersParentComponent : IComponent
+        private class ReRendersParentComponent : AutoRenderComponent
         {
             public TestComponent Parent { get; set; }
             private bool _isFirstTime = true;
 
-            public void Init(RenderHandle renderHandle) { }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
+            public override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 if (_isFirstTime) // Don't want an infinite loop
                 {

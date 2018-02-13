@@ -3,10 +3,9 @@
 
 @functions {
     public int SuppliedValue { get; set; }
-    private int ComputedValue { get; set; }
 
-    public override void OnPropertiesChanged()
-    {
-        ComputedValue = SuppliedValue * 2;
-    }
+    // TODO: Instead of computing this in the getter, override OnParametersChanged or whatever
+    // it ends up being called when that's implemented on BlazorComponent
+    private int ComputedValue
+        => SuppliedValue * 2;
 }

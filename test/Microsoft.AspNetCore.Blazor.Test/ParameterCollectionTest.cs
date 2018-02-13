@@ -107,6 +107,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void Init(RenderHandle renderHandle)
                 => throw new NotImplementedException();
 
+            public void SetParameters(ParameterCollection parameters)
+                => throw new NotImplementedException();
+
             public void BuildRenderTree(RenderTreeBuilder builder)
                 => throw new NotImplementedException();
         }

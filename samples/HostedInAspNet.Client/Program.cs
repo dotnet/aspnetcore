@@ -24,6 +24,10 @@ namespace HostedInAspNet.Client
         {
         }
 
+        public void SetParameters(ParameterCollection parameters)
+        {
+        }
+
         public void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "h1");

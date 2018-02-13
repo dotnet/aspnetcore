@@ -144,133 +144,23 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             int oldComponentIndex,
             int newComponentIndex)
         {
-            // The algorithm here is the same as in AppendDiffEntriesForRange, except that
-            // here we don't optimise for loops - we assume that both sequences are forward-only.
-            // That's because this is true for all currently supported scenarios, and it means
-            // fewer steps here.
-
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
             ref var oldComponentFrame = ref oldTree[oldComponentIndex];
             ref var newComponentFrame = ref newTree[newComponentIndex];
             var componentId = oldComponentFrame.ComponentId;
             var componentInstance = oldComponentFrame.Component;
-            var hasSetAnyProperty = false;
 
             // Preserve the actual componentInstance
             newComponentFrame = newComponentFrame.WithComponentInstance(componentId, componentInstance);
 
-            // Now locate any added/changed/removed properties
-            var oldStartIndex = oldComponentIndex + 1;
-            var newStartIndex = newComponentIndex + 1;
-            var oldEndIndexExcl = oldComponentIndex + oldComponentFrame.ComponentSubtreeLength;
-            var newEndIndexExcl = newComponentIndex + newComponentFrame.ComponentSubtreeLength;
-            var hasMoreOld = oldEndIndexExcl > oldStartIndex;
-            var hasMoreNew = newEndIndexExcl > newStartIndex;
-            while (hasMoreOld || hasMoreNew)
-            {
-                var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
-                var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
-
-                if (oldSeq == newSeq)
-                {
-                    ref var oldFrame = ref oldTree[oldStartIndex];
-                    ref var newFrame = ref newTree[newStartIndex];
-                    var oldName = oldFrame.AttributeName;
-                    var newName = newFrame.AttributeName;
-                    var newPropertyValue = newFrame.AttributeValue;
-                    if (string.Equals(oldName, newName, StringComparison.Ordinal))
-                    {
-                        // Using Equals to account for string comparisons, nulls, etc.
-                        var oldPropertyValue = oldFrame.AttributeValue;
-                        if (!Equals(oldPropertyValue, newPropertyValue))
-                        {
-                            SetChildComponentProperty(componentInstance, newName, newPropertyValue);
-                            hasSetAnyProperty = true;
-                        }
-                    }
-                    else
-                    {
-                        // Since this code path is never reachable for Razor components (because you
-                        // can't have two different attribute names from the same source sequence), we
-                        // could consider removing the 'name equality' check entirely for perf
-                        SetChildComponentProperty(componentInstance, newName, newPropertyValue);
-                        RemoveChildComponentProperty(componentInstance, oldName);
-                        hasSetAnyProperty = true;
-                    }
-
-                    oldStartIndex++;
-                    newStartIndex++;
-                    hasMoreOld = oldEndIndexExcl > oldStartIndex;
-                    hasMoreNew = newEndIndexExcl > newStartIndex;
-                }
-                else
-                {
-                    // Both sequences are proceeding through the same loop block, so do a simple
-                    // preordered merge join (picking from whichever side brings us closer to being
-                    // back in sync)
-                    var treatAsInsert = newSeq < oldSeq;
-
-                    if (treatAsInsert)
-                    {
-                        ref var newFrame = ref newTree[newStartIndex];
-                        SetChildComponentProperty(componentInstance, newFrame.AttributeName, newFrame.AttributeValue);
-                        hasSetAnyProperty = true;
-                        newStartIndex++;
-                        hasMoreNew = newEndIndexExcl > newStartIndex;
-                    }
-                    else
-                    {
-                        ref var oldFrame = ref oldTree[oldStartIndex];
-                        RemoveChildComponentProperty(componentInstance, oldFrame.AttributeName);
-                        hasSetAnyProperty = true;
-                        oldStartIndex++;
-                        hasMoreOld = oldEndIndexExcl > oldStartIndex;
-                    }
-                }
-            }
-
-            if (hasSetAnyProperty)
-            {
-                diffContext.BatchBuilder.ComponentRenderQueue.Enqueue(newComponentFrame.ComponentId);
-            }
-        }
-
-        private static void RemoveChildComponentProperty(IComponent component, string componentPropertyName)
-        {
-            var propertyInfo = GetChildComponentPropertyInfo(component.GetType(), componentPropertyName);
-            var defaultValue = propertyInfo.PropertyType.IsValueType
-                ? Activator.CreateInstance(propertyInfo.PropertyType)
-                : null;
-            SetChildComponentProperty(component, componentPropertyName, defaultValue);
-        }
-
-        private static void SetChildComponentProperty(IComponent component, string componentPropertyName, object newPropertyValue)
-        {
-            var propertyInfo = GetChildComponentPropertyInfo(component.GetType(), componentPropertyName);
-            try
-            {
-                propertyInfo.SetValue(component, newPropertyValue);
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException(
-                    $"Unable to set property '{componentPropertyName}' on component of " +
-                    $"type '{component.GetType().FullName}'. The error was: {ex.Message}", ex);
-            }
-        }
-
-        private static PropertyInfo GetChildComponentPropertyInfo(Type componentType, string componentPropertyName)
-        {
-            var property = componentType.GetProperty(componentPropertyName);
-            if (property == null)
-            {
-                throw new InvalidOperationException(
-                    $"Component of type '{componentType.FullName}' does not have a property " +
-                    $"matching the name '{componentPropertyName}'.");
-            }
-
-            return property;
+            // Supply latest parameters. They might not have changed, but it's up to the
+            // recipient to decide what "changed" means. Currently we only supply the new
+            // set of parameters and assume the recipient has enough info to do whatever
+            // comparisons it wants with the old values. Later we could choose to pass the
+            // old parameter values if we wanted.
+            var newParameters = new ParameterCollection(newTree, newComponentIndex);
+            componentInstance.SetParameters(newParameters);
         }
 
         private static int NextSiblingIndex(RenderTreeFrame frame, int frameIndex)
@@ -541,18 +431,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             diffContext.Renderer.InstantiateChildComponentOnFrame(ref frame);
             var childComponentInstance = frame.Component;
 
-            // All descendants of a component are its properties
-            var componentDescendantsEndIndexExcl = frameIndex + frame.ComponentSubtreeLength;
-            for (var attributeFrameIndex = frameIndex + 1; attributeFrameIndex < componentDescendantsEndIndexExcl; attributeFrameIndex++)
-            {
-                ref var attributeFrame = ref frames[attributeFrameIndex];
-                SetChildComponentProperty(
-                    childComponentInstance,
-                    attributeFrame.AttributeName,
-                    attributeFrame.AttributeValue);
-            }
-
-            diffContext.BatchBuilder.ComponentRenderQueue.Enqueue(frame.ComponentId);
+            // Set initial parameters
+            var initialParameters = new ParameterCollection(frames, frameIndex);
+            childComponentInstance.SetParameters(initialParameters);
         }
 
         private static void InitializeNewAttributeFrame(ref DiffContext diffContext, ref RenderTreeFrame newFrame)

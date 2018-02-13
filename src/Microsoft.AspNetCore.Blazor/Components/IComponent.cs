@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Blazor.Components
         void Init(RenderHandle renderHandle);
 
         /// <summary>
+        /// Sets parameters supplied by the component's parent in the render tree.
+        /// </summary>
+        /// <param name="parameters">The parameters.</param>
+        void SetParameters(ParameterCollection parameters);
+
+        /// <summary>
         /// Builds a <see cref="RenderTree"/> representing the current state of the component.
         /// </summary>
         /// <param name="builder">A <see cref="RenderTreeBuilder"/> to which the rendered frames should be appended.</param>

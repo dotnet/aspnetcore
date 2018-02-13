@@ -37,11 +37,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder)
         {
-            if (_component is IHandlePropertiesChanged notifyableComponent)
-            {
-                notifyableComponent.OnPropertiesChanged();
-            }
-
             // Swap the old and new tree builders
             (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 

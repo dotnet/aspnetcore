@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// Optional base class for Blazor components. Alternatively, Blazor components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class BlazorComponent : IComponent, IHandlePropertiesChanged
+    public abstract class BlazorComponent : IComponent
     {
         private RenderHandle _renderHandle;
 
@@ -26,6 +26,16 @@ namespace Microsoft.AspNetCore.Blazor.Components
             }
 
             _renderHandle = renderHandle;
+        }
+
+        void IComponent.SetParameters(ParameterCollection parameters)
+        {
+            parameters.AssignToProperties(this);
+
+            // TODO: If we know conclusively that the parameters have not changed since last
+            // time (because they are all primitives and equal to the existing property values)
+            // then don't re-render. Can put an "out bool" parameter on AssignToProperties.
+            _renderHandle.Render();
         }
 
         /// <inheritdoc />
@@ -49,11 +59,6 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <returns>Always throws an exception.</returns>
         public virtual Task ExecuteAsync()
             => throw new NotImplementedException($"Blazor components do not implement {nameof(ExecuteAsync)}.");
-
-        /// <inheritdoc />
-        public virtual void OnPropertiesChanged()
-        {
-        }
 
         /// <summary>
         /// Handles click events by invoking <paramref name="handler"/>.
