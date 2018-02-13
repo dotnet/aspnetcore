@@ -1109,7 +1109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void Rewrite_AllowsCommentsAsChildren()
+        public void Rewrite_AllowsHtmlCommentsAsChildren()
         {
             // Arrangestring documentContent,
             IEnumerable<string> allowedChildren = new List<string> { "b" };
@@ -1139,6 +1139,51 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     factory.Markup(literal),
                     blockFactory.MarkupTagBlock("</b>"),
                     factory.Markup(commentOutput)));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                Array.Empty<RazorDiagnostic>());
+        }
+
+        [Fact]
+        public void Rewrite_AllowsRazorCommentsAsChildren()
+        {
+            // Arrangestring documentContent,
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string literal = "asdf";
+            string commentOutput = $"@*{literal}*@";
+            string expectedOutput = $"<p><b>{literal}</b>{commentOutput}</p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.MarkupTagBlock("<b>"),
+                    factory.Markup(literal),
+                    blockFactory.MarkupTagBlock("</b>"),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(literal, HtmlSymbolType.RazorComment)).Accepts(AcceptedCharactersInternal.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None))));
 
             // Act & Assert
             EvaluateData(
