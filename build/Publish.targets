@@ -63,10 +63,17 @@
       <PackageArchiveFileName>nuGetPackagesArchive-$(PackageVersion).lzma</PackageArchiveFileName>
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
+      <SymbolsArchiveBaseFileName>aspnetcore-runtime-symbols-$(PackageVersion)</SymbolsArchiveBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
     </PropertyGroup>
 
     <ItemGroup>
+      <!-- symbols -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)" Condition=" '%(RuntimeSymbolsArchive.Identity)' != '' ">
+        <RelativeBlobPath>$(BlobBasePath)$(SymbolsArchiveBaseFileName)-%(RuntimeSymbolsArchive.Identity)%(RuntimeSymbolsArchive.FileExt)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
+
       <PackagesToPublishToTransport Include="$(DependencySymbolsDir)\**\*.symbols.nupkg" />
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
