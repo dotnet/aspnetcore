@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         continue;
                     }
                 }
-                else if (!IsComment((Span)child))
+                else
                 {
                     ValidateParentAllowsContent((Span)child, errorSink);
                 }
@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
         {
-            if (HasAllowedChildren())
+            if (HasAllowedChildren() && !IsComment(child))
             {
                 var content = child.Content;
                 if (!string.IsNullOrWhiteSpace(content))
