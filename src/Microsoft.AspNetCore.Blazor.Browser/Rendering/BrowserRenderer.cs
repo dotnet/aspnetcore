@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         internal void DispatchBrowserEvent(int componentId, int eventHandlerId, UIEventArgs eventArgs)
             => DispatchEvent(componentId, eventHandlerId, eventArgs);
 
-        internal void RenderNewBatchInternal(int componentId)
-            => RenderNewBatch(componentId);
-
         /// <summary>
         /// Attaches a new root component to the renderer,
         /// causing it to be displayed in the specified DOM element.
@@ -59,7 +56,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
                 _browserRendererId,
                 domElementSelector,
                 componentId);
-            RenderNewBatch(componentId);
+            component.SetParameters(ParameterCollection.Empty);
         }
 
         /// <summary>

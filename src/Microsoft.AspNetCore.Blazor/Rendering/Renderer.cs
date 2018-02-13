@@ -65,52 +65,6 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         protected abstract void UpdateDisplay(RenderBatch renderBatch);
 
         /// <summary>
-        /// Updates the rendered state of the specified <see cref="IComponent"/>.
-        /// </summary>
-        /// <param name="componentId">The identifier of the <see cref="IComponent"/> to render.</param>
-        protected void RenderNewBatch(int componentId)
-        {
-            // It's very important that components' rendering logic has no side-effects, and in particular
-            // components must *not* trigger Render from inside their render logic, otherwise you could
-            // easily get hard-to-debug infinite loops.
-            // Since rendering is currently synchronous and single-threaded, we can enforce the above by
-            // checking here that no other rendering process is already underway. This also means we only
-            // need a single _renderBatchBuilder instance that can be reused throughout the lifetime of
-            // the Renderer instance, which also means we're not allocating on a typical render cycle.
-            // In the future, if rendering becomes async, we'll need a more sophisticated system of
-            // capturing successive diffs from each component and probably serializing them for the
-            // interop calls instead of using shared memory.
-
-            // Note that Monitor.TryEnter is not yet supported in Mono WASM, so using the following instead
-            var renderAlreadyRunning = Interlocked.CompareExchange(ref _renderBatchLock, 1, 0) == 1;
-            if (renderAlreadyRunning)
-            {
-                throw new InvalidOperationException("Cannot render while a render is already in progress. " +
-                    "Render logic must not have side-effects such as manually triggering other rendering.");
-            }
-
-            _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
-
-            try
-            {
-                // Process render queue until empty
-                while (_sharedRenderBatchBuilder.ComponentRenderQueue.Count > 0)
-                {
-                    var nextComponentIdToRender = _sharedRenderBatchBuilder.ComponentRenderQueue.Dequeue();
-                    RenderInExistingBatch(_sharedRenderBatchBuilder, nextComponentIdToRender);
-                }
-
-                UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
-            }
-            finally
-            {
-                RemoveEventHandlerIds(_sharedRenderBatchBuilder.DisposedEventHandlerIds.ToRange());
-                _sharedRenderBatchBuilder.Clear();
-                Interlocked.Exchange(ref _renderBatchLock, 0);
-            }            
-        }
-
-        /// <summary>
         /// Notifies the specified component that an event has occurred.
         /// </summary>
         /// <param name="componentId">The unique identifier for the component within the scope of this <see cref="Renderer"/>.</param>
@@ -170,6 +124,48 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             => _componentStateById.TryGetValue(componentId, out var componentState)
                 ? componentState
                 : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
+
+        private void RenderNewBatch(int componentId)
+        {
+            // It's very important that components' rendering logic has no side-effects, and in particular
+            // components must *not* trigger Render from inside their render logic, otherwise you could
+            // easily get hard-to-debug infinite loops.
+            // Since rendering is currently synchronous and single-threaded, we can enforce the above by
+            // checking here that no other rendering process is already underway. This also means we only
+            // need a single _renderBatchBuilder instance that can be reused throughout the lifetime of
+            // the Renderer instance, which also means we're not allocating on a typical render cycle.
+            // In the future, if rendering becomes async, we'll need a more sophisticated system of
+            // capturing successive diffs from each component and probably serializing them for the
+            // interop calls instead of using shared memory.
+
+            // Note that Monitor.TryEnter is not yet supported in Mono WASM, so using the following instead
+            var renderAlreadyRunning = Interlocked.CompareExchange(ref _renderBatchLock, 1, 0) == 1;
+            if (renderAlreadyRunning)
+            {
+                throw new InvalidOperationException("Cannot render while a render is already in progress. " +
+                    "Render logic must not have side-effects such as manually triggering other rendering.");
+            }
+
+            _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
+
+            try
+            {
+                // Process render queue until empty
+                while (_sharedRenderBatchBuilder.ComponentRenderQueue.Count > 0)
+                {
+                    var nextComponentIdToRender = _sharedRenderBatchBuilder.ComponentRenderQueue.Dequeue();
+                    RenderInExistingBatch(_sharedRenderBatchBuilder, nextComponentIdToRender);
+                }
+
+                UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
+            }
+            finally
+            {
+                RemoveEventHandlerIds(_sharedRenderBatchBuilder.DisposedEventHandlerIds.ToRange());
+                _sharedRenderBatchBuilder.Clear();
+                Interlocked.Exchange(ref _renderBatchLock, 0);
+            }
+        }
 
         private void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
         {

@@ -11,6 +11,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public readonly struct ParameterCollection
     {
+        private static readonly RenderTreeFrame[] _emptyCollectionFrames = new RenderTreeFrame[]
+        {
+            RenderTreeFrame.Element(0, string.Empty).WithComponentSubtreeLength(1)
+        };
+
+        private static readonly ParameterCollection _emptyCollection
+            = new ParameterCollection(_emptyCollectionFrames, 0);
+
         private readonly RenderTreeFrame[] _frames;
         private readonly int _ownerIndex;
 
@@ -19,6 +27,11 @@ namespace Microsoft.AspNetCore.Blazor.Components
             _frames = frames;
             _ownerIndex = ownerIndex;
         }
+
+        /// <summary>
+        /// Gets an empty <see cref="ParameterCollection"/>.
+        /// </summary>
+        public static ParameterCollection Empty => _emptyCollection;
 
         /// <summary>
         /// Returns an enumerator that iterates through the <see cref="ParameterCollection"/>.

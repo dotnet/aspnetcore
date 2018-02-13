@@ -20,7 +20,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void SetParameters(ParameterCollection parameters)
         {
             parameters.AssignToProperties(this);
-            _renderHandle.Render();
+            TriggerRender();
         }
+
+        public void TriggerRender()
+            => _renderHandle.Render();
     }
 }
