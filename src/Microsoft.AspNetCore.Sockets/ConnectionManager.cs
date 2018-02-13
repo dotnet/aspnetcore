@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Sockets.Internal;
