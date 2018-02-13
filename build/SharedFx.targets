@@ -284,15 +284,24 @@
 
     <ItemGroup>
       <IgnoredAssemblies Include="@(AppPublishAssemblies);@(AllPublishAssemblies)" Condition="'%(AssetType)' == 'native' OR '%(AssetType)' == 'resources'" />
-      <AppRuntimeAssemblies Include="@(AppPublishAssemblies)" Condition="'%(AssetType)' == 'runtime'">
+      <_AppRuntimeAssemblies Include="@(AppPublishAssemblies)" Condition="'%(AssetType)' == 'runtime'">
+        <SymbolsPackageFilename>%(PackageName).%(PackageVersion).symbols.nupkg</SymbolsPackageFilename>
         <PortablePDB>%(RootDir)%(Directory)%(Filename).pdb</PortablePDB>
-      </AppRuntimeAssemblies>
-      <AllRuntimeAssemblies Include="@(AllPublishAssemblies)" Exclude="@(AppRuntimeAssemblies)" Condition="'%(AssetType)' == 'runtime'">
+      </_AppRuntimeAssemblies>
+      <_AllRuntimeAssemblies Include="@(AllPublishAssemblies)" Exclude="@(_AppRuntimeAssemblies)" Condition="'%(AssetType)' == 'runtime'">
+        <SymbolsPackageFilename>%(PackageName).%(PackageVersion).symbols.nupkg</SymbolsPackageFilename>
         <PortablePDB>%(RootDir)%(Directory)%(Filename).pdb</PortablePDB>
-      </AllRuntimeAssemblies>
-      <OtherAssemblies Include="@(AppPublishAssemblies);@(AllPublishAssemblies)" Exclude="@(IgnoredAssemblies);@(AppRuntimeAssemblies);@(AllRuntimeAssemblies)" />
+      </_AllRuntimeAssemblies>
+      <OtherAssemblies Include="@(AppPublishAssemblies);@(AllPublishAssemblies)" Exclude="@(IgnoredAssemblies);@(_AppRuntimeAssemblies);@(_AllRuntimeAssemblies)" />
       <_AssembliesToCrossgen Include="$(SharedFxIntermediateOutputPath)**\*.dll" />
     </ItemGroup>
+
+    <RepoTasks.ResolveSymbolsRecursivePath Symbols="@(_AppRuntimeAssemblies)">
+      <Output TaskParameter="Symbols" ItemName="AppRuntimeAssemblies" />
+    </RepoTasks.ResolveSymbolsRecursivePath>
+    <RepoTasks.ResolveSymbolsRecursivePath Symbols="@(_AllRuntimeAssemblies)">
+      <Output TaskParameter="Symbols" ItemName="AllRuntimeAssemblies" />
+    </RepoTasks.ResolveSymbolsRecursivePath>
 
     <Error Text="Unaccounted shared framework assemblies found: @(OtherAssemblies). Assemblies must be included as runtime assemblies or marked as ignored." Condition="'@(OtherAssemblies)' != ''" />
 
@@ -373,7 +382,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <_SymbolFiles Include="$(SymbolsWorkDir)**\*.pdb;$(SymbolsWorkDir)**\*.map" />
+      <_SymbolFiles Include="$(SymbolsWorkDir)**\*.pdb;$(SymbolsWorkDir)**\*.map;$(SymbolsWorkDir)**\*.dll" />
       <SymbolFiles Include="@(_SymbolFiles)">
         <PackagePath>%(RecursiveDir)%(Filename)%(Extension)</PackagePath>
       </SymbolFiles>
@@ -396,17 +405,40 @@
 
   <Target Name="PackSharedFx" DependsOnTargets="DefineSharedFxPrerequisites" >
     <PropertyGroup>
+      <AppSharedFxCrossgenDirectory>$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.App\$(PackageVersion)\</AppSharedFxCrossgenDirectory>
+      <AllSharedFxCrossgenDirectory>$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)\</AllSharedFxCrossgenDirectory>
       <AppSharedFxSymbolsDirectory>$(_WorkRoot)Symbols\Microsoft.AspNetCore.App\</AppSharedFxSymbolsDirectory>
       <AllSharedFxSymbolsDirectory>$(_WorkRoot)Symbols\Microsoft.AspNetCore.All\</AllSharedFxSymbolsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-      <CrossGenOutput Include="$(SharedFxCrossGenDirectory)**\*.dll" />
-      <AppCrossGenSymbols Include="$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.App\$(PackageVersion)\**\*" Exclude="@(CrossGenOutput)" />
-      <AllCrossGenSymbols Include="$(SharedFxCrossGenDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)\**\*" Exclude="@(CrossGenOutput)" />
+      <AppCrossGenOutput Include="$(AppSharedFxCrossgenDirectory)**\*.dll" />
+      <AllCrossGenOutput Include="$(AllSharedFxCrossgenDirectory)**\*.dll" />
+      <AppCrossGenSymbols Include="$(AppSharedFxCrossgenDirectory)**\*" Exclude="@(AppCrossGenOutput)" />
+      <AllCrossGenSymbols Include="$(AllSharedFxCrossgenDirectory)**\*" Exclude="@(AllCrossGenOutput)" />
     </ItemGroup>
 
-    <!-- Copy over PDBs  -->
+    <!-- Extract symbols package and copy over PDBs -->
+    <UnzipArchive
+      File="$(_SymbolsSourceDir)%(AppPortablePDBsToPublish.SymbolsPackageFilename)"
+      Destination="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)"
+      Condition="Exists('$(_SymbolsSourceDir)%(AppPortablePDBsToPublish.SymbolsPackageFilename)')" />
+    <UnzipArchive
+      File="$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)"
+      Destination="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)"
+      Condition="Exists('$(_SymbolsSourceDir)%(AllPortablePDBsToPublish.SymbolsPackageFilename)')" />
+    <Copy
+      SourceFiles="$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)%(AppPortablePDBsToPublish.SymbolsRecursivePath)"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      OverwriteReadOnlyFiles="True"
+      Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AppPortablePDBsToPublish.SymbolsPackageFilename)\%(AppPortablePDBsToPublish.SymbolsRecursivePath)')" />
+    <Copy
+      SourceFiles="$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)%(AllPortablePDBsToPublish.SymbolsRecursivePath)"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      OverwriteReadOnlyFiles="True"
+      Condition="Exists('$(_WorkRoot)SymbolsPackages\%(AllPortablePDBsToPublish.SymbolsPackageFilename)\%(AllPortablePDBsToPublish.SymbolsRecursivePath)')" />
+
+    <!-- Copy over DLLs and PDBs -->
     <Copy
       SourceFiles="%(AppPortablePDBsToPublish.PortablePDB)"
       DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
@@ -425,6 +457,14 @@
       SourceFiles="@(AllCrossGenSymbols)"
       DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
       OverwriteReadOnlyFiles="True" />
+    <Copy
+      SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
+      DestinationFolder="$(AppSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      OverwriteReadOnlyFiles="True" />
+    <Copy
+      SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
+      DestinationFolder="$(AllSharedFxSymbolsDirectory)runtimes\$(SharedFxRID)\lib\netcoreapp2.1"
+      OverwriteReadOnlyFiles="True" />
 
     <!-- Create symbols nupkg -->
     <PropertyGroup>
@@ -440,10 +480,14 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildSharedFxSymbols" Properties="$(AllSymbolsArguments)" />
 
     <!-- Replace assemblies with crossgen output -->
-    <Copy
-      SourceFiles="$(SharedFxCrossGenDirectory)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
-      DestinationFiles="$(SharedFxIntermediateOutputPath)%(CrossGenOutput.RecursiveDir)%(CrossGenOutput.FileName)%(CrossGenOutput.Extension)"
+    <!-- <Copy
+      SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
+      DestinationFiles="$(SharedFxIntermediateOutputPath)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
       OverwriteReadOnlyFiles="True" />
+    <Copy
+      SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
+      DestinationFiles="$(SharedFxIntermediateOutputPath)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
+      OverwriteReadOnlyFiles="True" /> -->
 
     <ItemGroup>
       <OutputZipFiles Include="$(SharedFxIntermediateOutputPath)**\*" />

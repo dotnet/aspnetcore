@@ -11,7 +11,7 @@
     <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
     <_SharedFxSourceDir>$(RepositoryRoot).deps\Signed\SharedFx\</_SharedFxSourceDir>
     <_InstallerSourceDir>$(RepositoryRoot).deps\Installers\</_InstallerSourceDir>
-    <_SymbolsSourceDir>$(RepositoryRoot).deps\Symbols\</_SymbolsSourceDir>
+    <_SymbolsSourceDir>$(RepositoryRoot).deps\symbols\</_SymbolsSourceDir>
     <_DockerRootDir>/opt/code/</_DockerRootDir>
     <_InstallersOutputDir>$(ArtifactsDir)installers\</_InstallersOutputDir>
     <!-- 3B = semicolon in ASCII -->

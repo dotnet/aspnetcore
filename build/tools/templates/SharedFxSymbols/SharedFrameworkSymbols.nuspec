@@ -15,7 +15,8 @@
     <tags>aspnetcore</tags>
   </metadata>
   <files>
-    <file src="**\*.pdb" target="" />
+    <file src="**\*.dll" target="" />
     <file src="**\*.map" target="" />
+    <file src="**\*.pdb" target="" />
   </files>
 </package>
