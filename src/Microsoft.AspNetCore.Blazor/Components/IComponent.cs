@@ -11,6 +11,12 @@ namespace Microsoft.AspNetCore.Blazor.Components
     public interface IComponent
     {
         /// <summary>
+        /// Initializes the component.
+        /// </summary>
+        /// <param name="renderHandle">A <see cref="RenderHandle"/> that allows the component to be rendered.</param>
+        void Init(RenderHandle renderHandle);
+
+        /// <summary>
         /// Builds a <see cref="RenderTree"/> representing the current state of the component.
         /// </summary>
         /// <param name="builder">A <see cref="RenderTreeBuilder"/> to which the rendered frames should be appended.</param>

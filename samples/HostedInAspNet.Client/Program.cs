@@ -20,6 +20,10 @@ namespace HostedInAspNet.Client
 
     internal class MyComponent : IComponent
     {
+        public void Init(RenderHandle renderHandle)
+        {
+        }
+
         public void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "h1");

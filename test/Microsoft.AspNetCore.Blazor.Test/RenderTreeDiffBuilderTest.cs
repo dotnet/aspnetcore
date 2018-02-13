@@ -798,13 +798,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public string ReadonlyProperty { get; private set; }
             private string PrivateProperty { get; set; }
 
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-            }
+            public void Init(RenderHandle renderHandle) { }
+            public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 
         private class FakeComponent2 : IComponent
         {
+            public void Init(RenderHandle renderHandle) { }
+
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(100, $"Hello from {nameof(FakeComponent2)}");
@@ -815,11 +816,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             public int DisposalCount { get; private set; }
             public void Dispose() => DisposalCount++;
+
+            public void Init(RenderHandle renderHandle) { }
+
             public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 
         private class NonDisposableComponent : IComponent
         {
+            public void Init(RenderHandle renderHandle) { }
+
             public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 

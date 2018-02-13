@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var componentId = _nextComponentId++;
             var componentState = new ComponentState(this, componentId, component);
             _componentStateById.Add(componentId, componentState);
+            component.Init(new RenderHandle(this, componentId));
             return componentId;
         }
 
@@ -153,6 +154,20 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             var id = ++_lastEventHandlerId;
             _eventHandlersById.Add(id, (UIEventHandler)frame.AttributeValue);
             frame = frame.WithAttributeEventHandlerId(id);
+        }
+
+        internal void ComponentRequestedRender(int componentId)
+        {
+            // TODO: Clean up the locking around rendering. The Renderer doesn't really need
+            // to be thread-safe, and the following code isn't actually thread-safe anyway.
+            if (_renderBatchLock == 0)
+            {
+                RenderNewBatch(componentId);
+            }
+            else
+            {
+                _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
+            }
         }
 
         private ComponentState GetRequiredComponentState(int componentId)

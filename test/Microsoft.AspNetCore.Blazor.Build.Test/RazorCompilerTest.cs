@@ -478,6 +478,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         public class TestComponent : IComponent
         {
+            public void Init(RenderHandle renderHandle)
+            {
+            }
+
             public void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, $"Hello from {nameof(TestComponent)}");

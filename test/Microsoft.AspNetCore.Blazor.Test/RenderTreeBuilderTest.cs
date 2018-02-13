@@ -291,6 +291,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class TestComponent : IComponent
         {
+            public void Init(RenderHandle renderHandle) { }
+
             public void BuildRenderTree(RenderTreeBuilder builder)
                 => throw new NotImplementedException();
         }

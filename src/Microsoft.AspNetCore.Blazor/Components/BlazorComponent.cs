@@ -13,6 +13,21 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public abstract class BlazorComponent : IComponent, IHandlePropertiesChanged
     {
+        private RenderHandle _renderHandle;
+
+        void IComponent.Init(RenderHandle renderHandle)
+        {
+            // This implicitly means a BlazorComponent can only be associated with a single
+            // renderer. That's the only use case we have right now. If there was ever a need,
+            // a component could hold a collection of render handles.
+            if (_renderHandle.IsInitalised)
+            {
+                throw new InvalidOperationException($"The render handle is already set. Cannot initialize a {nameof(BlazorComponent)} more than once.");
+            }
+
+            _renderHandle = renderHandle;
+        }
+
         /// <inheritdoc />
         public virtual void BuildRenderTree(RenderTreeBuilder builder)
         {
