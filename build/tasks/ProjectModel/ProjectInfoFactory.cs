@@ -88,6 +88,7 @@ namespace RepoTasks.ProjectModel
             var globalProps = new Dictionary<string, string>()
             {
                 ["DesignTimeBuild"] = "true",
+                ["ExcludeRestorePackageImports"] = "true",
             };
 
             var project = new Project(xml,
