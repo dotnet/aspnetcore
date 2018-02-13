@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// Optional base class for Blazor components. Alternatively, Blazor components may
     /// implement <see cref="IComponent"/> directly.
     /// </summary>
-    public abstract class BlazorComponent : IComponent
+    public abstract class BlazorComponent : IComponent, IHandleEvent
     {
         private RenderHandle _renderHandle;
         private bool _hasNeverRendered = true;
@@ -80,6 +80,16 @@ namespace Microsoft.AspNetCore.Blazor.Components
             // time (because they are all primitives and equal to the existing property values)
             // then skip the following. Can put an "out bool" parameter on AssignToProperties.
             OnParametersSet();
+            StateHasChanged();
+        }
+
+        void IHandleEvent.HandleEvent(UIEventHandler handler, UIEventArgs args)
+        {
+            handler(args);
+
+            // After each event, we synchronously re-render (unless !ShouldRender())
+            // This just saves the developer the trouble of putting "StateHasChanged();"
+            // at the end of every event callback.
             StateHasChanged();
         }
 

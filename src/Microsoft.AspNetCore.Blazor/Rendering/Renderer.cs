@@ -120,11 +120,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         {
             if (_eventHandlersById.TryGetValue(eventHandlerId, out var handler))
             {
-                handler.Invoke(eventArgs);
-
-                // After any event, we synchronously re-render. Most of the time this means that
-                // developers don't need to call Render() on their components explicitly.
-                RenderNewBatch(componentId);
+                GetRequiredComponentState(componentId).DispatchEvent(handler, eventArgs);
             }
             else
             {

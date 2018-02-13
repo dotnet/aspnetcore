@@ -229,6 +229,37 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void ThrowsIfComponentDoesNotHandleEvents()
+        {
+            // Arrange: Render a component with an event handler
+            var renderer = new TestRenderer();
+            UIEventHandler handler = args => throw new NotImplementedException();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenElement(0, "mybutton");
+                builder.AddAttribute(1, "my click event", handler);
+                builder.CloseElement();
+            });
+
+            var componentId = renderer.AssignComponentId(component);
+            renderer.RenderNewBatch(componentId);
+
+            var eventHandlerId = renderer.Batches.Single()
+                .ReferenceFrames
+                .First(frame => frame.AttributeValue != null)
+                .AttributeEventHandlerId;
+            var eventArgs = new UIEventArgs();
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                renderer.DispatchEvent(componentId, eventHandlerId, eventArgs);
+            });
+            Assert.Equal($"The component of type {typeof(TestComponent).FullName} cannot receive " +
+                $"events because it does not implement {typeof(IHandleEvent).FullName}.", ex.Message);
+        }
+
+        [Fact]
         public void CannotRenderUnknownComponents()
         {
             // Arrange
@@ -812,7 +843,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 => parameters.AssignToProperties(this);
         }
 
-        private class EventComponent : AutoRenderComponent, IComponent
+        private class EventComponent : AutoRenderComponent, IComponent, IHandleEvent
         {
             public UIEventHandler Handler { get; set; }
             public bool SkipElement { get; set; }
@@ -833,6 +864,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 }
                 builder.CloseElement();
             }
+
+            public void HandleEvent(UIEventHandler handler, UIEventArgs args)
+                => handler(args);
         }
 
         private class ConditionalParentComponent<T> : AutoRenderComponent where T : IComponent

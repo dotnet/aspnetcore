@@ -62,5 +62,19 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
             RenderTreeDiffBuilder.DisposeFrames(batchBuilder, _renderTreeBuilderCurrent.GetFrames());
         }
+
+        public void DispatchEvent(UIEventHandler handler, UIEventArgs eventArgs)
+        {
+            if (_component is IHandleEvent handleEventComponent)
+            {
+                handleEventComponent.HandleEvent(handler, eventArgs);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"The component of type {_component.GetType().FullName} cannot receive " +
+                    $"events because it does not implement {typeof(IHandleEvent).FullName}.");
+            }
+        }
     }
 }
