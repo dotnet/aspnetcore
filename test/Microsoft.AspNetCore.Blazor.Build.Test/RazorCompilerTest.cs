@@ -88,15 +88,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         [Fact]
         public void SupportsPlainText()
         {
-            // Arrange
-            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
-
             // Arrange/Act
             var component = CompileToComponent("Some plain text");
-            component.BuildRenderTree(treeBuilder);
+            var frames = GetRenderTree(component);
 
             // Assert
-            Assert.Collection(treeBuilder.GetFrames(),
+            Assert.Collection(frames,
                 frame => AssertFrame.Text(frame, "Some plain text", 0));
         }
 
@@ -303,17 +300,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         [Fact]
         public void SupportsUsingStatements()
         {
-            // Arrange
-            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
-
             // Arrange/Act
             var component = CompileToComponent(
                 @"@using System.Collections.Generic
                 @(typeof(List<string>).FullName)");
-            component.BuildRenderTree(treeBuilder);
+            var frames = GetRenderTree(component);
 
             // Assert
-            Assert.Collection(treeBuilder.GetFrames(),
+            Assert.Collection(frames,
                 frame => AssertFrame.Whitespace(frame, 0),
                 frame => AssertFrame.Text(frame, typeof(List<string>).FullName, 1));
         }
@@ -352,24 +346,22 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         [Fact]
         public void SupportsChildComponentsViaTemporarySyntax()
         {
-            // Arrange
-            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
-
             // Arrange/Act
             var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
             var component = CompileToComponent($"<c:{testComponentTypeName} />");
-            component.BuildRenderTree(treeBuilder);
+            var frames = GetRenderTree(component);
 
             // Assert
-            Assert.Collection(treeBuilder.GetFrames(),
+            Assert.Collection(frames,
                 frame => AssertFrame.Component<TestComponent>(frame, 0));
         }
 
-        private static ArrayRange<RenderTreeFrame> GetRenderTree(IComponent component)
+        private static RenderTreeFrame[] GetRenderTree(IComponent component)
         {
-            var treeBuilder = new RenderTreeBuilder(new TestRenderer());
-            component.BuildRenderTree(treeBuilder);
-            return treeBuilder.GetFrames();
+            var renderer = new TestRenderer();
+            renderer.AttachComponent(component);
+            component.SetParameters(ParameterCollection.Empty);
+            return renderer.LatestBatchReferenceFrames;
         }
 
         private static IComponent CompileToComponent(string cshtmlSource)
@@ -472,8 +464,15 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         private class TestRenderer : Renderer
         {
+            public RenderTreeFrame[] LatestBatchReferenceFrames { get; private set; }
+
+            public void AttachComponent(IComponent component)
+                => AssignComponentId(component);
+
             protected override void UpdateDisplay(RenderBatch renderBatch)
-                => throw new NotImplementedException();
+            {
+                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+            }
         }
 
         public class TestComponent : IComponent
