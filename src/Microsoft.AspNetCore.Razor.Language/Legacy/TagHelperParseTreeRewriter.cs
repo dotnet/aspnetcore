@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         continue;
                     }
                 }
-                else if (!IsCommentTag((Span)child))
+                else if (!IsComment((Span)child))
                 {
                     ValidateParentAllowsContent((Span)child, errorSink);
                 }
@@ -817,9 +817,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
         }
 
-        private static bool IsCommentTag(Span span)
+        private static bool IsComment(Span span)
         {
-            return span.Content.StartsWith("<!--");
+            bool isHtmlComment = span.Content?.StartsWith("<!--") == true;
+            bool isRazorComment = span.Parent?.Type == BlockKindInternal.Comment;
+
+            return isHtmlComment || isRazorComment;
         }
 
         private static void EnsureTagBlock(Block tagBlock)
