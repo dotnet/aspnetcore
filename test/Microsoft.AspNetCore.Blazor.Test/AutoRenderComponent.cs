@@ -10,8 +10,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
     {
         private RenderHandle _renderHandle;
 
-        public abstract void BuildRenderTree(RenderTreeBuilder builder);
-
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
@@ -24,6 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         public void TriggerRender()
-            => _renderHandle.Render();
+            => _renderHandle.Render(BuildRenderTree);
+
+        protected abstract void BuildRenderTree(RenderTreeBuilder builder);
     }
 }

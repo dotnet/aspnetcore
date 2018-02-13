@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
 
                 // Add parameters to the primary method via string manipulation because
                 // DefaultDocumentWriter's VisitMethodDeclaration can't emit parameters
-                var primaryMethodSource = $"public override void {nameof(BlazorComponent.BuildRenderTree)}";
+                var primaryMethodSource = $"protected override void {BlazorComponent.BuildRenderTreeMethodName}";
                 generatedCode = generatedCode.Replace(
                     $"{primaryMethodSource}()",
                     $"{primaryMethodSource}({typeof(RenderTreeBuilder).FullName} builder)");

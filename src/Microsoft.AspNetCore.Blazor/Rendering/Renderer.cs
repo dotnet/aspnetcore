@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Blazor.Rendering
 {
@@ -19,10 +18,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly Dictionary<int, ComponentState> _componentStateById
             = new Dictionary<int, ComponentState>();
 
-        // Because rendering is currently synchronous and single-threaded, we can keep re-using the
-        // same RenderBatchBuilder instance to avoid reallocating
-        private readonly RenderBatchBuilder _sharedRenderBatchBuilder = new RenderBatchBuilder();
-        private int _renderBatchLock = 0;
+        private readonly RenderBatchBuilder _batchBuilder = new RenderBatchBuilder();
+        private bool _isBatchInProgress;
 
         private int _lastEventHandlerId = 0;
         private readonly Dictionary<int, UIEventHandler> _eventHandlersById
@@ -106,17 +103,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             frame = frame.WithAttributeEventHandlerId(id);
         }
 
-        internal void ComponentRequestedRender(int componentId)
+        internal void AddToRenderQueue(RenderQueueEntry renderQueueEntry)
         {
-            // TODO: Clean up the locking around rendering. The Renderer doesn't really need
-            // to be thread-safe, and the following code isn't actually thread-safe anyway.
-            if (_renderBatchLock == 0)
+            _batchBuilder.ComponentRenderQueue.Enqueue(renderQueueEntry);
+
+            if (!_isBatchInProgress)
             {
-                RenderNewBatch(componentId);
-            }
-            else
-            {
-                _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
+                ProcessRenderQueue();
             }
         }
 
@@ -125,59 +118,42 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
                 ? componentState
                 : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
 
-        private void RenderNewBatch(int componentId)
+        private void ProcessRenderQueue()
         {
-            // It's very important that components' rendering logic has no side-effects, and in particular
-            // components must *not* trigger Render from inside their render logic, otherwise you could
-            // easily get hard-to-debug infinite loops.
-            // Since rendering is currently synchronous and single-threaded, we can enforce the above by
-            // checking here that no other rendering process is already underway. This also means we only
-            // need a single _renderBatchBuilder instance that can be reused throughout the lifetime of
-            // the Renderer instance, which also means we're not allocating on a typical render cycle.
-            // In the future, if rendering becomes async, we'll need a more sophisticated system of
-            // capturing successive diffs from each component and probably serializing them for the
-            // interop calls instead of using shared memory.
-
-            // Note that Monitor.TryEnter is not yet supported in Mono WASM, so using the following instead
-            var renderAlreadyRunning = Interlocked.CompareExchange(ref _renderBatchLock, 1, 0) == 1;
-            if (renderAlreadyRunning)
-            {
-                throw new InvalidOperationException("Cannot render while a render is already in progress. " +
-                    "Render logic must not have side-effects such as manually triggering other rendering.");
-            }
-
-            _sharedRenderBatchBuilder.ComponentRenderQueue.Enqueue(componentId);
+            _isBatchInProgress = true;
 
             try
             {
                 // Process render queue until empty
-                while (_sharedRenderBatchBuilder.ComponentRenderQueue.Count > 0)
+                while (_batchBuilder.ComponentRenderQueue.Count > 0)
                 {
-                    var nextComponentIdToRender = _sharedRenderBatchBuilder.ComponentRenderQueue.Dequeue();
-                    RenderInExistingBatch(_sharedRenderBatchBuilder, nextComponentIdToRender);
+                    var nextToRender = _batchBuilder.ComponentRenderQueue.Dequeue();
+                    RenderInExistingBatch(nextToRender);
                 }
 
-                UpdateDisplay(_sharedRenderBatchBuilder.ToBatch());
+                UpdateDisplay(_batchBuilder.ToBatch());
             }
             finally
             {
-                RemoveEventHandlerIds(_sharedRenderBatchBuilder.DisposedEventHandlerIds.ToRange());
-                _sharedRenderBatchBuilder.Clear();
-                Interlocked.Exchange(ref _renderBatchLock, 0);
+                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange());
+                _batchBuilder.Clear();
+                _isBatchInProgress = false;
             }
         }
 
-        private void RenderInExistingBatch(RenderBatchBuilder batchBuilder, int componentId)
+        private void RenderInExistingBatch(RenderQueueEntry renderQueueEntry)
         {
-            GetRequiredComponentState(componentId).RenderIntoBatch(batchBuilder);
+            var componentId = renderQueueEntry.ComponentId;
+            GetRequiredComponentState(componentId)
+                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderAction);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
-            while (batchBuilder.ComponentDisposalQueue.Count > 0)
+            while (_batchBuilder.ComponentDisposalQueue.Count > 0)
             {
-                var disposeComponentId = batchBuilder.ComponentDisposalQueue.Dequeue();
-                GetRequiredComponentState(disposeComponentId).DisposeInBatch(batchBuilder);
+                var disposeComponentId = _batchBuilder.ComponentDisposalQueue.Dequeue();
+                GetRequiredComponentState(disposeComponentId).DisposeInBatch(_batchBuilder);
                 _componentStateById.Remove(disposeComponentId);
-                batchBuilder.DisposedComponentIds.Append(disposeComponentId);
+                _batchBuilder.DisposedComponentIds.Append(disposeComponentId);
             }
         }
 

@@ -484,11 +484,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void SetParameters(ParameterCollection parameters)
             {
             }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddText(0, $"Hello from {nameof(TestComponent)}");
-            }
         }
     }
 }

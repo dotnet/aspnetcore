@@ -775,7 +775,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 parameters.AssignToProperties(this);
             }
-            public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 
         private class FakeComponent2 : IComponent
@@ -787,11 +786,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void SetParameters(ParameterCollection parameters)
             {
             }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-                builder.AddText(100, $"Hello from {nameof(FakeComponent2)}");
-            }
         }
 
         private class DisposableComponent : IComponent, IDisposable
@@ -802,8 +796,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void Init(RenderHandle renderHandle) { }
 
             public void SetParameters(ParameterCollection parameters) { }
-
-            public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 
         private class NonDisposableComponent : IComponent
@@ -811,8 +803,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public void Init(RenderHandle renderHandle) { }
 
             public void SetParameters(ParameterCollection parameters) { }
-
-            public void BuildRenderTree(RenderTreeBuilder builder) { }
         }
 
         private static void AssertEdit(

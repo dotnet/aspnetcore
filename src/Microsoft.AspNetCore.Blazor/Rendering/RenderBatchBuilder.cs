@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         public ArrayBuilder<RenderTreeFrame> ReferenceFramesBuffer { get; } = new ArrayBuilder<RenderTreeFrame>();
 
         // State of render pipeline
-        public Queue<int> ComponentRenderQueue { get; } = new Queue<int>();
+        public Queue<RenderQueueEntry> ComponentRenderQueue { get; } = new Queue<RenderQueueEntry>();
         public Queue<int> ComponentDisposalQueue { get; } = new Queue<int>();
 
         public void Clear()

@@ -42,9 +42,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             // from here. We inject the parameter later in RazorCompiler.
             var primaryMethod = documentNode.FindPrimaryMethod();
             primaryMethod.ReturnType = "void";
-            primaryMethod.MethodName = nameof(BlazorComponent.BuildRenderTree);
+            primaryMethod.MethodName = BlazorComponent.BuildRenderTreeMethodName;
             primaryMethod.Modifiers.Clear();
-            primaryMethod.Modifiers.Add("public");
+            primaryMethod.Modifiers.Add("protected");
             primaryMethod.Modifiers.Add("override");
 
             var line = new CSharpCodeIntermediateNode();

@@ -13,12 +13,23 @@ namespace Microsoft.AspNetCore.Blazor.Components
     /// </summary>
     public abstract class BlazorComponent : IComponent, IHandleEvent
     {
+        public const string BuildRenderTreeMethodName = nameof(BuildRenderTree);
+
+        private readonly Action<RenderTreeBuilder> _renderAction;
         private RenderHandle _renderHandle;
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
 
-        /// <inheritdoc />
-        public virtual void BuildRenderTree(RenderTreeBuilder builder)
+        public BlazorComponent()
+        {
+            _renderAction = BuildRenderTree;
+        }
+
+        /// <summary>
+        /// Renders the component to the supplied <see cref="RenderTreeBuilder"/>.
+        /// </summary>
+        /// <param name="builder">A <see cref="RenderTreeBuilder"/> that will receive the render output.</param>
+        protected virtual void BuildRenderTree(RenderTreeBuilder builder)
         {
             // Developers can either override this method in derived classes, or can use Razor
             // syntax to define a derived class and have the compiler generate the method.
@@ -48,7 +59,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
             if (_hasNeverRendered || ShouldRender())
             {
                 _hasPendingQueuedRender = true;
-                _renderHandle.Render();
+                _renderHandle.Render(_renderAction);
             }
         }
 

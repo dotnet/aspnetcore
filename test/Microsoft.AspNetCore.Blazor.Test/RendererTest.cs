@@ -803,20 +803,17 @@ namespace Microsoft.AspNetCore.Blazor.Test
             }
 
             public void SetParameters(ParameterCollection parameters)
-                => _renderHandle.Render();
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-                => _renderAction(builder);
+                => TriggerRender();
 
             public void TriggerRender()
-                => _renderHandle.Render();
+                => _renderHandle.Render(_renderAction);
         }
 
         private class MessageComponent : AutoRenderComponent
         {
             public string Message { get; set; }
 
-            public override void BuildRenderTree(RenderTreeBuilder builder)
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, Message);
             }
@@ -827,10 +824,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public int IntProperty { get; set; }
             public string StringProperty { get; set; }
             public object ObjectProperty { get; set; }
-
-            public void BuildRenderTree(RenderTreeBuilder builder)
-            {
-            }
 
             public void Init(RenderHandle renderHandle)
             {
@@ -845,7 +838,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public UIEventHandler Handler { get; set; }
             public bool SkipElement { get; set; }
 
-            public override void BuildRenderTree(RenderTreeBuilder builder)
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.OpenElement(0, "grandparent");
                 if (!SkipElement)
@@ -871,7 +864,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public bool IncludeChild { get; set; }
             public IDictionary<string, object> ChildParameters { get; set; }
 
-            public override void BuildRenderTree(RenderTreeBuilder builder)
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddText(0, "Parent here");
                 
@@ -896,7 +889,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public TestComponent Parent { get; set; }
             private bool _isFirstTime = true;
 
-            public override void BuildRenderTree(RenderTreeBuilder builder)
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 if (_isFirstTime) // Don't want an infinite loop
                 {
@@ -913,9 +906,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
             private readonly List<RenderHandle> _renderHandles
                 = new List<RenderHandle>();
 
-            public void BuildRenderTree(RenderTreeBuilder builder)
-                => builder.AddText(0, $"Hello from {nameof(MultiRendererComponent)}");
-
             public void Init(RenderHandle renderHandle)
                 => _renderHandles.Add(renderHandle);
 
@@ -927,7 +917,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 foreach (var renderHandle in _renderHandles)
                 {
-                    renderHandle.Render();
+                    renderHandle.Render(builder =>
+                    {
+                        builder.AddText(0, $"Hello from {nameof(MultiRendererComponent)}");
+                    });
                 }
             }
         }
