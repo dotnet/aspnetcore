@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public interface IRazorImportFeature : IRazorProjectEngineFeature
     {
-        IReadOnlyList<RazorSourceDocument> GetImports(string sourceFilePath);
+        IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem);
     }
 }

@@ -5,16 +5,16 @@ using System.IO;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class FileSystemRazorProjectItem : RazorProjectItem
+    internal class DefaultRazorProjectItem : RazorProjectItem
     {
         /// <summary>
-        /// Initializes a new instance of <see cref="FileSystemRazorProjectItem"/>.
+        /// Initializes a new instance of <see cref="DefaultRazorProjectItem"/>.
         /// </summary>
         /// <param name="basePath">The base path.</param>
         /// <param name="relativePhysicalPath">The physical path of the base path.</param>
         /// <param name="filePath">The path.</param>
         /// <param name="file">The <see cref="FileInfo"/>.</param>
-        public FileSystemRazorProjectItem(string basePath, string filePath, string relativePhysicalPath, FileInfo file)
+        public DefaultRazorProjectItem(string basePath, string filePath, string relativePhysicalPath, FileInfo file)
         {
             BasePath = basePath;
             FilePath = filePath;

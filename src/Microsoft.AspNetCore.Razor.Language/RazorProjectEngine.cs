@@ -14,9 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract IReadOnlyList<IRazorProjectEngineFeature> Features { get; }
 
-        public abstract RazorCodeDocument Process(string filePath);
-
-        public abstract RazorCodeDocument Process(RazorSourceDocument sourceDocument);
+        public abstract RazorCodeDocument Process(RazorProjectItem projectItem);
 
         public static RazorProjectEngine Create(RazorProjectFileSystem fileSystem) => Create(fileSystem, configure: null);
 
