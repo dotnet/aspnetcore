@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -28,8 +29,31 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
         {
             var writer = BlazorComponentDocumentWriter.Create(_codegenOptions);
             var documentNode = codeDocument.GetDocumentIntermediateNode();
+            ConvertToBlazorPrimaryMethod(documentNode);
             var csharpDoc = writer.WriteDocument(codeDocument, documentNode);
             codeDocument.SetCSharpDocument(csharpDoc);
+        }
+
+        private void ConvertToBlazorPrimaryMethod(DocumentIntermediateNode documentNode)
+        {
+            // Replaces the default "ExecuteAsync" method with Blazor's "BuildRenderTree".
+            // Note that DefaultDocumentWriter's VisitMethodDeclaration is hardcoded to
+            // emit methods with no parameters, so there's no way of setting the parameters
+            // from here. We inject the parameter later in RazorCompiler.
+            var primaryMethod = documentNode.FindPrimaryMethod();
+            primaryMethod.ReturnType = "void";
+            primaryMethod.MethodName = nameof(BlazorComponent.BuildRenderTree);
+            primaryMethod.Modifiers.Clear();
+            primaryMethod.Modifiers.Add("public");
+            primaryMethod.Modifiers.Add("override");
+
+            var line = new CSharpCodeIntermediateNode();
+            line.Children.Add(new IntermediateToken
+            {
+                Kind = TokenKind.CSharp,
+                Content = $"base.{primaryMethod.MethodName}(builder);" + Environment.NewLine
+            });
+            primaryMethod.Children.Insert(0, line);
         }
 
         /// <summary>
