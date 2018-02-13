@@ -10,20 +10,19 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class VirtualRazorProjectFileSystem : RazorProjectFileSystem
     {
-        private readonly DirectoryNode Root = new DirectoryNode("/");
+        private readonly DirectoryNode _root = new DirectoryNode("/");
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
         {
-
             basePath = NormalizeAndEnsureValidPath(basePath);
-            var directory = Root.GetDirectory(basePath);
+            var directory = _root.GetDirectory(basePath);
             return directory?.EnumerateItems() ?? Enumerable.Empty<RazorProjectItem>();
         }
 
         public override RazorProjectItem GetItem(string path)
         {
             path = NormalizeAndEnsureValidPath(path);
-            return Root.GetItem(path) ?? new NotFoundProjectItem(string.Empty, path);
+            return _root.GetItem(path) ?? new NotFoundProjectItem(string.Empty, path);
         }
 
         public void Add(RazorProjectItem projectItem)
@@ -34,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var filePath = NormalizeAndEnsureValidPath(projectItem.FilePath);
-            Root.AddFile(new FileNode(filePath, projectItem));
+            _root.AddFile(new FileNode(filePath, projectItem));
         }
 
         // Internal for testing

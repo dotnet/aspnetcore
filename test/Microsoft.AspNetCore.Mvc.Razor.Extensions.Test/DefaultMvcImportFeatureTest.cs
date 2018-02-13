@@ -29,12 +29,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             // Arrange
             var imports = new List<RazorSourceDocument>();
+            var projectItem = new TestRazorProjectItem("/Contact/Index.cshtml");
             var testFileSystem = new TestRazorProjectFileSystem(new[]
             {
                 new TestRazorProjectItem("/Index.cshtml"),
                 new TestRazorProjectItem("/_ViewImports.cshtml"),
                 new TestRazorProjectItem("/Contact/_ViewImports.cshtml"),
-                new TestRazorProjectItem("/Contact/Index.cshtml"),
+                projectItem,
             });
             var mvcImportFeature = new DefaultMvcImportFeature()
             {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             // Act
-            mvcImportFeature.AddHierarchicalImports("/Contact/Index.cshtml", imports);
+            mvcImportFeature.AddHierarchicalImports(projectItem, imports);
 
             // Assert
             Assert.Collection(imports,
@@ -55,17 +56,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             // Arrange
             var imports = new List<RazorSourceDocument>();
-            var testFileSystem = new TestRazorProjectFileSystem(new[]
-            {
-                new TestRazorProjectItem("/Pages/Contact/Index.cshtml"),
-            });
+            var projectItem = new TestRazorProjectItem("/Pages/Contact/Index.cshtml");
+            var testFileSystem = new TestRazorProjectFileSystem(new[] { projectItem });
             var mvcImportFeature = new DefaultMvcImportFeature()
             {
                 ProjectEngine = Mock.Of<RazorProjectEngine>(projectEngine => projectEngine.FileSystem == testFileSystem)
             };
 
             // Act
-            mvcImportFeature.AddHierarchicalImports("/Pages/Contact/Index.cshtml", imports);
+            mvcImportFeature.AddHierarchicalImports(projectItem, imports);
 
             // Assert
             Assert.Collection(imports,

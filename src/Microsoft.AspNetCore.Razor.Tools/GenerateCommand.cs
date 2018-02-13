@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var project = new VirtualRazorProjectFileSystem();
             foreach (var item in inputItems)
             {
-                var projectItem = new FileSystemRazorProjectItem(
+                var projectItem = new DefaultRazorProjectItem(
                     basePath: "/",
                     filePath: item.FilePath,
                     relativePhysicalPath: item.RelativePhysicalPath,

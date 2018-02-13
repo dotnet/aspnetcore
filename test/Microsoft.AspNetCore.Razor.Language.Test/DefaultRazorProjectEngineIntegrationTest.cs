@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Process_GetsImportsFromFeature()
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create();
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
             var testImport = TestRazorSourceDocument.Create();
             var importFeature = new Mock<IRazorImportFeature>();
-            importFeature.Setup(feature => feature.GetImports(It.IsAny<string>()))
+            importFeature.Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
                 .Returns(new[] { testImport });
             var projectEngine = RazorProjectEngine.Create(TestRazorProjectFileSystem.Empty, builder =>
             {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
 
             // Act
-            var codeDocument = projectEngine.Process(sourceDocument);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
             var import = Assert.Single(codeDocument.Imports);
@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Process_GeneratesCodeDocumentWithValidCSharpDocument()
         {
             // Arrange
-            var sourceDocument = TestRazorSourceDocument.Create();
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
             var projectEngine = RazorProjectEngine.Create(TestRazorProjectFileSystem.Empty);
 
             // Act
-            var codeDocument = projectEngine.Process(sourceDocument);
+            var codeDocument = projectEngine.Process(projectItem);
 
             // Assert
             var csharpDocument = codeDocument.GetCSharpDocument();

@@ -6,21 +6,21 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class FileSystemRazorProjectItemTest
+    public class DefaultRazorProjectItemTest
     {
         private static string TestFolder { get; } = Path.Combine(
-            TestProject.GetProjectDirectory(typeof(FileSystemRazorProjectItemTest)), 
-            "TestFiles", 
-            "FileSystemRazorProject");
+            TestProject.GetProjectDirectory(typeof(DefaultRazorProjectItemTest)), 
+            "TestFiles",
+            "DefaultRazorProjectFileSystem");
 
         [Fact]
-        public void FileSystemRazorProjectItem_SetsProperties()
+        public void DefaultRazorProjectItem_SetsProperties()
         {
             // Arrange
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Home.cshtml"));
 
             // Act
-            var projectItem = new FileSystemRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
+            var projectItem = new DefaultRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
 
             // Assert
             Assert.Equal("/Home.cshtml", projectItem.FilePath);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Views", "FileDoesNotExist.cshtml"));
 
             // Act
-            var projectItem = new FileSystemRazorProjectItem("/Views", "/FileDoesNotExist.cshtml", Path.Combine("Views", "FileDoesNotExist.cshtml"), fileInfo);
+            var projectItem = new DefaultRazorProjectItem("/Views", "/FileDoesNotExist.cshtml", Path.Combine("Views", "FileDoesNotExist.cshtml"), fileInfo);
 
             // Assert
             Assert.False(projectItem.Exists);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var fileInfo = new FileInfo(Path.Combine(TestFolder, "Home.cshtml"));
-            var projectItem = new FileSystemRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
+            var projectItem = new DefaultRazorProjectItem("/", "/Home.cshtml", "Home.cshtml", fileInfo);
 
             // Act
             var stream = projectItem.Read();

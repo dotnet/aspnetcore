@@ -30,6 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <PropertyGroup>
     <PrepareForRazorGenerateDependsOn>
+      ResolveRazorConfiguration;
       ResolveRazorGenerateInputs;
       AssignRazorGenerateTargetPaths;
       ResolveAssemblyReferenceRazorGenerateInputs;
@@ -181,6 +182,23 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
   </Target>
 
+  <!-- 
+    Computes the applicable @(ResolvedRazorConfiguration) and @(ResolvedRazorExtension) items that match the project's
+    configuration. 
+  -->
+  <Target 
+    Name="ResolveRazorConfiguration"
+    Condition="'$(RazorDefaultConfiguration)'!=''">
+
+    <ItemGroup>
+      <ResolvedRazorConfiguration Include="@(RazorConfiguration)" Condition="'%(RazorConfiguration.Identity)'=='$(RazorDefaultConfiguration)'" />
+    </ItemGroup>
+
+    <FindInList List="@(RazorExtension)" ItemSpecToFind="@(RazorConfiguration->Metadata('Extensions'))">
+      <Output TaskParameter="ItemFound" ItemName="ResolvedRazorExtension" />
+    </FindInList>
+  </Target>
+
   <!--
     Generates assembly attributes in support for Razor runtime code generation. This is a set of standard
     metadata attributes (defined in Microsoft.AspNetCore.Razor.Runtime) that capture the build-time
@@ -193,19 +211,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     it will be unset by default.
   -->
   <Target 
-    Name="RazorGetAssemblyAttributes" 
+    Name="RazorGetAssemblyAttributes"
     AfterTargets="GetAssemblyAttributes"
-    Condition="'$(GenerateRazorAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''">
-
-    <ItemGroup>
-      <_ResolvedRazorConfiguration Include="@(RazorConfiguration)" Condition="'%(RazorConfiguration.Identity)'=='$(RazorDefaultConfiguration)'" />
-      <_ResolvedRazorExtensionName Include="%(_ResolvedRazorConfiguration.Extensions)"/>
-    </ItemGroup>
-
-    <FindInList List="@(RazorExtension)" ItemSpecToFind="%(_ResolvedRazorExtensionName.Identity)">
-      <Output TaskParameter="ItemFound" ItemName="_ResolvedRazorExtension" />
-    </FindInList>
-
+    Condition="'$(GenerateRazorAssemblyInfo)'=='true' and '$(RazorDefaultConfiguration)'!=''"
+    DependsOnTargets="ResolveRazorConfiguration">
     <ItemGroup>
       <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute">
         <_Parameter1>$(RazorLangVersion)</_Parameter1>
@@ -213,9 +222,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute">
         <_Parameter1>$(RazorDefaultConfiguration)</_Parameter1>
       </AssemblyAttribute>
-      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute" Condition="'%(_ResolvedRazorExtension.AssemblyName)'!=''">
-        <_Parameter1>%(_ResolvedRazorExtension.Identity)</_Parameter1>
-        <_Parameter2>%(_ResolvedRazorExtension.AssemblyName)</_Parameter2>
+      <AssemblyAttribute Include="Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute" Condition="'%(ResolvedRazorExtension.AssemblyName)'!=''">
+        <_Parameter1>%(ResolvedRazorExtension.Identity)</_Parameter1>
+        <_Parameter2>%(ResolvedRazorExtension.AssemblyName)</_Parameter2>
       </AssemblyAttribute>
     </ItemGroup>
 

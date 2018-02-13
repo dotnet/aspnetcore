@@ -599,7 +599,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var items = new List<RazorProjectItem>();
             items.Add(new TestRazorProjectItem(path));
 
-            var project = new TestRazorProject(items);
+            var project = new TestRazorProjectFileSystem(items);
 
             var templateEngine = new RazorTemplateEngine(engine, project);
             templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");

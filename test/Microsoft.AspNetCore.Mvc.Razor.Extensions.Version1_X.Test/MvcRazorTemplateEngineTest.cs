@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             };
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             // Arrange
             var mvcRazorTemplateEngine = new MvcRazorTemplateEngine(
                 RazorEngine.Create(),
-                new TestRazorProject());
+                new TestRazorProjectFileSystem());
 
             // Act
             var imports = mvcRazorTemplateEngine.Options.DefaultImports;
