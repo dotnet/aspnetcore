@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.DeveloperCertificates.Tools
             {
                 var app = new CommandLineApplication
                 {
-                    Name = "dotnet-dev-certs"
+                    Name = "dotnet dev-certs"
                 };
 
                 app.Command("https", c =>
