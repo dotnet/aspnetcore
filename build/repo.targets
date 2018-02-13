@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <Target Name="PrepareOutputPaths">
-    <MakeDir Directories="$(ArtifactsDir);$(BuildDir)" />
+    <MakeDir Directories="$(ArtifactsDir);$(BuildDir);$(IntermediateExternalPackageDir);$(IntermediateMirrorPackageDir)" />
   </Target>
 
   <Target Name="RestoreExternalDependencies">

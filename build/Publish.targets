@@ -249,12 +249,12 @@
     <ItemGroup>
       <PackageToPublishToTransport
         Include="@(PackageToPublish)"
-        Condition="'%(PackagesToPublish.Category)' == 'ship'" />
+        Condition="'%(PackageToPublish.Category)' == 'ship'" />
 
       <PackageToPublishToTransport
         Include="@(PackageToPublish)"
         ManifestArtifactData="NonShipping=true"
-        Condition="'%(PackagesToPublish.Category)' != 'ship'" />
+        Condition="'%(PackageToPublish.Category)' != 'ship'" />
 
       <!-- Filter aliased artifacts to workaround dotnet/buildtools#1855 -->
       <FilesToPublishToTransport Include="@(FilesToPublish)"
