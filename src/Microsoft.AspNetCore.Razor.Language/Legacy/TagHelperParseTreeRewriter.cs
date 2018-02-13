@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         continue;
                     }
                 }
-                else
+                else if (!IsCommentTag((Span)child))
                 {
                     ValidateParentAllowsContent((Span)child, errorSink);
                 }
@@ -815,6 +815,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var relevantSymbol = (HtmlSymbol)childSpan.Symbols[childSpan.Symbols.Count == 1 ? 0 : 1];
 
             return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
+        }
+
+        private static bool IsCommentTag(Span span)
+        {
+            return span.Content.StartsWith("<!--");
         }
 
         private static void EnsureTagBlock(Block tagBlock)
