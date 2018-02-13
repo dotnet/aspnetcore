@@ -10,8 +10,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Project="Sdk.Razor.CurrentVersion.props" />
-
   <PropertyGroup>
     <_RazorSdkPackageReferenced>true</_RazorSdkPackageReferenced>
   </PropertyGroup>
