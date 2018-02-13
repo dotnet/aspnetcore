@@ -29,7 +29,7 @@
     <MicrosoftNETCoreApp10PackageVersion>1.0.8</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.5</MicrosoftNETCoreApp11PackageVersion>
     <LZMAMicrosoftNETCoreApp20PackageVersion>2.0.0</LZMAMicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp20PackageVersion>2.0.6-servicing-26118-01</MicrosoftNETCoreApp20PackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>2.0.6</MicrosoftNETCoreApp20PackageVersion>
   </PropertyGroup>
 
   <!-- .NET Core feed -->
@@ -47,7 +47,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.3-servicing-26117-02" Source="$(DotNetCorePatchFeed)" Mirror="true" />
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.3" Source="$(DotNetCorePatchFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(MicrosoftNETCoreApp20PackageVersion)" Source="$(DotNetCorePatchFeed)" Mirror="true">
       <NoWarn>KRB2004</NoWarn>
       <VariableName>RuntimeFrameworkVersion</VariableName>
