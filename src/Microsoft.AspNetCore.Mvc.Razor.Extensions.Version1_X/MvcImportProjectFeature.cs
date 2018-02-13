@@ -8,9 +8,9 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
-    internal class DefaultMvcImportFeature : RazorProjectEngineFeatureBase, IRazorImportFeature
+    internal class MvcImportProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
     {
         private const string ImportsFileName = "_ViewImports.cshtml";
 
@@ -49,8 +49,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 writer.WriteLine("@inject global::Microsoft.AspNetCore.Mvc.IUrlHelper Url");
                 writer.WriteLine("@inject global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider");
                 writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.UrlResolutionTagHelper, Microsoft.AspNetCore.Mvc.Razor");
-                writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor");
-                writer.WriteLine("@addTagHelper Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor");
                 writer.Flush();
 
                 stream.Position = 0;

@@ -43,12 +43,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var project = FindProject(projectPath);
             var configuration = (project?.Configuration as MvcExtensibilityConfiguration) ?? DefaultConfiguration;
             var razorLanguageVersion = configuration.LanguageVersion;
-            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>(), designTime: true);
+            var razorConfiguration = new RazorConfiguration(razorLanguageVersion, "unnamed", Array.Empty<RazorExtension>());
 
             RazorEngine engine;
             if (razorLanguageVersion.Major == 1)
             {
-                engine = RazorEngine.CreateCore(razorConfiguration, b =>
+                engine = RazorEngine.CreateCore(razorConfiguration, true, b =>
                 {
                     configure?.Invoke(b);
 
@@ -66,7 +66,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else
             {
-                engine = RazorEngine.CreateCore(razorConfiguration, b =>
+                engine = RazorEngine.CreateCore(razorConfiguration, true, b =>
                 {
                     configure?.Invoke(b);
 

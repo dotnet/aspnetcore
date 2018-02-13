@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorCodeGenerationOptionsBuilder
     {
+        public virtual RazorConfiguration Configuration => null;
+
         public abstract bool DesignTime { get; }
 
         public abstract int IndentSize { get; set; }
@@ -41,5 +43,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         public virtual bool SuppressMetadataAttributes { get; set; }
 
         public abstract RazorCodeGenerationOptions Build();
+
+        public virtual void SetDesignTime(bool designTime)
+        {
+        }
     }
 }

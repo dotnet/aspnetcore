@@ -109,6 +109,46 @@ namespace Microsoft.AspNetCore.Razor.Language
             document.Items[typeof(RazorCSharpDocument)] = csharp;
         }
 
+        public static RazorParserOptions GetParserOptions(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (RazorParserOptions)document.Items[typeof(RazorParserOptions)];
+        }
+
+        public static void SetParserOptions(this RazorCodeDocument document, RazorParserOptions parserOptions)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[typeof(RazorParserOptions)] = parserOptions;
+        }
+
+        public static RazorCodeGenerationOptions GetCodeGenerationOptions(this RazorCodeDocument document)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            return (RazorCodeGenerationOptions)document.Items[typeof(RazorCodeGenerationOptions)];
+        }
+
+        public static void SetCodeGenerationOptions(this RazorCodeDocument document, RazorCodeGenerationOptions codeGenerationOptions)
+        {
+            if (document == null)
+            {
+                throw new ArgumentNullException(nameof(document));
+            }
+
+            document.Items[typeof(RazorCodeGenerationOptions)] = codeGenerationOptions;
+        }
+
         private class ImportSyntaxTreesHolder
         {
             public ImportSyntaxTreesHolder(IReadOnlyList<RazorSyntaxTree> syntaxTrees)

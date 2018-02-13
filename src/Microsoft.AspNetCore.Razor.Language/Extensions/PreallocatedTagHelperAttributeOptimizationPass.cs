@@ -15,6 +15,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
+            // There's no value in executing this pass at design time, it just prevents some allocations.
+            if (documentNode.Options.DesignTime)
+            {
+                return;
+            }
+            
             var walker = new PreallocatedTagHelperWalker();
             walker.VisitDocument(documentNode);
         }

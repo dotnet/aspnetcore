@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class RazorProjectEngineBuilderExtensions
     {
-        public static void SetImportFeature(this RazorProjectEngineBuilder builder, IRazorImportFeature feature)
+        public static void SetImportFeature(this RazorProjectEngineBuilder builder, IImportProjectFeature feature)
         {
             if (builder == null)
             {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             // Remove any existing import features in favor of the new one we're given.
-            var existingFeatures = builder.Features.OfType<IRazorImportFeature>().ToArray();
+            var existingFeatures = builder.Features.OfType<IImportProjectFeature>().ToArray();
             foreach (var existingFeature in existingFeatures)
             {
                 builder.Features.Remove(existingFeature);

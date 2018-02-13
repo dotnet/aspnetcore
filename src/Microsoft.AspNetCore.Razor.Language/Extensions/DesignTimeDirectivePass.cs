@@ -15,6 +15,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
+            // Only supports design time. This pass rewrites directives so they will have the right design time
+            // behavior and would break things if it ran for runtime.
+            if (!documentNode.Options.DesignTime)
+            {
+                return;
+            }
+
             var walker = new DesignTimeHelperWalker();
             walker.VisitDocument(documentNode);
         }

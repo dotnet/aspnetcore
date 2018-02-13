@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Collection(
                 feature.TargetExtensions,
                 extension => Assert.IsType<MetadataAttributeTargetExtension>(extension),
-                extension => Assert.False(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<DefaultTagHelperTargetExtension>(extension),
                 extension => Assert.IsType<PreallocatedAttributeTargetExtension>(extension));
         }
 
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Collection(
                 feature.TargetExtensions,
                 extension => Assert.IsType<MetadataAttributeTargetExtension>(extension),
-                extension => Assert.True(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<DefaultTagHelperTargetExtension>(extension),
                 extension => Assert.IsType<DesignTimeDirectiveTargetExtension>(extension));
         }
 

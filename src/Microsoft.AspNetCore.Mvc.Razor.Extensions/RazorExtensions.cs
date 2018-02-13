@@ -36,14 +36,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Features.Add(new ViewComponentTagHelperPass());
             builder.Features.Add(new RazorPageDocumentClassifierPass());
             builder.Features.Add(new MvcViewDocumentClassifierPass());
+            builder.Features.Add(new AssemblyAttributeInjectionPass());
+            builder.Features.Add(new InstrumentationPass());
 
-            if (!builder.Configuration.DesignTime)
-            {
-                builder.Features.Add(new AssemblyAttributeInjectionPass());
-                builder.Features.Add(new InstrumentationPass());
-            }
-
-            builder.SetImportFeature(new DefaultMvcImportFeature());
+            builder.SetImportFeature(new MvcImportProjectFeature());
         }
 
         #region Obsolete

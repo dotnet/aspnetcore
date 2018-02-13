@@ -3,6 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DefaultRazorParsingPhase : RazorEnginePhaseBase, IRazorParsingPhase
     {
         private IRazorParserOptionsFeature _optionsFeature;
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var options = _optionsFeature.GetOptions();
+            var options = codeDocument.GetParserOptions() ??_optionsFeature.GetOptions();
             var syntaxTree = RazorSyntaxTree.Parse(codeDocument.Source, options);
             codeDocument.SetSyntaxTree(syntaxTree);
 
@@ -26,4 +27,5 @@ namespace Microsoft.AspNetCore.Razor.Language
             codeDocument.SetImportSyntaxTrees(importSyntaxTrees);
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

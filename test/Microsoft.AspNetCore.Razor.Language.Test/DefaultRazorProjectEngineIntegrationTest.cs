@@ -9,15 +9,60 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class DefaultRazorProjectEngineIntegrationTest
     {
         [Fact]
+        public void Process_SetsOptions_Runtime()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.Process(projectItem);
+
+            // Assert
+            var parserOptions = codeDocument.GetParserOptions();
+            Assert.False(parserOptions.DesignTime);
+
+            var codeGenerationOptions = codeDocument.GetCodeGenerationOptions();
+            Assert.False(codeGenerationOptions.DesignTime);
+            Assert.False(codeGenerationOptions.SuppressChecksum);
+            Assert.False(codeGenerationOptions.SuppressMetadataAttributes);
+        }
+
+        [Fact]
+        public void ProcessDesignTime_SetsOptions_DesignTime()
+        {
+            // Arrange
+            var projectItem = new TestRazorProjectItem("Index.cshtml");
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
+
+            // Act
+            var codeDocument = projectEngine.ProcessDesignTime(projectItem);
+
+            // Assert
+            var parserOptions = codeDocument.GetParserOptions();
+            Assert.True(parserOptions.DesignTime);
+
+            var codeGenerationOptions = codeDocument.GetCodeGenerationOptions();
+            Assert.True(codeGenerationOptions.DesignTime);
+            Assert.True(codeGenerationOptions.SuppressChecksum);
+            Assert.True(codeGenerationOptions.SuppressMetadataAttributes);
+        }
+
+        [Fact]
         public void Process_GetsImportsFromFeature()
         {
             // Arrange
             var projectItem = new TestRazorProjectItem("Index.cshtml");
+
             var testImport = TestRazorSourceDocument.Create();
-            var importFeature = new Mock<IRazorImportFeature>();
-            importFeature.Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
+            var importFeature = new Mock<IImportProjectFeature>();
+            importFeature
+                .Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
                 .Returns(new[] { testImport });
-            var projectEngine = RazorProjectEngine.Create(TestRazorProjectFileSystem.Empty, builder =>
+
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty, builder =>
             {
                 builder.SetImportFeature(importFeature.Object);
             });
@@ -35,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var projectItem = new TestRazorProjectItem("Index.cshtml");
-            var projectEngine = RazorProjectEngine.Create(TestRazorProjectFileSystem.Empty);
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, TestRazorProjectFileSystem.Empty);
 
             // Act
             var codeDocument = projectEngine.Process(projectItem);

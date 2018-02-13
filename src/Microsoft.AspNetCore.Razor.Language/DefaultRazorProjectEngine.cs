@@ -10,10 +10,16 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal class DefaultRazorProjectEngine : RazorProjectEngine
     {
         public DefaultRazorProjectEngine(
+            RazorConfiguration configuration,
             RazorEngine engine,
             RazorProjectFileSystem fileSystem,
-            IReadOnlyList<IRazorProjectEngineFeature> features)
+            IReadOnlyList<IRazorProjectEngineFeature> projectFeatures)
         {
+            if (configuration == null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             if (engine == null)
             {
                 throw new ArgumentNullException(nameof(engine));
@@ -24,39 +30,87 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(fileSystem));
             }
 
-            if (features == null)
+            if (projectFeatures == null)
             {
-                throw new ArgumentNullException(nameof(features));
+                throw new ArgumentNullException(nameof(projectFeatures));
             }
 
+            Configuration = configuration;
             Engine = engine;
             FileSystem = fileSystem;
-            Features = features;
+            ProjectFeatures = projectFeatures;
 
-            for (var i = 0; i < features.Count; i++)
+            for (var i = 0; i < projectFeatures.Count; i++)
             {
-                features[i].ProjectEngine = this;
+                projectFeatures[i].ProjectEngine = this;
             }
         }
+
+        public override RazorConfiguration Configuration { get; }
 
         public override RazorProjectFileSystem FileSystem { get; }
 
         public override RazorEngine Engine { get; }
 
-        public override IReadOnlyList<IRazorProjectEngineFeature> Features { get; }
+        public override IReadOnlyList<IRazorProjectEngineFeature> ProjectFeatures { get; }
 
-        public override RazorCodeDocument Process(RazorProjectItem projectItem)
+        protected override void ConfigureParserOptions(RazorParserOptionsBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+        }
+
+        protected override void ConfigureDesignTimeParserOptions(RazorParserOptionsBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.SetDesignTime(true);
+        }
+
+        protected override void ConfigureCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+        }
+
+        protected override void ConfigureDesignTimeCodeGenerationOptions(RazorCodeGenerationOptionsBuilder builder)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.SetDesignTime(true);
+            builder.SuppressChecksum = true;
+            builder.SuppressMetadataAttributes = true;
+        }
+
+        protected override RazorCodeDocument ProcessCore(
+            RazorProjectItem projectItem,
+            Action<RazorParserOptionsBuilder> configureParser,
+            Action<RazorCodeGenerationOptionsBuilder> configureCodeGeneration)
         {
             if (projectItem == null)
             {
                 throw new ArgumentNullException(nameof(projectItem));
             }
 
-            var importFeature = GetRequiredFeature<IRazorImportFeature>();
-            var imports = importFeature.GetImports(projectItem);
             var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
 
-            var codeDocument = RazorCodeDocument.Create(sourceDocument, imports);
+            var importFeature = GetRequiredFeature<IImportProjectFeature>();
+            var imports = importFeature.GetImports(projectItem);
+
+            var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(configureParser);
+            var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(configureCodeGeneration);
+
+            var codeDocument = RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
 
             Engine.Process(codeDocument);
 
@@ -65,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private TFeature GetRequiredFeature<TFeature>() where TFeature : IRazorProjectEngineFeature
         {
-            var feature = Features.OfType<TFeature>().FirstOrDefault();
+            var feature = ProjectFeatures.OfType<TFeature>().FirstOrDefault();
             if (feature == null)
             {
                 throw new InvalidOperationException(

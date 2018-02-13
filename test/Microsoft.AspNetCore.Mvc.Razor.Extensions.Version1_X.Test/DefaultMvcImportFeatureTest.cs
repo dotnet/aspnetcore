@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             var imports = new List<RazorSourceDocument>();
 
             // Act
-            DefaultMvcImportFeature.AddDefaultDirectivesImport(imports);
+            MvcImportProjectFeature.AddDefaultDirectivesImport(imports);
 
             // Assert
             var import = Assert.Single(imports);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 new TestRazorProjectItem("/Contact/_ViewImports.cshtml"),
                 projectItem,
             });
-            var mvcImportFeature = new DefaultMvcImportFeature()
+            var mvcImportFeature = new MvcImportProjectFeature()
             {
                 ProjectEngine = Mock.Of<RazorProjectEngine>(projectEngine => projectEngine.FileSystem == testFileSystem)
             };
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             var imports = new List<RazorSourceDocument>();
             var projectItem = new TestRazorProjectItem("/Pages/Contact/Index.cshtml");
             var testFileSystem = new TestRazorProjectFileSystem(new[] { projectItem });
-            var mvcImportFeature = new DefaultMvcImportFeature()
+            var mvcImportFeature = new MvcImportProjectFeature()
             {
                 ProjectEngine = Mock.Of<RazorProjectEngine>(projectEngine => projectEngine.FileSystem == testFileSystem)
             };

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultRazorImportFeature : RazorProjectEngineFeatureBase, IRazorImportFeature
+    internal class DefaultImportProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
     {
         public IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem) => Array.Empty<RazorSourceDocument>();
     }
