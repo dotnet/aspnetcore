@@ -1,15 +1,15 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine;
-using Microsoft.AspNetCore.Blazor.Components;
-using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.CodeDom.Compiler;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Blazor.Razor;
+using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
 {

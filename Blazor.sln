@@ -62,7 +62,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicTestApp", "test\testap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "anglesharp", "anglesharp", "{4E3BD19A-6159-4548-A88F-700443E6D934}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AngleSharpBuilder", "src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj", "{36706AC2-C851-4038-B161-9C1E44B668C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AngleSharpBuilder", "src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj", "{36706AC2-C851-4038-B161-9C1E44B668C8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Razor.Extensions", "src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj", "{D652A019-B765-4922-B7B8-3AB1C58338D7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -154,6 +156,10 @@ Global
 		{36706AC2-C851-4038-B161-9C1E44B668C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36706AC2-C851-4038-B161-9C1E44B668C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36706AC2-C851-4038-B161-9C1E44B668C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D652A019-B765-4922-B7B8-3AB1C58338D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D652A019-B765-4922-B7B8-3AB1C58338D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D652A019-B765-4922-B7B8-3AB1C58338D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D652A019-B765-4922-B7B8-3AB1C58338D7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +191,7 @@ Global
 		{2838CB6F-D2C7-4C0A-A994-C72E56F16984} = {4AE0D35B-D97A-44D0-8392-C9240377DCCE}
 		{4E3BD19A-6159-4548-A88F-700443E6D934} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 		{36706AC2-C851-4038-B161-9C1E44B668C8} = {4E3BD19A-6159-4548-A88F-700443E6D934}
+		{D652A019-B765-4922-B7B8-3AB1C58338D7} = {B867E038-B3CE-43E3-9292-61568C46CDEB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {504DA352-6788-4DC0-8705-82167E72A4D3}

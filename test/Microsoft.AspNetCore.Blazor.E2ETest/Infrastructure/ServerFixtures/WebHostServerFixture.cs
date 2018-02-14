@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
 
         public override void Dispose()
         {
+            // This can be null if creating the webhost throws, we don't want to throw here and hide
+            // the original exception.
             _host?.StopAsync();
         }
 

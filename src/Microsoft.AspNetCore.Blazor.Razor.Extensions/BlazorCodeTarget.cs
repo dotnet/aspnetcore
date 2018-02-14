@@ -1,10 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using System;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
     /// Directs a <see cref="DocumentWriter"/> to use <see cref="BlazorIntermediateNodeWriter"/>.

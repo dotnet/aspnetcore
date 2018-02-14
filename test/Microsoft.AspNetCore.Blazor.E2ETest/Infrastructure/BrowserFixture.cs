@@ -26,7 +26,17 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
                 Console.WriteLine($"Set {nameof(ChromeOptions)}.{nameof(opts.BinaryLocation)} to {binaryLocation}");
             }
 
-            Browser = new RemoteWebDriver(opts);
+            try
+            {
+                Browser = new RemoteWebDriver(opts);
+            }
+            catch (WebDriverException ex)
+            {
+                var message =
+                    "Failed to connect to the web driver. Please see the readme and follow the instructions to install selenium." +
+                    "Remember to start the web driver with `selenium-standalone start` before running the end-to-end tests.";
+                throw new InvalidOperationException(message, ex);
+            }
         }
 
         public void Dispose()

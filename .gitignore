@@ -2,3 +2,4 @@
 bin/
 obj/
 *.user
+launchSettings.json

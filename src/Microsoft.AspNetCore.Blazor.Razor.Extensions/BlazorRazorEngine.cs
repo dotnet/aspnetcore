@@ -1,17 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
-using Microsoft.AspNetCore.Blazor.Components;
-using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
     /// Wraps <see cref="RazorEngine"/>, configuring it to compile Blazor components.
     /// </summary>
-    internal class BlazorRazorEngine
+    public class BlazorRazorEngine
     {
         private readonly RazorEngine _engine;
         private readonly RazorCodeGenerationOptions _codegenOptions;
@@ -24,7 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             {
                 FunctionsDirective.Register(configure);
 
-                configure.SetBaseType(typeof(BlazorComponent).FullName);
+                configure.SetBaseType(BlazorComponent.FullTypeName);
 
                 configure.Phases.Remove(
                     configure.Phases.OfType<IRazorCSharpLoweringPhase>().Single());

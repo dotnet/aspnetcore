@@ -1,18 +1,17 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using AngleSharp;
 using AngleSharp.Html;
 using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Blazor.RenderTree;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
     /// Generates the C# code corresponding to Razor source document contents.

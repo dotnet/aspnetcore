@@ -1,13 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Components;
+using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using System;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
     /// A <see cref="RazorEngine"/> phase that builds the C# document corresponding to
@@ -42,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation.Engine
             // from here. We inject the parameter later in RazorCompiler.
             var primaryMethod = documentNode.FindPrimaryMethod();
             primaryMethod.ReturnType = "void";
-            primaryMethod.MethodName = BlazorComponent.BuildRenderTreeMethodName;
+            primaryMethod.MethodName = BlazorComponent.BuildRenderTree;
             primaryMethod.Modifiers.Clear();
             primaryMethod.Modifiers.Add("protected");
             primaryMethod.Modifiers.Add("override");

@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.Blazor.Razor</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Language" Version="2.0.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor" Version="2.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj">
+      <Name>AngleSharpBuilder</Name>
+      <Private>False</Private>
+      <SetTargetFramework>TargetFramework=netcoreapp2.0</SetTargetFramework>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <Reference Include="..\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
+  </ItemGroup>
+</Project>

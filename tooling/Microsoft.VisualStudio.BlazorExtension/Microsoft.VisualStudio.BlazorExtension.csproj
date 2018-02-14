@@ -4,13 +4,6 @@
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <UseCodebase>true</UseCodebase>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-  </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>true</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <!--
@@ -21,6 +14,12 @@
     
     BEGIN INTERESTING STUFF
   -->
+  <PropertyGroup>
+    <!-- VSIXes are always signed. This is the same key that ASP.NET uses for OSS signing -->
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- Following VS convention of using the VS release # as a convention for the vsix version. -->
     <VsixVersion>15.7</VsixVersion>
@@ -91,7 +90,7 @@
     <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.dll" />
     <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <!--
       Let's continue our parade of gross workarounds. 
@@ -100,6 +99,18 @@
       this problem, we're only using the P2P references to force build ordering. Then we include the build
       output of those projects as content.
     -->
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj">
+      <Name>Microsoft.AspNetCore.Blazor.Razor.Extensions</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX></IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly></IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
+    <Content Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
+      <Link>Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
       <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
       <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
@@ -125,12 +136,12 @@
       <Visible>false</Visible>
     </Content>
   </ItemGroup>
-  <!-- 
+  <!--
   
     END INTERESTING STUFF 
     
   -->
-  
+
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
