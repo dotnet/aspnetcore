@@ -22,7 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Func<PageContext, object> modelFactory,
             Action<PageContext, object> releaseModel,
             Func<PageContext, object, Task> propertyBinder,
-            Func<object, object[], Task<IActionResult>>[] executors,
+            PageHandlerExecutorDelegate[] handlerExecutors,
+            PageHandlerBinderDelegate[] handlerBinders,
             IReadOnlyList<Func<IRazorPage>> viewStartFactories,
             FilterItem[] cacheableFilters)
         {
@@ -33,7 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ModelFactory = modelFactory;
             ReleaseModel = releaseModel;
             PropertyBinder = propertyBinder;
-            Executors = executors;
+            HandlerExecutors = handlerExecutors;
+            HandlerBinders = handlerBinders;
             ViewStartFactories = viewStartFactories;
             CacheableFilters = cacheableFilters;
         }
@@ -60,7 +62,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         /// </summary>
         public Func<PageContext, object, Task> PropertyBinder { get; }
 
-        public Func<object, object[], Task<IActionResult>>[] Executors { get; }
+        public PageHandlerExecutorDelegate[] HandlerExecutors { get; }
+
+        public PageHandlerBinderDelegate[] HandlerBinders { get; }
 
         public Func<IModelMetadataProvider, ModelStateDictionary, ViewDataDictionary> ViewDataFactory { get; }
 
@@ -70,5 +74,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public IReadOnlyList<Func<IRazorPage>> ViewStartFactories { get; }
 
         public FilterItem[] CacheableFilters { get; }
+
     }
 }

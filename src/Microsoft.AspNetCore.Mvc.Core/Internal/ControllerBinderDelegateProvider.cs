@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
+    // Note: changes made to binding behavior in type should also be made to PageBinderFactory.
     public static class ControllerBinderDelegateProvider
     {
         public static ControllerBinderDelegate CreateBinderDelegate(
@@ -100,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static BindingInfo[] GetParameterBindingInfo(
+        private static BinderItem[] GetParameterBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
             ControllerActionDescriptor actionDescriptor)
@@ -111,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return null;
             }
 
-            var parameterBindingInfo = new BindingInfo[parameters.Count];
+            var parameterBindingInfo = new BinderItem[parameters.Count];
             for (var i = 0; i < parameters.Count; i++)
             {
                 var parameter = parameters[i];
@@ -140,13 +141,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     CacheToken = parameter,
                 });
 
-                parameterBindingInfo[i] = new BindingInfo(binder, metadata);
+                parameterBindingInfo[i] = new BinderItem(binder, metadata);
             }
 
             return parameterBindingInfo;
         }
 
-        private static BindingInfo[] GetPropertyBindingInfo(
+        private static BinderItem[] GetPropertyBindingInfo(
             IModelBinderFactory modelBinderFactory,
             IModelMetadataProvider modelMetadataProvider,
             ControllerActionDescriptor actionDescriptor)
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return null;
             }
 
-            var propertyBindingInfo = new BindingInfo[properties.Count];
+            var propertyBindingInfo = new BinderItem[properties.Count];
             var controllerType = actionDescriptor.ControllerTypeInfo.AsType();
             for (var i = 0; i < properties.Count; i++)
             {
@@ -170,15 +171,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     CacheToken = property,
                 });
 
-                propertyBindingInfo[i] = new BindingInfo(binder, metadata);
+                propertyBindingInfo[i] = new BinderItem(binder, metadata);
             }
 
             return propertyBindingInfo;
         }
 
-        private struct BindingInfo
+        private struct BinderItem
         {
-            public BindingInfo(IModelBinder modelBinder, ModelMetadata modelMetadata)
+            public BinderItem(IModelBinder modelBinder, ModelMetadata modelMetadata)
             {
                 ModelBinder = modelBinder;
                 ModelMetadata = modelMetadata;

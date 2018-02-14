@@ -463,5 +463,26 @@ Hello from /Pages/Shared/";
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
             Assert.Equal("/", response.Headers.Location.ToString());
         }
+
+        [Fact]
+        public async Task ValidationAttributes_OnTopLevelProperties()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/Validation/PageWithValidation?age=71");
+
+            // Assert
+            Assert.Contains("Name is required", response);
+            Assert.Contains("18 &#x2264; Age &#x2264; 60", response);
+        }
+
+        [Fact]
+        public async Task ValidationAttributes_OnHandlerParameters()
+        {
+            // Act
+            var response = await Client.GetStringAsync("/Validation/PageHandlerWithValidation");
+
+            // Assert
+            Assert.Contains("Name is required", response);
+        }
     }
 }

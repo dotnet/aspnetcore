@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public static class ExecutorFactory
     {
-        public static Func<object, object[], Task<IActionResult>> CreateExecutor(HandlerMethodDescriptor handlerDescriptor)
+        public static PageHandlerExecutorDelegate CreateExecutor(HandlerMethodDescriptor handlerDescriptor)
         {
             if (handlerDescriptor == null)
             {

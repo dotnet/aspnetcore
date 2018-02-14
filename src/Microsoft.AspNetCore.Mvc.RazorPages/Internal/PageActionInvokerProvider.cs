@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IPageLoader _loader;
         private readonly IPageFactoryProvider _pageFactoryProvider;
         private readonly IPageModelFactoryProvider _modelFactoryProvider;
+        private readonly IModelBinderFactory _modelBinderFactory;
         private readonly IRazorPageFactoryProvider _razorPageFactoryProvider;
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IEnumerable<IFilterProvider> filterProviders,
             ParameterBinder parameterBinder,
             IModelMetadataProvider modelMetadataProvider,
+            IModelBinderFactory modelBinderFactory,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
@@ -63,6 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _loader = loader;
             _pageFactoryProvider = pageFactoryProvider;
             _modelFactoryProvider = modelFactoryProvider;
+            _modelBinderFactory = modelBinderFactory;
             _razorPageFactoryProvider = razorPageFactoryProvider;
             _collectionProvider = collectionProvider;
             _filterProviders = filterProviders.ToArray();
@@ -172,9 +175,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var pageFactory = _pageFactoryProvider.CreatePageFactory(compiledActionDescriptor);
             var pageDisposer = _pageFactoryProvider.CreatePageDisposer(compiledActionDescriptor);
-            var propertyBinder = PagePropertyBinderFactory.CreateBinder(
+            var propertyBinder = PageBinderFactory.CreatePropertyBinder(
                 _parameterBinder,
                 _modelMetadataProvider,
+                _modelBinderFactory,
                 compiledActionDescriptor);
 
             Func<PageContext, object> modelFactory = null;
@@ -187,7 +191,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var viewStartFactories = GetViewStartFactories(compiledActionDescriptor);
 
-            var executors = GetExecutors(compiledActionDescriptor);
+            var handlerExecutors = GetHandlerExecutors(compiledActionDescriptor);
+            var handlerBinders = GetHandlerBinders(compiledActionDescriptor);
 
             return new PageActionInvokerCacheEntry(
                 compiledActionDescriptor,
@@ -197,7 +202,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 modelFactory,
                 modelReleaser,
                 propertyBinder,
-                executors,
+                handlerExecutors,
+                handlerBinders,
                 viewStartFactories,
                 cachedFilters);
         }
@@ -222,18 +228,40 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             return viewStartFactories;
         }
 
-        private static Func<object, object[], Task<IActionResult>>[] GetExecutors(CompiledPageActionDescriptor actionDescriptor)
+        private static PageHandlerExecutorDelegate[] GetHandlerExecutors(CompiledPageActionDescriptor actionDescriptor)
         {
             if (actionDescriptor.HandlerMethods == null || actionDescriptor.HandlerMethods.Count == 0)
             {
-                return Array.Empty<Func<object, object[], Task<IActionResult>>>();
+                return Array.Empty<PageHandlerExecutorDelegate>();
             }
 
-            var results = new Func<object, object[], Task<IActionResult>>[actionDescriptor.HandlerMethods.Count];
+            var results = new PageHandlerExecutorDelegate[actionDescriptor.HandlerMethods.Count];
 
             for (var i = 0; i < actionDescriptor.HandlerMethods.Count; i++)
             {
                 results[i] = ExecutorFactory.CreateExecutor(actionDescriptor.HandlerMethods[i]);
+            }
+
+            return results;
+        }
+
+        private PageHandlerBinderDelegate[] GetHandlerBinders(CompiledPageActionDescriptor actionDescriptor)
+        {
+            if (actionDescriptor.HandlerMethods == null ||actionDescriptor.HandlerMethods.Count == 0)
+            {
+                return Array.Empty<PageHandlerBinderDelegate>();
+            }
+
+            var results = new PageHandlerBinderDelegate[actionDescriptor.HandlerMethods.Count];
+
+            for (var i = 0; i < actionDescriptor.HandlerMethods.Count; i++)
+            {
+                results[i] = PageBinderFactory.CreateHandlerBinder(
+                    _parameterBinder,
+                    _modelMetadataProvider,
+                    _modelBinderFactory,
+                    actionDescriptor,
+                    actionDescriptor.HandlerMethods[i]);
             }
 
             return results;

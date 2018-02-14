@@ -486,6 +486,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var modelBinderFactory = TestModelBinderFactory.CreateDefault();
             var parameterBinder = new ParameterBinder(
                 modelMetadataProvider,
                 TestModelBinderFactory.CreateDefault(),
@@ -501,6 +502,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 new IFilterProvider[0],
                 parameterBinder,
                 modelMetadataProvider,
+                modelBinderFactory,
                 tempDataFactory.Object,
                 Options.Create(new MvcOptions()),
                 Options.Create(new HtmlHelperOptions()),

@@ -1102,7 +1102,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 BoundProperties = new List<ParameterDescriptor>(),
             };
 
-            var handlers = new List<Func<object, object[], Task<IActionResult>>>();
+            var handlers = new List<PageHandlerExecutorDelegate>();
             if (result != null)
             {
                 handlers.Add((obj, args) => Task.FromResult(result));
@@ -1135,7 +1135,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Func<PageContext, object> modelFactory = null,
             ITempDataDictionaryFactory tempDataFactory = null,
             IList<IValueProviderFactory> valueProviderFactories = null,
-            Func<object, object[], Task<IActionResult>>[] handlers = null,
+            PageHandlerExecutorDelegate[] handlers = null,
+            PageHandlerBinderDelegate[] handlerBinders = null,
             RouteData routeData = null,
             ILogger logger = null,
             TestDiagnosticListener listener = null)
@@ -1178,12 +1179,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             if (handlers == null)
             {
-                handlers = new Func<object, object[], Task<IActionResult>>[actionDescriptor.HandlerMethods.Count];
+                handlers = new PageHandlerExecutorDelegate[actionDescriptor.HandlerMethods.Count];
                 for (var i = 0; i < handlers.Length; i++)
                 {
                     handlers[i] = (obj, args) => Task.FromResult<IActionResult>(new PageResult());
                 }
             }
+
+            handlerBinders = handlerBinders ?? Array.Empty<PageHandlerBinderDelegate>();
 
             if (modelFactory == null)
             {
@@ -1199,6 +1202,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 (c, model) => { (model as IDisposable)?.Dispose(); },
                 null,
                 handlers,
+                handlerBinders,
                 null,
                 new FilterItem[0]);
 

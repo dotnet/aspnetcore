@@ -154,33 +154,26 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private async Task BindArgumentsCoreAsync()
         {
-            if (CacheEntry.PropertyBinder != null)
-            {
-                await CacheEntry.PropertyBinder(_pageContext, _instance);
-            }
+            await CacheEntry.PropertyBinder(_pageContext, _instance);
 
             if (_handler == null)
             {
                 return;
             }
 
-            var valueProvider = await CompositeValueProvider.CreateAsync(_pageContext, _pageContext.ValueProviderFactories);
-
-            for (var i = 0; i < _handler.Parameters.Count; i++)
+            // We do two separate cache lookups, once for the binder and once for the executor.
+            // Reduding it to a single lookup requires a lot of code change with little value.
+            PageHandlerBinderDelegate handlerBinder = null;
+            for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
             {
-                var parameter = _handler.Parameters[i];
-
-                var result = await _parameterBinder.BindModelAsync(
-                    _pageContext,
-                    valueProvider,
-                    parameter,
-                    value: null);
-
-                if (result.IsModelSet)
+                if (object.ReferenceEquals(_handler, _actionDescriptor.HandlerMethods[i]))
                 {
-                    _arguments[parameter.Name] = result.Model;
+                    handlerBinder = CacheEntry.HandlerBinders[i];
+                    break;
                 }
             }
+
+            await handlerBinder(_pageContext, _arguments);
         }
 
         private static object[] PrepareArguments(
@@ -223,15 +216,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 var arguments = PrepareArguments(_arguments, handler);
 
-                Func<object, object[], Task<IActionResult>> executor = null;
+                PageHandlerExecutorDelegate executor = null;
                 for (var i = 0; i < _actionDescriptor.HandlerMethods.Count; i++)
                 {
                     if (object.ReferenceEquals(handler, _actionDescriptor.HandlerMethods[i]))
                     {
-                        executor = CacheEntry.Executors[i];
+                        executor = CacheEntry.HandlerExecutors[i];
                         break;
                     }
                 }
+
+                Debug.Assert(executor != null, "We should always find a executor for a handler");
 
                 _diagnosticSource.BeforeHandlerMethod(_pageContext, handler, _arguments, _instance);
                 _logger.ExecutingHandlerMethod(_pageContext, handler, arguments);
