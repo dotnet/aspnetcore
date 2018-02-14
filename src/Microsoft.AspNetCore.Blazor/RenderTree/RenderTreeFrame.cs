@@ -118,6 +118,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         [FieldOffset(24)] public readonly IComponent Component;
 
+        // --------------------------------------------------------------------------------
+        // RenderTreeFrameType.Region
+        // --------------------------------------------------------------------------------
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Region"/>
+        /// gets the number of frames in the subtree for which this frame is the root.
+        /// The value is zero if the frame has not yet been closed.
+        /// </summary>
+        [FieldOffset(8)] public readonly int RegionSubtreeLength;
+
         private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength)
             : this()
         {
@@ -170,6 +181,14 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             AttributeEventHandlerId = eventHandlerId;
         }
 
+        private RenderTreeFrame(int sequence, int regionSubtreeLength)
+            : this()
+        {
+            FrameType = RenderTreeFrameType.Region;
+            Sequence = sequence;
+            RegionSubtreeLength = regionSubtreeLength;
+        }
+
         internal static RenderTreeFrame Element(int sequence, string elementName)
             => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0);
 
@@ -185,6 +204,9 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal static RenderTreeFrame ChildComponent<T>(int sequence) where T : IComponent
             => new RenderTreeFrame(sequence, typeof(T), 0);
 
+        internal static RenderTreeFrame Region(int sequence)
+            => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
+
         internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
             => new RenderTreeFrame(Sequence, elementName: ElementName, elementSubtreeLength: elementSubtreeLength);
 
@@ -199,5 +221,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
             => new RenderTreeFrame(Sequence, AttributeName, AttributeValue, eventHandlerId);
+
+        internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
+            => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
     }
 }

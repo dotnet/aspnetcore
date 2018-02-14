@@ -58,17 +58,6 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         }
 
         /// <summary>
-        /// Marks a previously appended component frame as closed. Calls to this method
-        /// must be balanced with calls to <see cref="OpenComponent{TComponent}"/>.
-        /// </summary>
-        public void CloseComponent()
-        {
-            var indexOfEntryBeingClosed = _openElementIndices.Pop();
-            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
-            entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
-        }
-
-        /// <summary>
         /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
@@ -169,6 +158,39 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             // So it's more flexible if we track open/close frames for components explicitly.
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.ChildComponent<TComponent>(sequence));
+        }
+
+        /// <summary>
+        /// Marks a previously appended component frame as closed. Calls to this method
+        /// must be balanced with calls to <see cref="OpenComponent{TComponent}"/>.
+        /// </summary>
+        public void CloseComponent()
+        {
+            var indexOfEntryBeingClosed = _openElementIndices.Pop();
+            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
+            entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
+        }
+
+        /// <summary>
+        /// Appends a frame denoting the start of a region (that is, a tree fragment that is
+        /// processed as a unit for the purposes of diffing).
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        public void OpenRegion(int sequence)
+        {
+            _openElementIndices.Push(_entries.Count);
+            Append(RenderTreeFrame.Region(sequence));
+        }
+
+        /// <summary>
+        /// Marks a previously appended region frame as closed. Calls to this method
+        /// must be balanced with calls to <see cref="OpenRegion"/>.
+        /// </summary>
+        internal void CloseRegion()
+        {
+            var indexOfEntryBeingClosed = _openElementIndices.Pop();
+            ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];
+            entry = entry.WithRegionSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
 
         private void AssertCanAddAttribute()

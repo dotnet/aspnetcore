@@ -67,6 +67,13 @@ namespace Microsoft.AspNetCore.Blazor.Test.Shared
             Assert.Equal(componentId, frame.ComponentId);
         }
 
+        public static void Region(RenderTreeFrame frame, int subtreeLength, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.Region, frame.FrameType);
+            Assert.Equal(subtreeLength, frame.RegionSubtreeLength);
+            AssertFrame.Sequence(frame, sequence);
+        }
+
         public static void Whitespace(RenderTreeFrame frame, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);

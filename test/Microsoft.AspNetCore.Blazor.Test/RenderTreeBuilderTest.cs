@@ -246,6 +246,20 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void CannotAddAttributeToRegion()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act/Assert
+            Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.OpenRegion(0);
+                builder.AddAttribute(1, "name", "value");
+            });
+        }
+
+        [Fact]
         public void CanAddChildComponents()
         {
             // Arrange
@@ -270,6 +284,34 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 frame => AssertFrame.Attribute(frame, "child1attribute2", "B"),
                 frame => AssertFrame.Component<TestComponent>(frame),
                 frame => AssertFrame.Attribute(frame, "child2attribute", "C"));
+        }
+
+        [Fact]
+        public void CanAddRegions()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            builder.OpenElement(10, "parent");                      //  0: <parent>
+            builder.OpenRegion(11);                                 //  1:     [region
+            builder.AddText(3, "Hello");                            //  2:         Hello
+            builder.OpenRegion(4);                                  //  3:         [region
+            builder.OpenElement(3, "another");                      //  4:             <another>
+            builder.CloseElement();                                 //                 </another>
+            builder.CloseRegion();                                  //             ]
+            builder.AddText(6, "Goodbye");                          //  5:         Goodbye
+            builder.CloseRegion();                                  //         ]
+            builder.CloseElement();                                 //     </parent>
+
+            // Assert
+            Assert.Collection(builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "parent", 6, 10),
+                frame => AssertFrame.Region(frame, 5, 11),
+                frame => AssertFrame.Text(frame, "Hello", 3),
+                frame => AssertFrame.Region(frame, 2, 4),
+                frame => AssertFrame.Element(frame, "another", 1, 3),
+                frame => AssertFrame.Text(frame, "Goodbye", 6));
         }
 
         [Fact]
