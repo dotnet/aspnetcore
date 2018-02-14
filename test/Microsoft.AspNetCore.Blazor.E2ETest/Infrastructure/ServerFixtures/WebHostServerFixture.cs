@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
 
         public override void Dispose()
         {
-            _host.StopAsync();
+            _host?.StopAsync();
         }
 
         protected abstract IWebHost CreateWebHost();
