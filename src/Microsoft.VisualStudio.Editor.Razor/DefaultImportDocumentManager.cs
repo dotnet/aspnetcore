@@ -123,19 +123,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // There should always be an import feature unless someone has misconfigured their RazorProjectEngine.
             // In that case once we attempt to parse the Razor file we'll explode and give the a user a decent
             // error message; for now, lets just be extra protective and assume 0 imports to not give a bad error.
-            var imports = importFeature?.GetImports(trackerItem) ?? Enumerable.Empty<RazorSourceDocument>();
-            var physicalImports = imports.Where(import => import.FilePath != null);
+            var importItems = importFeature?.GetImports(trackerItem) ?? Enumerable.Empty<RazorProjectItem>();
+            var physicalImports = importItems.Where(import => import.FilePath != null);
 
-            // Now that we have non-dynamic imports we need to get their RazorProjectItem equivalents so we have their
-            // physical file paths (according to the FileSystem).
-            var projectItems = new List<RazorProjectItem>();
-            foreach (var physicalImport in physicalImports)
-            {
-                var projectItem = projectEngine.FileSystem.GetItem(physicalImport.FilePath);
-                projectItems.Add(projectItem);
-            }
-
-            return projectItems;
+            return physicalImports;
         }
 
         private void OnChanged(ImportTracker importTracker, FileChangeKind changeKind)

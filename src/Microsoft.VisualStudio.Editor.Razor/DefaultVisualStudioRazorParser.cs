@@ -85,8 +85,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
         }
 
-        public override RazorProjectEngine ProjectEngine => _projectEngine;
-
         public override string FilePath => _documentTracker.FilePath;
 
         public override RazorCodeDocument CodeDocument => _codeDocument;
@@ -171,7 +169,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var projectDirectory = Path.GetDirectoryName(_documentTracker.ProjectPath);
             _projectEngine = _projectEngineFactory.Create(projectDirectory, ConfigureProjectEngine);
-            _parser = new BackgroundParser(ProjectEngine, FilePath, projectDirectory);
+            _parser = new BackgroundParser(_projectEngine, FilePath, projectDirectory);
             _parser.ResultsReady += OnResultsReady;
             _parser.Start();
 

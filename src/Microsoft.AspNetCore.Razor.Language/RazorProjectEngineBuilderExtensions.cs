@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -144,13 +145,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
-        /// Adds the provided <see cref="RazorSourceDocument" /> documents as imports to all documents processed
+        /// Adds the provided <see cref="RazorProjectItem" />s as imports to all project items processed
         /// by the <see cref="RazorProjectEngine"/>.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         /// <param name="imports">The collection of imports.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
-        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params RazorSourceDocument[] imports)
+        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params RazorProjectItem[] imports)
         {
             if (builder == null)
             {
@@ -203,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private class AdditionalImportsProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
         {
             private readonly IImportProjectFeature _existingImportFeature;
-            private readonly RazorSourceDocument[] _imports;
+            private readonly RazorProjectItem[] _imports;
 
             public override RazorProjectEngine ProjectEngine
             {
@@ -215,13 +216,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params RazorSourceDocument[] imports)
+            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params RazorProjectItem[] imports)
             {
                 _existingImportFeature = existingImportFeature;
                 _imports = imports;
             }
 
-            public IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem)
+            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
             {
                 var imports = _existingImportFeature.GetImports(projectItem).ToList();
                 imports.AddRange(_imports);

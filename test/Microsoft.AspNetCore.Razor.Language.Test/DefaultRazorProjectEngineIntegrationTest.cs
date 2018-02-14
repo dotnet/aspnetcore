@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using Moq;
 using Xunit;
 
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var projectItem = new TestRazorProjectItem("Index.cshtml");
 
-            var testImport = TestRazorSourceDocument.Create();
+            var testImport = Mock.Of<RazorProjectItem>(i => i.Read() == new MemoryStream() && i.FilePath == "testvalue");
             var importFeature = new Mock<IImportProjectFeature>();
             importFeature
                 .Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))
@@ -72,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var import = Assert.Single(codeDocument.Imports);
-            Assert.Same(testImport, import);
+            Assert.Equal("testvalue", import.FilePath);
         }
 
         [Fact]

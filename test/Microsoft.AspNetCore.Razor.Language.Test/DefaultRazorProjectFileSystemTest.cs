@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     Assert.Equal("/_ViewImports.cshtml", item.FilePath);
                     Assert.Equal("/Views", item.BasePath);
                     Assert.Equal(Path.Combine(TestFolder, "Views", "_ViewImports.cshtml"), item.PhysicalPath);
-                    Assert.Equal(Path.Combine( "_ViewImports.cshtml"), item.RelativePhysicalPath);
+                    Assert.Equal(Path.Combine("_ViewImports.cshtml"), item.RelativePhysicalPath);
                 },
                 item =>
                 {

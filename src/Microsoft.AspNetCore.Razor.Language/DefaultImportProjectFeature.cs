@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultImportProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
     {
-        public IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem) => Array.Empty<RazorSourceDocument>();
+        public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem) => Array.Empty<RazorProjectItem>();
     }
 }

@@ -64,12 +64,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
-            var imports = importFeature.GetImports(projectItem);
+            var importItems = importFeature.GetImports(projectItem);
+            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureCodeGenerationOptions);
 
-            return RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
+            return RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
         }
 
         protected override RazorCodeDocument CreateCodeDocumentDesignTimeCore(RazorProjectItem projectItem)
@@ -82,12 +83,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
-            var imports = importFeature.GetImports(projectItem);
+            var importItems = importFeature.GetImports(projectItem);
+            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
 
-            return RazorCodeDocument.Create(sourceDocument, imports, parserOptions, codeGenerationOptions);
+
+            return RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
         }
 
         protected override void ProcessCore(RazorCodeDocument codeDocument)
@@ -132,6 +135,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.SetDesignTime(true);
             builder.SuppressChecksum = true;
             builder.SuppressMetadataAttributes = true;
+        }
+
+        // Internal for testing
+        internal static RazorSourceDocument ConvertToSourceDocument(RazorProjectItem importItem)
+        {
+            if (importItem.Exists)
+            {
+                // Normal import, has file paths, content etc.
+                return RazorSourceDocument.ReadFrom(importItem);
+            }
+
+            // Marker import, doesn't exist, used as an identifier for "there could be something here".
+            var sourceDocumentProperties = new RazorSourceDocumentProperties(importItem.FilePath, importItem.RelativePhysicalPath);
+            return RazorSourceDocument.Create(string.Empty, sourceDocumentProperties);
         }
     }
 }
