@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             var startupAssembliesElement = sharedStoreElement.NextSibling;
             Assert.Equal("add", startupAssembliesElement.Name);
             Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
-            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
+            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup;Microsoft.AspNetCore.AzureKeyVault.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             var startupAssembliesElement = sharedStoreElement.NextSibling;
             Assert.Equal("add", startupAssembliesElement.Name);
             Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
-            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
+            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup;Microsoft.AspNetCore.AzureKeyVault.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         private static XmlDocument LoadDocAndRunTransform(string docName)
