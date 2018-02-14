@@ -51,7 +51,7 @@ foreach ($varName in ($variables.Keys | sort)) {
 
     $packageVersion = $packageVersions | Select-Object -First 1
 
-    $depVarNode = $dependencies.SelectSingleNode("//PropertyGroup/$varName")
+    $depVarNode = $dependencies.SelectSingleNode("//PropertyGroup[`@Label=`"Package Versions: Auto`"]/$varName")
     if ($depVarNode -and $depVarNode.InnerText -ne $packageVersion) {
         $depVarNode.InnerText = $packageVersion
         $count++
