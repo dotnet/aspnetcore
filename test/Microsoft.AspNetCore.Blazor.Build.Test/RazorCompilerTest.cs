@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using Xunit;
 
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var result = CompileToCSharp(
-                "x:\\dir\\subdir",
+                GetArbitraryPlatformValidDirectoryPath(),
                 "Filename with spaces.cshtml",
                 "ignored code",
                 "ignored namespace");
@@ -45,8 +46,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void RejectsFilenameOutsideRoot(string filename)
         {
             // Arrange/Act
+            filename = filename.Replace('\\', Path.DirectorySeparatorChar);
             var result = CompileToCSharp(
-                "x:\\dir\\subdir",
+                GetArbitraryPlatformValidDirectoryPath(),
                 filename,
                 "ignored code",
                 "ignored namespace");
@@ -69,8 +71,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void CreatesClassWithCorrectNameAndNamespace(string relativePath, string expectedNamespace, string expectedClassName)
         {
             // Arrange/Act
+            relativePath = relativePath.Replace(ArbitraryWindowsPath, GetArbitraryPlatformValidDirectoryPath());
+            relativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar);
             var result = CompileToAssembly(
-                "x:\\dir\\subdir",
+                GetArbitraryPlatformValidDirectoryPath(),
                 relativePath,
                 "{* No code *}",
                 "Test.Base");
@@ -368,11 +372,16 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var testComponentTypeName = "TestComponent";
             var testComponentNamespace = "Test";
-            var assemblyResult = CompileToAssembly("c:\\ignored", $"{testComponentTypeName}.cshtml", cshtmlSource, testComponentNamespace);
+            var assemblyResult = CompileToAssembly(GetArbitraryPlatformValidDirectoryPath(), $"{testComponentTypeName}.cshtml", cshtmlSource, testComponentNamespace);
             Assert.Empty(assemblyResult.Diagnostics);
             var testComponentType = assemblyResult.Assembly.GetType($"{testComponentNamespace}.{testComponentTypeName}");
             return (IComponent)Activator.CreateInstance(testComponentType);
         }
+
+        const string ArbitraryWindowsPath = "x:\\dir\\subdir";
+        const string ArbitraryMacLinuxPath = "/dir/subdir";
+        private static string GetArbitraryPlatformValidDirectoryPath()
+            => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
 
         private static CompileToAssemblyResult CompileToAssembly(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent, string outputNamespace)
         {
