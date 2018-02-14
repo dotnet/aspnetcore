@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
 {
     public class TransformTest
     {
+        private static readonly string XdtExtensionPath = AppDomain.CurrentDomain.BaseDirectory;
+
         [Theory]
         [InlineData("config_empty.xml")]
         [InlineData("config_existingline.xml")]
@@ -24,18 +26,25 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
 
             Assert.NotNull(envNode);
 
-            Assert.Equal(2, envNode.ChildNodes.Count);
+            Assert.Equal(3, envNode.ChildNodes.Count);
 
-            var firstChild = envNode.FirstChild;
-            Assert.Equal("add", firstChild.Name);
-            Assert.Equal("DOTNET_ADDITIONAL_DEPS", firstChild.Attributes["name"].Value);
-            Assert.Equal(@"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
-                firstChild.Attributes["value"].Value);
+            var depsElement = envNode.FirstChild;
+            Assert.Equal("add", depsElement.Name);
+            Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
+            Assert.Equal($@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
+                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\;" +
+                         @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
+                depsElement.Attributes["value"].Value);
 
-            var secondChild = firstChild.NextSibling;
-            Assert.Equal("add", secondChild.Name);
-            Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", secondChild.Attributes["name"].Value);
-            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup", secondChild.Attributes["value"].Value);
+            var sharedStoreElement = depsElement.NextSibling;
+            Assert.Equal("add", sharedStoreElement.Name);
+            Assert.Equal("DOTNET_SHARED_STORE", sharedStoreElement.Attributes["name"].Value);
+            Assert.Equal($@"{XdtExtensionPath}\store", sharedStoreElement.Attributes["value"].Value);
+
+            var startupAssembliesElement = sharedStoreElement.NextSibling;
+            Assert.Equal("add", startupAssembliesElement.Name);
+            Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
+            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         [Fact]
@@ -48,18 +57,26 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
 
             Assert.NotNull(envNode);
 
-            Assert.Equal(2, envNode.ChildNodes.Count);
+            Assert.Equal(3, envNode.ChildNodes.Count);
 
-            var firstChild = envNode.FirstChild;
-            Assert.Equal("add", firstChild.Name);
-            Assert.Equal("DOTNET_ADDITIONAL_DEPS", firstChild.Attributes["name"].Value);
-            Assert.Equal(@"ExistingValue1;%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
-                firstChild.Attributes["value"].Value);
+            var depsElement = envNode.FirstChild;
+            Assert.Equal("add", depsElement.Name);
+            Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
+            Assert.Equal(@"ExistingValue1;"+
+                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
+                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\;" +
+                         @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
+                depsElement.Attributes["value"].Value);
 
-            var secondChild = firstChild.NextSibling;
-            Assert.Equal("add", secondChild.Name);
-            Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", secondChild.Attributes["name"].Value);
-            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup", secondChild.Attributes["value"].Value);
+            var sharedStoreElement = depsElement.NextSibling;
+            Assert.Equal("add", sharedStoreElement.Name);
+            Assert.Equal("DOTNET_SHARED_STORE", sharedStoreElement.Attributes["name"].Value);
+            Assert.Equal($@"ExistingValue3;{XdtExtensionPath}\store", sharedStoreElement.Attributes["value"].Value);
+
+            var startupAssembliesElement = sharedStoreElement.NextSibling;
+            Assert.Equal("add", startupAssembliesElement.Name);
+            Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
+            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         private static XmlDocument LoadDocAndRunTransform(string docName)
@@ -67,7 +84,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             // Microsoft.Web.Hosting.Transformers.ApplicationHost.SiteExtensionDefinition.Transform
             // (See Microsoft.Web.Hosting, Version=7.1.0.0) replaces variables for you in Azure.
             var transformFile = File.ReadAllText("applicationHost.xdt");
-            transformFile = transformFile.Replace("%XDT_EXTENSIONPATH%", AppDomain.CurrentDomain.BaseDirectory);
+            transformFile = transformFile.Replace("%XDT_EXTENSIONPATH%", XdtExtensionPath);
             var transform = new XmlTransformation(transformFile, isTransformAFile: false, logger: null);
             var doc = new XmlDocument();
             doc.Load(docName);

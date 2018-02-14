@@ -4,6 +4,7 @@
     <runtime>
       <environmentVariables>
         <add name="DOTNET_ADDITIONAL_DEPS" value="" />
+        <add name="DOTNET_SHARED_STORE" value="" />
         <add name="ASPNETCORE_HOSTINGSTARTUPASSEMBLIES" value="" />
       </environmentVariables>
     </runtime>
