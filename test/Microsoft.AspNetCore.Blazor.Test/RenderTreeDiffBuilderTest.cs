@@ -580,6 +580,133 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void PassesThroughRegionsInsidePrependedElements()
+        {
+            // Arrange
+            oldTree.AddText(0, "Will not change");
+            newTree.AddText(0, "Will not change");
+            newTree.OpenElement(1, "root");
+            newTree.OpenRegion(2);
+            newTree.AddText(0, "text1");
+            newTree.CloseRegion();
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                });
+            Assert.Collection(referenceFrames,
+                frame => AssertFrame.Element(frame, "root", 3, 1),
+                frame => AssertFrame.Region(frame, 2, 2),
+                frame => AssertFrame.Text(frame, "text1"));
+        }
+
+        [Fact]
+        public void RecognizesInsertedRegions()
+        {
+            // Arrange
+            oldTree.AddText(1, "Start");
+            oldTree.AddText(3, "End");
+            newTree.AddText(1, "Start");
+            newTree.OpenRegion(2);
+            newTree.AddText(4, "Text inside region"); // Sequence number is unrelated to outside the region
+            newTree.OpenRegion(5);
+            newTree.AddText(6, "Text inside nested region");
+            newTree.CloseRegion();
+            newTree.CloseRegion();
+            newTree.AddText(3, "End");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 1);
+                    AssertFrame.Text(
+                        referenceFrames[entry.ReferenceFrameIndex], "Text inside region");
+                },
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
+                    AssertFrame.Text(
+                        referenceFrames[entry.ReferenceFrameIndex], "Text inside nested region");
+                });
+        }
+
+        [Fact]
+        public void RecognizesRemovedRegions()
+        {
+            // Arrange
+            oldTree.AddText(1, "Start");
+            oldTree.OpenRegion(2);
+            oldTree.AddText(4, "Text inside region"); // Sequence number is unrelated to outside the region
+            oldTree.OpenRegion(5);
+            oldTree.AddText(6, "Text inside nested region");
+            oldTree.CloseRegion();
+            oldTree.CloseRegion();
+            oldTree.AddText(3, "End");
+            newTree.AddText(1, "Start");
+            newTree.AddText(3, "End");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1),
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void RecognizesEquivalentRegions()
+        {
+            // Arrange
+            oldTree.AddText(1, "Start");
+            oldTree.OpenRegion(2);
+            oldTree.AddText(4, "Text inside region");
+            oldTree.AddText(5, "Text to move");
+            oldTree.OpenRegion(6);
+            oldTree.CloseRegion();
+            oldTree.CloseRegion();
+            oldTree.AddText(3, "End");
+            newTree.AddText(1, "Start");
+            newTree.OpenRegion(2);
+            newTree.AddText(4, "Changed text inside region");
+            newTree.OpenRegion(6);
+            newTree.AddText(5, "Text to move"); // Although it's the same sequence and content, it's now in a different region so not the same
+            newTree.CloseRegion();
+            newTree.CloseRegion();
+            newTree.AddText(3, "End");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 1);
+                    AssertFrame.Text(
+                        referenceFrames[entry.ReferenceFrameIndex], "Changed text inside region");
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 2),
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 2);
+                    AssertFrame.Text(
+                        referenceFrames[entry.ReferenceFrameIndex], "Text to move");
+                });
+        }
+
+        [Fact]
         public void InstantiatesChildComponentsForInsertedFrames()
         {
             // Arrange

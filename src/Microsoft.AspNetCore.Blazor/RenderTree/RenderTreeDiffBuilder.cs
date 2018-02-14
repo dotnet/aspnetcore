@@ -247,6 +247,15 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         break;
                     }
 
+                case RenderTreeFrameType.Region:
+                    {
+                        AppendDiffEntriesForRange(
+                            ref diffContext,
+                            oldFrameIndex + 1, oldFrameIndex + oldFrame.RegionSubtreeLength,
+                            newFrameIndex + 1, newFrameIndex + newFrame.RegionSubtreeLength);
+                        break;
+                    }
+
                 case RenderTreeFrameType.Component:
                     {
                         if (oldFrame.ComponentType == newFrame.ComponentType)
@@ -328,6 +337,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         diffContext.SiblingIndex++;
                         break;
                     }
+                case RenderTreeFrameType.Region:
+                    {
+                        var regionChildFrameIndex = newFrameIndex + 1;
+                        var regionChildFrameEndIndexExcl = newFrameIndex + newFrame.RegionSubtreeLength;
+                        while (regionChildFrameIndex < regionChildFrameEndIndexExcl)
+                        {
+                            InsertNewFrame(ref diffContext, regionChildFrameIndex);
+                            regionChildFrameIndex = NextSiblingIndex(newTree[regionChildFrameIndex], regionChildFrameIndex);
+                        }
+                        break;
+                    }
                 case RenderTreeFrameType.Text:
                     {
                         var referenceFrameIndex = diffContext.ReferenceFrames.Append(newFrame);
@@ -359,6 +379,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
                         var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLength;
                         DisposeFramesInRange(diffContext.BatchBuilder, oldTree, oldFrameIndex, endIndexExcl);
                         diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
+                        break;
+                    }
+                case RenderTreeFrameType.Region:
+                    {
+                        var regionChildFrameIndex = oldFrameIndex + 1;
+                        var regionChildFrameEndIndexExcl = oldFrameIndex + oldFrame.RegionSubtreeLength;
+                        while (regionChildFrameIndex < regionChildFrameEndIndexExcl)
+                        {
+                            RemoveOldFrame(ref diffContext, regionChildFrameIndex);
+                            regionChildFrameIndex = NextSiblingIndex(oldTree[regionChildFrameIndex], regionChildFrameIndex);
+                        }
                         break;
                     }
                 case RenderTreeFrameType.Text:
