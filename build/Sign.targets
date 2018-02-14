@@ -48,6 +48,7 @@
       <OobArchiveBinaries Include="$(UnsignedOobArchivePath)**\*.dll" />
 
       <SharedFxThirdPartyBinaries Include="
+        $(UnsignedSharedFxPath)**\MsgPack.dll;
         $(UnsignedSharedFxPath)**\newtonsoft*.dll;
         $(UnsignedSharedFxPath)**\remotion*.dll;
         $(UnsignedSharedFxPath)**\sqlitepclraw*.dll;
