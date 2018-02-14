@@ -341,11 +341,6 @@
     <ExternalDependency Include="StackExchange.Redis.StrongName" Version="$(StackExchangeRedisStrongNamePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="StreamJsonRpc" Version="$(StreamJsonRpcPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="System.Data.SqlClient" Version="$(Benchmarks_11_SystemDataSqlClientPackageVersion)" Source="$(DefaultNuGetFeed)" Private="true">
-      <!-- This version is used by EF's 1.1 benchmark project -->
-      <NoWarn>KRB2004</NoWarn>
-      <VariableName>Benchmarks_11_SystemDataSqlClientPackageVersion</VariableName>
-    </ExternalDependency>
     <ExternalDependency Include="System.Interactive.Async" Version="$(SystemInteractiveAsyncPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Management.Automation" Version="$(SystemManagementAutomationPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="System.Net.Http" Version="$(SystemNetHttpPackageVersion)" Source="$(DefaultNuGetFeed)" />

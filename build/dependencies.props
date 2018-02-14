@@ -1,52 +1,22 @@
 ﻿<Project>
-  <PropertyGroup>
-    <DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>2.1.0-prerelease-02430-04</DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>
-    <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.0.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
-    <DevDependency_WindowsAzureStoragePackageVersion>8.7.0</DevDependency_WindowsAzureStoragePackageVersion>
-    <BenchmarkDotNetPackageVersion>0.10.11</BenchmarkDotNetPackageVersion>
-    <Benchmarks_11_SystemDataSqlClientPackageVersion>4.3.1</Benchmarks_11_SystemDataSqlClientPackageVersion>
-    <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
-    <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
-    <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
+  <!-- These package version may be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
-    <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
-    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
-    <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
-    <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
-    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(InternalAspNetCoreSdkPackageVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
-    <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
-    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
-    <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
-    <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
-    <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.1.0-preview</MicrosoftAzureServicesAppAuthenticationPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildPackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildPackageVersion>
     <MicrosoftBuildRuntimePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildRuntimePackageVersion>
     <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildTasksCorePackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildUtilitiesCorePackageVersion>
-    <MicrosoftCodeAnalysisCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisCommonPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisEditorFeaturesPackageVersion>2.6.1</MicrosoftCodeAnalysisEditorFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.6.1</MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
-    <MicrosoftCodeAnalysisFeaturesPackageVersion>2.6.1</MicrosoftCodeAnalysisFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>2.6.1</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisVisualBasicPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicPackageVersion>
-    <MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftCSharpPackageVersion>4.5.0-preview1-26208-08</MicrosoftCSharpPackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview1-26208-06</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview1-26208-06</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
-    <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
-    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0-preview2-41113220915</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
     <MicrosoftNETCoreApp10PackageVersion>1.0.5</MicrosoftNETCoreApp10PackageVersion>
     <MicrosoftNETCoreApp11PackageVersion>1.1.2</MicrosoftNETCoreApp11PackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom -->
+    <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26208-06</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26208-06</MicrosoftNETCoreDotNetAppHostPackageVersion>
@@ -55,41 +25,9 @@
     <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview1-26208-08</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
-    <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
-    <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
-    <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
-    <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>
-    <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
-    <MicrosoftVisualStudioCoreUtilityPackageVersion>15.6.161-preview</MicrosoftVisualStudioCoreUtilityPackageVersion>
-    <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
-    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.6.161-preview</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
-    <MicrosoftVisualStudioLanguageServicesPackageVersion>2.6.1</MicrosoftVisualStudioLanguageServicesPackageVersion>
-    <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
-    <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
-    <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
-    <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
-    <MicrosoftVisualStudioShellInterop120PackageVersion>12.0.30110</MicrosoftVisualStudioShellInterop120PackageVersion>
-    <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50727</MicrosoftVisualStudioShellInterop80PackageVersion>
-    <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30729</MicrosoftVisualStudioShellInterop90PackageVersion>
-    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6071</MicrosoftVisualStudioShellInteropPackageVersion>
-    <MicrosoftVisualStudioTextDataPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextDataPackageVersion>
-    <MicrosoftVisualStudioTextLogicPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextLogicPackageVersion>
-    <MicrosoftVisualStudioTextUIPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIPackageVersion>
-    <MicrosoftVisualStudioTextUIWpfPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIWpfPackageVersion>
-    <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
-    <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview1-26208-08</MicrosoftWin32RegistryPackageVersion>
-    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
-    <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
-    <MoqPackageVersion>4.7.49</MoqPackageVersion>
-    <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
-    <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
-    <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
-    <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
     <NuGetFrameworksPackageVersion>4.7.0-preview1-4939</NuGetFrameworksPackageVersion>
-    <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
-    <RemotionLinqPackageVersion>2.2.0-alpha-002</RemotionLinqPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview1-26208-06</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview1-26208-06</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26208-06</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
@@ -115,14 +53,6 @@
     <RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview1-26208-06</RuntimeWinX86MicrosoftNETCoreDotNetHostPackageVersion>
     <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26208-06</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
     <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26208-06</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
-    <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
-    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.8</SQLitePCLRawBundleSqlcipherPackageVersion>
-    <SQLitePCLRawCorePackageVersion>1.1.8</SQLitePCLRawCorePackageVersion>
-    <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
-    <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
-    <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview1-26208-08</SystemBuffersPackageVersion>
     <SystemBuffersPrimitivesPackageVersion>0.1.0-preview1-180208-1</SystemBuffersPrimitivesPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview1-26208-08</SystemCodeDomPackageVersion>
@@ -138,7 +68,6 @@
     <SystemDataSqlClientPackageVersion>4.5.0-preview1-26208-08</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview1-26208-08</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.5.0-preview1-26208-08</SystemDiagnosticsEventLogPackageVersion>
-    <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
     <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview1-26208-08</SystemIOFileSystemAccessControlPackageVersion>
     <SystemIOPackagingPackageVersion>4.5.0-preview1-26208-08</SystemIOPackagingPackageVersion>
     <SystemIOPipelinesPackageVersion>0.1.0-preview1-180208-1</SystemIOPipelinesPackageVersion>
@@ -146,15 +75,12 @@
     <SystemIOPipesAccessControlPackageVersion>4.5.0-preview1-26208-08</SystemIOPipesAccessControlPackageVersion>
     <SystemIOPortsPackageVersion>4.5.0-preview1-26208-08</SystemIOPortsPackageVersion>
     <SystemJsonPackageVersion>4.5.0-preview1-26208-08</SystemJsonPackageVersion>
-    <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
     <SystemMemoryPackageVersion>4.5.0-preview1-26208-08</SystemMemoryPackageVersion>
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.0-preview1-26208-08</SystemNetHttpWinHttpHandlerPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview1-26208-08</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0-preview1-26208-08</SystemNumericsVectorsPackageVersion>
-    <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview1-26208-08</SystemReflectionDispatchProxyPackageVersion>
-    <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0-preview1-26208-08</SystemReflectionMetadataPackageVersion>
     <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview1-26208-08</SystemReflectionTypeExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview1-26208-08</SystemRuntimeCompilerServicesUnsafePackageVersion>
@@ -178,6 +104,93 @@
     <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26208-08</SystemThreadingTasksDataflowPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview1-26208-08</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview1-26208-08</SystemValueTuplePackageVersion>
+  </PropertyGroup>
+
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+
+  <PropertyGroup>
+    <!-- Assign this variable last because it may be updated from DotNetPackageVersionPropsPath as MicrosoftNETCoreAppPackageVersion. -->
+    <MicrosoftNETCoreApp21PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
+
+    <!-- Determined by build tools -->
+    <InternalAspNetCoreSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSiteExtensionSdkPackageVersion>$(KoreBuildVersion)</InternalAspNetCoreSiteExtensionSdkPackageVersion>
+    <MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>$(KoreBuildVersion)</MicrosoftAspNetCoreBuildToolsApiCheckPackageVersion>
+  </PropertyGroup>
+
+  <!-- These are package versions that should not be overridden or updated by automation. -->
+  <PropertyGroup Label="Package Versions: Pinned">
+    <DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>2.1.0-prerelease-02430-04</DevDependency_MicrosoftDotNetBuildTasksFeedPackageVersion>
+    <DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>2.0.0</DevDependency_MicrosoftExtensionsDependencyModelPackageVersion>
+    <DevDependency_WindowsAzureStoragePackageVersion>8.7.0</DevDependency_WindowsAzureStoragePackageVersion>
+    <BenchmarkDotNetPackageVersion>0.10.11</BenchmarkDotNetPackageVersion>
+    <BuildBundlerMinifierPackageVersion>2.4.337</BuildBundlerMinifierPackageVersion>
+    <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
+    <EntityFrameworkPackageVersion>6.1.3</EntityFrameworkPackageVersion>
+    <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
+    <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
+    <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
+    <MicrosoftAspNetIdentityEntityFrameworkPackageVersion>2.2.1</MicrosoftAspNetIdentityEntityFrameworkPackageVersion>
+    <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
+    <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
+    <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
+    <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.1.0-preview</MicrosoftAzureServicesAppAuthenticationPackageVersion>
+    <MicrosoftCodeAnalysisCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisCommonPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisEditorFeaturesPackageVersion>2.6.1</MicrosoftCodeAnalysisEditorFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.6.1</MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
+    <MicrosoftCodeAnalysisFeaturesPackageVersion>2.6.1</MicrosoftCodeAnalysisFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>2.6.1</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisVisualBasicPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicPackageVersion>
+    <MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
+    <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0-preview2-41113220915</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
+    <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
+    <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
+    <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
+    <MicrosoftOwinTestingPackageVersion>3.0.1</MicrosoftOwinTestingPackageVersion>
+    <MicrosoftVisualStudioComponentModelHostPackageVersion>15.0.26606</MicrosoftVisualStudioComponentModelHostPackageVersion>
+    <MicrosoftVisualStudioCoreUtilityPackageVersion>15.6.161-preview</MicrosoftVisualStudioCoreUtilityPackageVersion>
+    <MicrosoftVisualStudioEditorPackageVersion>15.6.161-preview</MicrosoftVisualStudioEditorPackageVersion>
+    <MicrosoftVisualStudioLanguageIntellisensePackageVersion>15.6.161-preview</MicrosoftVisualStudioLanguageIntellisensePackageVersion>
+    <MicrosoftVisualStudioLanguageServicesPackageVersion>2.6.1</MicrosoftVisualStudioLanguageServicesPackageVersion>
+    <MicrosoftVisualStudioOLEInteropPackageVersion>7.10.6070</MicrosoftVisualStudioOLEInteropPackageVersion>
+    <MicrosoftVisualStudioShell150PackageVersion>15.0.26606</MicrosoftVisualStudioShell150PackageVersion>
+    <MicrosoftVisualStudioShellInterop100PackageVersion>10.0.30319</MicrosoftVisualStudioShellInterop100PackageVersion>
+    <MicrosoftVisualStudioShellInterop110PackageVersion>11.0.61030</MicrosoftVisualStudioShellInterop110PackageVersion>
+    <MicrosoftVisualStudioShellInterop120PackageVersion>12.0.30110</MicrosoftVisualStudioShellInterop120PackageVersion>
+    <MicrosoftVisualStudioShellInterop80PackageVersion>8.0.50727</MicrosoftVisualStudioShellInterop80PackageVersion>
+    <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30729</MicrosoftVisualStudioShellInterop90PackageVersion>
+    <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6071</MicrosoftVisualStudioShellInteropPackageVersion>
+    <MicrosoftVisualStudioTextDataPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextDataPackageVersion>
+    <MicrosoftVisualStudioTextLogicPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextLogicPackageVersion>
+    <MicrosoftVisualStudioTextUIPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIPackageVersion>
+    <MicrosoftVisualStudioTextUIWpfPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIWpfPackageVersion>
+    <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
+    <MicrosoftWebXdtPackageVersion>1.4.0</MicrosoftWebXdtPackageVersion>
+    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
+    <MoqPackageVersion>4.7.49</MoqPackageVersion>
+    <MsgPackCliPackageVersion>0.9.0-beta2</MsgPackCliPackageVersion>
+    <NETStandard16PackageVersion>1.6.1</NETStandard16PackageVersion>
+    <NewtonsoftJsonBsonPackageVersion>1.0.1</NewtonsoftJsonBsonPackageVersion>
+    <NewtonsoftJsonPackageVersion>10.0.1</NewtonsoftJsonPackageVersion>
+    <OracleManagedDataAccessPackageVersion>12.2.1100</OracleManagedDataAccessPackageVersion>
+    <RemotionLinqPackageVersion>2.2.0-alpha-002</RemotionLinqPackageVersion>
+    <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
+    <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.8</SQLitePCLRawBundleSqlcipherPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.8</SQLitePCLRawCorePackageVersion>
+    <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
+    <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
+    <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
+    <SystemInteractiveAsyncPackageVersion>3.1.1</SystemInteractiveAsyncPackageVersion>
+    <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
+    <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
+    <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
@@ -201,12 +214,5 @@
     <XunitExtensibilityCorePackageVersion>2.3.1</XunitExtensibilityCorePackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualstudioPackageVersion>2.3.1</XunitRunnerVisualstudioPackageVersion>
-  </PropertyGroup>
-
-  <Import Project="$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
-
-  <PropertyGroup>
-    <!-- Assign this variable last because it may be updated from DotNetPackageVersionPropsPath as MicrosoftNETCoreAppPackageVersion. -->
-    <MicrosoftNETCoreApp21PackageVersion Condition="'$(MicrosoftNETCoreAppPackageVersion)' != ''">$(MicrosoftNETCoreAppPackageVersion)</MicrosoftNETCoreApp21PackageVersion>
   </PropertyGroup>
 </Project>
