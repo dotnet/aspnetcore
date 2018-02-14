@@ -294,6 +294,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 RequestUpgrade = true;
             }
 
+            public override bool IsEmpty => true;
+
             protected override bool Read(ReadOnlyBuffer<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
             {
                 Copy(readableBuffer, writableBuffer);

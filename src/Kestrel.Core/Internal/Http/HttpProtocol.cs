@@ -533,7 +533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             await ProduceEnd();
 
                             // ForZeroContentLength does not complete the reader nor the writer
-                            if (!messageBody.IsEmpty && _keepAlive)
+                            if (!messageBody.IsEmpty)
                             {
                                 // Finish reading the request body in case the app did not.
                                 await messageBody.ConsumeAsync();

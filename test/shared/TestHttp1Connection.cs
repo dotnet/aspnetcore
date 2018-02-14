@@ -25,9 +25,16 @@ namespace Microsoft.AspNetCore.Testing
             set => _keepAlive = value;
         }
 
+        public MessageBody NextMessageBody { private get; set; }
+
         public Task ProduceEndAsync()
         {
             return ProduceEnd();
+        }
+
+        protected override MessageBody CreateMessageBody()
+        {
+            return NextMessageBody ?? base.CreateMessageBody();
         }
     }
 }

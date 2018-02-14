@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
@@ -790,6 +791,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Assert
             var ex = Assert.Throws<ArgumentOutOfRangeException>(() => ((IHttpMaxRequestBodySizeFeature)_http1Connection).MaxRequestBodySize = -1);
             Assert.StartsWith(CoreStrings.NonNegativeNumberOrNullRequired, ex.Message);
+        }
+
+        [Fact]
+        public async Task ConsumesRequestWhenApplicationDoesNotConsumeIt()
+        {
+            var httpApplication = new DummyApplication(async context =>
+            {
+                var buffer = new byte[10];
+                await context.Response.Body.WriteAsync(buffer, 0, 10);
+            });
+            var mockMessageBody = new Mock<MessageBody>(null);
+            _http1Connection.NextMessageBody = mockMessageBody.Object;
+
+            var requestProcessingTask = _http1Connection.ProcessRequestsAsync(httpApplication);
+            
+            var data = Encoding.ASCII.GetBytes("POST / HTTP/1.1\r\nHost:\r\nConnection: close\r\ncontent-length: 1\r\n\r\n");
+            await _application.Output.WriteAsync(data);
+            await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);
+
+            mockMessageBody.Verify(body => body.ConsumeAsync(), Times.Once);
         }
 
         private static async Task WaitForCondition(TimeSpan timeout, Func<bool> condition)
