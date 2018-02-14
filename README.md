@@ -36,38 +36,38 @@ packages that will not be supported in a officially released build.
 
 Commonly referenced packages:
 
-[all-metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore.All
-[all-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.All.svg?style=flat-square&label=myget
+[app-metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore.App
+[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=myget
 
 [metapackage-myget]:  https://dotnet.myget.org/feed/aspnetcore-dev/package/nuget/Microsoft.AspNetCore
 [metapackage-myget-badge]: http://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.svg?style=flat-square&label=myget
 
 Package                           | MyGet
 :---------------------------------|:---------------------------------------------------------
-Microsoft.AspNetCore.All          | [![][all-metapackage-myget-badge]][all-metapackage-myget]
+Microsoft.AspNetCore.App          | [![][app-metapackage-myget-badge]][app-metapackage-myget]
 Microsoft.AspNetCore              | [![][metapackage-myget-badge]][metapackage-myget]
 
 ### ASP.NET Core Shared Framework
 
-[badge-master]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/master/aspnetcore-runtime-latest-x64.rpm
+[badge-master]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/master/aspnetcore-runtime-latest-x64.rpm
 
-[badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
-[win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
-[win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
-[win-x86-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
-[win-x86-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
-[linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
-[osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
-[debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
-[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
+[badge-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-win-x64-version-badge.svg
+[win-x64-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.zip
+[win-x64-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x64.exe
+[win-x86-zip-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.zip
+[win-x86-exe-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-win-x86.exe
+[linux-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-linux-x64.tar.gz
+[osx-x64-tar-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-osx-x64.tar.gz
+[debian-x64-deb-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.deb
+[redhat-x64-rpm-rel-21]: https://dotnetcli.blob.core.windows.net/dotnet/aspnetcore/Runtime/release/2.1/aspnetcore-runtime-latest-x64.rpm
 
 Platform              | Latest (dev branch) <br> ![][badge-master]                      | release/2.1 <br> ![][badge-rel-21]
 :---------------------|:----------------------------------------------------------------|:-------------------------------------------------------------------------
