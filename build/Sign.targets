@@ -28,7 +28,7 @@
         $(UnsignedNoShipPackagesPath)**\*.psd1;
         $(UnsignedNoShipPackagesPath)**\*.psm1;
         $(UnsignedNoShipPackagesPath)**\*.ps1;" />
-        
+
       <OobPackageBinaries Include="
         $(UnsignedOobPackagesPath)**\*.dll;
         $(UnsignedOobPackagesPath)**\*.exe;
