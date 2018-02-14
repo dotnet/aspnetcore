@@ -66,6 +66,7 @@
         buttons[i].disabled = false;
       }
       el('loadingIndicator').style.display = 'none';
+      window.isTestReady = true; // The Xunit code polls until this is true
     });
 
     el('addNumbers').onsubmit = function (evt) {
