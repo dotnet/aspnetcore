@@ -616,7 +616,7 @@ HOSTFXR_UTILITY::FindDotnetExePath(
             {
                 goto Finished;
             }
-            prevIndex = index;
+            prevIndex = index + 1;
 
             if (GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType) &&
                 fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY)) {
