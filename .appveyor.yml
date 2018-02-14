@@ -7,8 +7,7 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 install:
-  # Set depth to 50 because the commit we need may not be at the tip of the branch configured in .gitmodules
-  - git submodule update --init --depth=50 --recursive
+  - git submodule update --init --recursive
 skip_commits:
   message: /.*\[auto-updated:.*/
 build_script:
