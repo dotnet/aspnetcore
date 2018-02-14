@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Identity.UI
                 throw new InvalidOperationException("Missing FileProvider.");
             }
 
-            options.FileProvider = Environment.WebRootFileProvider;
+            options.FileProvider = options.FileProvider ?? Environment.WebRootFileProvider;
 
             // Add our provider
             var filesProvider = new ManifestEmbeddedFileProvider(GetType().Assembly, "wwwroot");
