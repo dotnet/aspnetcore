@@ -533,9 +533,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 try
                 {
-                    var message = DeserializeMessage<HubInvocationMessage>(data);
+                    var message = DeserializeMessage<RedisInvocationMessage>(data);
 
-                    await connection.WriteAsync(message);
+                    await connection.WriteAsync(message.CreateInvocation());
                 }
                 catch (Exception ex)
                 {
