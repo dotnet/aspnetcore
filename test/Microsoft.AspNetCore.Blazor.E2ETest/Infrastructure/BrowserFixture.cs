@@ -16,6 +16,16 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure
         {
             var opts = new ChromeOptions();
             opts.AddArgument("--headless");
+
+            // On Windows/Linux, we don't need to set opts.BinaryLocation
+            // But for Travis Mac builds we do
+            var binaryLocation = Environment.GetEnvironmentVariable("TEST_CHROME_BINARY");
+            if (!string.IsNullOrEmpty(binaryLocation))
+            {
+                opts.BinaryLocation = binaryLocation;
+                Console.WriteLine($"Set {nameof(ChromeOptions)}.{nameof(opts.BinaryLocation)} to {binaryLocation}");
+            }
+
             Browser = new RemoteWebDriver(opts);
         }
 
