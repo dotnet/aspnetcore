@@ -1,5 +1,7 @@
 init:
 - git config --global core.autocrlf true
+install:
+  - ps: Install-Product node 8 x64
 branches:
   only:
   - dev
@@ -13,7 +15,14 @@ environment:
 test: 'off'
 deploy: 'off'
 os: Visual Studio 2017 Preview
-
-# Everything above here copied from the ASP.NET Core configurations
-build:
-  project: Blazor.sln
+build_script:
+  - dotnet build Blazor.sln
+before_test:
+  - choco install googlechrome
+  - npm install -g selenium-standalone
+  - selenium-standalone install
+  - ps: $SeleniumProcess = Start-Process "selenium-standalone" -ArgumentList "start" -PassThru
+test_script:
+  - dotnet test test\AllTests.proj
+after_test:
+  - ps: Stop-Process -Id $SeleniumProcess.Id
