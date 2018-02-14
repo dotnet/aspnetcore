@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// Marks a previously appended region frame as closed. Calls to this method
         /// must be balanced with calls to <see cref="OpenRegion"/>.
         /// </summary>
-        internal void CloseRegion()
+        public void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];

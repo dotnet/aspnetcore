@@ -165,6 +165,30 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("I computed: 202", computedValueElement.Text);
         }
 
+        [Fact]
+        public void CanRenderRegionsWhilePreservingSurroundingElements()
+        {
+            // Initially, the region isn't shown
+            var appElement = MountTestComponent<RenderBlockComponent>();
+            var originalButton = appElement.FindElement(By.TagName("button"));
+            var regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
+            Assert.Empty(regionElements);
+
+            // The JS-side DOM builder handles regions correctly, placing elements
+            // after the region after the corresponding elements
+            Assert.Equal("The end", appElement.FindElements(By.CssSelector("div > *:last-child")).Single().Text);
+
+            // When we click the button, the region is shown
+            originalButton.Click();
+            regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
+            Assert.Single(regionElements);
+
+            // The button itself was preserved, so we can click it again and see the effect
+            originalButton.Click();
+            regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
+            Assert.Empty(regionElements);
+        }
+
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
         {
             var componentTypeName = typeof(TComponent).FullName;

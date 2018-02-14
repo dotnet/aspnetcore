@@ -90,20 +90,22 @@ export class BrowserRenderer {
     }
   }
 
-  insertFrame(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number) {
+  insertFrame(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, frame: RenderTreeFramePointer, frameIndex: number): number {
     const frameType = renderTreeFrame.frameType(frame);
     switch (frameType) {
       case FrameType.element:
         this.insertElement(componentId, parent, childIndex, frames, frame, frameIndex);
-        break;
+        return 1;
       case FrameType.text:
         this.insertText(parent, childIndex, frame);
-        break;
+        return 1;
       case FrameType.attribute:
         throw new Error('Attribute frames should only be present as leading children of element frames.');
       case FrameType.component:
         this.insertComponent(parent, childIndex, frame);
-        break;
+        return 1;
+      case FrameType.region:
+        return this.insertFrameRange(componentId, parent, childIndex, frames, frameIndex + 1, frameIndex + renderTreeFrame.subtreeLength(frame));
       default:
         const unknownType: never = frameType; // Compile-time verification that the switch was exhaustive
         throw new Error(`Unknown frame type: ${unknownType}`);
@@ -199,11 +201,12 @@ export class BrowserRenderer {
     }
   }
 
-  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndexExcl: number) {
+  insertFrameRange(componentId: number, parent: Element, childIndex: number, frames: System_Array<RenderTreeFramePointer>, startIndex: number, endIndexExcl: number): number {
+    const origChildIndex = childIndex;
     for (let index = startIndex; index < endIndexExcl; index++) {
       const frame = getTreeFramePtr(frames, index);
-      this.insertFrame(componentId, parent, childIndex, frames, frame, index);
-      childIndex++;
+      const numChildrenInserted = this.insertFrame(componentId, parent, childIndex, frames, frame, index);
+      childIndex += numChildrenInserted;
 
       // Skip over any descendants, since they are already dealt with recursively
       const subtreeLength = renderTreeFrame.subtreeLength(frame);
@@ -211,6 +214,8 @@ export class BrowserRenderer {
         index += subtreeLength - 1;
       }
     }
+
+    return (childIndex - origChildIndex); // Total number of children inserted
   }
 }
 

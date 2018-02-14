@@ -28,6 +28,7 @@ export enum FrameType {
   text = 2,
   attribute = 3,
   component = 4,
+  region = 5,
 }
 
 // Nominal type to ensure only valid pointers are passed to the renderTreeFrame functions.
