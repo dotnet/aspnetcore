@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
+    <Content Include="scmApplicationHost.xdt" />
     <Content Include="bin\$(Configuration)\$(TargetFramework)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
   </ItemGroup>
 
