@@ -4,6 +4,13 @@
             "DefaultCompositeRule"
         ],
         "packages": {
+            "Microsoft.AspNetCore.AspNetCoreModule": {
+                "Exclusions": {
+                    "BUILD_ITEMS_FRAMEWORK": {
+                        "*": "This package does not contain runtimes, so this rule shouldn't really apply here."
+                    }
+                }
+            },
             "Microsoft.AspNetCore.All": {
                 "Exclusions": {
                     "PACKAGE_DEPENDENCY_VERSION_UPPER_BOUND": {
@@ -92,14 +99,14 @@
                     "Template"
                 ]
             },
-           "Microsoft.EntityFrameworkCore.Design": {
-                 "Exclusions": {
-                     "BUILD_ITEMS_FRAMEWORK": {
-                         "*": "False negative. aspnet/BuildTools#554"
-                     }
-                 }
-             },
-             "Microsoft.EntityFrameworkCore.Tools.DotNet": {
+            "Microsoft.EntityFrameworkCore.Design": {
+                "Exclusions": {
+                    "BUILD_ITEMS_FRAMEWORK": {
+                        "*": "False negative. aspnet/BuildTools#554"
+                    }
+                }
+            },
+            "Microsoft.EntityFrameworkCore.Tools.DotNet": {
                 "packageTypes": [
                     "DotnetCliTool"
                 ]
