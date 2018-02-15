@@ -482,11 +482,11 @@
     <!-- Replace assemblies with crossgen output -->
     <Copy
       SourceFiles="$(AppSharedFxCrossgenDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
-      DestinationFiles="$(SharedFxIntermediateOutputPath)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
+      DestinationFiles="$(AppSharedFxPublishDirectory)%(AppCrossGenOutput.RecursiveDir)%(AppCrossGenOutput.FileName)%(AppCrossGenOutput.Extension)"
       OverwriteReadOnlyFiles="True" />
     <Copy
       SourceFiles="$(AllSharedFxCrossgenDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
-      DestinationFiles="$(SharedFxIntermediateOutputPath)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
+      DestinationFiles="$(AllSharedFxPublishDirectory)%(AllCrossGenOutput.RecursiveDir)%(AllCrossGenOutput.FileName)%(AllCrossGenOutput.Extension)"
       OverwriteReadOnlyFiles="True" />
 
     <ItemGroup>
