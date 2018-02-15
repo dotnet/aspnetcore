@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
 
-            var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
+            var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
             var razorEngine = RazorEngine.Create();
-            var razorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
-            var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddFile(viewPath, fileContent);
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
-            var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem);
 
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
@@ -124,8 +124,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
             var razorEngine = RazorEngine.Create();
-            var razorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
-            var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject)
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var templateEngine = new MvcRazorTemplateEngine(razorEngine, fileSystem)
             {
                 Options =
                 {

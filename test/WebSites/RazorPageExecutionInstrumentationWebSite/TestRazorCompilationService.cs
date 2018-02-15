@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Razor.Language;
 
 namespace RazorPageExecutionInstrumentationWebSite
 {
-    public class TestRazorProject : FileProviderRazorProject
+    public class TestRazorProjectFileSystem : FileProviderRazorProjectFileSystem
     {
-        public TestRazorProject(IRazorViewEngineFileProviderAccessor fileProviderAccessor, IHostingEnvironment hostingEnvironment)
+        public TestRazorProjectFileSystem(IRazorViewEngineFileProviderAccessor fileProviderAccessor, IHostingEnvironment hostingEnvironment)
             : base(fileProviderAccessor, hostingEnvironment)
         {
         }

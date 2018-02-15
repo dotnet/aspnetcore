@@ -935,8 +935,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             var fileProvider = new TestFileProvider();
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>());
-            var viewEngine = CreateViewEngine(pageFactory.Object, razorProject: razorProject);
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>());
+            var viewEngine = CreateViewEngine(pageFactory.Object, fileSystem: fileSystem);
             var context = GetActionContext(_controllerTestContext);
 
             // Act 1
@@ -1385,7 +1385,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new HtmlTestEncoder(),
                 GetOptionsAccessor(expanders: null),
-                new FileProviderRazorProject(
+                new FileProviderRazorProjectFileSystem(
                     Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider()),
                     Mock.Of<IHostingEnvironment>()),
                 loggerFactory,
@@ -1969,15 +1969,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private TestableRazorViewEngine CreateViewEngine(
             IRazorPageFactoryProvider pageFactory = null,
             IEnumerable<IViewLocationExpander> expanders = null,
-            RazorProject razorProject = null)
+            RazorProjectFileSystem fileSystem = null)
         {
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactoryProvider>();
-            if (razorProject == null)
+            if (fileSystem == null)
             {
                 var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider());
-                razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>());
+                fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>());
             }
-            return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders), razorProject);
+            return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders), fileSystem);
         }
 
         private static IOptions<RazorViewEngineOptions> GetOptionsAccessor(
@@ -2080,7 +2080,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 : this(
                       pageFactory,
                       optionsAccessor,
-                      new FileProviderRazorProject(
+                      new FileProviderRazorProjectFileSystem(
                           Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider()),
                           Mock.Of<IHostingEnvironment>()))
             {
@@ -2089,8 +2089,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,
                 IOptions<RazorViewEngineOptions> optionsAccessor,
-                RazorProject razorProject)
-                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, razorProject, NullLoggerFactory.Instance, new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"))
+                RazorProjectFileSystem fileSystem)
+                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, fileSystem, NullLoggerFactory.Instance, new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"))
             {
             }
 

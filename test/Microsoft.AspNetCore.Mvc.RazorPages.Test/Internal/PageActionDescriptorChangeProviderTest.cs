@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions());
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = rootDirectory;
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions { AllowAreas = true });
             var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             var options = Options.Create(new RazorPagesOptions
             {
                 AllowAreas = true,
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions());
             options.Value.RootDirectory = "/dir1/dir2";
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(accessor, _hostingEnvironment));
+                new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = Options.Create(new RazorPagesOptions { AllowAreas = false });
 
