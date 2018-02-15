@@ -11,6 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0">
   <PropertyGroup>
-    <_RazorSdkPackageReferenced>true</_RazorSdkPackageReferenced>
+    <RazorSdkCurrentVersionProps>$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.MultiTargeting.targets</RazorSdkCurrentVersTargetsFile>
   </PropertyGroup>
 </Project>

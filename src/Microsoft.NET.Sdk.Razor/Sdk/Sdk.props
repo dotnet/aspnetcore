@@ -10,5 +10,9 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Project="$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props" Condition="'$(_RazorSdkPackageReferenced)' != 'true'" />
+  <PropertyGroup>
+    <RazorSdkCurrentVersionProps Condition="'$(RazorSdkCurrentVersionProps)' == ''">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+  </PropertyGroup>
+
+  <Import Project="$(RazorSdkCurrentVersionProps)" />
 </Project>
