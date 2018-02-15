@@ -22,6 +22,8 @@
           $(UnsignedPackagesPath)Microsoft.AspNetCore.Server.IIS*\runtimes\**\aspnetcorerh.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x64\aspnetcore.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x64\aspnetcorerh.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x86\aspnetcore.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x86\aspnetcorerh.dll;
           " />
     </ItemGroup>
 
