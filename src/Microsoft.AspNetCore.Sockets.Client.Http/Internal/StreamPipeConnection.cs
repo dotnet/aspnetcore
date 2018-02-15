@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Threading;
+
 namespace System.IO.Pipelines
 {
     internal class StreamPipeConnection : IDuplexPipe
@@ -21,7 +23,7 @@ namespace System.IO.Pipelines
             Output.Complete();
         }
 
-        public static PipeReader CreateReader(PipeOptions options, Stream stream)
+        public static PipeReader CreateReader(PipeOptions options, Stream stream, CancellationToken cancellationToken = default)
         {
             if (!stream.CanRead)
             {
@@ -29,7 +31,7 @@ namespace System.IO.Pipelines
             }
 
             var pipe = new Pipe(options);
-            var ignore = stream.CopyToEndAsync(pipe.Writer);
+            var ignore = stream.CopyToEndAsync(pipe.Writer, cancellationToken);
 
             return pipe.Reader;
         }

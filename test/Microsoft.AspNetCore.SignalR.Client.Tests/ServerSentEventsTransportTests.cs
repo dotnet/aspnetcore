@@ -65,10 +65,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
         }
 
-        [Fact(Skip = "Flaky tests keep failing")]
+        [Fact]
         public async Task SSETransportStopsSendAndReceiveLoopsWhenTransportStopped()
         {
-            var eventStreamCts = new CancellationTokenSource();
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -77,13 +76,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var mockStream = new Mock<Stream>();
                     mockStream
                         .Setup(s => s.CopyToAsync(It.IsAny<Stream>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                        .Returns<Stream, int, CancellationToken>(async (stream, bufferSize, t) =>
+                        .Returns<Stream, int, CancellationToken>(async (stream, bufferSize, token) =>
                         {
                             await Task.Yield();
                             var buffer = Encoding.ASCII.GetBytes("data: 3:abc\r\n\r\n");
-                            while (!eventStreamCts.IsCancellationRequested)
+                            while (!token.IsCancellationRequested)
                             {
-                                await stream.WriteAsync(buffer, 0, buffer.Length).OrTimeout();
+                                await stream.WriteAsync(buffer, 0, buffer.Length, token).OrTimeout();
                             }
                         });
                     mockStream.Setup(s => s.CanRead).Returns(true);
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     transportActiveTask = sseTransport.Running;
                     Assert.False(transportActiveTask.IsCompleted);
                     var message = await pair.Transport.Input.ReadSingleAsync().OrTimeout();
-                    Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
+                    Assert.StartsWith("3:abc", Encoding.ASCII.GetString(message));
                 }
                 finally
                 {
@@ -115,7 +114,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 }
 
                 await transportActiveTask.OrTimeout();
-                eventStreamCts.Cancel();
             }
         }
 
