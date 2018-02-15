@@ -60,10 +60,10 @@
 
   function preloadAssemblies(loadAssemblyUrls) {
     var loadBclAssemblies = [
+      'netstandard',
       'mscorlib',
       'System',
       'System.Core',
-      'System.Runtime'
     ];
 
     var allAssemblyUrls = loadAssemblyUrls

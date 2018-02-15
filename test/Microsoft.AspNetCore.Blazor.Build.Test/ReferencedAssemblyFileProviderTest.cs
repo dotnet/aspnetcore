@@ -87,7 +87,6 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
                 "/System.IO.Compression.FileSystem.dll",
                 "/System.Net.Http.dll",
                 "/System.Numerics.dll",
-                "/System.Runtime.dll",
                 "/System.Runtime.Serialization.dll",
                 "/System.Runtime.Serialization.Primitives.dll",
                 "/System.Runtime.Serialization.Xml.dll",

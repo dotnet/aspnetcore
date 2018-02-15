@@ -14,6 +14,10 @@
     <!-- Ensures this project is built before the consuming project, but without
          adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
          given that the packed version of this project wouldn't add a .dll reference) -->
-    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj">
+      <SetTargetFramework>TargetFramework=netcoreapp2.0</SetTargetFramework>
+      <PrivateAssets>all</PrivateAssets>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 </Project>
