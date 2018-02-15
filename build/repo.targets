@@ -2,13 +2,15 @@
   <Import Project="$(RepositoryRoot)\build\dependencies.props" />
 
   <PropertyGroup>
-      <_SdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildExtensionsPath)'))))</_SdkVersion>
+      <ComposeSdk Condition="$(SITE_EXTENSION_SDK_VERSION) == ''">True</ComposeSdk>
+      <_SdkVersion>$(SITE_EXTENSION_SDK_VERSION)</_SdkVersion>
+      <_SdkVersion Condition="'$(_SdkVersion)' == ''">$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildExtensionsPath)'))))</_SdkVersion>
       <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
       <AppsArtifactDirectory>$(RepositoryRoot)artifacts\apps</AppsArtifactDirectory>
       <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
       <SiteExtensionOutputDirectory>$(RepositoryRoot)artifacts\build</SiteExtensionOutputDirectory>
       <TestProjectDirectory>$(RepositoryRoot)\test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\</TestProjectDirectory>
-      <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
+      <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-release/</SiteExtensionFeed>
   </PropertyGroup>
 
   <Target Name="_AddTestRuntimes">
@@ -22,10 +24,14 @@
     <RemoveDir Directories="$(SiteExtensionWorkingDirectory)" Condition="Exists($(SiteExtensionWorkingDirectory))" />
   </Target>
 
-  <Target Name="_AddSiteExtensionRuntime">
-
+  <Target Name="_AddSiteExtensionSdk">
     <ItemGroup>
       <DotNetCoreSdk Include="$(_SdkVersion)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AddSiteExtensionRuntime">
+    <ItemGroup>
       <DotNetCoreRuntime
         Include="$(MicrosoftNETCoreApp21PackageVersion)"
         InstallDir="$(SiteExtensionWorkingDirectory)"
@@ -35,7 +41,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;_AddSiteExtensionRuntime;InstallDotNet">
+  <Target Name="ComposeSiteExtensions" Condition="'$(ComposeSdk)' == 'True'" DependsOnTargets="_AddSiteExtensionSdk;_AddSiteExtensionRuntime;InstallDotNet">
     <ItemGroup>
       <RuntimeArchiveItems Include="$(RuntimeArchives)" />
       <DotNetCacheArchiveItems Include="$(DotNetCacheArchives)" />
@@ -70,6 +76,10 @@
     <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
+
+  </Target>
+
+  <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;ComposeSiteExtensions;_AddSiteExtensionSdk;InstallDotNet">
 
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
