@@ -18,8 +18,9 @@
 
   <!-- .NET Core feed -->
   <PropertyGroup>
-    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/20180208-05/final/index.json</DotNetCoreFeed>
+    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
   </PropertyGroup>
+
   <ItemGroup>
     <ExternalDependency Include="Microsoft.CSharp" Version="$(MicrosoftCSharpPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(MicrosoftDotNetPlatformAbstractionsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
@@ -127,8 +128,6 @@
     <RoslynFeed>https://dotnet.myget.org/F/roslyn/api/v3/index.json</RoslynFeed>
   </PropertyGroup>
   <ItemGroup>
-    <!-- The consume compiler used by Kestrel. -->
-    <ExternalDependency Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
     <!-- These versions of roslyn must be used when building a VSIX. -->
     <!-- Suppress KRB2004 because this version differs from the version used by the runtime. -->
     <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(VSIX_MicrosoftCodeAnalysisPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
