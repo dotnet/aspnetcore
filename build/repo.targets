@@ -69,10 +69,6 @@
     <Message Text="Removing %(_CleanupFiles.Identity)" Importance="High" />
     <RemoveDir Directories="@(_CleanupFiles)" />
 
-    <!-- Workaround for nuget filtering out .nupkg files by default -->
-    <Copy SourceFiles="$(ArtifactDependencyLocation)\%(BundledTemplate.Identity).%(Version).nupkg" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\Templates\%(BundledTemplate.Identity).%(Version).nupkg_" />
-    <Copy SourceFiles="$(ArtifactDependencyLocation)\nuGetPackagesArchive-$(PackageVersion).lzma" DestinationFiles="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
-
     <UnzipArchive File="$(ArtifactDependencyLocation)\aspnetcore-runtime-internal-$(PackageVersion)-win-x86.zip" Destination="$(SiteExtensionWorkingDirectory)" Overwrite="true" />
     <UnzipArchive File="%(RuntimeArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)" Condition="'$(RuntimeArchives)' != ''" Overwrite="true" />
     <UnzipArchive File="%(DotNetCacheArchiveItems.Identity)" Destination="$(SiteExtensionWorkingDirectory)DotNetCache" Condition="'$(DotNetCacheArchives)' != ''" Overwrite="true" />
@@ -80,7 +76,8 @@
   </Target>
 
   <Target Name="BuildSiteExtension" DependsOnTargets="_CleanSiteExtension;ComposeSiteExtensions;_AddSiteExtensionSdk;InstallDotNet">
-
+    <!-- Strip LZMA from sdk -->
+    <Delete Files="$(SiteExtensionWorkingDirectory)\sdk\$(_SdkVersion)\nuGetPackagesArchive.lzma" />
     <MSBuild Projects="%(SiteExtensions.Identity)"
       Targets="Restore"
       Properties="BuildNumber=$(BuildNumber)" />

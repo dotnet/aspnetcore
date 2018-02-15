@@ -8,7 +8,7 @@
       <runtime xdt:Transform="InsertIfMissing" >
         <environmentVariables xdt:Transform="InsertIfMissing">
           <add name="PATH" value="%XDT_EXTENSIONPATH%;%USERPROFILE%\.dotnet\tools;%PATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
-          <add name="DOTNET_SKIP_FIRST_TIME_EXPERIENCE" value="0" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
+          <add name="DOTNET_SKIP_FIRST_TIME_EXPERIENCE" value="1" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
         </environmentVariables>
       </runtime>
     </system.webServer>
