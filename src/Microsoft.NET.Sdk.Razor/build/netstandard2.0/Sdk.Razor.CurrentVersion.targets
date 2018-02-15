@@ -57,6 +57,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       PrepareForRazorCompile;
       RazorCoreCompile
     </RazorCompileDependsOn>
+
+  </PropertyGroup>
+
+  <!--
+    PreserveCompilationContext needs to enabled by default only for "applications" (OutputType = exe) which have one or more Razor files.
+  -->
+  <PropertyGroup Condition="'$(PreserveCompilationContext)' == '' AND '$(OutputType)' == 'exe'">
+    <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
   <!-- 
@@ -129,7 +137,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Resolve the toolset to use -->
-  <PropertyGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true'">
+  <PropertyGroup>
     <!-- Default value for the property 'MvcRazorCompileOnPublish' is empty. If it has been explicitly enabled, continue using precompilation. -->
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
 

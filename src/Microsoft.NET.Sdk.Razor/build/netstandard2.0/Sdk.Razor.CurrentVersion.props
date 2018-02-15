@@ -51,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true' AND '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
     <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
     <None Remove="**\*.cshtml" />
   </ItemGroup>

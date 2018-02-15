@@ -6,4 +6,8 @@
   <Target Name="_IntrospectRazorEmbeddedResources">
     <Message Text="CompileResource: %(_RazorCoreCompileResourceInputs.Identity) %(_RazorCoreCompileResourceInputs.LogicalName)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectPreserveCompilationContext">
+    <Message Text="PreserveCompilationContext: $(PreserveCompilationContext)" Importance="High" />
+  </Target>
 </Project>
