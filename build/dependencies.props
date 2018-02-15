@@ -18,7 +18,6 @@
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreAppPackageVersion>
-    <MicrosoftNETCoreCompilersPackageVersion>2.6.0-beta2-62211-02</MicrosoftNETCoreCompilersPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreDotNetHostPolicyPackageVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreDotNetHostResolverPackageVersion>
