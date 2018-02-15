@@ -17,4 +17,11 @@
          given that the packed version of this project wouldn't add a .dll reference) -->
     <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" />
   </Target>
+
+  <PropertyGroup>
+    <!-- When referencing from source, we need to disable VS's fast up-to-date check,
+         because otherwise changing the underlying Blazor library code isn't enough
+         to make it rebuild the affected library apps. -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
 </Project>
