@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation;
 using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Blazor.Layouts;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Shared;
@@ -358,6 +359,34 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             Assert.Collection(frames,
                 frame => AssertFrame.Component<TestComponent>(frame, 0));
+        }
+
+        [Fact]
+        public void ComponentsDoNotHaveLayoutAttributeByDefault()
+        {
+            // Arrange/Act
+            var component = CompileToComponent($"Hello");
+
+            // Assert
+            Assert.Null(component.GetType().GetCustomAttribute<LayoutAttribute>());
+        }
+
+        [Fact]
+        public void SupportsLayoutDeclarationsViaTemporarySyntax()
+        {
+            // Arrange/Act
+            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var component = CompileToComponent(
+                $"@(Layout<{testComponentTypeName}>())" +
+                $"Hello");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            var layoutAttribute = component.GetType().GetCustomAttribute<LayoutAttribute>();
+            Assert.NotNull(layoutAttribute);
+            Assert.Equal(typeof(TestComponent), layoutAttribute.LayoutType);
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Hello"));
         }
 
         private static RenderTreeFrame[] GetRenderTree(IComponent component)

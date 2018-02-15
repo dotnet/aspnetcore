@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             _engine = RazorEngine.Create(configure =>
             {
                 FunctionsDirective.Register(configure);
+                TemporaryLayoutPass.Register(configure);
 
                 configure.SetBaseType(BlazorComponent.FullTypeName);
 

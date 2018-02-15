@@ -24,7 +24,13 @@ namespace Microsoft.AspNetCore.Mvc
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
-    public class RazorPage<T>: BlazorComponent { }
+    public class RazorPage<T>: BlazorComponent
+    {
+        // This is temporary and exists only to support TemporaryLayoutPass.
+        // It will be removed when we can add Blazor-specific directives.
+        public object Layout<TLayout>() where TLayout : IComponent
+            => throw new NotImplementedException();
+    }
 
     namespace Internal
     {
