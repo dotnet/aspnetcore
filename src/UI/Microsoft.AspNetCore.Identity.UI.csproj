@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Razor">
   
   <PropertyGroup>
     <Description>ASP.NET Core Identity UI is the default Razor Pages built-in UI for the ASP.NET Core Identity framework.</Description>
@@ -10,6 +10,7 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
     <ResolvedRazorCompileToolset>RazorSdk</ResolvedRazorCompileToolset>
+    <RazorTargetName>$(MSBuildProjectName).Views</RazorTargetName>
     <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
     <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>
@@ -26,7 +27,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="$(MicrosoftExtensionsFileProvidersEmbeddedPackageVersion)" />
-    <PackageReference Include="Microsoft.Net.Sdk.Razor" Version="$(MicrosoftNetSdkRazorPackageVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(MicrosoftAspNetCoreStaticFilesPackageVersion)" />
   </ItemGroup>
 
@@ -45,5 +45,14 @@
   </ItemGroup>
   
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Identity.UI.targets" />
+
+  <Target Name="VerifyBuildOutputs" AfterTargets="Build">
+    <PropertyGroup>
+      <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
+    </PropertyGroup>
+
+    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)"
+      Condition="!Exists('$(ExpectedOutputFile)')" />
+  </Target>
     
 </Project>
