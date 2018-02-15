@@ -3,6 +3,7 @@
   <PropertyGroup>
     <DependencyAssetsDir>$(RepositoryRoot).deps\assets\</DependencyAssetsDir>
     <DependencyPackagesDir>$(RepositoryRoot).deps\packages\</DependencyPackagesDir>
+    <DependencyMirrorDir>$(RepositoryRoot).deps\mirror\</DependencyMirrorDir>
     <DependencySymbolsDir>$(RepositoryRoot).deps\symbols\</DependencySymbolsDir>
     <!-- This file is used by the dotnet/cli to determine if our shared framework aligns with the version they pull. -->
     <BaseRuntimeVersionFileName>aspnetcore_base_runtime.version</BaseRuntimeVersionFileName>
@@ -117,6 +118,7 @@
         <Overwrite>true</Overwrite>
       </FilesToPublish>
 
+      <!-- Packages -->
       <_Artifact
         Include="@(ArtifactInfo)"
         ArtifactPath="$(DependencyPackagesDir)%(ArtifactInfo.PackageId).%(ArtifactInfo.Version).nupkg"
@@ -135,6 +137,13 @@
     </ItemGroup>
 
     <Error Text="Missing expected packages from PackagesToPublish: %0A - @(_MissingPackages, '%0A - ')" Condition="@(_MissingPackages->Count()) != 0" />
+
+    <!-- Packages from corefxlab: special case - we are shipping these in preview1 from aspnet because the pipelines API won't be in dotnet/corefx until 2.1.0-preview2. -->
+    <ItemGroup>
+      <PackagesToPublish Include="@(ExternalDependency)" Condition="'%(ExternalDependency.Publish)' == 'true'">
+        <ArtifactPath>$(DependencyMirrorDir)%(ExternalDependency.Identity).%(ExternalDependency.Version).nupkg</ArtifactPath>
+      </PackagesToPublish>
+    </ItemGroup>
   </Target>
 
   <Target Name="_CheckFilesToPublish">

@@ -117,11 +117,13 @@
     <CoreFxLabFeed>https://dotnet.myget.org/f/dotnet-corefxlab/api/v3/index.json</CoreFxLabFeed>
   </PropertyGroup>
   <ItemGroup>
-    <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
+    <!-- For tests only: -->
     <ExternalDependency Include="System.IO.Pipelines.Testing" Version="$(SystemIOPipelinesTestingPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Primitives" Version="$(SystemTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
+    <!-- Published for preview1: -->
+    <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" Publish="true" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" Publish="true" />
+    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" Publish="true" />
+    <ExternalDependency Include="System.Text.Primitives" Version="$(SystemTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" Publish="true" />
   </ItemGroup>
   <!-- Roslyn -->
   <PropertyGroup>
