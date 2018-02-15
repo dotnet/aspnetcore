@@ -54,6 +54,11 @@
         Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.NETCore.App\$(MicrosoftNETCoreApp21PackageVersion)" />
 
       <_CleanupFiles
+        Condition="Exists('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\')"
+        Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\'))"
+        Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.App\$(PackageVersion)" />
+
+      <_CleanupFiles
         Include="$([System.IO.Directory]::GetDirectories('$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\'))"
         Exclude="$(SiteExtensionWorkingDirectory)shared\Microsoft.AspNetCore.All\$(PackageVersion)" />
 
