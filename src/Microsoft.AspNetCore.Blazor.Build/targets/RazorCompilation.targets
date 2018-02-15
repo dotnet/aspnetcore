@@ -18,5 +18,9 @@
     <Compile Update="**\*.cshtml">
       <Generator>MSBuild:BlazorCompileRazorComponents</Generator>
     </Compile>
+
+    <!-- Instruct VS to include cshtml files in its "fast up-to-date check". If we didn't, then
+         it will skip the build entirely if you only changed cshtml files. -->
+    <UpToDateCheckInput Include="$(ProjectDir)**\*.cshtml" />
   </ItemGroup>
 </Project>
