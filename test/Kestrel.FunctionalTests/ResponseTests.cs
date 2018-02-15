@@ -2662,6 +2662,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task NonZeroContentLengthFor304StatusCodeIsAllowed()
+        {
+            using (var server = new TestServer(httpContext =>
+            {
+                var response = httpContext.Response;
+                response.StatusCode = StatusCodes.Status304NotModified;
+                response.ContentLength = 42;
+
+                return Task.CompletedTask;
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 304 Not Modified",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 42",
+                        "",
+                        "");
+                }
+            }
+        }
+
         public static TheoryData<string, StringValues, string> NullHeaderData
         {
             get

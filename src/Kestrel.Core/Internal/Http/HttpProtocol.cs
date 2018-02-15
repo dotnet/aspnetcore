@@ -875,6 +875,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var responseHeaders = HttpResponseHeaders;
 
             if (!HttpMethods.IsHead(Method) &&
+                StatusCode != StatusCodes.Status304NotModified &&
                 !responseHeaders.HasTransferEncoding &&
                 responseHeaders.ContentLength.HasValue &&
                 _responseBytesWritten < responseHeaders.ContentLength.Value)
