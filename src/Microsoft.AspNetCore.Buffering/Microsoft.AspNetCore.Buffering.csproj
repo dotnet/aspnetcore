@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
-    <VerifyVersion Condition="'$(ExperimentalProjectVersionPrefix)' != ''">false</VerifyVersion>
+    <VersionPrefix Condition="'$(ExperimentalVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VersionSuffix Condition="'$(ExperimentalVersionSuffix)' != ''">$(ExperimentalVersionSuffix)</VersionSuffix>
+    <VerifyVersion Condition="'$(ExperimentalVersionPrefix)' != ''">false</VerifyVersion>
+    <PackageVersion Condition="'$(ExperimentalPackageVersion)' != ''">$(ExperimentalPackageVersion)</PackageVersion>
     <Description>ASP.NET Core middleware for buffering response bodies.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
