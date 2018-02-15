@@ -45,8 +45,24 @@ namespace AngleSharpBuilder
             RemoveStrongName(moduleDefinition);
             SetAssemblyName(moduleDefinition, "Microsoft.AspNetCore.Blazor.AngleSharp");
 
-            moduleDefinition.Write(
-                Path.Combine(outputDir, $"{moduleDefinition.Name}.dll"));
+            // Try to minimize the chance of a parallel build reading the assembly in an
+            // incomplete state by writing it to a temp location then moving the result.
+            // There's still a race condition here, but hopefully this is enough to stop
+            // it from surfacing in practice.
+
+            var tempFilePath = Path.GetTempFileName();
+            moduleDefinition.Write(tempFilePath);
+
+            var outputPath = Path.Combine(outputDir, $"{moduleDefinition.Name}.dll");
+            try
+            {
+                File.Delete(outputPath);
+                File.Move(tempFilePath, outputPath);
+            }
+            finally
+            {
+                File.Delete(tempFilePath); // In case it didn't get moved above
+            }
         }
 
         private static void SetAssemblyName(ModuleDefinition moduleDefinition, string name)
