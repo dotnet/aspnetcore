@@ -7,7 +7,6 @@ branches:
   - dev
   - /^release\/.*$/
   - /^(.*\/)?ci-.*$/
-clone_depth: 1
 environment:
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
