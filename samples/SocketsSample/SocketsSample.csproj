@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.MsgPack\Microsoft.AspNetCore.SignalR.MsgPack.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
@@ -29,7 +30,12 @@
       <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr\dist\browser\*" />
       <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr-protocol-msgpack\dist\browser\*" />
     </ItemGroup>
-    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
+    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr" />
+
+    <ItemGroup>
+      <MsgPackClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\signalr-protocol-msgpack\node_modules\msgpack5\dist\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(MsgPackClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\msgpack5" />
   </Target>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -7,11 +7,23 @@
 </head>
 
 <body>
-    <h1 id="head1"></h1>
+    <h1 id="head1">SignalR Hubs Sample</h1>
     <div>
-        <select id="formatType">
-            <option value="json">json</option>
-            <option value="line">line</option>
+        <select id="protocol">
+            <option value="json" selected>json</option>
+            <option value="msgpack">msgpack</option>
+        </select>
+
+        <select id="transport">
+            <option value="WebSockets" selected>WebSockets</option>
+            <option value="ServerSentEvents">ServerSentEvents</option>
+            <option value="LongPolling">LongPolling</option>
+        </select>
+
+        <select id="hubType">
+            <option value="default" selected>Hub</option>
+            <option value="dynamic">DynamicHub</option>
+            <option value="hubT">Hub&lt;T&gt;</option>
         </select>
 
         <input type="button" id="connect" value="Connect" />
@@ -62,7 +74,9 @@
 </body>
 
 </html>
-<script src="lib/signalr-client/signalr.js"></script>
+<script src="lib/signalr/signalr.js"></script>
+<script src="lib/msgpack5/msgpack5.js"></script>
+<script src="lib/signalr/signalr-protocol-msgpack.js"></script>
 <script src="utils.js"></script>
 <script>
     var isConnected = false;
@@ -88,12 +102,7 @@
         return document.getElementById(id).value;
     }
 
-    let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
     let logger = new signalR.ConsoleLogger(signalR.LogLevel.Trace);
-    let hubRoute = getParameterByName('hubType') || "default";
-    console.log('Hub Route:' + hubRoute);
-
-    document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
     let connectButton = document.getElementById('connect');
     let disconnectButton = document.getElementById('disconnect');
@@ -105,6 +114,9 @@
     let groupMsgButton = document.getElementById('groupmsg');
     let othersGroupMsgButton = document.getElementById('others-groupmsg');
     let sendButton = document.getElementById('send');
+    let protocolDropdown = document.getElementById('protocol');
+    let transportDropdown = document.getElementById('transport');
+    let hubTypeDropdown = document.getElementById('hubType');
 
     function updateButtonState(isConnected) {
         broadcastButton.disabled = !isConnected;
@@ -123,8 +135,14 @@
     var connection;
 
     click('connect', function (event) {
+        let transportType = signalR.TransportType[transportDropdown.value] || signalR.TransportType.WebSockets;
+        let hubRoute = hubTypeDropdown.value || "default";
+        let protocol = protocolDropdown.value === "msgpack" ?
+            new signalR.protocols.msgpack.MessagePackHubProtocol() :
+            new signalR.JsonHubProtocol();
+
         console.log('http://' + document.location.host + '/' + hubRoute);
-        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logger: logger });
+        connection = new signalR.HubConnection(hubRoute, { transport: transportType, logger: logger, protocol: protocol });
         connection.on('Send', function (msg) {
             addLine('message-list', msg);
         });

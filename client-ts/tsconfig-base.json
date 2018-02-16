@@ -3,6 +3,7 @@
     "compilerOptions": {
         "module": "es2015",
         "target": "es2016",
+        "outDir": "./obj/js",
         "sourceMap": true,
         "moduleResolution": "node",
         "inlineSources": true,
