@@ -1,0 +1,11 @@
+﻿@using Microsoft.AspNetCore.Blazor.RenderTree
+@(Implements<Microsoft.AspNetCore.Blazor.Layouts.ILayoutComponent>())
+
+<fieldset>
+    <legend>Layout</legend>
+    @Body
+</fieldset>
+
+@functions {
+    public RenderFragment Body { get; set; }
+}

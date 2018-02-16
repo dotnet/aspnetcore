@@ -9,7 +9,7 @@ namespace StandaloneApp
     {
         public static void Main(string[] args)
         {
-            new BrowserRenderer().AddComponent<Home>("app");
+            new BrowserRenderer().AddComponent<App>("app");
         }
     }
 }

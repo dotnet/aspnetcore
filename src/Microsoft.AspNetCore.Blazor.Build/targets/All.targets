@@ -1,6 +1,9 @@
 <Project>
   <PropertyGroup>
     <BlazorBuildExe>dotnet &quot;$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
+  
+    <!-- The Blazor build code can only find your referenced assemblies if they are in the output directory -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <Import Project="RazorCompilation.targets" />
