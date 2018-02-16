@@ -166,13 +166,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         }
 
         [Fact]
-        public void CanRenderRegionsWhilePreservingSurroundingElements()
+        public void CanRenderFragmentsWhilePreservingSurroundingElements()
         {
             // Initially, the region isn't shown
-            var appElement = MountTestComponent<RenderBlockComponent>();
+            var appElement = MountTestComponent<RenderFragmentToggler>();
             var originalButton = appElement.FindElement(By.TagName("button"));
-            var regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
-            Assert.Empty(regionElements);
+            var fragmentElements = appElement.FindElements(By.CssSelector("p[name=fragment-element]"));
+            Assert.Empty(fragmentElements);
 
             // The JS-side DOM builder handles regions correctly, placing elements
             // after the region after the corresponding elements
@@ -180,13 +180,13 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 
             // When we click the button, the region is shown
             originalButton.Click();
-            regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
-            Assert.Single(regionElements);
+            fragmentElements = appElement.FindElements(By.CssSelector("p[name=fragment-element]"));
+            Assert.Single(fragmentElements);
 
             // The button itself was preserved, so we can click it again and see the effect
             originalButton.Click();
-            regionElements = appElement.FindElements(By.CssSelector("p[name=region-element]"));
-            Assert.Empty(regionElements);
+            fragmentElements = appElement.FindElements(By.CssSelector("p[name=fragment-element]"));
+            Assert.Empty(fragmentElements);
         }
 
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
