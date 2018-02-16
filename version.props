@@ -3,6 +3,7 @@
     <VersionPrefix>2.1.0</VersionPrefix>
     <ExperimentalVersionPrefix>0.4.0</ExperimentalVersionPrefix>
     <ExperimentalVersionSuffix>alpha1</ExperimentalVersionSuffix>
+    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(BuildNumber)' != ''">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
     <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <VersionSuffix>preview1</VersionSuffix>
     <PackageVersion Condition="'$(IsFinalBuild)' == 'true' AND '$(VersionSuffix)' == 'rtm' ">$(VersionPrefix)</PackageVersion>
