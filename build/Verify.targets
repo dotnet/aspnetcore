@@ -17,11 +17,10 @@
       <BinScopeTargetFiles
         Include="$(UnsignedPackagesPath)**\*.dll"
         Exclude="
-          $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\any\any\runtimes\win-arm64\native\sni.dll;
-          $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\any\any\runtimes\win-x86\native\sni.dll;
+          $(UnsignedPackagesPath)dotnet-sql-cache.*\tools\any\any\runtimes\**\native\sni.dll;
           $(UnsignedPackagesPath)Microsoft.AspNetCore.Server.IIS*\runtimes\**\aspnetcorerh.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x64\aspnetcore.dll;
-          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\contentFiles\any\any\x64\aspnetcorerh.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\**\aspnetcore.dll;
+          $(UnsignedPackagesPath)Microsoft.AspNetCore.AspNetCoreModule.*\**\aspnetcorerh.dll;
           " />
     </ItemGroup>
 
