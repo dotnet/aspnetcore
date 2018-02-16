@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsLayoutDeclarationsViaTemporarySyntax()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var testComponentTypeName = typeof(TestLayout).FullName.Replace('+', '.');
             var component = CompileToComponent(
                 $"@(Layout<{testComponentTypeName}>())" +
                 $"Hello");
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             var layoutAttribute = component.GetType().GetCustomAttribute<LayoutAttribute>();
             Assert.NotNull(layoutAttribute);
-            Assert.Equal(typeof(TestComponent), layoutAttribute.LayoutType);
+            Assert.Equal(typeof(TestLayout), layoutAttribute.LayoutType);
             Assert.Collection(frames,
                 frame => AssertFrame.Text(frame, "Hello"));
         }
@@ -531,6 +531,19 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         public class TestComponent : IComponent
         {
+            public void Init(RenderHandle renderHandle)
+            {
+            }
+
+            public void SetParameters(ParameterCollection parameters)
+            {
+            }
+        }
+
+        public class TestLayout : ILayoutComponent
+        {
+            public RenderFragment Body { get; set; }
+
             public void Init(RenderHandle renderHandle)
             {
             }

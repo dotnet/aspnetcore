@@ -14,6 +14,7 @@
  */
 
 using Microsoft.AspNetCore.Blazor.Components;
+using Microsoft.AspNetCore.Blazor.Layouts;
 using System;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         // This is temporary and exists only to support TemporaryLayoutPass.
         // It will be removed when we can add Blazor-specific directives.
-        public object Layout<TLayout>() where TLayout : IComponent
+        public object Layout<TLayout>() where TLayout : ILayoutComponent
             => throw new NotImplementedException();
 
         // Similar temporary mechanism as above
