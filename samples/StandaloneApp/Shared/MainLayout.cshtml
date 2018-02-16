@@ -1,10 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Blazor.RenderTree
 @(Implements<Microsoft.AspNetCore.Blazor.Layouts.ILayoutComponent>())
 
-<fieldset>
-    <legend>Layout</legend>
-    @Body
-</fieldset>
+<div class='container-fluid'>
+    <div class='row'>
+        <div class='col-sm-3'>
+            <c:NavMenu />
+        </div>
+        <div class='col-sm-9'>
+            @Body
+        </div>
+    </div>
+</div>
 
 @functions {
     public RenderFragment Body { get; set; }
