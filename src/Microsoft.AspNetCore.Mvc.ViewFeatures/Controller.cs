@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// controllers.
         /// <para>
         /// This property can be accessed after the controller has been activated, for example, in a controller action
-        /// on by overriding <see cref="OnActionExecuting(ActionExecutingContext)"/>.
+        /// or by overriding <see cref="OnActionExecuting(ActionExecutingContext)"/>.
         /// </para>
         /// <para>
         /// This property can be also accessed from within a unit test where it is initialized with
