@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var component = new TestComponent(builder =>
             {
                 builder.OpenElement(0, "my element");
-                builder.AddText(1, "some text");
+                builder.AddContent(1, "some text");
                 builder.CloseElement();
             });
 
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var renderer = new TestRenderer();
             var component = new TestComponent(builder =>
             {
-                builder.AddText(0, "Hello");
+                builder.AddContent(0, "Hello");
                 builder.OpenComponent<MessageComponent>(1);
                 builder.AddAttribute(2, nameof(MessageComponent.Message), "Nested component output");
                 builder.CloseComponent();
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var message = "Hello";
             var component = new TestComponent(builder =>
             {
-                builder.AddText(0, message);
+                builder.AddContent(0, message);
                 builder.OpenComponent<MessageComponent>(1);
                 builder.CloseComponent();
             });
@@ -634,7 +634,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             var renderCount = 0;
             var component = new TestComponent(builder =>
             {
-                builder.AddText(0, $"Render count: {++renderCount}");
+                builder.AddContent(0, $"Render count: {++renderCount}");
             });
             var componentId = renderer.AssignComponentId(component);
 
@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 builder.OpenComponent<ReRendersParentComponent>(0);
                 builder.AddAttribute(1, nameof(ReRendersParentComponent.Parent), parent);
                 builder.CloseComponent();
-                builder.AddText(2, $"Parent render count: {++parentRenderCount}");
+                builder.AddContent(2, $"Parent render count: {++parentRenderCount}");
             });
             var parentComponentId = renderer.AssignComponentId(parent);
 
@@ -815,7 +815,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.AddText(0, Message);
+                builder.AddContent(0, Message);
             }
         }
 
@@ -866,7 +866,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.AddText(0, "Parent here");
+                builder.AddContent(0, "Parent here");
                 
                 if (IncludeChild)
                 {
@@ -897,7 +897,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Parent.TriggerRender();
                 }
 
-                builder.AddText(0, "Child is here");
+                builder.AddContent(0, "Child is here");
             }
         }
 
@@ -919,7 +919,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 {
                     renderHandle.Render(builder =>
                     {
-                        builder.AddText(0, $"Hello from {nameof(MultiRendererComponent)}");
+                        builder.AddContent(0, $"Hello from {nameof(MultiRendererComponent)}");
                     });
                 }
             }

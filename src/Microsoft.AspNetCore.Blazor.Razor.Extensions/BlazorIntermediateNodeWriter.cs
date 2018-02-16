@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
             context.CodeWriter
-                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator();
 
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         {
                             // Text node
                             codeWriter
-                                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddText)}")
+                                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
                                 .Write((_sourceSequence++).ToString())
                                 .WriteParameterSeparator()
                                 .WriteStringLiteral(nextToken.Data)

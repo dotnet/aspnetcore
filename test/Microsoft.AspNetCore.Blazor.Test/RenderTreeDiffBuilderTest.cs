@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public static IEnumerable<object[]> RecognizesEquivalentFramesAsSameCases()
             => new Action<RenderTreeBuilder>[]
             {
-                builder => builder.AddText(0, "Hello"),
+                builder => builder.AddContent(0, "Hello"),
                 builder => builder.OpenElement(0, "Some Element"),
                 builder =>
                 {
@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesNewItemsBeingInserted()
         {
             // Arrange
-            oldTree.AddText(0, "text0");
-            oldTree.AddText(2, "text2");
-            newTree.AddText(0, "text0");
-            newTree.AddText(1, "text1");
-            newTree.AddText(2, "text2");
+            oldTree.AddContent(0, "text0");
+            oldTree.AddContent(2, "text2");
+            newTree.AddContent(0, "text0");
+            newTree.AddContent(1, "text1");
+            newTree.AddContent(2, "text2");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -85,11 +85,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesOldItemsBeingRemoved()
         {
             // Arrange
-            oldTree.AddText(0, "text0");
-            oldTree.AddText(1, "text1");
-            oldTree.AddText(2, "text2");
-            newTree.AddText(0, "text0");
-            newTree.AddText(2, "text2");
+            oldTree.AddContent(0, "text0");
+            oldTree.AddContent(1, "text1");
+            oldTree.AddContent(2, "text2");
+            newTree.AddContent(0, "text0");
+            newTree.AddContent(2, "text2");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -103,12 +103,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingSequenceWithinLoopBlockBeingRemoved()
         {
             // Arrange
-            oldTree.AddText(0, "x"); // Loop start
-            oldTree.AddText(1, "x"); // Will be removed
-            oldTree.AddText(2, "x"); // Will be removed
-            oldTree.AddText(0, "x"); // Loop start
-            newTree.AddText(0, "x"); // Loop start
-            newTree.AddText(0, "x"); // Loop start
+            oldTree.AddContent(0, "x"); // Loop start
+            oldTree.AddContent(1, "x"); // Will be removed
+            oldTree.AddContent(2, "x"); // Will be removed
+            oldTree.AddContent(0, "x"); // Loop start
+            newTree.AddContent(0, "x"); // Loop start
+            newTree.AddContent(0, "x"); // Loop start
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -123,12 +123,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingSequenceWithinLoopBlockBeingAppended()
         {
             // Arrange
-            oldTree.AddText(10, "x"); // Loop start
-            oldTree.AddText(10, "x"); // Loop start
-            newTree.AddText(10, "x"); // Loop start
-            newTree.AddText(11, "x"); // Will be added
-            newTree.AddText(12, "x"); // Will be added
-            newTree.AddText(10, "x"); // Loop start
+            oldTree.AddContent(10, "x"); // Loop start
+            oldTree.AddContent(10, "x"); // Loop start
+            newTree.AddContent(10, "x"); // Loop start
+            newTree.AddContent(11, "x"); // Will be added
+            newTree.AddContent(12, "x"); // Will be added
+            newTree.AddContent(10, "x"); // Loop start
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -153,12 +153,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingLoopBlockBeingRemoved()
         {
             // Arrange
-            oldTree.AddText(0, "x");
-            oldTree.AddText(1, "x");
-            oldTree.AddText(0, "x"); // Will be removed
-            oldTree.AddText(1, "x"); // Will be removed
-            newTree.AddText(0, "x");
-            newTree.AddText(1, "x");
+            oldTree.AddContent(0, "x");
+            oldTree.AddContent(1, "x");
+            oldTree.AddContent(0, "x"); // Will be removed
+            oldTree.AddContent(1, "x"); // Will be removed
+            newTree.AddContent(0, "x");
+            newTree.AddContent(1, "x");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -173,12 +173,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTrailingLoopBlockBeingAdded()
         {
             // Arrange
-            oldTree.AddText(10, "x");
-            oldTree.AddText(11, "x");
-            newTree.AddText(10, "x");
-            newTree.AddText(11, "x");
-            newTree.AddText(10, "x"); // Will be added
-            newTree.AddText(11, "x"); // Will be added
+            oldTree.AddContent(10, "x");
+            oldTree.AddContent(11, "x");
+            newTree.AddContent(10, "x");
+            newTree.AddContent(11, "x");
+            newTree.AddContent(10, "x"); // Will be added
+            newTree.AddContent(11, "x"); // Will be added
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -203,12 +203,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesLeadingLoopBlockItemsBeingAdded()
         {
             // Arrange
-            oldTree.AddText(12, "x");
-            oldTree.AddText(12, "x"); // Note that the '0' and '1' items are not present on this iteration
-            newTree.AddText(12, "x");
-            newTree.AddText(10, "x");
-            newTree.AddText(11, "x");
-            newTree.AddText(12, "x");
+            oldTree.AddContent(12, "x");
+            oldTree.AddContent(12, "x"); // Note that the '0' and '1' items are not present on this iteration
+            newTree.AddContent(12, "x");
+            newTree.AddContent(10, "x");
+            newTree.AddContent(11, "x");
+            newTree.AddContent(12, "x");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -233,12 +233,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesLeadingLoopBlockItemsBeingRemoved()
         {
             // Arrange
-            oldTree.AddText(2, "x");
-            oldTree.AddText(0, "x");
-            oldTree.AddText(1, "x");
-            oldTree.AddText(2, "x");
-            newTree.AddText(2, "x");
-            newTree.AddText(2, "x"); // Note that the '0' and '1' items are not present on this iteration
+            oldTree.AddContent(2, "x");
+            oldTree.AddContent(0, "x");
+            oldTree.AddContent(1, "x");
+            oldTree.AddContent(2, "x");
+            newTree.AddContent(2, "x");
+            newTree.AddContent(2, "x"); // Note that the '0' and '1' items are not present on this iteration
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -253,8 +253,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void HandlesAdjacentItemsBeingRemovedAndInsertedAtOnce()
         {
             // Arrange
-            oldTree.AddText(0, "text");
-            newTree.AddText(1, "text");
+            oldTree.AddContent(0, "text");
+            newTree.AddContent(1, "text");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -269,10 +269,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesTextUpdates()
         {
             // Arrange
-            oldTree.AddText(123, "old text 1");
-            oldTree.AddText(182, "old text 2");
-            newTree.AddText(123, "new text 1");
-            newTree.AddText(182, "new text 2");
+            oldTree.AddContent(123, "old text 1");
+            oldTree.AddContent(182, "old text 2");
+            newTree.AddContent(123, "new text 1");
+            newTree.AddContent(182, "new text 2");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -479,20 +479,20 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void DiffsElementsHierarchically()
         {
             // Arrange
-            oldTree.AddText(09, "unrelated");
+            oldTree.AddContent(09, "unrelated");
             oldTree.OpenElement(10, "root");
             oldTree.OpenElement(11, "child");
             oldTree.OpenElement(12, "grandchild");
-            oldTree.AddText(13, "grandchild old text");
+            oldTree.AddContent(13, "grandchild old text");
             oldTree.CloseElement();
             oldTree.CloseElement();
             oldTree.CloseElement();
 
-            newTree.AddText(09, "unrelated");
+            newTree.AddContent(09, "unrelated");
             newTree.OpenElement(10, "root");
             newTree.OpenElement(11, "child");
             newTree.OpenElement(12, "grandchild");
-            newTree.AddText(13, "grandchild new text");
+            newTree.AddContent(13, "grandchild new text");
             newTree.CloseElement();
             newTree.CloseElement();
             newTree.CloseElement();
@@ -521,19 +521,19 @@ namespace Microsoft.AspNetCore.Blazor.Test
         {
             // Arrange
             oldTree.OpenElement(10, "root");
-            oldTree.AddText(11, "Text that will change");
+            oldTree.AddContent(11, "Text that will change");
             oldTree.OpenElement(12, "Subtree that will not change");
             oldTree.OpenElement(13, "Another");
-            oldTree.AddText(14, "Text that will not change");
+            oldTree.AddContent(14, "Text that will not change");
             oldTree.CloseElement();
             oldTree.CloseElement();
             oldTree.CloseElement();
 
             newTree.OpenElement(10, "root");
-            newTree.AddText(11, "Text that has changed");
+            newTree.AddContent(11, "Text that has changed");
             newTree.OpenElement(12, "Subtree that will not change");
             newTree.OpenElement(13, "Another");
-            newTree.AddText(14, "Text that will not change");
+            newTree.AddContent(14, "Text that will not change");
             newTree.CloseElement();
             newTree.CloseElement();
             newTree.CloseElement();
@@ -557,14 +557,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void SkipsUnmodifiedTrailingSiblings()
         {
             // Arrange
-            oldTree.AddText(10, "text1");
-            oldTree.AddText(11, "text2");
-            oldTree.AddText(12, "text3");
-            oldTree.AddText(13, "text4");
-            newTree.AddText(10, "text1");
-            newTree.AddText(11, "text2modified");
-            newTree.AddText(12, "text3");
-            newTree.AddText(13, "text4");
+            oldTree.AddContent(10, "text1");
+            oldTree.AddContent(11, "text2");
+            oldTree.AddContent(12, "text3");
+            oldTree.AddContent(13, "text4");
+            newTree.AddContent(10, "text1");
+            newTree.AddContent(11, "text2modified");
+            newTree.AddContent(12, "text3");
+            newTree.AddContent(13, "text4");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -583,11 +583,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void PassesThroughRegionsInsidePrependedElements()
         {
             // Arrange
-            oldTree.AddText(0, "Will not change");
-            newTree.AddText(0, "Will not change");
+            oldTree.AddContent(0, "Will not change");
+            newTree.AddContent(0, "Will not change");
             newTree.OpenElement(1, "root");
             newTree.OpenRegion(2);
-            newTree.AddText(0, "text1");
+            newTree.AddContent(0, "text1");
             newTree.CloseRegion();
             newTree.CloseElement();
 
@@ -611,16 +611,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesInsertedRegions()
         {
             // Arrange
-            oldTree.AddText(1, "Start");
-            oldTree.AddText(3, "End");
-            newTree.AddText(1, "Start");
+            oldTree.AddContent(1, "Start");
+            oldTree.AddContent(3, "End");
+            newTree.AddContent(1, "Start");
             newTree.OpenRegion(2);
-            newTree.AddText(4, "Text inside region"); // Sequence number is unrelated to outside the region
+            newTree.AddContent(4, "Text inside region"); // Sequence number is unrelated to outside the region
             newTree.OpenRegion(5);
-            newTree.AddText(6, "Text inside nested region");
+            newTree.AddContent(6, "Text inside nested region");
             newTree.CloseRegion();
             newTree.CloseRegion();
-            newTree.AddText(3, "End");
+            newTree.AddContent(3, "End");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -645,16 +645,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesRemovedRegions()
         {
             // Arrange
-            oldTree.AddText(1, "Start");
+            oldTree.AddContent(1, "Start");
             oldTree.OpenRegion(2);
-            oldTree.AddText(4, "Text inside region"); // Sequence number is unrelated to outside the region
+            oldTree.AddContent(4, "Text inside region"); // Sequence number is unrelated to outside the region
             oldTree.OpenRegion(5);
-            oldTree.AddText(6, "Text inside nested region");
+            oldTree.AddContent(6, "Text inside nested region");
             oldTree.CloseRegion();
             oldTree.CloseRegion();
-            oldTree.AddText(3, "End");
-            newTree.AddText(1, "Start");
-            newTree.AddText(3, "End");
+            oldTree.AddContent(3, "End");
+            newTree.AddContent(1, "Start");
+            newTree.AddContent(3, "End");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -669,22 +669,22 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RecognizesEquivalentRegions()
         {
             // Arrange
-            oldTree.AddText(1, "Start");
+            oldTree.AddContent(1, "Start");
             oldTree.OpenRegion(2);
-            oldTree.AddText(4, "Text inside region");
-            oldTree.AddText(5, "Text to move");
+            oldTree.AddContent(4, "Text inside region");
+            oldTree.AddContent(5, "Text to move");
             oldTree.OpenRegion(6);
             oldTree.CloseRegion();
             oldTree.CloseRegion();
-            oldTree.AddText(3, "End");
-            newTree.AddText(1, "Start");
+            oldTree.AddContent(3, "End");
+            newTree.AddContent(1, "Start");
             newTree.OpenRegion(2);
-            newTree.AddText(4, "Changed text inside region");
+            newTree.AddContent(4, "Changed text inside region");
             newTree.OpenRegion(6);
-            newTree.AddText(5, "Text to move"); // Although it's the same sequence and content, it's now in a different region so not the same
+            newTree.AddContent(5, "Text to move"); // Although it's the same sequence and content, it's now in a different region so not the same
             newTree.CloseRegion();
             newTree.CloseRegion();
-            newTree.AddText(3, "End");
+            newTree.AddContent(3, "End");
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent();
@@ -710,10 +710,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void InstantiatesChildComponentsForInsertedFrames()
         {
             // Arrange
-            oldTree.AddText(10, "text1");                       //  0: text1
+            oldTree.AddContent(10, "text1");                    //  0: text1
             oldTree.OpenElement(11, "container");               //  1: <container>
             oldTree.CloseElement();                             //     </container>
-            newTree.AddText(10, "text1");                       //  0: text1
+            newTree.AddContent(10, "text1");                    //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
             newTree.OpenComponent<FakeComponent>(12);           //  2:   <FakeComponent>
             newTree.CloseComponent();                           //       </FakeComponent>
@@ -772,14 +772,14 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void RetainsChildComponentsForExistingFrames()
         {
             // Arrange
-            oldTree.AddText(10, "text1");                       //  0: text1
+            oldTree.AddContent(10, "text1");                    //  0: text1
             oldTree.OpenElement(11, "container");               //  1: <container>
             oldTree.OpenComponent<FakeComponent>(12);           //  2:   <FakeComponent>
             oldTree.CloseComponent();                           //       </FakeComponent>
             oldTree.OpenComponent<FakeComponent2>(13);          //  3:   <FakeComponent2>
             oldTree.CloseComponent();                           //       </FakeComponent2>
             oldTree.CloseElement();                             //     </container>
-            newTree.AddText(10, "text1");                       //  0: text1
+            newTree.AddContent(10, "text1");                    //  0: text1
             newTree.OpenElement(11, "container");               //  1: <container>
             newTree.OpenComponent<FakeComponent>(12);           //  2:   <FakeComponent>
             newTree.CloseComponent();                           //       </FakeComponent>

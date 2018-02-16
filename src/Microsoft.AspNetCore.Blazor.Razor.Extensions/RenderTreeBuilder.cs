@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public static readonly string CloseComponent = nameof(CloseElement);
 
-        public static readonly string AddText = nameof(AddText);
+        public static readonly string AddContent = nameof(AddContent);
 
         public static readonly string AddAttribute = nameof(AddAttribute);
         

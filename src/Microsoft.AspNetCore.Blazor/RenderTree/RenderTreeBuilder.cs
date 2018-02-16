@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text frame.</param>
-        public void AddText(int sequence, string textContent)
+        public void AddContent(int sequence, string textContent)
             => Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
 
         /// <summary>
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         /// <param name="textContent">Content for the new text frame.</param>
-        public void AddText(int sequence, object textContent)
-            => AddText(sequence, textContent?.ToString());
+        public void AddContent(int sequence, object textContent)
+            => AddContent(sequence, textContent?.ToString());
 
         /// <summary>
         /// Appends a frame representing a string-valued attribute.

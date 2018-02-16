@@ -25,7 +25,7 @@ namespace BasicTestApp
             builder.OpenElement(100, "p");
             builder.AddAttribute(101, "name", "region-element");
             builder.AddAttribute(102, "style", "color: red");
-            builder.AddText(103, "This is from the region");
+            builder.AddContent(103, "This is from the region");
             builder.CloseElement();
         };
 
@@ -47,7 +47,7 @@ namespace BasicTestApp
         {
             builder.OpenElement(0, "div"); // Container so we can see that passing through regions is OK
             builder.OpenRegion(1);
-            builder.AddText(2, "Region will be toggled below ");
+            builder.AddContent(2, "Region will be toggled below ");
 
             if (_showRegion)
             {
@@ -58,12 +58,12 @@ namespace BasicTestApp
 
             builder.OpenElement(4, "button");
             builder.AddAttribute(5, "onclick", ToggleRegion);
-            builder.AddText(6, "Toggle");
+            builder.AddContent(6, "Toggle");
             builder.CloseElement();
 
             builder.CloseRegion();
             builder.OpenElement(7, "p");
-            builder.AddText(8, "The end");
+            builder.AddContent(8, "The end");
             builder.CloseElement();
             builder.CloseElement();
         });
