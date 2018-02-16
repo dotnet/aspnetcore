@@ -201,22 +201,17 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             entry = entry.WithComponentSubtreeLength(_entries.Count - indexOfEntryBeingClosed);
         }
 
-        /// <summary>
-        /// Appends a frame denoting the start of a region (that is, a tree fragment that is
-        /// processed as a unit for the purposes of diffing).
-        /// </summary>
-        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
-        public void OpenRegion(int sequence)
+        // Internal for tests
+        // Not public because there's no current use case for user code defining regions arbitrarily.
+        // Currently the sole use case for regions is when appending a RenderFragment.
+        internal void OpenRegion(int sequence)
         {
             _openElementIndices.Push(_entries.Count);
             Append(RenderTreeFrame.Region(sequence));
         }
 
-        /// <summary>
-        /// Marks a previously appended region frame as closed. Calls to this method
-        /// must be balanced with calls to <see cref="OpenRegion"/>.
-        /// </summary>
-        public void CloseRegion()
+        // See above for why this is not public
+        internal void CloseRegion()
         {
             var indexOfEntryBeingClosed = _openElementIndices.Pop();
             ref var entry = ref _entries.Buffer[indexOfEntryBeingClosed];

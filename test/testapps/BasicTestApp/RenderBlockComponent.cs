@@ -43,22 +43,20 @@ namespace BasicTestApp
         private void Render() => _renderHandle.Render(builder =>
         {
             builder.OpenElement(0, "div"); // Container so we can see that passing through regions is OK
-            builder.OpenRegion(1);
-            builder.AddContent(2, "Region will be toggled below ");
+            builder.AddContent(1, "Region will be toggled below ");
 
             if (_showRegion)
             {
-                builder.AddContent(3, _exampleContent);
+                builder.AddContent(2, _exampleContent);
             }
 
-            builder.OpenElement(4, "button");
-            builder.AddAttribute(5, "onclick", ToggleRegion);
-            builder.AddContent(6, "Toggle");
+            builder.OpenElement(3, "button");
+            builder.AddAttribute(4, "onclick", ToggleRegion);
+            builder.AddContent(5, "Toggle");
             builder.CloseElement();
 
-            builder.CloseRegion();
-            builder.OpenElement(7, "p");
-            builder.AddContent(8, "The end");
+            builder.OpenElement(6, "p");
+            builder.AddContent(7, "The end");
             builder.CloseElement();
             builder.CloseElement();
         });
