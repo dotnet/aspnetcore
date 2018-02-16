@@ -41,9 +41,6 @@
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
 
-    <Error Text="%(Repository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(Repository.RootPath))" />
-    <Error Text="%(ShippedRepository.RootPath) does not exist. Did you forget to clone the submodules? Run `git submodules update`." Condition="!Exists(%(ShippedRepository.RootPath)) AND '%(ShippedRepository.Identity)' != ''" />
-
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
              Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);DesignTimeBuild=true"
@@ -85,7 +82,7 @@
       <Solution Include="@(_NoBuildSolution);@(_ShippedSolution)" />
     </ItemGroup>
 
-    <Error Text="No solutions were found in '$(SubmoduleRoot)'" Condition="@(Solution->Count()) == 0" />
+    <Error Text="No solutions were found in '$(SubmoduleRoot)'. Did you forget to clone the submodules? Run `git submodule update --init`." Condition="@(Solution->Count()) == 0" />
   </Target>
 
   <Target Name="GetLineupPackageInfo">
