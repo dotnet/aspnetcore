@@ -340,6 +340,7 @@
     </ExternalDependency>
     <ExternalDependency Include="Castle.Core" Version="$(CastleCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Oracle.ManagedDataAccess" Version="$(OracleManagedDataAccessPackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Polly-Signed" Version="$(PollySignedPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Remotion.Linq" Version="$(RemotionLinqPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="$(SerilogExtensionsLoggingPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Serilog.Sinks.File" Version="$(SerilogSinksFilePackageVersion)" Source="$(DefaultNuGetFeed)" />
