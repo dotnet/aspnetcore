@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <!-- These package version may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
