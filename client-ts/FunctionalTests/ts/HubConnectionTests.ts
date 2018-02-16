@@ -9,7 +9,7 @@ const TESTHUBENDPOINT_URL = "/testhub";
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
-        describe(protocol.name + " over " + TransportType[transportType] + " transport", () => {
+        describe("using " + protocol.name + " over " + TransportType[transportType] + " transport", () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 
@@ -465,7 +465,7 @@ describe("hubConnection", () => {
     });
 
     eachTransport((transportType) => {
-        describe(" over " + TransportType[transportType] + " transport", () => {
+        describe("over " + TransportType[transportType] + " transport", () => {
 
             it("can connect to hub with authorization", async (done) => {
                 const message = "你好，世界！";

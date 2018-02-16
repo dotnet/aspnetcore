@@ -15,7 +15,7 @@
     "lib": [ "es2015.promise", "es5", "dom", "es2015.collection" ]
   },
   "include": [
-    "./**/*",
+    "./ts/**/*",
     "../signalr/dist/esm/**/*.d.ts"
   ],
   "exclude": [
