@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
-using Microsoft.AspNetCore.Blazor.Test.Shared;
+using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;

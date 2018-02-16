@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Blazor.Test.Shared
+namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
     internal static class AssertFrame
     {

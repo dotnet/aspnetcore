@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor.Test
+namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
     public abstract class AutoRenderComponent : IComponent
     {
