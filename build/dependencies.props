@@ -53,7 +53,7 @@
     <RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview1-26213-01</RuntimeWinX86MicrosoftNETCoreDotNetHostPolicyPackageVersion>
     <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview1-26213-01</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview1-26213-02</SystemBuffersPackageVersion>
-    <SystemBuffersPrimitivesPackageVersion>0.1.0-preview1-180208-1</SystemBuffersPrimitivesPackageVersion>
+    <SystemBuffersPrimitivesPackageVersion>0.1.0-preview1-180216-4</SystemBuffersPrimitivesPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview1-26213-02</SystemCodeDomPackageVersion>
     <SystemCollectionsImmutablePackageVersion>1.5.0-preview1-26213-02</SystemCollectionsImmutablePackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview1-26213-02</SystemComponentModelAnnotationsPackageVersion>
@@ -69,8 +69,8 @@
     <SystemDiagnosticsEventLogPackageVersion>4.5.0-preview1-26213-02</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOFileSystemAccessControlPackageVersion>4.5.0-preview1-26213-02</SystemIOFileSystemAccessControlPackageVersion>
     <SystemIOPackagingPackageVersion>4.5.0-preview1-26213-02</SystemIOPackagingPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-preview1-180208-1</SystemIOPipelinesPackageVersion>
-    <SystemIOPipelinesTestingPackageVersion>0.1.0-preview1-180208-1</SystemIOPipelinesTestingPackageVersion>
+    <SystemIOPipelinesPackageVersion>0.1.0-preview1-180216-4</SystemIOPipelinesPackageVersion>
+    <SystemIOPipelinesTestingPackageVersion>0.1.0-preview1-180216-4</SystemIOPipelinesTestingPackageVersion>
     <SystemIOPipesAccessControlPackageVersion>4.5.0-preview1-26213-02</SystemIOPipesAccessControlPackageVersion>
     <SystemIOPortsPackageVersion>4.5.0-preview1-26213-02</SystemIOPortsPackageVersion>
     <SystemJsonPackageVersion>4.5.0-preview1-26213-02</SystemJsonPackageVersion>
@@ -94,10 +94,8 @@
     <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview1-26213-02</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingCodePagesPackageVersion>4.5.0-preview1-26213-02</SystemTextEncodingCodePagesPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.5.0-preview1-26213-02</SystemTextEncodingsWebPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-preview1-180208-1</SystemTextEncodingsWebUtf8PackageVersion>
-    <SystemTextFormattingPackageVersion>0.1.0-preview1-180208-1</SystemTextFormattingPackageVersion>
-    <SystemTextPrimitivesPackageVersion>0.1.0-preview1-180208-1</SystemTextPrimitivesPackageVersion>
-    <SystemTextUtf8StringPackageVersion>0.1.0-preview1-180208-1</SystemTextUtf8StringPackageVersion>
+    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-preview1-180216-4</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemTextPrimitivesPackageVersion>0.1.0-preview1-180216-4</SystemTextPrimitivesPackageVersion>
     <SystemThreadingAccessControlPackageVersion>4.5.0-preview1-26213-02</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0-preview1-26213-02</SystemThreadingChannelsPackageVersion>
     <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview1-26213-02</SystemThreadingTasksDataflowPackageVersion>
