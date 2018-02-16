@@ -3,11 +3,11 @@
   <PropertyGroup Label="Package Versions: Auto">
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <FSharpNETSdkPackageVersion>1.0.5</FSharpNETSdkPackageVersion>
-    <MicrosoftBuildFrameworkPackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildPackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildRuntimePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildRuntimePackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000010-1365343</MicrosoftBuildUtilitiesCorePackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildPackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildRuntimePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildRuntimePackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCSharpPackageVersion>4.5.0-preview2-26130-01</MicrosoftCSharpPackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-25711-01</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <MicrosoftDotNetProjectModelPackageVersion>1.0.0-rc3-003121</MicrosoftDotNetProjectModelPackageVersion>
@@ -26,7 +26,7 @@
     <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview2-26130-01</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
-    <NuGetFrameworksPackageVersion>4.7.0-preview1-4939</NuGetFrameworksPackageVersion>
+    <NuGetFrameworksPackageVersion>4.7.0-preview1-4958</NuGetFrameworksPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26130-04</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26130-04</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26130-04</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
