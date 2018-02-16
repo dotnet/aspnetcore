@@ -40,3 +40,4 @@ node_modules
 global.json
 BenchmarkDotNet.Artifacts/
 .idea/
+msbuild.binlog
