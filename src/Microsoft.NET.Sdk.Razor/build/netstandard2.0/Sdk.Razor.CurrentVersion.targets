@@ -58,6 +58,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       RazorCoreCompile
     </RazorCompileDependsOn>
 
+    <PrepareForBuildDependsOn>
+      _InitializePreserveCompilationContext;
+      $(PrepareForBuildDependsOn)
+    </PrepareForBuildDependsOn>
+
   </PropertyGroup>
 
   <!-- 
@@ -186,6 +191,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
+  </Target>
+
+  <!--
+    PreserveCompilationContext needs to enabled by default only for "applications" (OutputType = exe) which have one or more Razor files.
+    We cannot only inspect ItemGroups globally, therefore setting this must be done inside a target. We wire this up to run before Build.
+  -->
+  <Target Name="_InitializePreserveCompilationContext">
+    <PropertyGroup Condition="'$(PreserveCompilationContext)' == '' AND '$(OutputType)' == 'exe' AND '@(Content->AnyHaveMetadataValue('Extension', '.cshtml'))' == 'true'">
+      <PreserveCompilationContext>true</PreserveCompilationContext>
+    </PropertyGroup>
   </Target>
 
   <!-- 

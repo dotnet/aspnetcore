@@ -7,10 +7,6 @@
     <Message Text="CompileResource: %(_RazorCoreCompileResourceInputs.Identity) %(_RazorCoreCompileResourceInputs.LogicalName)" Importance="High" />
   </Target>
 
-  <Target Name="_IntrospectPreserveCompilationContext">
-    <Message Text="PreserveCompilationContext: $(PreserveCompilationContext)" Importance="High" />
-  </Target>
-
   <Target Name="_IntrospectUpToDateCheckInput">
     <Message Text="UpToDateCheckInput: %(UpToDateCheckInput.Identity)" Importance="High" />
   </Target>

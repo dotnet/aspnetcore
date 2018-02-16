@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -39,11 +42,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // end up in the MSBuild logs.
                 Assert.BuildOutputContainsLine(result, $"SimpleMvc -> {Path.Combine(Path.GetFullPath(Project.DirectoryPath), OutputPath, "SimpleMvc.Views.dll")}");
             }
-
-            result = await DotnetMSBuild("_IntrospectPreserveCompilationContext");
-
-            Assert.BuildPassed(result);
-            Assert.BuildOutputContainsLine(result, "PreserveCompilationContext: true");
         }
 
         [Fact]
@@ -59,13 +57,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.dll");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.pdb");
-
-            result = await DotnetMSBuild("_IntrospectPreserveCompilationContext");
-
-            Assert.BuildPassed(result);
-            // An app with no cshtml files should not have PreserveCompilationContext.
-            // This expectation should get resolved once we address https://github.com/aspnet/Razor/issues/2077
-            Assert.BuildOutputContainsLine(result, "PreserveCompilationContext: true");
         }
 
         [Fact]
@@ -227,6 +218,65 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("Pages", "Index.cshtml")} /Pages/Index.cshtml");
             Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("Areas", "Products", "Pages", "_ViewStart.cshtml")} /Areas/Products/Pages/_ViewStart.cshtml");
             Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} /LinkedFileOut/LinkedFile.cshtml");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithViews_ProducesDepsFileWithCompilationContext()
+        {
+            var customDefine = "RazorSdkTest";
+            var result = await DotnetMSBuild("Build", $"/p:DefineConstants={customDefine}");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "SimpleMvc.deps.json");
+            var depsFilePath = Path.Combine(Project.DirectoryPath, OutputPath, "SimpleMvc.deps.json");
+            var dependencyContext = ReadDependencyContext(depsFilePath);
+            // Pick a couple of libraries and ensure they have some compile references
+            var packageReference = dependencyContext.CompileLibraries.First(l => l.Name == "Microsoft.AspNetCore.Html.Abstractions");
+            Assert.NotEmpty(packageReference.Assemblies);
+
+            var projectReference = dependencyContext.CompileLibraries.First(l => l.Name == "SimpleMvc");
+            Assert.NotEmpty(packageReference.Assemblies);
+
+            Assert.Contains(customDefine, dependencyContext.CompilationOptions.Defines);
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithoutViews_ProducesDepsFileWithotCompiilationContext()
+        {
+            Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
+            var customDefine = "RazorSdkTest";
+            var result = await DotnetMSBuild("Build", $"/p:DefineConstants={customDefine}");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "SimpleMvc.deps.json");
+            var depsFilePath = Path.Combine(Project.DirectoryPath, OutputPath, "SimpleMvc.deps.json");
+            var dependencyContext = ReadDependencyContext(depsFilePath);
+            Assert.All(dependencyContext.CompileLibraries, library => Assert.Empty(library.Assemblies));
+            Assert.Empty(dependencyContext.CompilationOptions.Defines);
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_ClassLibrary_DoesNotProduceDepsFile()
+        {
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.deps.json");
+        }
+
+        private static DependencyContext ReadDependencyContext(string depsFilePath)
+        {
+            var reader = new DependencyContextJsonReader();
+            using (var stream = File.OpenRead(depsFilePath))
+            {
+                return reader.Read(stream);
+            }
         }
     }
 }

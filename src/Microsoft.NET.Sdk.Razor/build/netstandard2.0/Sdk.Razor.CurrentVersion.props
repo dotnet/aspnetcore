@@ -62,8 +62,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Set to true to allow a Razor code generation to use a persistent build server process.
     -->
     <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
-
-    <PreserveCompilationContext Condition="'$(PreserveCompilationContext)' == ''">true</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
