@@ -343,6 +343,33 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void CanAddFragments()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            RenderFragment fragment = fragmentBuilder =>
+            {
+                fragmentBuilder.AddContent(0, "Hello from the fragment");
+                fragmentBuilder.OpenElement(1, "Fragment element");
+                fragmentBuilder.AddContent(2, "Some text");
+                fragmentBuilder.CloseElement();
+            };
+
+            // Act
+            builder.OpenElement(10, "parent");
+            builder.AddContent(11, fragment);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "parent", 5, 10),
+                frame => AssertFrame.Region(frame, 4, 11),
+                frame => AssertFrame.Text(frame, "Hello from the fragment", 0),
+                frame => AssertFrame.Element(frame, "Fragment element", 2, 1),
+                frame => AssertFrame.Text(frame, "Some text", 2));
+        }
+
+        [Fact]
         public void CanClear()
         {
             // Arrange

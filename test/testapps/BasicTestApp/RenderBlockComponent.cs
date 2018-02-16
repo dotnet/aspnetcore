@@ -48,9 +48,7 @@ namespace BasicTestApp
 
             if (_showRegion)
             {
-                builder.OpenRegion(3);
-                _exampleContent(builder);
-                builder.CloseRegion();
+                builder.AddContent(3, _exampleContent);
             }
 
             builder.OpenElement(4, "button");

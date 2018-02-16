@@ -66,6 +66,25 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             => Append(RenderTreeFrame.Text(sequence, textContent ?? string.Empty));
 
         /// <summary>
+        /// Appends frames representing an arbitrary fragment of content.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="fragment">Content to append.</param>
+        public void AddContent(int sequence, RenderFragment fragment)
+        {
+            if (fragment != null)
+            {
+                // We surround the fragment with a region delimiter to indicate that the
+                // sequence numbers inside the fragment are unrelated to the sequence numbers
+                // outside it. If we didn't do this, the diffing logic might produce inefficient
+                // diffs depending on how the sequence numbers compared.
+                OpenRegion(sequence);
+                fragment(this);
+                CloseRegion();
+            }
+        }
+
+        /// <summary>
         /// Appends a frame representing text content.
         /// </summary>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
