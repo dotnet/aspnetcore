@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void CanAddChildComponents()
+        public void CanAddChildComponentsUsingGenericParam()
         {
             // Arrange
             var builder = new RenderTreeBuilder(new TestRenderer());
@@ -272,6 +272,34 @@ namespace Microsoft.AspNetCore.Blazor.Test
             builder.AddAttribute(13, "child1attribute2", "B");   //  3:       child1attribute2="B">
             builder.CloseComponent();                            //         </testcomponent>
             builder.OpenComponent<TestComponent>(14);            //  4:     <testcomponent
+            builder.AddAttribute(15, "child2attribute", "C");    //  5:       child2attribute="C">
+            builder.CloseComponent();                            //         </testcomponent>
+            builder.CloseElement();                              //     </parent>
+
+            // Assert
+            Assert.Collection(builder.GetFrames(),
+                frame => AssertFrame.Element(frame, "parent", 6),
+                frame => AssertFrame.Component<TestComponent>(frame),
+                frame => AssertFrame.Attribute(frame, "child1attribute1", "A"),
+                frame => AssertFrame.Attribute(frame, "child1attribute2", "B"),
+                frame => AssertFrame.Component<TestComponent>(frame),
+                frame => AssertFrame.Attribute(frame, "child2attribute", "C"));
+        }
+
+        [Fact]
+        public void CanAddChildComponentsUsingTypeArgument()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act
+            var componentType = typeof(TestComponent);
+            builder.OpenElement(10, "parent");                   //  0: <parent>
+            builder.OpenComponent(11, componentType);            //  1:     <testcomponent
+            builder.AddAttribute(12, "child1attribute1", "A");   //  2:       child1attribute1="A"
+            builder.AddAttribute(13, "child1attribute2", "B");   //  3:       child1attribute2="B">
+            builder.CloseComponent();                            //         </testcomponent>
+            builder.OpenComponent(14, componentType);            //  4:     <testcomponent
             builder.AddAttribute(15, "child2attribute", "C");    //  5:       child2attribute="C">
             builder.CloseComponent();                            //         </testcomponent>
             builder.CloseElement();                              //     </parent>

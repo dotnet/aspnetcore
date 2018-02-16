@@ -201,8 +201,8 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         internal static RenderTreeFrame Attribute(int sequence, string name, object value)
             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);
 
-        internal static RenderTreeFrame ChildComponent<T>(int sequence) where T : IComponent
-            => new RenderTreeFrame(sequence, typeof(T), 0);
+        internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
+            => new RenderTreeFrame(sequence, componentType, 0);
 
         internal static RenderTreeFrame Region(int sequence)
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);

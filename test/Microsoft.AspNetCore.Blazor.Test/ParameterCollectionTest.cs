@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Arrange
             var frames = new[]
             {
-                RenderTreeFrame.ChildComponent<FakeComponent>(0).WithComponentSubtreeLength(1)
+                RenderTreeFrame.ChildComponent(0, typeof(FakeComponent)).WithComponentSubtreeLength(1)
             };
             var parameterCollection = new ParameterCollection(frames, 0);
 

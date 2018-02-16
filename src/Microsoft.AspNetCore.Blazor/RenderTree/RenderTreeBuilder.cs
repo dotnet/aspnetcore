@@ -148,16 +148,27 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <typeparam name="TComponent">The type of the child component.</typeparam>
         /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
         public void OpenComponent<TComponent>(int sequence) where TComponent : IComponent
+            => OpenComponentUnchecked(sequence, typeof(TComponent));
+
+        /// <summary>
+        /// Appends a frame representing a child component.
+        /// </summary>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="componentType">The type of the child component.</param>
+        public void OpenComponent(int sequence, Type componentType)
         {
-            // Currently, child components can't have further grandchildren of their own, so it would
-            // technically be possible to skip their CloseElement calls and not track them in _openElementIndices.
-            // However at some point we might want to have the grandchildren frames available at runtime
-            // (rather than being parsed as attributes at compile time) so that we could have APIs for
-            // components to query the complete hierarchy of transcluded frames instead of forcing the
-            // transcluded subtree to be in a particular shape such as representing key/value pairs.
-            // So it's more flexible if we track open/close frames for components explicitly.
+            if (!typeof(IComponent).IsAssignableFrom(componentType))
+            {
+                throw new ArgumentException($"The component type must implement {typeof(IComponent).FullName}.");
+            }
+
+            OpenComponentUnchecked(sequence, componentType);
+        }
+
+        private void OpenComponentUnchecked(int sequence, Type componentType)
+        {
             _openElementIndices.Push(_entries.Count);
-            Append(RenderTreeFrame.ChildComponent<TComponent>(sequence));
+            Append(RenderTreeFrame.ChildComponent(sequence, componentType));
         }
 
         /// <summary>
