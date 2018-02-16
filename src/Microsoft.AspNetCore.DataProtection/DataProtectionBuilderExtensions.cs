@@ -274,6 +274,8 @@ namespace Microsoft.AspNetCore.DataProtection
                 });
             });
 
+            builder.Services.Configure<XmlKeyDecryptionOptions>(o => o.AddKeyDecryptionCertificate(certificate));
+
             return builder;
         }
 

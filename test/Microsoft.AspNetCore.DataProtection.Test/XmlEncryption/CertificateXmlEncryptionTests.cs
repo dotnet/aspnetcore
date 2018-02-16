@@ -7,7 +7,6 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
@@ -155,6 +156,39 @@ namespace Microsoft.AspNetCore.DataProtection
             });
         }
 
+        [Fact]
+        public void System_UsesInMemoryCertificate()
+        {
+            var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
+            var certificate = new X509Certificate2(filePath, "password");
+
+            using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
+            {
+                store.Open(OpenFlags.ReadOnly);
+                // ensure this cert is not in the x509 store
+                Assert.Empty(store.Certificates.Find(X509FindType.FindByThumbprint, certificate.Thumbprint, false));
+            }
+
+            WithUniqueTempDirectory(directory =>
+            {
+                    // Step 1: directory should be completely empty
+                    directory.Create();
+                Assert.Empty(directory.GetFiles());
+
+                    // Step 2: instantiate the system and round-trip a payload
+                    var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
+                Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
+
+                    // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
+                    var allFiles = directory.GetFiles();
+                Assert.Single(allFiles);
+                Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
+                string fileText = File.ReadAllText(allFiles[0].FullName);
+                Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
+                Assert.Contains("X509Certificate", fileText, StringComparison.Ordinal);
+            });
+        }
+
         /// <summary>
         /// Runs a test and cleans up the temp directory afterward.
         /// </summary>
@@ -177,24 +211,6 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         private static string GetTestFilesPath()
-        {
-            var projectName = typeof(DataProtectionProviderTests).GetTypeInfo().Assembly.GetName().Name;
-            var projectPath = RecursiveFind(projectName, Path.GetFullPath("."));
-
-            return Path.Combine(projectPath, projectName, "TestFiles");
-        }
-
-        private static string RecursiveFind(string path, string start)
-        {
-            var test = Path.Combine(start, path);
-            if (Directory.Exists(test))
-            {
-                return start;
-            }
-            else
-            {
-                return RecursiveFind(path, new DirectoryInfo(start).Parent.FullName);
-            }
-        }
+            => Path.Combine(AppContext.BaseDirectory, "TestFiles");
     }
 }

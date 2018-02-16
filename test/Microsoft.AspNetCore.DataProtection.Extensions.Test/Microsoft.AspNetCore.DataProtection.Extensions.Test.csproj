@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="..\shared\*.cs" />
+    <Content Include="TestFiles\**\*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -347,7 +349,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                     <expirationDate>2015-06-01T00:00:00Z</expirationDate>
                     <descriptor deserializerType='deserializer-B'>
                       <elementB />
-                    </descriptor>    
+                    </descriptor>
                   </key>
                 </root>";
 

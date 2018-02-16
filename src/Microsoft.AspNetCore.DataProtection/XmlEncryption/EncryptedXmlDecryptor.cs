@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
 {
@@ -15,6 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     public sealed class EncryptedXmlDecryptor : IInternalEncryptedXmlDecryptor, IXmlDecryptor
     {
         private readonly IInternalEncryptedXmlDecryptor _decryptor;
+        private readonly XmlKeyDecryptionOptions _options;
 
         /// <summary>
         /// Creates a new instance of an <see cref="EncryptedXmlDecryptor"/>.
@@ -31,6 +36,7 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         public EncryptedXmlDecryptor(IServiceProvider services)
         {
             _decryptor = services?.GetService<IInternalEncryptedXmlDecryptor>() ?? this;
+            _options = services?.GetService<IOptions<XmlKeyDecryptionOptions>>()?.Value;
         }
 
         /// <summary>
@@ -57,8 +63,10 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
             var elementToDecrypt = (XmlElement)xmlDocument.DocumentElement.FirstChild;
 
             // Perform the decryption and update the document in-place.
-            var encryptedXml = new EncryptedXml(xmlDocument);
+            var decryptionCerts = _options?.KeyDecryptionCertificates;
+            var encryptedXml = new EncryptedXmlWithCertificateKeys(decryptionCerts, xmlDocument);
             _decryptor.PerformPreDecryptionSetup(encryptedXml);
+
             encryptedXml.DecryptDocument();
 
             // Strip the <root /> element back off and convert the XmlDocument to an XElement.
@@ -68,6 +76,89 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
         void IInternalEncryptedXmlDecryptor.PerformPreDecryptionSetup(EncryptedXml encryptedXml)
         {
             // no-op
+        }
+
+        /// <summary>
+        /// Can decrypt the XML key data from an <see cref="X509Certificate2"/> that is not in stored in <see cref="X509Store"/>.
+        /// </summary>
+        private class EncryptedXmlWithCertificateKeys : EncryptedXml
+        {
+            private readonly IReadOnlyDictionary<string, X509Certificate2> _certificates;
+
+            public EncryptedXmlWithCertificateKeys(IReadOnlyDictionary<string, X509Certificate2> certificates, XmlDocument document)
+                : base(document)
+            {
+                _certificates = certificates;
+            }
+
+            public override byte[] DecryptEncryptedKey(EncryptedKey encryptedKey)
+            {
+                byte[] key = base.DecryptEncryptedKey(encryptedKey);
+                if (key != null)
+                {
+                    return key;
+                }
+
+                if (_certificates == null || _certificates.Count == 0)
+                {
+                    return null;
+                }
+
+                var keyInfoEnum = encryptedKey.KeyInfo?.GetEnumerator();
+                if (keyInfoEnum == null)
+                {
+                    return null;
+                }
+
+                while (keyInfoEnum.MoveNext())
+                {
+                    if (!(keyInfoEnum.Current is KeyInfoX509Data kiX509Data))
+                    {
+                        continue;
+                    }
+
+                    key = GetKeyFromCert(encryptedKey, kiX509Data);
+                    if (key != null)
+                    {
+                        return key;
+                    }
+                }
+
+                return null;
+            }
+
+            private byte[] GetKeyFromCert(EncryptedKey encryptedKey, KeyInfoX509Data keyInfo)
+            {
+                var certEnum = keyInfo.Certificates?.GetEnumerator();
+                if (certEnum == null)
+                {
+                    return null;
+                }
+
+                while (certEnum.MoveNext())
+                {
+                    if (!(certEnum.Current is X509Certificate2 certInfo))
+                    {
+                        continue;
+                    }
+
+                    if (!_certificates.TryGetValue(certInfo.Thumbprint, out var certificate))
+                    {
+                        continue;
+                    }
+
+                    using (RSA privateKey = certificate.GetRSAPrivateKey())
+                    {
+                        if (privateKey != null)
+                        {
+                            var useOAEP = encryptedKey.EncryptionMethod?.KeyAlgorithm == XmlEncRSAOAEPUrl;
+                            return DecryptKey(encryptedKey.CipherData.CipherValue, privateKey, useOAEP);
+                        }
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }
