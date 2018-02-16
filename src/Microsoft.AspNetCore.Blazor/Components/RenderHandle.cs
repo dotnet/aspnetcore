@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
                 throw new InvalidOperationException("The render handle is not yet assigned.");
             }
 
-            _renderer.AddToRenderQueue(new RenderQueueEntry(_componentId, renderFragment));
+            _renderer.AddToRenderQueue(_componentId, renderFragment);
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         private readonly Renderer _renderer;
         private RenderTreeBuilder _renderTreeBuilderCurrent;
         private RenderTreeBuilder _renderTreeBuilderPrevious;
+        private bool _componentWasDisposed;
 
         /// <summary>
         /// Constructs an instance of <see cref="ComponentState"/>.
@@ -37,6 +38,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
+            // A component might be in the render queue already before getting disposed by an
+            // earlier entry in the render queue. In that case, rendering is a no-op.
+            if (_componentWasDisposed)
+            {
+                return;
+            }
+
             // Swap the old and new tree builders
             (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 
@@ -54,6 +62,8 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
         public void DisposeInBatch(RenderBatchBuilder batchBuilder)
         {
+            _componentWasDisposed = true;
+ 
             // TODO: Handle components throwing during dispose. Shouldn't break the whole render batch.
             if (_component is IDisposable disposable)
             {

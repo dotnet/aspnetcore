@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 {
     internal readonly struct RenderQueueEntry
     {
-        public readonly int ComponentId;
+        public readonly ComponentState ComponentState;
         public readonly RenderFragment RenderFragment;
 
-        public RenderQueueEntry(int componentId, RenderFragment renderFragment)
+        public RenderQueueEntry(ComponentState componentState, RenderFragment renderFragment)
         {
-            ComponentId = componentId;
+            ComponentState = componentState;
             RenderFragment = renderFragment ?? throw new ArgumentNullException(nameof(renderFragment));
         }
     }
