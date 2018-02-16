@@ -9,6 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class RazorGenerate : DotNetToolTask
     {
+        private static readonly string[] SourceRequiredMetadata = new string[]
+        {
+            FullPath,
+            GeneratedOutput,
+            TargetPath,
+        };
+
         private const string GeneratedOutput = "GeneratedOutput";
         private const string TargetPath = "TargetPath";
         private const string FullPath = "FullPath";
@@ -38,12 +45,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         protected override bool ValidateParameters()
         {
+            if (Configuration.Length == 0)
+            {
+                Log.LogError("The project {0} must provide a value for {1}.", ProjectRoot, nameof(Configuration));
+                return false;
+            }
+
             for (var i = 0; i < Sources.Length; i++)
             {
                 if (!EnsureRequiredMetadata(Sources[i], FullPath) ||
                     !EnsureRequiredMetadata(Sources[i], GeneratedOutput) ||
                     !EnsureRequiredMetadata(Sources[i], TargetPath))
                 {
+                    Log.LogError("The Razor source item '{0}' is missing a required metadata entry. Required metadata are: '{1}'", Sources[i], SourceRequiredMetadata);
                     return false;
                 }
             }

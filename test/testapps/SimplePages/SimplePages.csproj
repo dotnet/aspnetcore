@@ -13,7 +13,7 @@
     <!-- Override for the MVC extension -->
     <_MvcExtensionAssemblyPath>$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</_MvcExtensionAssemblyPath>
   </PropertyGroup>
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.props" />
+  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.props" />
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -21,7 +21,7 @@
 
   <!-- Test Placeholder -->
 
-  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.targets" />
+  <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk.Web" />
   <Import Project="$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\Sdk\Sdk.targets" />
