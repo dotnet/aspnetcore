@@ -65,10 +65,17 @@
       <InstallerBaseFileName>aspnetcore-runtime-$(PackageVersion)</InstallerBaseFileName>
       <InstallerAliasBaseFileName>aspnetcore-runtime-latest</InstallerAliasBaseFileName>
       <IntermediateInstallerBaseFileName>aspnetcore-runtime-internal-$(PackageVersion)</IntermediateInstallerBaseFileName>
+      <WindowsHostingBundleInstallerFileName>dotnet-hosting-$(PackageVersion)-win.exe</WindowsHostingBundleInstallerFileName>
     </PropertyGroup>
 
     <ItemGroup>
       <PackagesToPublishToTransport Include="$(DependencySymbolsDir)\**\*.symbols.nupkg" />
+
+      <!-- Windows Server hosting bundle -->
+      <FilesToPublish Include="$(DependencyAssetsDir)$(WindowsHostingBundleInstallerFileName)">
+        <RelativeBlobPath>$(BlobBasePath)$(WindowsHostingBundleInstallerFileName)</RelativeBlobPath>
+        <ManifestArtifactData>ShipInstaller=dotnetcli</ManifestArtifactData>
+      </FilesToPublish>
 
       <!-- Intermediate files passed on to the dotnet-CLI. -->
       <FilesToPublish Include="$(DependencyAssetsDir)$(PackageArchiveFileName)" >
