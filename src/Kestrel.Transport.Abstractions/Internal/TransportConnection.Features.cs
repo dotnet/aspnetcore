@@ -4,7 +4,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
 

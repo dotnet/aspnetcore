@@ -3,8 +3,6 @@
 
 using System.Buffers;
 using System.Collections;
-using System.Collections.Sequences;
-using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {

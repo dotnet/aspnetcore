@@ -4,8 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections;
-using System.Collections.Sequences;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;

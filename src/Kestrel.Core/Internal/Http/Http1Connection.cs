@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Collections;
-using System.Collections.Sequences;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;

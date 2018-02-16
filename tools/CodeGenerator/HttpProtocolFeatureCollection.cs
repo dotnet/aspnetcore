@@ -4,9 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Authentication;
-//using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 
 namespace CodeGenerator
 {
