@@ -35,13 +35,13 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             _renderTreeBuilderPrevious = new RenderTreeBuilder(renderer);
         }
 
-        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, Action<RenderTreeBuilder> renderAction)
+        public void RenderIntoBatch(RenderBatchBuilder batchBuilder, RenderFragment renderFragment)
         {
             // Swap the old and new tree builders
             (_renderTreeBuilderCurrent, _renderTreeBuilderPrevious) = (_renderTreeBuilderPrevious, _renderTreeBuilderCurrent);
 
             _renderTreeBuilderCurrent.Clear();
-            renderAction(_renderTreeBuilderCurrent);
+            renderFragment(_renderTreeBuilderCurrent);
 
             var diff = RenderTreeDiffBuilder.ComputeDiff(
                 _renderer,

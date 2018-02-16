@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         [Theory]
         [MemberData(nameof(RecognizesEquivalentFramesAsSameCases))]
-        public void RecognizesEquivalentFramesAsSame(Action<RenderTreeBuilder> appendAction)
+        public void RecognizesEquivalentFramesAsSame(RenderFragment appendFragment)
         {
             // Arrange
-            appendAction(oldTree);
-            appendAction(newTree);
+            appendFragment(oldTree);
+            appendFragment(newTree);
 
             // Act
             var (result, referenceFrames) = GetSingleUpdatedComponent(initializeFromFrames: true);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         public static IEnumerable<object[]> RecognizesEquivalentFramesAsSameCases()
-            => new Action<RenderTreeBuilder>[]
+            => new RenderFragment[]
             {
                 builder => builder.AddContent(0, "Hello"),
                 builder => builder.OpenElement(0, "Some Element"),

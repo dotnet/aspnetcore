@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
     {
         public const string BuildRenderTreeMethodName = nameof(BuildRenderTree);
 
-        private readonly Action<RenderTreeBuilder> _renderAction;
+        private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
 
         public BlazorComponent()
         {
-            _renderAction = BuildRenderTree;
+            _renderFragment = BuildRenderTree;
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
             if (_hasNeverRendered || ShouldRender())
             {
                 _hasPendingQueuedRender = true;
-                _renderHandle.Render(_renderAction);
+                _renderHandle.Render(_renderFragment);
             }
         }
 

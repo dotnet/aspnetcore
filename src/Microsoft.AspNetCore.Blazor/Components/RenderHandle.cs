@@ -31,14 +31,15 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <summary>
         /// Notifies the renderer that the component should be rendered.
         /// </summary>
-        public void Render(Action<RenderTreeBuilder> renderAction)
+        /// <param name="renderFragment">The content that should be rendered.</param>
+        public void Render(RenderFragment renderFragment)
         {
             if (_renderer == null)
             {
                 throw new InvalidOperationException("The render handle is not yet assigned.");
             }
 
-            _renderer.AddToRenderQueue(new RenderQueueEntry(_componentId, renderAction));
+            _renderer.AddToRenderQueue(new RenderQueueEntry(_componentId, renderFragment));
         }
     }
 }

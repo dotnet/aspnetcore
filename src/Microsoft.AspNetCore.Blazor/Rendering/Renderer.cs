@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         {
             var componentId = renderQueueEntry.ComponentId;
             GetRequiredComponentState(componentId)
-                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderAction);
+                .RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment);
 
             // Process disposal queue now in case it causes further component renders to be enqueued
             while (_batchBuilder.ComponentDisposalQueue.Count > 0)

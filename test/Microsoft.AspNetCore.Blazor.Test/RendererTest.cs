@@ -790,11 +790,11 @@ namespace Microsoft.AspNetCore.Blazor.Test
         private class TestComponent : IComponent
         {
             private RenderHandle _renderHandle;
-            private Action<RenderTreeBuilder> _renderAction;
+            private RenderFragment _renderFragment;
 
-            public TestComponent(Action<RenderTreeBuilder> renderAction)
+            public TestComponent(RenderFragment renderFragment)
             {
-                _renderAction = renderAction;
+                _renderFragment = renderFragment;
             }
 
             public void Init(RenderHandle renderHandle)
@@ -806,7 +806,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 => TriggerRender();
 
             public void TriggerRender()
-                => _renderHandle.Render(_renderAction);
+                => _renderHandle.Render(_renderFragment);
         }
 
         private class MessageComponent : AutoRenderComponent
