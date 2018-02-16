@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         {
             if (_itemsInUse == _items.Length)
             {
-                SetCapacity(_itemsInUse * 2, preserveContents: true);
+                SetCapacity(_items.Length * 2, preserveContents: true);
             }
 
             var indexOfAppendedItem = _itemsInUse++;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             var requiredCapacity = _itemsInUse + length;
             if (_items.Length < requiredCapacity)
             {
-                var candidateCapacity = _itemsInUse * 2;
+                var candidateCapacity = _items.Length * 2;
                 while (candidateCapacity < requiredCapacity)
                 {
                     candidateCapacity *= 2;
