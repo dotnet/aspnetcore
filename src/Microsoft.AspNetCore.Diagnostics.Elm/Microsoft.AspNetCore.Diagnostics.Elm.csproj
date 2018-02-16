@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Error Logging Middleware (ELM) to capture and display request logs.</Description>
-    <VersionPrefix Condition="'$(ExperimentalVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
+    <VersionPrefix Condition="'$(ExperimentalVersionPrefix)' != ''">$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix Condition="'$(ExperimentalVersionSuffix)' != ''">$(ExperimentalVersionSuffix)</VersionSuffix>
     <VerifyVersion Condition="'$(ExperimentalVersionPrefix)' != ''">false</VerifyVersion>
     <PackageVersion Condition="'$(ExperimentalPackageVersion)' != ''">$(ExperimentalPackageVersion)</PackageVersion>
