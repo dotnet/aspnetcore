@@ -19,20 +19,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
-        private readonly RazorTemplateEngine _templateEngine;
+        private readonly RazorProjectEngine _razorProjectEngine;
         private readonly ILogger<CompiledPageRouteModelProvider> _logger;
         private readonly PageRouteModelFactory _routeModelFactory;
 
         public CompiledPageRouteModelProvider(
             ApplicationPartManager applicationManager,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
-            RazorTemplateEngine templateEngine,
+            RazorProjectEngine razorProjectEngine,
             ILogger<CompiledPageRouteModelProvider> logger)
         {
             _applicationManager = applicationManager ?? throw new ArgumentNullException(nameof(applicationManager));
             _pagesOptions = pagesOptionsAccessor?.Value ?? throw new ArgumentNullException(nameof(pagesOptionsAccessor));
-            _templateEngine = templateEngine ?? throw new ArgumentNullException(nameof(templateEngine));
-            _logger = logger ?? throw new ArgumentNullException(nameof(templateEngine));
+            _razorProjectEngine = razorProjectEngine ?? throw new ArgumentNullException(nameof(razorProjectEngine));
+            _logger = logger ?? throw new ArgumentNullException(nameof(razorProjectEngine));
             _routeModelFactory = new PageRouteModelFactory(_pagesOptions, _logger);
         }
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
             {
-                if (viewDescriptor.Item != null && !ChecksumValidator.IsItemValid(_templateEngine.Project, viewDescriptor.Item))
+                if (viewDescriptor.Item != null && !ChecksumValidator.IsItemValid(_razorProjectEngine.FileSystem, viewDescriptor.Item))
                 {
                     // If we get here, this compiled Page has different local content, so ignore it.
                     continue;

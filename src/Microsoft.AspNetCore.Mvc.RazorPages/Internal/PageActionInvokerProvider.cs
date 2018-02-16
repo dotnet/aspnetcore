@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
         private readonly IPageHandlerMethodSelector _selector;
-        private readonly RazorProject _razorProject;
+        private readonly RazorProjectFileSystem _razorFileSystem;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ILogger<PageActionInvoker> _logger;
         private volatile InnerCache _currentCache;
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
             IPageHandlerMethodSelector selector,
-            RazorProject razorProject,
+            RazorProjectFileSystem razorFileSystem,
             DiagnosticSource diagnosticSource,
             ILoggerFactory loggerFactory)
         {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
             _selector = selector;
-            _razorProject = razorProject;
+            _razorFileSystem = razorFileSystem;
             _diagnosticSource = diagnosticSource;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
         }
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var viewStartFactories = new List<Func<IRazorPage>>();
             // Always pick up all _ViewStarts, including the ones outside the Pages root.
-            var viewStartItems = _razorProject.FindHierarchicalItems(
+            var viewStartItems = _razorFileSystem.FindHierarchicalItems(
                 descriptor.RelativePath,
                 ViewStartFileName);
             foreach (var item in viewStartItems)

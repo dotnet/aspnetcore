@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class FileProviderRazorProjectTest
+    public class FileProviderRazorProjectFileSystemTest
     {
         [Fact]
         public void EnumerateFiles_ReturnsEmptySequenceIfNoCshtmlFilesArePresent()
@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var razorFiles = razorProject.EnumerateItems("/");
+            var razorFiles = fileSystem.EnumerateItems("/");
 
             // Assert
             Assert.Empty(razorFiles);
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var razorFiles = razorProject.EnumerateItems("/");
+            var razorFiles = fileSystem.EnumerateItems("/");
 
             // Assert
             Assert.Collection(
@@ -98,10 +98,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var razorFiles = razorProject.EnumerateItems("/");
+            var razorFiles = fileSystem.EnumerateItems("/");
 
             // Assert
             Assert.Collection(razorFiles.OrderBy(f => f.FilePath),
@@ -165,10 +165,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var razorFiles = razorProject.EnumerateItems("/Level1-Dir1");
+            var razorFiles = fileSystem.EnumerateItems("/Level1-Dir1");
 
             // Assert
             Assert.Collection(razorFiles.OrderBy(f => f.FilePath),
@@ -199,10 +199,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var item = razorProject.GetItem("/File3.cshtml");
+            var item = fileSystem.GetItem("/File3.cshtml");
 
             // Assert
             Assert.True(item.Exists);
@@ -223,10 +223,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var item = razorProject.GetItem("/File3.cshtml");
+            var item = fileSystem.GetItem("/File3.cshtml");
 
             // Assert
             Assert.True(item.Exists);
@@ -245,10 +245,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file });
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var razorProject = new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
 
             // Act
-            var item = razorProject.GetItem("/NotFound.cshtml");
+            var item = fileSystem.GetItem("/NotFound.cshtml");
 
             // Assert
             Assert.False(item.Exists);

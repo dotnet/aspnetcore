@@ -29,11 +29,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -71,10 +71,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var areasDir = fileProvider.AddDirectoryContent("/Areas", new[] { productsDir });
             var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = true });
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -155,10 +155,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pagesDir = fileProvider.AddDirectoryContent("/Pages", new[] { file4 });
             var rootDir = fileProvider.AddDirectoryContent("/", new[] { areasDir, pagesDir });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions { AllowAreas = false });
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var areasDir = fileProvider.AddDirectoryContent("/Areas", new IFileInfo[] { productsDir, nonConformingFileUnderAreasDirectory });
             var rootDir = fileProvider.AddDirectoryContent("/", new IFileInfo[] { areasDir, rootFile });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions
             {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 AreaRootDirectory = "/Areas",
                 AllowAreas = true,
             });
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -251,11 +251,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { dir2, file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -289,11 +289,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var file = fileProvider.AddFile("/Index.cshtml", "@page \"/custom-route\"");
             fileProvider.AddDirectoryContent("/", new[] { file });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -325,11 +325,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -363,11 +363,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var rootFile = fileProvider.AddFile("/Index.cshtml", "@page");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { rootFile, dir1, dir2 });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/Pages";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
 
             // Act
@@ -392,11 +392,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { file1, file2 });
             fileProvider.AddDirectoryContent("/", new[] { dir1 });
 
-            var project = new TestRazorProject(fileProvider, _hostingEnvironment);
+            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
 
             var optionsManager = Options.Create(new RazorPagesOptions());
             optionsManager.Value.RootDirectory = "/";
-            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var provider = new RazorProjectPageRouteModelProvider(fileSystem, optionsManager, NullLoggerFactory.Instance);
             var context = new PageRouteModelProviderContext();
             var pageModel = new PageRouteModel("/Pages/Test.cshtml", "/Pages/Test");
             context.RouteModels.Add(pageModel);

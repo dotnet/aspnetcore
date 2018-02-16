@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class RazorViewCompilerProvider : IViewCompilerProvider
     {
-        private readonly RazorTemplateEngine _razorTemplateEngine;
+        private readonly RazorProjectEngine _razorProjectEngine;
         private readonly ApplicationPartManager _applicationPartManager;
         private readonly IRazorViewEngineFileProviderAccessor _fileProviderAccessor;
         private readonly CSharpCompiler _csharpCompiler;
@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         public RazorViewCompilerProvider(
             ApplicationPartManager applicationPartManager,
-            RazorTemplateEngine razorTemplateEngine,
+            RazorProjectEngine razorProjectEngine,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             CSharpCompiler csharpCompiler,
             IOptions<RazorViewEngineOptions> viewEngineOptionsAccessor,
             ILoggerFactory loggerFactory)
         {
             _applicationPartManager = applicationPartManager;
-            _razorTemplateEngine = razorTemplateEngine;
+            _razorProjectEngine = razorProjectEngine;
             _fileProviderAccessor = fileProviderAccessor;
             _csharpCompiler = csharpCompiler;
             _viewEngineOptions = viewEngineOptionsAccessor.Value;
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             return new RazorViewCompiler(
                 _fileProviderAccessor.FileProvider,
-                _razorTemplateEngine,
+                _razorProjectEngine,
                 _csharpCompiler,
                 _viewEngineOptions.CompilationCallback,
                 feature.ViewDescriptors,

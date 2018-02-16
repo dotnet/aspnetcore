@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         // Validates that we can use an existing precompiled view by comparing checksums with files on
         // disk.
-        public static bool IsItemValid(RazorProject project, RazorCompiledItem item)
+        public static bool IsItemValid(RazorProjectFileSystem project, RazorCompiledItem item)
         {
             if (project == null)
             {

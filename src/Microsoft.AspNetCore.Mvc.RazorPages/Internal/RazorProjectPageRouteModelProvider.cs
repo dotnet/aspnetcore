@@ -13,17 +13,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     public class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
     {
-        private readonly RazorProject _project;
+        private readonly RazorProjectFileSystem _razorFileSystem;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly PageRouteModelFactory _routeModelFactory;
         private readonly ILogger<RazorProjectPageRouteModelProvider> _logger;
 
         public RazorProjectPageRouteModelProvider(
-            RazorProject razorProject,
+            RazorProjectFileSystem razorFileSystem,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
             ILoggerFactory loggerFactory)
         {
-            _project = razorProject;
+            _razorFileSystem = razorFileSystem;
             _pagesOptions = pagesOptionsAccessor.Value;
             _logger = loggerFactory.CreateLogger<RazorProjectPageRouteModelProvider>();
             _routeModelFactory = new PageRouteModelFactory(_pagesOptions, _logger);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 normalizedAreaRootDirectory += "/";
             }
 
-            foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
+            foreach (var item in _razorFileSystem.EnumerateItems(_pagesOptions.RootDirectory))
             {
                 if (!IsRouteable(item))
                 {
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private void AddAreaPageModels(PageRouteModelProviderContext context)
         {
-            foreach (var item in _project.EnumerateItems(_pagesOptions.AreaRootDirectory))
+            foreach (var item in _razorFileSystem.EnumerateItems(_pagesOptions.AreaRootDirectory))
             {
                 if (!IsRouteable(item))
                 {

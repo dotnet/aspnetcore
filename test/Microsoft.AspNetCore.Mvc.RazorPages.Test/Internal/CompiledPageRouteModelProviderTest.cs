@@ -522,15 +522,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             options = options ?? new RazorPagesOptions();
             fileProvider = fileProvider ?? new TestFileProvider();
-            var project = new FileProviderRazorProject(
+            var fileSystem = new FileProviderRazorProjectFileSystem(
                 Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider),
                 Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath"));
-            var templateEngine = new RazorTemplateEngine(RazorEngine.Create(), project);
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem);
 
             var provider = new TestCompiledPageRouteModelProvider(
                 new ApplicationPartManager(),
                 Options.Create(options),
-                templateEngine,
+                projectEngine,
                 NullLogger<CompiledPageRouteModelProvider>.Instance);
 
             provider.Descriptors.AddRange(descriptors ?? Array.Empty<CompiledViewDescriptor>());
@@ -565,9 +565,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public TestCompiledPageRouteModelProvider(
                 ApplicationPartManager partManager,
                 IOptions<RazorPagesOptions> options,
-                RazorTemplateEngine templateEngine,
+                RazorProjectEngine projectEngine,
                 ILogger<CompiledPageRouteModelProvider> logger)
-                : base(partManager, options, templateEngine, logger)
+                : base(partManager, options, projectEngine, logger)
             {
             }
 

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
@@ -79,9 +80,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             Assert.Collection(
                 result.ExpirationTokens,
                 token => Assert.Same(fileProvider.GetChangeToken(path), token),
-                token => Assert.Same(fileProvider.GetChangeToken("/file/exists/_ViewImports.cshtml"), token),
+                token => Assert.Same(fileProvider.GetChangeToken("/_ViewImports.cshtml"), token),
                 token => Assert.Same(fileProvider.GetChangeToken("/file/_ViewImports.cshtml"), token),
-                token => Assert.Same(fileProvider.GetChangeToken("/_ViewImports.cshtml"), token));
+                token => Assert.Same(fileProvider.GetChangeToken("/file/exists/_ViewImports.cshtml"), token));
         }
 
         [Theory]
@@ -822,17 +823,14 @@ this should fail";
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
 
             var hostingEnvironment = Mock.Of<IHostingEnvironment>(e => e.ContentRootPath == "BasePath");
-            var projectSystem = new FileProviderRazorProject(accessor, hostingEnvironment);
-            var templateEngine = new RazorTemplateEngine(RazorEngine.Create(), projectSystem)
+            var fileSystem = new FileProviderRazorProjectFileSystem(accessor, hostingEnvironment);
+            var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
             {
-                Options =
-                {
-                    ImportsFileName = "_ViewImports.cshtml",
-                }
-            };
+                RazorExtensions.Register(builder);
+            });
             var viewCompiler = new TestRazorViewCompiler(
                 fileProvider,
-                templateEngine,
+                projectEngine,
                 new CSharpCompiler(referenceManager, hostingEnvironment),
                 compilationCallback,
                 precompiledViews);
@@ -843,12 +841,12 @@ this should fail";
         {
             public TestRazorViewCompiler(
                 TestFileProvider fileProvider,
-                RazorTemplateEngine templateEngine,
+                RazorProjectEngine projectEngine,
                 CSharpCompiler csharpCompiler,
                 Action<RoslynCompilationContext> compilationCallback,
                 IList<CompiledViewDescriptor> precompiledViews,
                 Func<string, CompiledViewDescriptor> compile = null) :
-                base(fileProvider, templateEngine, csharpCompiler, compilationCallback, precompiledViews, NullLogger.Instance)
+                base(fileProvider, projectEngine, csharpCompiler, compilationCallback, precompiledViews, NullLogger.Instance)
             {
                 Compile = compile;
                 if (Compile == null)
