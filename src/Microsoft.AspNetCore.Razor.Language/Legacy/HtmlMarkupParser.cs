@@ -207,6 +207,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (last != null)
             {
                 Accept(last);
+                if (At(HtmlSymbolType.OpenAngle) && last.Type == HtmlSymbolType.Text)
+                {
+                    Output(SpanKindInternal.Markup);
+                }
             }
         }
 
@@ -494,26 +498,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 if (CurrentSymbol.Type == HtmlSymbolType.DoubleHyphen)
                 {
-                    AcceptAndMoveNext();
-
-                    Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
-                    while (!EndOfFile)
+                    using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
                     {
-                        SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
-                        if (At(HtmlSymbolType.DoubleHyphen))
+                        AcceptAndMoveNext();
+
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
+                        while (!EndOfFile)
                         {
-                            AcceptWhile(HtmlSymbolType.DoubleHyphen);
-
-                            if (At(HtmlSymbolType.Text) &&
-                                string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
+                            SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
+                            if (At(HtmlSymbolType.DoubleHyphen))
                             {
-                                AcceptAndMoveNext();
-                            }
+                                AcceptWhile(HtmlSymbolType.DoubleHyphen);
 
-                            if (At(HtmlSymbolType.CloseAngle))
-                            {
-                                AcceptAndMoveNext();
-                                return true;
+                                if (At(HtmlSymbolType.Text) &&
+                                    string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
+                                {
+                                    AcceptAndMoveNext();
+                                }
+
+                                if (At(HtmlSymbolType.CloseAngle))
+                                {
+                                    // This is the end of a comment block
+                                    Accept(this.CurrentSymbol);
+                                    Output(SpanKindInternal.Markup);
+
+                                    NextToken();
+                                    //AcceptAndMoveNext();
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -1476,6 +1488,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         AcceptAndMoveNext(); // Accept '<'
                         BangTag();
+
                         return;
                     }
 

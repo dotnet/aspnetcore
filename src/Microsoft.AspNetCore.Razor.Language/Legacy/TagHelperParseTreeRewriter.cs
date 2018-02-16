@@ -488,7 +488,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
         {
-            if (HasAllowedChildren() && !IsComment(child))
+            if (HasAllowedChildren() && !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code)
             {
                 var content = child.Content;
                 if (!string.IsNullOrWhiteSpace(content))
@@ -817,13 +817,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
         }
 
-        private static bool IsComment(Span span)
+        internal static bool IsComment(Span span)
         {
-            bool isHtmlComment = span.Content?.StartsWith("<!--") == true;
-            bool isRazorComment = span.Parent?.Type == BlockKindInternal.Comment;
+            Block currentBlock = span.Parent;
+            while (currentBlock != null && currentBlock.Type != BlockKindInternal.Comment && currentBlock.Type != BlockKindInternal.HtmlComment)
+            {
+                currentBlock = currentBlock.Parent;
+            }
 
-            return isHtmlComment || isRazorComment;
+            return currentBlock != null;
         }
+
 
         private static void EnsureTagBlock(Block tagBlock)
         {

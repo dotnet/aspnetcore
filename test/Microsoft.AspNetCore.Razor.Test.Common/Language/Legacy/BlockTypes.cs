@@ -217,4 +217,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
         }
     }
+
+    internal class HtmlCommentBlock : Block
+    {
+        private const BlockKindInternal ThisBlockKind = BlockKindInternal.HtmlComment;
+
+        public HtmlCommentBlock(params SyntaxTreeNode[] children)
+            : base(ThisBlockKind, children, ParentChunkGenerator.Null)
+        {
+        }
+    }
 }
