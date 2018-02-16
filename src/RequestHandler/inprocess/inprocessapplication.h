@@ -4,8 +4,8 @@
 #pragma once
 
 typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_REQUEST_HANDLER) (IN_PROCESS_HANDLER* pInProcessHandler, void* pvRequestHandlerContext);
-typedef BOOL( WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
-typedef REQUEST_NOTIFICATION_STATUS( WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
+typedef BOOL(WINAPI * PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
+typedef REQUEST_NOTIFICATION_STATUS(WINAPI * PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
 class IN_PROCESS_APPLICATION : public APPLICATION
 {
@@ -15,53 +15,63 @@ public:
     ~IN_PROCESS_APPLICATION();
 
     __override
-    VOID
-    ShutDown();
-
-    VOID
-    SetCallbackHandles(
-        _In_ PFN_REQUEST_HANDLER request_callback,
-        _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
-        _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
-        _In_ VOID* pvRequstHandlerContext,
-        _In_ VOID* pvShutdownHandlerContext
-    );
-
-    VOID
-    Recycle(
         VOID
-    );
+        ShutDown();
+
+    VOID
+        SetCallbackHandles(
+            _In_ PFN_REQUEST_HANDLER request_callback,
+            _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
+            _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
+            _In_ VOID* pvRequstHandlerContext,
+            _In_ VOID* pvShutdownHandlerContext
+        );
+
+    VOID
+        Recycle(
+            VOID
+        );
 
     // Executes the .NET Core process
     HRESULT
-    ExecuteApplication(
-        VOID
-    );
+        ExecuteApplication(
+            VOID
+        );
+
+    VOID
+        ReadStdErrHandleInternal(
+            VOID
+        );
+
+    VOID
+        CloseStdErrHandles(
+            VOID
+        );
 
     HRESULT
-    LoadManagedApplication(
-        VOID
-    );
+        LoadManagedApplication(
+            VOID
+        );
 
     REQUEST_NOTIFICATION_STATUS
-    OnAsyncCompletion(
-        DWORD                   cbCompletion,
-        HRESULT                 hrCompletionStatus,
-        IN_PROCESS_HANDLER*     pInProcessHandler
-    );
+        OnAsyncCompletion(
+            DWORD                   cbCompletion,
+            HRESULT                 hrCompletionStatus,
+            IN_PROCESS_HANDLER*     pInProcessHandler
+        );
 
     REQUEST_NOTIFICATION_STATUS
-    OnExecuteRequest
-    (
-        IHttpContext* pHttpContext,
-        IN_PROCESS_HANDLER* pInProcessHandler
-    );
+        OnExecuteRequest
+        (
+            IHttpContext* pHttpContext,
+            IN_PROCESS_HANDLER* pInProcessHandler
+        );
 
     static
-    IN_PROCESS_APPLICATION*
-    GetInstance(
-        VOID
-    )
+        IN_PROCESS_APPLICATION*
+        GetInstance(
+            VOID
+        )
     {
         return s_Application;
     }
@@ -85,6 +95,8 @@ private:
 
     // The std log file handle
     HANDLE                          m_hLogFileHandle;
+    HANDLE                          m_hErrReadPipe;
+    HANDLE                          m_hErrWritePipe;
     STRU                            m_struLogFilePath;
 
     // The exit code of the .NET Core process
@@ -101,27 +113,38 @@ private:
     STTIMER                         m_Timer;
     SRWLOCK                         m_srwLock;
 
-    static IN_PROCESS_APPLICATION*   s_Application;
+    // Thread for capturing startup stderr logs when logging is disabled
+    HANDLE                          m_hErrThread;
+    CHAR                            m_pzFileContents[4096] = { 0 };
+    DWORD                           m_dwStdErrReadTotal;
+    static IN_PROCESS_APPLICATION*  s_Application;
 
     VOID
-    SetStdOut(
+        SetStdOut(
+            VOID
+        );
+
+    static
         VOID
-    );
+        ExecuteAspNetCoreProcess(
+            _In_ LPVOID pContext
+        );
 
     static
-    VOID
-    ExecuteAspNetCoreProcess(
-        _In_ LPVOID pContext
-    );
+        VOID
+        ReadStdErrHandle
+        (
+            _In_ LPVOID pContext
+        );
 
     static
-    INT
-    FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
+        INT
+        FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);
 
     HRESULT
-    RunDotnetApplication(
-        DWORD argc,
-        CONST PCWSTR* argv,
-        hostfxr_main_fn pProc
-    );
+        RunDotnetApplication(
+            DWORD argc,
+            CONST PCWSTR* argv,
+            hostfxr_main_fn pProc
+        );
 };

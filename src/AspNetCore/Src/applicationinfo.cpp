@@ -93,13 +93,13 @@ VOID
 APPLICATION_INFO::UpdateAppOfflineFileHandle()
 {
     STRU strFilePath;
-    UTILITY::ConvertPathToFullPath(L".\\app_offline.htm", 
-        m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(), 
+    UTILITY::ConvertPathToFullPath(L".\\app_offline.htm",
+        m_pConfiguration->QueryApplicationPhysicalPath()->QueryStr(),
         &strFilePath);
     APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
     APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
 
-    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) && 
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) &&
         GetLastError() == ERROR_FILE_NOT_FOUND)
     {
         m_fAppOfflineFound = FALSE;
@@ -141,9 +141,9 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
                 m_pApplication->QueryConfig()->QueryApplicationPath()->QueryStr())))
             {
                 UTILITY::LogEvent(g_hEventLog,
-                                  EVENTLOG_INFORMATION_TYPE,
-                                  ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
-                                  strEventMsg.QueryStr());
+                    EVENTLOG_INFORMATION_TYPE,
+                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
+                    strEventMsg.QueryStr());
             }
 
             m_pApplication->ShutDown();
@@ -170,7 +170,7 @@ APPLICATION_INFO::EnsureApplicationCreated()
         goto Finished;
     }
 
-    if ( m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS )
+    if (m_pConfiguration->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
     {
         if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
             g_hEventLog,
@@ -385,13 +385,13 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     INT         intIndex = -1;
     INT         intPrevIndex = 0;
     BOOL        fFound = FALSE;
-    DWORD       dwBufferSize = 1024;
+    DWORD       dwBufferSize = 1024 * 10;
     DWORD       dwRequiredBufferSize = 0;
 
     DBG_ASSERT(struFileName != NULL);
 
     hmHostFxrDll = LoadLibraryW(m_pConfiguration->QueryHostFxrFullPath());
-    
+
     if (hmHostFxrDll == NULL)
     {
         // Could not load hostfxr
@@ -429,9 +429,10 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
         {
             break;
         }
-        else if (dwRequiredBufferSize >= dwBufferSize)
+        else if (dwRequiredBufferSize > dwBufferSize)
         {
             dwBufferSize = dwRequiredBufferSize + 1; // for null terminator
+
             if (FAILED(hr = struNativeSearchPaths.Resize(dwBufferSize)))
             {
                 goto Finished;
@@ -451,7 +452,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     }
 
     fFound = FALSE;
-    
+
     // The native search directories are semicolon delimited.
     // Split on semicolons, append aspnetcorerh.dll, and check if the file exists.
     while ((intIndex = struNativeSearchPaths.IndexOf(L";", intPrevIndex)) != -1)
