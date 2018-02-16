@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var provider = new RazorViewCompilerProvider(
                 partManager,
-                RazorProjectEngine.Create(
-                    RazorConfiguration.Default, 
-                    new FileProviderRazorProjectFileSystem(accessor, Mock.Of<IHostingEnvironment>())),
+                new RazorTemplateEngine(
+                    RazorEngine.Create(), 
+                    new FileProviderRazorProject(accessor, Mock.Of<IHostingEnvironment>())),
                 accessor,
                 new CSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>()),
                 options,

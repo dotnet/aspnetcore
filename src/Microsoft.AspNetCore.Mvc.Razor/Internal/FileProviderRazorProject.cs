@@ -10,13 +10,13 @@ using Microsoft.Extensions.FileProviders;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
-    public class FileProviderRazorProjectFileSystem : RazorProjectFileSystem
+    public class FileProviderRazorProject : RazorProject
     {
         private const string RazorFileExtension = ".cshtml";
         private readonly IFileProvider _provider;
         private readonly IHostingEnvironment _hostingEnvironment;
 
-        public FileProviderRazorProjectFileSystem(IRazorViewEngineFileProviderAccessor accessor, IHostingEnvironment hostingEnviroment)
+        public FileProviderRazorProject(IRazorViewEngineFileProviderAccessor accessor, IHostingEnvironment hostingEnviroment)
         {
             if (accessor == null)
             {

@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Linq;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
@@ -16,10 +14,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using CompilationTagHelperFeature = Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature;
-using DefaultTagHelperDescriptorProvider = Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -146,19 +141,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 IRazorViewEngineFileProviderAccessor,
                 DefaultRazorViewEngineFileProviderAccessor>();
 
-            services.TryAddSingleton<IRazorViewEngine>(s =>
-            {
-                var pageFactory = s.GetRequiredService<IRazorPageFactoryProvider>();
-                var pageActivator = s.GetRequiredService<IRazorPageActivator>();
-                var htmlEncoder = s.GetRequiredService<HtmlEncoder>();
-                var optionsAccessor = s.GetRequiredService<IOptions<RazorViewEngineOptions>>();
-                var razorFileSystem = s.GetRequiredService<RazorProjectFileSystem>();
-                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
-                var diagnosticSource = s.GetRequiredService<DiagnosticSource>();
-
-                var viewEngine = new RazorViewEngine(pageFactory, pageActivator, htmlEncoder, optionsAccessor, razorFileSystem, loggerFactory, diagnosticSource);
-                return viewEngine;
-            });
+            services.TryAddSingleton<IRazorViewEngine, RazorViewEngine>();
             services.TryAddSingleton<IViewCompilerProvider, RazorViewCompilerProvider>();
 
             // In the default scenario the following services are singleton by virtue of being initialized as part of
@@ -168,32 +151,26 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Razor compilation infrastructure
             //
+            services.TryAddSingleton<RazorProject, FileProviderRazorProject>();
+            services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
             services.TryAddSingleton<LazyMetadataReferenceFeature>();
-            services.TryAddSingleton<RazorProjectFileSystem, FileProviderRazorProjectFileSystem>();
+
             services.TryAddSingleton(s =>
             {
-                var fileSystem = s.GetRequiredService<RazorProjectFileSystem>();
-                var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
+                return RazorEngine.Create(b =>
                 {
-                    RazorExtensions.Register(builder);
+                    RazorExtensions.Register(b);
 
                     // Roslyn + TagHelpers infrastructure
                     var metadataReferenceFeature = s.GetRequiredService<LazyMetadataReferenceFeature>();
-                    builder.Features.Add(metadataReferenceFeature);
-                    builder.Features.Add(new CompilationTagHelperFeature());
+                    b.Features.Add(metadataReferenceFeature);
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.CompilationTagHelperFeature());
 
                     // TagHelperDescriptorProviders (actually do tag helper discovery)
-                    builder.Features.Add(new DefaultTagHelperDescriptorProvider());
-                    builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+                    b.Features.Add(new Microsoft.CodeAnalysis.Razor.DefaultTagHelperDescriptorProvider());
+                    b.Features.Add(new ViewComponentTagHelperDescriptorProvider());
                 });
-
-                return projectEngine;
             });
-
-            // Legacy Razor compilation services
-            services.TryAddSingleton<RazorProject>(s => s.GetRequiredService<RazorProjectEngine>().FileSystem);
-            services.TryAddSingleton<RazorTemplateEngine, MvcRazorTemplateEngine>();
-            services.TryAddSingleton(s => s.GetRequiredService<RazorProjectEngine>().Engine);
 
             // This caches Razor page activation details that are valid for the lifetime of the application.
             services.TryAddSingleton<IRazorPageActivator, RazorPageActivator>();

@@ -8,9 +8,9 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    public class TestRazorProjectFileSystem : FileProviderRazorProjectFileSystem
+    public class TestRazorProject : FileProviderRazorProject
     {
-        public TestRazorProjectFileSystem(IFileProvider fileProvider, IHostingEnvironment hostingEnvironment)
+        public TestRazorProject(IFileProvider fileProvider, IHostingEnvironment hostingEnvironment)
             :base(GetAccessor(fileProvider), hostingEnvironment)
         {
         }

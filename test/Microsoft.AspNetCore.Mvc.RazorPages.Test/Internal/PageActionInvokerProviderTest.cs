@@ -196,13 +196,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/_ViewStart.cshtml", "content2");
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var defaultFileSystem = new FileProviderRazorProjectFileSystem(accessor, _hostingEnvironment);
+            var defaultRazorProject = new FileProviderRazorProject(accessor, _hostingEnvironment);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider.Object,
-                fileSystem: defaultFileSystem);
+                razorProject: defaultRazorProject);
 
             var context = new ActionInvokerProviderContext(new ActionContext()
             {
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             fileProvider.AddFile("/Pages/Level1/Level2/_ViewStart.cshtml", "page content");
             fileProvider.AddFile("/Pages/Level1/Level3/_ViewStart.cshtml", "page content");
 
-            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
+            var razorProject = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
             mock
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider,
-                fileSystem: fileSystem);
+                razorProject: razorProject);
 
             // Act
             var factories = invokerProvider.GetViewStartFactories(compiledPageDescriptor);
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // No files
             var fileProvider = new TestFileProvider();
-            var fileSystem = new TestRazorProjectFileSystem(fileProvider, _hostingEnvironment);
+            var razorProject = new TestRazorProject(fileProvider, _hostingEnvironment);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
@@ -427,7 +427,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageProvider: null,
                 modelProvider: null,
                 razorPageFactoryProvider: pageFactory.Object,
-                fileSystem: fileSystem);
+                razorProject: razorProject);
 
             var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
 
@@ -473,16 +473,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageFactoryProvider pageProvider = null,
             IPageModelFactoryProvider modelProvider = null,
             IRazorPageFactoryProvider razorPageFactoryProvider = null,
-            RazorProjectFileSystem fileSystem = null)
+            RazorProject razorProject = null)
         {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
             tempDataFactory
                 .Setup(t => t.GetTempData(It.IsAny<HttpContext>()))
                 .Returns((HttpContext context) => new TempDataDictionary(context, Mock.Of<ITempDataProvider>()));
 
-            if (fileSystem == null)
+            if (razorProject == null)
             {
-                fileSystem = Mock.Of<RazorProjectFileSystem>();
+                razorProject = Mock.Of<RazorProject>();
             }
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 Options.Create(new MvcOptions()),
                 Options.Create(new HtmlHelperOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
-                fileSystem,
+                razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),
                 NullLoggerFactory.Instance);
         }
