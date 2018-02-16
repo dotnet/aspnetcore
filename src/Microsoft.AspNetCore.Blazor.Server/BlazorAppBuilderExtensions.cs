@@ -42,6 +42,18 @@ namespace Microsoft.AspNetCore.Builder
                 FileProvider = distFileProvider,
                 ContentTypeProvider = CreateContentTypeProvider(),
             });
+
+            if (!string.IsNullOrEmpty(config.WebRootPath))
+            {
+                // In development, we serve the wwwroot files directly from source
+                // (and don't require them to be copied into dist).
+                // TODO: When publishing is implemented, have config.WebRootPath set
+                // to null so that it only serves files that were copied to dist
+                applicationBuilder.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new PhysicalFileProvider(config.WebRootPath)
+                });
+            }
         }
 
         private static IContentTypeProvider CreateContentTypeProvider()

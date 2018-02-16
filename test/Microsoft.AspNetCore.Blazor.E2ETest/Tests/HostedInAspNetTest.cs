@@ -3,6 +3,9 @@
 
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
@@ -14,13 +17,29 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;
+            Navigate("/", noReload: true);
+            WaitUntilLoaded();
         }
 
         [Fact]
         public void HasTitle()
         {
-            Navigate("/", noReload: true);
             Assert.Equal("Sample Blazor app", Browser.Title);
+        }
+
+        [Fact]
+        public void ServesStaticAssetsFromClientAppWebRoot()
+        {
+            var javascriptExecutor = (IJavaScriptExecutor)Browser;
+            var bootstrapTooltipType = javascriptExecutor
+                .ExecuteScript("return window.customJsWasLoaded;");
+            Assert.True((bool)bootstrapTooltipType);
+        }
+
+        private void WaitUntilLoaded()
+        {
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
+                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
         }
     }
 }

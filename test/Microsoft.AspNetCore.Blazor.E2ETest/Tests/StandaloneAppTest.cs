@@ -31,6 +31,16 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         {
             Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
         }
+        
+        [Fact]
+        public void ServesStaticAssetsFromClientAppWebRoot()
+        {
+            // Verify that bootstrap.js was loaded
+            var javascriptExecutor = (IJavaScriptExecutor)Browser;
+            var bootstrapTooltipType = javascriptExecutor
+                .ExecuteScript("return typeof (window.Tooltip);");
+            Assert.Equal("function", bootstrapTooltipType);
+        }
 
         private void WaitUntilLoaded()
         {
