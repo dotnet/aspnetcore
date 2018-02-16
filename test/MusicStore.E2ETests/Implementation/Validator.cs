@@ -127,6 +127,13 @@ namespace E2ETests
                 StringComparison.OrdinalIgnoreCase);
         }
 
+        public async Task VerifyDeveloperExceptionPage(HttpResponseMessage response)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.Contains(responseContent, "PageThatThrows.cshtml");
+            Assert.Contains(responseContent, "@{ throw new InvalidOperationException(); }");
+        }
+
         public void ValidateLayoutPage(string responseContent)
         {
             Assert.Contains("ASP.NET MVC Music Store", responseContent, StringComparison.OrdinalIgnoreCase);

@@ -17,24 +17,21 @@ namespace E2ETests
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X64_WebListener_CoreCLR_Portable()
         {
             return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X64_WebListener_CoreCLR_Standalone()
         {
             return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X64_WebListener_Clr()
         {
             // CLR must be published as standalone to perform rid specific deployment
@@ -48,14 +45,26 @@ namespace E2ETests
         }
 
         [Fact]
+        public Task PublishAndRunDevelopmentTests_X64_Kestrel_CoreClr_Portable()
+        {
+            return _testRunner.RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable, RuntimeArchitecture.x64);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public Task PublishAndRunDevelopmentTests_X64_Kestrel_Clr_Portable()
+        {
+            return _testRunner.RunTests(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Portable, RuntimeArchitecture.x64);
+        }
+
+        [Fact]
         public Task PublishAndRunTests_X64_Kestrel_CoreClr_Standalone()
         {
             return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public Task PublishAndRunTests_X64_Kestrel_Clr()
         {
             // CLR must be published as standalone to perform rid specific deployment
