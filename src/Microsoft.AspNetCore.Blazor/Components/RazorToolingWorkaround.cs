@@ -30,6 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         // It will be removed when we can add Blazor-specific directives.
         public object Layout<TLayout>() where TLayout : IComponent
             => throw new NotImplementedException();
+
+        // Similar temporary mechanism as above
+        public object Implements<TInterface>()
+            => throw new NotImplementedException();
     }
 
     namespace Internal

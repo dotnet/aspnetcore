@@ -389,6 +389,22 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Text(frame, "Hello"));
         }
 
+        [Fact]
+        public void SupportsImplementsDeclarationsViaTemporarySyntax()
+        {
+            // Arrange/Act
+            var testInterfaceTypeName = typeof(ITestInterface).FullName.Replace('+', '.');
+            var component = CompileToComponent(
+                $"@(Implements<{testInterfaceTypeName}>())" +
+                $"Hello");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.IsAssignableFrom<ITestInterface>(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Hello"));
+        }
+
         private static RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
@@ -523,5 +539,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
             }
         }
+
+        public interface ITestInterface { }
     }
 }

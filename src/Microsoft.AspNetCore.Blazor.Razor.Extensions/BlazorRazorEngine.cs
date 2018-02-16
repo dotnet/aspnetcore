@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 FunctionsDirective.Register(configure);
                 TemporaryLayoutPass.Register(configure);
+                TemporaryImplementsPass.Register(configure);
 
                 configure.SetBaseType(BlazorComponent.FullTypeName);
 
