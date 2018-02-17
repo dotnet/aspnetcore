@@ -36,7 +36,7 @@ Prerequisites:
 - [.NET Core SDK](https://dot.net/core) (>2.1.4)
 - [Node.js](https://nodejs.org/) (>8.3)
 
-Run `dotnet build` from the solution directory.
+Run `dotnet build Blazor.sln` from the solution directory.
 
 ## Run tests
 
