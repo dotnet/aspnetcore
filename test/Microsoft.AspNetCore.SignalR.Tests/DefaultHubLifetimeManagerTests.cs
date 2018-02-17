@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                await connection1.DisposeAsync().OrTimeout();
-                await connection2.DisposeAsync().OrTimeout();
-
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -57,9 +54,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.SendAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
-                await connection1.DisposeAsync().OrTimeout();
-                await connection2.DisposeAsync().OrTimeout();
-
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -86,9 +80,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.SendGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
-                await connection1.DisposeAsync().OrTimeout();
-                await connection2.DisposeAsync().OrTimeout();
-
                 var message = Assert.IsType<InvocationMessage>(client1.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -110,8 +101,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await manager.SendConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
-                await connection.DisposeAsync().OrTimeout();
-
                 var message = Assert.IsType<InvocationMessage>(client.TryRead());
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
@@ -125,11 +114,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 // Force an exception when writing to connection
-                var writer = new Mock<ChannelWriter<HubMessage>>();
-                writer.Setup(o => o.WaitToWriteAsync(It.IsAny<CancellationToken>())).Throws(new Exception("Message"));
-
                 var manager = new DefaultHubLifetimeManager<MyHub>();
-                var connection = HubConnectionContextUtils.Create(client.Connection, new MockChannel(writer.Object));
+
+                var connectionMock = HubConnectionContextUtils.CreateMock(client.Connection);
+                connectionMock.Setup(m => m.WriteAsync(It.IsAny<HubMessage>())).Throws(new Exception("Message"));
+                var connection = connectionMock.Object;
 
                 await manager.OnConnectedAsync(connection).OrTimeout();
 

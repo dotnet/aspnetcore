@@ -402,7 +402,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     var invocation = message.CreateInvocation();
                     foreach (var connection in _connections)
                     {
-                        tasks.Add(connection.WriteAsync(invocation));
+                        try
+                        {
+                            tasks.Add(connection.WriteAsync(invocation));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.FailedWritingMessage(ex);
+                        }
                     }
 
                     await Task.WhenAll(tasks);
@@ -434,7 +441,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     {
                         if (!excludedIds.Contains(connection.ConnectionId))
                         {
-                            tasks.Add(connection.WriteAsync(invocation));
+                            try
+                            {
+                                tasks.Add(connection.WriteAsync(invocation));
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.FailedWritingMessage(ex);
+                            }
                         }
                     }
 
@@ -562,7 +576,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                             continue;
                         }
 
-                        tasks.Add(groupConnection.WriteAsync(invocation));
+                        try
+                        {
+                            tasks.Add(groupConnection.WriteAsync(invocation));
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.FailedWritingMessage(ex);
+                        }
                     }
 
                     await Task.WhenAll(tasks);

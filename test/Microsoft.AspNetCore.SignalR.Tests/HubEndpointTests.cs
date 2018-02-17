@@ -1646,32 +1646,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task ConnectionClosedIfWritingToTransportFails()
-        {
-            // MessagePack does not support serializing objects or private types (including anonymous types)
-            // and throws. In this test we make sure that this exception closes the connection and bubbles up.
-
-            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
-
-            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
-
-            using (var client = new TestClient(false, new MessagePackHubProtocol()))
-            {
-                var transportFeature = new Mock<IConnectionTransportFeature>();
-                transportFeature.SetupGet(f => f.TransportCapabilities).Returns(TransferMode.Binary);
-                client.Connection.Features.Set(transportFeature.Object);
-
-                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
-
-                await client.Connected.OrThrowIfOtherFails(endPointLifetime).OrTimeout();
-
-                await client.SendInvocationAsync(nameof(MethodHub.SendAnonymousObject)).OrTimeout();
-
-                await Assert.ThrowsAsync<SerializationException>(() => endPointLifetime.OrTimeout());
-            }
-        }
-
-        [Fact]
         public async Task AcceptsPingMessages()
         {
             var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
