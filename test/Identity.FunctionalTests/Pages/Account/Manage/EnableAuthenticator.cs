@@ -7,19 +7,24 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 {
-    internal class EnableAuthenticator : HtmlPage
+    internal class EnableAuthenticator : DefaultUIPage
     {
         public const string AuthenticatorKey = nameof(EnableAuthenticator) + "." + nameof(AuthenticatorKey);
 
         private readonly IHtmlElement _codeElement;
         private readonly IHtmlFormElement _sendCodeForm;
 
-        public EnableAuthenticator(HttpClient client, IHtmlDocument enableAuthenticator, HtmlPageContext context)
+        public EnableAuthenticator(
+            HttpClient client,
+            IHtmlDocument enableAuthenticator,
+            DefaultUIContext context)
             : base(client, enableAuthenticator, context)
         {
+            Assert.True(Context.UserAuthenticated);
             _codeElement = HtmlAssert.HasElement("kbd", enableAuthenticator);
             _sendCodeForm = HtmlAssert.HasForm("#send-code", enableAuthenticator);
         }
@@ -27,7 +32,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         internal async Task<ShowRecoveryCodes> SendValidCodeAsync()
         {
             var authenticatorKey = _codeElement.TextContent.Replace(" ", "");
-            Context[AuthenticatorKey] = authenticatorKey;
+            Context.AuthenticatorKey = authenticatorKey;
             var verificationCode = ComputeCode(authenticatorKey);
 
             var sendCodeResponse = await Client.SendAsync(_sendCodeForm, new Dictionary<string, string>

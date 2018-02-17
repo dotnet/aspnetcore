@@ -4,31 +4,34 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 {
-    public class Index : HtmlPage
+    public class Index : DefaultUIPage
     {
         private readonly IHtmlAnchorElement _profileLink;
         private readonly IHtmlAnchorElement _changePasswordLink;
         private readonly IHtmlAnchorElement _twoFactorLink;
         private readonly IHtmlAnchorElement _personalDataLink;
 
-        public Index(HttpClient client, IHtmlDocument manage, HtmlPageContext context)
+        public Index(HttpClient client, IHtmlDocument manage, DefaultUIContext context)
             : base(client, manage, context)
         {
+            Assert.True(Context.UserAuthenticated);
+
             _profileLink = HtmlAssert.HasLink("#profile", manage);
             _changePasswordLink = HtmlAssert.HasLink("#change-password", manage);
             _twoFactorLink = HtmlAssert.HasLink("#two-factor", manage);
             _personalDataLink = HtmlAssert.HasLink("#personal-data", manage);
         }
 
-        public async Task<TwoFactorAuthentication> ClickTwoFactorLinkAsync(bool twoFactorEnabled)
+        public async Task<TwoFactorAuthentication> ClickTwoFactorLinkAsync()
         {
             var goToTwoFactor = await Client.GetAsync(_twoFactorLink.Href);
             var twoFactor = await ResponseAssert.IsHtmlDocumentAsync(goToTwoFactor);
 
-            return new TwoFactorAuthentication(Client, twoFactor, Context, twoFactorEnabled);
+            return new TwoFactorAuthentication(Client, twoFactor, Context);
         }
     }
 }

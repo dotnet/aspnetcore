@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-md-4">
         <section>
-            <form method="post">
+            <form id="account" method="post">
                 <h4>Use a local account to log in.</h4>
                 <hr />
                 <div asp-validation-summary="All" class="text-danger"></div>
@@ -61,7 +61,7 @@
                 }
                 else
                 {
-                    <form asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
                         <div>
                             <p>
                                 @foreach (var provider in Model.ExternalLogins)

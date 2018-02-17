@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var index = await UserStories.RegisterNewUserAsync(client, userName, password);
 
             // Act & Assert
-            await UserStories.EnableTwoFactorAuthentication(index, twoFactorEnabled: false);
+            await UserStories.EnableTwoFactorAuthentication(index);
         }
     }
 }

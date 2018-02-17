@@ -9,14 +9,35 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 {
-    public class Login : HtmlPage
+    public class Login : DefaultUIPage
     {
         private readonly IHtmlFormElement _loginForm;
+        private readonly IHtmlFormElement _externalLoginForm;
+        private readonly IHtmlElement _contosoButton;
 
-        public Login(HttpClient client, IHtmlDocument login, HtmlPageContext context)
+        public Login(
+            HttpClient client,
+            IHtmlDocument login,
+            DefaultUIContext context)
             : base(client, login, context)
         {
-            _loginForm = HtmlAssert.HasForm(login);
+            _loginForm = HtmlAssert.HasForm("#account", login);
+            if (Context.ContosoLoginEnabled)
+            {
+                _externalLoginForm = HtmlAssert.HasForm("#external-account", login);
+                _contosoButton = HtmlAssert.HasElement("button[value=Contoso]", login);
+            }
+        }
+
+        public async Task<Contoso.Login> ClickLoginWithContosoLinkAsync()
+        {
+            var externalFormResponse = await Client.SendAsync(_externalLoginForm, _contosoButton);
+            var goToContosoLogin = ResponseAssert.IsRedirect(externalFormResponse);
+            var contosoLoginResponse = await Client.GetAsync(goToContosoLogin);
+
+            var contosoLogin = await ResponseAssert.IsHtmlDocumentAsync(contosoLoginResponse);
+
+            return new Contoso.Login(Client, contosoLogin, Context);
         }
 
         public async Task<Index> LoginValidUserAsync(string userName, string password)
@@ -27,7 +48,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             Assert.Equal(Index.Path, loggedInLocation.ToString());
             var indexResponse = await Client.GetAsync(loggedInLocation);
             var index = await ResponseAssert.IsHtmlDocumentAsync(indexResponse);
-            return new Index(Client, index, Context, authenticated: true);
+            return new Index(
+                Client,
+                index,
+                Context.WithAuthenticatedUser());
         }
 
         private async Task<HttpResponseMessage> SendLoginForm(string userName, string password)

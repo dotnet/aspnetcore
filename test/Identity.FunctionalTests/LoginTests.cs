@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
-using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -45,9 +44,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var password = $"!Test.Password1$";
 
             var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn, twoFactorEnabled: false);
+            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var twoFactorKey = showRecoveryCodes.Context[EnableAuthenticator.AuthenticatorKey];
+            var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
 
             // Act & Assert
             // Use a new client to simulate a new browser session.
@@ -66,11 +65,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var password = $"!Test.Password1$";
 
             var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
-            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn, twoFactorEnabled: false);
+            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
 
-            var recoveryCode = showRecoveryCodes.Context[ShowRecoveryCodes.RecoveryCodes]
-                .Split(' ')
-                .First();
+            var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
 
             // Act & Assert
             // Use a new client to simulate a new browser session.
@@ -130,6 +127,24 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var response = await newClient.GetAsync(link.Href);
 
             await UserStories.LoginExistingUserAsync(newClient, userName, password);
+        }
+
+        [Fact]
+        public async Task CanLoginWithASocialLoginProvider()
+        {
+            // Arrange
+            var server = ServerFactory.CreateServer(builder =>
+                builder.ConfigureServices(services => services.SetupTestThirdPartyLogin()));
+            var client = ServerFactory.CreateDefaultClient(server);
+            var newClient = ServerFactory.CreateDefaultClient(server);
+
+            var guid = Guid.NewGuid();
+            var userName = $"{guid}";
+            var email = $"{guid}@example.com";
+
+            // Act & Assert
+            await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
+            await UserStories.LoginWithSocialLoginAsync(newClient, userName);
         }
     }
 

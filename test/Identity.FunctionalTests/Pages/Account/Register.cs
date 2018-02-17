@@ -9,11 +9,11 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 {
-    public class Register : HtmlPage
+    public class Register : DefaultUIPage
     {
         private IHtmlFormElement _registerForm;
 
-        public Register(HttpClient client, IHtmlDocument register, HtmlPageContext context)
+        public Register(HttpClient client, IHtmlDocument register, DefaultUIContext context)
             : base(client, register, context)
         {
             _registerForm = HtmlAssert.HasForm(register);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var indexResponse = await Client.GetAsync(registeredLocation);
             var index = await ResponseAssert.IsHtmlDocumentAsync(indexResponse);
 
-            return new Index(Client, index, Context, authenticated: true);
+            return new Index(Client, index, Context.WithAuthenticatedUser());
         }
     }
 }

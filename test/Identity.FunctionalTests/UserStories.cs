@@ -30,6 +30,34 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login.LoginValidUserAsync(userName, password);
         }
 
+        internal static async Task<Index> RegisterNewUserWithSocialLoginAsync(HttpClient client, string userName, string email)
+        {
+            var index = await Index.CreateAsync(client,new DefaultUIContext().WithSocialLoginEnabled());
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
+
+            return await externalLogin.SendEmailAsync(email);
+        }
+
+        internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)
+        {
+            var index = await Index.CreateAsync(
+                client,
+                new DefaultUIContext()
+                    .WithSocialLoginEnabled()
+                    .WithExistingUser());
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var contosoLogin = await login.ClickLoginWithContosoLinkAsync();
+
+            return await contosoLogin.SendExistingUserNameAsync(userName);
+        }
+
         internal static async Task<Index> LoginExistingUser2FaAsync(HttpClient client, string userName, string password, string twoFactorKey)
         {
             var index = await Index.CreateAsync(client);
@@ -41,12 +69,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login2Fa.Send2FACodeAsync(twoFactorKey);
         }
 
-        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(
-            Index index,
-            bool twoFactorEnabled)
+        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(Index index)
         {
             var manage = await index.ClickManageLinkAsync();
-            var twoFactor = await manage.ClickTwoFactorLinkAsync(twoFactorEnabled);
+            var twoFactor = await manage.ClickTwoFactorLinkAsync();
             var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
             return await enableAuthenticator.SendValidCodeAsync();
         }
@@ -63,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             var login2Fa = await loginWithPassword.PasswordLoginValidUserWith2FaAsync(userName, password);
 
-            var loginRecoveryCode =  await login2Fa.ClickRecoveryCodeLinkAsync();
+            var loginRecoveryCode = await login2Fa.ClickRecoveryCodeLinkAsync();
 
             return await loginRecoveryCode.SendRecoveryCodeAsync(recoveryCode);
         }

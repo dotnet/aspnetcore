@@ -7,13 +7,26 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
     public class HtmlPageContext
     {
-        private readonly IDictionary<string, string> _properties = 
-            new Dictionary<string, string>();
+        private readonly IDictionary<string, object> _properties;
 
-        public string this[string key]
+        protected HtmlPageContext()
+            : this(new Dictionary<string, object>())
         {
-            get => _properties[key];
-            set => _properties[key] = value;
         }
+
+        protected HtmlPageContext(HtmlPageContext currentContext)
+            : this(new Dictionary<string,object>(currentContext._properties))
+        {
+        }
+
+        private HtmlPageContext(IDictionary<string, object> properties)
+        {
+            _properties = properties;
+        }
+
+        protected TValue GetValue<TValue>(string key) =>
+            _properties.TryGetValue(key, out var rawValue) ? (TValue)rawValue : default;
+        protected void SetValue(string key, object value) =>
+            _properties[key] = value;
     }
 }

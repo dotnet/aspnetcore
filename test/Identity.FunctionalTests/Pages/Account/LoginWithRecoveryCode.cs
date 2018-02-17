@@ -8,11 +8,11 @@ using AngleSharp.Dom.Html;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 {
-    public class LoginWithRecoveryCode : HtmlPage
+    public class LoginWithRecoveryCode : DefaultUIPage
     {
         private readonly IHtmlFormElement _loginWithRecoveryCodeForm;
 
-        public LoginWithRecoveryCode(HttpClient client, IHtmlDocument loginWithRecoveryCode, HtmlPageContext context)
+        public LoginWithRecoveryCode(HttpClient client, IHtmlDocument loginWithRecoveryCode, DefaultUIContext context)
             : base(client, loginWithRecoveryCode, context)
         {
             _loginWithRecoveryCodeForm = HtmlAssert.HasForm(loginWithRecoveryCode);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var indexPage = await Client.GetAsync(goToIndex);
             var index = await ResponseAssert.IsHtmlDocumentAsync(indexPage);
 
-            return new Index(Client, index, Context, authenticated: true);
+            return new Index(Client, index, new DefaultUIContext(Context) { UserAuthenticated = true });
         }
     }
 }

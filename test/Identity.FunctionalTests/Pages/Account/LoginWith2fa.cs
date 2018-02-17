@@ -10,14 +10,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
 {
-    public class LoginWith2fa : HtmlPage
+    public class LoginWith2fa : DefaultUIPage
     {
         public const string Path = "/Identity/Account/LoginWith2fa";
 
         private readonly IHtmlFormElement _twoFactorForm;
         private readonly IHtmlAnchorElement _loginWithRecoveryCodeLink;
 
-        public LoginWith2fa(HttpClient client, IHtmlDocument loginWithTwoFactor, HtmlPageContext context)
+        public LoginWith2fa(HttpClient client, IHtmlDocument loginWithTwoFactor, DefaultUIContext context)
             : base(client, loginWithTwoFactor, context)
         {
             _twoFactorForm = HtmlAssert.HasForm(loginWithTwoFactor);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var indexResponse = await Client.GetAsync(goToIndex);
             var index = await ResponseAssert.IsHtmlDocumentAsync(indexResponse);
 
-            return new Index(Client, index, Context, true);
+            return new Index(Client, index, Context.WithAuthenticatedUser());
         }
 
         internal async Task<LoginWithRecoveryCode> ClickRecoveryCodeLinkAsync()

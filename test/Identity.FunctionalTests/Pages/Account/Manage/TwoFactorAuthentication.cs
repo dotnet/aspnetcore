@@ -8,16 +8,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 {
-    public class TwoFactorAuthentication : HtmlPage
+    public class TwoFactorAuthentication : DefaultUIPage
     {
-        private readonly bool _twoFactorEnabled;
         private readonly IHtmlAnchorElement _enableAuthenticatorLink;
 
-        public TwoFactorAuthentication(HttpClient client, IHtmlDocument twoFactor, HtmlPageContext context, bool twoFactorEnabled)
+        public TwoFactorAuthentication(HttpClient client, IHtmlDocument twoFactor, DefaultUIContext context)
             : base(client, twoFactor, context)
         {
-            _twoFactorEnabled = twoFactorEnabled;
-            if (!_twoFactorEnabled)
+            if (!Context.TwoFactorEnabled)
             {
                 _enableAuthenticatorLink = HtmlAssert.HasLink("#enable-authenticator", twoFactor);
             }
@@ -25,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 
         internal async Task<EnableAuthenticator> ClickEnableAuthenticatorLinkAsync()
         {
-            Assert.False(_twoFactorEnabled);
+            Assert.False(Context.TwoFactorEnabled);
 
             var goToEnableAuthenticator = await Client.GetAsync(_enableAuthenticatorLink.Href);
             var enableAuthenticator = await ResponseAssert.IsHtmlDocumentAsync(goToEnableAuthenticator);
