@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         };
 
         public LibuvAwaitable<TRequest> GetAwaiter() => this;
-        public bool IsCompleted => _callback == _callbackCompleted;
+        public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
 
         public UvWriteResult GetResult()
         {
@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // There should never be a race between IsCompleted and OnCompleted since both operations
             // should always be on the libuv thread
 
-            if (_callback == _callbackCompleted ||
-                Interlocked.CompareExchange(ref _callback, continuation, null) == _callbackCompleted)
+            if (ReferenceEquals(_callback, _callbackCompleted) ||
+                ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
             {
                 Debug.Fail($"{typeof(LibuvAwaitable<TRequest>)}.{nameof(OnCompleted)} raced with {nameof(IsCompleted)}, running callback inline.");
 

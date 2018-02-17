@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private SocketError _error;
 
         public SocketAwaitable GetAwaiter() => this;
-        public bool IsCompleted => _callback == _callbackCompleted;
+        public bool IsCompleted => ReferenceEquals(_callback, _callbackCompleted);
 
         public int GetResult()
         {
-            Debug.Assert(_callback == _callbackCompleted);
+            Debug.Assert(ReferenceEquals(_callback, _callbackCompleted));
 
             _callback = null;
 
@@ -36,8 +36,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void OnCompleted(Action continuation)
         {
-            if (_callback == _callbackCompleted ||
-                Interlocked.CompareExchange(ref _callback, continuation, null) == _callbackCompleted)
+            if (ReferenceEquals(_callback, _callbackCompleted) ||
+                ReferenceEquals(Interlocked.CompareExchange(ref _callback, continuation, null), _callbackCompleted))
             {
                 continuation();
             }
