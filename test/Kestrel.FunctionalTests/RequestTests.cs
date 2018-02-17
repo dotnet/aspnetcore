@@ -269,6 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var connectionStarted = new SemaphoreSlim(0);
             var connectionReset = new SemaphoreSlim(0);
+            var loggedHigherThanDebug = false;
 
             var mockLogger = new Mock<ILogger>();
             mockLogger
@@ -285,6 +286,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     else if (eventId.Id == _connectionResetEventId)
                     {
                         connectionReset.Release();
+                    }
+
+                    if (logLevel > LogLevel.Debug)
+                    {
+                        loggedHigherThanDebug = true;
                     }
                 });
 
@@ -315,12 +321,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // and therefore not logged.
                 Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout));
             }
+
+            Assert.False(loggedHigherThanDebug);
         }
 
         [Fact]
         public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
         {
             var connectionReset = new SemaphoreSlim(0);
+            var loggedHigherThanDebug = false;
 
             var mockLogger = new Mock<ILogger>();
             mockLogger
@@ -333,6 +342,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     if (eventId.Id == _connectionResetEventId)
                     {
                         connectionReset.Release();
+                    }
+
+                    if (logLevel > LogLevel.Debug)
+                    {
+                        loggedHigherThanDebug = true;
                     }
                 });
 
@@ -375,6 +389,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // and therefore not logged.
                 Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout));
             }
+
+            Assert.False(loggedHigherThanDebug);
         }
 
         [Fact]
@@ -383,6 +399,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestStarted = new SemaphoreSlim(0);
             var connectionReset = new SemaphoreSlim(0);
             var connectionClosing = new SemaphoreSlim(0);
+            var loggedHigherThanDebug = false;
 
             var mockLogger = new Mock<ILogger>();
             mockLogger
@@ -397,6 +414,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     if (eventId.Id == _connectionResetEventId)
                     {
                         connectionReset.Release();
+                    }
+
+                    if (logLevel > LogLevel.Debug)
+                    {
+                        loggedHigherThanDebug = true;
                     }
                 });
 
@@ -435,6 +457,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.True(await connectionReset.WaitAsync(TestConstants.DefaultTimeout), "Connection reset event should have been logged");
                 connectionClosing.Release();
             }
+
+            Assert.False(loggedHigherThanDebug, "Logged event should not have been higher than debug.");
         }
 
         [Fact]
