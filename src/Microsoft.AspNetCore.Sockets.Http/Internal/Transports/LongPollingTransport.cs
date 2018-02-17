@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                         var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
                         // We're using the managed memory pool which is backed by managed buffers
                         Debug.Assert(isArray);
-                        await context.Response.Body.WriteAsync(arraySegment.Array, 0, arraySegment.Count);
+                        await context.Response.Body.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
                     }
                 }
                 finally
