@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             var stream = await response.Content.ReadAsStreamAsync();
-            var pipelineReader = StreamPipeConnection.CreateReader(PipeOptions.Default, stream);
+            var pipelineReader = StreamPipeConnection.CreateReader(PipeOptions.Default, stream, cancellationToken);
 
             var readCancellationRegistration = cancellationToken.Register(
                 reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
