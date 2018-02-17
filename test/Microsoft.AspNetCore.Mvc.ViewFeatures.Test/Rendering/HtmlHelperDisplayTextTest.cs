@@ -305,10 +305,28 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
-            var result = helper.DisplayTextFor(m => m);
+            var result = helper.DisplayText(expression: string.Empty);
+            var forResult = helper.DisplayTextFor(m => m);
 
             // Assert
             Assert.Equal("Value One", result);
+            Assert.Equal("Value One", forResult);
+        }
+
+        [Fact]
+        public void DisplayTextFor_EnumDisplayAttribute_WhenPresentOnProperty()
+        {
+            // Arrange
+            var model = new EnumWithDisplayAttributeContainer { EnumValue = EnumWithDisplayAttribute.Value1 };
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
+
+            // Act
+            var result = helper.DisplayText(expression: nameof(EnumWithDisplayAttributeContainer.EnumValue));
+            var forResult = helper.DisplayTextFor(m => m.EnumValue);
+
+            // Assert
+            Assert.Equal("Value One", result);
+            Assert.Equal("Value One", forResult);
         }
 
         [Fact]
@@ -319,10 +337,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             var helper = DefaultTemplatesUtilities.GetHtmlHelper(model);
 
             // Act
-            var result = helper.DisplayTextFor(m => m);
+            var result = helper.DisplayText(expression: null);
+            var forResult = helper.DisplayTextFor(m => m);
 
             // Assert
             Assert.Equal("Value1", result);
+            Assert.Equal("Value1", forResult);
         }
 
         // ModelMetadata.SimpleDisplayText returns ToString() result if that method has been overridden.
@@ -345,15 +365,20 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             }
         }
 
-        public enum EnumWithDisplayAttribute
+        private enum EnumWithDisplayAttribute
         {
             [Display(Name = "Value One")]
             Value1
         }
 
-        public enum EnumWithoutDisplayAttribute
+        private enum EnumWithoutDisplayAttribute
         {
             Value1
+        }
+
+        private class EnumWithDisplayAttributeContainer
+        {
+            public EnumWithDisplayAttribute EnumValue { get; set; }
         }
     }
 }
