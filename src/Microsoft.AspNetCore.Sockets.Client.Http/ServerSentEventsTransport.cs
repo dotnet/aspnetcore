@@ -82,65 +82,60 @@ namespace Microsoft.AspNetCore.Sockets.Client
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
-            var stream = await response.Content.ReadAsStreamAsync();
-            var pipelineReader = StreamPipeConnection.CreateReader(PipeOptions.Default, stream, cancellationToken);
-
-            var readCancellationRegistration = cancellationToken.Register(
-                reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
-            try
+            using (var stream = await response.Content.ReadAsStreamAsync())
             {
-                while (true)
-                {
-                    var result = await pipelineReader.ReadAsync();
-                    var input = result.Buffer;
-                    if (result.IsCancelled || (input.IsEmpty && result.IsCompleted))
-                    {
-                        _logger.EventStreamEnded();
-                        break;
-                    }
-
-                    var consumed = input.Start;
-                    var examined = input.End;
-
-                    try
-                    {
-                        var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
-
-                        switch (parseResult)
-                        {
-                            case ServerSentEventsMessageParser.ParseResult.Completed:
-                                await _application.Output.WriteAsync(buffer);
-                                _parser.Reset();
-                                break;
-                            case ServerSentEventsMessageParser.ParseResult.Incomplete:
-                                if (result.IsCompleted)
-                                {
-                                    throw new FormatException("Incomplete message.");
-                                }
-                                break;
-                        }
-                    }
-                    finally
-                    {
-                        pipelineReader.AdvanceTo(consumed, examined);
-                    }
-                }
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.ReceiveCanceled();
-            }
-            finally
-            {
-                readCancellationRegistration.Dispose();
-                _transportCts.Cancel();
+                var pipelineReader = StreamPipeConnection.CreateReader(PipeOptions.Default, stream);
+                var readCancellationRegistration = cancellationToken.Register(
+                    reader => ((PipeReader)reader).CancelPendingRead(), pipelineReader);
                 try
                 {
-                    stream.Dispose();
+                    while (true)
+                    {
+                        var result = await pipelineReader.ReadAsync();
+                        var input = result.Buffer;
+                        if (result.IsCancelled || (input.IsEmpty && result.IsCompleted))
+                        {
+                            _logger.EventStreamEnded();
+                            break;
+                        }
+
+                        var consumed = input.Start;
+                        var examined = input.End;
+
+                        try
+                        {
+                            var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
+
+                            switch (parseResult)
+                            {
+                                case ServerSentEventsMessageParser.ParseResult.Completed:
+                                    await _application.Output.WriteAsync(buffer);
+                                    _parser.Reset();
+                                    break;
+                                case ServerSentEventsMessageParser.ParseResult.Incomplete:
+                                    if (result.IsCompleted)
+                                    {
+                                        throw new FormatException("Incomplete message.");
+                                    }
+                                    break;
+                            }
+                        }
+                        finally
+                        {
+                            pipelineReader.AdvanceTo(consumed, examined);
+                        }
+                    }
                 }
-                // workaround issue with a null-ref in 2.0
-                catch { }
-                _logger.ReceiveStopped();
+                catch (OperationCanceledException)
+                {
+                    _logger.ReceiveCanceled();
+                }
+                finally
+                {
+                    readCancellationRegistration.Dispose();
+                    _transportCts.Cancel();
+                    _logger.ReceiveStopped();
+                }
             }
         }
 
