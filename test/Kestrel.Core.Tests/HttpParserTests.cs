@@ -368,6 +368,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
         }
 
+        [Fact]
+        public void ParseRequestLineSplitBufferWithoutNewLineDoesNotUpdateConsumed()
+        {
+            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var buffer = CreateBuffer("GET ", "/");
+
+            var requestHandler = new RequestHandler();
+            var result = parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
+
+            Assert.False(result);
+            Assert.Equal(buffer.Start, consumed);
+            Assert.Equal(buffer.End, examined);
+        }
+
         private void VerifyHeader(
             string headerName,
             string rawHeaderValue,
@@ -449,6 +463,87 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 RawPath = path.GetAsciiStringNonNullCharacters();
                 Query = query.GetAsciiStringNonNullCharacters();
                 PathEncoded = pathEncoded;
+            }
+        }
+
+        private static ReadOnlyBuffer<byte> CreateBuffer(params string[] inputs)
+        {
+            var buffers = new byte[inputs.Length][];
+            for (int i = 0; i < inputs.Length; i++)
+            {
+                buffers[i] = Encoding.UTF8.GetBytes(inputs[i]);
+            }
+            return CreateBuffer(buffers);
+        }
+
+        // Copied from https://github.com/dotnet/corefx/blob/master/src/System.Memory/tests/ReadOnlyBuffer/ReadOnlySequenceFactory.cs
+        private static ReadOnlyBuffer<byte> CreateBuffer(params byte[][] inputs)
+        {
+            if (inputs == null || inputs.Length == 0)
+            {
+                throw new InvalidOperationException();
+            }
+
+            int i = 0;
+
+            BufferSegment last = null;
+            BufferSegment first = null;
+
+            do
+            {
+                byte[] s = inputs[i];
+                int length = s.Length;
+                int dataOffset = length;
+                var chars = new byte[length * 2];
+
+                for (int j = 0; j < length; j++)
+                {
+                    chars[dataOffset + j] = s[j];
+                }
+
+                // Create a segment that has offset relative to the OwnedMemory and OwnedMemory itself has offset relative to array
+                var memory = new Memory<byte>(chars).Slice(length, length);
+
+                if (first == null)
+                {
+                    first = new BufferSegment(memory);
+                    last = first;
+                }
+                else
+                {
+                    last = last.Append(memory);
+                }
+                i++;
+            } while (i < inputs.Length);
+
+            return new ReadOnlyBuffer<byte>(first, 0, last, last.Memory.Length);
+        }
+
+        // Copied from https://github.com/dotnet/corefx/blob/master/src/System.Memory/tests/ReadOnlyBuffer/BufferSegment.cs
+        private class BufferSegment : IMemoryList<byte>
+        {
+            public BufferSegment(Memory<byte> memory)
+            {
+                Memory = memory;
+            }
+
+            /// <summary>
+            /// Combined length of all segments before this
+            /// </summary>
+            public long RunningIndex { get; private set; }
+
+            public Memory<byte> Memory { get; set; }
+
+            public IMemoryList<byte> Next { get; private set; }
+
+            public BufferSegment Append(Memory<byte> memory)
+            {
+                var segment = new BufferSegment(memory)
+                {
+                    RunningIndex = RunningIndex + Memory.Length
+                };
+                Next = segment;
+                return segment;
             }
         }
     }
