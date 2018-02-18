@@ -405,6 +405,22 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Text(frame, "Hello"));
         }
 
+        [Fact]
+        public void SupportsInheritsDirective()
+        {
+            // Arrange/Act
+            var testBaseClassTypeName = typeof(TestBaseClass).FullName.Replace('+', '.');
+            var component = CompileToComponent(
+                $"@inherits {testBaseClassTypeName}" + Environment.NewLine +
+                $"Hello");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.IsAssignableFrom<TestBaseClass>(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Hello"));
+        }
+
         private static RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
@@ -554,5 +570,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         public interface ITestInterface { }
+
+        public class TestBaseClass : BlazorComponent { }
     }
 }
