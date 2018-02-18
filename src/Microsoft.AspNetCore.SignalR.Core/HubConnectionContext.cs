@@ -85,19 +85,24 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual async Task WriteAsync(HubMessage message)
         {
-            await _writeLock.WaitAsync();
+            try
+            {
+                await _writeLock.WaitAsync();
 
-            var buffer = ProtocolReaderWriter.WriteMessage(message);
+                var buffer = ProtocolReaderWriter.WriteMessage(message);
 
-            _connectionContext.Transport.Output.Write(buffer);
+                _connectionContext.Transport.Output.Write(buffer);
 
-            Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
+                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
 
-            await _connectionContext.Transport.Output.FlushAsync(CancellationToken.None);
-
-            _writeLock.Release();
+                await _connectionContext.Transport.Output.FlushAsync(CancellationToken.None);
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
         }
-        
+
         public virtual void Abort()
         {
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
