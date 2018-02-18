@@ -94,13 +94,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
                 // invocations.
 
                 var engine = new BlazorRazorEngine();
-
-                var sourceDoc = RazorSourceDocument.ReadFrom(inputFileContents, inputFilePath);
-                var codeDoc = RazorCodeDocument.Create(sourceDoc);
+                var blazorTemplateEngine = new BlazorTemplateEngine(
+                    engine.Engine,
+                    RazorProject.Create(inputRootPath));
+                var codeDoc = blazorTemplateEngine.CreateCodeDocument(
+                    new BlazorProjectItem(inputRootPath, inputFilePath, inputFileContents));
                 codeDoc.Items[BlazorCodeDocItems.Namespace] = combinedNamespace;
                 codeDoc.Items[BlazorCodeDocItems.ClassName] = itemClassName;
-                engine.Process(codeDoc);
-                var csharpDocument = codeDoc.GetCSharpDocument();
+                var csharpDocument = blazorTemplateEngine.GenerateCode(codeDoc);
                 var generatedCode = csharpDocument.GeneratedCode;
 
                 // Add parameters to the primary method via string manipulation because

@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Configuration.Assemblies;
 using System.Linq;
+using System.Numerics;
 using BasicTestApp;
+using BasicTestApp.HierarchicalImportsTest.Subdir;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
@@ -187,6 +190,17 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             originalButton.Click();
             fragmentElements = appElement.FindElements(By.CssSelector("p[name=fragment-element]"));
             Assert.Empty(fragmentElements);
+        }
+
+        [Fact]
+        public void CanUseViewImportsHierarchically()
+        {
+            // The component is able to compile and output these type names only because
+            // of the _ViewImports.cshtml files at the same and ancestor levels
+            var appElement = MountTestComponent<ComponentUsingImports>();
+            Assert.Collection(appElement.FindElements(By.TagName("p")),
+                elem => Assert.Equal(typeof(Complex).FullName, elem.Text),
+                elem => Assert.Equal(typeof(AssemblyHashAlgorithm).FullName, elem.Text));
         }
 
         private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent

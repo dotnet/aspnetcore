@@ -496,7 +496,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
                 compilation.Emit(peStream);
 
-                var diagnostics = compilation.GetDiagnostics();
+                var diagnostics = compilation
+                    .GetDiagnostics()
+                    .Where(d => d.Severity != DiagnosticSeverity.Hidden);
                 return new CompileToAssemblyResult
                 {
                     Diagnostics = diagnostics,
