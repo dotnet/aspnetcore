@@ -4,7 +4,11 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AngleSharp.Dom.Html;
+using Identity.DefaultUI.WebSite.Services;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
+using Microsoft.AspNetCore.Identity.FunctionalTests.Pages.Account;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
@@ -41,6 +45,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var externalLogin = await contosoLogin.SendNewUserNameAsync(userName);
 
             return await externalLogin.SendEmailAsync(email);
+        }
+
+        internal static async Task<Account.Manage.Index> SendEmailConfirmationLinkAsync(Index index)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            return await manage.SendConfirmationEmailAsync();
         }
 
         internal static async Task<Index> LoginWithSocialLoginAsync(HttpClient client, string userName)
@@ -92,6 +102,17 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var loginRecoveryCode = await login2Fa.ClickRecoveryCodeLinkAsync();
 
             return await loginRecoveryCode.SendRecoveryCodeAsync(recoveryCode);
+        }
+
+        internal static async Task<ConfirmEmail> ConfirmEmailAsync(IdentityEmail email, HttpClient client)
+        {
+            var emailBody = HtmlAssert.IsHtmlFragment(email.Body);
+            var linkElement = HtmlAssert.HasElement("a", emailBody);
+            var link = Assert.IsAssignableFrom<IHtmlAnchorElement>(linkElement);
+            return await ConfirmEmail.Create(link, client, new DefaultUIContext()
+                .WithAuthenticatedUser()
+                .WithExistingUser()
+                .WithConfirmedEmail());
         }
     }
 }

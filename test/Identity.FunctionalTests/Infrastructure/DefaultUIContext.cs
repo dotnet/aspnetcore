@@ -25,6 +25,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public DefaultUIContext WithExistingUser() =>
             new DefaultUIContext(this) { ExistingUser = true };
 
+        public DefaultUIContext WithConfirmedEmail() =>
+            new DefaultUIContext(this) { EmailConfirmed = true };
+
         public string AuthenticatorKey
         {
             get => GetValue<string>(nameof(AuthenticatorKey));
@@ -54,6 +57,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             set => SetValue(nameof(UserAuthenticated), value);
         }
         public bool ExistingUser
+        {
+            get => GetValue<bool>(nameof(ExistingUser));
+            set => SetValue(nameof(ExistingUser), value);
+        }
+
+        public bool EmailConfirmed
         {
             get => GetValue<bool>(nameof(ExistingUser));
             set => SetValue(nameof(ExistingUser), value);

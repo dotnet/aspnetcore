@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
+using Identity.DefaultUI.WebSite.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -78,12 +79,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CannotLogInWithoutRequiredEmailConfirmation()
         {
             // Arrange
-            var testEmailSender = new TestEmailSender();
+            var emailSender = new ContosoEmailSender();
             var server = ServerFactory.CreateServer(builder =>
             {
                 builder.ConfigureServices(services => services
-                    .AddSingleton<IEmailSender>(testEmailSender)
-                    .Configure<IdentityOptions>(opt => opt.SignIn.RequireConfirmedEmail = true));
+                    .SetupTestEmailSender(emailSender)
+                    .SetupEmailRequired());
             });
 
             var client = ServerFactory.CreateDefaultClient(server);
@@ -103,12 +104,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public async Task CanLogInAfterConfirmingEmail()
         {
             // Arrange
-            TestEmailSender testEmailSender = new TestEmailSender();
+            var emailSender = new ContosoEmailSender();
             var server = ServerFactory.CreateServer(builder =>
             {
                 builder.ConfigureServices(services => services
-                    .AddSingleton<IEmailSender>(testEmailSender)
-                    .Configure<IdentityOptions>(opt => opt.SignIn.RequireConfirmedEmail = true));
+                    .SetupTestEmailSender(emailSender)
+                    .SetupEmailRequired());
             });
 
             var client = ServerFactory.CreateDefaultClient(server);
@@ -121,10 +122,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert
             // Use a new client to simulate a new browser session.
-            var emailBody = HtmlAssert.IsHtmlFragment(testEmailSender.HtmlMessage);
-            var linkElement = HtmlAssert.HasElement("a", emailBody);
-            var link = Assert.IsAssignableFrom<IHtmlAnchorElement>(linkElement);
-            var response = await newClient.GetAsync(link.Href);
+            var email = Assert.Single(emailSender.SentEmails);
+            await UserStories.ConfirmEmailAsync(email, newClient);
 
             await UserStories.LoginExistingUserAsync(newClient, userName, password);
         }
@@ -145,22 +144,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             // Act & Assert
             await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
             await UserStories.LoginWithSocialLoginAsync(newClient, userName);
-        }
-    }
-
-    class TestEmailSender : IEmailSender
-    {
-        public string Email { get; private set; }
-        public string Subject { get; private set; }
-        public string HtmlMessage { get; private set; }
-
-        public Task SendEmailAsync(string email, string subject, string htmlMessage)
-        {
-            Email = email;
-            Subject = subject;
-            HtmlMessage = htmlMessage;
-
-            return Task.CompletedTask;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -43,7 +44,13 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             }
 
             var submit = form.GetSubmission(submitButton);
-            var submision = new HttpRequestMessage(new HttpMethod(submit.Method.ToString()), submit.Target)
+            var target = (Uri)submit.Target;
+            if (submitButton.HasAttribute("formaction"))
+            {
+                var formaction = submitButton.GetAttribute("formaction");
+                target = new Uri(formaction, UriKind.Relative);
+            }
+            var submision = new HttpRequestMessage(new HttpMethod(submit.Method.ToString()), target)
             {
                 Content = new StreamContent(submit.Body)
             };
