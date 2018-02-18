@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
-using Microsoft.AspNetCore.Identity.FunctionalTests.Pages.Account;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account

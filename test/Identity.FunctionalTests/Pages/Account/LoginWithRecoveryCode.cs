@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var indexPage = await Client.GetAsync(goToIndex);
             var index = await ResponseAssert.IsHtmlDocumentAsync(indexPage);
 
-            return new Index(Client, index, new DefaultUIContext(Context) { UserAuthenticated = true });
+            return new Index(Client, index, Context.WithAuthenticatedUser());
         }
     }
 }

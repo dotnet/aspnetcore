@@ -6,8 +6,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class AuthorizationTests
+    public class AuthorizationTests : IClassFixture<ServerFactory>
     {
+        public AuthorizationTests(ServerFactory serverFactory)
+        {
+            ServerFactory = serverFactory;
+        }
+
+        public ServerFactory ServerFactory { get; }
+
         public static TheoryData<string> AuthorizedPages =>
             new TheoryData<string>
             {
@@ -86,10 +93,10 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         // /Identity/Account/LoginWith2fa
         // /Identity/Account/ExternalLogin
         // /Identity/Account/ConfirmEmail
+        // /Identity/Account/ResetPassword,
         public static TheoryData<string> UnauthorizedPages =>
             new TheoryData<string>
             {
-                "/Identity/Account/ResetPassword",
                 "/Identity/Account/Login",
                 "/Identity/Account/Lockout",
                 "/Identity/Account/ForgotPasswordConfirmation",

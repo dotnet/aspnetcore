@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -12,9 +13,12 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class ServerFactory
+    public class ServerFactory : IDisposable
     {
-        public static TestServer CreateServer(
+        private bool disposedValue = false;
+        private IList<IDisposable> _disposableServers = new List<IDisposable>();
+
+        public TestServer CreateServer(
             Action<IWebHostBuilder> configureBuilder, 
             [CallerMemberName] string isolationKey = "")
         {
@@ -30,13 +34,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             configureBuilder(builder);
 
             var server = new TestServer(builder);
+            _disposableServers.Add(server);
             return server;
         }
 
-        public static TestServer CreateDefaultServer([CallerMemberName] string isolationKey = "") =>
+        public TestServer CreateDefaultServer([CallerMemberName] string isolationKey = "") =>
             CreateServer(b => { }, isolationKey);
 
-        public static HttpClient CreateDefaultClient(TestServer server)
+        public HttpClient CreateDefaultClient(TestServer server)
         {
             var client = new HttpClient(new CookieContainerHandler(server.CreateHandler()))
             {
@@ -46,7 +51,29 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return client;
         }
 
-        public static HttpClient CreateDefaultClient() =>
+        public HttpClient CreateDefaultClient() =>
             CreateDefaultClient(CreateDefaultServer());
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    foreach (var disposable in _disposableServers)
+                    {
+                        disposable?.Dispose();
+                    }
+                }
+
+                _disposableServers = null;
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
     }
 }

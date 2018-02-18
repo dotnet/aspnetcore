@@ -7,8 +7,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class RegistrationTests
+    public class RegistrationTests : IClassFixture<ServerFactory>
     {
+        public RegistrationTests(ServerFactory serverFactory)
+        {
+            ServerFactory = serverFactory;
+        }
+
+        public ServerFactory ServerFactory { get; }
+
         [Fact]
         public async Task CanRegisterAUser()
         {

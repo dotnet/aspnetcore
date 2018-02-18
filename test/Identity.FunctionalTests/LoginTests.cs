@@ -4,17 +4,21 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AngleSharp.Dom.Html;
-using Identity.DefaultUI.WebSite.Services;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.Extensions.DependencyInjection;
+using Identity.DefaultUI.WebSite;
 using Xunit;
 using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class LoginTests
+    public class LoginTests : IClassFixture<ServerFactory>
     {
+        public LoginTests(ServerFactory serverFactory)
+        {
+            ServerFactory = serverFactory;
+        }
+
+        public ServerFactory ServerFactory { get; }
+
         [Fact]
         public async Task CanLogInWithAPreviouslyRegisteredUser()
         {

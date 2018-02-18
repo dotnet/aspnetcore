@@ -9,13 +9,12 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
     {
         private readonly IDictionary<string, object> _properties;
 
-        protected HtmlPageContext()
-            : this(new Dictionary<string, object>())
+        protected HtmlPageContext() : this(new Dictionary<string, object>())
         {
         }
 
         protected HtmlPageContext(HtmlPageContext currentContext)
-            : this(new Dictionary<string,object>(currentContext._properties))
+            : this(new Dictionary<string, object>(currentContext._properties))
         {
         }
 
@@ -26,6 +25,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         protected TValue GetValue<TValue>(string key) =>
             _properties.TryGetValue(key, out var rawValue) ? (TValue)rawValue : default;
+
         protected void SetValue(string key, object value) =>
             _properties[key] = value;
     }

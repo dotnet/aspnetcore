@@ -3,13 +3,20 @@
 
 using System;
 using System.Threading.Tasks;
-using Identity.DefaultUI.WebSite.Services;
+using Identity.DefaultUI.WebSite;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
 {
-    public class ManagementTests
+    public class ManagementTests : IClassFixture<ServerFactory>
     {
+        public ManagementTests(ServerFactory serverFactory)
+        {
+            ServerFactory = serverFactory;
+        }
+
+        public ServerFactory ServerFactory { get; }
+
         [Fact]
         public async Task CanEnableTwoFactorAuthentication()
         {

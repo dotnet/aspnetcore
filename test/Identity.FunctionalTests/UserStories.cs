@@ -5,10 +5,9 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
-using Identity.DefaultUI.WebSite.Services;
+using Identity.DefaultUI.WebSite;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
-using Microsoft.AspNetCore.Identity.FunctionalTests.Pages.Account;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests
