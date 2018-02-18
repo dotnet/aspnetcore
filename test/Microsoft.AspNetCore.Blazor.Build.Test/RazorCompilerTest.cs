@@ -421,6 +421,21 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Text(frame, "Hello"));
         }
 
+        [Fact]
+        public void SurfacesCSharpCompilationErrors()
+        {
+            // Arrange/Act
+            var result = CompileToAssembly(
+                GetArbitraryPlatformValidDirectoryPath(),
+                "file.cshtml",
+                "@invalidVar",
+                "Test.Base");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                diagnostic => Assert.Contains("'invalidVar'", diagnostic.GetMessage()));
+        }
+
         private static RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
