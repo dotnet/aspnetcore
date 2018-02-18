@@ -145,5 +145,32 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             await UserStories.RegisterNewUserWithSocialLoginAsync(client, userName, email);
             await UserStories.LoginWithSocialLoginAsync(newClient, userName);
         }
+
+        [Fact]
+        public async Task CanLogInAfterResettingThePassword()
+        {
+            // Arrange
+            var emailSender = new ContosoEmailSender();
+            var server = ServerFactory.CreateServer(b => b.ConfigureServices(s =>
+                s.SetupTestEmailSender(emailSender)));
+            var client = ServerFactory.CreateDefaultClient(server);
+            var resetPasswordClient = ServerFactory.CreateDefaultClient(server);
+            var newClient = ServerFactory.CreateDefaultClient(server);
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+            var newPassword = $"!New.Password1$";
+
+            await UserStories.RegisterNewUserAsync(client, userName, password);
+            var registrationEmail = Assert.Single(emailSender.SentEmails);
+            await UserStories.ConfirmEmailAsync(registrationEmail, client);
+
+            // Act & Assert
+            await UserStories.ForgotPasswordAsync(resetPasswordClient, userName);
+            Assert.Equal(2, emailSender.SentEmails.Count);
+            var email = emailSender.SentEmails[1];
+            await UserStories.ResetPasswordAsync(resetPasswordClient, email, userName, newPassword);
+            await UserStories.LoginExistingUserAsync(newClient, userName, newPassword);
+        }
     }
 }

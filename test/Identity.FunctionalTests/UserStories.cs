@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using Identity.DefaultUI.WebSite.Services;
+using Microsoft.AspNetCore.Identity.FunctionalTests.Account;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage;
 using Microsoft.AspNetCore.Identity.FunctionalTests.Pages.Account;
 using Xunit;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         internal static async Task<Index> RegisterNewUserWithSocialLoginAsync(HttpClient client, string userName, string email)
         {
-            var index = await Index.CreateAsync(client,new DefaultUIContext().WithSocialLoginEnabled());
+            var index = await Index.CreateAsync(client, new DefaultUIContext().WithSocialLoginEnabled());
 
             var login = await index.ClickLoginLinkAsync();
 
@@ -113,6 +114,27 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .WithAuthenticatedUser()
                 .WithExistingUser()
                 .WithConfirmedEmail());
+        }
+
+        internal static async Task<ForgotPasswordConfirmation> ForgotPasswordAsync(HttpClient client, string userName)
+        {
+            var index = await Index.CreateAsync(client);
+
+            var login = await index.ClickLoginLinkAsync();
+
+            var forgotPassword = await login.ClickForgotPasswordLinkAsync();
+
+            return await forgotPassword.SendForgotPasswordAsync(userName);
+        }
+
+        internal static async Task<ResetPasswordConfirmation> ResetPasswordAsync(HttpClient client, IdentityEmail resetPasswordEmail, string email, string newPassword)
+        {
+            var emailBody = HtmlAssert.IsHtmlFragment(resetPasswordEmail.Body);
+            var linkElement = HtmlAssert.HasElement("a", emailBody);
+            var link = Assert.IsAssignableFrom<IHtmlAnchorElement>(linkElement);
+
+            var resetPassword = await ResetPassword.CreateAsync(link, client, new DefaultUIContext().WithExistingUser());
+            return await resetPassword.SendNewPasswordAsync(email, newPassword);
         }
     }
 }

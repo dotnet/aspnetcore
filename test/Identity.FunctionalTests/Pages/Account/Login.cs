@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
+using Microsoft.AspNetCore.Identity.FunctionalTests.Pages.Account;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
     public class Login : DefaultUIPage
     {
         private readonly IHtmlFormElement _loginForm;
+        private readonly IHtmlAnchorElement _forgotPasswordLink;
         private readonly IHtmlFormElement _externalLoginForm;
         private readonly IHtmlElement _contosoButton;
 
@@ -22,6 +24,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             : base(client, login, context)
         {
             _loginForm = HtmlAssert.HasForm("#account", login);
+            _forgotPasswordLink = HtmlAssert.HasLink("#forgot-password", login);
             if (Context.ContosoLoginEnabled)
             {
                 _externalLoginForm = HtmlAssert.HasForm("#external-account", login);
@@ -38,6 +41,14 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account
             var contosoLogin = await ResponseAssert.IsHtmlDocumentAsync(contosoLoginResponse);
 
             return new Contoso.Login(Client, contosoLogin, Context);
+        }
+
+        public async Task<ForgotPassword> ClickForgotPasswordLinkAsync()
+        {
+            var response = await Client.GetAsync(_forgotPasswordLink.Href);
+            var forgotPassword = await ResponseAssert.IsHtmlDocumentAsync(response);
+
+            return new ForgotPassword(Client, forgotPassword, Context);
         }
 
         public async Task<Index> LoginValidUserAsync(string userName, string password)

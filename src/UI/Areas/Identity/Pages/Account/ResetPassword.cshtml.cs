@@ -31,12 +31,13 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
             public string ConfirmPassword { get; set; }
 
+            [Required]
             public string Code { get; set; }
 
-            public virtual IActionResult OnGet(string code = null) => throw new NotImplementedException();
-
-            public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
         }
+        public virtual IActionResult OnGet(string code = null) => throw new NotImplementedException();
+
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
     }
 
     internal class ResetPasswordModel<TUser> : ResetPasswordModel where TUser : IdentityUser
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             _userManager = userManager;
         }
 
-        public IActionResult OnGet(string code = null)
+        public override IActionResult OnGet(string code = null)
         {
             if (code == null)
             {
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public override async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
