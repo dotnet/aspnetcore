@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -40,14 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = "Switching Protocols";
             ResponseHeaders["Connection"] = "Upgrade";
-            if (!ResponseHeaders.ContainsKey("Upgrade"))
-            {
-                StringValues values;
-                if (RequestHeaders.TryGetValue("Upgrade", out values))
-                {
-                    ResponseHeaders["Upgrade"] = values;
-                }
-            }
 
             await FlushAsync(default(CancellationToken));
 
