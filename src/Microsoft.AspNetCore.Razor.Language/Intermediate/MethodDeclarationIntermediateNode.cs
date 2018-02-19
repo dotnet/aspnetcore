@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string MethodName { get; set; }
 
+        public IList<MethodParameter> Parameters { get; } = new List<MethodParameter>();
+
         public string ReturnType { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
