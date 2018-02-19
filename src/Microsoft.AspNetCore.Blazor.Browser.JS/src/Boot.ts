@@ -6,13 +6,9 @@ import './GlobalExports';
 async function boot() {
   // Read startup config from the <script> element that's importing this file
   const allScriptElems = document.getElementsByTagName('script');
-  const thisScriptElem = document.currentScript || allScriptElems[allScriptElems.length - 1];
-  const entryPointDll = thisScriptElem.getAttribute('main');
-  if (!entryPointDll) {
-    throw new Error('Missing "main" attribute on Blazor script tag.');
-  }
-  // TODO:  should method be a required, non-empty field or just an optional *hint*?
-  const entryPointMethod = thisScriptElem.getAttribute('entry-point');
+  const thisScriptElem = (document.currentScript || allScriptElems[allScriptElems.length - 1]) as HTMLScriptElement;
+  const entryPointDll = getRequiredBootScriptAttribute(thisScriptElem, 'main');
+  const entryPointMethod = getRequiredBootScriptAttribute(thisScriptElem, 'entrypoint');
   const entryPointAssemblyName = getAssemblyNameFromUrl(entryPointDll);
   const referenceAssembliesCommaSeparated = thisScriptElem.getAttribute('references') || '';
   const referenceAssemblies = referenceAssembliesCommaSeparated
@@ -33,6 +29,14 @@ async function boot() {
 
   // Start up the application
   platform.callEntryPoint(entryPointAssemblyName, entryPointMethod, []);
+}
+
+function getRequiredBootScriptAttribute(elem: HTMLScriptElement, attributeName: string): string {
+  const result = elem.getAttribute(attributeName);
+  if (!result) {
+    throw new Error(`Missing "${attributeName}" attribute on Blazor script tag.`);
+  }
+  return result;
 }
 
 boot();

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Internal.Common.FileProviders;
 using Microsoft.Extensions.FileProviders;
 using Mono.Cecil;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
@@ -51,16 +52,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
                 {
                     var template = File.ReadAllText(path);
                     var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
-                    var assemblyEntryPoint = string.Empty;
+                    var assemblyEntryPoint = GetAssemblyEntryPoint(assemblyPath);
                     var binFiles = frameworkFileProvider.GetDirectoryContents("/_bin");
-
-                    using (var asmDef = AssemblyDefinition.ReadAssembly(assemblyPath))
-                    {
-                        var ep = asmDef.EntryPoint;
-                        if (ep != null)
-                            assemblyEntryPoint = $"{ep.DeclaringType.FullName}::{ep.Name}";
-                    }
-
                     result = new IndexHtmlFileProvider(template, assemblyName, assemblyEntryPoint, binFiles);
                     return true;
                 }
@@ -68,6 +61,20 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.FileSystem
 
             result = null;
             return false;
+        }
+
+        private static string GetAssemblyEntryPoint(string assemblyPath)
+        {
+            using (var assemblyDefinition = AssemblyDefinition.ReadAssembly(assemblyPath))
+            {
+                var entryPoint = assemblyDefinition.EntryPoint;
+                if (entryPoint == null)
+                {
+                    throw new ArgumentException($"The assembly at {assemblyPath} has no specified entry point.");
+                }
+
+                return $"{entryPoint.DeclaringType.FullName}::{entryPoint.Name}";
+            }
         }
     }
 }
