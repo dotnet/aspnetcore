@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var testComponentTypeName = typeof(TestLayout).FullName.Replace('+', '.');
             var component = CompileToComponent(
-                $"@(Layout<{testComponentTypeName}>())" +
+                $"@(Layout<{testComponentTypeName}>())\n" +
                 $"Hello");
             var frames = GetRenderTree(component);
 
@@ -386,7 +386,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.NotNull(layoutAttribute);
             Assert.Equal(typeof(TestLayout), layoutAttribute.LayoutType);
             Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
+                frame => AssertFrame.Text(frame, "\nHello"));
         }
 
         [Fact]
@@ -395,14 +395,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var testInterfaceTypeName = typeof(ITestInterface).FullName.Replace('+', '.');
             var component = CompileToComponent(
-                $"@(Implements<{testInterfaceTypeName}>())" +
+                $"@(Implements<{testInterfaceTypeName}>())\n" +
                 $"Hello");
             var frames = GetRenderTree(component);
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
             Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "Hello"));
+                frame => AssertFrame.Text(frame, "\nHello"));
         }
 
         [Fact]
