@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
             // This implicitly means a BlazorComponent can only be associated with a single
             // renderer. That's the only use case we have right now. If there was ever a need,
             // a component could hold a collection of render handles.
-            if (_renderHandle.IsInitalized)
+            if (_renderHandle.IsInitialized)
             {
                 throw new InvalidOperationException($"The render handle is already set. Cannot initialize a {nameof(BlazorComponent)} more than once.");
             }

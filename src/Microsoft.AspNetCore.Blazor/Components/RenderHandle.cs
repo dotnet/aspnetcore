@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// Gets a value that indicates whether the <see cref="RenderHandle"/> has been
         /// initialised and is ready to use.
         /// </summary>
-        public bool IsInitalized
+        public bool IsInitialized
             => _renderer != null;
 
         /// <summary>
