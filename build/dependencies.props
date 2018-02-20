@@ -23,7 +23,6 @@
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview2-26130-01</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETCoreWindowsApiSetsPackageVersion>1.0.1</MicrosoftNETCoreWindowsApiSetsPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>15.3.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview2-26130-01</MicrosoftWin32RegistryPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
     <NuGetFrameworksPackageVersion>4.7.0-preview1-4958</NuGetFrameworksPackageVersion>
@@ -149,6 +148,7 @@
     <MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>3.14.2</MicrosoftIdentityModelClientsActiveDirectoryPackageVersion>
     <MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion>
     <MicrosoftIdentityModelProtocolsWsFederationPackageVersion>5.2.0</MicrosoftIdentityModelProtocolsWsFederationPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftOwinPackageVersion>3.0.1</MicrosoftOwinPackageVersion>
     <MicrosoftOwinSecurityCookiesPackageVersion>3.0.1</MicrosoftOwinSecurityCookiesPackageVersion>
     <MicrosoftOwinSecurityPackageVersion>3.0.1</MicrosoftOwinSecurityPackageVersion>
