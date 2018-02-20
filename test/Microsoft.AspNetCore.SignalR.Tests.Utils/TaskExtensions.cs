@@ -17,6 +17,12 @@ namespace System.Threading.Tasks
 
         public static async Task OrTimeout(this Task task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
+            if (task.IsCompleted)
+            {
+                await task;
+                return;
+            }
+
             var cts = new CancellationTokenSource();
             var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout, cts.Token));
             if (completed != task)
@@ -35,6 +41,11 @@ namespace System.Threading.Tasks
 
         public static async Task<T> OrTimeout<T>(this Task<T> task, TimeSpan timeout, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int? lineNumber = null)
         {
+            if (task.IsCompleted)
+            {
+                return await task;
+            }
+
             var cts = new CancellationTokenSource();
             var completed = await Task.WhenAny(task, Task.Delay(Debugger.IsAttached ? Timeout.InfiniteTimeSpan : timeout, cts.Token));
             if (completed != task)
