@@ -1,2 +1,2 @@
-﻿@using Microsoft.AspNetCore.Blazor.Layouts
-<c:LayoutDisplay Page=@typeof(StandaloneApp.Pages.Home) />
+﻿@using Microsoft.AspNetCore.Blazor.Browser.Routing
+<c:BrowserRouter AppAssembly=@(typeof(StandaloneApp.Program).Assembly) PagesNamespace=@("StandaloneApp.Pages") />
