@@ -285,6 +285,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                             break;
                         }
 
+                    case HtmlTokenType.Comment:
+                        break;
+
                     default:
                         throw new InvalidCastException($"Unsupported token type: {nextToken.Type.ToString()}");
                 }

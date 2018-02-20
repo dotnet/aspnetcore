@@ -188,6 +188,19 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsComments()
+        {
+            // Arrange/Act
+            var component = CompileToComponent("Start<!-- My comment -->End");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Start", 0),
+                frame => AssertFrame.Text(frame, "End", 1));
+        }
+
+        [Fact]
         public void SupportsAttributesWithLiteralValues()
         {
             // Arrange/Act
