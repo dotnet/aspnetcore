@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System.IO;
+using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Blazor.DevHost.Server
 {
@@ -17,12 +18,38 @@ namespace Microsoft.AspNetCore.Blazor.DevHost.Server
             services.AddRouting();
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IConfiguration configuration)
         {
             app.UseDeveloperExceptionPage();
+            EnableConfiguredPathbase(app, configuration);
 
             var clientAssemblyPath = FindClientAssemblyPath(app);
             app.UseBlazor(new BlazorOptions { ClientAssemblyPath = clientAssemblyPath });
+        }
+
+        private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)
+        {
+            var pathBase = configuration.GetValue<string>("pathbase");
+            if (!string.IsNullOrEmpty(pathBase))
+            {
+                app.UsePathBase(pathBase);
+
+                // To ensure consistency with a production environment, only handle requests
+                // that match the specified pathbase.
+                app.Use((context, next) =>
+                {
+                    if (context.Request.PathBase == pathBase)
+                    {
+                        return next();
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = 404;
+                        return context.Response.WriteAsync($"The server is configured only to " +
+                            $"handle request URIs within the PathBase '{pathBase}'.");
+                    }
+                });
+            }
         }
 
         private static string FindClientAssemblyPath(IApplicationBuilder app)

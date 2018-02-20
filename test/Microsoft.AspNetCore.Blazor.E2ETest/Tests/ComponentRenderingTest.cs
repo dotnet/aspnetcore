@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
         public ComponentRenderingTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
-            Navigate("/", noReload: true);
+            serverFixture.PathBase = "/subdir";
+            Navigate("/subdir", noReload: true);
         }
 
         [Fact]

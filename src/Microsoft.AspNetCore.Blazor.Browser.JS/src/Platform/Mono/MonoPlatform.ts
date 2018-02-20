@@ -48,9 +48,9 @@ export const monoPlatform: Platform = {
   callEntryPoint: function callEntryPoint(assemblyName: string, entrypointMethod: string, args: System_Object[]): void {
     // Parse the entrypointMethod, which is of the form MyApp.MyNamespace.MyTypeName::MyMethodName
     // Note that we don't support specifying a method overload, so it has to be unique
-    const entrypointSegments = entrypointMethod.split("::");
+    const entrypointSegments = entrypointMethod.split('::');
     if (entrypointSegments.length != 2) {
-      throw new Error("malformed entry point method name; could not resolve class name and method name");
+      throw new Error('Malformed entry point method name; could not resolve class name and method name.');
     }
     const typeFullName = entrypointSegments[0];
     const methodName = entrypointSegments[1];
@@ -146,7 +146,7 @@ export const monoPlatform: Platform = {
 function addScriptTagsToDocument() {
   // Load either the wasm or asm.js version of the Mono runtime
   const browserSupportsNativeWebAssembly = typeof WebAssembly !== 'undefined' && WebAssembly.validate;
-  const monoRuntimeUrlBase = '/_framework/' + (browserSupportsNativeWebAssembly ? 'wasm' : 'asmjs');
+  const monoRuntimeUrlBase = '_framework/' + (browserSupportsNativeWebAssembly ? 'wasm' : 'asmjs');
   const monoRuntimeScriptUrl = `${monoRuntimeUrlBase}/mono.js`;
 
   if (!browserSupportsNativeWebAssembly) {
@@ -165,8 +165,8 @@ function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () 
 
   module.print = line => console.log(`WASM: ${line}`);
   module.printErr = line => console.error(`WASM: ${line}`);
-  module.wasmBinaryFile = '/_framework/wasm/mono.wasm';
-  module.asmjsCodeFile = '/_framework/asmjs/mono.asm.js';
+  module.wasmBinaryFile = '_framework/wasm/mono.wasm';
+  module.asmjsCodeFile = '_framework/asmjs/mono.asm.js';
   module.preRun = [];
   module.postRun = [];
   module.preloadPlugins = [];
