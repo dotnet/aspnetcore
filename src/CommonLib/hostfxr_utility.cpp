@@ -188,15 +188,19 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     {
         // Check if hostfxr is in this folder, if it is, we are a standalone application,
         // else we assume we received an absolute path to dotnet.exe
-        hr = GetStandaloneHostfxrParameters(
-            struExeLocation.QueryStr(),
-            pcwzApplicationPhysicalPath,
-            pcwzArguments,
-            hEventLog,
-            struHostFxrDllLocation,
-            pdwArgCount,
-            ppwzArgv);
-        goto Finished;
+        if (!struExeLocation.EndsWith(L"dotnet.exe") &&
+            !struExeLocation.EndsWith(L"dotnet"))
+        {
+            hr = GetStandaloneHostfxrParameters(
+                struExeLocation.QueryStr(),
+                pcwzApplicationPhysicalPath,
+                pcwzArguments,
+                hEventLog,
+                struHostFxrDllLocation,
+                pdwArgCount,
+                ppwzArgv);
+            goto Finished;
+        }
     }
     else
     {
