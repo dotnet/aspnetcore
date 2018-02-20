@@ -24,12 +24,6 @@
 
   <!-- Test Placeholder -->
 
-  <ItemGroup>
-    <Content Include="**\*.cshtml">
-      <Pack>false</Pack>
-    </Content>
-  </ItemGroup>
-
   <Import Project="$(SolutionRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.targets" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

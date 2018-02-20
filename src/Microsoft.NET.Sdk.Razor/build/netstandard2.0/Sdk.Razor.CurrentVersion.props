@@ -19,6 +19,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <PropertyGroup>
     <!--
+    Set to true to automatically include certain file types, such as .cshtml files, as content in the project.
+    When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under wwwroot, and any config files.
+    -->
+    <EnableDefaultContentItems Condition="'$(EnableDefaultContentItems)'==''">true</EnableDefaultContentItems>
+
+    <!--
       Set to true to automatically include Razor (.cshtml) files in @(RazorGenerate) from @(Content).
     -->
     <EnableDefaultRazorGenerateItems Condition="'$(EnableDefaultRazorGenerateItems)'==''">true</EnableDefaultRazorGenerateItems>
@@ -46,13 +52,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorCompileToolset>Implicit</RazorCompileToolset>
 
     <!--
+    Configures whether all Razor content items (.cshtml files) will be marked to be included in the produced NuGet package as content.
+
+    All Content items are included in a NuGet package as content files. This setting can be used to control this behavior for Razor content items.
+    -->
+    <IncludeRazorContentInPack Condition="'$(IncludeRazorContentInPack)'==''">false</IncludeRazorContentInPack>
+
+    <!--
     Set to true to allow a Razor code generation to use a persistent build server process.
     -->
     <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
-    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+
     <None Remove="**\*.cshtml" />
   </ItemGroup>
 

@@ -26,6 +26,39 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" " +
                 $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" />");
 
+            Assert.NuspecDoesNotContain(
+                result,
+                Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
+                @"<files include=""any/netcoreapp2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+
+            Assert.NupkgContains(
+                result,
+                Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
+                Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll"));
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Pack_IncludesRazorFilesAsContent_WhenIncludeRazorContentInPack_IsSet()
+        {
+            var result = await DotnetMSBuild("Pack", "/p:RazorCompileOnBuild=true /p:IncludeRazorContentInPack=true");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.dll");
+
+            Assert.NuspecContains(
+                result,
+                Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
+                $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" " +
+                $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" />");
+
+            Assert.NuspecContains(
+                result,
+                Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
+                @"<files include=""any/netcoreapp2.0/Views/Shared/_Layout.cshtml"" buildAction=""Content"" />");
+
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),

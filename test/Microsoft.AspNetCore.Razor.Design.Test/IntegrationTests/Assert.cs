@@ -233,6 +233,33 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        public static void NuspecDoesNotContain(MSBuildResult result, string nuspecPath, string expected)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (nuspecPath == null)
+            {
+                throw new ArgumentNullException(nameof(nuspecPath));
+            }
+
+            if (expected == null)
+            {
+                throw new ArgumentNullException(nameof(expected));
+            }
+
+            nuspecPath = Path.Combine(result.Project.DirectoryPath, nuspecPath);
+            FileExists(result, nuspecPath);
+
+            var content = File.ReadAllText(nuspecPath);
+            if (content.Contains(expected))
+            {
+                throw new NuspecFoundException(result, nuspecPath, content, expected);
+            }
+        }
+
         public static void NupkgContains(MSBuildResult result, string nupkgPath, string filePath)
         {
             if (result == null)
@@ -503,6 +530,34 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                         $"expected: {Expected}" + Environment.NewLine +
                         Environment.NewLine +
                         $"actual: {Content}";
+                }
+            }
+        }
+
+        private class NuspecFoundException : MSBuildXunitException
+        {
+            public NuspecFoundException(MSBuildResult result, string filePath, string content, string expected)
+                : base(result)
+            {
+                FilePath = filePath;
+                Content = content;
+                Expected = expected;
+            }
+
+            public string Content { get; }
+
+            public string Expected { get; }
+
+            public string FilePath { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    return
+                        $"nuspec: '{FilePath}' should not contain the content {Expected}." +
+                        Environment.NewLine +
+                        $"actual content: {Content}";
                 }
             }
         }
