@@ -457,7 +457,7 @@ APPLICATION_INFO::FindNativeAssemblyFromHostfxr(
     // Split on semicolons, append aspnetcorerh.dll, and check if the file exists.
     while ((intIndex = struNativeSearchPaths.IndexOf(L";", intPrevIndex)) != -1)
     {
-        if (FAILED(hr = struNativeDllLocation.Copy(struNativeSearchPaths.QueryStr(), intIndex - intPrevIndex)))
+        if (FAILED(hr = struNativeDllLocation.Copy(&struNativeSearchPaths.QueryStr()[intPrevIndex], intIndex - intPrevIndex)))
         {
             goto Finished;
         }

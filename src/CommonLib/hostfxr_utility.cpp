@@ -612,11 +612,12 @@ HOSTFXR_UTILITY::FindDotnetExePath(
             {
                 break;
             }
-            if (FAILED(hr = struDotnetSubstring.Copy(struDotnetLocationsString.QueryStr(), index - prevIndex)))
+            if (FAILED(hr = struDotnetSubstring.Copy(&struDotnetLocationsString.QueryStr()[prevIndex], index - prevIndex)))
             {
                 goto Finished;
             }
-            prevIndex = index + 1;
+            // \r\n is two wchars, so add 2 here.
+            prevIndex = index + 2;
 
             if (GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType) &&
                 fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY)) {
