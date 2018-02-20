@@ -159,11 +159,35 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     Context.CodeWriter.Write(" ");
                 }
 
-                Context.CodeWriter
-                    .Write(node.ReturnType)
-                    .Write(" ")
-                    .Write(node.MethodName)
-                    .WriteLine("()");
+                Context.CodeWriter.Write(node.ReturnType);
+                Context.CodeWriter.Write(" ");
+
+                Context.CodeWriter.Write(node.MethodName);
+                Context.CodeWriter.Write("(");
+
+                for (var i = 0; i < node.Parameters.Count; i++)
+                {
+                    var parameter = node.Parameters[i];
+
+                    for (var j = 0; j < parameter.Modifiers.Count; j++)
+                    {
+                        Context.CodeWriter.Write(parameter.Modifiers[j]);
+                        Context.CodeWriter.Write(" ");
+                    }
+
+                    Context.CodeWriter.Write(parameter.TypeName);
+                    Context.CodeWriter.Write(" ");
+
+                    Context.CodeWriter.Write(parameter.ParameterName);
+
+                    if (i < node.Parameters.Count - 1)
+                    {
+                        Context.CodeWriter.Write(", ");
+                    }
+                }
+
+                Context.CodeWriter.Write(")");
+                Context.CodeWriter.WriteLine();
 
                 using (Context.CodeWriter.BuildScope())
                 {
