@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             trigger.GetAwaiter().GetResult();
         }
 
-        private async Task<WebSocketReceiveResult> StartReceiving(WebSocket socket)
+        private async Task StartReceiving(WebSocket socket)
         {
             try
             {
@@ -113,14 +113,18 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 {
                     var memory = _application.Output.GetMemory();
 
-                    // REVIEW: Use new Memory<byte> websocket APIs on .NET Core 2.1
-                    memory.TryGetArray(out var arraySegment);
+#if NETCOREAPP2_1
+                    var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
+#else
+                    var isArray = memory.TryGetArray(out var arraySegment);
+                    Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await socket.ReceiveAsync(arraySegment, CancellationToken.None);
+#endif
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
-                        return receiveResult;
+                        return;
                     }
 
                     _logger.MessageReceived(receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
@@ -163,7 +167,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
                             if (WebSocketCanSend(ws))
                             {
-                                await ws.SendAsync(new ArraySegment<byte>(buffer.ToArray()), webSocketMessageType, endOfMessage: true, cancellationToken: CancellationToken.None);
+                                await ws.SendAsync(buffer, webSocketMessageType);
                             }
                         }
                         catch (WebSocketException socketException) when (!WebSocketCanSend(ws))

@@ -3,7 +3,10 @@
 
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
@@ -14,7 +17,31 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         private const byte LineFeed = (byte)'\n';
 
-        public static void WriteMessage(ReadOnlySpan<byte> payload, MemoryStream output)
+        public static async Task WriteMessageAsync(ReadOnlyBuffer<byte> payload, Stream output)
+        {
+            var ms = new MemoryStream();
+
+            // TODO: There are 2 improvements to be made here
+            // 1. Don't convert the entire payload into an array if if's multi-segmented.
+            // 2. Don't allocate the memory stream unless the payload contains \n. If it doesn't we can just write the buffers directly
+            // to the stream without modification. While it does mean that there will be smaller writes, should be fine for the most part
+            // since we're using reasonably sized buffers.
+
+            if (payload.IsSingleSegment)
+            {
+                WriteMessage(payload.First, ms);
+            }
+            else
+            {
+                WriteMessage(payload.ToArray(), ms);
+            }
+
+            ms.Position = 0;
+
+            await ms.CopyToAsync(output);
+        }
+
+        public static void WriteMessage(ReadOnlyMemory<byte> payload, Stream output)
         {
             // Write the payload
             WritePayload(payload, output);
@@ -23,7 +50,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             output.Write(Newline, 0, Newline.Length);
         }
 
-        private static void WritePayload(ReadOnlySpan<byte> payload, Stream output)
+        private static void WritePayload(ReadOnlyMemory<byte> payload, Stream output)
         {
             // Short-cut for empty payload
             if (payload.Length == 0)
@@ -45,8 +72,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             var keepWriting = true;
             while (keepWriting)
             {
+                var span = payload.Span;
                 // Seek to the end of buffer or newline
-                var sliceEnd = payload.IndexOf(LineFeed);
+                var sliceEnd = span.IndexOf(LineFeed);
                 var nextSliceStart = sliceEnd + 1;
                 if (sliceEnd < 0)
                 {
@@ -56,7 +84,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     // This is the last span
                     keepWriting = false;
                 }
-                if (sliceEnd > 0 && payload[sliceEnd - 1] == '\r')
+                if (sliceEnd > 0 && span[sliceEnd - 1] == '\r')
                 {
                     sliceEnd--;
                 }
@@ -65,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
                 if (nextSliceStart >= payload.Length)
                 {
-                    payload = ReadOnlySpan<byte>.Empty;
+                    payload = ReadOnlyMemory<byte>.Empty;
                 }
                 else
                 {
@@ -76,15 +104,20 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             }
         }
 
-        private static void WriteLine(ReadOnlySpan<byte> payload, Stream output)
+        private static void WriteLine(ReadOnlyMemory<byte> payload, Stream output)
         {
             output.Write(DataPrefix, 0, DataPrefix.Length);
 
-            var buffer = ArrayPool<byte>.Shared.Rent(payload.Length);
-            payload.CopyTo(buffer);
-            output.Write(buffer, 0, payload.Length);
-            ArrayPool<byte>.Shared.Return(buffer);
-
+#if NETCOREAPP2_1
+            output.Write(payload.Span);
+#else
+            if (payload.Length > 0)
+            {
+                var isArray = MemoryMarshal.TryGetArray(payload, out var segment);
+                Debug.Assert(isArray);
+                output.Write(segment.Array, segment.Offset, segment.Count);
+            }
+#endif
             output.Write(Newline, 0, Newline.Length);
         }
     }

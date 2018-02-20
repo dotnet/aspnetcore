@@ -53,12 +53,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     {
                         if (!buffer.IsEmpty)
                         {
-                            var ms = new MemoryStream();
                             _logger.SSEWritingMessage(buffer.Length);
-                            // Don't create a copy using ToArray every time
-                            ServerSentEventsMessageFormatter.WriteMessage(buffer.ToArray(), ms);
-                            ms.Seek(0, SeekOrigin.Begin);
-                            await ms.CopyToAsync(context.Response.Body);
+
+                            await ServerSentEventsMessageFormatter.WriteMessageAsync(buffer, context.Response.Body);
                         }
                         else if (result.IsCompleted)
                         {

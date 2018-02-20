@@ -206,7 +206,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         private static byte[] FormatMessageToArray(byte[] message)
         {
             var output = new MemoryStream();
-            TextMessageFormatter.WriteMessage(message, output);
+            output.Write(message, 0, message.Length);
+            TextMessageFormatter.WriteRecordSeparator(output);
             return output.ToArray();
         }
     }

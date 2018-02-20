@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -52,13 +53,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
                 try
                 {
-                    foreach (var segment in buffer)
-                    {
-                        var isArray = MemoryMarshal.TryGetArray(segment, out var arraySegment);
-                        // We're using the managed memory pool which is backed by managed buffers
-                        Debug.Assert(isArray);
-                        await context.Response.Body.WriteAsync(arraySegment.Array, arraySegment.Offset, arraySegment.Count);
-                    }
+                    await context.Response.Body.WriteAsync(buffer);
                 }
                 finally
                 {

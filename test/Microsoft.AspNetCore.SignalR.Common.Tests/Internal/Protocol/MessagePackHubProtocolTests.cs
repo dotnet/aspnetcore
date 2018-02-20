@@ -485,8 +485,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             using (var stream = new MemoryStream())
             {
-                BinaryMessageFormatter.WriteMessage(input, stream);
-                stream.Flush();
+                BinaryMessageFormatter.WriteLengthPrefix(input.Length, stream);
+                stream.Write(input, 0, input.Length);
                 return stream.ToArray();
             }
         }

@@ -115,7 +115,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private byte[] FormatMessageToArray(byte[] message)
         {
             var output = new MemoryStream();
-            TextMessageFormatter.WriteMessage(message, output);
+            output.Write(message, 0, message.Length);
+            TextMessageFormatter.WriteRecordSeparator(output);
             return output.ToArray();
         }
 

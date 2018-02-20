@@ -2,11 +2,14 @@
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core SignalR</Description>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\Common\ForceAsyncAwaiter.cs" Link="ForceAsyncAwaiter.cs" />
+    <Compile Include="..\Common\PipeWriterStream.cs" Link="PipeWriterStream.cs" />
+    <Compile Include="..\Common\WebSocketExtensions.cs" Link="WebSocketExtensions.cs" />
+    <Compile Include="..\Common\StreamExtensions.cs" Link="StreamExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>

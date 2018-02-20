@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
@@ -102,18 +104,23 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     var memory = _application.Output.GetMemory();
 
-                    // REVIEW: Use new Memory<byte> websocket APIs on .NET Core 2.1
-                    memory.TryGetArray(out var arraySegment);
+#if NETCOREAPP2_1
+                    var receiveResult = await _webSocket.ReceiveAsync(memory, _receiveCts.Token);
+#else
+                    var isArray = memory.TryGetArray(out var arraySegment);
+                    Debug.Assert(isArray);
 
                     // Exceptions are handled above where the send and receive tasks are being run.
                     var receiveResult = await _webSocket.ReceiveAsync(arraySegment, _receiveCts.Token);
+#endif
+
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
-                        _logger.WebSocketClosed(receiveResult.CloseStatus);
+                        _logger.WebSocketClosed(_webSocket.CloseStatus);
 
-                        if (receiveResult.CloseStatus != WebSocketCloseStatus.NormalClosure)
+                        if (_webSocket.CloseStatus != WebSocketCloseStatus.NormalClosure)
                         {
-                            throw new InvalidOperationException($"Websocket closed with error: {receiveResult.CloseStatus}.");
+                            throw new InvalidOperationException($"Websocket closed with error: {_webSocket.CloseStatus}.");
                         }
 
                         return;
@@ -162,7 +169,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.ReceivedFromApp(buffer.Length);
 
-                            await _webSocket.SendAsync(new ArraySegment<byte>(buffer.ToArray()), webSocketMessageType, true, _transportCts.Token);
+                            await _webSocket.SendAsync(buffer, webSocketMessageType, _transportCts.Token);
                         }
                         else if (result.IsCompleted)
                         {

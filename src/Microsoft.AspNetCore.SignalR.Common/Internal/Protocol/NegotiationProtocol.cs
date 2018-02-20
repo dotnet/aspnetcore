@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.IO;
+using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,22 +14,21 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public static class NegotiationProtocol
     {
+        private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
         private const string ProtocolPropertyName = "protocol";
 
         public static void WriteMessage(NegotiationMessage negotiationMessage, Stream output)
         {
-            using (var memoryStream = new MemoryStream())
+            using (var writer = new JsonTextWriter(new StreamWriter(output, _utf8NoBom, 1024, leaveOpen: true)))
             {
-                using (var writer = new JsonTextWriter(new StreamWriter(memoryStream)))
-                {
-                    writer.WriteStartObject();
-                    writer.WritePropertyName(ProtocolPropertyName);
-                    writer.WriteValue(negotiationMessage.Protocol);
-                    writer.WriteEndObject();
-                }
-
-                TextMessageFormatter.WriteMessage(memoryStream.ToArray(), output);
+                writer.WriteStartObject();
+                writer.WritePropertyName(ProtocolPropertyName);
+                writer.WriteValue(negotiationMessage.Protocol);
+                writer.WriteEndObject();
             }
+
+            TextMessageFormatter.WriteRecordSeparator(output);
         }
 
         public static bool TryParseMessage(ReadOnlySpan<byte> input, out NegotiationMessage negotiationMessage)

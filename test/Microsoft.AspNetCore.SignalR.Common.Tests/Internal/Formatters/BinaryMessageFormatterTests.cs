@@ -33,7 +33,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var output = new MemoryStream(); // Use small chunks to test Advance/Enlarge and partial payload writing
             foreach (var message in messages)
             {
-                BinaryMessageFormatter.WriteMessage(message, output);
+                BinaryMessageFormatter.WriteLengthPrefix(message.Length, output);
+                output.Write(message, 0, message.Length);
             }
 
             Assert.Equal(expectedEncoding, output.ToArray());
@@ -77,7 +78,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 output.Seek(offset, SeekOrigin.Begin);
             }
 
-            BinaryMessageFormatter.WriteMessage(payload, output);
+            BinaryMessageFormatter.WriteLengthPrefix(payload.Length, output);
+            output.Write(payload, 0, payload.Length);
 
             Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
@@ -97,7 +99,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 output.Seek(offset, SeekOrigin.Begin);
             }
 
-            BinaryMessageFormatter.WriteMessage(message, output);
+            BinaryMessageFormatter.WriteLengthPrefix(message.Length, output);
+            output.Write(message, 0, message.Length);
 
             Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
@@ -108,7 +111,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         {
             using (var ms = new MemoryStream())
             {
-                BinaryMessageFormatter.WriteMessage(payload, ms);
+                BinaryMessageFormatter.WriteLengthPrefix(payload.Length, ms);
+                ms.Write(payload, 0, payload.Length);
                 var buffer = new ReadOnlySpan<byte>(ms.ToArray());
                 Assert.True(BinaryMessageParser.TryParseMessage(ref buffer, out var roundtripped));
                 Assert.Equal(payload, roundtripped.ToArray());

@@ -23,14 +23,16 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
             var output = new MemoryStream();
-            BinaryMessageFormatter.WriteMessage(buffer, output);
+            BinaryMessageFormatter.WriteLengthPrefix(buffer.Length, output);
+            output.Write(buffer, 0, buffer.Length);
 
             _binaryInput = output.ToArray();
 
             buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
             output = new MemoryStream();
-            TextMessageFormatter.WriteMessage(buffer, output);
+            output.Write(buffer, 0, buffer.Length);
+            TextMessageFormatter.WriteRecordSeparator(output);
 
             _textInput = output.ToArray();
         }

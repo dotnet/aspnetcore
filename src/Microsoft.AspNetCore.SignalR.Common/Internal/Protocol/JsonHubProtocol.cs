@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.ExceptionServices;
+using System.Text;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public class JsonHubProtocol : IHubProtocol
     {
+        private static readonly UTF8Encoding _utf8NoBom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
+
         private const string ResultPropertyName = "result";
         private const string ItemPropertyName = "item";
         private const string InvocationIdPropertyName = "invocationId";
@@ -59,13 +62,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public void WriteMessage(HubMessage message, Stream output)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                WriteMessageCore(message, memoryStream);
-                memoryStream.Flush();
-
-                TextMessageFormatter.WriteMessage(memoryStream.ToArray(), output);
-            }
+            WriteMessageCore(message, output);
+            TextMessageFormatter.WriteRecordSeparator(output);
         }
 
         private HubMessage ParseMessage(Stream input, IInvocationBinder binder)
@@ -135,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteMessageCore(HubMessage message, Stream stream)
         {
-            using (var writer = new JsonTextWriter(new StreamWriter(stream)))
+            using (var writer = new JsonTextWriter(new StreamWriter(stream, _utf8NoBom, 1024, leaveOpen: true)))
             {
                 writer.WriteStartObject();
                 switch (message)

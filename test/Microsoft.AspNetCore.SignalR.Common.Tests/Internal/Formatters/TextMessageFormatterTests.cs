@@ -16,7 +16,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Formatters
         {
             using (var ms = new MemoryStream())
             {
-                TextMessageFormatter.WriteMessage(new ReadOnlySpan<byte>(Encoding.UTF8.GetBytes("ABC")), ms);
+                var buffer = Encoding.UTF8.GetBytes("ABC");
+                ms.Write(buffer, 0, buffer.Length);
+                TextMessageFormatter.WriteRecordSeparator(ms);
                 Assert.Equal("ABC\u001e", Encoding.UTF8.GetString(ms.ToArray()));
             }
         }

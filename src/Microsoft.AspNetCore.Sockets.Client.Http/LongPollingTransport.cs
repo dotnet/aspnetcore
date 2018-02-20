@@ -123,12 +123,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _logger.ReceivedMessages();
 
-                        // TODO: Use CopyToAsync here
-                        var payload = await response.Content.ReadAsByteArrayAsync();
-                        if (payload.Length > 0)
-                        {
-                            await _application.Output.WriteAsync(payload);
-                        }
+                        var stream = new PipeWriterStream(_application.Output);
+                        await response.Content.CopyToAsync(stream);
+                        await _application.Output.FlushAsync();
                     }
                 }
             }

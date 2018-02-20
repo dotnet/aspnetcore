@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
+using System.IO;
 using System.IO.Pipelines;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,8 +42,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
                             PrepareHttpRequest(request, httpOptions);
 
-                            // TODO: Use a custom stream implementation over the ReadOnlyBuffer<byte>
-                            request.Content = new ByteArrayContent(buffer.ToArray());
+                            request.Content = new ReadOnlyBufferContent(buffer);
 
                             var response = await httpClient.SendAsync(request, transportCts.Token);
                             response.EnsureSuccessStatusCode();
@@ -94,6 +96,27 @@ namespace Microsoft.AspNetCore.Sockets.Client
             if (httpOptions?.AccessTokenFactory != null)
             {
                 request.Headers.Add("Authorization", $"Bearer {httpOptions.AccessTokenFactory()}");
+            }
+        }
+
+        private class ReadOnlyBufferContent : HttpContent
+        {
+            private readonly ReadOnlyBuffer<byte> _buffer;
+
+            public ReadOnlyBufferContent(ReadOnlyBuffer<byte> buffer)
+            {
+                _buffer = buffer;
+            }
+
+            protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
+            {
+                return stream.WriteAsync(_buffer);
+            }
+
+            protected override bool TryComputeLength(out long length)
+            {
+                length = _buffer.Length;
+                return true;
             }
         }
     }

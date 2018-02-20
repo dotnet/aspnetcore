@@ -4,11 +4,10 @@
 using System;
 using System.Buffers;
 using System.IO;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Sockets.Http.Internal
+namespace System.IO.Pipelines
 {
     // Write only stream implementation for efficiently writing bytes from the request body
     internal class PipeWriterStream : Stream
@@ -62,5 +61,14 @@ namespace Microsoft.AspNetCore.Sockets.Http.Internal
             Write(buffer, offset, count);
             return Task.CompletedTask;
         }
+
+#if NETCOREAPP2_1
+        public override Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            _pipeWriter.Write(source.Span);
+            _length += source.Length;
+            return Task.CompletedTask;
+        }
+#endif
     }
 }
