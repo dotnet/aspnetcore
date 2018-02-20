@@ -177,7 +177,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem.Rules {
 						Microsoft.Build.Framework.XamlTypes.Rule t = ((Microsoft.Build.Framework.XamlTypes.Rule)(ruleEnumerator.Current));
 						if (System.StringComparer.OrdinalIgnoreCase.Equals(t.Name, SchemaName)) {
 							unboundRule = t;
-							unboundRule.Name = "843bc0bc-5265-4864-9b06-f5d5503b0484";
+							unboundRule.Name = "6ffb2641-19cd-4943-bc6d-446919acb77e";
 							RazorConfiguration.deserializedFallbackRule = unboundRule;
 						}
 					}

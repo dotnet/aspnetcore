@@ -49,6 +49,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
 
+            // In 15.6-7 this API is called by WTE to resolve tag helpers, and can be called on build - ie: without any ProjectSnapshot
+            // changes. That means that projectSnapshot.WorkspaceProject is out of date with respect to the actual workspace. 
+            //
+            // To work around this issue, always grab the latest WorkspaceProject with the same ID, which will trigger tag helper
+            // discovery on the current state of the workspace.
+            //
+            // This workaround won't be needed in 15.8 since we do tag helper discovery through the project snapshot manager.
+            var latest = _workspace.CurrentSolution.GetProject(projectSnapshot.WorkspaceProject.Id) ?? projectSnapshot.WorkspaceProject;
+            if (projectSnapshot.WorkspaceProject != latest)
+            {
+                projectSnapshot = ((DefaultProjectSnapshot)projectSnapshot).WithWorkspaceProject(latest);
+            }
+            
             var resolver = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<TagHelperResolver>();
             return resolver.GetTagHelpersAsync(projectSnapshot);
         }
