@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Blazor.Server.Test
             var parsedHtml = new HtmlParser().Parse("<html><body>" + scriptTagText + "</body></html>");
             var scriptElem = parsedHtml.Body.QuerySelector("script");
             Assert.False(scriptElem.HasChildNodes);
-            Assert.Equal("/_framework/blazor.js", scriptElem.GetAttribute("src"));
+            Assert.Equal("_framework/blazor.js", scriptElem.GetAttribute("src"));
             Assert.Equal("MyApp.Entrypoint.dll", scriptElem.GetAttribute("main"));
             Assert.Equal("MyNamespace.MyType::MyMethod", scriptElem.GetAttribute("entrypoint"));
             Assert.Equal("System.Abc.dll,MyApp.ClassLib.dll", scriptElem.GetAttribute("references"));
