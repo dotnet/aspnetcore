@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
     // IMPORTANT
     //
     // Many of these names are used in code generation. Keep these in sync with the code generation code
-    // See: src/Microsoft.AspNetCore.Blazor.Razor.Extensions/RenderTreeBuilder.cs
+    // See: src/Microsoft.AspNetCore.Blazor.Razor.Extensions/BlazorApi.cs
 
     /// <summary>
     /// Provides methods for building a collection of <see cref="RenderTreeFrame"/> entries.

@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
@@ -11,11 +13,47 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     internal class BlazorCodeTarget : CodeTarget
     {
+        private readonly RazorCodeGenerationOptions _options;
+
+        public BlazorCodeTarget(RazorCodeGenerationOptions options, IEnumerable<ICodeTargetExtension> extensions)
+        {
+            _options = options;
+            Extensions = extensions.ToArray();
+        }
+
+        public ICodeTargetExtension[] Extensions { get; }
+
         public override IntermediateNodeWriter CreateNodeWriter()
-            => new BlazorIntermediateNodeWriter();
+        {
+            return _options.DesignTime ? (IntermediateNodeWriter)new DesignTimeNodeWriter() : new BlazorIntermediateNodeWriter();
+        }
 
-        public override TExtension GetExtension<TExtension>() => null;
+        public override TExtension GetExtension<TExtension>()
+        {
+            for (var i = 0; i < Extensions.Length; i++)
+            {
+                var match = Extensions[i] as TExtension;
+                if (match != null)
+                {
+                    return match;
+                }
+            }
 
-        public override bool HasExtension<TExtension>() => false;
+            return null;
+        }
+
+        public override bool HasExtension<TExtension>()
+        {
+            for (var i = 0; i < Extensions.Length; i++)
+            {
+                var match = Extensions[i] as TExtension;
+                if (match != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

@@ -22,9 +22,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         // Captures: MyApp.Namespace.ISomeType<T1, T2>
         private const string ImplementsTokenPattern = @"\s*Implements\s*<(.+)\>\s*\(\s*\)\s*";
 
-        public static void Register(IRazorEngineBuilder configuration)
+        public static void Register(IRazorEngineBuilder builder)
         {
-            configuration.Features.Add(new TemporaryImplementsPass());
+            builder.Features.Add(new TemporaryImplementsPass());
+        }
+
+        public static void Register(RazorProjectEngineBuilder builder)
+        {
+            builder.Features.Add(new TemporaryImplementsPass());
         }
 
         private TemporaryImplementsPass() : base(ImplementsTokenPattern)

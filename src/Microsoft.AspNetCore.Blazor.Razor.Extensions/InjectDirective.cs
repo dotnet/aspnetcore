@@ -29,6 +29,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 builder.Description = "Inject a service from the application's service container into a property.";
             });
 
+        public static void Register(RazorProjectEngineBuilder builder)
+        {
+            builder.AddDirective(Directive);
+            builder.Features.Add(new Pass());
+        }
+
         public static void Register(IRazorEngineBuilder builder)
         {
             builder.AddDirective(Directive);

@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
                 // name and any public members. Don't need to actually emit all the RenderTreeBuilder
                 // invocations.
 
-                var engine = new BlazorRazorEngine();
+                var engine = RazorEngine.Create(b => BlazorExtensionInitializer.Register(b));
                 var blazorTemplateEngine = new BlazorTemplateEngine(
-                    engine.Engine,
+                    engine,
                     RazorProjectFileSystem.Create(inputRootPath));
                 var codeDoc = blazorTemplateEngine.CreateCodeDocument(
                     new BlazorProjectItem(inputRootPath, inputFilePath, inputFileContents));

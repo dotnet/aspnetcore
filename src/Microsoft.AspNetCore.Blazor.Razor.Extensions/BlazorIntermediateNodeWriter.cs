@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // text to display
             _scopeStack.IncrementCurrentScopeChildCount(context);
             context.CodeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator();
 
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                             // Text node
                             _scopeStack.IncrementCurrentScopeChildCount(context);
                             codeWriter
-                                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
+                                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddContent)}")
                                 .Write((_sourceSequence++).ToString())
                                 .WriteParameterSeparator()
                                 .WriteStringLiteral(nextToken.Data)
@@ -237,14 +237,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                 if (isComponent)
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
+                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
                                 }
                                 else
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.OpenElement)}")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteParameterSeparator()
                                         .WriteStringLiteral(nextTag.Data)
@@ -294,8 +294,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     isComponent: isComponent,
                                     source: CalculateSourcePosition(node.Source, nextToken.Position));
                                 var closeMethodName = isComponent
-                                    ? nameof(RenderTreeBuilder.CloseComponent)
-                                    : nameof(RenderTreeBuilder.CloseElement);
+                                    ? nameof(BlazorApi.RenderTreeBuilder.CloseComponent)
+                                    : nameof(BlazorApi.RenderTreeBuilder.CloseElement);
                                 codeWriter
                                     .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{closeMethodName}")
                                     .WriteEndMethodInvocation();
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 WriteAttribute(context.CodeWriter, "value", new IntermediateToken
                 {
                     Kind = TokenKind.CSharp,
-                    Content = $"{RenderTreeBuilder.BindMethodsGetValue}({valueParams})"
+                    Content = $"{BlazorApi.BindMethods.GetValue}({valueParams})"
                 });
 
                 // [2] @onchange(BindSetValue(parsed => { X = parsed; }, X, Y, Z, ...))
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     AttributeValue = new IntermediateToken
                     {
                         Kind = TokenKind.CSharp,
-                        Content = $"onchange({RenderTreeBuilder.BindMethodsSetValue}({parsedArgsJoined}))"
+                        Content = $"onchange({BlazorApi.BindMethods.SetValue}({parsedArgsJoined}))"
                     }
                 };
                 WriteElementAttributeToken(context, tag, onChangeAttributeToken);
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // For any other attribute token (e.g., @onclick(...)), treat it as an expression
                 // that will evaluate as an attribute frame
                 context.CodeWriter
-                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
                     .Write((_sourceSequence++).ToString())
                     .WriteParameterSeparator()
                     .Write(token.AttributeValue.Content)
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public void BeginWriteAttribute(CodeWriter codeWriter, string key)
         {
             codeWriter
-                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)

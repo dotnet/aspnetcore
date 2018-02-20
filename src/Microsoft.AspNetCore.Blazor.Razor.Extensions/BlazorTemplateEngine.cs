@@ -4,6 +4,7 @@
 using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
 using System.Text;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -12,11 +13,26 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     public class BlazorTemplateEngine : RazorTemplateEngine
     {
+        // We need to implement and register this feature for tooling support to work. Subclassing TemplateEngine
+        // doesn't work inside visual studio.
+        private readonly BlazorImportProjectFeature _feature;
+
         public BlazorTemplateEngine(RazorEngine engine, RazorProject project)
             : base(engine, project)
         {
-            Options.ImportsFileName = "_ViewImports.cshtml";
-            Options.DefaultImports = GetDefaultImports();
+            _feature = new BlazorImportProjectFeature();
+            
+            Options.DefaultImports = RazorSourceDocument.ReadFrom(_feature.DefaultImports);
+        }
+
+        public override IEnumerable<RazorProjectItem> GetImportItems(RazorProjectItem projectItem)
+        {
+            if (projectItem == null)
+            {
+                throw new System.ArgumentNullException(nameof(projectItem));
+            }
+
+            return _feature.GetHierarchicalImports(Project, projectItem);
         }
 
         private static RazorSourceDocument GetDefaultImports()

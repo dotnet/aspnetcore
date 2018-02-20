@@ -15,8 +15,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     internal class ScopeStack
     {
-        private const string _renderFragmentTypeName = "Microsoft.AspNetCore.Blazor.RenderFragment";
-
         private readonly Stack<ScopeEntry> _stack = new Stack<ScopeEntry>();
         private int _builderVarNumber = 1;
 
@@ -72,9 +70,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     // When we're about to insert the first child into a component,
                     // it's time to open a new lambda
                     var blazorNodeWriter = (BlazorIntermediateNodeWriter)context.NodeWriter;
-                    blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, RenderTreeBuilder.ChildContent);
+                    blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, BlazorApi.RenderTreeBuilder.ChildContent);
                     OffsetBuilderVarNumber(1);
-                    context.CodeWriter.Write($"({_renderFragmentTypeName})(");
+                    context.CodeWriter.Write($"({BlazorApi.RenderFragment.FullTypeName})(");
                     currentScope.LambdaScope = context.CodeWriter.BuildLambda(BuilderVarName);
                 }
 

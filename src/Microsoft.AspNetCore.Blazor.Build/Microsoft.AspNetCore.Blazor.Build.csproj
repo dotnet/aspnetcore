@@ -32,6 +32,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- This is a newer version than is in the shared framework, so copy it -->
+    <Content Include="..\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Razor.Language.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>false</Visible>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Browser.JS\Microsoft.AspNetCore.Blazor.Browser.JS.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Mono\Microsoft.AspNetCore.Blazor.Mono.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj" />

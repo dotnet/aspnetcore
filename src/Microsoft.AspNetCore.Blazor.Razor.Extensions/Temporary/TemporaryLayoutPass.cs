@@ -25,9 +25,14 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private const string LayoutAttributeTypeName
             = "Microsoft.AspNetCore.Blazor.Layouts.LayoutAttribute";
 
-        public static void Register(IRazorEngineBuilder configuration)
+        public static void Register(IRazorEngineBuilder builder)
         {
-            configuration.Features.Add(new TemporaryLayoutPass());
+            builder.Features.Add(new TemporaryLayoutPass());
+        }
+
+        public static void Register(RazorProjectEngineBuilder builder)
+        {
+            builder.Features.Add(new TemporaryLayoutPass());
         }
 
         private TemporaryLayoutPass() : base(LayoutTokenPattern)
