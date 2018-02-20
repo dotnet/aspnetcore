@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
-            Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
             
             Assert.NuspecContains(
                 result,
                 Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" " +
-                $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" />");
+                $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.Views.dll")}\" " +
+                $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.Views.dll")}\" />");
 
             Assert.NuspecDoesNotContain(
                 result,
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll"));
+                Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.Views.dll"));
         }
 
         [Fact]
@@ -46,13 +46,13 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, OutputPath, "ClassLibrary.dll");
-            Assert.FileExists(result, OutputPath, "ClassLibrary.PrecompiledViews.dll");
+            Assert.FileExists(result, OutputPath, "ClassLibrary.Views.dll");
 
             Assert.NuspecContains(
                 result,
                 Path.Combine("obj", Configuration, "ClassLibrary.1.0.0.nuspec"),
-                $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" " +
-                $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll")}\" />");
+                $"<file src=\"{Path.Combine("bin", Configuration, "netcoreapp2.0", "ClassLibrary.Views.dll")}\" " +
+                $"target=\"{Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.Views.dll")}\" />");
 
             Assert.NuspecContains(
                 result,
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.NupkgContains(
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
-                Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.PrecompiledViews.dll"));
+                Path.Combine("lib", "netcoreapp2.0", "ClassLibrary.Views.dll"));
         }
     }
 }

@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
-            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
         }
 
         [Fact]
@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
-            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, OutputPath, "SimpleMvc.Views.pdb");
         }
 
         [Fact]
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "Whitespace in name.dll");
             Assert.FileExists(result, OutputPath, "Whitespace in name.pdb");
-            Assert.FileExists(result, OutputPath, "Whitespace in name.PrecompiledViews.dll");
-            Assert.FileExists(result, OutputPath, "Whitespace in name.PrecompiledViews.pdb");
+            Assert.FileExists(result, OutputPath, "Whitespace in name.Views.dll");
+            Assert.FileExists(result, OutputPath, "Whitespace in name.Views.pdb");
 
-            Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.Views.dll");
             Assert.FileExists(result, IntermediateOutputPath, "Whitespace in name.RazorCoreGenerate.cache");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
         }

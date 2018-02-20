@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.pdb");
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.dll");
+            Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.pdb");
             
             // This target should be part of the design time build.
             Assert.Contains("RazorGetAssemblyAttributes", result.Output);

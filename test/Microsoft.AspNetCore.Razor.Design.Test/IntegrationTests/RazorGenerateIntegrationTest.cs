@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             // The file should still be generated even if we had a Razor syntax error.
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");

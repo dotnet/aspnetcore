@@ -91,9 +91,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Output directory used for generated files -->
     <RazorGenerateIntermediateOutputPath Condition="'$(RazorGenerateIntermediateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateIntermediateOutputPath>
+
+    <!-- Suffix appended to $(TargetName) to produce $(RazorTargetName), the name of the assembly produced by Razor -->
+    <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)' == ''">.Razor</RazorTargetNameSuffix>
     
     <!-- File name (without extension) of the assembly produced by Razor -->
-    <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName).PrecompiledViews</RazorTargetName>
+    <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName)$(RazorTargetNameSuffix)</RazorTargetName>
 
     <!--
       The compatibility zone - these properties were provided by the MVC Precompilation tool and they

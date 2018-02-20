@@ -22,8 +22,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // RazorGenerate should compile the assembly and pdb.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.pdb");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
         }
 
         [Fact]
@@ -39,8 +39,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Everything we do should noop - including building the app. 
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.pdb");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
         }
 
         [Fact]
@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
-            var assembly = LoadAssemblyFromBytes(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            var assembly = LoadAssemblyFromBytes(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.Views.dll");
             var resources = assembly.GetManifestResourceNames();
 
             Assert.Equal(new string[]
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
-            var assembly = LoadAssemblyFromBytes(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            var assembly = LoadAssemblyFromBytes(result.Project.DirectoryPath, IntermediateOutputPath, "SimpleMvc.Views.dll");
             var resources = assembly.GetManifestResourceNames();
 
             Assert.Equal(new string[]

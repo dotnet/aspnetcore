@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
             Assert.FileContainsLine(
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
             Assert.FileDoesNotContainLine(
@@ -69,8 +69,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs");
             Assert.FileDoesNotContainLine(
