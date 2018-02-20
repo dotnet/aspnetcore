@@ -171,21 +171,55 @@ namespace Microsoft.AspNetCore.DataProtection
 
             WithUniqueTempDirectory(directory =>
             {
-                    // Step 1: directory should be completely empty
-                    directory.Create();
+                // Step 1: directory should be completely empty
+                directory.Create();
                 Assert.Empty(directory.GetFiles());
 
-                    // Step 2: instantiate the system and round-trip a payload
-                    var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
+                // Step 2: instantiate the system and round-trip a payload
+                var protector = DataProtectionProvider.Create(directory, certificate).CreateProtector("purpose");
                 Assert.Equal("payload", protector.Unprotect(protector.Protect("payload")));
 
-                    // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
-                    var allFiles = directory.GetFiles();
+                // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
+                var allFiles = directory.GetFiles();
                 Assert.Single(allFiles);
                 Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
                 string fileText = File.ReadAllText(allFiles[0].FullName);
                 Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
                 Assert.Contains("X509Certificate", fileText, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
+        public void System_CanUnprotectWithCert()
+        {
+            var filePath = Path.Combine(GetTestFilesPath(), "TestCert2.pfx");
+            var certificate = new X509Certificate2(filePath, "password");
+
+            WithUniqueTempDirectory(directory =>
+            {
+                // Step 1: directory should be completely empty
+                directory.Create();
+                Assert.Empty(directory.GetFiles());
+
+                // Step 2: instantiate the system and create some data
+                var protector = DataProtectionProvider
+                    .Create(directory, certificate)
+                    .CreateProtector("purpose");
+
+                var data = protector.Protect("payload");
+
+                // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
+                var allFiles = directory.GetFiles();
+                Assert.Single(allFiles);
+                Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
+                string fileText = File.ReadAllText(allFiles[0].FullName);
+                Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
+                Assert.Contains("X509Certificate", fileText, StringComparison.Ordinal);
+
+                // Step 4: setup a second system and validate it can decrypt keys and unprotect data
+                var unprotector = DataProtectionProvider.Create(directory,
+                    b => b.UnprotectKeysWithAnyCertificate(certificate));
+                Assert.Equal("payload", unprotector.CreateProtector("purpose").Unprotect(data));
             });
         }
 

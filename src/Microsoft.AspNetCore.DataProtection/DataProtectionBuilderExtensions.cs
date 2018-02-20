@@ -321,6 +321,33 @@ namespace Microsoft.AspNetCore.DataProtection
         }
 
         /// <summary>
+        /// Configures certificates which can be used to decrypt keys loaded from storage.
+        /// </summary>
+        /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
+        /// <param name="certificates">Certificates that can be used to decrypt key data.</param>
+        /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
+        public static IDataProtectionBuilder UnprotectKeysWithAnyCertificate(this IDataProtectionBuilder builder, params X509Certificate2[] certificates)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.Configure<XmlKeyDecryptionOptions>(o =>
+            {
+                if (certificates != null)
+                {
+                    foreach (var certificate in certificates)
+                    {
+                        o.AddKeyDecryptionCertificate(certificate);
+                    }
+                }
+            });
+
+            return builder;
+        }
+
+        /// <summary>
         /// Configures keys to be encrypted with Windows DPAPI before being persisted to
         /// storage. The encrypted key will only be decryptable by the current Windows user account.
         /// </summary>
