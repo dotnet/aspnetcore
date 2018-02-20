@@ -52,6 +52,12 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             Assert.Equal(attributeEventHandlerValue, frame.AttributeValue);
         }
 
+        public static void Attribute(RenderTreeFrame frame, string attributeName, object attributeValue, int? sequence = null)
+        {
+            AssertFrame.Attribute(frame, attributeName, sequence);
+            Assert.Equal(attributeValue, frame.AttributeValue);
+        }
+
         public static void Component<T>(RenderTreeFrame frame, int? sequence = null) where T : IComponent
         {
             Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);

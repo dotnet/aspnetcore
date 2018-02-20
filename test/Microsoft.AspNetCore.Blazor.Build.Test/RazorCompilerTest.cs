@@ -375,6 +375,40 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void CanPassParametersToComponents()
+        {
+            // Arrange/Act
+            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var testObjectTypeName = typeof(SomeType).FullName.Replace('+', '.');
+            var component = CompileToComponent($"<c:{testComponentTypeName}" +
+                $" IntProperty=123" +
+                $" StringProperty=\"My string\"" +
+                $" ObjectProperty=@(new {testObjectTypeName}()) />");
+            var frames = GetRenderTree(component);
+
+            // Assert
+            // TODO: Fix this. 
+            // * Currently the attribute names are lowercased if they were
+            //   parsed by AngleSharp as HTML, and left in their original case if they
+            //   were parsed by the Razor compiler as a C# expression. They should all
+            //   retain their original case when the target element represents a component.
+            // * Similarly, unquoted values are interpreted as strings if they were parsed
+            //   by AngleSharp (e.g., intproperty=123 passes a string). The values should
+            //   always be treated as C# expressions if the target represents a component.
+            // This problem will probably go away on its own when we have new component
+            // tooling.
+            Assert.Collection(frames,
+                frame => AssertFrame.Component<TestComponent>(frame, 0),
+                frame => AssertFrame.Attribute(frame, "intproperty", "123", 1),
+                frame => AssertFrame.Attribute(frame, "stringproperty", "My string", 2),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "ObjectProperty");
+                    Assert.IsType<SomeType>(frame.AttributeValue);
+                });
+        }
+
+        [Fact]
         public void ComponentsDoNotHaveLayoutAttributeByDefault()
         {
             // Arrange/Act
@@ -602,5 +636,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public interface ITestInterface { }
 
         public class TestBaseClass : BlazorComponent { }
+
+        public class SomeType { }
     }
 }
