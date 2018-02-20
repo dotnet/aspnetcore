@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebSockets.ConformanceTest.Autobahn;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
@@ -27,6 +28,11 @@ namespace Microsoft.AspNetCore.WebSockets.ConformanceTest
         [SkipIfWsTestNotPresent]
         public async Task AutobahnTestSuite()
         {
+            // If we're on CI, we want to actually fail if WsTest isn't installed, rather than just skipping the test
+            // The SkipIfWsTestNotPresent attribute ensures that this test isn't skipped on CI, so we just need to check that Wstest is present
+            // And we use Assert.True to provide an error message
+            Assert.True(Wstest.Default != null, $"The 'wstest' executable (Autobahn WebSockets Test Suite) could not be found at '{Wstest.DefaultLocation}'. Run the Build Agent setup scripts to install it or see https://github.com/crossbario/autobahn-testsuite for instructions on manual installation.");
+
             using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger<AutobahnTests>();
