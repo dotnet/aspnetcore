@@ -6,29 +6,59 @@ using System;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 {
+    // TODO: Make this not static, and wrap it in an interface that can be injected through DI.
+    // We can make EnableNavigationInteception private, and call it automatically when the any
+    // concrete instance is instantiated.
+
+    /// <summary>
+    /// Helpers for working with URIs and navigation state.
+    /// </summary>
     public static class UriHelper
     {
         static readonly string _functionPrefix = typeof(UriHelper).FullName;
 
+        /// <summary>
+        /// An event that fires when the navigation location has changed.
+        /// </summary>
         public static event EventHandler<string> OnLocationChanged;
 
+        /// <summary>
+        /// Prevents default navigation on all links whose href is inside the base URI space,
+        /// causing clicks on those links to trigger <see cref="OnLocationChanged"/> instead.
+        /// </summary>
         public static void EnableNavigationInteception()
             => RegisteredFunction.InvokeUnmarshalled<object>(
                 $"{_functionPrefix}.enableNavigationInteception");
 
+        /// <summary>
+        /// Gets the URI prefix that can be prepended before URI paths to produce an absolute URI.
+        /// Typically this corresponds to the 'href' attribute on the document's &lt;base&gt; element.
+        /// </summary>
+        /// <returns>The URI prefix.</returns>
         public static string GetBaseUriPrefix()
         {
             var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
                 $"{_functionPrefix}.getBaseURI");
-            return ToBaseURIPrefix(baseUri);
+            return ToBaseUriPrefix(baseUri);
         }
 
+        /// <summary>
+        /// Gets the browser's current absolute URI.
+        /// </summary>
+        /// <returns>The browser's current absolute URI.</returns>
         public static string GetAbsoluteUri()
         {
             return RegisteredFunction.InvokeUnmarshalled<string>(
                 $"{_functionPrefix}.getLocationHref");
         }
 
+        /// <summary>
+        /// Given a base URI prefix (e.g., one previously returned by <see cref="GetBaseUriPrefix"/>),
+        /// converts an absolute URI into one relative to the base URI prefix.
+        /// </summary>
+        /// <param name="baseUriPrefix">The base URI prefix (e.g., previously returned by <see cref="GetBaseUriPrefix"/>).</param>
+        /// <param name="absoluteUri">An absolute URI that is within the space of the base URI prefix.</param>
+        /// <returns>A relative URI path.</returns>
         public static string ToBaseRelativePath(string baseUriPrefix, string absoluteUri)
         {
             // The absolute URI must be of the form "{baseUriPrefix}/something",
@@ -49,13 +79,14 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             => OnLocationChanged?.Invoke(null, newAbsoluteUri);
 
         /// <summary>
-        /// Given the href value from the document's <base> element, returns the URI
-        /// prefix that can be prepended to URI paths to produce an absolute URI.
+        /// Given the document's document.baseURI value, returns the URI prefix
+        /// that can be prepended to URI paths to produce an absolute URI.
         /// This is computed by removing the final slash and any following characters.
+        /// Internal for tests.
         /// </summary>
-        /// <param name="baseUri">The href value from a document's <base> element.</param>
+        /// <param name="baseUri">The page's document.baseURI value.</param>
         /// <returns>The URI prefix</returns>
-        private static string ToBaseURIPrefix(string baseUri)
+        internal static string ToBaseUriPrefix(string baseUri)
         {
             if (baseUri != null)
             {

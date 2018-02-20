@@ -10,18 +10,35 @@ using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 {
+    /// <summary>
+    /// A component that displays whichever other component corresponds to the
+    /// browser's changing navigation state.
+    /// </summary>
     public class BrowserRouter : IComponent, IDisposable
     {
         RenderHandle _renderHandle;
         string _baseUriPrefix;
         string _locationAbsolute;
 
+        /// <summary>
+        /// Gets or sets the assembly that should be searched, along with its referenced
+        /// assemblies, for components matching the URI.
+        /// </summary>
         public Assembly AppAssembly { get; set; }
 
+        /// <summary>
+        /// Gets or sets the namespace prefix that should be prepended when searching
+        /// for matching components.
+        /// </summary>
         public string PagesNamespace { get; set; }
 
+        /// <summary>
+        /// Gets or sets the component name that will be used if the URI ends with
+        /// a slash.
+        /// </summary>
         public string DefaultComponentName { get; set; } = "Index";
 
+        /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
@@ -32,12 +49,14 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             _locationAbsolute = UriHelper.GetAbsoluteUri();
         }
 
+        /// <inheritdoc />
         public void SetParameters(ParameterCollection parameters)
         {
             parameters.AssignToProperties(this);
             Refresh();
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             UriHelper.OnLocationChanged -= OnLocationChanged;

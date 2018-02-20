@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
-namespace Microsoft.AspNetCore.Blazor.Test
+namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
     public class CapturedBatch
     {
