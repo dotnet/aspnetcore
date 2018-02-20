@@ -555,5 +555,28 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+
+    <!-- Rename cumulative archives for publishing -->
+    <ItemGroup>
+      <CumulativeArchive Include="Build.RS.linux.tar.gz">
+        <RSArchive>$(RSInstallerName)-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</RSArchive>
+      </CumulativeArchive>
+      <CumulativeArchive Include="Build.RS.osx.tar.gz">
+        <RSArchive>$(RSInstallerName)-$(PackageVersionNoTimestamp)-osx-x64.tar.gz</RSArchive>
+      </CumulativeArchive>
+      <CumulativeArchive Include="Build.RS.winx64.zip">
+        <RSArchive>$(RSInstallerName)-$(PackageVersionNoTimestamp)-win7-x64.zip</RSArchive>
+      </CumulativeArchive>
+      <CumulativeArchive Include="Build.RS.winx86.zip">
+        <RSArchive>$(RSInstallerName)-$(PackageVersionNoTimestamp)-win7-x86.zip</RSArchive>
+      </CumulativeArchive>
+    </ItemGroup>
+
+    <Copy
+      SourceFiles="$(_InstallersOutputDir)%(CumulativeArchive.Identity)"
+      DestinationFiles="$(_InstallersOutputDir)PublishArchives\%(CumulativeArchive.RSArchive)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
   </Target>
 </Project>
