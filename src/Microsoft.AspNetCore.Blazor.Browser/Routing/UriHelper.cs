@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
     public static class UriHelper
     {
         static readonly string _functionPrefix = typeof(UriHelper).FullName;
+        static string _currentAbsoluteUri;
 
         /// <summary>
         /// An event that fires when the navigation location has changed.
@@ -48,8 +49,13 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         /// <returns>The browser's current absolute URI.</returns>
         public static string GetAbsoluteUri()
         {
-            return RegisteredFunction.InvokeUnmarshalled<string>(
+            if (_currentAbsoluteUri == null)
+            {
+                _currentAbsoluteUri = RegisteredFunction.InvokeUnmarshalled<string>(
                 $"{_functionPrefix}.getLocationHref");
+            }
+
+            return _currentAbsoluteUri;
         }
 
         /// <summary>
@@ -83,7 +89,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         }
 
         private static void NotifyLocationChanged(string newAbsoluteUri)
-            => OnLocationChanged?.Invoke(null, newAbsoluteUri);
+        {
+            _currentAbsoluteUri = newAbsoluteUri;
+            OnLocationChanged?.Invoke(null, newAbsoluteUri);
+        }
 
         /// <summary>
         /// Given the document's document.baseURI value, returns the URI prefix
