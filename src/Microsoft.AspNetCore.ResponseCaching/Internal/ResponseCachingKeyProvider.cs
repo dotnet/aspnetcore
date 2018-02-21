@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
     {
         // Use the record separator for delimiting components of the cache key to avoid possible collisions
         private static readonly char KeyDelimiter = '\x1e';
+        // Use the unit separator for delimiting subcomponents of the cache key to avoid possible collisions
+        private static readonly char KeySubDelimiter = '\x1f';
 
         private readonly ObjectPool<StringBuilder> _builderPool;
         private readonly ResponseCachingOptions _options;
@@ -147,6 +149,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
                             for (var i = 0; i < query.Value.Count; i++)
                             {
+                                if (i > 0)
+                                {
+                                    builder.Append(KeySubDelimiter);
+                                }
                                 builder.Append(query.Value[i]);
                             }
                         }
@@ -163,6 +169,10 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
                             for (var j = 0; j < queryKeyValues.Count; j++)
                             {
+                                if (j > 0)
+                                {
+                                    builder.Append(KeySubDelimiter);
+                                }
                                 builder.Append(queryKeyValues[j]);
                             }
                         }
