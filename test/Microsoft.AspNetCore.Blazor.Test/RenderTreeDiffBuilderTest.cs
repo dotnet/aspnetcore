@@ -739,8 +739,8 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(1, entry.ReferenceFrameIndex);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0));
-            AssertFrame.ComponentWithInstance<FakeComponent>(renderBatch.ReferenceFrames.Array[0], 0, 12);
-            AssertFrame.ComponentWithInstance<FakeComponent2>(renderBatch.ReferenceFrames.Array[1], 1, 13);
+            AssertFrame.ComponentWithInstance<FakeComponent>(renderBatch.ReferenceFrames.Array[0], 0, null, 12);
+            AssertFrame.ComponentWithInstance<FakeComponent2>(renderBatch.ReferenceFrames.Array[1], 1, null, 13);
         }
 
         [Fact]

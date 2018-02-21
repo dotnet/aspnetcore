@@ -220,17 +220,17 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     case HtmlTokenType.EndTag:
                         {
                             var nextTag = nextToken.AsTag();
-                            var isComponent = false;
+                            var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
+                            var isComponent = TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName);
+
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
-                                var tagNameOriginalCase = GetTagNameWithOriginalCase(originalHtmlContent, nextTag);
-                                if (TryGetComponentTypeNameFromTagName(tagNameOriginalCase, out var componentTypeName))
+                                if (isComponent)
                                 {
                                     codeWriter
                                         .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
-                                    isComponent = true;
                                 }
                                 else
                                 {
@@ -304,7 +304,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         }
 
         private static string GetTagNameWithOriginalCase(string document, HtmlTagToken tagToken)
-            => document.Substring(tagToken.Position.Position, tagToken.Name.Length);
+        {
+            var offset = tagToken.Type == HtmlTokenType.EndTag ? 1 : 0; // For end tags, skip the '/'
+            return document.Substring(tagToken.Position.Position + offset, tagToken.Name.Length);
+        }
 
         private bool TryGetComponentTypeNameFromTagName(string tagName, out string componentTypeName)
         {

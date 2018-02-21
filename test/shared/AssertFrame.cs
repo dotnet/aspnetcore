@@ -58,16 +58,20 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             Assert.Equal(attributeValue, frame.AttributeValue);
         }
 
-        public static void Component<T>(RenderTreeFrame frame, int? sequence = null) where T : IComponent
+        public static void Component<T>(RenderTreeFrame frame, int? subtreeLength = null, int? sequence = null) where T : IComponent
         {
             Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
             Assert.Equal(typeof(T), frame.ComponentType);
+            if (subtreeLength.HasValue)
+            {
+                Assert.Equal(subtreeLength.Value, frame.ComponentSubtreeLength);
+            }
             AssertFrame.Sequence(frame, sequence);
         }
 
-        public static void ComponentWithInstance<T>(RenderTreeFrame frame, int componentId, int? sequence = null) where T : IComponent
+        public static void ComponentWithInstance<T>(RenderTreeFrame frame, int componentId, int? subtreeLength = null, int? sequence = null) where T : IComponent
         {
-            AssertFrame.Component<T>(frame, sequence);
+            AssertFrame.Component<T>(frame, subtreeLength, sequence);
             Assert.IsType<T>(frame.Component);
             Assert.Equal(componentId, frame.ComponentId);
         }

@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             // Assert
             Assert.Collection(frames,
-                frame => AssertFrame.Component<TestComponent>(frame, 0));
+                frame => AssertFrame.Component<TestComponent>(frame, 1, 0));
         }
 
         [Fact]
@@ -398,7 +398,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // This problem will probably go away on its own when we have new component
             // tooling.
             Assert.Collection(frames,
-                frame => AssertFrame.Component<TestComponent>(frame, 0),
+                frame => AssertFrame.Component<TestComponent>(frame, 4, 0),
                 frame => AssertFrame.Attribute(frame, "intproperty", "123", 1),
                 frame => AssertFrame.Attribute(frame, "stringproperty", "My string", 2),
                 frame =>
@@ -406,6 +406,26 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     AssertFrame.Attribute(frame, "ObjectProperty");
                     Assert.IsType<SomeType>(frame.AttributeValue);
                 });
+        }
+
+        [Fact]
+        public void CanIncludeChildrenInComponents()
+        {
+            // Arrange/Act
+            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var component = CompileToComponent($"<c:{testComponentTypeName} attr=\"abc\">" +
+                $"Some text" +
+                $"<some-child a='1'>Nested text</some-child>" +
+                $"</c:{testComponentTypeName}>");
+            var frames = GetRenderTree(component);
+
+            Assert.Collection(frames,
+                frame => AssertFrame.Component<TestComponent>(frame, 6, 0),
+                frame => AssertFrame.Attribute(frame, "attr", "abc", 1),
+                frame => AssertFrame.Text(frame, "Some text", 2),
+                frame => AssertFrame.Element(frame, "some-child", 3, 3),
+                frame => AssertFrame.Attribute(frame, "a", "1", 4),
+                frame => AssertFrame.Text(frame, "Nested text", 5));
         }
 
         [Fact]
