@@ -13,14 +13,6 @@
 #define ASPNETCORE_APP_PATH_ENV_STR                 L"ASPNETCORE_APPL_PATH="
 #define ASPNETCORE_APP_TOKEN_ENV_STR                L"ASPNETCORE_TOKEN="
 #define ASPNETCORE_APP_PATH_ENV_STR                 L"ASPNETCORE_APPL_PATH="
-#define HOSTING_STARTUP_ASSEMBLIES_ENV_STR          L"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"
-#define HOSTING_STARTUP_ASSEMBLIES_NAME             L"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES="
-#define HOSTING_STARTUP_ASSEMBLIES_VALUE            L"Microsoft.AspNetCore.Server.IISIntegration"
-#define ASPNETCORE_IIS_AUTH_ENV_STR                 L"ASPNETCORE_IIS_HTTPAUTH="
-#define ASPNETCORE_IIS_AUTH_WINDOWS                 L"windows;"
-#define ASPNETCORE_IIS_AUTH_BASIC                   L"basic;"
-#define ASPNETCORE_IIS_AUTH_ANONYMOUS               L"anonymous;"
-#define ASPNETCORE_IIS_AUTH_NONE                    L"none"
 
 class PROCESS_MANAGER;
 
@@ -180,11 +172,6 @@ private:
     HRESULT
     SetupAppToken(
         ENVIRONMENT_VAR_HASH*   pEnvironmentVarTable
-    );
-
-    HRESULT
-    InitEnvironmentVariablesTable(
-        ENVIRONMENT_VAR_HASH**   pEnvironmentVarTable
     );
 
     HRESULT

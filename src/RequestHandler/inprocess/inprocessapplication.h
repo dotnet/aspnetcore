@@ -137,6 +137,11 @@ private:
             _In_ LPVOID pContext
         );
 
+    HRESULT
+    SetEnvironementVariablesOnWorkerProcess(
+        VOID
+    );
+
     static
         INT
         FilterException(unsigned int code, struct _EXCEPTION_POINTERS *ep);

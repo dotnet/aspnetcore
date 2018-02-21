@@ -31,6 +31,10 @@ namespace IISTestSite
             app.Map("/LargeResponseBody", LargeResponseBody);
             app.Map("/ResponseHeaders", ResponseHeaders);
             app.Map("/ResponseInvalidOrdering", ResponseInvalidOrdering);
+            app.Map("/CheckEnvironmentVariable", CheckEnvironmentVariable);
+            app.Map("/CheckEnvironmentLongValueVariable", CheckEnvironmentLongValueVariable);
+            app.Map("/CheckAppendedEnvironmentVariable", CheckAppendedEnvironmentVariable);
+            app.Map("/CheckRemoveAuthEnvironmentVariable", CheckRemoveAuthEnvironmentVariable);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -283,6 +287,42 @@ namespace IISTestSite
                     await context.Response.WriteAsync("Finished");
                     return;
                 }
+            });
+        }
+
+        private void CheckEnvironmentVariable(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_VALUE");
+                await context.Response.WriteAsync(variable);
+            });
+        }
+
+        private void CheckEnvironmentLongValueVariable(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var variable = Environment.GetEnvironmentVariable("ASPNETCORE_INPROCESS_TESTING_LONG_VALUE");
+                await context.Response.WriteAsync(variable);
+            });
+        }
+
+        private void CheckAppendedEnvironmentVariable(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var variable = Environment.GetEnvironmentVariable("ProgramFiles");
+                await context.Response.WriteAsync(variable);
+            });
+        }
+
+        private void CheckRemoveAuthEnvironmentVariable(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var variable = Environment.GetEnvironmentVariable("ASPNETCORE_IIS_HTTPAUTH");
+                await context.Response.WriteAsync(variable);
             });
         }
     }

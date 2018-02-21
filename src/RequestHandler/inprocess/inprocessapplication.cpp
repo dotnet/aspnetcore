@@ -616,6 +616,29 @@ IN_PROCESS_APPLICATION::ExecuteAspNetCoreProcess(
 }
 
 HRESULT
+IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
+    VOID
+)
+{
+    HRESULT hr = S_OK;
+    ENVIRONMENT_VAR_HASH* pHashTable = NULL;
+    if (FAILED(hr = ENVIRONMENT_VAR_HASH::InitEnvironmentVariablesTable(
+        m_pConfig->QueryEnvironmentVariables(),
+        m_pConfig->QueryWindowsAuthEnabled(),
+        m_pConfig->QueryBasicAuthEnabled(),
+        m_pConfig->QueryAnonymousAuthEnabled(),
+        &pHashTable)))
+    {
+        goto Finished;
+    }
+
+    pHashTable->Apply(ENVIRONMENT_VAR_HASH::AppendEnvironmentVariables, NULL);
+    pHashTable->Apply(ENVIRONMENT_VAR_HASH::SetEnvironmentVariables, NULL);
+Finished:
+    return hr;
+}
+
+HRESULT
 IN_PROCESS_APPLICATION::ExecuteApplication(
     VOID
 )
@@ -634,7 +657,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         hr = ERROR_BAD_ENVIRONMENT;
         goto Finished;
     }
-
+    
     // Get the entry point for main
     pProc = (hostfxr_main_fn)GetProcAddress(hModule, "hostfxr_main");
     if (pProc == NULL)
@@ -647,6 +670,10 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     // loaded in the process but we need to get config information to boot it up in the
     // first place. This is happening in an execute request handler and everyone waits
     // until this initialization is done.
+    if (FAILED(hr = SetEnvironementVariablesOnWorkerProcess()))
+    {
+        goto Finished;
+    }
 
     // We set a static so that managed code can call back into this instance and
     // set the callbacks
