@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Test
         [InlineData("scheme://host", "scheme://host/path", "/path")]
         [InlineData("scheme://host/path", "scheme://host/path/", "/")]
         [InlineData("scheme://host/path", "scheme://host/path/more", "/more")]
+        [InlineData("scheme://host/path", "scheme://host/path", "/")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUriPrefix, string absoluteUri, string expectedResult)
         {
             var actualResult = UriHelper.ToBaseRelativePath(baseUriPrefix, absoluteUri);
@@ -35,7 +36,6 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Test
         [Theory]
         [InlineData("scheme://host", "otherscheme://host/")] // Mismatched prefix is error
         [InlineData("scheme://host", "scheme://otherhost/")] // Mismatched prefix is error
-        [InlineData("scheme://host/path", "scheme://host/path")] // URI isn't within base URI space
         public void ThrowsForInvalidBaseRelativePaths(string baseUriPrefix, string absoluteUri)
         {
             var ex = Assert.Throws<ArgumentException>(() =>

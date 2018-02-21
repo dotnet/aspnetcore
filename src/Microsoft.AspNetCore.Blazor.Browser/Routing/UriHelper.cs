@@ -61,14 +61,22 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         /// <returns>A relative URI path.</returns>
         public static string ToBaseRelativePath(string baseUriPrefix, string absoluteUri)
         {
-            // The absolute URI must be of the form "{baseUriPrefix}/something",
-            // and from that we return "/something" (also stripping any querystring
-            // and/or hash value)
-            if (absoluteUri.StartsWith(baseUriPrefix, StringComparison.Ordinal)
+            if (absoluteUri.Equals(baseUriPrefix, StringComparison.Ordinal))
+            {
+                // Special case: if you're exactly at the base URI, treat it as if you
+                // were at "{baseUriPrefix}/" (i.e., with a following slash). It's a bit
+                // ambiguous because we don't know whether the server would return the
+                // same page whether or not the slash is present, but ASP.NET Core at
+                // least does by default when using PathBase.
+                return "/";
+            }
+            else if (absoluteUri.StartsWith(baseUriPrefix, StringComparison.Ordinal)
                 && absoluteUri.Length > baseUriPrefix.Length
                 && absoluteUri[baseUriPrefix.Length] == '/')
             {
-                // TODO: Remove querystring and/or hash
+                // The absolute URI must be of the form "{baseUriPrefix}/something",
+                // and from that we return "/something" (also stripping any querystring
+                // and/or hash value)
                 return absoluteUri.Substring(baseUriPrefix.Length);
             }
 

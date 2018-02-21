@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
     /// </summary>
     public class BrowserRouter : IComponent, IDisposable
     {
+        static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
+
         RenderHandle _renderHandle;
         string _baseUriPrefix;
         string _locationAbsolute;
@@ -74,6 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
                 throw new InvalidOperationException($"No value was specified for {nameof(PagesNamespace)}.");
             }
 
+            locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var componentTypeName = $"{PagesNamespace}{locationPath.Replace('/', '.')}";
             if (componentTypeName[componentTypeName.Length - 1] == '.')
             {
@@ -82,6 +85,14 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 
             return FindComponentTypeInAssemblyOrReferences(AppAssembly, componentTypeName)
                 ?? throw new InvalidOperationException($"{nameof(BrowserRouter)} cannot find any component type with name {componentTypeName}.");
+        }
+
+        private string StringUntilAny(string str, char[] chars)
+        {
+            var firstIndex = str.IndexOfAny(chars);
+            return firstIndex < 0
+                ? str
+                : str.Substring(0, firstIndex);
         }
 
         private Type FindComponentTypeInAssemblyOrReferences(Assembly assembly, string typeName)

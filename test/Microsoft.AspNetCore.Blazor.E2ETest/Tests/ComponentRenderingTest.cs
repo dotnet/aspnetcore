@@ -8,23 +8,19 @@ using System.Linq;
 using System.Numerics;
 using BasicTestApp;
 using BasicTestApp.HierarchicalImportsTest.Subdir;
-using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
-    public class ComponentRenderingTest
-        : ServerTestBase<DevHostServerFixture<BasicTestApp.Program>>
+    public class ComponentRenderingTest : BasicTestAppTestBase
     {
         public ComponentRenderingTest(BrowserFixture browserFixture, DevHostServerFixture<Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
-            serverFixture.PathBase = "/subdir";
-            Navigate("/subdir", noReload: true);
+            Navigate(ServerPathBase, noReload: true);
         }
 
         [Fact]
@@ -202,24 +198,6 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Collection(appElement.FindElements(By.TagName("p")),
                 elem => Assert.Equal(typeof(Complex).FullName, elem.Text),
                 elem => Assert.Equal(typeof(AssemblyHashAlgorithm).FullName, elem.Text));
-        }
-
-        private IWebElement MountTestComponent<TComponent>() where TComponent: IComponent
-        {
-            var componentTypeName = typeof(TComponent).FullName;
-            WaitUntilDotNetRunningInBrowser();
-            ((IJavaScriptExecutor)Browser).ExecuteScript(
-                $"mountTestComponent('{componentTypeName}')");
-            return Browser.FindElement(By.TagName("app"));
-        }
-
-        private void WaitUntilDotNetRunningInBrowser()
-        {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(driver =>
-            {
-                return ((IJavaScriptExecutor)driver)
-                    .ExecuteScript("return window.isTestReady;");
-            });
         }
     }
 }
