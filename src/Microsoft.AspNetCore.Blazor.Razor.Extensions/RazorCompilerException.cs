@@ -3,15 +3,15 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
+namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
     /// Represents a fatal error during the transformation of a Blazor component from
     /// Razor source code to C# source code.
     /// </summary>
-    internal class RazorCompilerException : Exception
+    public class RazorCompilerException : Exception
     {
-        public RazorCompilerException(string message): base(message)
+        public RazorCompilerException(string message) : base(message)
         {
         }
 

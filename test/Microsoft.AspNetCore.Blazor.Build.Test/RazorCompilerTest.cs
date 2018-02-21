@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Layouts;
+using Microsoft.AspNetCore.Blazor.Razor;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Test.Helpers;
@@ -503,6 +504,38 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 diagnostic => Assert.Contains("'invalidVar'", diagnostic.GetMessage()));
         }
 
+        [Fact]
+        public void RejectsEndTagWithNoStartTag()
+        {
+            // Arrange/Act
+            var result = CompileToCSharp(
+                "Line1\nLine2\nLine3</mytag>");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                item =>
+                {
+                    Assert.Equal(RazorCompilerDiagnostic.DiagnosticType.Error, item.Type);
+                    Assert.StartsWith("Unexpected closing tag 'mytag' with no matching start tag.", item.Message);
+                });
+        }
+
+        [Fact]
+        public void RejectsEndTagWithDifferentNameToStartTag()
+        {
+            // Arrange/Act
+            var result = CompileToCSharp(
+                "<root><other />text<child>more text</root></child>");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                item =>
+                {
+                    Assert.Equal(RazorCompilerDiagnostic.DiagnosticType.Error, item.Type);
+                    Assert.StartsWith("Mismatching closing tag. Found 'root' but expected 'child'.", item.Message);
+                });
+        }
+
         private static RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
@@ -574,6 +607,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 };
             }
         }
+
+        private static CompileToCSharpResult CompileToCSharp(string cshtmlContent)
+            => CompileToCSharp(
+                GetArbitraryPlatformValidDirectoryPath(),
+                "test.cshtml",
+                cshtmlContent,
+                "TestNamespace");
 
         private static CompileToCSharpResult CompileToCSharp(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent, string outputNamespace)
         {
