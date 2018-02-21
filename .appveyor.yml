@@ -5,17 +5,12 @@ environment:
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
-    ASPNETCORE_WSTEST_PATH: "$(APPVEYOR_BUILD_FOLDER)/vendor/virtualenv/Scripts/wstest.exe"
-cache:
-  - vendor\VCForPython27.msi
 branches:
   only:
     - master
     - /release\/.*/
     - dev
     - /^(.*\/)?ci-.*$/
-install:
-  - ps: .\build\setup-wstest.ps1
 build_script:
   - ps: .\run.ps1 default-build
 clone_depth: 1
