@@ -11,7 +11,7 @@ ASP.NET Core MVC gives you a powerful, patterns-based way to build dynamic websi
 
 ASP.NET Core MVC includes support for building web pages and HTTP services in a single aligned framework that can be hosted in IIS or self-hosted in your own process.
 
-The the [ASP.NET Core documentation](https://docs.microsoft.com/aspnet/core/).
+The [ASP.NET Core documentation](https://docs.microsoft.com/aspnet/core/).
 
 Related community projects:
 * [AspNet.Mvc.TypedRouting](https://github.com/ivaylokenov/AspNet.Mvc.TypedRouting): A collection of extension methods providing strongly typed routing and link generation for ASP.NET Core MVC projects.
