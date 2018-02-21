@@ -1114,8 +1114,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrangestring documentContent,
             IEnumerable<string> allowedChildren = new List<string> { "b" };
             string literal = "asdf";
-            string commentOutput = "<!--Hello World-->";
-            string expectedOutput = $"<p><b>{literal}</b>{commentOutput}</p>";
+            string commentOutput = "Hello World";
+            string expectedOutput = $"<p><b>{literal}</b><!--{commentOutput}--></p>";
 
             var pTagHelperBuilder = TagHelperDescriptorBuilder
                 .Create("PTagHelper", "SomeAssembly")
@@ -1138,7 +1138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     blockFactory.MarkupTagBlock("<b>"),
                     factory.Markup(literal),
                     blockFactory.MarkupTagBlock("</b>"),
-                    new HtmlCommentBlock(factory.Markup(commentOutput))));
+                    blockFactory.HtmlCommentBlock(commentOutput)));
 
             // Act & Assert
             EvaluateData(
@@ -1185,9 +1185,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var expectedMarkup = new MarkupBlock(
                 new MarkupTagHelperBlock("p",
-                    new HtmlCommentBlock(factory.Markup($"<!--{comment1}-->")),
+                    blockFactory.HtmlCommentBlock(comment1),
                     factory.Markup(literal),
-                    new HtmlCommentBlock(factory.Markup($"<!--{comment2}-->"))));
+                    blockFactory.HtmlCommentBlock(comment2)));
 
             // Act & Assert
             EvaluateData(
@@ -1251,10 +1251,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Arrangestring documentContent,
             IEnumerable<string> allowedChildren = new List<string> { "b" };
             string literal = "asdf";
-            string part1 = "<!--Hello ";
+            string part1 = "Hello ";
             string part2 = "World";
-            string part3 = "-->";
-            string expectedOutput = $"<p><b>{literal}</b>{part1}@{part2}{part3}</p>";
+            string commentStart = "<!--";
+            string commentEnd = "-->";
+            string expectedOutput = $"<p><b>{literal}</b>{commentStart}{part1}@{part2}{commentEnd}</p>";
 
             var pTagHelperBuilder = TagHelperDescriptorBuilder
                 .Create("PTagHelper", "SomeAssembly")
@@ -1277,13 +1278,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     blockFactory.MarkupTagBlock("<b>"),
                     factory.Markup(literal),
                     blockFactory.MarkupTagBlock("</b>"),
-                    new HtmlCommentBlock(factory.Markup(part1),
-                     new ExpressionBlock(
-                        factory.CodeTransition(),
-                        factory.Code(part2)
-                            .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                            .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    factory.Markup(part3))));
+                    blockFactory.HtmlCommentBlock(
+                        factory.Markup(part1).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                         new ExpressionBlock(
+                            factory.CodeTransition(),
+                            factory.Code(part2)
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))));
 
             // Act & Assert
             EvaluateData(
@@ -4086,14 +4087,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             get
             {
                 var factory = new SpanFactory();
-
+                var blockFactory = new BlockFactory(factory);
                 yield return new object[]
                 {
                     "<foo><!-- Hello World --></foo>",
                     new MarkupBlock(
                         new MarkupTagBlock(
                             factory.Markup("<foo>")),
-                        new HtmlCommentBlock( factory.Markup("<!-- Hello World -->")),
+                        blockFactory.HtmlCommentBlock (" Hello World "),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
@@ -4103,13 +4104,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupBlock(
                         new MarkupTagBlock(
                             factory.Markup("<foo>")),
-                        new HtmlCommentBlock(factory.Markup("<!-- "),
+                        blockFactory.HtmlCommentBlock(
+                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace),
                             new ExpressionBlock(
                                 factory.CodeTransition(),
                                 factory.Code("foo")
-                                       .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                       .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                            factory.Markup(" -->")),
+                                    .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                    .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace)),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
@@ -4185,8 +4187,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new ExpressionBlock(
                             factory.CodeTransition(),
                             factory.Code("foo")
-                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                         factory.Markup(" ]]>"),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
