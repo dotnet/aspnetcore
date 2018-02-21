@@ -926,6 +926,7 @@ Finished:
         if (SUCCEEDED(strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_PROCESS_START_FAILURE_MSG,
             m_struAppFullPath.QueryStr(),
+            m_struPhysicalPath.QueryStr(),
             m_struCommandLine.QueryStr(),
             m_dwPort)))
         {
@@ -998,12 +999,6 @@ SERVER_PROCESS::SetupStdHandles(
         goto Finished;
     }
 
-    hr = UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
     GetSystemTime(&systemTime);
     hr = m_struFullLogFile.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
         struPath.QueryStr(),
@@ -1014,6 +1009,12 @@ SERVER_PROCESS::SetupStdHandles(
         systemTime.wMinute,
         systemTime.wSecond,
         GetCurrentProcessId());
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = UTILITY::EnsureDirectoryPathExist(struPath.QueryStr());
     if (FAILED(hr))
     {
         goto Finished;
@@ -1057,8 +1058,6 @@ SERVER_PROCESS::SetupStdHandles(
 Finished:
     if (FAILED(hr))
     {
-        // The log file was not created yet in case of failure. No need to clean it
-        m_struFullLogFile.Reset();
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
         pStartupInfo->hStdError = INVALID_HANDLE_VALUE;
@@ -1070,7 +1069,7 @@ Finished:
             STRU              strEventMsg;
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_INVALID_STDOUT_LOG_FILE_MSG,
-                m_struFullLogFile.QueryStr(),
+                m_struFullLogFile.IsEmpty()? m_struLogFile.QueryStr() : m_struFullLogFile.QueryStr(),
                 hr)))
             {
                 UTILITY::LogEvent(g_hEventLog,
@@ -1079,6 +1078,8 @@ Finished:
                     strEventMsg.QueryStr());
             }
         }
+        // The log file was not created yet in case of failure. No need to clean it
+        m_struFullLogFile.Reset();
     }
     return hr;
 }
