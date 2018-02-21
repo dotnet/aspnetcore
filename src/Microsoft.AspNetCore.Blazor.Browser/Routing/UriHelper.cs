@@ -75,8 +75,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
                 && absoluteUri[baseUriPrefix.Length] == '/')
             {
                 // The absolute URI must be of the form "{baseUriPrefix}/something",
-                // and from that we return "/something" (also stripping any querystring
-                // and/or hash value)
+                // and from that we return "/something"
                 return absoluteUri.Substring(baseUriPrefix.Length);
             }
 
