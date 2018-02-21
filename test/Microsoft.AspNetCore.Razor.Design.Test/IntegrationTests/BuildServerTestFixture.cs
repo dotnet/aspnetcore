@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using Microsoft.AspNetCore.Razor.Tools;
+using Microsoft.CodeAnalysis;
 using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.");
                 });
 
-                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>());
+                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>());
                 var exitCode = application.Execute("shutdown", "-w", "-p", PipeName);
                 if (exitCode != 0)
                 {

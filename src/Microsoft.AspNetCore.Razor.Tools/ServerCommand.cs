@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
 
                     var host = ConnectionHost.Create(Pipe.Value());
+
                     var compilerHost = CompilerHost.Create();
                     ExecuteServerCore(host, compilerHost, Cancelled, eventBus: null, keepAlive: keepAlive);
                 }

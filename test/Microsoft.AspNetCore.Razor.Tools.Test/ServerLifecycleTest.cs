@@ -116,7 +116,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// A shutdown request should not abort an existing compilation.  It should be allowed to run to 
         /// completion.
         /// </summary>
-        [Fact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [ConditionalFact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task ServerRunning_ShutdownRequest_DoesNotAbortCompilation()
         {
             // Arrange
@@ -152,7 +153,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Multiple clients should be able to send shutdown requests to the server.
         /// </summary>
-        [Fact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [ConditionalFact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task ServerRunning_MultipleShutdownRequests_HandlesSuccessfully()
         {
             // Arrange
@@ -189,7 +191,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        [Fact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [ConditionalFact(Skip = "Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991")]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
             // Arrange

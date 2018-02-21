@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -19,7 +20,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var loader = new DefaultExtensionAssemblyLoader(baseDirectory: null);
             var checker = new DefaultExtensionDependencyChecker(loader, Console.Error);
 
-            var application = new Application(cancel.Token, loader, checker);
+            var application = new Application(
+                cancel.Token,
+                loader,
+                checker,
+                (path, properties) => MetadataReference.CreateFromFile(path, properties));
+
             return application.Execute(args);
         }
     }

@@ -1,10 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -30,7 +32,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 // consistently reject a request that doesn't specify everything it needs. Otherwise the request
                 // could succeed sometimes if it relies on transient state.
                 Loader = new DefaultExtensionAssemblyLoader(Path.Combine(Path.GetTempPath(), "Razor-Server"));
+
+                AssemblyReferenceProvider = (path, properties) => new CachingMetadataReference(path, properties);
             }
+
+            public Func<string, MetadataReferenceProperties, PortableExecutableReference> AssemblyReferenceProvider { get; }
 
             public ExtensionAssemblyLoader Loader { get; }
 
@@ -48,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var writer = ServerLogger.IsLoggingEnabled ? new StringWriter() : TextWriter.Null;
 
                 var checker = new DefaultExtensionDependencyChecker(Loader, writer);
-                var app = new Application(cancellationToken, Loader, checker)
+                var app = new Application(cancellationToken, Loader, checker, AssemblyReferenceProvider)
                 {
                     Out = writer,
                     Error = writer,

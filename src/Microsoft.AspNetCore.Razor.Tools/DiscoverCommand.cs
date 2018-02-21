@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             var metadataReferences = new MetadataReference[assemblies.Length];
             for (var i = 0; i < assemblies.Length; i++)
             {
-                metadataReferences[i] = MetadataReference.CreateFromFile(assemblies[i]);
+                metadataReferences[i] = Parent.AssemblyReferenceProvider(assemblies[i], default(MetadataReferenceProperties));
             }
 
             var engine = RazorProjectEngine.Create(configuration, RazorProjectFileSystem.Empty, b =>

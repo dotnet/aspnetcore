@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tools
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 CancellationToken ct,
                 EventBus eventBus,
                 TimeSpan? keepAlive)
-                : base(new Application(ct, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>()))
+                : base(new Application(ct, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>()))
             {
                 _host = host;
                 _compilerHost = compilerHost;
