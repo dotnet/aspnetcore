@@ -112,13 +112,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupBlock(
                     new MarkupTagBlock(
                         Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<!-- "),
-                    new ExpressionBlock(
-                        Factory.CodeTransition(),
-                        Factory.Code("foo")
-                               .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                               .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                    Factory.Markup(" -->").Accepts(AcceptedCharactersInternal.None),
+                    BlockFactory.HtmlCommentBlock(Factory, f => new SyntaxTreeNode[] {
+                        f.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        new ExpressionBlock(
+                            f.CodeTransition(),
+                            f.Code("foo")
+                                   .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
+                                   .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
+                            f.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace) }),
                     new MarkupTagBlock(
                         Factory.Markup("</foo>").Accepts(AcceptedCharactersInternal.None))));
         }
