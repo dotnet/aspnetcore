@@ -133,6 +133,8 @@ SERVER_PROCESS::SetupListenPort(
 {
     HRESULT hr = S_OK;
     ENVIRONMENT_VAR_ENTRY *pEntry = NULL;
+    STACK_STRU(strEventMsg, 256);
+
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
@@ -190,6 +192,25 @@ Finished:
         pEntry->Dereference();
         pEntry = NULL;
     }
+
+    if (FAILED(hr))
+    {
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_PROCESS_START_PORTSETUP_ERROR_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_struPhysicalPath.QueryStr(),
+            m_dwPort,
+            MIN_PORT,
+            MAX_PORT,
+            hr)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_PROCESS_START_SUCCESS,
+                strEventMsg.QueryStr());
+        }
+    }
+
     return hr;
 }
 
@@ -503,6 +524,9 @@ SERVER_PROCESS::OutputEnvironmentVariables
     DBG_ASSERT(pEnvironmentVarTable); // We added some startup variables 
     DBG_ASSERT(pEnvironmentVarTable->Count() >0);
 
+    // cleanup, as we may in retry logic 
+    pmszOutput->Reset();
+
     pszEnvironmentVariables = GetEnvironmentStringsW();
     if (pszEnvironmentVariables == NULL)
     {
@@ -575,6 +599,13 @@ SERVER_PROCESS::SetupCommandLine(
 
     DBG_ASSERT(pstrCommandLine);
 
+    if (!m_struCommandLine.IsEmpty() &&
+        pstrCommandLine == (&m_struCommandLine))
+    {
+        // already set up the commandline string, skip
+        goto Finished;
+    }
+
     pszPath = m_ProcessPath.QueryStr();
 
     if ((wcsstr(pszPath, L":") == NULL) && (wcsstr(pszPath, L"%") == NULL))
@@ -638,6 +669,7 @@ SERVER_PROCESS::PostStartCheck(
     DWORD   dwTimeDifference = 0;
     DWORD   dwActualProcessId = 0;
     INT     iChildProcessIndex = -1;
+    STACK_STRU(strEventMsg, 256);
 
     if (CheckRemoteDebuggerPresent(m_hProcessHandle, &fDebuggerAttached) == 0)
     {
@@ -654,14 +686,14 @@ SERVER_PROCESS::PostStartCheck(
             // make sure the process is still running
             if (processStatus != STILL_ACTIVE)
             {
-                hr = E_FAIL;
-                /*pStruErrorMessage->SafeSnwprintf(
-                    ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+                hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
+                strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_PROCESS_START_STATUS_ERROR_MSG,
                     m_struAppFullPath.QueryStr(),
-                    m_pszRootApplicationPath.QueryStr(),
-                    m_pStruCommandline->QueryStr(),
+                    m_struPhysicalPath.QueryStr(),
+                    m_struCommandLine.QueryStr(),
                     hr,
-                    processStatus);*/
+                    processStatus);
                 goto Finished;
             }
         }
@@ -679,6 +711,11 @@ SERVER_PROCESS::PostStartCheck(
         dwTimeDifference = (GetTickCount() - dwTickCount);
     } while (fReady == FALSE &&
         ((dwTimeDifference < m_dwStartupTimeLimitInMS) || fDebuggerAttached));
+
+    if (!fReady)
+    {
+        hr = E_APPLICATION_ACTIVATION_TIMED_OUT;
+    }
 
     // register call back with the created process
     if (FAILED(hr = RegisterProcessWait(&m_hProcessWaitHandle, m_hProcessHandle)))
@@ -750,14 +787,14 @@ SERVER_PROCESS::PostStartCheck(
             // on the port we specified.
             //
             fReady = FALSE;
-            //pStruErrorMessage->SafeSnwprintf(
-            //    ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
-            //    m_struAppFullPath.QueryStr(),
-            //    m_pszRootApplicationPath.QueryStr(),
-            //    m_struCommandline.QueryStr(),
-            //    m_dwPort,
-            //    hr);
             hr = HRESULT_FROM_WIN32(ERROR_CREATE_FAILED);
+            strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_PROCESS_START_WRONGPORT_ERROR_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_struPhysicalPath.QueryStr(),
+                m_struCommandLine.QueryStr(),
+                m_dwPort,
+                hr);
             goto Finished;
         }
     }
@@ -770,13 +807,13 @@ SERVER_PROCESS::PostStartCheck(
         if (dwTimeDifference >= m_dwStartupTimeLimitInMS)
         {
             hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
-            /*pStruErrorMessage->SafeSnwprintf(
+            strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
                 m_struAppFullPath.QueryStr(),
-                m_pszRootApplicationPath.QueryStr(),
-                pStruCommandline->QueryStr(),
+                m_struPhysicalPath.QueryStr(),
+                m_struCommandLine.QueryStr(),
                 m_dwPort,
-                hr);*/
+                hr);
         }
         goto Finished;
     }
@@ -794,13 +831,13 @@ SERVER_PROCESS::PostStartCheck(
 
         if ((FAILED(hr) || fReady == FALSE))
         {
-            //pStruErrorMessage->SafeSnwprintf(
-            //    ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
-            //    m_struAppFullPath.QueryStr(),
-            //    m_pszRootApplicationPath.QueryStr(),
-            //    pStruCommandline->QueryStr(),
-            //    m_dwPort,
-            //    hr);
+            strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_PROCESS_START_NOTREADY_ERROR_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_struPhysicalPath.QueryStr(),
+                m_struCommandLine.QueryStr(),
+                m_dwPort,
+                hr);
             goto Finished;
         }
     }
@@ -845,6 +882,12 @@ Finished:
             m_pForwarderConnection->DereferenceForwarderConnection();
             m_pForwarderConnection = NULL;
         }
+
+        UTILITY::LogEvent(
+            g_hEventLog,
+            EVENTLOG_WARNING_TYPE,
+            ASPNETCORE_EVENT_PROCESS_START_ERROR,
+            strEventMsg.QueryStr());
     }
     return hr;
 }
@@ -862,6 +905,7 @@ SERVER_PROCESS::StartProcess(
     STACK_STRU(             strEventMsg, 256);
     MULTISZ                 mszNewEnvironment;
     ENVIRONMENT_VAR_HASH    *pHashTable = NULL;
+    PWSTR                   pStrStage = NULL;
 
     GetStartupInfoW(&startupInfo);
 
@@ -871,20 +915,22 @@ SERVER_PROCESS::StartProcess(
     //
     SetupStdHandles(&startupInfo);
 
-    //
-    // generate process command line.
-    //
-    if (FAILED(hr = SetupCommandLine(&m_struCommandLine)))
-    {
-        goto Finished;
-    }
-
     while (dwRetryCount > 0)
     {
         dwRetryCount--;
+        //
+        // generate process command line.
+        //
+        if (FAILED(hr = SetupCommandLine(&m_struCommandLine)))
+        {
+            pStrStage = L"SetupCommanLine";
+            goto Failure;
+        }
+
         if (FAILED(hr = InitEnvironmentVariablesTable(&pHashTable)))
         {
-            goto Finished;
+            pStrStage = L"InitEnvironmentVariablesTable";
+            goto Failure;
         }
 
         //
@@ -892,7 +938,8 @@ SERVER_PROCESS::StartProcess(
         //
         if (FAILED(hr = SetupListenPort(pHashTable)))
         {
-            goto Finished;
+            pStrStage = L"SetupListenPort";
+            goto Failure;
         }
 
         //
@@ -900,7 +947,8 @@ SERVER_PROCESS::StartProcess(
         //
         if (FAILED(hr = SetupAppPath(pHashTable)))
         {
-            goto Finished;
+            pStrStage = L"SetupAppPath";
+            goto Failure;
         }
 
         //
@@ -908,7 +956,8 @@ SERVER_PROCESS::StartProcess(
         //
         if (FAILED(hr = SetupAppToken(pHashTable)))
         {
-            goto Finished;
+            pStrStage = L"SetupAppToken";
+            goto Failure;
         }
 
         //
@@ -916,7 +965,8 @@ SERVER_PROCESS::StartProcess(
         //
         if (FAILED(hr = OutputEnvironmentVariables(&mszNewEnvironment, pHashTable)))
         {
-            goto Finished;
+            pStrStage = L"OutputEnvironmentVariables";
+            goto Failure;
         }
 
         dwCreationFlags = CREATE_NO_WINDOW |
@@ -936,16 +986,9 @@ SERVER_PROCESS::StartProcess(
             &startupInfo,
             &processInformation))
         {
+            pStrStage = L"CreateProcessW";
             hr = HRESULT_FROM_WIN32(GetLastError());
-            // don't the check return code as we already in error report
-            strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_struPhysicalPath.QueryStr(),
-                m_struCommandLine.QueryStr(),
-                hr,
-                dwRetryCount);
-            goto Finished;
+            goto Failure;
         }
 
         m_hProcessHandle = processInformation.hProcess;
@@ -958,15 +1001,17 @@ SERVER_PROCESS::StartProcess(
                 hr = HRESULT_FROM_WIN32(GetLastError());
                 if (hr != HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
                 {
-                    goto Finished;
+                    pStrStage = L"AssignProcessToJobObject";
+                    goto Failure;
                 }
             }
         }
 
         if (ResumeThread(processInformation.hThread) == -1)
         {
+            pStrStage = L"ResumeThread";
             hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
+            goto Failure;
         }
 
         //
@@ -974,7 +1019,8 @@ SERVER_PROCESS::StartProcess(
         //
         if (FAILED(hr = PostStartCheck()))
         {
-            goto Finished;
+            pStrStage = L"PostStartCheck";
+            goto Failure;
         }
 
         // Backend process starts successfully. Set retry counter to 0
@@ -992,7 +1038,24 @@ SERVER_PROCESS::StartProcess(
                 strEventMsg.QueryStr());
         }
 
-    Finished:
+        goto Finished;
+
+    Failure:
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_PROCESS_START_ERROR_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_struPhysicalPath.QueryStr(),
+                m_struCommandLine.QueryStr(),
+                pStrStage,
+                hr,
+                dwRetryCount)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_WARNING_TYPE,
+                ASPNETCORE_EVENT_PROCESS_START_ERROR,
+                strEventMsg.QueryStr());
+        }
+
         if (processInformation.hThread != NULL)
         {
             CloseHandle(processInformation.hThread);
@@ -1006,29 +1069,11 @@ SERVER_PROCESS::StartProcess(
             pHashTable = NULL;
         }
 
-        if (FAILED(hr))
-        {
-            if (strEventMsg.IsEmpty())
-            {
-                strEventMsg.SafeSnwprintf(
-                    ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
-                    m_struAppFullPath.QueryStr(),
-                    m_struPhysicalPath.QueryStr(),
-                    m_struCommandLine.QueryStr(),
-                    hr,
-                    dwRetryCount);
-            }
+        CleanUp();
 
-            if (!strEventMsg.IsEmpty())
-            {
-                UTILITY::LogEvent(g_hEventLog,
-                    EVENTLOG_ERROR_TYPE,
-                    ASPNETCORE_EVENT_PROCESS_START_ERROR,
-                    strEventMsg.QueryStr());
-            }
-        }
     }
 
+Finished:
     if (FAILED(hr) || m_fReady == FALSE)
     {
         if (m_hStdoutHandle != NULL)
@@ -1045,23 +1090,17 @@ SERVER_PROCESS::StartProcess(
             m_Timer.CancelTimer();
         }
 
-        if (m_hListeningProcessHandle != NULL)
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_PROCESS_START_FAILURE_MSG,
+            m_struAppFullPath.QueryStr(),
+            m_struCommandLine.QueryStr(),
+            m_dwPort)))
         {
-            if (m_hListeningProcessHandle != INVALID_HANDLE_VALUE)
-            {
-                CloseHandle(m_hListeningProcessHandle);
-            }
-            m_hListeningProcessHandle = NULL;
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_PROCESS_START_FAILURE,
+                strEventMsg.QueryStr());
         }
-
-        if (m_hProcessWaitHandle != NULL)
-        {
-            UnregisterWait(m_hProcessWaitHandle);
-            m_hProcessWaitHandle = NULL;
-        }
-
-        StopProcess();
-        StopAllProcessesInJobObject();
     }
     return hr;
 }
@@ -1807,7 +1846,8 @@ SERVER_PROCESS::SERVER_PROCESS() :
     }
 }
 
-SERVER_PROCESS::~SERVER_PROCESS()
+VOID
+SERVER_PROCESS::CleanUp()
 {
     if (m_hProcessWaitHandle != NULL)
     {
@@ -1815,7 +1855,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
         m_hProcessWaitHandle = NULL;
     }
 
-    for (INT i=0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {
         if (m_hChildProcessWaitHandles[i] != NULL)
         {
@@ -1828,6 +1868,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         if (m_hProcessHandle != INVALID_HANDLE_VALUE)
         {
+            TerminateProcess(m_hProcessHandle, 1);
             CloseHandle(m_hProcessHandle);
         }
         m_hProcessHandle = NULL;
@@ -1842,17 +1883,51 @@ SERVER_PROCESS::~SERVER_PROCESS()
         m_hListeningProcessHandle = NULL;
     }
 
-    for (INT i=0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for (INT i = 0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {
         if (m_hChildProcessHandles[i] != NULL)
         {
             if (m_hChildProcessHandles[i] != INVALID_HANDLE_VALUE)
             {
+                TerminateProcess(m_hChildProcessHandles[i], 1);
                 CloseHandle(m_hChildProcessHandles[i]);
             }
             m_hChildProcessHandles[i] = NULL;
             m_dwChildProcessIds[i] = 0;
         }
+    }
+
+    if (m_hJobObject != NULL)
+    {
+        if (m_hJobObject != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(m_hJobObject);
+        }
+        m_hJobObject = NULL;
+    }
+
+    if (m_pForwarderConnection != NULL)
+    {
+        m_pForwarderConnection->DereferenceForwarderConnection();
+        m_pForwarderConnection = NULL;
+    }
+
+}
+
+SERVER_PROCESS::~SERVER_PROCESS()
+{
+
+    CleanUp();
+
+    m_pEnvironmentVarTable = NULL;
+    // no need to free m_pEnvironmentVarTable, as it references to
+    // the same hash table hold by configuration.
+    // the hashtable memory will be freed once onfiguration got recycled 
+
+    if (m_pProcessManager != NULL)
+    {
+        m_pProcessManager->DereferenceProcessManager();
+        m_pProcessManager = NULL;
     }
 
     if (m_hStdoutHandle != NULL)
@@ -1883,34 +1958,6 @@ SERVER_PROCESS::~SERVER_PROCESS()
             DeleteFile(m_struFullLogFile.QueryStr());
         }
     }
-
-    if (m_hJobObject != NULL)
-    {
-        if (m_hJobObject != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(m_hJobObject);
-        }
-        m_hJobObject = NULL;
-    }
-
-    if (m_pProcessManager != NULL)
-    {
-        m_pProcessManager->DereferenceProcessManager();
-        m_pProcessManager = NULL;
-    }
-
-    if (m_pForwarderConnection != NULL)
-    {
-        m_pForwarderConnection->DereferenceForwarderConnection();
-        m_pForwarderConnection = NULL;
-    }
-
-    m_pEnvironmentVarTable = NULL;
-    // no need to free m_pEnvironmentVarTable, as it references to
-    // the same hash table hold by configuration.
-    // the hashtable memory will be freed once onfiguration got recycled 
-
-//    InterlockedDecrement(&g_dwActiveServerProcesses);
 }
 
 //static

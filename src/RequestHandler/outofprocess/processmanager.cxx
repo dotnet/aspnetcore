@@ -173,9 +173,7 @@ PROCESS_MANAGER::GetProcess(
                 // terminate existing process that is not ready
                 // before creating new one.
                 //
-
-                //todo:
-                //ShutdownProcessNoLock( m_ppServerProcessList[dwProcessIndex] );
+                ShutdownProcessNoLock( m_ppServerProcessList[dwProcessIndex] );
             }
             else
             {

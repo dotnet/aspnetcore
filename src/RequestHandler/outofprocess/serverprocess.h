@@ -131,6 +131,8 @@ public:
     );
 
 private:
+    VOID
+    CleanUp();
 
     BOOL 
     IsDebuggerIsAttached(

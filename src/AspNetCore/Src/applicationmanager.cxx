@@ -196,6 +196,7 @@ APPLICATION_MANAGER::RecycleApplication(
 {
     HRESULT          hr = S_OK;
     APPLICATION_INFO_KEY  key;
+    DWORD            dwPreviousCounter = 0;
 
     hr = key.Initialize(pszApplicationId);
     if (FAILED(hr))
@@ -203,12 +204,31 @@ APPLICATION_MANAGER::RecycleApplication(
         goto Finished;
     }
     AcquireSRWLockExclusive(&m_srwLock);
+    dwPreviousCounter = m_pApplicationInfoHash->Count();
+
     m_pApplicationInfoHash->DeleteKey(&key);
+
+    if(dwPreviousCounter != m_pApplicationInfoHash->Count())
+    {
+        // Application got recycled. Log an event
+        STACK_STRU(strEventMsg, 256);
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_RECYCLE_CONFIGURATION_MSG,
+            pszApplicationId)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_INFORMATION_TYPE,
+                ASPNETCORE_EVENT_RECYCLE_CONFIGURATION,
+                strEventMsg.QueryStr());
+        }
+
+    }
 
     if (m_pApplicationInfoHash->Count() == 0)
     {
         m_hostingModel = HOSTING_UNKNOWN;
     }
+
 
     if (g_fAspnetcoreRHLoadedError)
     {

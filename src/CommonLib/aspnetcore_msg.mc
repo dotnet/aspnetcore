@@ -146,6 +146,17 @@ Language=English
 %1
 .
 
+Messageid=1020
+SymbolicName=ASPNETCORE_EVENT_PROCESS_START_FAILURE
+Language=English
+%1
+.
+
+Messageid=1021
+SymbolicName=ASPNETCORE_EVENT_RECYCLE_CONFIGURATION
+Language=English
+%1
+.
 
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
