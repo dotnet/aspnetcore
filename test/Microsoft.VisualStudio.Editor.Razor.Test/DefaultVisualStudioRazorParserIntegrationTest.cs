@@ -533,7 +533,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 RazorExtensions.Register(builder);
 
-                builder.AddDefaultImports(new TestRazorProjectItem("_TestImports.cshtml") { Content = "@addTagHelper *, Test" });
+                builder.AddDefaultImports("@addTagHelper *, Test");
 
                 if (tagHelpers != null)
                 {

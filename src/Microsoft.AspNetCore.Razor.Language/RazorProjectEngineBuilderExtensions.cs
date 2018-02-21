@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -151,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
         /// <param name="imports">The collection of imports.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
-        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params RazorProjectItem[] imports)
+        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params string[] imports)
         {
             if (builder == null)
             {
@@ -204,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private class AdditionalImportsProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
         {
             private readonly IImportProjectFeature _existingImportFeature;
-            private readonly RazorProjectItem[] _imports;
+            private readonly IEnumerable<RazorProjectItem> _imports;
 
             public override RazorProjectEngine ProjectEngine
             {
@@ -216,10 +217,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params RazorProjectItem[] imports)
+            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params string[] imports)
             {
                 _existingImportFeature = existingImportFeature;
-                _imports = imports;
+                _imports = imports.Select(import => new InMemoryProjectItem(import));
             }
 
             public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
@@ -228,6 +229,36 @@ namespace Microsoft.AspNetCore.Razor.Language
                 imports.AddRange(_imports);
 
                 return imports;
+            }
+
+            private class InMemoryProjectItem : RazorProjectItem
+            {
+                private readonly byte[] _importBytes;
+
+                public InMemoryProjectItem(string content)
+                {
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(content));
+                    }
+
+                    var preamble = Encoding.UTF8.GetPreamble();
+                    var contentBytes = Encoding.UTF8.GetBytes(content);
+
+                    _importBytes = new byte[preamble.Length + contentBytes.Length];
+                    preamble.CopyTo(_importBytes, 0);
+                    contentBytes.CopyTo(_importBytes, preamble.Length);
+                }
+
+                public override string BasePath => null;
+
+                public override string FilePath => null;
+
+                public override string PhysicalPath => null;
+
+                public override bool Exists => true;
+
+                public override Stream Read() => new MemoryStream(_importBytes);
             }
         }
     }
