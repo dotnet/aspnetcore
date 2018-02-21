@@ -16,7 +16,7 @@ The SignalR Protocol requires the following attributes from the underlying trans
 
 ## Overview
 
-This document describes three encodings of the SignalR protocol: [JSON](http://www.json.org/), [MessagePack](http://msgpack.org/) and [Protocol Buffers](https://developers.google.com/protocol-buffers/). Only one format can be used for the duration of a connection, and the format must be negotiated after opening the connection and before sending any other messages. However, each format shares a similar overall structure.
+This document describes two encodings of the SignalR protocol: [JSON](http://www.json.org/) and [MessagePack](http://msgpack.org/). Only one format can be used for the duration of a connection, and the format must be negotiated after opening the connection and before sending any other messages. However, each format shares a similar overall structure.
 
 In the SignalR protocol, the following types of messages can be sent:
 
