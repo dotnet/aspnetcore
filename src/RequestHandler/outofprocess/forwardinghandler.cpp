@@ -116,7 +116,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     if (pApplication == NULL)
     {
         hr = E_INVALIDARG;
-        goto Finished;
+        goto Failure;
     }
 
     hr = pApplication->GetProcess(&pServerProcess);
@@ -330,7 +330,7 @@ Failure:
     {
         pResponse->SetStatus(400, "Bad Request", 0, hr);
     }
-    else
+    else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
         HTTP_DATA_CHUNK   DataChunk;
         pResponse->SetStatus(502, "Bad Gateway", 5, hr, NULL, TRUE);
@@ -344,6 +344,13 @@ Failure:
         DataChunk.FromMemory.pBuffer = (PVOID)sm_pStra502ErrorMsg.QueryStr();
         DataChunk.FromMemory.BufferLength = sm_pStra502ErrorMsg.QueryCB();
         pResponse->WriteEntityChunkByReference(&DataChunk);
+    }
+    else
+    {
+        //
+        // default error behavior
+        //
+        pResponse->SetStatus(502, "Bad Gateway", 3, hr);
     }
     //
     // Finish the request on failure.
