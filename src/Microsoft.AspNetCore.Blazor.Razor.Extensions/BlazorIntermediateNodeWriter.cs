@@ -8,6 +8,7 @@ using System.Text;
 using AngleSharp;
 using AngleSharp.Html;
 using AngleSharp.Parser.Html;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -286,7 +287,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                             {
                                 _scopeStack.CloseScope(
                                     tagName: isComponent ? tagNameOriginalCase : nextTag.Data,
-                                    isComponent: isComponent);
+                                    isComponent: isComponent,
+                                    source: CalculateSourcePosition(node.Source, nextToken.Position));
                                 var closeMethodName = isComponent
                                     ? nameof(RenderTreeBuilder.CloseComponent)
                                     : nameof(RenderTreeBuilder.CloseElement);
@@ -312,6 +314,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (originalHtmlContent.Length > nextToken.Position.Position)
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
+            }
+        }
+
+        private SourceSpan? CalculateSourcePosition(
+            SourceSpan? razorTokenPosition,
+            TextPosition htmlNodePosition)
+        {
+            if (razorTokenPosition.HasValue)
+            {
+                var razorPos = razorTokenPosition.Value;
+                return new SourceSpan(
+                    razorPos.FilePath,
+                    razorPos.AbsoluteIndex + htmlNodePosition.Position,
+                    razorPos.LineIndex + htmlNodePosition.Line - 1,
+                    htmlNodePosition.Line == 1
+                        ? razorPos.CharacterIndex + htmlNodePosition.Column - 1
+                        : htmlNodePosition.Column - 1,
+                    length: 1);
+            }
+            else
+            {
+                return null;
             }
         }
 

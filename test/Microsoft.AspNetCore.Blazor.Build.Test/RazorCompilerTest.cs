@@ -525,7 +525,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var result = CompileToCSharp(
-                "<root><other />text<child>more text</root></child>");
+                $"@{{\n" +
+                $"   var abc = 123;\n" +
+                $"}}\n" +
+                $"<root>\n" +
+                $"    <other />\n" +
+                $"    text\n" +
+                $"    <child>more text</root>\n" +
+                $"</child>\n");
 
             // Assert
             Assert.Collection(result.Diagnostics,
@@ -533,6 +540,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 {
                     Assert.Equal(RazorCompilerDiagnostic.DiagnosticType.Error, item.Type);
                     Assert.StartsWith("Mismatching closing tag. Found 'root' but expected 'child'.", item.Message);
+                    Assert.Equal(7, item.Line);
+                    Assert.Equal(21, item.Column);
                 });
         }
 

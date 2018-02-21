@@ -21,19 +21,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             _stack.Push(new ScopeEntry(tagName, isComponent));
         }
 
-        public void CloseScope(string tagName, bool isComponent)
+        public void CloseScope(string tagName, bool isComponent, SourceSpan? source)
         {
             if (_stack.Count == 0)
             {
                 throw new RazorCompilerException(
-                    $"Unexpected closing tag '{tagName}' with no matching start tag.");
+                    $"Unexpected closing tag '{tagName}' with no matching start tag.", source);
             }
 
             var expected = _stack.Pop();
             if (!tagName.Equals(expected.TagName, StringComparison.Ordinal))
             {
                 throw new RazorCompilerException(
-                    $"Mismatching closing tag. Found '{tagName}' but expected '{expected.TagName}'.");
+                    $"Mismatching closing tag. Found '{tagName}' but expected '{expected.TagName}'.", source);
             }
 
             // Note: there's no unit test to cover the following, because there's no known way of
