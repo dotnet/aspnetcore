@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken));
         Task Write100ContinueAsync(int streamId);
         void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers);
-        Task WriteDataAsync(int streamId, Span<byte> data, CancellationToken cancellationToken);
-        Task WriteDataAsync(int streamId, Span<byte> data, bool endStream, CancellationToken cancellationToken);
+        Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, CancellationToken cancellationToken);
+        Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, bool endStream, CancellationToken cancellationToken);
         Task WriteRstStreamAsync(int streamId, Http2ErrorCode errorCode);
         Task WriteSettingsAckAsync();
-        Task WritePingAsync(Http2PingFrameFlags flags, Span<byte> payload);
+        Task WritePingAsync(Http2PingFrameFlags flags, ReadOnlySpan<byte> payload);
         Task WriteGoAwayAsync(int lastStreamId, Http2ErrorCode errorCode);
     }
 }

@@ -100,10 +100,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task WriteDataAsync(int streamId, Span<byte> data, CancellationToken cancellationToken)
+        public Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, CancellationToken cancellationToken)
             => WriteDataAsync(streamId, data, endStream: false, cancellationToken: cancellationToken);
 
-        public Task WriteDataAsync(int streamId, Span<byte> data, bool endStream, CancellationToken cancellationToken)
+        public Task WriteDataAsync(int streamId, ReadOnlySpan<byte> data, bool endStream, CancellationToken cancellationToken)
         {
             var tasks = new List<Task>();
 
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public Task WritePingAsync(Http2PingFrameFlags flags, Span<byte> payload)
+        public Task WritePingAsync(Http2PingFrameFlags flags, ReadOnlySpan<byte> payload)
         {
             lock (_writeLock)
             {
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Must be called with _writeLock
-        private void Append(ArraySegment<byte> data)
+        private void Append(ReadOnlySpan<byte> data)
         {
             if (_completed)
             {
@@ -194,15 +194,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         }
 
         // Must be called with _writeLock
-        private async Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        private Task WriteAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_completed)
             {
-                return;
+                return Task.CompletedTask;
             }
 
             _outputWriter.Write(data);
-            await _outputWriter.FlushAsync(cancellationToken);
+            return FlushAsync(_outputWriter, cancellationToken);
+        }
+
+        private async Task FlushAsync(PipeWriter outputWriter, CancellationToken cancellationToken)
+        {
+            await outputWriter.FlushAsync(cancellationToken);
         }
 
         private static IEnumerable<KeyValuePair<string, string>> EnumerateHeaders(IHeaderDictionary headers)

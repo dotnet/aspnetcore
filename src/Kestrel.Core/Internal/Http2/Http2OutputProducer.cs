@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task Write100ContinueAsync(CancellationToken cancellationToken) => _frameWriter.Write100ContinueAsync(_streamId);
 
-        public Task WriteDataAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        public Task WriteDataAsync(ReadOnlySpan<byte> data, CancellationToken cancellationToken)
         {
             return _frameWriter.WriteDataAsync(_streamId, data, cancellationToken);
         }

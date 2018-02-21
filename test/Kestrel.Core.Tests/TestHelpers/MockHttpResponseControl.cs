@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests.TestHelpers
         {
         }
 
-        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

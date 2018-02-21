@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockBodyControl = new Mock<IHttpBodyControlFeature>();
             mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(() => allowSynchronousIO);
             var mockHttpResponseControl = new Mock<IHttpResponseControl>();
-            mockHttpResponseControl.Setup(m => m.WriteAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None)).Returns(Task.CompletedTask);
+            mockHttpResponseControl.Setup(m => m.WriteAsync(It.IsAny<ReadOnlyMemory<byte>>(), CancellationToken.None)).Returns(Task.CompletedTask);
 
             var stream = new HttpResponseStream(mockBodyControl.Object, mockHttpResponseControl.Object);
             stream.StartAcceptingWrites();

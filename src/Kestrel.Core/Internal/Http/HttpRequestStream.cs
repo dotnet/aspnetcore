@@ -3,11 +3,12 @@
 
 using System;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -105,20 +106,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var task = ValidateState(cancellationToken);
-            if (task != null)
-            {
-                return task;
-            }
+            ValidateState(cancellationToken);
 
-            return ReadAsyncInternal(buffer, offset, count, cancellationToken);
+            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
-        private async Task<int> ReadAsyncInternal(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+#if NETCOREAPP2_1
+        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+        {
+            ValidateState(cancellationToken);
+
+            return ReadAsyncInternal(destination, cancellationToken);
+        }
+#endif
+
+        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
         {
             try
             {
-                return await _body.ReadAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
+                return await _body.ReadAsync(buffer, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
@@ -137,11 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 throw new ArgumentException(CoreStrings.PositiveNumberRequired, nameof(bufferSize));
             }
 
-            var task = ValidateState(cancellationToken);
-            if (task != null)
-            {
-                return task;
-            }
+            ValidateState(cancellationToken);
 
             return CopyToAsyncInternal(destination, cancellationToken);
         }
@@ -193,24 +195,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task<int> ValidateState(CancellationToken cancellationToken)
+        private void ValidateState(CancellationToken cancellationToken)
         {
             switch (_state)
             {
                 case HttpStreamState.Open:
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return Task.FromCanceled<int>(cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                     break;
                 case HttpStreamState.Closed:
                     throw new ObjectDisposedException(nameof(HttpRequestStream));
                 case HttpStreamState.Aborted:
-                    return _error != null ?
-                        Task.FromException<int>(_error) :
-                        Task.FromCanceled<int>(new CancellationToken(true));
+                    if (_error != null)
+                    {
+                        ExceptionDispatchInfo.Capture(_error).Throw();
+                    }
+                    else
+                    {
+                        throw new TaskCanceledException();
+                    }
+                    break;
             }
-            return null;
         }
     }
 }

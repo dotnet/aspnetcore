@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: " + Constants.ServerName);
-        private static readonly Action<PipeWriter, ArraySegment<byte>> _writeChunk = WriteChunk;
+        private static readonly Action<PipeWriter, ReadOnlyMemory<byte>> _writeChunk = WriteChunk;
 
         private readonly object _onStartingSync = new Object();
         private readonly object _onCompletedSync = new Object();
@@ -762,14 +762,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             await Output.FlushAsync(cancellationToken);
         }
 
-        public Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
             // For the first write, ensure headers are flushed if WriteDataAsync isn't called.
             var firstWrite = !HasResponseStarted;
 
             if (firstWrite)
             {
-                var initializeTask = InitializeResponseAsync(data.Count);
+                var initializeTask = InitializeResponseAsync(data.Length);
                 // If return is Task.CompletedTask no awaiting is required
                 if (!ReferenceEquals(initializeTask, Task.CompletedTask))
                 {
@@ -778,14 +778,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                VerifyAndUpdateWrite(data.Count);
+                VerifyAndUpdateWrite(data.Length);
             }
 
             if (_canHaveBody)
             {
                 if (_autoChunk)
                 {
-                    if (data.Count == 0)
+                    if (data.Length == 0)
                     {
                         return !firstWrite ? Task.CompletedTask : FlushAsync(cancellationToken);
                     }
@@ -794,7 +794,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     CheckLastWrite();
-                    return Output.WriteDataAsync(data, cancellationToken: cancellationToken);
+                    return Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
                 }
             }
             else
@@ -804,7 +804,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public async Task WriteAsyncAwaited(Task initializeTask, ArraySegment<byte> data, CancellationToken cancellationToken)
+        public async Task WriteAsyncAwaited(Task initializeTask, ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             await initializeTask;
 
@@ -814,7 +814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_autoChunk)
                 {
-                    if (data.Count == 0)
+                    if (data.Length == 0)
                     {
                         await FlushAsync(cancellationToken);
                         return;
@@ -825,7 +825,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else
                 {
                     CheckLastWrite();
-                    await Output.WriteDataAsync(data, cancellationToken: cancellationToken);
+                    await Output.WriteDataAsync(data.Span, cancellationToken: cancellationToken);
                 }
             }
             else
@@ -892,18 +892,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task WriteChunkedAsync(ArraySegment<byte> data, CancellationToken cancellationToken)
+        private Task WriteChunkedAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken)
         {
             return Output.WriteAsync(_writeChunk, data);
         }
 
-        private static void WriteChunk(PipeWriter writableBuffer, ArraySegment<byte> buffer)
+        private static void WriteChunk(PipeWriter writableBuffer, ReadOnlyMemory<byte> buffer)
         {
             var writer = OutputWriter.Create(writableBuffer);
-            if (buffer.Count > 0)
+            if (buffer.Length > 0)
             {
-                ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Count);
-                writer.Write(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count));
+                ChunkWriter.WriteBeginChunkBytes(ref writer, buffer.Length);
+                writer.Write(buffer.Span);
                 ChunkWriter.WriteEndChunkBytes(ref writer);
             }
         }

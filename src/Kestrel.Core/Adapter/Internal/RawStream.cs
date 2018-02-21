@@ -61,28 +61,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         {
             // ValueTask uses .GetAwaiter().GetResult() if necessary
             // https://github.com/dotnet/corefx/blob/f9da3b4af08214764a51b2331f3595ffaf162abe/src/System.Threading.Tasks.Extensions/src/System/Threading/Tasks/ValueTask.cs#L156
-            return ReadAsync(new ArraySegment<byte>(buffer, offset, count)).Result;
+            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count)).Result;
         }
 
         public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return ReadAsync(new ArraySegment<byte>(buffer, offset, count));
+            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count)).AsTask();
         }
+
+#if NETCOREAPP2_1
+        public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+        {
+            return ReadAsyncInternal(destination);
+        }
+#endif
 
         public override void Write(byte[] buffer, int offset, int count)
         {
             WriteAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
-        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
+        public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
             if (buffer != null)
             {
                 _output.Write(new ReadOnlySpan<byte>(buffer, offset, count));
             }
 
-            await _output.FlushAsync(token);
+            await _output.FlushAsync(cancellationToken);
         }
+
+#if NETCOREAPP2_1
+        public override async Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            _output.Write(source.Span);
+            await _output.FlushAsync(cancellationToken);
+        }
+#endif
 
         public override void Flush()
         {
@@ -94,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             return WriteAsync(null, 0, 0, cancellationToken);
         }
 
-        private async Task<int> ReadAsync(ArraySegment<byte> buffer)
+        private async ValueTask<int> ReadAsyncInternal(Memory<byte> destination)
         {
             while (true)
             {
@@ -105,9 +120,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     if (!readableBuffer.IsEmpty)
                     {
                         // buffer.Count is int
-                        var count = (int) Math.Min(readableBuffer.Length, buffer.Count);
+                        var count = (int) Math.Min(readableBuffer.Length, destination.Length);
                         readableBuffer = readableBuffer.Slice(0, count);
-                        readableBuffer.CopyTo(buffer);
+                        readableBuffer.CopyTo(destination.Span);
                         return count;
                     }
                     else if (result.IsCompleted)

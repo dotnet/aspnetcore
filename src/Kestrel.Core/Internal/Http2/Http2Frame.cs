@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private readonly byte[] _data = new byte[HeaderLength + MinAllowedMaxFrameSize];
 
-        public ArraySegment<byte> Raw => new ArraySegment<byte>(_data, 0, HeaderLength + Length);
+        public Span<byte> Raw => new Span<byte>(_data, 0, HeaderLength + Length);
 
         public int Length
         {

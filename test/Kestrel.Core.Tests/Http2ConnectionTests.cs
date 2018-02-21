@@ -2136,10 +2136,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return Task.WhenAll(_runningStreams.Values.Select(tcs => tcs.Task)).TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
-        private async Task SendAsync(ArraySegment<byte> span)
+        private Task SendAsync(ReadOnlySpan<byte> span)
         {
             var writableBuffer = _pair.Application.Output;
             writableBuffer.Write(span);
+            return FlushAsync(writableBuffer);
+        }
+
+        private static async Task FlushAsync(PipeWriter writableBuffer)
+        {
             await writableBuffer.FlushAsync();
         }
 

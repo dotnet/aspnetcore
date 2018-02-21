@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockBodyControl = new Mock<IHttpBodyControlFeature>();
             mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(() => allowSynchronousIO);
             var mockMessageBody = new Mock<MessageBody>((HttpProtocol)null);
-            mockMessageBody.Setup(m => m.ReadAsync(It.IsAny<ArraySegment<byte>>(), CancellationToken.None)).ReturnsAsync(0);
+            mockMessageBody.Setup(m => m.ReadAsync(It.IsAny<Memory<byte>>(), CancellationToken.None)).Returns(new ValueTask<int>(0));
 
             var stream = new HttpRequestStream(mockBodyControl.Object);
             stream.StartAcceptingReads(mockMessageBody.Object);
@@ -136,25 +136,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void AbortCausesReadToCancel()
+        public async Task AbortCausesReadToCancel()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             stream.StartAcceptingReads(null);
             stream.Abort();
-            var task = stream.ReadAsync(new byte[1], 0, 1);
-            Assert.True(task.IsCanceled);
+            await Assert.ThrowsAsync<TaskCanceledException>(() => stream.ReadAsync(new byte[1], 0, 1));
         }
 
         [Fact]
-        public void AbortWithErrorCausesReadToCancel()
+        public async Task AbortWithErrorCausesReadToCancel()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             stream.StartAcceptingReads(null);
             var error = new Exception();
             stream.Abort(error);
-            var task = stream.ReadAsync(new byte[1], 0, 1);
-            Assert.True(task.IsFaulted);
-            Assert.Same(error, task.Exception.InnerException);
+            var exception = await Assert.ThrowsAsync<Exception>(() => stream.ReadAsync(new byte[1], 0, 1));
+            Assert.Same(error, exception);
         }
 
         [Fact]
@@ -167,25 +165,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void AbortCausesCopyToAsyncToCancel()
+        public async Task AbortCausesCopyToAsyncToCancel()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             stream.StartAcceptingReads(null);
             stream.Abort();
-            var task = stream.CopyToAsync(Mock.Of<Stream>());
-            Assert.True(task.IsCanceled);
+            await Assert.ThrowsAsync<TaskCanceledException>(() => stream.CopyToAsync(Mock.Of<Stream>()));
         }
 
         [Fact]
-        public void AbortWithErrorCausesCopyToAsyncToCancel()
+        public async Task AbortWithErrorCausesCopyToAsyncToCancel()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
             stream.StartAcceptingReads(null);
             var error = new Exception();
             stream.Abort(error);
-            var task = stream.CopyToAsync(Mock.Of<Stream>());
-            Assert.True(task.IsFaulted);
-            Assert.Same(error, task.Exception.InnerException);
+            var exception = await Assert.ThrowsAsync<Exception>(() => stream.CopyToAsync(Mock.Of<Stream>()));
+            Assert.Same(error, exception);
         }
 
         [Fact]

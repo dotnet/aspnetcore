@@ -426,7 +426,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var writeCount = 0;
             var writeTcs = new TaskCompletionSource<byte[]>();
-            var mockDestination = new Mock<Stream>();
+            var mockDestination = new Mock<Stream>() { CallBase = true };
 
             mockDestination
                 .Setup(m => m.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), CancellationToken.None))
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 // Time out on the next read
                 input.Http1Connection.SendTimeoutResponse();
 
-                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                var exception = await Assert.ThrowsAsync<BadHttpRequestException>(async () => await body.ReadAsync(new Memory<byte>(new byte[1])));
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
 
                 await body.StopAsync();

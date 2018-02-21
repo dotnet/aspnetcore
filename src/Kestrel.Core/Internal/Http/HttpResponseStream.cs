@@ -41,12 +41,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            var task = ValidateState(cancellationToken);
-            if (task == null)
-            {
-                return _httpResponseControl.FlushAsync(cancellationToken);
-            }
-            return task;
+            ValidateState(cancellationToken);
+
+            return _httpResponseControl.FlushAsync(cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -109,13 +106,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            var task = ValidateState(cancellationToken);
-            if (task == null)
-            {
-                return _httpResponseControl.WriteAsync(new ArraySegment<byte>(buffer, offset, count), cancellationToken);
-            }
-            return task;
+            ValidateState(cancellationToken);
+
+            return _httpResponseControl.WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
+
+#if NETCOREAPP2_1
+        public override Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            ValidateState(cancellationToken);
+
+            return _httpResponseControl.WriteAsync(source, cancellationToken);
+        }
+#endif
 
         public void StartAcceptingWrites()
         {
@@ -147,14 +150,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private Task ValidateState(CancellationToken cancellationToken)
+        private void ValidateState(CancellationToken cancellationToken)
         {
             switch (_state)
             {
                 case HttpStreamState.Open:
                     if (cancellationToken.IsCancellationRequested)
                     {
-                        return Task.FromCanceled(cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                     break;
                 case HttpStreamState.Closed:
@@ -163,11 +166,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (cancellationToken.IsCancellationRequested)
                     {
                         // Aborted state only throws on write if cancellationToken requests it
-                        return Task.FromCanceled(cancellationToken);
+                        cancellationToken.ThrowIfCancellationRequested();
                     }
                     break;
             }
-            return null;
         }
     }
 }

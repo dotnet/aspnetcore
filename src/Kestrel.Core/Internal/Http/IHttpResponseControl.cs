@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     public interface IHttpResponseControl
     {
         void ProduceContinue();
-        Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken);
+        Task WriteAsync(ReadOnlyMemory<byte> data, CancellationToken cancellationToken);
         Task FlushAsync(CancellationToken cancellationToken);
     }
 }

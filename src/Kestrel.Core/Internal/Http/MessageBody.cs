@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public virtual async Task<int> ReadAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             TryInit();
 
@@ -50,10 +50,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     if (!readableBuffer.IsEmpty)
                     {
                         //  buffer.Count is int
-                        var actual = (int) Math.Min(readableBuffer.Length, buffer.Count);
+                        var actual = (int) Math.Min(readableBuffer.Length, buffer.Length);
                         var slice = readableBuffer.Slice(0, actual);
                         consumed = readableBuffer.GetPosition(readableBuffer.Start, actual);
-                        slice.CopyTo(buffer);
+                        slice.CopyTo(buffer.Span);
                         return actual;
                     }
                     else if (result.IsCompleted)
@@ -84,8 +84,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         foreach (var memory in readableBuffer)
                         {
+                            // REVIEW: This *could* be slower if 2 things are true
+                            // - The WriteAsync(ReadOnlyMemory<byte>) isn't overridden on the destination
+                            // - We change the Kestrel Memory Pool to not use pinned arrays but instead use native memory
+#if NETCOREAPP2_1
+                            await destination.WriteAsync(memory);
+#else
                             var array = memory.GetArray();
                             await destination.WriteAsync(array.Array, array.Offset, array.Count, cancellationToken);
+#endif
                         }
                     }
                     else if (result.IsCompleted)
@@ -148,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             public override bool IsEmpty => true;
 
-            public override Task<int> ReadAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken)) => Task.FromResult(0);
+            public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default(CancellationToken)) => new ValueTask<int>(0);
 
             public override Task CopyToAsync(Stream destination, CancellationToken cancellationToken = default(CancellationToken)) => Task.CompletedTask;
 

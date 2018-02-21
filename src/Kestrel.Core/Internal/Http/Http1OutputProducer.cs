@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class Http1OutputProducer : IHttpOutputProducer
     {
-        private static readonly ArraySegment<byte> _continueBytes = new ArraySegment<byte>(Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n"));
+        private static readonly ReadOnlyMemory<byte> _continueBytes = new ReadOnlyMemory<byte>(Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n"));
         private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
-        private static readonly ArraySegment<byte> _endChunkedResponseBytes = new ArraySegment<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
+        private static readonly ReadOnlyMemory<byte> _endChunkedResponseBytes = new ReadOnlyMemory<byte>(Encoding.ASCII.GetBytes("0\r\n\r\n"));
 
         private readonly string _connectionId;
         private readonly ITimeoutControl _timeoutControl;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _flushCompleted = OnFlushCompleted;
         }
 
-        public Task WriteDataAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
+        public Task WriteDataAsync(ReadOnlySpan<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (cancellationToken.IsCancellationRequested)
             {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task WriteStreamSuffixAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(_endChunkedResponseBytes, cancellationToken);
+            return WriteAsync(_endChunkedResponseBytes.Span, cancellationToken);
         }
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
@@ -160,11 +160,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task Write100ContinueAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(_continueBytes, default(CancellationToken));
+            return WriteAsync(_continueBytes.Span, default(CancellationToken));
         }
 
         private Task WriteAsync(
-            ArraySegment<byte> buffer,
+            ReadOnlySpan<byte> buffer,
             CancellationToken cancellationToken)
         {
             var writableBuffer = default(PipeWriter);
@@ -178,10 +178,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 writableBuffer = _pipeWriter;
                 var writer = OutputWriter.Create(writableBuffer);
-                if (buffer.Count > 0)
+                if (buffer.Length > 0)
                 {
-                    writer.Write(new ReadOnlySpan<byte>(buffer.Array, buffer.Offset, buffer.Count));
-                    bytesWritten += buffer.Count;
+                    writer.Write(buffer);
+                    bytesWritten += buffer.Length;
                 }
 
                 writableBuffer.Commit();
