@@ -60,13 +60,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
-  <!--
-    PreserveCompilationContext needs to enabled by default only for "applications" (OutputType = exe) which have one or more Razor files.
-  -->
-  <PropertyGroup Condition="'$(PreserveCompilationContext)' == '' AND '$(OutputType)' == 'exe'">
-    <PreserveCompilationContext>true</PreserveCompilationContext>
-  </PropertyGroup>
-
   <!-- 
     Default values for properties that affect Razor targets to the standard build lifecycle.
   -->
