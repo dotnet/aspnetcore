@@ -491,8 +491,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_EnsureRazorCompilerReferenced" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
     <Error Text="A reference to Microsoft.AspNetCore.Razor.Design is required for this target to succeed. See todo:fwlink for instructions on how to resolve this." />
-
   </Target>
+
+  <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">
+    <RazorDesignTimeTargets>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Razor\Microsoft.NET.Sdk.Razor.DesignTime.targets</RazorDesignTimeTargets>
+    <RazorDesignTimeTargets Condition="!Exists('$(RazorDesignTimeTargets)')">$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Razor.DesignTime.targets</RazorDesignTimeTargets>
+  </PropertyGroup>
+
+  <Import Project="$(RazorDesignTimeTargets)" />
 
   <!--
     This is a hook to import a set of targets after the Razor targets. By default this is unused.

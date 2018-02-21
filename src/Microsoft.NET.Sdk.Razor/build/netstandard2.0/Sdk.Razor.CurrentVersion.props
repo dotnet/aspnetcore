@@ -72,27 +72,4 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**\*.cshtml" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- 
-      Defines the generic .NET Core 'Razor' capability.
-
-      Note that we don't define any capabilities here that depend on the version of the runtime/toolset
-      in use by the project. Those capabilities are defined by the relevant runtime packages so that
-      we use the lack of the capability to detect downlevel scenarios.
-    -->
-    <ProjectCapability Include="DotNetCoreRazor"/>
-  </ItemGroup>
-
-  <ItemGroup> 
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorConfiguration.xaml">
-      <Context>File</Context>
-    </PropertyPageSchema>
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorExtension.xaml">
-      <Context>File</Context>
-    </PropertyPageSchema>
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorGeneral.xaml">
-      <Context>Project</Context>
-    </PropertyPageSchema>
-  </ItemGroup>
-
 </Project>
