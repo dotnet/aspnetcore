@@ -22,9 +22,9 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
         private const int DefaultWebSocketBufferSize = 4096;
         private const int StreamCopyBufferSize = 81920;
 
-        // Don't forward User-Agent because of https://github.com/aspnet/JavaScriptServices/issues/1469
+        // Don't forward User-Agent/Accept because of https://github.com/aspnet/JavaScriptServices/issues/1469
         // Others just aren't applicable in proxy scenarios
-        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
+        private static readonly string[] NotForwardedWebSocketHeaders = new[] { "Accept", "Connection", "Host", "User-Agent", "Upgrade", "Sec-WebSocket-Key", "Sec-WebSocket-Version" };
 
         public static HttpClient CreateHttpClientForProxy(TimeSpan requestTimeout)
         {
@@ -206,7 +206,19 @@ namespace Microsoft.AspNetCore.SpaServices.Extensions.Proxy
                 {
                     if (!NotForwardedWebSocketHeaders.Contains(headerEntry.Key, StringComparer.OrdinalIgnoreCase))
                     {
-                        client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                        try
+                        {
+                            client.Options.SetRequestHeader(headerEntry.Key, headerEntry.Value);
+                        }
+                        catch (ArgumentException)
+                        {
+                            // On net461, certain header names are reserved and can't be set.
+                            // We filter out the known ones via the test above, but there could
+                            // be others arbitrarily set by the client. It's not helpful to
+                            // consider it an error, so just skip non-forwardable headers.
+                            // The perf implications of handling this via a catch aren't an
+                            // issue since this is a dev-time only feature.
+                        }
                     }
                 }
 
