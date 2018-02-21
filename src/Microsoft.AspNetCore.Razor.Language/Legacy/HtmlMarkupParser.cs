@@ -207,10 +207,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (last != null)
             {
                 Accept(last);
-                if (At(HtmlSymbolType.OpenAngle) && last.Type == HtmlSymbolType.Text)
-                {
-                    Output(SpanKindInternal.Markup);
-                }
             }
         }
 
@@ -501,30 +497,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
                     {
                         AcceptAndMoveNext();
+                        Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
-                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Any;
+                        Span.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.WhiteSpace;
                         while (!EndOfFile)
                         {
                             SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
                             if (At(HtmlSymbolType.DoubleHyphen))
                             {
-                                AcceptWhile(HtmlSymbolType.DoubleHyphen);
+                                var lastDoubleHyphen = CurrentSymbol;
+                                AcceptWhile(s =>
+                                {
+                                    if (NextIs(HtmlSymbolType.DoubleHyphen))
+                                    {
+                                        lastDoubleHyphen = s;
+                                        return true;
+                                    }
+
+                                    NextToken();
+                                    EnsureCurrent();
+                                    return false;
+                                });
 
                                 if (At(HtmlSymbolType.Text) &&
                                     string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
                                 {
+                                    // Doing this here to maintain the order of symbols
+                                    if (!NextIs(HtmlSymbolType.CloseAngle))
+                                    {
+                                        Accept(lastDoubleHyphen);
+                                        lastDoubleHyphen = null;
+                                    }
+
                                     AcceptAndMoveNext();
                                 }
 
                                 if (At(HtmlSymbolType.CloseAngle))
                                 {
-                                    // This is the end of a comment block
-                                    Accept(this.CurrentSymbol);
-                                    Output(SpanKindInternal.Markup);
+                                    // Output the content in the comment block as a separate markup
+                                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
 
-                                    NextToken();
-                                    //AcceptAndMoveNext();
+                                    // This is the end of a comment block
+                                    Accept(lastDoubleHyphen);
+                                    AcceptAndMoveNext();
+                                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
+
                                     return true;
+                                }
+                                else if (lastDoubleHyphen != null)
+                                {
+                                    Accept(lastDoubleHyphen);
                                 }
                             }
                         }
@@ -1486,6 +1508,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // Checking to see if we meet the conditions of a special '!' tag: <!DOCTYPE, <![CDATA[, <!--.
                     if (!IsBangEscape(lookahead: 1))
                     {
+                        if (Lookahead(2)?.Type == HtmlSymbolType.DoubleHyphen)
+                        {
+                            Output(SpanKindInternal.Markup);
+                        }
+
                         AcceptAndMoveNext(); // Accept '<'
                         BangTag();
 

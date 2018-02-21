@@ -55,6 +55,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             );
         }
 
+        public HtmlCommentBlock HtmlCommentBlock(string content)
+        {
+            return new HtmlCommentBlock(new SyntaxTreeNode[] {
+                _factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None),
+                _factory.Markup(content).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                _factory.Markup("-->").Accepts(AcceptedCharactersInternal.None) });
+        }
+
+        public HtmlCommentBlock HtmlCommentBlock(params SyntaxTreeNode[] syntaxTreeNodes)
+        {
+            var nodes = new List<SyntaxTreeNode>();
+            nodes.Add(_factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None));
+            if (syntaxTreeNodes != null)
+            {
+                nodes.AddRange(syntaxTreeNodes);
+            }
+            nodes.Add(_factory.Markup("-->").Accepts(AcceptedCharactersInternal.None));
+
+            return new HtmlCommentBlock(nodes.ToArray());
+        }
+
         public Block TagHelperBlock(
             string tagName,
             TagMode tagMode,
