@@ -214,7 +214,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseDocumentReturnsOneMarkupSegmentIfNoCodeBlocksEncountered()
         {
-            SingleSpanDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux", BlockKindInternal.Markup, SpanKindInternal.Markup);
+            ParseDocumentTest("Foo Baz<!--Foo-->Bar<!--F> Qux",
+                new MarkupBlock(
+                    Factory.Markup("Foo Baz"),
+                    BlockFactory.HtmlCommentBlock("Foo"),
+                    Factory.Markup("Bar"),
+                    new HtmlCommentBlock(Factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None)),
+                    Factory.Markup("F> Qux").Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]

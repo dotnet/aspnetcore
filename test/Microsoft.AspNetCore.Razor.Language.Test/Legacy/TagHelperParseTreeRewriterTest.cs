@@ -1278,13 +1278,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     blockFactory.MarkupTagBlock("<b>"),
                     factory.Markup(literal),
                     blockFactory.MarkupTagBlock("</b>"),
-                    blockFactory.HtmlCommentBlock(
-                        factory.Markup(part1).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    BlockFactory.HtmlCommentBlock(factory, f => new SyntaxTreeNode[] {
+                        f.Markup(part1).Accepts(AcceptedCharactersInternal.WhiteSpace),
                          new ExpressionBlock(
-                            factory.CodeTransition(),
-                            factory.Code(part2)
+                            f.CodeTransition(),
+                            f.Code(part2)
                                 .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))));
+                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)) })));
 
             // Act & Assert
             EvaluateData(
@@ -4104,14 +4104,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new MarkupBlock(
                         new MarkupTagBlock(
                             factory.Markup("<foo>")),
-                        blockFactory.HtmlCommentBlock(
-                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        BlockFactory.HtmlCommentBlock(factory, f=> new SyntaxTreeNode[]{
+                            f.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace),
                             new ExpressionBlock(
-                                factory.CodeTransition(),
-                                factory.Code("foo")
+                                f.CodeTransition(),
+                                f.Code("foo")
                                     .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                     .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
-                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                            factory.Markup(" ").Accepts(AcceptedCharactersInternal.WhiteSpace) }),
                         new MarkupTagBlock(
                             factory.Markup("</foo>")))
                 };
