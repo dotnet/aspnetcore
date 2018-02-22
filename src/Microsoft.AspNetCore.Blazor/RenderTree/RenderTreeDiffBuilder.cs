@@ -153,13 +153,22 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
             // Preserve the actual componentInstance
             newComponentFrame = newComponentFrame.WithComponentInstance(componentId, componentInstance);
 
-            // Supply latest parameters. They might not have changed, but it's up to the
-            // recipient to decide what "changed" means. Currently we only supply the new
+            // As an important rendering optimization, we want to skip parameter update
+            // notifications if we know for sure they haven't changed/mutated. The
+            // "MayHaveChangedSince" logic is conservative, in that it returns true if
+            // any parameter is of a type we don't know is immutable. In this case
+            // we call SetParameters and it's up to the recipient to implement
+            // whatever change-detection logic they want. Currently we only supply the new
             // set of parameters and assume the recipient has enough info to do whatever
             // comparisons it wants with the old values. Later we could choose to pass the
-            // old parameter values if we wanted.
+            // old parameter values if we wanted. By default, components always rerender
+            // after any SetParameters call, which is safe but now always optimal for perf.
+            var oldParameters = new ParameterCollection(oldTree, oldComponentIndex);
             var newParameters = new ParameterCollection(newTree, newComponentIndex);
-            componentInstance.SetParameters(newParameters);
+            if (!newParameters.DefinitelyEquals(oldParameters))
+            {
+                componentInstance.SetParameters(newParameters);
+            }
         }
 
         private static int NextSiblingIndex(RenderTreeFrame frame, int frameIndex)

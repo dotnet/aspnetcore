@@ -833,6 +833,44 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void SkipsUpdatingParametersOnChildComponentsIfAllAreDefinitelyImmutableAndUnchanged()
+        {
+            // We only know that types are immutable if either Type.IsPrimitive, or it's one of
+            // a known set of common immutable types.
+
+            // Arrange: Populate old and new with equivalent content
+            RenderFragment fragmentWillNotChange = builder => throw new NotImplementedException();
+            var dateTimeWillNotChange = DateTime.Now;
+            foreach (var tree in new[] { oldTree, newTree })
+            {
+                tree.OpenComponent<CaptureSetParametersComponent>(0);
+                tree.AddAttribute(1, "MyString", "Some fixed string");
+                tree.AddAttribute(1, "MyByte", (byte)123);
+                tree.AddAttribute(1, "MyInt", int.MaxValue);
+                tree.AddAttribute(1, "MyLong", long.MaxValue);
+                tree.AddAttribute(1, "MyBool", true);
+                tree.AddAttribute(1, "MyFloat", float.MaxValue);
+                tree.AddAttribute(1, "MyDouble", double.MaxValue);
+                tree.AddAttribute(1, "MyDecimal", decimal.MinusOne);
+                tree.AddAttribute(1, "MyDate", dateTimeWillNotChange);
+                tree.AddAttribute(1, "MyFragment", fragmentWillNotChange); // Treat fragments as primitive
+                tree.CloseComponent();
+            }
+
+            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            var originalComponentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
+            Assert.Equal(1, originalComponentInstance.SetParametersCallCount);
+
+            // Act
+            var renderBatch = GetRenderedBatch();
+            var newComponentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
+
+            // Assert
+            Assert.Same(originalComponentInstance, newComponentInstance);
+            Assert.Equal(1, originalComponentInstance.SetParametersCallCount); // Received no further parameter change notification
+        }
+
+        [Fact]
         public void QueuesRemovedChildComponentsForDisposal()
         {
             // Arrange
@@ -912,6 +950,20 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
             public void SetParameters(ParameterCollection parameters)
             {
+            }
+        }
+
+        private class CaptureSetParametersComponent : IComponent
+        {
+            public int SetParametersCallCount { get; private set; }
+
+            public void Init(RenderHandle renderHandle)
+            {
+            }
+
+            public void SetParameters(ParameterCollection parameters)
+            {
+                SetParametersCallCount++;
             }
         }
 

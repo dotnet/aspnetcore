@@ -341,7 +341,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                     Assert.Equal(0, edit.ReferenceFrameIndex);
                 });
             AssertFrame.Text(batch.ReferenceFrames[0], "Modified message");
-            Assert.Empty(batch.DiffsByComponentId[nestedComponentFrame.ComponentId].Single().Edits);
+            Assert.False(batch.DiffsByComponentId.ContainsKey(nestedComponentFrame.ComponentId));
         }
 
         [Fact]
