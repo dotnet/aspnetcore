@@ -23,10 +23,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.Tokens.Add(DirectiveTokenDescriptor.CreateToken(
-                    DirectiveTokenKind.Type, optional: false));
-                builder.Tokens.Add(DirectiveTokenDescriptor.CreateToken(
-                    DirectiveTokenKind.Member, optional: false));
+                builder.AddTypeToken("TypeName", "The type of the service to inject.");
+                builder.AddMemberToken("PropertyName", "The name of the property.");
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                 builder.Description = "Inject a service from the application's service container into a property.";
             });
