@@ -5,6 +5,8 @@
       <ComposeSdk Condition="$(SITE_EXTENSION_SDK_VERSION) == ''">True</ComposeSdk>
       <_SdkVersion>$(SITE_EXTENSION_SDK_VERSION)</_SdkVersion>
       <_SdkVersion Condition="'$(_SdkVersion)' == ''">$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(MSBuildExtensionsPath)'))))</_SdkVersion>
+      <_SdkFeed>$(SITE_EXTENSION_SDK_FEED)</_SdkFeed>
+      <_SdkFeed Condition="'$(_SdkFeed)' == ''">$(DefaultDotNetAssetFeed)</_SdkFeed>
       <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
       <AppsArtifactDirectory>$(RepositoryRoot)artifacts\apps</AppsArtifactDirectory>
       <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
@@ -26,7 +28,7 @@
 
   <Target Name="_AddSiteExtensionSdk">
     <ItemGroup>
-      <DotNetCoreSdk Include="$(_SdkVersion)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+      <DotNetCoreSdk Include="$(_SdkVersion)" Feed="$(_SdkFeed)" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
     </ItemGroup>
   </Target>
 
