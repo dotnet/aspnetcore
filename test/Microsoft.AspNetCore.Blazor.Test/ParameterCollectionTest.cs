@@ -85,6 +85,88 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 AssertParameter("attribute 2", attribute2Value));
         }
 
+        [Fact]
+        public void CanTryGetNonExistingValue()
+        {
+            // Arrange
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "some other entry", new object())
+            }, 0);
+
+            // Act
+            var didFind = parameterCollection.TryGetValue<string>("nonexisting entry", out var value);
+
+            // Assert
+            Assert.False(didFind);
+            Assert.Null(value);
+        }
+
+        [Fact]
+        public void CanTryGetExistingValueWithCorrectType()
+        {
+            // Arrange
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "my entry", "hello")
+            }, 0);
+
+            // Act
+            var didFind = parameterCollection.TryGetValue<string>("my entry", out var value);
+
+            // Assert
+            Assert.True(didFind);
+            Assert.Equal("hello", value);
+        }
+
+        [Fact]
+        public void ThrowsIfTryGetExistingValueWithIncorrectType()
+        {
+            // Arrange
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(2),
+                RenderTreeFrame.Attribute(1, "my entry", "hello")
+            }, 0);
+
+            // Act/Assert
+            Assert.Throws<InvalidCastException>(() =>
+            {
+                parameterCollection.TryGetValue<bool>("my entry", out var value);
+            });
+        }
+
+        [Fact]
+        public void CanConvertToReadOnlyDictionary()
+        {
+            // Arrange
+            var entry2Value = new object();
+            var parameterCollection = new ParameterCollection(new[]
+            {
+                RenderTreeFrame.Element(0, "some element").WithElementSubtreeLength(3),
+                RenderTreeFrame.Attribute(0, "entry 1", "value 1"),
+                RenderTreeFrame.Attribute(0, "entry 2", entry2Value),
+            }, 0);
+
+            // Act
+            IReadOnlyDictionary<string, object> dict = parameterCollection.ToDictionary();
+
+            // Assert
+            Assert.Collection(dict,
+                entry =>
+                {
+                    Assert.Equal("entry 1", entry.Key);
+                    Assert.Equal("value 1", entry.Value);
+                },
+                entry =>
+                {
+                    Assert.Equal("entry 2", entry.Key);
+                    Assert.Same(entry2Value, entry.Value);
+                });
+        }
+
         private Action<Parameter> AssertParameter(string expectedName, object expectedValue)
         {
             return parameter =>

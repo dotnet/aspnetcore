@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 
 namespace Microsoft.AspNetCore.Blazor.Components
@@ -40,6 +41,42 @@ namespace Microsoft.AspNetCore.Blazor.Components
         /// <returns>The enumerator.</returns>
         public ParameterEnumerator GetEnumerator()
             => new ParameterEnumerator(_frames, _ownerIndex);
+
+        /// <summary>
+        /// Gets the value of the parameter with the specified name.
+        /// </summary>
+        /// <typeparam name="T">The type of the value.</typeparam>
+        /// <param name="parameterName">The name of the parameter.</param>
+        /// <param name="result">Receives the result, if any.</param>
+        /// <returns>True if a matching parameter was found; false otherwise.</returns>
+        public bool TryGetValue<T>(string parameterName, out T result)
+        {
+            foreach (var entry in this)
+            {
+                if (string.Equals(entry.Name, parameterName))
+                {
+                    result = (T)entry.Value;
+                    return true;
+                }
+            }
+
+            result = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Returns a dictionary populated with the contents of the <see cref="ParameterCollection"/>.
+        /// </summary>
+        /// <returns>A dictionary populated with the contents of the <see cref="ParameterCollection"/>.</returns>
+        public IReadOnlyDictionary<string, object> ToDictionary()
+        {
+            var result = new Dictionary<string, object>();
+            foreach (var entry in this)
+            {
+                result[entry.Name] = entry.Value;
+            }
+            return result;
+        }
 
         // It's internal because there isn't a known use case for user code comparing
         // ParameterCollection instances, and even if there was, it's unlikely it should
