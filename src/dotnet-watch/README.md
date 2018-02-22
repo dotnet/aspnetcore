@@ -2,14 +2,6 @@ dotnet-watch
 ============
 `dotnet-watch` is a file watcher for `dotnet` that restarts the specified application when changes in the source code are detected.
 
-### How To Install
-
-From the command-line, execute:
-
-```
-dotnet install tool --global dotnet-watch
-```
-
 ### How To Use
 
 The command must be executed in the directory that contains the project to be watched.

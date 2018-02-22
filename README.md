@@ -8,30 +8,18 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## Projects
 
-The repository contains command-line tools for the .NET Core CLI. Follow the links below for more details on each tool.
+The repository contains command-line tools for ASP.NET Core that are bundled* in the .NET Core CLI. Follow the links below for more details on each tool.
 
- - [dotnet-watch](src/dotnet-watch/)
- - [dotnet-user-secrets](src/dotnet-user-secrets/)
- - [dotnet-sql-cache](src/dotnet-sql-cache/) (dotnet-sql-cache)
- - [dotnet-dev-certs](src/dotnet-dev-certs/) (dotnet-dev-certs)
+ - [dotnet-watch](src/dotnet-watch/README.md)
+ - [dotnet-user-secrets](src/dotnet-user-secrets/README.md)
+ - [dotnet-sql-cache](src/dotnet-sql-cache/README.md)
+ - [dotnet-dev-certs](src/dotnet-dev-certs/README.md)
 
-## How to Install
-
-:warning: These instructions currently require a prerelease version of the [.NET Core SDK](https://github.com/dotnet/cli).
-For stable, released versions of the tools, see [these instructions](https://github.com/aspnet/DotNetTools/tree/release/2.0#how-to-install).
-
-Install tools using the .NET Core command-line.
-
-```
-dotnet install tool --global dotnet-watch
-dotnet install tool --global dotnet-user-secrets
-dotnet install tool --global dotnet-dev-certs
-dotnet install tool --global dotnet-sql-cache
-```
+*\*This applies to .NET Core CLI 2.1.300 and up. For earlier versions of the CLI, these tools must be installed separately. See the [release/2.0](https://github.com/aspnet/DotNetTools/tree/release/2.0/README.md) branch for details.*
 
 ## Usage
 
-The command line tools can be invoked as a new verb hanging off `dotnet`.
+The command line tools can be invoked as a subcommand of `dotnet`.
 
 ```sh
 dotnet watch
