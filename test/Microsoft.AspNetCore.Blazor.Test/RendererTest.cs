@@ -865,6 +865,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class NoOpRenderer : Renderer
         {
+            public NoOpRenderer() : base(new TestServiceProvider())
+            {
+            }
+
             public new int AssignComponentId(IComponent component)
                 => base.AssignComponentId(component);
 

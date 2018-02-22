@@ -11,6 +11,10 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
     public class TestRenderer : Renderer
     {
+        public TestRenderer(): base(new TestServiceProvider())
+        {
+        }
+
         public List<CapturedBatch> Batches { get; }
             = new List<CapturedBatch>();
 

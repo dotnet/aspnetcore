@@ -18,7 +18,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Build\Microsoft.AspNetCore.Blazor.Build.csproj" />
 
     <!-- Shared sources -->
-    <Compile Include="..\shared\AssertFrame.cs" Link="Helpers\AssertFrame.cs" />
+    <Compile Include="..\shared\**\*.cs" Link="Helpers\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

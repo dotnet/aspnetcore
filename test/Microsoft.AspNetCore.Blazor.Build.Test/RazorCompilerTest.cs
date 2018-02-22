@@ -745,6 +745,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         private class TestRenderer : Renderer
         {
+            public TestRenderer() : base(new TestServiceProvider())
+            {
+            }
+
             public RenderTreeFrame[] LatestBatchReferenceFrames { get; private set; }
 
             public void AttachComponent(IComponent component)

@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.AspNetCore.Blazor.Browser.Services;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Rendering;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
 {
@@ -21,7 +21,15 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <summary>
         /// Constructs an instance of <see cref="BrowserRenderer"/>.
         /// </summary>
-        public BrowserRenderer()
+        public BrowserRenderer(): this(new DefaultBrowserServiceProvider())
+        {
+        }
+
+        /// <summary>
+        /// Constructs an instance of <see cref="BrowserRenderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use when initializing components.</param>
+        public BrowserRenderer(IServiceProvider serviceProvider): base(serviceProvider)
         {
             _browserRendererId = BrowserRendererRegistry.Add(this);
         }

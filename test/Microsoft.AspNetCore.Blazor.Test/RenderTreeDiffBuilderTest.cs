@@ -922,6 +922,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class FakeRenderer : Renderer
         {
+            public FakeRenderer() : base(new TestServiceProvider())
+            {
+            }
+
             protected override void UpdateDisplay(RenderBatch renderBatch)
             {
             }

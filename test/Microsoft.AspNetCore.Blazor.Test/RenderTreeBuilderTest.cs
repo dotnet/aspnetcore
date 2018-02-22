@@ -396,6 +396,10 @@ namespace Microsoft.AspNetCore.Blazor.Test
 
         private class TestRenderer : Renderer
         {
+            public TestRenderer() : base(new TestServiceProvider())
+            {
+            }
+
             protected override void UpdateDisplay(RenderBatch renderBatch)
                 => throw new NotImplementedException();
         }

@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
     /// </summary>
     public abstract class Renderer
     {
+        private readonly ComponentFactory _componentFactory;
         private int _nextComponentId = 0; // TODO: change to 'long' when Mono .NET->JS interop supports it
         private readonly Dictionary<int, ComponentState> _componentStateById
             = new Dictionary<int, ComponentState>();
@@ -26,19 +27,21 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             = new Dictionary<int, UIEventHandler>();
 
         /// <summary>
+        /// Constructs an instance of <see cref="Renderer"/>.
+        /// </summary>
+        /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to be used when initialising components.</param>
+        public Renderer(IServiceProvider serviceProvider)
+        {
+            _componentFactory = new ComponentFactory(serviceProvider);
+        }
+
+        /// <summary>
         /// Constructs a new component of the specified type.
         /// </summary>
         /// <param name="componentType">The type of the component to instantiate.</param>
         /// <returns>The component instance.</returns>
         protected IComponent InstantiateComponent(Type componentType)
-        {
-            if (!typeof(IComponent).IsAssignableFrom(componentType))
-            {
-                throw new ArgumentException($"Must implement {nameof(IComponent)}", nameof(componentType));
-            }
-
-            return (IComponent)Activator.CreateInstance(componentType);
-        }
+            => _componentFactory.InstantiateComponent(componentType);
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="Renderer"/>, assigning
