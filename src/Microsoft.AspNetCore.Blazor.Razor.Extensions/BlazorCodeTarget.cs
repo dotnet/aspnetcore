@@ -14,10 +14,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public override IntermediateNodeWriter CreateNodeWriter()
             => new BlazorIntermediateNodeWriter();
 
-        public override TExtension GetExtension<TExtension>()
-            => throw new NotImplementedException();
+        public override TExtension GetExtension<TExtension>() => null;
 
-        public override bool HasExtension<TExtension>()
-            => throw new NotImplementedException();
+        public override bool HasExtension<TExtension>() => false;
     }
 }

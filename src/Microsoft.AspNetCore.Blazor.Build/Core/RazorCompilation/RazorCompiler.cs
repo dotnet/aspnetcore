@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation
                 var engine = new BlazorRazorEngine();
                 var blazorTemplateEngine = new BlazorTemplateEngine(
                     engine.Engine,
-                    RazorProject.Create(inputRootPath));
+                    RazorProjectFileSystem.Create(inputRootPath));
                 var codeDoc = blazorTemplateEngine.CreateCodeDocument(
                     new BlazorProjectItem(inputRootPath, inputFilePath, inputFileContents));
                 codeDoc.Items[BlazorCodeDocItems.Namespace] = combinedNamespace;

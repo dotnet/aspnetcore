@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(RazorPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj">
       <Name>AngleSharpBuilder</Name>
       <Private>False</Private>
