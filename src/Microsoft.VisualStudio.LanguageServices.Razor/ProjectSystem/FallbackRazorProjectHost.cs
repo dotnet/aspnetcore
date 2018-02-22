@@ -58,7 +58,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 receiver,
                 initialDataAsNew: true,
                 suppressVersionOnlyUpdates: true,
-                ruleNames: new string[] { ResolvedCompilationReference.SchemaName });
+                ruleNames: new string[] { ResolvedCompilationReference.SchemaName },
+                linkOptions: new DataflowLinkOptions() { PropagateCompletion = true });
         }
 
         protected override async Task DisposeCoreAsync(bool initialized)
@@ -74,43 +75,46 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Internal for testing
         internal async Task OnProjectChanged(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
         {
-            await ExecuteWithLock(async () =>
+            if (IsDisposing || IsDisposed)
             {
-                if (IsDisposing || IsDisposed)
-                {
-                    return;
-                }
+                return;
+            }
 
-                string mvcReferenceFullPath = null;
-                var references = update.Value.CurrentState[ResolvedCompilationReference.SchemaName].Items;
-                foreach (var reference in references)
+            await CommonServices.TasksService.LoadedProjectAsync(async () =>
+            {
+                await ExecuteWithLock(async () =>
                 {
-                    if (reference.Key.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                    string mvcReferenceFullPath = null;
+                    var references = update.Value.CurrentState[ResolvedCompilationReference.SchemaName].Items;
+                    foreach (var reference in references)
                     {
-                        mvcReferenceFullPath = reference.Key;
-                        break;
+                        if (reference.Key.EndsWith(MvcAssemblyFileName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            mvcReferenceFullPath = reference.Key;
+                            break;
+                        }
                     }
-                }
 
-                if (mvcReferenceFullPath == null)
-                {
-                    // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
-                    await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
-                    return;
-                }
+                    if (mvcReferenceFullPath == null)
+                    {
+                        // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
+                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        return;
+                    }
 
-                var version = GetAssemblyVersion(mvcReferenceFullPath);
-                if (version == null)
-                {
-                    // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
-                    await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
-                    return;
-                }
+                    var version = GetAssemblyVersion(mvcReferenceFullPath);
+                    if (version == null)
+                    {
+                        // Ok we can't find an MVC version. Let's assume this project isn't using Razor then.
+                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        return;
+                    }
 
-                var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
-                var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
-                await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
-            });
+                    var configuration = FallbackRazorConfiguration.SelectConfiguration(version);
+                    var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
+                    await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
+                });
+            }, registerFaultHandler: true);
         }
 
         // virtual for overriding in tests

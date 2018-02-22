@@ -1,30 +1,96 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.References;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    // This defines the set of services that we frequently need for working with UnconfiguredProject.
-    //
-    // We're following a somewhat common pattern for code that uses CPS. It's really easy to end up
-    // relying on service location inside CPS, which can be hard to test. This approach makes it easy
-    // for us to build reusable mocks instead.
-    internal interface IUnconfiguredProjectCommonServices
+    [Export(typeof(IUnconfiguredProjectCommonServices))]
+    internal class UnconfiguredProjectCommonServices : IUnconfiguredProjectCommonServices
     {
-        ConfiguredProject ActiveConfiguredProject { get; }
+        private readonly ActiveConfiguredProject<ConfiguredProject> _activeConfiguredProject;
+        private readonly ActiveConfiguredProject<IAssemblyReferencesService> _activeConfiguredProjectAssemblyReferences;
+        private readonly ActiveConfiguredProject<IPackageReferencesService> _activeConfiguredProjectPackageReferences;
+        private readonly ActiveConfiguredProject<Rules.RazorProjectProperties> _activeConfiguredProjectProperties;
 
-        IAssemblyReferencesService ActiveConfiguredProjectAssemblyReferences { get; }
+        [ImportingConstructor]
+        public UnconfiguredProjectCommonServices(
+            [Import(ExportContractNames.Scopes.UnconfiguredProject)] IProjectAsynchronousTasksService tasksService,
+            IProjectThreadingService threadingService,
+            UnconfiguredProject unconfiguredProject,
+            IActiveConfiguredProjectSubscriptionService activeConfiguredProjectSubscription,
+            ActiveConfiguredProject<ConfiguredProject> activeConfiguredProject,
+            ActiveConfiguredProject<IAssemblyReferencesService> activeConfiguredProjectAssemblyReferences,
+            ActiveConfiguredProject<IPackageReferencesService> activeConfiguredProjectPackageReferences,
+            ActiveConfiguredProject<Rules.RazorProjectProperties> activeConfiguredProjectRazorProperties)
+        {
+            if (tasksService == null)
+            {
+                throw new ArgumentNullException(nameof(tasksService));
+            }
 
-        IPackageReferencesService ActiveConfiguredProjectPackageReferences { get; }
+            if (threadingService == null)
+            {
+                throw new ArgumentNullException(nameof(threadingService));
+            }
 
-        Rules.RazorProjectProperties ActiveConfiguredProjectRazorProperties { get; }
+            if (unconfiguredProject == null)
+            {
+                throw new ArgumentNullException(nameof(unconfiguredProject));
+            }
 
-        IActiveConfiguredProjectSubscriptionService ActiveConfiguredProjectSubscription { get; }
+            if (activeConfiguredProjectSubscription == null)
+            {
+                throw new ArgumentNullException(nameof(ActiveConfiguredProjectSubscription));
+            }
+
+            if (activeConfiguredProject == null)
+            {
+                throw new ArgumentNullException(nameof(activeConfiguredProject));
+            }
+
+            if (activeConfiguredProjectAssemblyReferences == null)
+            {
+                throw new ArgumentNullException(nameof(activeConfiguredProjectAssemblyReferences));
+            }
+
+            if (activeConfiguredProjectPackageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(activeConfiguredProjectPackageReferences));
+            }
+
+            if (activeConfiguredProjectRazorProperties == null)
+            {
+                throw new ArgumentNullException(nameof(activeConfiguredProjectRazorProperties));
+            }
+
+            TasksService = tasksService;
+            ThreadingService = threadingService;
+            UnconfiguredProject = unconfiguredProject;
+            ActiveConfiguredProjectSubscription = activeConfiguredProjectSubscription;
+            _activeConfiguredProject = activeConfiguredProject;
+            _activeConfiguredProjectAssemblyReferences = activeConfiguredProjectAssemblyReferences;
+            _activeConfiguredProjectPackageReferences = activeConfiguredProjectPackageReferences;
+            _activeConfiguredProjectProperties = activeConfiguredProjectRazorProperties;
+        }
+
+        public ConfiguredProject ActiveConfiguredProject => _activeConfiguredProject.Value;
+
+        public IAssemblyReferencesService ActiveConfiguredProjectAssemblyReferences => _activeConfiguredProjectAssemblyReferences.Value;
+
+        public IPackageReferencesService ActiveConfiguredProjectPackageReferences => _activeConfiguredProjectPackageReferences.Value;
+
+        public Rules.RazorProjectProperties ActiveConfiguredProjectRazorProperties => _activeConfiguredProjectProperties.Value;
         
-        IProjectThreadingService ThreadingService { get; }
+        public IActiveConfiguredProjectSubscriptionService ActiveConfiguredProjectSubscription { get; }
 
-        UnconfiguredProject UnconfiguredProject { get; }
+        public IProjectAsynchronousTasksService TasksService { get; }
+
+        public IProjectThreadingService ThreadingService { get; }
+
+        public UnconfiguredProject UnconfiguredProject { get; }
     }
 }

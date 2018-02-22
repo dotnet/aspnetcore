@@ -73,53 +73,56 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Internal for testing
         internal async Task OnProjectChanged(IProjectVersionedValue<IProjectSubscriptionUpdate> update)
         {
-            await ExecuteWithLock(async () =>
+            if (IsDisposing || IsDisposed)
             {
-                if (IsDisposing || IsDisposed)
-                {
-                    return;
-                }
+                return;
+            }
 
-                var languageVersion = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorLangVersionProperty];
-                var defaultConfiguration = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorDefaultConfigurationProperty];
-
-                RazorConfiguration configuration = null;
-                if (!string.IsNullOrEmpty(languageVersion) && !string.IsNullOrEmpty(defaultConfiguration))
+            await CommonServices.TasksService.LoadedProjectAsync(async () =>
+            {
+                await ExecuteWithLock(async () =>
                 {
-                    if (!RazorLanguageVersion.TryParse(languageVersion, out var parsedVersion))
+                    var languageVersion = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorLangVersionProperty];
+                    var defaultConfiguration = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorDefaultConfigurationProperty];
+
+                    RazorConfiguration configuration = null;
+                    if (!string.IsNullOrEmpty(languageVersion) && !string.IsNullOrEmpty(defaultConfiguration))
                     {
-                        parsedVersion = RazorLanguageVersion.Latest;
+                        if (!RazorLanguageVersion.TryParse(languageVersion, out var parsedVersion))
+                        {
+                            parsedVersion = RazorLanguageVersion.Latest;
+                        }
+
+                        var extensions = update.Value.CurrentState[Rules.RazorExtension.PrimaryDataSourceItemType].Items.Select(e =>
+                        {
+                            return new ProjectSystemRazorExtension(e.Key);
+                        }).ToArray();
+
+                        var configurations = update.Value.CurrentState[Rules.RazorConfiguration.PrimaryDataSourceItemType].Items.Select(c =>
+                        {
+                            var includedExtensions = c.Value[Rules.RazorConfiguration.ExtensionsProperty]
+                                .Split(';')
+                                .Select(name => extensions.Where(e => e.ExtensionName == name).FirstOrDefault())
+                                .Where(e => e != null)
+                                .ToArray();
+
+                            return new ProjectSystemRazorConfiguration(parsedVersion, c.Key, includedExtensions);
+                        }).ToArray();
+
+                        configuration = configurations.Where(c => c.ConfigurationName == defaultConfiguration).FirstOrDefault();
                     }
 
-                    var extensions = update.Value.CurrentState[Rules.RazorExtension.PrimaryDataSourceItemType].Items.Select(e =>
+                    if (configuration == null)
                     {
-                        return new ProjectSystemRazorExtension(e.Key);
-                    }).ToArray();
+                        // Ok we can't find a language version. Let's assume this project isn't using Razor then.
+                        await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
+                        return;
+                    }
 
-                    var configurations = update.Value.CurrentState[Rules.RazorConfiguration.PrimaryDataSourceItemType].Items.Select(c =>
-                    {
-                        var includedExtensions = c.Value[Rules.RazorConfiguration.ExtensionsProperty]
-                            .Split(';')
-                            .Select(name => extensions.Where(e => e.ExtensionName == name).FirstOrDefault())
-                            .Where(e => e != null)
-                            .ToArray();
-
-                        return new ProjectSystemRazorConfiguration(parsedVersion, c.Key, includedExtensions);
-                    }).ToArray();
-
-                    configuration = configurations.Where(c => c.ConfigurationName == defaultConfiguration).FirstOrDefault();
-                }
-
-                if (configuration == null)
-                {
-                    // Ok we can't find a language version. Let's assume this project isn't using Razor then.
-                    await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
-                    return;
-                }
-
-                var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
-                await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
-            });
+                    var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
+                    await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
+                });
+            }, registerFaultHandler: true);
         }
     }
 }

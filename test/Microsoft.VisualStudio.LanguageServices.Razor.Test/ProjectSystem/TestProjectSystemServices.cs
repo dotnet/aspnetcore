@@ -40,6 +40,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ActiveConfiguredProjectAssemblyReferences = new TestAssemblyReferencesService();
             ActiveConfiguredProjectRazorProperties = new Rules.RazorProjectProperties(ActiveConfiguredProject, UnconfiguredProject);
             ActiveConfiguredProjectSubscription = new TestActiveConfiguredProjectSubscriptionService();
+
+            TasksService = new TestProjectAsynchronousTasksService(ProjectService, UnconfiguredProject, ActiveConfiguredProject);
         }
 
         public TestProjectServices Services { get; }
@@ -56,6 +58,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public TestActiveConfiguredProjectSubscriptionService ActiveConfiguredProjectSubscription { get; }
 
+        public TestProjectAsynchronousTasksService TasksService { get; }
+
         public TestThreadingService ThreadingService { get; }
 
         ConfiguredProject IUnconfiguredProjectCommonServices.ActiveConfiguredProject => ActiveConfiguredProject;
@@ -67,6 +71,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         Rules.RazorProjectProperties IUnconfiguredProjectCommonServices.ActiveConfiguredProjectRazorProperties => ActiveConfiguredProjectRazorProperties;
 
         IActiveConfiguredProjectSubscriptionService IUnconfiguredProjectCommonServices.ActiveConfiguredProjectSubscription => ActiveConfiguredProjectSubscription;
+
+        IProjectAsynchronousTasksService IUnconfiguredProjectCommonServices.TasksService => TasksService;
 
         IProjectThreadingService IUnconfiguredProjectCommonServices.ThreadingService => ThreadingService;
 
@@ -743,6 +749,63 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Task IResolvableReferencesService<IUnresolvedAssemblyReference, IAssemblyReference>.RemoveAsync(IEnumerable<IUnresolvedAssemblyReference> references)
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        public class TestProjectAsynchronousTasksService : IProjectAsynchronousTasksService, IProjectContext
+        {
+            public CancellationToken UnloadCancellationToken => CancellationToken.None;
+
+            public TestProjectAsynchronousTasksService(
+                IProjectService projectService,
+                UnconfiguredProject unconfiguredProject,
+                ConfiguredProject configuredProject)
+            {
+                ProjectService = projectService;
+                UnconfiguredProject = unconfiguredProject;
+                ConfiguredProject = configuredProject;
+            }
+
+            public IProjectService ProjectService { get; }
+
+            public UnconfiguredProject UnconfiguredProject { get; }
+
+            public ConfiguredProject ConfiguredProject { get; }
+
+            public Task DrainCriticalTaskQueueAsync(bool drainCurrentQueueOnly = false, bool throwExceptions = false, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task DrainTaskQueueAsync(bool drainCurrentQueueOnly = false, bool throwExceptions = false, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task DrainTaskQueueAsync(ProjectCriticalOperation operation, bool drainCurrentQueueOnly = false, bool throwExceptions = false, CancellationToken cancellationToken = default)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsTaskQueueEmpty(ProjectCriticalOperation projectCriticalOperation)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void RegisterAsyncTask(JoinableTask joinableTask, bool registerFaultHandler = false)
+            {
+            }
+
+            public void RegisterAsyncTask(Task task, bool registerFaultHandler = false)
+            {
+            }
+
+            public void RegisterAsyncTask(JoinableTask joinableTask, ProjectCriticalOperation operationFlags, bool registerFaultHandler = false)
+            {
+            }
+
+            public void RegisterCriticalAsyncTask(JoinableTask joinableTask, bool registerFaultHandler = false)
+            {
             }
         }
 
