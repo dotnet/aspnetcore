@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var projectItem = new TestRazorProjectItem("Index.cshtml");
 
-            var testImport = Mock.Of<RazorProjectItem>(i => i.Read() == new MemoryStream() && i.FilePath == "testvalue");
+            var testImport = Mock.Of<RazorProjectItem>(i => i.Read() == new MemoryStream() && i.FilePath == "testvalue" && i.Exists == true);
             var importFeature = new Mock<IImportProjectFeature>();
             importFeature
                 .Setup(feature => feature.GetImports(It.IsAny<RazorProjectItem>()))

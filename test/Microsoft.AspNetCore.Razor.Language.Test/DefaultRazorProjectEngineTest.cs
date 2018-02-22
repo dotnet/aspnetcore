@@ -9,29 +9,19 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class DefaultRazorProjectEngineTest
     {
         [Fact]
-        public void ConvertToSourceDocument_ConvertsNormalImports()
+        public void GetImportSourceDocuments_DoesNotIncludeNonExistentItems()
         {
             // Arrange
-            var projectItem = new TestRazorProjectItem("Index.cshtml");
+            var existingItem = new TestRazorProjectItem("Index.cshtml");
+            var nonExistentItem = Mock.Of<RazorProjectItem>(item => item.Exists == false);
+            var items = new[] { existingItem, nonExistentItem };
 
             // Act
-            var sourceDocument = DefaultRazorProjectEngine.ConvertToSourceDocument(projectItem);
+            var sourceDocuments = DefaultRazorProjectEngine.GetImportSourceDocuments(items);
 
             // Assert
-            Assert.NotNull(sourceDocument);
-        }
-
-        [Fact]
-        public void ConvertToSourceDocument_ConvertsMarkerImports()
-        {
-            // Arrange
-            var projectItem = Mock.Of<RazorProjectItem>(item => item.FilePath == "Index.cshtml" && item.Exists == false);
-
-            // Act
-            var sourceDocument = DefaultRazorProjectEngine.ConvertToSourceDocument(projectItem);
-
-            // Assert
-            Assert.NotNull(sourceDocument);
+            var sourceDocument = Assert.Single(sourceDocuments);
+            Assert.Equal(existingItem.FilePath, sourceDocument.FilePath);
         }
     }
 }

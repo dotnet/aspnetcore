@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
+            var importSourceDocuments = GetImportSourceDocuments(importItems);
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureCodeGenerationOptions);
@@ -84,11 +84,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var importFeature = GetRequiredFeature<IImportProjectFeature>();
             var importItems = importFeature.GetImports(projectItem);
-            var importSourceDocuments = importItems.Select(ConvertToSourceDocument);
+            var importSourceDocuments = GetImportSourceDocuments(importItems);
 
             var parserOptions = GetRequiredFeature<IRazorParserOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeParserOptions);
             var codeGenerationOptions = GetRequiredFeature<IRazorCodeGenerationOptionsFactoryProjectFeature>().Create(ConfigureDesignTimeCodeGenerationOptions);
-
 
             return RazorCodeDocument.Create(sourceDocument, importSourceDocuments, parserOptions, codeGenerationOptions);
         }
@@ -138,17 +137,21 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         // Internal for testing
-        internal static RazorSourceDocument ConvertToSourceDocument(RazorProjectItem importItem)
+        internal static IReadOnlyList<RazorSourceDocument> GetImportSourceDocuments(IReadOnlyList<RazorProjectItem> importItems)
         {
-            if (importItem.Exists)
+            var imports = new List<RazorSourceDocument>();
+            for (var i = 0; i < importItems.Count; i++)
             {
-                // Normal import, has file paths, content etc.
-                return RazorSourceDocument.ReadFrom(importItem);
+                var importItem = importItems[i];
+
+                if (importItem.Exists)
+                {
+                    var sourceDocument = RazorSourceDocument.ReadFrom(importItem);
+                    imports.Add(sourceDocument);
+                }
             }
 
-            // Marker import, doesn't exist, used as an identifier for "there could be something here".
-            var sourceDocumentProperties = new RazorSourceDocumentProperties(importItem.FilePath, importItem.RelativePhysicalPath);
-            return RazorSourceDocument.Create(string.Empty, sourceDocumentProperties);
+            return imports;
         }
     }
 }
