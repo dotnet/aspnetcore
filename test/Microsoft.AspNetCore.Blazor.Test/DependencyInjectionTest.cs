@@ -42,6 +42,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
+        public void IgnoresGetOnlyProperties()
+        {
+            // Arrange/Act
+            var component = InstantiateComponent<HasGetOnlyProperty>();
+
+            // Assert
+            Assert.Null(component.MyService);
+        }
+
+        [Fact]
         public void ThrowsIfNoSuchServiceIsRegistered()
         {
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -119,7 +129,12 @@ namespace Microsoft.AspNetCore.Blazor.Test
             [Inject] public static IMyService StaticPropertyWithInject { get; set; }
             public static IMyService StaticPropertyWithoutInject { get; set; }
         }
-        
+
+        class HasGetOnlyProperty : TestComponent
+        {
+            [Inject] public IMyService MyService { get; }
+        }
+
         class HasInjectableProperty : TestComponent
         {
             [Inject] public IMyService MyService { get; set; }
