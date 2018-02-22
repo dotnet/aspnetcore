@@ -230,7 +230,7 @@ public:
     };
     //
     // Event: mof class name ANCMForwardStart,
-    // Description: Start fardwarding request
+    // Description: Start forwarding request
     // EventTypeName: ANCM_REQUEST_FORWARD_START
     // EventType: 3
     // EventLevel: 4

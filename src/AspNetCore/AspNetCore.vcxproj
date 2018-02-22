@@ -243,6 +243,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ancm.mof" />
     <None Include="Source.def" />
   </ItemGroup>
   <ItemGroup>
@@ -250,6 +251,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="aspnetcore_schema.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ancm.mof">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

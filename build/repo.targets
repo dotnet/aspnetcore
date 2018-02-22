@@ -68,6 +68,7 @@
       <AncmFiles Include="$(RepositoryRoot)src\RequestHandler\bin\$(Configuration)\Win32\aspnetcorerh.pdb" Link="x86\aspnetcorerh.pdb" />
       <!-- Schema-->
       <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\x64\aspnetcore_schema.xml" Link="aspnetcore_schema.xml" />
+      <AncmFiles Include="$(RepositoryRoot)src\AspNetCore\bin\$(Configuration)\x64\ancm.mof" Link="ancm.mof" />
     </ItemGroup>
 
     <ZipArchive File="$(AncmZipOutputPath)"
