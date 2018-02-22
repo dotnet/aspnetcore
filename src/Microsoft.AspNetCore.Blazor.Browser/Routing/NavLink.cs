@@ -56,19 +56,15 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 
         public void Dispose()
         {
-            // To avoid leaking memory, it's important to detach any event handlers
-            // in Dispose().
+            // To avoid leaking memory, it's important to detach any event handlers in Dispose()
             UriHelper.OnLocationChanged -= OnLocationChanged;
         }
 
-        private void OnLocationChanged(object sender, string e)
+        private void OnLocationChanged(object sender, string newUri)
         {
             // We could just re-render always, but for this component we know the
             // only relevant state change is to the _isActive property.
-            var shouldBeActiveNow = UriHelper.GetAbsoluteUri().Equals(
-                _hrefAbsolute,
-                StringComparison.Ordinal);
-
+            var shouldBeActiveNow = newUri.Equals(_hrefAbsolute, StringComparison.Ordinal);
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
