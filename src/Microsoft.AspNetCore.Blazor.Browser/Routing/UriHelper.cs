@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
     {
         static readonly string _functionPrefix = typeof(UriHelper).FullName;
         static string _currentAbsoluteUri;
+        static string _baseUriString;
+        static Uri _baseUri;
 
         /// <summary>
         /// An event that fires when the navigation location has changed.
@@ -38,9 +40,20 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         /// <returns>The URI prefix.</returns>
         public static string GetBaseUriPrefix()
         {
-            var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
-                $"{_functionPrefix}.getBaseURI");
-            return ToBaseUriPrefix(baseUri);
+            EnsureBaseUriPopulated();
+            return _baseUriString;
+        }
+
+        private static void EnsureBaseUriPopulated()
+        {
+            // The <base href> is fixed for the lifetime of the page, so just cache it
+            if (_baseUriString == null)
+            {
+                var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
+                    $"{_functionPrefix}.getBaseURI");
+                _baseUriString = ToBaseUriPrefix(baseUri);
+                _baseUri = new Uri(_baseUriString);
+            }
         }
 
         /// <summary>
@@ -56,6 +69,17 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             }
 
             return _currentAbsoluteUri;
+        }
+
+        /// <summary>
+        /// Converts a relative URI into an absolute one.
+        /// </summary>
+        /// <param name="relativeUri">The relative URI.</param>
+        /// <returns>The absolute URI.</returns>
+        public static Uri ToAbsoluteUri(string relativeUri)
+        {
+            EnsureBaseUriPopulated();
+            return new Uri(_baseUri, relativeUri);
         }
 
         /// <summary>

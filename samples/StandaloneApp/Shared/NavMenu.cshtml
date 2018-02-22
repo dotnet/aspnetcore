@@ -1,4 +1,5 @@
-﻿<div class='main-nav'>
+﻿@using Microsoft.AspNetCore.Blazor.Browser.Routing
+<div class='main-nav'>
     <div class='navbar navbar-inverse'>
         <div class='navbar-header'>
             <button type='button' class='navbar-toggle' data-toggle='collapse' data-target='.navbar-collapse'>
@@ -13,14 +14,14 @@
         <div class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
                 <li>
-                    <a href='/'>
+                    <c:NavLink href=@("/")>
                         <span class='glyphicon glyphicon-home'></span> Home
-                    </a>
+                    </c:NavLink>
                 </li>
                 <li>
-                    <a href='/counter'>
+                    <c:NavLink href=@("/counter")>
                         <span class='glyphicon glyphicon-education'></span> Counter
-                    </a>
+                    </c:NavLink>
                 </li>
             </ul>
         </div>

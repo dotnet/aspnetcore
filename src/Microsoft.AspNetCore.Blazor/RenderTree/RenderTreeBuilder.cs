@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// <summary>
         /// The reserved parameter name used for supplying child content.
         /// </summary>
-        public static string ChildContent = nameof(ChildContent);
+        public const string ChildContent = nameof(ChildContent);
 
         /// <summary>
         /// Constructs an instance of <see cref="RenderTreeBuilder"/>.
