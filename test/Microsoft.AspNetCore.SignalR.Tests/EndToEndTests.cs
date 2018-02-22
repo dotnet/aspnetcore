@@ -290,8 +290,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Sent message", bytes.Length);
 
                     logger.LogInformation("Receiving message");
-                    // No timeout here because it can take a while to receive all the bytes
-                    var receivedData = await receiveTcs.Task;
+                    var receivedData = await receiveTcs.Task.OrTimeout();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }
