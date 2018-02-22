@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 {
@@ -13,71 +14,57 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
     // That's because you'd use NavLink in non-browser scenarios too (e.g., prerendering).
     // Can't do this until DI is implemented.
 
+    // NOTE: This could be implemented in a more performant way by iterating through
+    // the ParameterCollection only once (instead of multiple TryGetValue calls), and
+    // avoiding allocating a dictionary in the case where there are no additional params.
+    // However the intention here is to get a sense of what more high-level coding patterns
+    // will exist and what APIs are needed to support them. Later in the project when we
+    // have more examples of components implemented in pure C# (not Razor) we could change
+    // this one to the more low-level perf-sensitive implementation.
+
     public class NavLink : IComponent, IDisposable
     {
-        const string CssClassAttributeName = "class";
-        const string HrefAttributeName = "href";
-
         private RenderHandle _renderHandle;
         private bool _isActive;
 
         private RenderFragment _childContent;
         private string _cssClass;
-        private string _href;
         private string _hrefAbsolute;
-        private IDictionary<string, string> _otherAttributes;
+        private IReadOnlyDictionary<string, object> _allAttributes;
 
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
+
+            // We'll consider re-rendering on each location change
             UriHelper.OnLocationChanged += OnLocationChanged;
         }
 
         public void SetParameters(ParameterCollection parameters)
         {
-            _childContent = null;
-            _href = null;
-            _hrefAbsolute = null;
-            _cssClass = null;
-            _otherAttributes?.Clear();
-            foreach (var kvp in parameters)
-            {
-                switch (kvp.Name)
-                {
-                    case RenderTreeBuilder.ChildContent:
-                        _childContent = kvp.Value as RenderFragment;
-                        break;
-                    case CssClassAttributeName:
-                        _cssClass = kvp.Value as string;
-                        break;
-                    case HrefAttributeName:
-                        _href = kvp.Value as string;
-                        _hrefAbsolute = UriHelper.ToAbsoluteUri(_href).AbsoluteUri;
-                        break;
-                    default:
-                        if (kvp.Value != null)
-                        {
-                            if (_otherAttributes == null)
-                            {
-                                _otherAttributes = new Dictionary<string, string>();
-                            }
-                            _otherAttributes.Add(kvp.Name, kvp.Value.ToString());
-                        }
-                        break;
-                }
-            }
+            // Capture the parameters we want to do special things with, plus all as a dictionary
+            parameters.TryGetValue(RenderTreeBuilder.ChildContent, out _childContent);
+            parameters.TryGetValue("class", out _cssClass);
+            parameters.TryGetValue("href", out string href);
+            _allAttributes = parameters.ToDictionary();
 
+            // Update computed state and render
+            _hrefAbsolute = href == null ? null : UriHelper.ToAbsoluteUri(href).AbsoluteUri;
             _isActive = UriHelper.GetAbsoluteUri().Equals(_hrefAbsolute, StringComparison.Ordinal);
             _renderHandle.Render(Render);
         }
 
         public void Dispose()
         {
+            // To avoid leaking memory, it's important to detach any event handlers
+            // in Dispose().
             UriHelper.OnLocationChanged -= OnLocationChanged;
         }
 
         private void OnLocationChanged(object sender, string e)
         {
+            // We could just re-render always, but for this component we know the
+            // only relevant state change is to the _isActive property.
             var shouldBeActiveNow = UriHelper.GetAbsoluteUri().Equals(
                 _hrefAbsolute,
                 StringComparison.Ordinal);
@@ -85,11 +72,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;
-
-                if (_renderHandle.IsInitialized)
-                {
-                    _renderHandle.Render(Render);
-                }
+                _renderHandle.Render(Render);
             }
         }
 
@@ -97,29 +80,17 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         {
             builder.OpenElement(0, "a");
 
-            if (!string.IsNullOrEmpty(_href))
+            // Set "active" class dynamically
+            builder.AddAttribute(0, "class", CombineWithSpace(_cssClass, _isActive ? "active" : null));
+
+            // Pass through all other attributes unchanged
+            foreach (var kvp in _allAttributes.Where(kvp => kvp.Key != "class"))
             {
-                builder.AddAttribute(0, HrefAttributeName, _href);
+                builder.AddAttribute(0, kvp.Key, kvp.Value);
             }
 
-            var combinedClassValue = CombineWithSpace(_cssClass, _isActive ? "active" : null);
-            if (combinedClassValue != null)
-            {
-                builder.AddAttribute(0, CssClassAttributeName, combinedClassValue);
-            }
-
-            if (_otherAttributes != null)
-            {
-                foreach (var kvp in _otherAttributes)
-                {
-                    builder.AddAttribute(0, kvp.Key, kvp.Value);
-                }
-            }
-
-            if (_childContent != null)
-            {
-                builder.AddContent(1, _childContent);
-            }
+            // Pass through any child content unchanged
+            builder.AddContent(1, _childContent);
 
             builder.CloseElement();
         }
