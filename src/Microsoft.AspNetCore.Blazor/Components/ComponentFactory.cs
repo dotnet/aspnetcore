@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,11 +11,12 @@ namespace Microsoft.AspNetCore.Blazor.Components
 {
     internal class ComponentFactory
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly static BindingFlags _injectablePropertyBindingFlags
             = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        private readonly IServiceProvider _serviceProvider;
         private readonly IDictionary<Type, Action<IComponent>> _cachedInitializers
-            = new Dictionary<Type, Action<IComponent>>();
+            = new ConcurrentDictionary<Type, Action<IComponent>>();
 
         public ComponentFactory(IServiceProvider serviceProvider)
         {
@@ -37,6 +39,9 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
         private void PerformPropertyInjection(IComponent instance)
         {
+            // This is thread-safe because _cachedInitializers is a ConcurrentDictionary.
+            // We might generate the initializer more than once for a given type, but would
+            // still produce the correct result.
             var instanceType = instance.GetType();
             if (!_cachedInitializers.TryGetValue(instanceType, out var initializer))
             {
