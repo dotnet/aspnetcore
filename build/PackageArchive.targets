@@ -49,21 +49,6 @@
       Targets="Restore"
       Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
 
-    <!-- Add global CLI tools to the LZMA -->
-
-    <!-- Join categories (defined in artifacts.props) with package version info (defined in repos) -->
-    <RepoTasks.JoinItems
-         Left="@(ArtifactInfo)" LeftKey="PackageId" LeftMetadata="*" LeftItemSpec="PackageId"
-         Right="@(PackageArtifact->WithMetadataValue('LZMA', 'true')->WithMetadataValue('PackageType', 'DotnetTool'))">
-       <Output TaskParameter="JoinResult" ItemName="_DotnetToolPackageId" />
-    </RepoTasks.JoinItems>
-
-    <ItemGroup>
-      <_DotnetToolPackages Include="$(MetapackageRestoreSource)%(_DotnetToolPackageId.Identity).%(_DotnetToolPackageId.Version).nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.CreateNuGetV3FolderFeed Packages="@(_DotnetToolPackages)" DestinationFolder="$(FallbackStagingDir)" Overwrite="true" />
-
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
   </Target>

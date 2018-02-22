@@ -16,17 +16,16 @@
       Other known package types:
         Dependency = for packages that are installed via PackageReference
         DotnetCliTool = for packages that are installed via DotNetCliToolReference
-        DotnetTOol = for packages that installed via dotnet-install-tool
       -->
       <PackageType>Dependency</PackageType>
     </PackageArtifact>
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageArtifact Include="dotnet-dev-certs" Category="ship" LZMA="true" PackageType="DotnetTool" />
-    <PackageArtifact Include="dotnet-sql-cache" Category="ship" LZMA="true" PackageType="DotnetTool" />
-    <PackageArtifact Include="dotnet-user-secrets" Category="ship" LZMA="true" PackageType="DotnetTool" />
-    <PackageArtifact Include="dotnet-watch" Category="ship" LZMA="true" PackageType="DotnetTool" />
+    <PackageArtifact Include="dotnet-dev-certs" Category="shipoob" />
+    <PackageArtifact Include="dotnet-sql-cache" Category="shipoob" />
+    <PackageArtifact Include="dotnet-user-secrets" Category="shipoob" />
+    <PackageArtifact Include="dotnet-watch" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.App" Category="ship" />
