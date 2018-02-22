@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Blazor.Components;
@@ -11,7 +12,11 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 {
     public class TestRenderer : Renderer
     {
-        public TestRenderer(): base(new TestServiceProvider())
+        public TestRenderer(): this(new TestServiceProvider())
+        {
+        }
+
+        public TestRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
         {
         }
 
@@ -23,6 +28,9 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
 
         public new void DispatchEvent(int componentId, int eventHandlerId, UIEventArgs args)
             => base.DispatchEvent(componentId, eventHandlerId, args);
+
+        public T InstantiateComponent<T>() where T : IComponent
+            => (T)InstantiateComponent(typeof(T));
 
         protected override void UpdateDisplay(RenderBatch renderBatch)
         {
