@@ -11,6 +11,7 @@
     <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
 
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(BuildNumber)' != ''">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
   </PropertyGroup>
