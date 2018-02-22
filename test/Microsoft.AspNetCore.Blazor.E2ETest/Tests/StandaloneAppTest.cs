@@ -11,11 +11,14 @@ using Xunit;
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
 {
     public class StandaloneAppTest
-        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>
+        : ServerTestBase<DevHostServerFixture<StandaloneApp.Program>>, IDisposable
     {
+        private readonly ServerFixture _serverFixture;
+
         public StandaloneAppTest(BrowserFixture browserFixture, DevHostServerFixture<StandaloneApp.Program> serverFixture)
             : base(browserFixture, serverFixture)
         {
+            _serverFixture = serverFixture;
             Navigate("/", noReload: true);
             WaitUntilLoaded();
         }
@@ -42,10 +45,43 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("function", bootstrapTooltipType);
         }
 
+        [Fact]
+        public void NavMenuHighlightsCurrentLocation()
+        {
+            var activeNavLinksSelector = By.CssSelector(".main-nav a.active");
+            var mainHeaderSelector = By.TagName("h1");
+
+            // Verify we start at home, with the home link highlighted
+            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+            Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+                item => Assert.Equal("Home", item.Text));
+
+            // Click on the "counter" link
+            Browser.FindElement(By.LinkText("Counter")).Click();
+
+            // Verify we're now on the counter page, with that nav link (only) highlighted
+            Assert.Equal("Counter", Browser.FindElement(mainHeaderSelector).Text);
+            Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+                item => Assert.Equal("Counter", item.Text));
+
+            // Verify we can navigate back to home too
+            Browser.FindElement(By.LinkText("Home")).Click();
+            Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
+            Assert.Collection(Browser.FindElements(activeNavLinksSelector),
+                item => Assert.Equal("Home", item.Text));
+        }
+
         private void WaitUntilLoaded()
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
                 driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+        }
+
+        public void Dispose()
+        {
+            // Make the tests run faster by navigating back to the home page when we are done
+            // If we don't, then the next test will reload the whole page before it starts
+            Browser.FindElement(By.LinkText("Home")).Click();
         }
     }
 }
