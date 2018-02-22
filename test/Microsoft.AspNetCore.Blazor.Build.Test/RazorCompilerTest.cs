@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsChildComponentsViaTemporarySyntax()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var testComponentTypeName = FullTypeName<TestComponent>();
             var component = CompileToComponent($"<c:{testComponentTypeName} />");
             var frames = GetRenderTree(component);
 
@@ -379,8 +379,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void CanPassParametersToComponents()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
-            var testObjectTypeName = typeof(SomeType).FullName.Replace('+', '.');
+            var testComponentTypeName = FullTypeName<TestComponent>();
+            var testObjectTypeName = FullTypeName<SomeType>();
             // TODO: Once we have the improved component tooling and can allow syntax
             //       like StringProperty="My string" or BoolProperty=true, update this
             //       test to use that syntax.
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void CanIncludeChildrenInComponents()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var testComponentTypeName = FullTypeName<TestComponent>();
             var component = CompileToComponent($"<c:{testComponentTypeName} MyAttr=@(\"abc\")>" +
                 $"Some text" +
                 $"<some-child a='1'>Nested text</some-child>" +
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void CanNestComponentChildContent()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
+            var testComponentTypeName = FullTypeName<TestComponent>();
             var component = CompileToComponent(
                 $"<c:{testComponentTypeName}>" +
                     $"<c:{testComponentTypeName}>" +
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsLayoutDeclarationsViaTemporarySyntax()
         {
             // Arrange/Act
-            var testComponentTypeName = typeof(TestLayout).FullName.Replace('+', '.');
+            var testComponentTypeName = FullTypeName<TestLayout>();
             var component = CompileToComponent(
                 $"@(Layout<{testComponentTypeName}>())\n" +
                 $"Hello");
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsImplementsDeclarationsViaTemporarySyntax()
         {
             // Arrange/Act
-            var testInterfaceTypeName = typeof(ITestInterface).FullName.Replace('+', '.');
+            var testInterfaceTypeName = FullTypeName<ITestInterface>();
             var component = CompileToComponent(
                 $"@(Implements<{testInterfaceTypeName}>())\n" +
                 $"Hello");
@@ -548,7 +548,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public void SupportsInheritsDirective()
         {
             // Arrange/Act
-            var testBaseClassTypeName = typeof(TestBaseClass).FullName.Replace('+', '.');
+            var testBaseClassTypeName = FullTypeName<TestBaseClass>();
             var component = CompileToComponent(
                 $"@inherits {testBaseClassTypeName}" + Environment.NewLine +
                 $"Hello");
@@ -614,6 +614,51 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assert.Equal(7, item.Line);
                     Assert.Equal(21, item.Column);
                 });
+        }
+
+        [Fact]
+        public void SupportsInjectDirective()
+        {
+            // Arrange/Act 1: Compilation
+            var componentType = CompileToComponent(
+                $"@inject {FullTypeName<IMyService1>()} MyService1\n" +
+                $"@inject {FullTypeName<IMyService2>()} MyService2\n" +
+                $"Hello from @MyService1 and @MyService2").GetType();
+
+            // Assert 1: Compiled type has correct properties
+            var propertyFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.NonPublic;
+            var injectableProperties = componentType.GetProperties(propertyFlags)
+                .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
+            Assert.Collection(injectableProperties.OrderBy(p => p.Name),
+                property =>
+                {
+                    Assert.Equal("MyService1", property.Name);
+                    Assert.Equal(typeof(IMyService1), property.PropertyType);
+                    Assert.False(property.GetMethod.IsPublic);
+                    Assert.False(property.SetMethod.IsPublic);
+                },
+                property =>
+                {
+                    Assert.Equal("MyService2", property.Name);
+                    Assert.Equal(typeof(IMyService2), property.PropertyType);
+                    Assert.False(property.GetMethod.IsPublic);
+                    Assert.False(property.SetMethod.IsPublic);
+                });
+
+            // Arrange/Act 2: DI-supplied component has correct behavior
+            var serviceProvider = new TestServiceProvider();
+            serviceProvider.AddService<IMyService1>(new MyService1Impl());
+            serviceProvider.AddService<IMyService2>(new MyService2Impl());
+            var componentFactory = new ComponentFactory(serviceProvider);
+            var component = componentFactory.InstantiateComponent(componentType);
+            var frames = GetRenderTree(component);
+
+            // Assert 2: Rendered component behaves correctly
+            Assert.Collection(frames,
+                frame => AssertFrame.Text(frame, "Hello from "),
+                frame => AssertFrame.Text(frame, typeof(MyService1Impl).FullName),
+                frame => AssertFrame.Text(frame, " and "),
+                frame => AssertFrame.Text(frame, typeof(MyService2Impl).FullName));
         }
 
         private static RenderTreeFrame[] GetRenderTree(IComponent component)
@@ -789,5 +834,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public class TestBaseClass : BlazorComponent { }
 
         public class SomeType { }
+
+        public interface IMyService1 { }
+        public interface IMyService2 { }
+        public class MyService1Impl : IMyService1 { }
+        public class MyService2Impl : IMyService2 { }
+
+        private static string FullTypeName<T>()
+            => typeof(T).FullName.Replace('+', '.');
     }
 }

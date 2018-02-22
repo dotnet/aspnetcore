@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 FunctionsDirective.Register(configure);
                 InheritsDirective.Register(configure);
+                InjectDirective.Register(configure);
                 TemporaryLayoutPass.Register(configure);
                 TemporaryImplementsPass.Register(configure);
 
