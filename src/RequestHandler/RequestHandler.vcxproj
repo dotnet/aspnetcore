@@ -231,6 +231,24 @@
     <ClCompile Include="outofprocess\websockethandler.cxx" />
     <ClCompile Include="outofprocess\winhttphelper.cxx" />
   </ItemGroup>
+  <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
+    <ItemGroup>
+      <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />
+      <VersionHeaderContents Include="// Licensed under the MIT License. See LICENSE.txt in the project root for license information." />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="// This file is auto-generated" />
+      <VersionHeaderContents Include="%0a" />
+      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AspNetCoreModuleVersionPatch),$(AssemblyRevision)" />
+      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AspNetCoreModuleVersionPatch).$(AssemblyRevision)\0&quot;" />
+      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AspNetCoreModuleVersionPatch),$(AssemblyRevision)" />
+      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AspNetCoreModuleVersionPatch).$(AssemblyRevision)\0&quot;" />
+      <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
+    </ItemGroup>
+    <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+  </Target>
+  <ItemGroup>
+    <FileWrites Include="version.h" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonLib\CommonLib.vcxproj">
       <Project>{55494e58-e061-4c4c-a0a8-837008e72f85}</Project>
@@ -238,6 +256,9 @@
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">
       <Project>{4787a64f-9a3e-4867-a55a-70cb4b2b2ffe}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="requesthandler.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def" />

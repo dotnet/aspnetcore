@@ -84,4 +84,10 @@
      </Link>
    </ItemDefinitionGroup>
  
+  <PropertyGroup>
+    <_TwoDigitYear>$([MSBuild]::Subtract($([System.DateTime]::UtcNow.Year), 2000))</_TwoDigitYear>
+    <_ThreeDigitDayOfYear>$([System.DateTime]::UtcNow.DayOfYear.ToString().PadLeft(3, '0'))</_ThreeDigitDayOfYear>
+    <AssemblyRevision>$(_TwoDigitYear)$(_ThreeDigitDayOfYear)</AssemblyRevision>
+  </PropertyGroup>
+
  </Project>

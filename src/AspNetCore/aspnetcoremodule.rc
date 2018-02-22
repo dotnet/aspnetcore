@@ -2,7 +2,7 @@
 //
 #include <windows.h>
 #include "version.h"
-#include "resource.h"
+#include "..\CommonLib\resources.h"
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
 
@@ -34,7 +34,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "..\CommonLib\resources.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -77,7 +77,7 @@ BEGIN
             VALUE "FileDescription", "IIS ASP.NET Core Module"
             VALUE "FileVersion", FileVersionStr
             VALUE "InternalName", "aspnetcore.dll"
-            VALUE "LegalCopyright", "Copyright (C) 2016"
+            VALUE "LegalCopyright", "Copyright (C) Microsoft Corporation"
             VALUE "OriginalFilename", "aspnetcore.dll"
             VALUE "ProductName", "ASP.NET Core Module"
             VALUE "ProductVersion", ProductVersionStr

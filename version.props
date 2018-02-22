@@ -7,5 +7,8 @@
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <AspNetCoreModuleVersionMajor>8</AspNetCoreModuleVersionMajor>
+    <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor>
+    <AspNetCoreModuleVersionPatch>0</AspNetCoreModuleVersionPatch>
   </PropertyGroup>
 </Project>
