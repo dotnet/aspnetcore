@@ -18,7 +18,7 @@
     "file-loader": "^0.11.1",
     "html-loader": "^0.4.5",
     "isomorphic-fetch": "^2.2.1",
-    "jquery": "^3.2.1",
+    "jquery": "^3.3.1",
     "json-loader": "^0.5.4",
     "style-loader": "^0.16.1",
     "ts-loader": "^2.0.3",

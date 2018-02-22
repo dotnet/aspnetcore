@@ -145,132 +145,158 @@
     "aurelia-binding": {
       "version": "1.2.1",
       "from": "aurelia-binding@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-binding/-/aurelia-binding-1.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-binding/-/aurelia-binding-1.2.1.tgz",
+      "dev": true
     },
     "aurelia-bootstrapper": {
       "version": "2.1.1",
       "from": "aurelia-bootstrapper@>=2.0.1 <3.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-bootstrapper/-/aurelia-bootstrapper-2.1.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-bootstrapper/-/aurelia-bootstrapper-2.1.1.tgz",
+      "dev": true
     },
     "aurelia-dependency-injection": {
       "version": "1.3.1",
       "from": "aurelia-dependency-injection@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-dependency-injection/-/aurelia-dependency-injection-1.3.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-dependency-injection/-/aurelia-dependency-injection-1.3.1.tgz",
+      "dev": true
     },
     "aurelia-event-aggregator": {
       "version": "1.0.1",
       "from": "aurelia-event-aggregator@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-event-aggregator/-/aurelia-event-aggregator-1.0.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-event-aggregator/-/aurelia-event-aggregator-1.0.1.tgz",
+      "dev": true
     },
     "aurelia-fetch-client": {
       "version": "1.1.2",
       "from": "aurelia-fetch-client@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-fetch-client/-/aurelia-fetch-client-1.1.2.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-fetch-client/-/aurelia-fetch-client-1.1.2.tgz",
+      "dev": true
     },
     "aurelia-framework": {
       "version": "1.1.2",
       "from": "aurelia-framework@>=1.1.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-framework/-/aurelia-framework-1.1.2.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-framework/-/aurelia-framework-1.1.2.tgz",
+      "dev": true
     },
     "aurelia-history": {
       "version": "1.0.0",
       "from": "aurelia-history@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-history/-/aurelia-history-1.0.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-history/-/aurelia-history-1.0.0.tgz",
+      "dev": true
     },
     "aurelia-history-browser": {
       "version": "1.0.0",
       "from": "aurelia-history-browser@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-history-browser/-/aurelia-history-browser-1.0.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-history-browser/-/aurelia-history-browser-1.0.0.tgz",
+      "dev": true
     },
     "aurelia-hot-module-reload": {
       "version": "0.1.0",
       "from": "aurelia-hot-module-reload@>=0.1.0 <0.2.0",
-      "resolved": "https://registry.npmjs.org/aurelia-hot-module-reload/-/aurelia-hot-module-reload-0.1.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-hot-module-reload/-/aurelia-hot-module-reload-0.1.0.tgz",
+      "dev": true
     },
     "aurelia-loader": {
       "version": "1.0.0",
       "from": "aurelia-loader@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-loader/-/aurelia-loader-1.0.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-loader/-/aurelia-loader-1.0.0.tgz",
+      "dev": true
     },
     "aurelia-loader-default": {
       "version": "1.0.2",
       "from": "aurelia-loader-default@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-loader-default/-/aurelia-loader-default-1.0.2.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-loader-default/-/aurelia-loader-default-1.0.2.tgz",
+      "dev": true
     },
     "aurelia-loader-webpack": {
       "version": "2.1.0",
       "from": "aurelia-loader-webpack@>=2.0.0 <3.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-loader-webpack/-/aurelia-loader-webpack-2.1.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-loader-webpack/-/aurelia-loader-webpack-2.1.0.tgz",
+      "dev": true
     },
     "aurelia-logging": {
       "version": "1.3.1",
       "from": "aurelia-logging@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-logging/-/aurelia-logging-1.3.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-logging/-/aurelia-logging-1.3.1.tgz",
+      "dev": true
     },
     "aurelia-logging-console": {
       "version": "1.0.0",
       "from": "aurelia-logging-console@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-logging-console/-/aurelia-logging-console-1.0.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-logging-console/-/aurelia-logging-console-1.0.0.tgz",
+      "dev": true
     },
     "aurelia-metadata": {
       "version": "1.0.3",
       "from": "aurelia-metadata@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-metadata/-/aurelia-metadata-1.0.3.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-metadata/-/aurelia-metadata-1.0.3.tgz",
+      "dev": true
     },
     "aurelia-pal": {
       "version": "1.3.0",
       "from": "aurelia-pal@>=1.3.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-pal/-/aurelia-pal-1.3.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-pal/-/aurelia-pal-1.3.0.tgz",
+      "dev": true
     },
     "aurelia-pal-browser": {
       "version": "1.2.1",
       "from": "aurelia-pal-browser@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-pal-browser/-/aurelia-pal-browser-1.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-pal-browser/-/aurelia-pal-browser-1.2.1.tgz",
+      "dev": true
     },
     "aurelia-path": {
       "version": "1.1.1",
       "from": "aurelia-path@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-path/-/aurelia-path-1.1.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-path/-/aurelia-path-1.1.1.tgz",
+      "dev": true
     },
     "aurelia-polyfills": {
       "version": "1.2.1",
       "from": "aurelia-polyfills@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-polyfills/-/aurelia-polyfills-1.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-polyfills/-/aurelia-polyfills-1.2.1.tgz",
+      "dev": true
     },
     "aurelia-route-recognizer": {
       "version": "1.1.0",
       "from": "aurelia-route-recognizer@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-route-recognizer/-/aurelia-route-recognizer-1.1.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-route-recognizer/-/aurelia-route-recognizer-1.1.0.tgz",
+      "dev": true
     },
     "aurelia-router": {
       "version": "1.3.0",
       "from": "aurelia-router@>=1.2.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-router/-/aurelia-router-1.3.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-router/-/aurelia-router-1.3.0.tgz",
+      "dev": true
     },
     "aurelia-task-queue": {
       "version": "1.2.0",
       "from": "aurelia-task-queue@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-task-queue/-/aurelia-task-queue-1.2.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-task-queue/-/aurelia-task-queue-1.2.0.tgz",
+      "dev": true
     },
     "aurelia-templating": {
       "version": "1.4.2",
       "from": "aurelia-templating@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-templating/-/aurelia-templating-1.4.2.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-templating/-/aurelia-templating-1.4.2.tgz",
+      "dev": true
     },
     "aurelia-templating-binding": {
       "version": "1.3.0",
       "from": "aurelia-templating-binding@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-templating-binding/-/aurelia-templating-binding-1.3.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-templating-binding/-/aurelia-templating-binding-1.3.0.tgz",
+      "dev": true
     },
     "aurelia-templating-resources": {
       "version": "1.4.0",
       "from": "aurelia-templating-resources@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-templating-resources/-/aurelia-templating-resources-1.4.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-templating-resources/-/aurelia-templating-resources-1.4.0.tgz",
+      "dev": true
     },
     "aurelia-templating-router": {
       "version": "1.1.0",
       "from": "aurelia-templating-router@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aurelia-templating-router/-/aurelia-templating-router-1.1.0.tgz"
+      "resolved": "https://registry.npmjs.org/aurelia-templating-router/-/aurelia-templating-router-1.1.0.tgz",
+      "dev": true
     },
     "aurelia-webpack-plugin": {
       "version": "2.0.0-rc.2",
@@ -323,7 +349,8 @@
     "bootstrap": {
       "version": "3.3.7",
       "from": "bootstrap@>=3.3.7 <4.0.0",
-      "resolved": "https://registry.npmjs.org/bootstrap/-/bootstrap-3.3.7.tgz"
+      "resolved": "https://registry.npmjs.org/bootstrap/-/bootstrap-3.3.7.tgz",
+      "dev": true
     },
     "brace-expansion": {
       "version": "1.1.8",
@@ -712,7 +739,8 @@
     "encoding": {
       "version": "0.1.12",
       "from": "encoding@>=0.1.11 <0.2.0",
-      "resolved": "https://registry.npmjs.org/encoding/-/encoding-0.1.12.tgz"
+      "resolved": "https://registry.npmjs.org/encoding/-/encoding-0.1.12.tgz",
+      "dev": true
     },
     "enhanced-resolve": {
       "version": "3.1.0",
@@ -989,7 +1017,8 @@
     "iconv-lite": {
       "version": "0.4.18",
       "from": "iconv-lite@>=0.4.13 <0.5.0",
-      "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.18.tgz"
+      "resolved": "https://registry.npmjs.org/iconv-lite/-/iconv-lite-0.4.18.tgz",
+      "dev": true
     },
     "icss-replace-symbols": {
       "version": "1.1.0",
@@ -1152,7 +1181,8 @@
     "is-stream": {
       "version": "1.1.0",
       "from": "is-stream@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/is-stream/-/is-stream-1.1.0.tgz"
+      "resolved": "https://registry.npmjs.org/is-stream/-/is-stream-1.1.0.tgz",
+      "dev": true
     },
     "is-svg": {
       "version": "2.1.0",
@@ -1181,12 +1211,14 @@
     "isomorphic-fetch": {
       "version": "2.2.1",
       "from": "isomorphic-fetch@>=2.2.1 <3.0.0",
-      "resolved": "https://registry.npmjs.org/isomorphic-fetch/-/isomorphic-fetch-2.2.1.tgz"
+      "resolved": "https://registry.npmjs.org/isomorphic-fetch/-/isomorphic-fetch-2.2.1.tgz",
+      "dev": true
     },
     "jquery": {
-      "version": "3.2.1",
-      "from": "jquery@>=3.2.1 <4.0.0",
-      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.2.1.tgz"
+      "version": "3.3.1",
+      "from": "jquery@3.3.1",
+      "resolved": "https://registry.npmjs.org/jquery/-/jquery-3.3.1.tgz",
+      "dev": true
     },
     "js-base64": {
       "version": "2.1.9",
@@ -1409,7 +1441,8 @@
     "node-fetch": {
       "version": "1.7.1",
       "from": "node-fetch@>=1.0.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.7.1.tgz"
+      "resolved": "https://registry.npmjs.org/node-fetch/-/node-fetch-1.7.1.tgz",
+      "dev": true
     },
     "node-libs-browser": {
       "version": "2.0.0",
@@ -2527,7 +2560,8 @@
     "whatwg-fetch": {
       "version": "2.0.3",
       "from": "whatwg-fetch@>=0.10.0",
-      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.3.tgz"
+      "resolved": "https://registry.npmjs.org/whatwg-fetch/-/whatwg-fetch-2.0.3.tgz",
+      "dev": true
     },
     "whet.extend": {
       "version": "0.9.9",
