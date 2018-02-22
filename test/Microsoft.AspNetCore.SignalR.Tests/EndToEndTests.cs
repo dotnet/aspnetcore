@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/SignalR/issues/1485")]
         [MemberData(nameof(TransportTypesAndTransferModes))]
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferMode requestedTransferMode)
         {
