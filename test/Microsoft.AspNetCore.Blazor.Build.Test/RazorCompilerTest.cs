@@ -381,31 +381,62 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
             var testObjectTypeName = typeof(SomeType).FullName.Replace('+', '.');
+            // TODO: Once we have the improved component tooling and can allow syntax
+            //       like StringProperty="My string" or BoolProperty=true, update this
+            //       test to use that syntax.
             var component = CompileToComponent($"<c:{testComponentTypeName}" +
-                $" IntProperty=123" +
-                $" StringProperty=\"My string\"" +
+                $" IntProperty=@(123)" +
+                $" BoolProperty=@true" +
+                $" StringProperty=@(\"My string\")" +
                 $" ObjectProperty=@(new {testObjectTypeName}()) />");
             var frames = GetRenderTree(component);
 
             // Assert
-            // TODO: Fix this. 
-            // * Currently the attribute names are lowercased if they were
-            //   parsed by AngleSharp as HTML, and left in their original case if they
-            //   were parsed by the Razor compiler as a C# expression. They should all
-            //   retain their original case when the target element represents a component.
-            // * Similarly, unquoted values are interpreted as strings if they were parsed
-            //   by AngleSharp (e.g., intproperty=123 passes a string). The values should
-            //   always be treated as C# expressions if the target represents a component.
-            // This problem will probably go away on its own when we have new component
-            // tooling.
             Assert.Collection(frames,
-                frame => AssertFrame.Component<TestComponent>(frame, 4, 0),
-                frame => AssertFrame.Attribute(frame, "intproperty", "123", 1),
-                frame => AssertFrame.Attribute(frame, "stringproperty", "My string", 2),
+                frame => AssertFrame.Component<TestComponent>(frame, 5, 0),
+                frame => AssertFrame.Attribute(frame, "IntProperty", 123, 1),
+                frame => AssertFrame.Attribute(frame, "BoolProperty", true, 2),
+                frame => AssertFrame.Attribute(frame, "StringProperty", "My string", 3),
                 frame =>
                 {
-                    AssertFrame.Attribute(frame, "ObjectProperty");
+                    AssertFrame.Attribute(frame, "ObjectProperty", 4);
                     Assert.IsType<SomeType>(frame.AttributeValue);
+                });
+        }
+
+        [Fact]
+        public void TemporaryComponentSyntaxRejectsParametersExpressedAsPlainHtmlAttributes()
+        {
+            // This is a temporary syntax restriction. Currently you can write:
+            //    <c:MyComponent MyParam=@("My value") />
+            // ... but are *not* allowed to write:
+            //    <c:MyComponent MyParam="My value" />
+            // This is because until we get the improved taghelper-based tooling,
+            // we're using AngleSharp to parse the plain HTML attributes, and it
+            // suffers from limitations:
+            //  * Loses the casing of attribute names (MyParam becomes myparam)
+            //  * Doesn't recognize MyBool=true as an bool (becomes mybool="true"),
+            //    plus equivalent for other primitives like enum values
+            // So to avoid people getting runtime errors, we're currently imposing
+            // the compile-time restriction that component params have to be given
+            // as C# expressions, e.g., MyBool=@true and MyString=@("Hello")
+
+            // Arrange/Act
+            var result = CompileToCSharp(
+                $"Line 1\n" +
+                $"Some text <c:MyComponent MyParam=\"My value\" />");
+
+            // Assert
+            Assert.Collection(result.Diagnostics,
+                item =>
+                {
+                    Assert.Equal(RazorCompilerDiagnostic.DiagnosticType.Error, item.Type);
+                    Assert.StartsWith($"Wrong syntax for 'myparam' on 'c:MyComponent': As a temporary " +
+                        $"limitation, component attributes must be expressed with C# syntax. For " +
+                        $"example, SomeParam=@(\"Some value\") is allowed, but SomeParam=\"Some value\" " +
+                        $"is not.", item.Message);
+                    Assert.Equal(2, item.Line);
+                    Assert.Equal(11, item.Column);
                 });
         }
 
@@ -414,7 +445,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var testComponentTypeName = typeof(TestComponent).FullName.Replace('+', '.');
-            var component = CompileToComponent($"<c:{testComponentTypeName} attr=\"abc\">" +
+            var component = CompileToComponent($"<c:{testComponentTypeName} MyAttr=@(\"abc\")>" +
                 $"Some text" +
                 $"<some-child a='1'>Nested text</some-child>" +
                 $"</c:{testComponentTypeName}>");
@@ -423,7 +454,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert: component frames are correct
             Assert.Collection(frames,
                 frame => AssertFrame.Component<TestComponent>(frame, 3, 0),
-                frame => AssertFrame.Attribute(frame, "attr", "abc", 1),
+                frame => AssertFrame.Attribute(frame, "MyAttr", "abc", 1),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2));
 
             // Assert: Captured ChildContent frames are correct

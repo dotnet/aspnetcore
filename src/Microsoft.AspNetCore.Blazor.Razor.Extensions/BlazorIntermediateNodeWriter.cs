@@ -246,6 +246,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                         .WriteEndMethodInvocation();
                                 }
 
+                                if (isComponent && nextTag.Attributes.Count > 0)
+                                {
+                                    ThrowTemporaryComponentSyntaxError(node, nextTag, tagNameOriginalCase);
+                                }
+
                                 foreach (var attribute in nextTag.Attributes)
                                 {
                                     WriteAttribute(codeWriter, attribute.Key, attribute.Value);
@@ -315,6 +320,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
             }
         }
+
+        private void ThrowTemporaryComponentSyntaxError(HtmlContentIntermediateNode node, HtmlTagToken tag, string componentName)
+            => throw new RazorCompilerException(
+                $"Wrong syntax for '{tag.Attributes[0].Key}' on '{componentName}': As a temporary " +
+                $"limitation, component attributes must be expressed with C# syntax. For example, " +
+                $"SomeParam=@(\"Some value\") is allowed, but SomeParam=\"Some value\" is not.",
+                CalculateSourcePosition(node.Source, tag.Position));
 
         private SourceSpan? CalculateSourcePosition(
             SourceSpan? razorTokenPosition,
