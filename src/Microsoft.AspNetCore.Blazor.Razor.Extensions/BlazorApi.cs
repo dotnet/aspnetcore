@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string BuildRenderTree = nameof(BuildRenderTree);
         }
 
+        public static class LayoutAttribute
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Layouts.LayoutAttribute";
+        }
+
         public static class RenderFragment
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.RenderFragment";

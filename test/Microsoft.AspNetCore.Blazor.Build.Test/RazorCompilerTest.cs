@@ -663,12 +663,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsLayoutDeclarationsViaTemporarySyntax()
+        public void SupportsLayoutDeclarations()
         {
             // Arrange/Act
             var testComponentTypeName = FullTypeName<TestLayout>();
             var component = CompileToComponent(
-                $"@(Layout<{testComponentTypeName}>())\n" +
+                $"@layout {testComponentTypeName}\n" +
                 $"Hello");
             var frames = GetRenderTree(component);
 
@@ -677,23 +677,23 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             Assert.NotNull(layoutAttribute);
             Assert.Equal(typeof(TestLayout), layoutAttribute.LayoutType);
             Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "\nHello"));
+                frame => AssertFrame.Text(frame, "Hello"));
         }
 
         [Fact]
-        public void SupportsImplementsDeclarationsViaTemporarySyntax()
+        public void SupportsImplementsDeclarations()
         {
             // Arrange/Act
             var testInterfaceTypeName = FullTypeName<ITestInterface>();
             var component = CompileToComponent(
-                $"@(Implements<{testInterfaceTypeName}>())\n" +
+                $"@implements {testInterfaceTypeName}\n" +
                 $"Hello");
             var frames = GetRenderTree(component);
 
             // Assert
             Assert.IsAssignableFrom<ITestInterface>(component);
             Assert.Collection(frames,
-                frame => AssertFrame.Text(frame, "\nHello"));
+                frame => AssertFrame.Text(frame, "Hello"));
         }
 
         [Fact]
