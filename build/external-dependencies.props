@@ -116,7 +116,6 @@
   <ItemGroup>
     <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines.Testing" Version="$(SystemIOPipelinesTestingPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
     <ExternalDependency Include="System.Text.Primitives" Version="$(SystemTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
   </ItemGroup>
