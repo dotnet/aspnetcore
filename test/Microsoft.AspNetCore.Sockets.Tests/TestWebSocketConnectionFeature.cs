@@ -134,6 +134,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                             break;
                     }
 
+                    // Complete the client side if there's an error
+                    _output.TryComplete();
+
                     throw;
                 }
 
