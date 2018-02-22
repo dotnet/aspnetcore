@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Quotes any values containing comas, and then coma joins all of the values with any existing values.
+        /// Quotes any values containing commas, and then comma joins all of the values with any existing values.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> to use.</param>
         /// <param name="key">The header name.</param>
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Quotes any values containing comas, and then coma joins all of the values.
+        /// Quotes any values containing commas, and then comma joins all of the values.
         /// </summary>
         /// <param name="headers">The <see cref="IHeaderDictionary"/> to use.</param>
         /// <param name="key">The header name.</param>

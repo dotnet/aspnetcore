@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             }
         }
 
-        // Quote items that contain comas and are not already quoted.
+        // Quote items that contain commas and are not already quoted.
         private static string QuoteIfNeeded(string value)
         {
             if (!string.IsNullOrEmpty(value) &&
