@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         private RenderTreeFrameType? _lastNonAttributeFrameType;
 
         /// <summary>
+        /// The reserved parameter name used for supplying child content.
+        /// </summary>
+        public static string ChildContent = nameof(ChildContent);
+
+        /// <summary>
         /// Constructs an instance of <see cref="RenderTreeBuilder"/>.
         /// </summary>
         /// <param name="renderer">The associated <see cref="Renderer"/>.</param>

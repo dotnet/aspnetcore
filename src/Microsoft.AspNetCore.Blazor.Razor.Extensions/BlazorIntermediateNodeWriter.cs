@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     internal class BlazorIntermediateNodeWriter : IntermediateNodeWriter
     {
-        private const string builderVarName = "builder";
-
         // Per the HTML spec, the following elements are inherently self-closing
         // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
         private static HashSet<string> htmlVoidElementsLookup
@@ -77,7 +75,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             {
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    _scopeStack.IncrementCurrentScopeChildCount();
+                    _scopeStack.IncrementCurrentScopeChildCount(context);
                     context.CodeWriter.Write(token.Content);
                 }
                 else
@@ -121,9 +119,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             // Since we're not in the middle of writing an element, this must evaluate as some
             // text to display
-            _scopeStack.IncrementCurrentScopeChildCount();
+            _scopeStack.IncrementCurrentScopeChildCount(context);
             context.CodeWriter
-                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator();
 
@@ -211,9 +209,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     case HtmlTokenType.Character:
                         {
                             // Text node
-                            _scopeStack.IncrementCurrentScopeChildCount();
+                            _scopeStack.IncrementCurrentScopeChildCount(context);
                             codeWriter
-                                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
+                                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddContent)}")
                                 .Write((_sourceSequence++).ToString())
                                 .WriteParameterSeparator()
                                 .WriteStringLiteral(nextToken.Data)
@@ -230,18 +228,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                             if (nextToken.Type == HtmlTokenType.StartTag)
                             {
-                                _scopeStack.IncrementCurrentScopeChildCount();
+                                _scopeStack.IncrementCurrentScopeChildCount(context);
                                 if (isComponent)
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
+                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.OpenComponent)}<{componentTypeName}>")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteEndMethodInvocation();
                                 }
                                 else
                                 {
                                     codeWriter
-                                        .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
+                                        .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.OpenElement)}")
                                         .Write((_sourceSequence++).ToString())
                                         .WriteParameterSeparator()
                                         .WriteStringLiteral(nextTag.Data)
@@ -267,7 +265,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     foreach (var token in _currentElementAttributeTokens)
                                     {
                                         codeWriter
-                                            .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                                            .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
                                             .Write((_sourceSequence++).ToString())
                                             .WriteParameterSeparator()
                                             .Write(token.AttributeValue.Content)
@@ -286,6 +284,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                 || (!isComponent && htmlVoidElementsLookup.Contains(nextTag.Data)))
                             {
                                 _scopeStack.CloseScope(
+                                    context: context,
                                     tagName: isComponent ? tagNameOriginalCase : nextTag.Data,
                                     isComponent: isComponent,
                                     source: CalculateSourcePosition(node.Source, nextToken.Position));
@@ -293,7 +292,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                     ? nameof(RenderTreeBuilder.CloseComponent)
                                     : nameof(RenderTreeBuilder.CloseElement);
                                 codeWriter
-                                    .WriteStartMethodInvocation($"{builderVarName}.{closeMethodName}")
+                                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{closeMethodName}")
                                     .WriteEndMethodInvocation();
                             }
                             break;
@@ -373,14 +372,19 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private void WriteAttribute(CodeWriter codeWriter, string key, object value)
         {
+            BeginWriteAttribute(codeWriter, key);
+            WriteAttributeValue(codeWriter, value);
+            codeWriter.WriteEndMethodInvocation();
+        }
+
+        public void BeginWriteAttribute(CodeWriter codeWriter, string key)
+        {
             codeWriter
-                .WriteStartMethodInvocation($"{builderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
                 .Write((_sourceSequence++).ToString())
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
-            WriteAttributeValue(codeWriter, value);
-            codeWriter.WriteEndMethodInvocation();
         }
 
         public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)

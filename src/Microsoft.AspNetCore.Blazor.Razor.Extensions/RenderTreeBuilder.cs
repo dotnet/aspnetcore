@@ -22,5 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static readonly string Clear = nameof(Clear);
 
         public static readonly string GetFrames = nameof(GetFrames);
+
+        public static readonly string ChildContent = nameof(ChildContent);
     }
 }
