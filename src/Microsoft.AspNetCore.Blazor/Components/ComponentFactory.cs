@@ -52,16 +52,25 @@ namespace Microsoft.AspNetCore.Blazor.Components
             // Do all the reflection up front
             var injectableProperties = type.GetTypeInfo()
                 .GetProperties(_injectablePropertyBindingFlags)
-                .Where(p => p.GetCustomAttribute<InjectAttribute>() != null)
-                .Where(p => p.SetMethod != null);
+                .Where(p => p.GetCustomAttribute<InjectAttribute>() != null);
             var injectables = injectableProperties.Select(property =>
-            (
-                propertyName: property.Name,
-                propertyType: property.PropertyType,
-                setter: (IPropertySetter)Activator.CreateInstance(
-                    typeof(PropertySetter<,>).MakeGenericType(type, property.PropertyType),
-                    property.SetMethod)
-            )).ToArray();
+            {
+                if (property.SetMethod == null)
+                {
+                    throw new InvalidOperationException($"Cannot provide a value for property " +
+                        $"'{property.Name}' on type '{type.FullName}' because the property " +
+                        $"has no setter.");
+                }
+
+                return
+                (
+                    propertyName: property.Name,
+                    propertyType: property.PropertyType,
+                    setter: (IPropertySetter)Activator.CreateInstance(
+                        typeof(PropertySetter<,>).MakeGenericType(type, property.PropertyType),
+                        property.SetMethod)
+                );
+            }).ToArray();
 
             // Return an action whose closure can write all the injected properties
             // without any further reflection calls (just typecasts)
@@ -72,7 +81,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
                     var serviceInstance = _serviceProvider.GetService(injectable.propertyType);
                     if (serviceInstance == null)
                     {
-                        throw new InvalidOperationException($"Cannot provide value for property " +
+                        throw new InvalidOperationException($"Cannot provide a value for property " +
                             $"'{injectable.propertyName}' on type '{type.FullName}'. There is no " +
                             $"registered service of type '{injectable.propertyType}'.");
                     }

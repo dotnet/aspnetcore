@@ -42,13 +42,16 @@ namespace Microsoft.AspNetCore.Blazor.Test
         }
 
         [Fact]
-        public void IgnoresGetOnlyProperties()
+        public void ThrowsForInjectablePropertiesWithoutSetter()
         {
-            // Arrange/Act
-            var component = InstantiateComponent<HasGetOnlyProperty>();
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                InstantiateComponent<HasGetOnlyPropertyWithInject>();
+            });
 
-            // Assert
-            Assert.Null(component.MyService);
+            Assert.Equal($"Cannot provide a value for property '{nameof(HasInjectableProperty.MyService)}' " +
+                $"on type '{typeof(HasGetOnlyPropertyWithInject).FullName}' because the property " +
+                $"has no setter.", ex.Message);
         }
 
         [Fact]
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 InstantiateComponent<HasInjectableProperty>();
             });
 
-            Assert.Equal($"Cannot provide value for property '{nameof(HasInjectableProperty.MyService)}' " +
+            Assert.Equal($"Cannot provide a value for property '{nameof(HasInjectableProperty.MyService)}' " +
                 $"on type '{typeof(HasInjectableProperty).FullName}'. There is no registered service " +
                 $"of type '{typeof(IMyService).FullName}'.", ex.Message);
         }
@@ -130,7 +133,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public static IMyService StaticPropertyWithoutInject { get; set; }
         }
 
-        class HasGetOnlyProperty : TestComponent
+        class HasGetOnlyPropertyWithInject : TestComponent
         {
             [Inject] public IMyService MyService { get; }
         }
