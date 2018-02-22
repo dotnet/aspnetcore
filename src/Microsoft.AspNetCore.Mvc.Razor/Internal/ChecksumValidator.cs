@@ -27,11 +27,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         // Validates that we can use an existing precompiled view by comparing checksums with files on
         // disk.
-        public static bool IsItemValid(RazorProjectFileSystem project, RazorCompiledItem item)
+        public static bool IsItemValid(RazorProjectFileSystem fileSystem, RazorCompiledItem item)
         {
-            if (project == null)
+            if (fileSystem == null)
             {
-                throw new ArgumentNullException(nameof(project));
+                throw new ArgumentNullException(nameof(fileSystem));
             }
 
             if (item == null)
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 return true;
             }
 
-            var projectItem = project.GetItem(primaryChecksum.Identifier);
+            var projectItem = fileSystem.GetItem(primaryChecksum.Identifier);
             if (!projectItem.Exists)
             {
                 // Main file doesn't exist - assume valid.
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     continue;
                 }
 
-                var importItem = project.GetItem(checksum.Identifier);
+                var importItem = fileSystem.GetItem(checksum.Identifier);
                 if (!importItem.Exists)
                 {
                     // Import file doesn't exist - assume invalid.

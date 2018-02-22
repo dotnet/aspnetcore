@@ -97,6 +97,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             foreach (var precompiledView in precompiledViews)
             {
+                logger.ViewCompilerLocatedCompiledView(precompiledView.RelativePath);
+
                 if (_precompiledViews.TryGetValue(precompiledView.RelativePath, out var otherValue))
                 {
                     var message = string.Join(
@@ -108,6 +110,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 }
 
                 _precompiledViews.Add(precompiledView.RelativePath, precompiledView);
+            }
+
+            if (_precompiledViews.Count == 0)
+            {
+                logger.ViewCompilerNoCompiledViewsFound();
             }
         }
 
@@ -121,8 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Attempt to lookup the cache entry using the passed in path. This will succeed if the path is already
             // normalized and a cache entry exists.
-            Task<CompiledViewDescriptor> cachedResult;
-            if (_cache.TryGetValue(relativePath, out cachedResult))
+            if (_cache.TryGetValue(relativePath, out Task<CompiledViewDescriptor> cachedResult))
             {
                 return cachedResult;
             }
@@ -157,6 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
                 if (_precompiledViews.TryGetValue(normalizedPath, out var precompiledView))
                 {
+                    _logger.ViewCompilerLocatedCompiledViewForPath(normalizedPath);
                     item = CreatePrecompiledWorkItem(normalizedPath, precompiledView);
                 }
                 else
@@ -204,6 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     return taskSource.Task;
                 }
 
+                _logger.ViewCompilerInvalidingCompiledFile(item.NormalizedPath);
                 try
                 {
                     var descriptor = CompileAndEmit(normalizedPath);
@@ -284,6 +292,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var projectItem = _projectEngine.FileSystem.GetItem(normalizedPath);
             if (!projectItem.Exists)
             {
+                _logger.ViewCompilerCouldNotFindFileAtPath(normalizedPath);
+
                 // If the file doesn't exist, we can't do compilation right now - we still want to cache
                 // the fact that we tried. This will allow us to retrigger compilation if the view file
                 // is added.
@@ -302,6 +312,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     ExpirationTokens = expirationTokens,
                 };
             }
+
+            _logger.ViewCompilerFoundFileToCompile(normalizedPath);
 
             // OK this means we can do compilation. For now let's just identify the other files we need to watch
             // so we can create the cache entry. Compilation will happen after we release the lock.
