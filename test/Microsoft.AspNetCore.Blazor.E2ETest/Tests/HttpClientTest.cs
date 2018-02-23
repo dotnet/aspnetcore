@@ -1,8 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -13,6 +16,10 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
     public class HttpClientTest : BasicTestAppTestBase, IClassFixture<AspNetSiteServerFixture>
     {
         readonly ServerFixture _apiServerFixture;
+        readonly IWebElement _appElement;
+        IWebElement _responseStatus;
+        IWebElement _responseBody;
+        IWebElement _responseHeaders;
 
         public HttpClientTest(
             BrowserFixture browserFixture,
@@ -23,7 +30,8 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             apiServerFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
             _apiServerFixture = apiServerFixture;
 
-            //Navigate(ServerPathBase, noReload: true);
+            Navigate(ServerPathBase, noReload: true);
+            _appElement = MountTestComponent<HttpRequestsComponent>();
         }
 
         [Fact]
@@ -35,6 +43,92 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             var httpClient = new HttpClient { BaseAddress = _apiServerFixture.RootUri };
             var responseText = await httpClient.GetStringAsync("/api/greeting/sayhello");
             Assert.Equal("Hello", responseText);
+        }
+
+        [Fact]
+        public void CanPerformGetRequest()
+        {
+            IssueRequest("GET", "/api/person");
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.Equal("[\"value1\",\"value2\"]", _responseBody.Text);
+        }
+
+        [Fact]
+        public void CanPerformPostRequestWithBody()
+        {
+            var testMessage = $"The value is {Guid.NewGuid()}";
+            IssueRequest("POST", "/api/person", testMessage);
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.Equal($"You posted: {testMessage}", _responseBody.Text);
+        }
+
+        [Fact]
+        public void CanReadResponseHeaders()
+        {
+            IssueRequest("GET", "/api/person");
+            Assert.Equal("OK", _responseStatus.Text);
+
+            // Note that we only see header names case insensitively. The 'fetch' API
+            // can use whatever casing rules it wants, because the HTTP spec says the
+            // names are case-insensitive. In practice, Chrome lowercases them all.
+            // Ideally we should make the test case-insensitive for header name, but
+            // case-sensitive for header value.
+            Assert.Contains("mycustomheader: My custom value", _responseHeaders.Text);
+        }
+
+        [Fact]
+        public void CanSendRequestHeaders()
+        {
+            AddRequestHeader("TestHeader", "Value from test");
+            AddRequestHeader("another-header", "Another value");
+            IssueRequest("DELETE", "/api/person");
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.Contains("TestHeader: Value from test", _responseBody.Text);
+            Assert.Contains("another-header: Another value", _responseBody.Text);
+        }
+
+        [Fact]
+        public void CanSendAndReceiveJson()
+        {
+            AddRequestHeader("Content-Type", "application/json");
+            IssueRequest("PUT", "/api/person", "{\"Name\": \"Bert\", \"Id\": 123}");
+            Assert.Equal("OK", _responseStatus.Text);
+            Assert.Contains("Content-Type: application/json", _responseHeaders.Text);
+            Assert.Equal("{\"id\":123,\"name\":\"Bert\"}", _responseBody.Text);
+        }
+
+        private void IssueRequest(string requestMethod, string relativeUri, string requestBody = null)
+        {
+            var targetUri = new Uri(_apiServerFixture.RootUri, relativeUri);
+            SetValue("request-uri", targetUri.AbsoluteUri);
+            SetValue("request-body", requestBody ?? string.Empty);
+            new SelectElement(Browser.FindElement(By.Id("request-method")))
+                .SelectByText(requestMethod);
+
+            _appElement.FindElement(By.Id("send-request")).Click();
+
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
+                driver => driver.FindElement(By.Id("response-status")) != null);
+            _responseStatus = _appElement.FindElement(By.Id("response-status"));
+            _responseBody = _appElement.FindElement(By.Id("response-body"));
+            _responseHeaders = _appElement.FindElement(By.Id("response-headers"));
+        }
+
+        private void AddRequestHeader(string name, string value)
+        {
+            var addHeaderButton = _appElement.FindElement(By.Id("add-header"));
+            addHeaderButton.Click();
+            var newHeaderEntry = _appElement.FindElement(By.CssSelector(".header-entry:last-of-type"));
+            var textBoxes = newHeaderEntry.FindElements(By.TagName("input"));
+            textBoxes[0].SendKeys(name);
+            textBoxes[1].SendKeys(value);
+        }
+
+        private void SetValue(string elementId, string value)
+        {
+            var element = Browser.FindElement(By.Id(elementId));
+            element.Clear();
+            element.SendKeys(value);
         }
     }
 }

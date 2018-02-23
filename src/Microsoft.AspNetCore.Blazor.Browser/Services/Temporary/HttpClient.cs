@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
@@ -50,7 +53,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
             return await response.Content.ReadAsStringAsync();
         }
 
-        // <summary>
+        /// <summary>
         /// Sends a GET request to the specified URI and returns the response as
         /// an instance of <see cref="HttpResponseMessage"/> in an asynchronous
         /// operation.
@@ -58,6 +61,30 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         /// <param name="requestUri">The URI the request is sent to.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task<HttpResponseMessage> GetAsync(string requestUri)
+            => SendAsync(new HttpRequestMessage(HttpMethod.Get, requestUri));
+
+        /// <summary>
+        /// Sends a POST request to the specified URI and returns the response as
+        /// an instance of <see cref="HttpResponseMessage"/> in an asynchronous
+        /// operation.
+        /// </summary>
+        /// <param name="requestUri">The URI the request is sent to.</param>
+        /// <param name="content">The content for the request.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
+            => SendAsync(new HttpRequestMessage(HttpMethod.Post, requestUri)
+            {
+                Content = content
+            });
+
+        /// <summary>
+        /// Sends an HTTP request to the specified URI and returns the response as
+        /// an instance of <see cref="HttpResponseMessage"/> in an asynchronous
+        /// operation.
+        /// </summary>
+        /// <param name="request">The request to be sent.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request)
         {
             var tcs = new TaskCompletionSource<HttpResponseMessage>();
             int id;
@@ -67,12 +94,36 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
                 _pendingRequests.Add(id, tcs);
             }
 
-            RegisteredFunction.Invoke<object>($"{typeof(HttpClient).FullName}.Send", id, requestUri);
+            RegisteredFunction.Invoke<object>(
+                $"{typeof(HttpClient).FullName}.Send",
+                id,
+                request.Method.Method,
+                request.RequestUri.ToString(),
+                request.Content == null ? null : await GetContentAsString(request.Content),
+                SerializeHeadersAsJson(request));
 
-            return tcs.Task;
+            return await tcs.Task;
         }
 
-        private static void ReceiveResponse(string id, string statusCode, string responseText, string errorText)
+        private string SerializeHeadersAsJson(HttpRequestMessage request)
+            => Json.Serialize(
+                (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
+                from headerValue in header.Value // There can be more than one value for each name
+                select new[] { header.Key, headerValue }).ToList()
+            );
+
+        private static async Task<string> GetContentAsString(HttpContent content)
+            => content is StringContent stringContent
+                ? await stringContent.ReadAsStringAsync()
+                : throw new InvalidOperationException($"Currently, {typeof(HttpClient).FullName} " +
+                    $"only supports contents of type {nameof(StringContent)}, but you supplied " +
+                    $"{content.GetType().FullName}.");
+
+        private static void ReceiveResponse(
+            string id,
+            string responseDescriptorJson,
+            string responseBodyText,
+            string errorText)
         {
             TaskCompletionSource<HttpResponseMessage> tcs;
             var idVal = int.Parse(id);
@@ -82,17 +133,42 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
                 _pendingRequests.Remove(idVal);
             }
 
-            if (errorText == null)
+            if (errorText != null)
             {
-                tcs.SetResult(new HttpResponseMessage
-                {
-                    StatusCode = (HttpStatusCode)int.Parse(statusCode),
-                    Content = new StringContent(responseText)
-                });
+                tcs.SetException(new HttpRequestException(errorText));
             }
             else
             {
-                tcs.SetException(new HttpRequestException(errorText));
+                var responseDescriptor = Json.Deserialize<ResponseDescriptor>(responseDescriptorJson);
+                var responseContent = responseBodyText == null ? null : new StringContent(responseBodyText);
+                var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
+                tcs.SetResult(responseMessage);
+            }
+        }
+
+        // Keep in sync with TypeScript class in Http.ts
+        private class ResponseDescriptor
+        {
+            #pragma warning disable 0649
+            public int StatusCode { get; set; }
+            public string[][] Headers { get; set; }
+            #pragma warning restore 0649
+
+            public HttpResponseMessage ToResponseMessage(HttpContent content)
+            {
+                var result = new HttpResponseMessage((HttpStatusCode)StatusCode);
+                result.Content = content;
+                var headers = result.Headers;
+                var contentHeaders = result.Content?.Headers;
+                foreach (var pair in Headers)
+                {
+                    if (!headers.TryAddWithoutValidation(pair[0], pair[1]))
+                    {
+                        contentHeaders?.TryAddWithoutValidation(pair[0], pair[1]);
+                    }
+                }
+
+                return result;
             }
         }
     }

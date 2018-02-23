@@ -1,41 +1,60 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer.Controllers
 {
+    [EnableCors("AllowAll")]
     [Route("api/[controller]")]
     public class PersonController : Controller
     {
-        // GET api/values
+        // GET api/person
         [HttpGet]
         public IEnumerable<string> Get()
         {
+            HttpContext.Response.Headers.Add("MyCustomHeader", "My custom value");
             return new string[] { "value1", "value2" };
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/values
+        // POST api/person
         [HttpPost]
-        public void Post([FromBody]string value)
+        public async Task<string> Post()
         {
+            using (var reader = new StreamReader(Request.Body))
+            {
+                var plainTextBodyContent = await reader.ReadToEndAsync();
+                return $"You posted: {plainTextBodyContent}";
+            }
         }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
+        // PUT api/person
+        [HttpPut]
+        public Person Put([FromBody, Required] Person person)
         {
+            return person;
         }
 
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        // DELETE api/person
+        [HttpDelete]
+        public string Delete()
         {
+            var result = new StringBuilder();
+            foreach (var header in Request.Headers)
+            {
+                result.AppendLine($"{header.Key}: {string.Join(",", header.Value.ToArray())}");
+            }
+            return "REQUEST HEADERS:\n" + result.ToString();
+        }
+
+        public class Person
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
         }
     }
 }
