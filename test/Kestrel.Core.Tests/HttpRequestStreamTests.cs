@@ -98,17 +98,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #endif
 
         [Fact]
-        public void FlushThrows()
+        // Read-only streams should support Flush according to https://github.com/dotnet/corefx/pull/27327#pullrequestreview-98384813
+        public void FlushDoesNotThrow()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-            Assert.Throws<NotSupportedException>(() => stream.Flush());
+            stream.Flush();
         }
 
         [Fact]
-        public async Task FlushAsyncThrows()
+        public async Task FlushAsyncDoesNotThrow()
         {
             var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
-            await Assert.ThrowsAsync<NotSupportedException>(() => stream.FlushAsync());
+            await stream.FlushAsync();
         }
 
         [Fact]

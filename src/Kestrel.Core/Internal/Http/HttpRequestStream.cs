@@ -38,12 +38,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Flush()
         {
-            throw new NotSupportedException();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            throw new NotSupportedException();
+            return Task.CompletedTask;
         }
 
         public override long Seek(long offset, SeekOrigin origin)
