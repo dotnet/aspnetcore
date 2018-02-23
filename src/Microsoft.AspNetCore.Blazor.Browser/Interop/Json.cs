@@ -27,6 +27,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
 
         private static object CoerceShallow(object deserializedValue, Type typeOfT)
         {
+            if (typeOfT == typeof(object)) { return deserializedValue; }
+
             if (deserializedValue == null)
             {
                 // Return default value for type

@@ -178,6 +178,13 @@ export class BrowserRenderer {
         toDomElement.addEventListener('click', listener);
         break;
       }
+      case 'onchange': {
+        toDomElement.removeEventListener('change', toDomElement['_blazorChangeListener']);
+        const listener = evt => raiseEvent(browserRendererId, componentId, eventHandlerId, 'change', { Type: 'change', Value: evt.target.value });
+        toDomElement['_blazorChangeListener'] = listener;
+        toDomElement.addEventListener('change', listener);
+        break;
+      }
       case 'onkeypress': {
         toDomElement.removeEventListener('keypress', toDomElement['_blazorKeypressListener']);
         const listener = evt => {
@@ -256,4 +263,4 @@ function raiseEvent(browserRendererId: number, componentId: number, eventHandler
   ]);
 }
 
-type EventInfoType = 'mouse' | 'keyboard';
+type EventInfoType = 'mouse' | 'keyboard' | 'change';

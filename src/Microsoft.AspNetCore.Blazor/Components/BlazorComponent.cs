@@ -186,5 +186,14 @@ namespace Microsoft.AspNetCore.Blazor.Components
         protected RenderTreeFrame onclick(Action handler)
             // Note that the 'sequence' value is updated later when inserted into the tree
             => RenderTreeFrame.Attribute(0, "onclick", _ => handler());
+
+        /// <summary>
+        /// Handles change events by invoking <paramref name="handler"/>.
+        /// </summary>
+        /// <param name="handler">The handler to be invoked when the event occurs. The handler will receive the new value as a parameter.</param>
+        /// <returns>A <see cref="RenderTreeFrame"/> that represents the event handler.</returns>
+        protected RenderTreeFrame onchange(Action<object> handler)
+            // Note that the 'sequence' value is updated later when inserted into the tree
+            => RenderTreeFrame.Attribute(0, "onchange", args => handler(((UIChangeEventArgs)args).Value));
     }
 }

@@ -31,4 +31,16 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
         /// </summary>
         public string Key { get; set; }
     }
+
+    /// <summary>
+    /// Supplies information about an input change event that is being raised.
+    /// </summary>
+    public class UIChangeEventArgs : UIEventArgs
+    {
+        /// <summary>
+        /// Gets or sets the new value of the input. This may be a <see cref="string"/>
+        /// or a <see cref="bool"/>.
+        /// </summary>
+        public object Value { get; set; }
+    }
 }
