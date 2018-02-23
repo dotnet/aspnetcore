@@ -7,8 +7,6 @@ using System;
 namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 {
     // TODO: Make this not static, and wrap it in an interface that can be injected through DI.
-    // We can make EnableNavigationInteception private, and call it automatically when the any
-    // concrete instance is instantiated.
 
     /// <summary>
     /// Helpers for working with URIs and navigation state.
@@ -19,19 +17,26 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         static string _currentAbsoluteUri;
         static string _baseUriString;
         static Uri _baseUri;
+        static EventHandler<string> _onLocationChanged;
+        static bool _hasEnabledNavigationInterception;
 
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
-        public static event EventHandler<string> OnLocationChanged;
-
-        /// <summary>
-        /// Prevents default navigation on all links whose href is inside the base URI space,
-        /// causing clicks on those links to trigger <see cref="OnLocationChanged"/> instead.
-        /// </summary>
-        public static void EnableNavigationInteception()
-            => RegisteredFunction.InvokeUnmarshalled<object>(
-                $"{_functionPrefix}.enableNavigationInteception");
+        public static event EventHandler<string> OnLocationChanged
+        {
+            add
+            {
+                EnsureNavigationInteceptionEnabled();
+                _onLocationChanged += value;
+            }
+            remove
+            {
+                // We could consider deactivating the JS-side enableNavigationInteception
+                // if there are no remaining listeners, but we don't need that currently.
+                _onLocationChanged -= value;
+            }
+        }
 
         /// <summary>
         /// Gets the URI prefix that can be prepended before URI paths to produce an absolute URI.
@@ -115,7 +120,20 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         private static void NotifyLocationChanged(string newAbsoluteUri)
         {
             _currentAbsoluteUri = newAbsoluteUri;
-            OnLocationChanged?.Invoke(null, newAbsoluteUri);
+            _onLocationChanged?.Invoke(null, newAbsoluteUri);
+        }
+
+        private static void EnsureNavigationInteceptionEnabled()
+        {
+            // Don't need thread safety because:
+            // (1) there's only one UI thread
+            // (2) doesn't matter if we call enableNavigationInteception more than once anyway
+            if (!_hasEnabledNavigationInterception)
+            {
+                _hasEnabledNavigationInterception = true;
+                RegisteredFunction.InvokeUnmarshalled<object>(
+                    $"{_functionPrefix}.enableNavigationInteception");
+            }
         }
 
         /// <summary>

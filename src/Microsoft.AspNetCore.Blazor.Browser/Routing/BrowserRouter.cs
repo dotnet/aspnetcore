@@ -44,11 +44,9 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
-
-            UriHelper.EnableNavigationInteception();
-            UriHelper.OnLocationChanged += OnLocationChanged;
             _baseUriPrefix = UriHelper.GetBaseUriPrefix();
             _locationAbsolute = UriHelper.GetAbsoluteUri();
+            UriHelper.OnLocationChanged += OnLocationChanged;
         }
 
         /// <inheritdoc />
