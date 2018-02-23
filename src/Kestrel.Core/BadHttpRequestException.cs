@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -30,6 +32,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal StringValues AllowedHeader { get; }
 
+        [StackTraceHidden]
+        internal static void Throw(RequestRejectionReason reason)
+        {
+            throw GetException(reason);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
             BadHttpRequestException ex;
@@ -102,6 +111,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return ex;
         }
 
+        [StackTraceHidden]
+        internal static void Throw(RequestRejectionReason reason, string detail)
+        {
+            throw GetException(reason, detail);
+        }
+
+        [StackTraceHidden]
+        internal static void Throw(RequestRejectionReason reason, in StringValues detail)
+        {
+            throw GetException(reason, detail.ToString());
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         internal static BadHttpRequestException GetException(RequestRejectionReason reason, string detail)
         {
             BadHttpRequestException ex;

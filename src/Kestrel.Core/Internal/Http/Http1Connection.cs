@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var result = _parser.ParseRequestLine(new Http1ParsingHandler(this), buffer, out consumed, out examined);
             if (!result && overLength)
             {
-                ThrowRequestRejected(RequestRejectionReason.RequestLineTooLong);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestLineTooLong);
             }
 
             return result;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             if (!result && overLength)
             {
-                ThrowRequestRejected(RequestRejectionReason.HeadersExceedMaxTotalSize);
+                BadHttpRequestException.Throw(RequestRejectionReason.HeadersExceedMaxTotalSize);
             }
             if (result)
             {
@@ -278,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // requests (https://tools.ietf.org/html/rfc7231#section-4.3.6).
             if (method != HttpMethod.Connect)
             {
-                ThrowRequestRejected(RequestRejectionReason.ConnectMethodRequired);
+                BadHttpRequestException.Throw(RequestRejectionReason.ConnectMethodRequired);
             }
 
             // When making a CONNECT request to establish a tunnel through one or
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // OPTIONS request (https://tools.ietf.org/html/rfc7231#section-4.3.7).
             if (method != HttpMethod.Options)
             {
-                ThrowRequestRejected(RequestRejectionReason.OptionsMethodRequired);
+                BadHttpRequestException.Throw(RequestRejectionReason.OptionsMethodRequired);
             }
 
             RawTarget = Asterisk;
@@ -367,17 +367,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var host = HttpRequestHeaders.HeaderHost;
             if (host.Count <= 0)
             {
-                ThrowRequestRejected(RequestRejectionReason.MissingHostHeader);
+                BadHttpRequestException.Throw(RequestRejectionReason.MissingHostHeader);
             }
             else if (host.Count > 1)
             {
-                ThrowRequestRejected(RequestRejectionReason.MultipleHostHeaders);
+                BadHttpRequestException.Throw(RequestRejectionReason.MultipleHostHeaders);
             }
             else if (_requestTargetForm == HttpRequestTarget.AuthorityForm)
             {
                 if (!host.Equals(RawTarget))
                 {
-                    ThrowRequestRejected(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, in host);
                 }
             }
             else if (_requestTargetForm == HttpRequestTarget.AbsoluteForm)
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if ((host != _absoluteRequestTarget.Authority || !_absoluteRequestTarget.IsDefaultPort)
                     && host != authorityAndPort)
                 {
-                    ThrowRequestRejected(RequestRejectionReason.InvalidHostHeader, host.ToString());
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidHostHeader, in host);
                 }
             }
         }
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                 {
-                    throw BadHttpRequestException.GetException(RequestRejectionReason
+                    BadHttpRequestException.Throw(RequestRejectionReason
                         .MalformedRequestInvalidHeaders);
                 }
                 throw;
@@ -464,11 +464,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         endConnection = true;
                         return true;
                     case RequestProcessingStatus.ParsingRequestLine:
-                        throw BadHttpRequestException.GetException(
-                            RequestRejectionReason.InvalidRequestLine);
+                        BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestLine);
+                        break;
                     case RequestProcessingStatus.ParsingHeaders:
-                        throw BadHttpRequestException.GetException(
-                            RequestRejectionReason.MalformedRequestInvalidHeaders);
+                        BadHttpRequestException.Throw(RequestRejectionReason.MalformedRequestInvalidHeaders);
+                        break;
                 }
             }
             else if (!_keepAlive && _requestProcessingStatus == RequestProcessingStatus.RequestPending)
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
                 // a 408 response.
-                throw BadHttpRequestException.GetException(RequestRejectionReason.RequestTimeout);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestTimeout);
             }
 
             endConnection = false;

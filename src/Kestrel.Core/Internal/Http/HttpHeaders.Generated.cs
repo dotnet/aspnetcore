@@ -4049,7 +4049,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 if (_contentLength.HasValue)
                                 {
-                                    ThrowMultipleContentLengthsException();
+                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
                                 }
                                 else
                                 {

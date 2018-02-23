@@ -36,7 +36,7 @@ namespace CodeGenerator
                             {{{(header.Identifier == "ContentLength" ? $@"
                                 if (_contentLength.HasValue)
                                 {{
-                                    ThrowMultipleContentLengthsException();
+                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
                                 }}
                                 else
                                 {{

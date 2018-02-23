@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed++;
             if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
             {
-                ThrowRequestRejected(RequestRejectionReason.TooManyHeaders);
+                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
             var valueString = value.GetAsciiStringNonNullCharacters();
 
@@ -863,11 +863,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _responseBytesWritten + count > responseHeaders.ContentLength.Value)
             {
                 _keepAlive = false;
-                throw new InvalidOperationException(
-                    CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength.Value));
+                ThrowTooManyBytesWritten(count);
             }
 
             _responseBytesWritten += count;
+        }
+
+        [StackTraceHidden]
+        private void ThrowTooManyBytesWritten(int count)
+        {
+            throw GetTooManyBytesWrittenException(count);
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private InvalidOperationException GetTooManyBytesWrittenException(int count)
+        {
+            var responseHeaders = HttpResponseHeaders;
+            return new InvalidOperationException(
+                CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength.Value));
         }
 
         private void CheckLastWrite()
@@ -1250,25 +1263,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Writes to HEAD response are ignored and logged at the end of the request
             if (Method != "HEAD")
             {
-                // Throw Exception for 204, 205, 304 responses.
-                throw new InvalidOperationException(CoreStrings.FormatWritingToResponseBodyNotSupported(StatusCode));
+                ThrowWritingToResponseBodyNotSupported();
             }
         }
 
+        [StackTraceHidden]
+        private void ThrowWritingToResponseBodyNotSupported()
+        {
+            // Throw Exception for 204, 205, 304 responses.
+            throw new InvalidOperationException(CoreStrings.FormatWritingToResponseBodyNotSupported(StatusCode));
+        }
+
+        [StackTraceHidden]
         private void ThrowResponseAbortedException()
         {
             throw new ObjectDisposedException(CoreStrings.UnhandledApplicationException, _applicationException);
         }
 
-        public void ThrowRequestRejected(RequestRejectionReason reason)
-            => throw BadHttpRequestException.GetException(reason);
-
-        public void ThrowRequestRejected(RequestRejectionReason reason, string detail)
-            => throw BadHttpRequestException.GetException(reason, detail);
-
+        [StackTraceHidden]
         public void ThrowRequestTargetRejected(Span<byte> target)
             => throw GetInvalidRequestTargetException(target);
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private BadHttpRequestException GetInvalidRequestTargetException(Span<byte> target)
             => BadHttpRequestException.GetException(
                 RequestRejectionReason.InvalidRequestTarget,

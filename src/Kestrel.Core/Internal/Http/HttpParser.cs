@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -254,7 +255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 }
 
                                 // Headers don't end in CRLF line.
-                                RejectRequest(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
+                                BadHttpRequestException.Throw(RequestRejectionReason.InvalidRequestHeadersNoCRLF);
                             }
 
                             // We moved the reader so look ahead 2 bytes so reset both the reader
@@ -483,18 +484,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 c == '~';
         }
 
-        private void RejectRequest(RequestRejectionReason reason)
-            => throw BadHttpRequestException.GetException(reason);
-
+        [StackTraceHidden]
         private unsafe void RejectRequestLine(byte* requestLine, int length)
             => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestLine, requestLine, length);
 
+        [StackTraceHidden]
         private unsafe void RejectRequestHeader(byte* headerLine, int length)
             => throw GetInvalidRequestException(RequestRejectionReason.InvalidRequestHeader, headerLine, length);
 
+        [StackTraceHidden]
         private unsafe void RejectUnknownVersion(byte* version, int length)
             => throw GetInvalidRequestException(RequestRejectionReason.UnrecognizedHTTPVersion, version, length);
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe BadHttpRequestException GetInvalidRequestException(RequestRejectionReason reason, byte* detail, int length)
             => BadHttpRequestException.GetException(
                 reason,

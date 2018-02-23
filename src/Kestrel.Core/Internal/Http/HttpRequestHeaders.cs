@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             long parsed;
             if (!HeaderUtilities.TryParseNonNegativeInt64(value, out parsed))
             {
-                ThrowInvalidContentLengthException(value);
+                BadHttpRequestException.Throw(RequestRejectionReason.InvalidContentLength, value);
             }
 
             return parsed;
@@ -47,23 +47,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (!StringUtilities.TryGetAsciiString(pKeyBytes, keyBuffer, keyLength))
                 {
-                    throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidCharactersInHeaderName);
+                    BadHttpRequestException.Throw(RequestRejectionReason.InvalidCharactersInHeaderName);
                 }
             }
 
             StringValues existing;
             Unknown.TryGetValue(key, out existing);
             Unknown[key] = AppendValue(existing, value);
-        }
-
-        private static void ThrowInvalidContentLengthException(string value)
-        {
-            throw BadHttpRequestException.GetException(RequestRejectionReason.InvalidContentLength, value);
-        }
-
-        private static void ThrowMultipleContentLengthsException()
-        {
-            throw BadHttpRequestException.GetException(RequestRejectionReason.MultipleContentLengths);
         }
 
         public Enumerator GetEnumerator()
