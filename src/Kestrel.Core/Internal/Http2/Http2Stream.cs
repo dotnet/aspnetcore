@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         protected override void OnReset()
         {
-            FastFeatureSet(typeof(IHttp2StreamIdFeature), this);
+            ResetIHttp2StreamIdFeature();
         }
 
         protected override void OnRequestProcessingEnded()

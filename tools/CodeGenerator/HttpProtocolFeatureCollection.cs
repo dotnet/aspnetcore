@@ -16,6 +16,12 @@ namespace CodeGenerator
             return values.Select(formatter).Aggregate((a, b) => a + b);
         }
 
+        public class KnownFeature
+        {
+            public string Name;
+            public int Index;
+        }
+
         public static string GeneratedFile(string className)
         {
             var alwaysFeatures = new[]
@@ -55,7 +61,15 @@ namespace CodeGenerator
                 "IHttpSendFileFeature",
             };
 
-            var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
+            var allFeatures = alwaysFeatures
+                .Concat(commonFeatures)
+                .Concat(sometimesFeatures)
+                .Concat(rareFeatures)
+                .Select((type, index) => new KnownFeature
+                {
+                    Name = type,
+                    Index = index
+                });
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by HttpProtocol.
             // See also: src/Kestrel/Http/HttpProtocol.FeatureCollection.cs
@@ -86,43 +100,87 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
     public partial class {className}
     {{{Each(allFeatures, feature => $@"
-        private static readonly Type {feature}Type = typeof({feature});")}
+        private static readonly Type {feature.Name}Type = typeof({feature.Name});")}
 {Each(allFeatures, feature => $@"
-        private object _current{feature};")}
+        private object _current{feature.Name};")}
 
         private void FastReset()
         {{{Each(implementedFeatures, feature => $@"
             _current{feature} = this;")}
-            {Each(allFeatures.Where(f => !implementedFeatures.Contains(f)), feature => $@"
-            _current{feature} = null;")}
+            {Each(allFeatures.Where(f => !implementedFeatures.Contains(f.Name)), feature => $@"
+            _current{feature.Name} = null;")}
         }}
 
-        internal object FastFeatureGet(Type key)
-        {{{Each(allFeatures, feature => $@"
-            if (key == {feature}Type)
-            {{
-                return _current{feature};
-            }}")}
-            return ExtraFeatureGet(key);
-        }}
-
-        protected void FastFeatureSet(Type key, object feature)
+        object IFeatureCollection.this[Type key]
         {{
-            _featureRevision++;
-            {Each(allFeatures, feature => $@"
-            if (key == {feature}Type)
+            get
             {{
-                _current{feature} = feature;
-                return;
-            }}")};
-            ExtraFeatureSet(key, feature);
+                object feature = null;{Each(allFeatures, feature => $@"
+                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                {{
+                    feature = _current{feature.Name};
+                }}")}
+                else if (MaybeExtra != null)
+                {{
+                    feature = ExtraFeatureGet(key);
+                }}
+
+                return feature ?? ConnectionFeatures[key];
+            }}
+
+            set
+            {{
+                _featureRevision++;
+                {Each(allFeatures, feature => $@"
+                {(feature.Index != 0 ? "else " : "")}if (key == {feature.Name}Type)
+                {{
+                    _current{feature.Name} = value;
+                }}")}
+                else
+                {{
+                    ExtraFeatureSet(key, value);
+                }}
+            }}
+        }}
+
+        void IFeatureCollection.Set<TFeature>(TFeature feature) 
+        {{
+            _featureRevision++;{Each(allFeatures, feature => $@"
+            {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
+            {{
+                _current{feature.Name} = feature;
+            }}")}
+            else
+            {{
+                ExtraFeatureSet(typeof(TFeature), feature);
+            }}
+        }}
+
+        TFeature IFeatureCollection.Get<TFeature>()
+        {{
+            TFeature feature = default;{Each(allFeatures, feature => $@"
+            {(feature.Index != 0 ? "else " : "")}if (typeof(TFeature) == typeof({feature.Name}))
+            {{
+                feature = (TFeature)_current{feature.Name};
+            }}")}
+            else if (MaybeExtra != null)
+            {{
+                feature = (TFeature)(ExtraFeatureGet(typeof(TFeature)));
+            }}
+            
+            if (feature == null)
+            {{
+                feature = ConnectionFeatures.Get<TFeature>();
+            }}
+
+            return feature;
         }}
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {{{Each(allFeatures, feature => $@"
-            if (_current{feature} != null)
+            if (_current{feature.Name} != null)
             {{
-                yield return new KeyValuePair<Type, object>({feature}Type, _current{feature} as {feature});
+                yield return new KeyValuePair<Type, object>({feature.Name}Type, _current{feature.Name} as {feature.Name});
             }}")}
 
             if (MaybeExtra != null)

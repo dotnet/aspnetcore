@@ -111,68 +111,100 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         object IFeatureCollection.this[Type key]
         {
-            get => FastFeatureGet(key);
-            set => FastFeatureSet(key, value);
+            get
+            {
+                if (key == IHttpConnectionFeatureType)
+                {
+                    return _currentIHttpConnectionFeature;
+                }
+
+                if (key == IConnectionIdFeatureType)
+                {
+                    return _currentIConnectionIdFeature;
+                }
+
+                if (key == IConnectionTransportFeatureType)
+                {
+                    return _currentIConnectionTransportFeature;
+                }
+
+                if (MaybeExtra != null)
+                {
+                    return ExtraFeatureGet(key);
+                }
+
+                return null;
+            }
+            set
+            {
+                _featureRevision++;
+
+                if (key == IHttpConnectionFeatureType)
+                {
+                    _currentIHttpConnectionFeature = value;
+                }
+                else if (key == IConnectionIdFeatureType)
+                {
+                    _currentIConnectionIdFeature = value;
+                }
+                else if (key == IConnectionTransportFeatureType)
+                {
+                    _currentIConnectionTransportFeature = value;
+                }
+                else
+                {
+                    ExtraFeatureSet(key, value);
+                }
+            }
         }
 
         TFeature IFeatureCollection.Get<TFeature>()
         {
-            return (TFeature)FastFeatureGet(typeof(TFeature));
+            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
+            {
+                return (TFeature)_currentIHttpConnectionFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
+            {
+                return (TFeature)_currentIConnectionIdFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
+            {
+                return (TFeature)_currentIConnectionTransportFeature;
+            }
+            else if (MaybeExtra != null)
+            {
+                return (TFeature)ExtraFeatureGet(typeof(TFeature));
+            }
+
+            return default;
         }
 
         void IFeatureCollection.Set<TFeature>(TFeature instance)
         {
-            FastFeatureSet(typeof(TFeature), instance);
+            _featureRevision++;
+
+            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
+            {
+                _currentIHttpConnectionFeature = instance;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
+            {
+                _currentIConnectionIdFeature = instance;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionTransportFeature))
+            {
+                _currentIConnectionTransportFeature = instance;
+            }
+            else
+            {
+                ExtraFeatureSet(typeof(TFeature), instance);
+            }
         }
 
         IEnumerator<KeyValuePair<Type, object>> IEnumerable<KeyValuePair<Type, object>>.GetEnumerator() => FastEnumerable().GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
-
-        private object FastFeatureGet(Type key)
-        {
-            if (key == IHttpConnectionFeatureType)
-            {
-                return _currentIHttpConnectionFeature;
-            }
-
-            if (key == IConnectionIdFeatureType)
-            {
-                return _currentIConnectionIdFeature;
-            }
-
-            if (key == IConnectionTransportFeatureType)
-            {
-                return _currentIConnectionTransportFeature;
-            }
-
-            return ExtraFeatureGet(key);
-        }
-
-        private void FastFeatureSet(Type key, object feature)
-        {
-            _featureRevision++;
-
-            if (key == IHttpConnectionFeatureType)
-            {
-                _currentIHttpConnectionFeature = feature;
-                return;
-            }
-
-            if (key == IConnectionIdFeatureType)
-            {
-                _currentIConnectionIdFeature = feature;
-                return;
-            }
-
-            if (key == IConnectionTransportFeatureType)
-            {
-                _currentIConnectionTransportFeature = feature;
-                return;
-            }
-
-            ExtraFeatureSet(key, feature);
-        }
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
