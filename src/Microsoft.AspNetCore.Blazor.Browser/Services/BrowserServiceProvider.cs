@@ -11,22 +11,22 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
     /// An implementation of <see cref="IServiceProvider"/> configured with
     /// default services suitable for use in a browser environment.
     /// </summary>
-    public class DefaultBrowserServiceProvider : IServiceProvider
+    public class BrowserServiceProvider : IServiceProvider
     {
         private readonly IServiceProvider _underlyingProvider;
 
         /// <summary>
-        /// Constructs an instance of <see cref="DefaultBrowserServiceProvider"/>.
+        /// Constructs an instance of <see cref="BrowserServiceProvider"/>.
         /// </summary>
-        public DefaultBrowserServiceProvider(): this(null)
+        public BrowserServiceProvider(): this(null)
         {
         }
 
         /// <summary>
-        /// Constructs an instance of <see cref="DefaultBrowserServiceProvider"/>.
+        /// Constructs an instance of <see cref="BrowserServiceProvider"/>.
         /// </summary>
         /// <param name="configure">A callback that can be used to configure the <see cref="IServiceCollection"/>.</param>
-        public DefaultBrowserServiceProvider(Action<IServiceCollection> configure)
+        public BrowserServiceProvider(Action<IServiceCollection> configure)
         {
             var serviceCollection = new ServiceCollection();
             AddDefaultServices(serviceCollection);

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         /// <summary>
         /// Constructs an instance of <see cref="BrowserRenderer"/>.
         /// </summary>
-        public BrowserRenderer(): this(new DefaultBrowserServiceProvider())
+        public BrowserRenderer(): this(new BrowserServiceProvider())
         {
         }
 
