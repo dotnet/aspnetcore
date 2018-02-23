@@ -9,14 +9,11 @@
     <EnableApiCheck>false</EnableApiCheck>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <RazorCompileOnBuild>true</RazorCompileOnBuild>
-    <ResolvedRazorCompileToolset>RazorSdk</ResolvedRazorCompileToolset>
-    <RazorTargetName>$(MSBuildProjectName).Views</RazorTargetName>
     <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
-    <IncludeContentInPack>false</IncludeContentInPack>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Areas/**/*.cshtml" />
     <EmbeddedResource Include="wwwroot/**/*" />
     <EmbeddedResource Remove="wwwroot/**/.bower.json" />
     <EmbeddedResource Remove="wwwroot/**/LICENSE*" />
