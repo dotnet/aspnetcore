@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         // safety concerns due to the static state.
         static readonly string _functionPrefix = typeof(BrowserUriHelper).FullName;
         static bool _hasEnabledNavigationInterception;
-        static string _currentAbsoluteUri;
+        static string _cachedAbsoluteUri;
         static EventHandler<string> _onLocationChanged;
         static string _baseUriString;
         static Uri _baseUri;
@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
             {
                 // We could consider deactivating the JS-side enableNavigationInteception
                 // if there are no remaining listeners, but we don't need that currently.
+                // If we ever do that, will also need to change the logic inside GetAbsoluteUri
+                // so it knows not to continue using the cached URI.
                 _onLocationChanged -= value;
             }
         }
@@ -51,13 +53,24 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
         /// <inheritdoc />
         public string GetAbsoluteUri()
         {
-            if (_currentAbsoluteUri == null)
+            if (_cachedAbsoluteUri == null)
             {
-                _currentAbsoluteUri = RegisteredFunction.InvokeUnmarshalled<string>(
+                var newUri = RegisteredFunction.InvokeUnmarshalled<string>(
                     $"{_functionPrefix}.getLocationHref");
-            }
 
-            return _currentAbsoluteUri;
+                if (_hasEnabledNavigationInterception)
+                {
+                    // Once we turn on navigation interception, we no longer have to query
+                    // the browser for its URI each time (because we'd know if it had changed)
+                    _cachedAbsoluteUri = newUri;
+                }
+
+                return newUri;
+            }
+            else
+            {
+                return _cachedAbsoluteUri;
+            }
         }
 
         /// <inheritdoc />
@@ -105,7 +118,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
 
         private static void NotifyLocationChanged(string newAbsoluteUri)
         {
-            _currentAbsoluteUri = newAbsoluteUri;
+            _cachedAbsoluteUri = newAbsoluteUri;
             _onLocationChanged?.Invoke(null, newAbsoluteUri);
         }
 
