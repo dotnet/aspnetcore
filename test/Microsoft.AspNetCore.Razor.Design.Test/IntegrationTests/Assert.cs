@@ -100,6 +100,42 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             throw new BuildOutputMissingException(result, match);
         }
 
+        public static void FileContains(MSBuildResult result, string filePath, string match)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+
+            var text = File.ReadAllText(filePath);
+            if (text.Contains(match))
+            {
+                return;
+            }
+
+            throw new FileContentMissingException(result, filePath, File.ReadAllText(filePath), match);
+        }
+
+        public static void FileDoesNotContain(MSBuildResult result, string filePath, string match)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+
+            var text = File.ReadAllText(filePath);
+            if (text.Contains(match))
+            {
+                throw new FileContentFoundException(result, filePath, File.ReadAllText(filePath), match);
+            }
+        }
+
         public static void FileContainsLine(MSBuildResult result, string filePath, string match)
         {
             if (result == null)

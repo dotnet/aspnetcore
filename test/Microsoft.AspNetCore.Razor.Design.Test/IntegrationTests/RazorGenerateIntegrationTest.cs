@@ -26,6 +26,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
+            // RazorGenerate should generate correct TagHelper caches
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.TagHelpers.input.cache");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
+            Assert.FileContains(
+                result,
+                Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache"),
+                @"""Name"":""SimpleMvc.SimpleTagHelper""");
+
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "About.cs");
@@ -44,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Introducing a syntax error, an unclosed brace
             ReplaceContent("@{", "Views", "Home", "Index.cshtml");
 
-            var result = await DotnetMSBuild("RazorGenerate");
+            var result = await DotnetMSBuild(RazorGenerateTarget);
 
             Assert.BuildFailed(result);
 
@@ -179,6 +187,37 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Assert - 2
             Assert.BuildPassed(result);
             Assert.FileDoesNotExist(result, generatedFile);
+        }
+
+        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2104")]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_Rebuilds_IfTagHelpersChanged()
+        {
+            // Act - 1
+            var expectedTagHelperCacheContent = @"""Name"":""SimpleMvc.SimpleTagHelper""";
+            var result = await DotnetMSBuild(RazorGenerateTarget);
+            var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
+            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+
+            // Assert - 1
+            Assert.BuildPassed(result);
+            Assert.FileContains(result, tagHelperOutputCache, expectedTagHelperCacheContent);
+            var fileThumbPrint = GetThumbPrint(generatedFile);
+
+            // Act - 2
+            // Update the source content and build. We should expect the outputs to be regenerated.
+            // Timestamps on xplat are precise only to a second. Add a delay so we can ensure that MSBuild recognizes the
+            // file change. See https://github.com/dotnet/corefx/issues/26024
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            ReplaceContent(string.Empty, file);
+            result = await DotnetMSBuild(RazorGenerateTarget);
+
+            // Assert - 2
+            Assert.BuildPassed(result);
+            Assert.FileDoesNotContain(result, tagHelperOutputCache, expectedTagHelperCacheContent);
+            var newThumbPrint = GetThumbPrint(generatedFile);
+            Assert.NotEqual(fileThumbPrint, newThumbPrint);
         }
 
         [Fact]
