@@ -8,21 +8,8 @@
 @functions {
     private string responseText;
 
-    // TODO: Move to OnInitAsync
-    protected override void OnParametersSet()
+    protected override async Task OnInitAsync()
     {
-        Http.GetStringAsync("/").ContinueWith(task =>
-        {
-            try
-            {
-                responseText = task.Result;
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine(ex.InnerException.Message);
-                Console.Error.WriteLine(ex.InnerException.StackTrace);
-            }
-            StateHasChanged();
-        });
+        responseText = await Http.GetStringAsync("http://example.com/");
     }
 }

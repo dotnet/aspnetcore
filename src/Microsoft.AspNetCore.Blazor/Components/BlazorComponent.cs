@@ -12,6 +12,13 @@ namespace Microsoft.AspNetCore.Blazor.Components
     // Many of these names are used in code generation. Keep these in sync with the code generation code
     // See: src/Microsoft.AspNetCore.Blazor.Razor.Extensions/BlazorComponent.cs
 
+    // Most of the developer-facing component lifecycle concepts are encapsulated in this
+    // base class. The core Blazor rendering system doesn't know about them (it only knows
+    // about IComponent). This gives us flexibility to change the lifecycle concepts easily,
+    // or for developers to design their own lifecycles as different base classes.
+
+    // TODO: When the component lifecycle design stabilises, add proper unit tests for BlazorComponent.
+
     /// <summary>
     /// Optional base class for Blazor components. Alternatively, Blazor components may
     /// implement <see cref="IComponent"/> directly.
@@ -22,6 +29,7 @@ namespace Microsoft.AspNetCore.Blazor.Components
 
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
+        private bool _hasCalledInit;
         private bool _hasNeverRendered = true;
         private bool _hasPendingQueuedRender;
 
@@ -41,6 +49,25 @@ namespace Microsoft.AspNetCore.Blazor.Components
             _hasPendingQueuedRender = false;
             _hasNeverRendered = false;
         }
+
+        /// <summary>
+        /// Method invoked when the component is ready to start, having received its
+        /// initial parameters from its parent in the render tree.
+        /// </summary>
+        protected virtual void OnInit()
+        {
+        }
+
+        /// <summary>
+        /// Method invoked when the component is ready to start, having received its
+        /// initial parameters from its parent in the render tree.
+        /// 
+        /// Override this method if you will perform an asynchronous operation and
+        /// want the component to refresh when that operation is completed.
+        /// </summary>
+        /// <returns>A <see cref="Task"/> representing any asynchronous operation, or <see langword="null"/>.</returns>
+        protected virtual Task OnInitAsync()
+            => null;
 
         /// <summary>
         /// Method invoked when the component has received parameters from its parent in
@@ -92,11 +119,40 @@ namespace Microsoft.AspNetCore.Blazor.Components
         {
             parameters.AssignToProperties(this);
 
-            // TODO: If we know conclusively that the parameters have not changed since last
-            // time (because they are all primitives and equal to the existing property values)
-            // then skip the following. Can put an "out bool" parameter on AssignToProperties.
+            if (!_hasCalledInit)
+            {
+                _hasCalledInit = true;
+                OnInit();
+
+                // If you override OnInitAsync and return a nonnull task, then by default
+                // we automatically re-render once that task completes.
+                OnInitAsync()?.ContinueWith(task =>
+                {
+                    if (task.Exception == null)
+                    {
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        HandleException(task.Exception);
+                    }
+                });
+            }
+
+
             OnParametersSet();
             StateHasChanged();
+        }
+
+        private void HandleException(Exception ex)
+        {
+            if (ex is AggregateException && ex.InnerException != null)
+            {
+                ex = ex.InnerException; // It's more useful
+            }
+
+            // TODO: Need better global exception handling
+            Console.Error.WriteLine($"[{ex.GetType().FullName}] {ex.Message}\n{ex.StackTrace}");
         }
 
         void IHandleEvent.HandleEvent(UIEventHandler handler, UIEventArgs args)
