@@ -488,7 +488,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
         {
-            if (HasAllowedChildren() && !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code)
+            var isDisallowedContent = true;
+            if (_featureFlags.AllowHtmlCommentsInTagHelpers)
+            {
+                isDisallowedContent = !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code;
+            }
+
+            if (HasAllowedChildren() && isDisallowedContent)
             {
                 var content = child.Content;
                 if (!string.IsNullOrWhiteSpace(content))
