@@ -1,0 +1,28 @@
+﻿@using Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
+@inject HttpClient Http
+
+<h1>Fetch data</h1>
+
+<strong>Response: </strong> @responseText
+
+@functions {
+    private string responseText;
+
+    // TODO: Move to OnInitAsync
+    protected override void OnParametersSet()
+    {
+        Http.GetStringAsync("/").ContinueWith(task =>
+        {
+            try
+            {
+                responseText = task.Result;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.InnerException.Message);
+                Console.Error.WriteLine(ex.InnerException.StackTrace);
+            }
+            StateHasChanged();
+        });
+    }
+}

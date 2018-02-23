@@ -1,9 +1,9 @@
 ﻿export interface Platform {
   start(loadAssemblyUrls: string[]): Promise<void>;
 
-  callEntryPoint(assemblyName: string, entrypointMethod: string, args: System_Object[]);
+  callEntryPoint(assemblyName: string, entrypointMethod: string, args: (System_Object | null)[]);
   findMethod(assemblyName: string, namespace: string, className: string, methodName: string): MethodHandle;
-  callMethod(method: MethodHandle, target: System_Object | null, args: System_Object[]): System_Object;
+  callMethod(method: MethodHandle, target: System_Object | null, args: (System_Object | null)[]): System_Object;
 
   toJavaScriptString(dotNetString: System_String): string;
   toDotNetString(javaScriptString: string): System_String;
