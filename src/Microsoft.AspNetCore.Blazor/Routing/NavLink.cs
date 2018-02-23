@@ -8,13 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Routing
+namespace Microsoft.AspNetCore.Blazor.Routing
 {
-    // TODO: Move this into Microsoft.AspNetCore.Blazor, and use DI to break the
-    // coupling on Microsoft.AspNetCore.Blazor.Browser.Routing.UriHelper.
-    // That's because you'd use NavLink in non-browser scenarios too (e.g., prerendering).
-    // Can't do this until DI is implemented.
-
     // NOTE: This could be implemented in a more performant way by iterating through
     // the ParameterCollection only once (instead of multiple TryGetValue calls), and
     // avoiding allocating a dictionary in the case where there are no additional params.
@@ -23,6 +18,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
     // have more examples of components implemented in pure C# (not Razor) we could change
     // this one to the more low-level perf-sensitive implementation.
 
+    /// <summary>
+    /// A component that renders an anchor tag, automatically toggling its 'active'
+    /// class based on whether its 'href' matches the current URI.
+    /// </summary>
     public class NavLink : IComponent, IDisposable
     {
         private RenderHandle _renderHandle;
@@ -35,6 +34,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 
         [Inject] private IUriHelper UriHelper { get; set; }
 
+        /// <inheritdoc />
         public void Init(RenderHandle renderHandle)
         {
             _renderHandle = renderHandle;
@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             UriHelper.OnLocationChanged += OnLocationChanged;
         }
 
+        /// <inheritdoc />
         public void SetParameters(ParameterCollection parameters)
         {
             // Capture the parameters we want to do special things with, plus all as a dictionary
