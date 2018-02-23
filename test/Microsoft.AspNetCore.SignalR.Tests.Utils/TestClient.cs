@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         private class DefaultInvocationBinder : IInvocationBinder
         {
-            public Type[] GetParameterTypes(string methodName)
+            public IReadOnlyList<Type> GetParameterTypes(string methodName)
             {
                 // TODO: Possibly support actual client methods
                 return new[] { typeof(object) };

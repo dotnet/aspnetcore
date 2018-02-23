@@ -188,14 +188,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        private static object[] BindArguments(Unpacker unpacker, Type[] parameterTypes)
+        private static object[] BindArguments(Unpacker unpacker, IReadOnlyList<Type> parameterTypes)
         {
             var argumentCount = ReadArrayLength(unpacker, "arguments");
 
-            if (parameterTypes.Length != argumentCount)
+            if (parameterTypes.Count != argumentCount)
             {
                 throw new FormatException(
-                    $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Length}.");
+                    $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Count}.");
             }
 
             try

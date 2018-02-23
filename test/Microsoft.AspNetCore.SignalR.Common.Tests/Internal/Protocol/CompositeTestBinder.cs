@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             _hubMessages = hubMessages.Where(IsBindableMessage).ToArray();
         }
 
-        public Type[] GetParameterTypes(string methodName)
+        public IReadOnlyList<Type> GetParameterTypes(string methodName)
         {
             index++;
             return new TestBinder(_hubMessages[index - 1]).GetParameterTypes(methodName);

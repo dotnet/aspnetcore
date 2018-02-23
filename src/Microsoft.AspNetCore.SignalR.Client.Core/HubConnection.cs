@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 return irq.ResultType;
             }
 
-            public Type[] GetParameterTypes(string methodName)
+            public IReadOnlyList<Type> GetParameterTypes(string methodName)
             {
                 if (!_connection._handlers.TryGetValue(methodName, out var handlers))
                 {

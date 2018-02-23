@@ -350,17 +350,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return message;
         }
 
-        private object[] BindArguments(JArray args, Type[] paramTypes)
+        private object[] BindArguments(JArray args, IReadOnlyList<Type> paramTypes)
         {
             var arguments = new object[args.Count];
-            if (paramTypes.Length != arguments.Length)
+            if (paramTypes.Count != arguments.Length)
             {
-                throw new InvalidDataException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Length}.");
+                throw new InvalidDataException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Count}.");
             }
 
             try
             {
-                for (var i = 0; i < paramTypes.Length; i++)
+                for (var i = 0; i < paramTypes.Count; i++)
                 {
                     var paramType = paramTypes[i];
                     arguments[i] = args[i].ToObject(paramType, PayloadSerializer);

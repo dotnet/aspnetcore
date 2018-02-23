@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
-using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
 using System.Threading;
@@ -156,7 +155,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
-                                    _logger.UsingHubProtocol(protocol.Name);
+                                    Log.UsingHubProtocol(_logger, protocol.Name);
 
                                     UserIdentifier = userIdProvider.GetUserId(this);
 
@@ -177,7 +176,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (OperationCanceledException)
             {
-                _logger.NegotiateCanceled();
+                Log.NegotiateCanceled(_logger);
             }
 
             return false;
@@ -211,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // adding a Ping message when the transport is full is unnecessary since the
                 // transport is still in the process of sending frames.
 
-                _logger.SentPing();
+                Log.SentPing(_logger);
 
                 _ = WriteAsync(PingMessage.Instance);
 
@@ -236,5 +235,42 @@ namespace Microsoft.AspNetCore.SignalR
                 connection._abortCompletedTcs.TrySetException(ex);
             }
         }
+
+        private static class Log
+        {
+            // Category: HubConnectionContext
+            private static readonly Action<ILogger, string, Exception> _usingHubProtocol =
+                LoggerMessage.Define<string>(LogLevel.Information, new EventId(1, "UsingHubProtocol"), "Using HubProtocol '{protocol}'.");
+
+            private static readonly Action<ILogger, Exception> _negotiateCanceled =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "NegotiateCanceled"), "Negotiate was canceled.");
+
+            private static readonly Action<ILogger, Exception> _sentPing =
+                LoggerMessage.Define(LogLevel.Trace, new EventId(3, "SentPing"), "Sent a ping message to the client.");
+
+            private static readonly Action<ILogger, Exception> _transportBufferFull =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "TransportBufferFull"), "Unable to send Ping message to client, the transport buffer is full.");
+
+            public static void UsingHubProtocol(ILogger logger, string hubProtocol)
+            {
+                _usingHubProtocol(logger, hubProtocol, null);
+            }
+
+            public static void NegotiateCanceled(ILogger logger)
+            {
+                _negotiateCanceled(logger, null);
+            }
+
+            public static void SentPing(ILogger logger)
+            {
+                _sentPing(logger, null);
+            }
+
+            public static void TransportBufferFull(ILogger logger)
+            {
+                _transportBufferFull(logger, null);
+            }
+        }
+
     }
 }
