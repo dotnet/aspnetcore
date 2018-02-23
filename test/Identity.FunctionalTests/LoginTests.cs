@@ -59,10 +59,54 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         }
 
         [Fact]
+        public async Task CanLogInWithTwoFactorAuthentication_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var server = ServerFactory.CreateServer(builder =>
+               builder.ConfigureServices(services => services.SetupGlobalAuthorizeFilter()));
+            var client = ServerFactory.CreateDefaultClient(server);
+            var newClient = ServerFactory.CreateDefaultClient(server);
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+
+            var twoFactorKey = showRecoveryCodes.Context.AuthenticatorKey;
+
+            // Act & Assert
+            // Use a new client to simulate a new browser session.
+            await UserStories.LoginExistingUser2FaAsync(newClient, userName, password, twoFactorKey);
+        }
+
+        [Fact]
         public async Task CanLogInWithRecoveryCode()
         {
             // Arrange
             var server = ServerFactory.CreateDefaultServer();
+            var client = ServerFactory.CreateDefaultClient(server);
+            var newClient = ServerFactory.CreateDefaultClient(server);
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var loggedIn = await UserStories.RegisterNewUserAsync(client, userName, password);
+            var showRecoveryCodes = await UserStories.EnableTwoFactorAuthentication(loggedIn);
+
+            var recoveryCode = showRecoveryCodes.Context.RecoveryCodes.First();
+
+            // Act & Assert
+            // Use a new client to simulate a new browser session.
+            await UserStories.LoginExistingUserRecoveryCodeAsync(newClient, userName, password, recoveryCode);
+        }
+
+        [Fact]
+        public async Task CanLogInWithRecoveryCode_WithGlobalAuthorizeFilter()
+        {
+            // Arrange
+            var server = ServerFactory.CreateServer(builder =>
+                builder.ConfigureServices(services => services.SetupGlobalAuthorizeFilter()));
             var client = ServerFactory.CreateDefaultClient(server);
             var newClient = ServerFactory.CreateDefaultClient(server);
 

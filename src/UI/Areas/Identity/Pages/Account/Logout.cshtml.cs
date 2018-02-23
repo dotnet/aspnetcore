@@ -3,12 +3,14 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
+    [AllowAnonymous]
     [IdentityDefaultUI(typeof(LogoutModel<>))]
     public abstract class LogoutModel : PageModel
     {

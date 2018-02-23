@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 "/Identity/Account/Manage/SetPassword",
                 "/Identity/Account/Manage/ShowRecoveryCodes",
                 "/Identity/Account/Manage/TwoFactorAuthentication",
-                "/Identity/Account/Logout",
             };
 
         [Theory]
@@ -78,7 +77,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             // Arrange
             var client = ServerFactory.CreateDefaultClient();
             await UserStories.RegisterNewUserAsync(client);
-            
+
             // Act
             var response = await client.GetAsync(url);
 
@@ -110,6 +109,32 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         {
             // Arrange
             var client = ServerFactory.CreateDefaultClient();
+
+            // Act
+            var response = await client.GetAsync(url);
+
+            // Assert
+            await ResponseAssert.IsHtmlDocumentAsync(response);
+        }
+
+        public static TheoryData<string> UnauthorizedPagesAllowAnonymous =>
+        new TheoryData<string>
+        {
+             "/Identity/Error",
+             "/Identity/Account/Register",
+             "/Identity/Account/Login",
+             "/Identity/Account/ForgotPassword",
+             "/Identity/Account/Logout"
+        };
+
+        [Theory]
+        [MemberData(nameof(UnauthorizedPagesAllowAnonymous))]
+        public async Task AnonymousUserAllowedAccessToPages_WithGlobalAuthorizationFilter(string url)
+        {
+            // Arrange
+            var server = ServerFactory.CreateServer(builder =>
+               builder.ConfigureServices(services => services.SetupGlobalAuthorizeFilter()));
+            var client = ServerFactory.CreateDefaultClient(server);
 
             // Act
             var response = await client.GetAsync(url);

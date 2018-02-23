@@ -5,12 +5,14 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Internal
 {
+    [AllowAnonymous]
     [IdentityDefaultUI(typeof(ForgotPasswordModel<>))]
     public abstract class ForgotPasswordModel : PageModel
     {

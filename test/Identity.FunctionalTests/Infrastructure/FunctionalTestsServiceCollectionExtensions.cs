@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Identity.DefaultUI.WebSite;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,5 +27,15 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
         public static IServiceCollection SetupEmailRequired(this IServiceCollection services) =>
             services.Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedEmail = true);
+
+        public static IServiceCollection SetupGlobalAuthorizeFilter(this IServiceCollection services) =>
+            services.AddMvc(config =>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+                config.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .Services;
     }
 }
