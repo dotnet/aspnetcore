@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _transport.Input.AdvanceTo(_consumed, _examined);
 
             Assert.True(returnValue);
-            Assert.Equal(expectedMethod, _http1Connection.Method);
+            Assert.Equal(expectedMethod, ((IHttpRequestFeature)_http1Connection).Method);
             Assert.Equal(expectedRawTarget, _http1Connection.RawTarget);
             Assert.Equal(expectedDecodedPath, _http1Connection.Path);
             Assert.Equal(expectedQueryString, _http1Connection.QueryString);
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             _http1Connection.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)_http1Connection).Method = "HEAD";
+            _http1Connection.Method = HttpMethod.Head;
 
             // Act/Assert
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]));
@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             _http1Connection.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)_http1Connection).Method = "HEAD";
+            _http1Connection.Method = HttpMethod.Head;
 
             // Act/Assert
             await _http1Connection.WriteAsync(new ArraySegment<byte>(new byte[1]), default(CancellationToken));
@@ -554,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             // Arrange
             _http1Connection.HttpVersion = "HTTP/1.1";
-            ((IHttpRequestFeature)_http1Connection).Method = "HEAD";
+            _http1Connection.Method = HttpMethod.Head;
 
             // Act
             _http1Connection.ResponseHeaders.Add("Transfer-Encoding", "chunked");

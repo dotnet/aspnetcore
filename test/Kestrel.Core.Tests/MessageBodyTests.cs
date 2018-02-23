@@ -333,9 +333,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData("POST")]
-        [InlineData("PUT")]
-        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthOrTransferEncodingIsSet(string method)
+        [InlineData(HttpMethod.Post)]
+        [InlineData(HttpMethod.Put)]
+        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthOrTransferEncodingIsSet(HttpMethod method)
         {
             using (var input = new TestInput())
             {
@@ -344,14 +344,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
-                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(method), ex.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(((IHttpRequestFeature)input.Http1Connection).Method), ex.Message);
             }
         }
 
         [Theory]
-        [InlineData("POST")]
-        [InlineData("PUT")]
-        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthSetHttp10(string method)
+        [InlineData(HttpMethod.Post)]
+        [InlineData(HttpMethod.Put)]
+        public void ForThrowsWhenMethodRequiresLengthButNoContentLengthSetHttp10(HttpMethod method)
         {
             using (var input = new TestInput())
             {
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                     Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
-                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequiredHttp10(method), ex.Message);
+                Assert.Equal(CoreStrings.FormatBadRequest_LengthRequiredHttp10(((IHttpRequestFeature)input.Http1Connection).Method), ex.Message);
             }
         }
 

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -175,6 +176,87 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             return HttpMethod.Custom;
+        }
+
+        /// <summary>
+        /// Parses string <paramref name="value"/> for a known HTTP method.
+        /// </summary>
+        /// <remarks>
+        /// A "known HTTP method" can be an HTTP method name defined in the HTTP/1.1 RFC.
+        /// The Known Methods (CONNECT, DELETE, GET, HEAD, PATCH, POST, PUT, OPTIONS, TRACE)
+        /// </remarks>
+        /// <returns><see cref="HttpMethod"/></returns>
+        public static HttpMethod GetKnownMethod(string value)
+        {
+            // Called by http/2
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var length = value.Length;
+            if (length == 0)
+            {
+                throw new ArgumentException(nameof(value));
+            }
+
+            // Start with custom and assign if known method is found
+            var method = HttpMethod.Custom;
+
+            var firstChar = value[0];
+            if (length == 3)
+            {
+                if (firstChar == 'G' && string.Equals(value, HttpMethods.Get, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Get;
+                }
+                else if (firstChar == 'P' && string.Equals(value, HttpMethods.Put, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Put;
+                }
+            }
+            else if (length == 4)
+            {
+                if (firstChar == 'H' && string.Equals(value, HttpMethods.Head, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Head;
+                }
+                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Post, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Post;
+                }
+            }
+            else if (length == 5)
+            {
+                if (firstChar == 'T' && string.Equals(value, HttpMethods.Trace, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Trace;
+                }
+                else if(firstChar == 'P' && string.Equals(value, HttpMethods.Patch, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Patch;
+                }
+            }
+            else if (length == 6)
+            {
+                if (firstChar == 'D' && string.Equals(value, HttpMethods.Delete, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Delete;
+                }
+            }
+            else if (length == 7)
+            {
+                if (firstChar == 'C' && string.Equals(value, HttpMethods.Connect, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Connect;
+                }
+                else if (firstChar == 'O' && string.Equals(value, HttpMethods.Options, StringComparison.Ordinal))
+                {
+                    method = HttpMethod.Options;
+                }
+            }
+
+            return method;
         }
 
         /// <summary>

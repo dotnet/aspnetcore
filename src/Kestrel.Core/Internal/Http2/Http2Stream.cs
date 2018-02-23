@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -53,7 +54,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // We don't need any of the parameters because we don't implement BeginRead to actually
             // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
 
-            Method = RequestHeaders[":method"];
+            var methodText = RequestHeaders[":method"];
+            Method = HttpUtilities.GetKnownMethod(methodText);
+            _methodText = methodText;
+
             Scheme = RequestHeaders[":scheme"];
             _httpVersion = Http.HttpVersion.Http2;
 

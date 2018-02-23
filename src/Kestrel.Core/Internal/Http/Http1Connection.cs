@@ -181,13 +181,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 OnAuthorityFormTarget(method, target);
             }
 
-            Method = method != HttpMethod.Custom
-                ? HttpUtilities.MethodToString(method) ?? string.Empty
-                : customMethod.GetAsciiStringNonNullCharacters();
+            Method = method;
+            if (method == HttpMethod.Custom)
+            {
+                _methodText = customMethod.GetAsciiStringNonNullCharacters();
+            }
+
             _httpVersion = version;
 
             Debug.Assert(RawTarget != null, "RawTarget was not set");
-            Debug.Assert(Method != null, "Method was not set");
+            Debug.Assert(((IHttpRequestFeature)this).Method != null, "Method was not set");
             Debug.Assert(Path != null, "Path was not set");
             Debug.Assert(QueryString != null, "QueryString was not set");
             Debug.Assert(HttpVersion != null, "HttpVersion was not set");

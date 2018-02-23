@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private readonly IHttpProtocolContext _context;
 
+        protected string _methodText = null;
         private string _scheme = null;
 
         public HttpProtocol(IHttpProtocolContext context)
@@ -119,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public IPAddress LocalIpAddress { get; set; }
         public int LocalPort { get; set; }
         public string Scheme { get; set; }
-        public string Method { get; set; }
+        public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
         public string Path { get; set; }
         public string QueryString { get; set; }
@@ -324,7 +325,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
             AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
             TraceIdentifier = null;
-            Method = null;
+            Method = HttpMethod.None;
+            _methodText = null;
             PathBase = null;
             Path = null;
             RawTarget = null;
@@ -905,7 +907,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             var responseHeaders = HttpResponseHeaders;
 
-            if (!HttpMethods.IsHead(Method) &&
+            if (Method != HttpMethod.Head &&
                 StatusCode != StatusCodes.Status304NotModified &&
                 !responseHeaders.HasTransferEncoding &&
                 responseHeaders.ContentLength.HasValue &&
@@ -1074,7 +1076,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionKeepAlive(ConnectionId);
             }
 
-            if (HttpMethods.IsHead(Method) && _responseBytesWritten > 0)
+            if (Method == HttpMethod.Head && _responseBytesWritten > 0)
             {
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
@@ -1094,7 +1096,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Log.ConnectionKeepAlive(ConnectionId);
             }
 
-            if (HttpMethods.IsHead(Method) && _responseBytesWritten > 0)
+            if (Method == HttpMethod.Head && _responseBytesWritten > 0)
             {
                 Log.ConnectionHeadResponseBodyWrite(ConnectionId, _responseBytesWritten);
             }
@@ -1124,7 +1126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             // Set whether response can have body
-            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != "HEAD";
+            _canHaveBody = StatusCanHaveBody(StatusCode) && Method != HttpMethod.Head;
 
             // Don't set the Content-Length or Transfer-Encoding headers
             // automatically for HEAD requests or 204, 205, 304 responses.
@@ -1261,7 +1263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void HandleNonBodyResponseWrite()
         {
             // Writes to HEAD response are ignored and logged at the end of the request
-            if (Method != "HEAD")
+            if (Method != HttpMethod.Head)
             {
                 ThrowWritingToResponseBodyNotSupported();
             }

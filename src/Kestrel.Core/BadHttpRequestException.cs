@@ -38,6 +38,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             throw GetException(reason);
         }
 
+        [StackTraceHidden]
+        public static void Throw(RequestRejectionReason reason, HttpMethod method)
+            => throw GetException(reason, method.ToString().ToUpperInvariant());
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)
         {
