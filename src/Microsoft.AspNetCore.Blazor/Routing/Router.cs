@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Blazor.Layouts;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Microsoft.AspNetCore.Blazor.Services;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Routing
+namespace Microsoft.AspNetCore.Blazor.Routing
 {
     /// <summary>
     /// A component that displays whichever other component corresponds to the
-    /// browser's changing navigation state.
+    /// current navigation location.
     /// </summary>
-    public class BrowserRouter : IComponent, IDisposable
+    public class Router : IComponent, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             }
 
             return FindComponentTypeInAssemblyOrReferences(AppAssembly, componentTypeName)
-                ?? throw new InvalidOperationException($"{nameof(BrowserRouter)} cannot find any component type with name {componentTypeName}.");
+                ?? throw new InvalidOperationException($"{nameof(Router)} cannot find any component type with name {componentTypeName}.");
         }
 
         private string StringUntilAny(string str, char[] chars)
