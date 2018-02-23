@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private CancellationToken? _manuallySetRequestAbortToken;
 
         protected RequestProcessingStatus _requestProcessingStatus;
-        protected volatile bool _keepAlive = true; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
+        protected volatile bool _keepAlive; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected bool _upgradeAvailable;
         private bool _canHaveBody;
         private bool _autoChunk;
@@ -440,139 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                while (_keepAlive)
-                {
-                    BeginRequestProcessing();
-
-                    var result = default(ReadResult);
-                    var endConnection = false;
-                    do
-                    {
-                        if (BeginRead(out var awaitable))
-                        {
-                            result = await awaitable;
-                        }
-                    } while (!TryParseRequest(result, out endConnection));
-
-                    if (endConnection)
-                    {
-                        return;
-                    }
-
-                    var messageBody = CreateMessageBody();
-
-                    if (!messageBody.RequestKeepAlive)
-                    {
-                        _keepAlive = false;
-                    }
-
-                    _upgradeAvailable = messageBody.RequestUpgrade;
-
-                    InitializeStreams(messageBody);
-
-                    var httpContext = application.CreateContext(this);
-
-                    try
-                    {
-                        try
-                        {
-                            KestrelEventSource.Log.RequestStart(this);
-
-                            await application.ProcessRequestAsync(httpContext);
-
-                            if (_requestAborted == 0)
-                            {
-                                VerifyResponseContentLength();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ReportApplicationError(ex);
-
-                            if (ex is BadHttpRequestException)
-                            {
-                                throw;
-                            }
-                        }
-                        finally
-                        {
-                            KestrelEventSource.Log.RequestStop(this);
-
-                            // Trigger OnStarting if it hasn't been called yet and the app hasn't
-                            // already failed. If an OnStarting callback throws we can go through
-                            // our normal error handling in ProduceEnd.
-                            // https://github.com/aspnet/KestrelHttpServer/issues/43
-                            if (!HasResponseStarted && _applicationException == null && _onStarting != null)
-                            {
-                                await FireOnStarting();
-                            }
-
-                            PauseStreams();
-
-                            if (_onCompleted != null)
-                            {
-                                await FireOnCompleted();
-                            }
-                        }
-
-                        // If _requestAbort is set, the connection has already been closed.
-                        if (_requestAborted == 0)
-                        {
-                            // Call ProduceEnd() before consuming the rest of the request body to prevent
-                            // delaying clients waiting for the chunk terminator:
-                            //
-                            // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
-                            //
-                            // This also prevents the 100 Continue response from being sent if the app
-                            // never tried to read the body.
-                            // https://github.com/aspnet/KestrelHttpServer/issues/2102
-                            //
-                            // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                            // HttpContext.Response.StatusCode is correctly set when
-                            // IHttpContextFactory.Dispose(HttpContext) is called.
-                            await ProduceEnd();
-
-                            // ForZeroContentLength does not complete the reader nor the writer
-                            if (!messageBody.IsEmpty)
-                            {
-                                // Finish reading the request body in case the app did not.
-                                await messageBody.ConsumeAsync();
-                            }
-                        }
-                        else if (!HasResponseStarted)
-                        {
-                            // If the request was aborted and no response was sent, there's no
-                            // meaningful status code to log.
-                            StatusCode = 0;
-                        }
-                    }
-                    catch (BadHttpRequestException ex)
-                    {
-                        // Handle BadHttpRequestException thrown during app execution or remaining message body consumption.
-                        // This has to be caught here so StatusCode is set properly before disposing the HttpContext
-                        // (DisposeContext logs StatusCode).
-                        SetBadRequestState(ex);
-                    }
-                    finally
-                    {
-                        application.DisposeContext(httpContext, _applicationException);
-
-                        // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
-                        // to ensure InitializeStreams has been called.
-                        StopStreams();
-
-                        if (HasStartedConsumingRequestBody)
-                        {
-                            RequestBodyPipe.Reader.Complete();
-
-                            // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
-                            await messageBody.StopAsync();
-
-                            // At this point both the request body pipe reader and writer should be completed.
-                            RequestBodyPipe.Reset();
-                        }
-                    }
-                }
+                await ProcessRequests(application);
             }
             catch (BadHttpRequestException ex)
             {
@@ -613,6 +481,156 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     OnRequestProcessingEnded();
                 }
             }
+        }
+
+        private async Task ProcessRequests<TContext>(IHttpApplication<TContext> application)
+        {
+            // Keep-alive is default for HTTP/1.1 and HTTP/2; parsing and errors will change its value
+            _keepAlive = true;
+            do
+            {
+                BeginRequestProcessing();
+
+                var result = default(ReadResult);
+                var endConnection = false;
+                do
+                {
+                    if (BeginRead(out var awaitable))
+                    {
+                        result = await awaitable;
+                    }
+                } while (!TryParseRequest(result, out endConnection));
+
+                if (endConnection)
+                {
+                    // Connection finished, stop processing requests
+                    return;
+                }
+
+                var messageBody = CreateMessageBody();
+                if (!messageBody.RequestKeepAlive)
+                {
+                    _keepAlive = false;
+                }
+
+                _upgradeAvailable = messageBody.RequestUpgrade;
+
+                InitializeStreams(messageBody);
+
+                var httpContext = application.CreateContext(this);
+
+                BadHttpRequestException badRequestException = null;
+                try
+                {
+                    KestrelEventSource.Log.RequestStart(this);
+
+                    // Run the application code for this request
+                    await application.ProcessRequestAsync(httpContext);
+
+                    if (_requestAborted == 0)
+                    {
+                        VerifyResponseContentLength();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ReportApplicationError(ex);
+                    // Capture BadHttpRequestException for further processing
+                    badRequestException = ex as BadHttpRequestException;
+                }
+
+                KestrelEventSource.Log.RequestStop(this);
+
+                // Trigger OnStarting if it hasn't been called yet and the app hasn't
+                // already failed. If an OnStarting callback throws we can go through
+                // our normal error handling in ProduceEnd.
+                // https://github.com/aspnet/KestrelHttpServer/issues/43
+                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
+                {
+                    await FireOnStarting();
+                }
+
+                PauseStreams();
+
+                if (_onCompleted != null)
+                {
+                    await FireOnCompleted();
+                }
+
+                if (badRequestException == null)
+                {
+                    // If _requestAbort is set, the connection has already been closed.
+                    if (_requestAborted == 0)
+                    {
+                        // Call ProduceEnd() before consuming the rest of the request body to prevent
+                        // delaying clients waiting for the chunk terminator:
+                        //
+                        // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
+                        //
+                        // This also prevents the 100 Continue response from being sent if the app
+                        // never tried to read the body.
+                        // https://github.com/aspnet/KestrelHttpServer/issues/2102
+                        //
+                        // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                        // HttpContext.Response.StatusCode is correctly set when
+                        // IHttpContextFactory.Dispose(HttpContext) is called.
+                        await ProduceEnd();
+
+                        // ForZeroContentLength does not complete the reader nor the writer
+                        if (!messageBody.IsEmpty)
+                        {
+                            try
+                            {
+                                // Finish reading the request body in case the app did not.
+                                await messageBody.ConsumeAsync();
+                            }
+                            catch (BadHttpRequestException ex)
+                            {
+                                // Capture BadHttpRequestException for further processing
+                                badRequestException = ex;
+                            }
+                        }
+                    }
+                    else if (!HasResponseStarted)
+                    {
+                        // If the request was aborted and no response was sent, there's no
+                        // meaningful status code to log.
+                        StatusCode = 0;
+                    }
+                }
+
+                if (badRequestException != null)
+                {
+                    // Handle BadHttpRequestException thrown during app execution or remaining message body consumption.
+                    // This has to be caught here so StatusCode is set properly before disposing the HttpContext
+                    // (DisposeContext logs StatusCode).
+                    SetBadRequestState(badRequestException);
+                }
+
+                application.DisposeContext(httpContext, _applicationException);
+
+                // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
+                // to ensure InitializeStreams has been called.
+                StopStreams();
+
+                if (HasStartedConsumingRequestBody)
+                {
+                    RequestBodyPipe.Reader.Complete();
+
+                    // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
+                    await messageBody.StopAsync();
+
+                    // At this point both the request body pipe reader and writer should be completed.
+                    RequestBodyPipe.Reset();
+                }
+
+                if (badRequestException != null)
+                {
+                    // Bad request reported, stop processing requests
+                    return;
+                }
+
+            } while (_keepAlive);
         }
 
         public void OnStarting(Func<object, Task> callback, object state)
