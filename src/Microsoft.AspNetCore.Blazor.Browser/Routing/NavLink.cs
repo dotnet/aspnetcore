@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Blazor.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         private string _cssClass;
         private string _hrefAbsolute;
         private IReadOnlyDictionary<string, object> _allAttributes;
+
+        [Inject] private IUriHelper UriHelper { get; set; }
 
         public void Init(RenderHandle renderHandle)
         {

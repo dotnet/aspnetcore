@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Browser.Routing;
+using Microsoft.AspNetCore.Blazor.Browser.Services;
 using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Test
 {
-    public class UriHelperTest
+    public class BrowserUriHelperTest
     {
+        private BrowserUriHelper _browserUriHelper = new BrowserUriHelper();
+
         [Theory]
         [InlineData("scheme://host/", "scheme://host")]
         [InlineData("scheme://host:123/", "scheme://host:123")]
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Test
         [InlineData("scheme://host/path/page?query=string&another=here", "scheme://host/path")]
         public void ComputesCorrectBaseUriPrefix(string baseUri, string expectedResult)
         {
-            var actualResult = UriHelper.ToBaseUriPrefix(baseUri);
+            var actualResult = BrowserUriHelper.ToBaseUriPrefix(baseUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Test
         [InlineData("scheme://host/path", "scheme://host/path", "/")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUriPrefix, string absoluteUri, string expectedResult)
         {
-            var actualResult = UriHelper.ToBaseRelativePath(baseUriPrefix, absoluteUri);
+            var actualResult = _browserUriHelper.ToBaseRelativePath(baseUriPrefix, absoluteUri);
             Assert.Equal(expectedResult, actualResult);
         }
 
@@ -40,7 +42,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Test
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                UriHelper.ToBaseRelativePath(baseUriPrefix, absoluteUri);
+                _browserUriHelper.ToBaseRelativePath(baseUriPrefix, absoluteUri);
             });
 
             Assert.Equal(

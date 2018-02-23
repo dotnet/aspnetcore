@@ -34,7 +34,7 @@ export const monoPlatform: Platform = {
 
     const typeHandle = find_class(assemblyHandle, namespace, className);
     if (!typeHandle) {
-      throw new Error(`Could not find type "${className}'" in namespace "${namespace}" in assembly "${assemblyName}"`);
+      throw new Error(`Could not find type "${className}" in namespace "${namespace}" in assembly "${assemblyName}"`);
     }
 
     const methodHandle = find_method(typeHandle, methodName, -1);

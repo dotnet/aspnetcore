@@ -1,7 +1,7 @@
 ﻿import { registerFunction } from '../Interop/RegisteredFunction';
 import { platform } from '../Environment';
 import { MethodHandle } from '../Platform/Platform';
-const registeredFunctionPrefix = 'Microsoft.AspNetCore.Blazor.Browser.Routing.UriHelper';
+const registeredFunctionPrefix = 'Microsoft.AspNetCore.Blazor.Browser.Services.BrowserUriHelper';
 let notifyLocationChangedMethod: MethodHandle;
 let hasRegisteredEventListeners = false;
 
@@ -37,8 +37,8 @@ function handleInternalNavigation() {
   if (!notifyLocationChangedMethod) {
     notifyLocationChangedMethod = platform.findMethod(
       'Microsoft.AspNetCore.Blazor.Browser',
-      'Microsoft.AspNetCore.Blazor.Browser.Routing',
-      'UriHelper',
+      'Microsoft.AspNetCore.Blazor.Browser.Services',
+      'BrowserUriHelper',
       'NotifyLocationChanged'
     );
   }

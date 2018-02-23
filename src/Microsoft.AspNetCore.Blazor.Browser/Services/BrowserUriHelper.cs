@@ -2,28 +2,31 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.AspNetCore.Blazor.Services;
 using System;
 
-namespace Microsoft.AspNetCore.Blazor.Browser.Routing
+namespace Microsoft.AspNetCore.Blazor.Browser.Services
 {
-    // TODO: Make this not static, and wrap it in an interface that can be injected through DI.
-
     /// <summary>
-    /// Helpers for working with URIs and navigation state.
+    /// Default browser implementation of <see cref="IUriHelper"/>.
     /// </summary>
-    public static class UriHelper
+    public class BrowserUriHelper : IUriHelper
     {
-        static readonly string _functionPrefix = typeof(UriHelper).FullName;
+        // Since there's only one browser (and hence only one navigation state), the internal state
+        // is all static. In typical usage the DI system will register BrowserUriHelper as a singleton
+        // so it makes no difference, but if you manually instantiate more than one BrowserUriHelper
+        // that's fine too - they will just share their internal state.
+        // This class will never be used during server-side prerendering, so we don't have thread-
+        // safety concerns due to the static state.
+        static readonly string _functionPrefix = typeof(BrowserUriHelper).FullName;
+        static bool _hasEnabledNavigationInterception;
         static string _currentAbsoluteUri;
+        static EventHandler<string> _onLocationChanged;
         static string _baseUriString;
         static Uri _baseUri;
-        static EventHandler<string> _onLocationChanged;
-        static bool _hasEnabledNavigationInterception;
 
-        /// <summary>
-        /// An event that fires when the navigation location has changed.
-        /// </summary>
-        public static event EventHandler<string> OnLocationChanged
+        /// <inheritdoc />
+        public event EventHandler<string> OnLocationChanged
         {
             add
             {
@@ -38,63 +41,34 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             }
         }
 
-        /// <summary>
-        /// Gets the URI prefix that can be prepended before URI paths to produce an absolute URI.
-        /// Typically this corresponds to the 'href' attribute on the document's &lt;base&gt; element.
-        /// </summary>
-        /// <returns>The URI prefix.</returns>
-        public static string GetBaseUriPrefix()
+        /// <inheritdoc />
+        public string GetBaseUriPrefix()
         {
             EnsureBaseUriPopulated();
             return _baseUriString;
         }
 
-        private static void EnsureBaseUriPopulated()
-        {
-            // The <base href> is fixed for the lifetime of the page, so just cache it
-            if (_baseUriString == null)
-            {
-                var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
-                    $"{_functionPrefix}.getBaseURI");
-                _baseUriString = ToBaseUriPrefix(baseUri);
-                _baseUri = new Uri(_baseUriString);
-            }
-        }
-
-        /// <summary>
-        /// Gets the browser's current absolute URI.
-        /// </summary>
-        /// <returns>The browser's current absolute URI.</returns>
-        public static string GetAbsoluteUri()
+        /// <inheritdoc />
+        public string GetAbsoluteUri()
         {
             if (_currentAbsoluteUri == null)
             {
                 _currentAbsoluteUri = RegisteredFunction.InvokeUnmarshalled<string>(
-                $"{_functionPrefix}.getLocationHref");
+                    $"{_functionPrefix}.getLocationHref");
             }
 
             return _currentAbsoluteUri;
         }
 
-        /// <summary>
-        /// Converts a relative URI into an absolute one.
-        /// </summary>
-        /// <param name="relativeUri">The relative URI.</param>
-        /// <returns>The absolute URI.</returns>
-        public static Uri ToAbsoluteUri(string relativeUri)
+        /// <inheritdoc />
+        public Uri ToAbsoluteUri(string relativeUri)
         {
             EnsureBaseUriPopulated();
             return new Uri(_baseUri, relativeUri);
         }
 
-        /// <summary>
-        /// Given a base URI prefix (e.g., one previously returned by <see cref="GetBaseUriPrefix"/>),
-        /// converts an absolute URI into one relative to the base URI prefix.
-        /// </summary>
-        /// <param name="baseUriPrefix">The base URI prefix (e.g., previously returned by <see cref="GetBaseUriPrefix"/>).</param>
-        /// <param name="absoluteUri">An absolute URI that is within the space of the base URI prefix.</param>
-        /// <returns>A relative URI path.</returns>
-        public static string ToBaseRelativePath(string baseUriPrefix, string absoluteUri)
+        /// <inheritdoc />
+        public string ToBaseRelativePath(string baseUriPrefix, string absoluteUri)
         {
             if (absoluteUri.Equals(baseUriPrefix, StringComparison.Ordinal))
             {
@@ -115,6 +89,18 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
             }
 
             throw new ArgumentException($"The URI '{absoluteUri}' is not contained by the base URI '{baseUriPrefix}'.");
+        }
+
+        private static void EnsureBaseUriPopulated()
+        {
+            // The <base href> is fixed for the lifetime of the page, so just cache it
+            if (_baseUriString == null)
+            {
+                var baseUri = RegisteredFunction.InvokeUnmarshalled<string>(
+                    $"{_functionPrefix}.getBaseURI");
+                _baseUriString = ToBaseUriPrefix(baseUri);
+                _baseUri = new Uri(_baseUriString);
+            }
         }
 
         private static void NotifyLocationChanged(string newAbsoluteUri)

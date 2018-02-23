@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
 
         private void AddDefaultServices(ServiceCollection serviceCollection)
         {
-            // TODO: Add default services for HttpClient, IUrlHelper, etc.
+            serviceCollection.AddSingleton<IUriHelper>(new BrowserUriHelper());
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Layouts;
 using Microsoft.AspNetCore.Blazor.RenderTree;
+using Microsoft.AspNetCore.Blazor.Services;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Routing
 {
@@ -21,6 +22,8 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Routing
         RenderHandle _renderHandle;
         string _baseUriPrefix;
         string _locationAbsolute;
+
+        [Inject] private IUriHelper UriHelper { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly that should be searched, along with its referenced
