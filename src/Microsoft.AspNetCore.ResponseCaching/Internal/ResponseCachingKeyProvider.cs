@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             }
         }
 
-        // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue
+        // BaseKey<delimiter>H<delimiter>HeaderName=HeaderValue<delimiter>Q<delimiter>QueryName=QueryValue1<subdelimiter>QueryValue2
         public string CreateStorageVaryByKey(ResponseCachingContext context)
         {
             if (context == null)
@@ -124,9 +124,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                             .Append(header)
                             .Append("=");
 
-                        for (var j = 0; j < headerValues.Count; j++)
+                        var headerValuesArray = headerValues.ToArray();
+                        Array.Sort(headerValuesArray, StringComparer.Ordinal);
+
+                        for (var j = 0; j < headerValuesArray.Length; j++)
                         {
-                            builder.Append(headerValues[j]);
+                            builder.Append(headerValuesArray[j]);
                         }
                     }
                 }
@@ -141,19 +144,27 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                     if (varyByRules.QueryKeys.Count == 1 && string.Equals(varyByRules.QueryKeys[0], "*", StringComparison.Ordinal))
                     {
                         // Vary by all available query keys
-                        foreach (var query in context.HttpContext.Request.Query.OrderBy(q => q.Key, StringComparer.OrdinalIgnoreCase))
+                        var queryArray = context.HttpContext.Request.Query.ToArray();
+                        // Query keys are aggregated case-insensitively whereas the query values are compared ordinally.
+                        Array.Sort(queryArray, QueryKeyComparer.OrdinalIgnoreCase);
+
+                        for (var i = 0; i < queryArray.Length; i++)
                         {
                             builder.Append(KeyDelimiter)
-                                .AppendUpperInvariant(query.Key)
+                                .AppendUpperInvariant(queryArray[i].Key)
                                 .Append("=");
 
-                            for (var i = 0; i < query.Value.Count; i++)
+                            var queryValueArray = queryArray[i].Value.ToArray();
+                            Array.Sort(queryValueArray, StringComparer.Ordinal);
+
+                            for (var j = 0; j < queryValueArray.Length; j++)
                             {
-                                if (i > 0)
+                                if (j > 0)
                                 {
                                     builder.Append(KeySubDelimiter);
                                 }
-                                builder.Append(query.Value[i]);
+
+                                builder.Append(queryValueArray[j]);
                             }
                         }
                     }
@@ -167,13 +178,17 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                                 .Append(queryKey)
                                 .Append("=");
 
-                            for (var j = 0; j < queryKeyValues.Count; j++)
+                            var queryValueArray = queryKeyValues.ToArray();
+                            Array.Sort(queryValueArray, StringComparer.Ordinal);
+
+                            for (var j = 0; j < queryValueArray.Length; j++)
                             {
                                 if (j > 0)
                                 {
                                     builder.Append(KeySubDelimiter);
                                 }
-                                builder.Append(queryKeyValues[j]);
+
+                                builder.Append(queryValueArray[j]);
                             }
                         }
                     }
@@ -185,6 +200,20 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             {
                 _builderPool.Return(builder);
             }
+        }
+
+        private class QueryKeyComparer : IComparer<KeyValuePair<string, StringValues>>
+        {
+            private StringComparer _stringComparer;
+
+            public static QueryKeyComparer OrdinalIgnoreCase { get; } = new QueryKeyComparer(StringComparer.OrdinalIgnoreCase);
+
+            public QueryKeyComparer(StringComparer stringComparer)
+            {
+                _stringComparer = stringComparer;
+            }
+
+            public int Compare(KeyValuePair<string, StringValues> x, KeyValuePair<string, StringValues> y) => _stringComparer.Compare(x.Key, y.Key);
         }
     }
 }
