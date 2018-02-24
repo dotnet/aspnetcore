@@ -412,7 +412,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 if (logLevel == LogLevel.Error)
                 {
-                    _errorMessages.Add(formatter(state, exception));
+                    var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                    _errorMessages.Add(log);
                 }
 
                 if (exception is ObjectDisposedException)

@@ -409,7 +409,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
                 .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
                 {
-                    _output.WriteLine(logLevel + ": " + formatter(state, exception));
+                    var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                    _output.WriteLine(log);
 
                     if (eventId.Id == _connectionResetEventId)
                     {
