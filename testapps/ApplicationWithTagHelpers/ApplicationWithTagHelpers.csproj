@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">PrecompilationTool</ResolvedRazorCompileToolset>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 

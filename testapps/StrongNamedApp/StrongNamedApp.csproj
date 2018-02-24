@@ -5,8 +5,6 @@
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">PrecompilationTool</ResolvedRazorCompileToolset>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 

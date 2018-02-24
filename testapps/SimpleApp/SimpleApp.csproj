@@ -4,8 +4,6 @@
     <TargetFrameworks>$(StandardTestAppTfms)</TargetFrameworks>
     <RuntimeIdentifiers>win7-x86;debian-x64</RuntimeIdentifiers>
 
-    <!-- Workaround until we get a new SDK build -->
-    <ResolvedRazorCompileToolset Condition="'$(RazorCompileToolset)'==''">PrecompilationTool</ResolvedRazorCompileToolset>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>
 

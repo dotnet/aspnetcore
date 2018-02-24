@@ -22,7 +22,7 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [Fact(Skip = "https://github.com/aspnet/MvcPrecompilation/issues/241")]
+        [Fact]
         public async Task Publish_UsesRazorSDK()
         {
             using (StartLog(out var loggerFactory))
