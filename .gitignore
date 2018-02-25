@@ -4,3 +4,4 @@ obj/
 *.user
 launchSettings.json
 artifacts/
+msbuild.binlog
