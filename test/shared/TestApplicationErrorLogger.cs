@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Testing
             if (logLevel == LogLevel.Critical && ThrowOnCriticalErrors)
 #endif
             {
-                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
 
                 Console.WriteLine(log);
 

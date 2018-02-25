@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 if (logLevel == LogLevel.Error)
                 {
-                    var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception?.Message}";
+                    var log = $"Log {logLevel}[{eventId}]: {formatter(state, exception)} {exception}";
                     _errorMessages.Add(log);
                 }
 
