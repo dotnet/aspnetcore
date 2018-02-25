@@ -62,16 +62,6 @@
                     }
                 }
             },
-            "Microsoft.VisualStudio.Web.CodeGeneration.Tools": {
-                "exclusions": {
-                    "BUILD_ITEMS_FRAMEWORK": {
-                        "*": "This package intentionally targets .NET Standard 1.0 even though it only carries .NET Core assemblies."
-                    }
-                },
-                "packageTypes": [
-                    "DotnetCliTool"
-                ]
-            },
             "Microsoft.VisualStudio.Web.BrowserLink": {
                 "Exclusions": {
                     "NUSPEC_TAGS": {
@@ -103,6 +93,18 @@
                 "packageTypes": [
                     "DotnetCliTool"
                 ]
+            },
+            "dotnet-aspnet-codegenerator": {
+                "packageTypes": [
+                    "DotnetTool"
+                ],
+                "Exclusions": {
+                    "ASSEMBLY_COMMIT_HASH": {
+                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/NuGet.Frameworks.dll": "Assembly is built by another project but bundled in our nupkg.",
+                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
+                    }
+                }
             },
             "dotnet-sql-cache": {
                 "packageTypes": [
