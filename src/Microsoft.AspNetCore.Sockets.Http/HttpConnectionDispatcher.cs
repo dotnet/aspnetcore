@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Sockets
             else if (context.WebSockets.IsWebSocketRequest)
             {
                 // Connection can be established lazily
-                var connection = await GetOrCreateConnectionAsync(context);
+                var connection = await GetOrCreateConnectionAsync(context, options);
                 if (connection == null)
                 {
                     // No such connection, GetOrCreateConnection already set the response status code
@@ -364,7 +364,7 @@ namespace Microsoft.AspNetCore.Sockets
             context.Response.ContentType = "application/json";
 
             // Establish the connection
-            var connection = _manager.CreateConnection();
+            var connection = CreateConnectionInternal(options);
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
@@ -515,7 +515,14 @@ namespace Microsoft.AspNetCore.Sockets
             return connection;
         }
 
-        private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context)
+        private DefaultConnectionContext CreateConnectionInternal(HttpSocketOptions options)
+        {
+            var transportPipeOptions = new PipeOptions(pauseWriterThreshold: options.TransportMaxBufferSize, resumeWriterThreshold: options.TransportMaxBufferSize / 2);
+            var appPipeOptions = new PipeOptions(pauseWriterThreshold: options.ApplicationMaxBufferSize, resumeWriterThreshold: options.ApplicationMaxBufferSize / 2);
+            return _manager.CreateConnection(transportPipeOptions, appPipeOptions);
+        }
+
+        private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context, HttpSocketOptions options)
         {
             var connectionId = GetConnectionId(context);
             DefaultConnectionContext connection;
@@ -523,7 +530,7 @@ namespace Microsoft.AspNetCore.Sockets
             // There's no connection id so this is a brand new connection
             if (StringValues.IsNullOrEmpty(connectionId))
             {
-                connection = _manager.CreateConnection();
+                connection = CreateConnectionInternal(options);
             }
             else if (!_manager.TryGetConnection(connectionId, out connection))
             {
