@@ -298,7 +298,6 @@
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Category="ship" LZMA="true" />
-    <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Category="ship" LZMA="true" PackageType="DotnetCliTool" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.Web.Xdt.Extensions" Category="shipoob" />
