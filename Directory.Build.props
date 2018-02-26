@@ -1,4 +1,14 @@
 <Project>
+  <Import Project="version.props" />
+  
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core Blazor</Product>
+    <RepositoryUrl>https://github.com/aspnet/blazor</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
   <PropertyGroup>
     <RazorPackageVersion>2.1.0-preview2-30159</RazorPackageVersion>
   </PropertyGroup>
