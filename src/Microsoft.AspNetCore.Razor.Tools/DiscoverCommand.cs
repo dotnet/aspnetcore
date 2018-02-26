@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 Serialize(stream, tagHelpers);
 
-                stream.Position = 0L;
+                stream.Position = 0;
 
                 var newHash = Hash(stream);
                 var existingHash = Hash(outputFilePath);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 if (!HashesEqual(newHash, existingHash))
                 {
                     stream.Position = 0;
-                    using (var output = File.OpenWrite(outputFilePath))
+                    using (var output = File.Open(outputFilePath, FileMode.Create))
                     {
                         stream.CopyTo(output);
                     }

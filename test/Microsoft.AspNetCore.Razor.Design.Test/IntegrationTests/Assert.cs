@@ -136,6 +136,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        public static void FileContentEquals(MSBuildResult result, string filePath, string expected)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            filePath = Path.Combine(result.Project.DirectoryPath, filePath);
+            FileExists(result, filePath);
+
+            var actual = File.ReadAllText(filePath);
+            if (!actual.Equals(expected, StringComparison.Ordinal))
+            {
+                throw new FileContentNotEqualException(result, filePath, expected, actual);
+            }
+        }
+
         public static void FileContainsLine(MSBuildResult result, string filePath, string match)
         {
             if (result == null)
@@ -465,6 +482,36 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     builder.AppendLine();
                     builder.AppendLine();
                     builder.AppendLine(Content);
+                    return builder.ToString();
+                }
+            }
+        }
+
+        private class FileContentNotEqualException : MSBuildXunitException
+        {
+            public FileContentNotEqualException(MSBuildResult result, string filePath, string expected, string actual)
+                : base(result)
+            {
+                FilePath = filePath;
+                Expected = expected;
+                Actual = actual;
+            }
+
+            public string Actual { get; }
+
+            public string FilePath { get; }
+
+            public string Expected { get; }
+
+            protected override string Heading
+            {
+                get
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendFormat("File content of '{0}' did not match the expected content: '{1}'.", FilePath, Expected);
+                    builder.AppendLine();
+                    builder.AppendLine();
+                    builder.AppendLine(Actual);
                     return builder.ToString();
                 }
             }

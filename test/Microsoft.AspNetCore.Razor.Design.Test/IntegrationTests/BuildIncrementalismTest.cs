@@ -56,5 +56,34 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 }
             }
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerate_RegeneratesTagHelperInputs_IfFileChanges()
+        {
+            // Act - 1
+            var expectedTagHelperCacheContent = @"""Name"":""SimpleMvc.SimpleTagHelper""";
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
+            var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
+            var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
+
+            // Assert - 1
+            Assert.BuildPassed(result);
+            Assert.FileContains(result, tagHelperOutputCache, expectedTagHelperCacheContent);
+            var fileThumbPrint = GetThumbPrint(generatedFile);
+
+            // Act - 2
+            // Update the source content and build. We should expect the outputs to be regenerated.
+            ReplaceContent(string.Empty, file);
+            result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+
+            // Assert - 2
+            Assert.BuildPassed(result);
+            Assert.FileContentEquals(result, tagHelperOutputCache, "[]");
+            var newThumbPrint = GetThumbPrint(generatedFile);
+            Assert.NotEqual(fileThumbPrint, newThumbPrint);
+        }
+
     }
 }

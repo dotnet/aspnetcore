@@ -92,6 +92,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             File.WriteAllText(filePath, content, Encoding.UTF8);
+            // Timestamps on xplat are precise only to a second. Update it's last write time by at least 1 second
+            // so we can ensure that MSBuild recognizes the file change. See https://github.com/dotnet/corefx/issues/26024
+            File.SetLastWriteTimeUtc(filePath, File.GetLastWriteTimeUtc(filePath).AddSeconds(1));
         }
 
         /// <summary>
