@@ -11,6 +11,5 @@
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
     <file src="tools\**" target="tools" />
-    <file src="tools\Microsoft.AspNetCore.Blazor.Build.dll"  target="tools\blazor.dll" />
   </files>
 </package>
