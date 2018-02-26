@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using AngleSharp;
 using AngleSharp.Html;
 using AngleSharp.Parser.Html;
@@ -21,10 +22,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     {
         // Per the HTML spec, the following elements are inherently self-closing
         // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
-        private static HashSet<string> htmlVoidElementsLookup
+        private readonly static HashSet<string> htmlVoidElementsLookup
             = new HashSet<string>(
                 new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
                 StringComparer.OrdinalIgnoreCase);
+        private readonly static Regex bindExpressionRegex = new Regex(@"^bind\((.+)\)$");
 
         private readonly ScopeStack _scopeStack = new ScopeStack();
         private string _unconsumedHtml;
@@ -269,12 +271,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                                 {
                                     foreach (var token in _currentElementAttributeTokens)
                                     {
-                                        codeWriter
-                                            .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
-                                            .Write((_sourceSequence++).ToString())
-                                            .WriteParameterSeparator()
-                                            .Write(token.AttributeValue.Content)
-                                            .WriteEndMethodInvocation();
+                                        WriteElementAttributeToken(context, nextTag, token);
                                     }
                                     _currentElementAttributeTokens.Clear();
                                 }
@@ -318,6 +315,46 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             if (originalHtmlContent.Length > nextToken.Position.Position)
             {
                 _unconsumedHtml = originalHtmlContent.Substring(nextToken.Position.Position - 1);
+            }
+        }
+
+        private void WriteElementAttributeToken(CodeRenderingContext context, HtmlTagToken tag, PendingAttributeToken token)
+        {
+            var bindMatch = bindExpressionRegex.Match(token.AttributeValue.Content);
+            if (bindMatch.Success)
+            {
+                // The @bind(X) syntax is special. We convert it to a pair of attributes:
+                // [1] value=@X
+                var valueExpression = bindMatch.Groups[1].Value;
+                WriteAttribute(context.CodeWriter, "value",
+                    new IntermediateToken { Kind = TokenKind.CSharp, Content = valueExpression });
+
+                // [2] @onchange(newValue => { X = newValue; })
+                var isCheckbox = tag.Data.Equals("input", StringComparison.OrdinalIgnoreCase)
+                    && tag.Attributes.Any(a =>
+                        a.Key.Equals("type", StringComparison.Ordinal)
+                        && a.Value.Equals("checkbox", StringComparison.Ordinal));
+                var castToType = isCheckbox ? "bool" : "string";
+                var onChangeAttributeToken = new PendingAttributeToken
+                {
+                    AttributeValue = new IntermediateToken
+                    {
+                        Kind = TokenKind.CSharp,
+                        Content = $"onchange(_newValue_ => {{ {valueExpression} = ({castToType})_newValue_; }})"
+                    }
+                };
+                WriteElementAttributeToken(context, tag, onChangeAttributeToken);
+            }
+            else
+            {
+                // For any other attribute token (e.g., @onclick(...)), treat it as an expression
+                // that will evaluate as an attribute frame
+                context.CodeWriter
+                    .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(RenderTreeBuilder.AddAttribute)}")
+                    .Write((_sourceSequence++).ToString())
+                    .WriteParameterSeparator()
+                    .Write(token.AttributeValue.Content)
+                    .WriteEndMethodInvocation();
             }
         }
 

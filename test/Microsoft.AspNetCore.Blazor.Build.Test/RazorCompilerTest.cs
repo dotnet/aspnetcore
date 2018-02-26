@@ -363,6 +363,67 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
+        public void SupportsTwoWayBindingForTextboxes()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<input @bind(MyValue) />
+                @functions {
+                    public string MyValue { get; set; } = ""Initial value"";
+                }");
+            var myValueProperty = component.GetType().GetProperty("MyValue");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", "Initial value", 1),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 2);
+
+                    // Trigger the change event to show it updates the property
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = "Modified value"
+                    });
+                    Assert.Equal("Modified value", myValueProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact]
+        public void SupportsTwoWayBindingForCheckboxes()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<input @bind(MyValue) type=""checkbox"" />
+                @functions {
+                    public bool MyValue { get; set; } = true;
+                }");
+            var myValueProperty = component.GetType().GetProperty("MyValue");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "input", 4, 0),
+                frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
+                frame => AssertFrame.Attribute(frame, "value", "True", 2),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 3);
+
+                    // Trigger the change event to show it updates the property
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = false
+                    });
+                    Assert.False((bool)myValueProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 4));
+        }
+
+        [Fact]
         public void SupportsChildComponentsViaTemporarySyntax()
         {
             // Arrange/Act

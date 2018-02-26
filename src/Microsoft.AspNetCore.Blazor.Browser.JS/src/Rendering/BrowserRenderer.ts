@@ -186,7 +186,11 @@ export class BrowserRenderer {
       }
       case 'onchange': {
         toDomElement.removeEventListener('change', toDomElement['_blazorChangeListener']);
-        const listener = evt => raiseEvent(evt, browserRendererId, componentId, eventHandlerId, 'change', { Type: 'change', Value: evt.target.value });
+        const targetIsCheckbox = isCheckbox(toDomElement);
+        const listener = evt => {
+          const newValue = targetIsCheckbox ? evt.target.checked : evt.target.value;
+          raiseEvent(evt, browserRendererId, componentId, eventHandlerId, 'change', { Type: 'change', Value: newValue });
+        };
         toDomElement['_blazorChangeListener'] = listener;
         toDomElement.addEventListener('change', listener);
         break;
@@ -218,8 +222,13 @@ export class BrowserRenderer {
     // Certain elements have built-in behaviour for their 'value' property
     switch (element.tagName) {
       case 'INPUT':
-      case 'SELECT': // Note: this doen't handle <select> correctly: https://github.com/aspnet/Blazor/issues/157
-        (element as any).value = value;
+      case 'SELECT':
+        if (isCheckbox(element)) {
+          (element as HTMLInputElement).checked = value === 'True';
+        } else {
+          // Note: this doen't handle <select> correctly: https://github.com/aspnet/Blazor/issues/157
+          (element as any).value = value;
+        }
         return true;
       default:
         return false;
@@ -242,6 +251,10 @@ export class BrowserRenderer {
 
     return (childIndex - origChildIndex); // Total number of children inserted
   }
+}
+
+function isCheckbox(element: Element) {
+  return element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
 }
 
 function insertNodeIntoDOM(node: Node, parent: Element, childIndex: number) {
