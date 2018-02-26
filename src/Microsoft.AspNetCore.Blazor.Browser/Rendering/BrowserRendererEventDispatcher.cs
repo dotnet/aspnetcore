@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
         // This can be simplified in the future when the Mono WASM runtime is enhanced.
         public static void DispatchEvent(string eventDescriptorJson, string eventArgsJson)
         {
-            var eventDescriptor = Json.Deserialize<BrowserEventDescriptor>(eventDescriptorJson);
+            var eventDescriptor = JsonUtil.Deserialize<BrowserEventDescriptor>(eventDescriptorJson);
             var eventArgs = ParseEventArgsJson(eventDescriptor.EventArgsType, eventArgsJson);
             var browserRenderer = BrowserRendererRegistry.Find(eventDescriptor.BrowserRendererId);
             browserRenderer.DispatchBrowserEvent(
@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Rendering
             switch (eventArgsType)
             {
                 case "mouse":
-                    return Json.Deserialize<UIMouseEventArgs>(eventArgsJson);
+                    return JsonUtil.Deserialize<UIMouseEventArgs>(eventArgsJson);
                 case "keyboard":
-                    return Json.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
+                    return JsonUtil.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
                 case "change":
-                    return Json.Deserialize<UIChangeEventArgs>(eventArgsJson);
+                    return JsonUtil.Deserialize<UIChangeEventArgs>(eventArgsJson);
                 default:
                     throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
             }

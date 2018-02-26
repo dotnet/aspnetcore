@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Interop
         {
             // This is a low-perf convenience method that bypasses the need to deal with
             // .NET memory and data structures on the JS side
-            var argsJson = args.Select(Json.Serialize);
+            var argsJson = args.Select(JsonUtil.Serialize);
             var resultJson = InvokeUnmarshalled<string>("invokeWithJsonMarshalling",
                 argsJson.Prepend(identifier).ToArray());
-            return Json.Deserialize<TRes>(resultJson);
+            return JsonUtil.Deserialize<TRes>(resultJson);
         }
 
         /// <summary>

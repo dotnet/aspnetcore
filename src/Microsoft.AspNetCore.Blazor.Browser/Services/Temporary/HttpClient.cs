@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         }
 
         private string SerializeHeadersAsJson(HttpRequestMessage request)
-            => Json.Serialize(
+            => JsonUtil.Serialize(
                 (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
                 from headerValue in header.Value // There can be more than one value for each name
                 select new[] { header.Key, headerValue }).ToList()
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
             }
             else
             {
-                var responseDescriptor = Json.Deserialize<ResponseDescriptor>(responseDescriptorJson);
+                var responseDescriptor = JsonUtil.Deserialize<ResponseDescriptor>(responseDescriptorJson);
                 var responseContent = responseBodyText == null ? null : new StringContent(responseBodyText);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);

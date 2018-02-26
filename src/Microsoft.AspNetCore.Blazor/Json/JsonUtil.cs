@@ -3,10 +3,14 @@
 
 namespace Microsoft.AspNetCore.Blazor
 {
+    // TODO: Once we no longer need the Razor base class hacks, rename this from 'JsonUtil'
+    // to 'Json', because it's a better name. Currently we can't call it 'Json' because the
+    // fake Razor base class already has a property called 'Json'.
+
     /// <summary>
     /// Provides mechanisms for converting between .NET objects and JSON strings.
     /// </summary>
-    public static class Json
+    public static class JsonUtil
     {
         /// <summary>
         /// Serializes the value as a JSON string.
