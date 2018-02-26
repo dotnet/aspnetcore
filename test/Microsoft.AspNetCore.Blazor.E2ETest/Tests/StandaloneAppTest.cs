@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
@@ -69,6 +70,47 @@ namespace Microsoft.AspNetCore.Blazor.E2ETest.Tests
             Assert.Equal("Hello, world!", Browser.FindElement(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Home", item.Text));
+        }
+
+        [Fact]
+        public void HasCounterPage()
+        {
+            // Navigate to "Counter"
+            Browser.FindElement(By.LinkText("Counter")).Click();
+            Assert.Equal("Counter", Browser.FindElement(By.TagName("h1")).Text);
+
+            // Observe the initial value is zero
+            var countDisplayElement = Browser.FindElement(By.CssSelector("h1 + p"));
+            Assert.Equal("Current count: 0", countDisplayElement.Text);
+
+            // Click the button; see it counts
+            var button = Browser.FindElement(By.CssSelector(".col-sm-9 button"));
+            button.Click();
+            button.Click();
+            button.Click();
+            Assert.Equal("Current count: 3", countDisplayElement.Text);
+        }
+
+        [Fact]
+        public void HasFetchDataPage()
+        {
+            // Navigate to "Counter"
+            Browser.FindElement(By.LinkText("Fetch data")).Click();
+            Assert.Equal("Weather forecast", Browser.FindElement(By.TagName("h1")).Text);
+
+            // Wait until loaded
+            var tableSelector = By.CssSelector("table.table");
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(10)).Until(
+                driver => driver.FindElement(tableSelector) != null);
+
+            // Check the table is displayed correctly
+            var rows = Browser.FindElements(By.CssSelector("table.table tbody tr"));
+            Assert.Equal(5, rows.Count);
+            var cells = rows.SelectMany(row => row.FindElements(By.TagName("td")));
+            foreach (var cell in cells)
+            {
+                Assert.True(!string.IsNullOrEmpty(cell.Text));
+            }
         }
 
         private void WaitUntilLoaded()
