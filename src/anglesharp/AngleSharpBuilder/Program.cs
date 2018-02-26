@@ -40,7 +40,7 @@ namespace AngleSharpBuilder
             var assemblyLocation = assembly.Location;
             var moduleDefinition = ModuleDefinition.ReadModule(assemblyLocation);
 
-            AddInternalsVisibleTo(moduleDefinition, "Microsoft.AspNetCore.Blazor.Build");
+            AddInternalsVisibleTo(moduleDefinition, "dotnet-blazor");
             AddInternalsVisibleTo(moduleDefinition, "Microsoft.AspNetCore.Blazor.Razor.Extensions");
             RemoveStrongName(moduleDefinition);
             SetAssemblyName(moduleDefinition, "Microsoft.AspNetCore.Blazor.AngleSharp");

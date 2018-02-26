@@ -12,12 +12,13 @@ namespace Microsoft.AspNetCore.Blazor.Build
         {
             var app = new CommandLineApplication
             {
-                Name = "dotnet-blazorbuild"
+                Name = "dotnet-blazor"
             };
             app.HelpOption("-?|-h|--help");
             
             app.Command("build", BuildCommand.Command);
             app.Command("buildrazor", BuildRazorCommand.Command);
+            app.Command("serve", command => ServeDevHost.Command(command, args));
 
             if (args.Length > 0)
             {
