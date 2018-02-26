@@ -3,3 +3,4 @@ bin/
 obj/
 *.user
 launchSettings.json
+artifacts/
