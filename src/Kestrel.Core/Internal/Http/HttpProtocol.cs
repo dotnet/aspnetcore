@@ -554,11 +554,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 PauseStreams();
 
-                if (_onCompleted != null)
-                {
-                    await FireOnCompleted();
-                }
-
                 if (badRequestException == null)
                 {
                     // If _requestAbort is set, the connection has already been closed.
@@ -599,6 +594,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // meaningful status code to log.
                         StatusCode = 0;
                     }
+                }
+
+                if (_onCompleted != null)
+                {
+                    await FireOnCompleted();
                 }
 
                 if (badRequestException != null)
@@ -739,10 +739,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 return Task.CompletedTask;
             }
-            else
-            {
-                return FireOnCompletedAwaited(onCompleted);
-            }
+
+            return FireOnCompletedAwaited(onCompleted);
         }
 
         private async Task FireOnCompletedAwaited(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
@@ -755,7 +753,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 catch (Exception ex)
                 {
-                    ReportApplicationError(ex);
+                    Log.ApplicationError(ConnectionId, TraceIdentifier, ex);
                 }
             }
         }

@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task OnCompleteCalledEvenWhenOnStartingNotCalled()
         {
             var onStartingCalled = false;
-            var onCompletedCalled = false;
+            var onCompletedTcs = new TaskCompletionSource<object>();
 
             var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
@@ -156,7 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     app.Run(context =>
                     {
                         context.Response.OnStarting(() => Task.Run(() => onStartingCalled = true));
-                        context.Response.OnCompleted(() => Task.Run(() => onCompletedCalled = true));
+                        context.Response.OnCompleted(() => Task.Run(() =>
+                        {
+                            onCompletedTcs.SetResult(null);
+                        }));
 
                         // Prevent OnStarting call (see HttpProtocol.ProcessRequestsAsync()).
                         throw new Exception();
@@ -173,7 +176,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
                     Assert.False(onStartingCalled);
-                    Assert.True(onCompletedCalled);
+                    await onCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
                 }
             }
         }
@@ -292,6 +295,99 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 expectedClientStatusCode: HttpStatusCode.OK,
                 expectedServerStatusCode: HttpStatusCode.OK,
                 sendMalformedRequest: true);
+        }
+
+        [Fact]
+        public async Task OnCompletedExceptionShouldNotPreventAResponse()
+        {
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.OnCompleted(_ => throw new Exception(), null);
+                        await context.Response.WriteAsync("hello, world");
+                    });
+                });
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task OnCompletedShouldNotBlockAResponse()
+        {
+            var delay = Task.Delay(TestConstants.DefaultTimeout);
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
+                .UseKestrel()
+                .UseUrls("http://127.0.0.1:0/")
+                .Configure(app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.OnCompleted(async () =>
+                        {
+                            await delay;
+                        });
+                        await context.Response.WriteAsync("hello, world");
+                    });
+                });
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var client = new HttpClient())
+                {
+                    var response = await client.GetAsync($"http://127.0.0.1:{host.GetPort()}/");
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.False(delay.IsCompleted);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InvalidChunkedEncodingInRequestShouldNotBlockOnCompleted()
+        {
+            var onCompletedTcs = new TaskCompletionSource<object>();
+
+            using (var server = new TestServer(httpContext =>
+            {
+                httpContext.Response.OnCompleted(() => Task.Run(() =>
+                {
+                    onCompletedTcs.SetResult(null);
+                }));
+                return Task.CompletedTask;
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "gg");
+                    await connection.ReceiveForcedEnd(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+
+            await onCompletedTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
         }
 
         private static async Task ResponseStatusCodeSetBeforeHttpContextDispose(
@@ -1988,7 +2084,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Theory]
         [MemberData(nameof(ConnectionAdapterData))]
-        public async Task ThrowingInOnCompletedIsLoggedAndClosesConnection(ListenOptions listenOptions)
+        public async Task ThrowingInOnCompletedIsLogged(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
 
@@ -2024,7 +2120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await connection.ReceiveForcedEnd(
+                    await connection.ReceiveEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {testContext.DateHeaderValue}",
                         "Content-Length: 11",
