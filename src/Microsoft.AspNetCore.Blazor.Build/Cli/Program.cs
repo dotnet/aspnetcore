@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Blazor.Build
             app.HelpOption("-?|-h|--help");
             
             app.Command("build", BuildCommand.Command);
-            app.Command("buildrazor", BuildRazorCommand.Command);
 
             if (args.Length > 0)
             {

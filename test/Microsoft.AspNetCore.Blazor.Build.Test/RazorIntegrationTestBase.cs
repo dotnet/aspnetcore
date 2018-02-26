@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Razor;
 using Xunit;
 using Xunit.Sdk;
 
@@ -26,10 +27,35 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         internal const string ArbitraryWindowsPath = "x:\\dir\\subdir\\Test";
         internal const string ArbitraryMacLinuxPath = "/dir/subdir/Test";
 
-        private RazorProjectEngine _projectEngine;
+        // Creating the initial compilation + reading references is on the order of 250ms without caching
+        // so making sure it doesn't happen for each test.
+        private static readonly CSharpCompilation BaseCompilation;
+
+        static RazorIntegrationTestBase()
+        {
+            var referenceAssemblyRoots = new[]
+            {
+                typeof(System.Runtime.AssemblyTargetedPatchBandAttribute).Assembly, // System.Runtime
+                typeof(BlazorComponent).Assembly,
+                typeof(RazorIntegrationTestBase).Assembly, // Reference this assembly, so that we can refer to test component types
+            };
+
+            var referenceAssemblies = referenceAssemblyRoots
+                .SelectMany(assembly => assembly.GetReferencedAssemblies().Concat(new[] { assembly.GetName() }))
+                .Distinct()
+                .Select(Assembly.Load)
+                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
+                .ToList();
+            BaseCompilation = CSharpCompilation.Create(
+                "TestAssembly",
+                Array.Empty<SyntaxTree>(),
+                referenceAssemblies,
+                new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        }
 
         public RazorIntegrationTestBase()
         {
+            AdditionalSyntaxTrees = new List<SyntaxTree>();
             Configuration = BlazorExtensionInitializer.DefaultConfiguration;
             FileSystem = new VirtualRazorProjectFileSystem();
             WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
@@ -37,6 +63,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             DefaultBaseNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
         }
+
+        internal List<SyntaxTree> AdditionalSyntaxTrees { get; }
 
         internal virtual RazorConfiguration Configuration { get; }
 
@@ -46,26 +74,21 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
-        internal virtual RazorProjectEngine ProjectEngine
-        {
-            get
-            {
-                if (_projectEngine == null)
-                {
-                    _projectEngine = CreateProjectEngine();
-                }
-
-                return _projectEngine;
-            }
-        }
+        internal virtual bool UseTwoPhaseCompilation { get; }
 
         internal virtual string WorkingDirectory { get; }
 
-        internal RazorProjectEngine CreateProjectEngine()
+        internal RazorProjectEngine CreateProjectEngine(RazorConfiguration configuration, MetadataReference[] references)
         {
-            return RazorProjectEngine.Create(Configuration, FileSystem, b =>
+            return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {
                 BlazorExtensionInitializer.Register(b);
+
+                b.Features.Add(new CompilationTagHelperFeature());
+                b.Features.Add(new DefaultMetadataReferenceFeature()
+                {
+                    References = references,
+                });
             });
         }
 
@@ -95,13 +118,51 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 cshtmlRelativePath,
                 Encoding.UTF8.GetBytes(cshtmlContent));
 
-            var codeDocument = ProjectEngine.Process(projectItem);
-            return new CompileToCSharpResult
+            if (UseTwoPhaseCompilation)
             {
-                CodeDocument = codeDocument,
-                Code = codeDocument.GetCSharpDocument().GeneratedCode,
-                Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
-            };
+                // The first phase won't include any metadata references for component discovery. This mirrors
+                // what the build does.
+                var projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DeclarationConfiguration, Array.Empty<MetadataReference>());
+                var codeDocument = projectEngine.Process(projectItem);
+
+                // Result of generating declarations
+                var declaration = new CompileToCSharpResult
+                {
+                    CodeDocument = codeDocument,
+                    Code = codeDocument.GetCSharpDocument().GeneratedCode,
+                    Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
+                };
+
+                // Result of doing 'temp' compilation
+                var tempAssembly = CompileToAssembly(declaration, BaseCompilation);
+
+                // Add the 'temp' compilation as a metadata reference 
+                var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
+                projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DefaultConfiguration, references);
+                
+                // Result of real code
+                codeDocument = projectEngine.Process(projectItem);
+                return new CompileToCSharpResult
+                {
+                    CodeDocument = codeDocument,
+                    Code = codeDocument.GetCSharpDocument().GeneratedCode,
+                    Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
+                };
+            }
+            else
+            {
+                // For single phase compilation tests just use the base compilation's references.
+                // This will include the built-in Blazor components.
+                var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
+
+                var codeDocument = projectEngine.Process(projectItem);
+                return new CompileToCSharpResult
+                {
+                    CodeDocument = codeDocument,
+                    Code = codeDocument.GetCSharpDocument().GeneratedCode,
+                    Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
+                };
+            }
         }
 
         protected CompileToAssemblyResult CompileToAssembly(string cshtmlRelativePath, string cshtmlContent)
@@ -115,8 +176,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             return CompileToAssembly(cSharpResult);
         }
 
-        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult)
+        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult, CSharpCompilation baseCompilation = null)
         {
+            baseCompilation = baseCompilation ?? BaseCompilation;
+
             if (cSharpResult.Diagnostics.Any())
             {
                 var diagnosticsLog = string.Join(Environment.NewLine, cSharpResult.Diagnostics.Select(d => d.ToString()).ToArray());
@@ -127,25 +190,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             {
                 CSharpSyntaxTree.ParseText(cSharpResult.Code)
             };
-            var referenceAssembliesContainingTypes = new[]
-            {
-                typeof(System.Runtime.AssemblyTargetedPatchBandAttribute), // System.Runtime
-                typeof(BlazorComponent),
-                typeof(RazorIntegrationTestBase), // Reference this assembly, so that we can refer to test component types
-            };
-            var references = referenceAssembliesContainingTypes
-                .SelectMany(type => type.Assembly.GetReferencedAssemblies().Concat(new[] { type.Assembly.GetName() }))
-                .Distinct()
-                .Select(Assembly.Load)
-                .Select(assembly => MetadataReference.CreateFromFile(assembly.Location))
-                .ToList();
-            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-            var assemblyName = "TestAssembly" + Guid.NewGuid().ToString("N");
-            var compilation = CSharpCompilation.Create(assemblyName,
-                syntaxTrees,
-                references,
-                options);
 
+            var compilation = baseCompilation.AddSyntaxTrees(syntaxTrees).AddSyntaxTrees(AdditionalSyntaxTrees);
             using (var peStream = new MemoryStream())
             {
                 compilation.Emit(peStream);
@@ -155,6 +201,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     .Where(d => d.Severity != DiagnosticSeverity.Hidden);
                 return new CompileToAssemblyResult
                 {
+                    Compilation = compilation,
                     Diagnostics = diagnostics,
                     Assembly = diagnostics.Any() ? null : Assembly.Load(peStream.ToArray())
                 };
@@ -216,6 +263,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         protected class CompileToAssemblyResult
         {
             public Assembly Assembly { get; set; }
+            public Compilation Compilation { get; set; }
             public string VerboseLog { get; set; }
             public IEnumerable<Diagnostic> Diagnostics { get; set; }
         }

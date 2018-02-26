@@ -1,4 +1,10 @@
 <Project>
+
+  <!-- Require rebuild if the targets change -->
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+  </PropertyGroup>
+
   <PropertyGroup>
     <BlazorBuildExe>dotnet &quot;$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Build.dll&quot;</BlazorBuildExe>
   

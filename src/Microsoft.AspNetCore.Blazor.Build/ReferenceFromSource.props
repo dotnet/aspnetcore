@@ -10,6 +10,10 @@
   
   <Import Project="$(MSBuildThisFileDirectory)targets\All.targets" />
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
+  </ItemGroup>
+
   <Target Name="BuildBlazorBuildBinary"
           BeforeTargets="BlazorCompileRazorComponents">
     <!-- Ensures this project is built before the consuming project, but without
