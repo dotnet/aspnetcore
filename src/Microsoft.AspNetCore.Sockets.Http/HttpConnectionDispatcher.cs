@@ -358,9 +358,6 @@ namespace Microsoft.AspNetCore.Sockets
 
         private Task ProcessNegotiate(HttpContext context, HttpSocketOptions options, ConnectionLogScope logScope)
         {
-            // Set the allowed headers for this resource
-            context.Response.Headers.AppendCommaSeparatedValues("Allow", "GET", "POST", "OPTIONS");
-
             context.Response.ContentType = "application/json";
 
             // Establish the connection
