@@ -30,7 +30,7 @@ namespace E2ETests
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                    Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     EnvironmentName = "SocialTesting",
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,

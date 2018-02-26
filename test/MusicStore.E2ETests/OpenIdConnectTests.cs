@@ -46,7 +46,7 @@ namespace E2ETests
                 var logger = loggerFactory.CreateLogger("OpenIdConnectTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,

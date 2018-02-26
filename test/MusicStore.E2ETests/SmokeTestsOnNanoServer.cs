@@ -236,7 +236,7 @@ namespace E2ETests
             {
                 var logger = loggerFactory.CreateLogger(nameof(SmokeTestsOnNanoServerUsingStandaloneRuntime));
                 var deploymentParameters = new RemoteWindowsDeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType),
+                    Helpers.GetApplicationPath(),
                     _remoteDeploymentConfig.DotnetRuntimePathOnShare,
                     serverType,
                     RuntimeFlavor.CoreClr,

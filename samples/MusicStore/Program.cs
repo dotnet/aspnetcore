@@ -57,6 +57,9 @@ namespace MusicStore
 
                 var logLevel = string.Equals(environment, "Development", StringComparison.Ordinal) ? LogLevel.Information : LogLevel.Warning;
                 factory.SetMinimumLevel(logLevel);
+
+                // Turn off Info logging for EF commands
+                factory.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.Warning);
             });
 
             var host = builder.Build();

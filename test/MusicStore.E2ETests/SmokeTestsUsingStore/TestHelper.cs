@@ -30,7 +30,7 @@ namespace E2ETests.SmokeTestsUsingStore
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(ApplicationType.Portable), serverType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
+                    Helpers.GetApplicationPath(), serverType, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
                 {
                     EnvironmentName = "SocialTesting",
                     SiteName = "MusicStoreTestSiteUsingStore",

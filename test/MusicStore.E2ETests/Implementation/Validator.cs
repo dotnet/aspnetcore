@@ -110,8 +110,8 @@ namespace E2ETests
                 //Helpers.ThrowIfResponseStatusNotOk(runtimeResponse, _logger);
             }
 
-            //var runtimeInfo = await runtimeResponse.Content.ReadAsStringAsync();
-            //_logger.LogInformation(runtimeInfo);
+            // Verify the app is using precompiled views
+            Assert.Contains("MusicStore.Views, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null", responseContent);
         }
 
         public async Task VerifyNtlmHomePage(HttpResponseMessage response)
@@ -130,8 +130,8 @@ namespace E2ETests
         public async Task VerifyDeveloperExceptionPage(HttpResponseMessage response)
         {
             var responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Contains(responseContent, "PageThatThrows.cshtml");
-            Assert.Contains(responseContent, "@{ throw new InvalidOperationException(); }");
+            Assert.Contains("PageThatThrows.cshtml", responseContent);
+            Assert.Contains("@{ throw new InvalidOperationException(); }", responseContent);
         }
 
         public void ValidateLayoutPage(string responseContent)
@@ -141,6 +141,17 @@ namespace E2ETests
             Assert.Contains(PrefixBaseAddress("<a class=\"dropdown-toggle\" data-toggle=\"dropdown\" href=\"/{0}/Store\">Store <b class=\"caret\"></b></a>"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<ul class=\"dropdown-menu\">", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("<li class=\"divider\"></li>", responseContent, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public async Task VerifyRuntimeCompiledHomePage(HttpResponseMessage response)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Smoke test to make sure the page is served correctly.
+            Assert.Contains("<title>Home Page – ASP.NET MVC Music Store</title>", responseContent);
+
+            // Verify the app is using a runtime compiled view
+            Assert.DoesNotContain("MusicStore.Views, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null", responseContent);
         }
 
         public async Task VerifyStaticContentServed()

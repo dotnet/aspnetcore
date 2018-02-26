@@ -1,7 +1,12 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -11,9 +16,9 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public class PublishAndRunTestRunner : LoggedTest
+    public class DotnetRunTestRunner : LoggedTest
     {
-        public PublishAndRunTestRunner(ITestOutputHelper output) 
+        public DotnetRunTestRunner(ITestOutputHelper output)
             : base(output)
         {
         }
@@ -24,31 +29,29 @@ namespace E2ETests
             ApplicationType applicationType,
             RuntimeArchitecture runtimeArchitecture)
         {
-            var testName = $"PublishAndRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
+            var testName = $"DotnetRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
+                var logger = loggerFactory.CreateLogger("DotnetRunTests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
-
+                var applicationPath = Helpers.GetApplicationPath();
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(), serverType, runtimeFlavor, runtimeArchitecture)
+                    applicationPath, serverType, runtimeFlavor, runtimeArchitecture)
                 {
-                    PublishApplicationBeforeDeployment = true,
-                    PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
+                    PublishApplicationBeforeDeployment = false,
                     TargetFramework = Helpers.GetTargetFramework(runtimeFlavor),
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
+                    EnvironmentName = "Development",
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
                     {
                         DbUtils.DropDatabase(musicStoreDbName, logger);
-                    }
+                    },
+                    EnvironmentVariables =
+                    {
+                        { MusicStoreConfig.ConnectionStringKey, DbUtils.CreateConnectionString(musicStoreDbName) },
+                    },
                 };
-
-                // Override the connection strings using environment based configuration
-                deploymentParameters.EnvironmentVariables
-                    .Add(new KeyValuePair<string, string>(
-                        MusicStoreConfig.ConnectionStringKey,
-                        DbUtils.CreateConnectionString(musicStoreDbName)));
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
@@ -56,10 +59,8 @@ namespace E2ETests
                     var httpClientHandler = new HttpClientHandler { UseDefaultCredentials = true };
                     var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
-                    // Request to base address and check if various parts of the body are rendered &
-                    // measure the cold startup time.
-                    // Add retry logic since tests are flaky on mono due to connection issues
-                    var response = await RetryHelper.RetryRequest(() => httpClient.GetAsync(string.Empty), logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    var response = await RetryHelper.RetryRequest(
+                        () => httpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
 
                     Assert.False(response == null, "Response object is null because the client could not " +
                         "connect to the server after multiple retries");
@@ -67,19 +68,14 @@ namespace E2ETests
                     var validator = new Validator(httpClient, httpClientHandler, logger, deploymentResult);
 
                     logger.LogInformation("Verifying home page");
+                    // Verify HomePage should validate that we're using precompiled views.
                     await validator.VerifyHomePage(response);
 
-                    logger.LogInformation("Verifying static files are served from static file middleware");
-                    await validator.VerifyStaticContentServed();
-
-                    if (serverType != ServerType.IISExpress)
-                    {
-                        if (Directory.GetFiles(
-                            deploymentParameters.ApplicationPath, "*.cmd", SearchOption.TopDirectoryOnly).Length > 0)
-                        {
-                            throw new Exception("publishExclude parameter values are not honored.");
-                        }
-                    }
+                    // Verify developer exception page
+                    logger.LogInformation("Verifying developer exception page");
+                    response = await RetryHelper.RetryRequest(
+                        () => httpClient.GetAsync("PageThatThrows"), logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    await validator.VerifyDeveloperExceptionPage(response);
 
                     logger.LogInformation("Variation completed successfully.");
                 }

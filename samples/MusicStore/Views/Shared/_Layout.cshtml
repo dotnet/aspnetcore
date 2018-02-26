@@ -1,4 +1,4 @@
-﻿@inject IOptions<AppSettings> AppSettings
+@inject IOptions<AppSettings> AppSettings
 <!DOCTYPE html>
 <html>
 <head>
@@ -51,6 +51,7 @@
         <footer class="navbar navbar-fixed-bottom navbar-default text-center">
             <p><a href="https://www.github.com/aspnet/MusicStore">www.github.com/aspnet/MusicStore</a></p>
             <small>@Html.ActionLink("admin", "Index", "StoreManager", new { area = "Admin" })</small>
+            <small>This view served from @GetType().Assembly.FullName</small>
         </footer>
     </div>
 

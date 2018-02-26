@@ -7,7 +7,7 @@ namespace E2ETests
 {
     public class Helpers
     {
-        public static string GetApplicationPath(ApplicationType applicationType)
+        public static string GetApplicationPath()
         {
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("MusicStore");
             return Path.GetFullPath(Path.Combine(solutionDirectory, "samples", "MusicStore"));
