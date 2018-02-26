@@ -6,11 +6,10 @@
     <OutDir>tools</OutDir>
   </PropertyGroup>
 
-  <Target Name="SetPackageProperties" BeforeTargets="Pack">
+  <Target Name="SetPackageProperties" BeforeTargets="_IntermediatePack">
     <PropertyGroup>
       <NoPackageAnalysis>true</NoPackageAnalysis>
-      <NuspecFile>Microsoft.AspNetCore.Blazor.BuildTools.nuspec</NuspecFile>
-      <PackageVersion>0.0.1</PackageVersion>
+      <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
       <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
     </PropertyGroup>
   </Target>
