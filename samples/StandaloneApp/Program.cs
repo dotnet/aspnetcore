@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Rendering;
+using Microsoft.AspNetCore.Blazor.Browser.Services;
 
 namespace StandaloneApp
 {
@@ -9,7 +10,12 @@ namespace StandaloneApp
     {
         public static void Main(string[] args)
         {
-            new BrowserRenderer().AddComponent<App>("app");
+            var serviceProvider = new BrowserServiceProvider(configure =>
+            {
+                // Add any custom services here
+            });
+
+            new BrowserRenderer(serviceProvider).AddComponent<App>("app");
         }
     }
 }
