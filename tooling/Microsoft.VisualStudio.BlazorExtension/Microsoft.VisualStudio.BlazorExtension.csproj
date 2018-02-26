@@ -99,18 +99,6 @@
       this problem, we're only using the P2P references to force build ordering. Then we include the build
       output of those projects as content.
     -->
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj">
-      <Name>Microsoft.AspNetCore.Blazor.Razor.Extensions</Name>
-      <Private>False</Private>
-      <IncludeOutputGroupsInVSIX></IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly></IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <Content Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
-      <Link>Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
       <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
       <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
@@ -124,24 +112,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
-
-    <!--
-      This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P
-      to this project will cause a NU1201 error that doesn't have a workaround.
-    -->
-    <Content Include="..\..\src\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll">
-      <Link>Microsoft.AspNetCore.Blazor.AngleSharp.dll</Link>
-      <IncludeInVSIX>true</IncludeInVSIX>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Visible>false</Visible>
-    </Content>
   </ItemGroup>
   <!--
   
     END INTERESTING STUFF 
     
   -->
-
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
