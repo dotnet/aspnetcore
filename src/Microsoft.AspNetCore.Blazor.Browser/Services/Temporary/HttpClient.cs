@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Blazor.Browser.Interop;
+using Microsoft.AspNetCore.Blazor.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         static int _nextRequestId = 0;
         static IDictionary<int, TaskCompletionSource<HttpResponseMessage>> _pendingRequests
             = new Dictionary<int, TaskCompletionSource<HttpResponseMessage>>();
+        IUriHelper _uriHelper;
 
         // Making the constructor internal to be sure people only get instances from
         // the service provider. It doesn't make any difference right now, but when
@@ -33,8 +34,9 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         // has to be configured with a browser-specific HTTP handler. In the long
         // term, it should be possible to use System.Net.Http.HttpClient directly
         // without any browser-specific constructor args.
-        internal HttpClient()
+        internal HttpClient(IUriHelper uriHelper)
         {
+            _uriHelper = uriHelper ?? throw new ArgumentNullException(nameof(uriHelper));
         }
 
         /// <summary>
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         /// <param name="requestUri">The URI the request is sent to.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task<HttpResponseMessage> GetAsync(string requestUri)
-            => SendAsync(new HttpRequestMessage(HttpMethod.Get, requestUri));
+            => SendAsync(new HttpRequestMessage(HttpMethod.Get, CreateUri(requestUri)));
 
         /// <summary>
         /// Sends a POST request to the specified URI and returns the response as
@@ -72,7 +74,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
         /// <param name="content">The content for the request.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public Task<HttpResponseMessage> PostAsync(string requestUri, HttpContent content)
-            => SendAsync(new HttpRequestMessage(HttpMethod.Post, requestUri)
+            => SendAsync(new HttpRequestMessage(HttpMethod.Post, CreateUri(requestUri))
             {
                 Content = content
             });
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
                 $"{typeof(HttpClient).FullName}.Send",
                 id,
                 request.Method.Method,
-                request.RequestUri.ToString(),
+                ResolveRequestUri(request.RequestUri),
                 request.Content == null ? null : await GetContentAsString(request.Content),
                 SerializeHeadersAsJson(request));
 
@@ -118,6 +120,9 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
                 : throw new InvalidOperationException($"Currently, {typeof(HttpClient).FullName} " +
                     $"only supports contents of type {nameof(StringContent)}, but you supplied " +
                     $"{content.GetType().FullName}.");
+
+        private Uri CreateUri(String uri)
+            => new Uri(uri, UriKind.RelativeOrAbsolute);
 
         private static void ReceiveResponse(
             string id,
@@ -145,6 +150,9 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services.Temporary
                 tcs.SetResult(responseMessage);
             }
         }
+
+        private string ResolveRequestUri(Uri requestUri)
+            => _uriHelper.ToAbsoluteUri(requestUri.OriginalString).AbsoluteUri;
 
         // Keep in sync with TypeScript class in Http.ts
         private class ResponseDescriptor

@@ -41,8 +41,9 @@ namespace Microsoft.AspNetCore.Blazor.Browser.Services
 
         private void AddDefaultServices(ServiceCollection serviceCollection)
         {
-            serviceCollection.AddSingleton<IUriHelper>(new BrowserUriHelper());
-            serviceCollection.AddSingleton(new HttpClient());
+            var uriHelper = new BrowserUriHelper();
+            serviceCollection.AddSingleton<IUriHelper>(uriHelper);
+            serviceCollection.AddSingleton(new HttpClient(uriHelper));
         }
     }
 }
