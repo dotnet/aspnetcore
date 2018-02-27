@@ -23,7 +23,7 @@ namespace HostedInAspNet.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseBlazor("HostedInAspNet.Client");
+            app.UseBlazor<Client.Program>();
         }
     }
 }

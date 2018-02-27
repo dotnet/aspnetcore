@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Server\Microsoft.AspNetCore.Blazor.Server.csproj" />
-    <ProjectReference Include="..\MonoSanityClient\MonoSanityClient.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="..\MonoSanityClient\MonoSanityClient.csproj" />
   </ItemGroup>
 
 </Project>

@@ -16,18 +16,15 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Configures the middleware pipeline to work with Blazor.
         /// </summary>
+        /// <typeparam name="TProgram">Any type from the client app project. This is used to identify the client app assembly.</typeparam>
         /// <param name="applicationBuilder"></param>
-        /// <param name="clientAssemblyName"
-        ///     >The name of the client assembly relative to the current bin directory.</param>
-        public static void UseBlazor(
-            this IApplicationBuilder applicationBuilder,
-            string clientAssemblyName)
+        public static void UseBlazor<TProgram>(
+            this IApplicationBuilder applicationBuilder)
         {
-            var binDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            var clientAssemblyPath = Path.Combine(binDir, $"{clientAssemblyName}.dll");
+            var clientAssemblyInServerBinDir = typeof(TProgram).Assembly;
             applicationBuilder.UseBlazor(new BlazorOptions
             {
-                ClientAssemblyPath = clientAssemblyPath,
+                ClientAssemblyPath = clientAssemblyInServerBinDir.Location,
             });
         }
 
