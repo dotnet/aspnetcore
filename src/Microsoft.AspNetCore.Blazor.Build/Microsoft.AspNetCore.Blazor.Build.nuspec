@@ -10,6 +10,6 @@
     <file src="_._" target="lib/netstandard1.0/" />
     <file src="build\**" target="build" />
     <file src="targets\**" target="targets" />
-    <file src="tools\**" target="tools" />
+    <file src="$publishdir$\netcoreapp2.0\**\*" target="tools/" />
   </files>
 </package>

@@ -1,18 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <OutputType>Exe</OutputType>
-    <OutDir>tools</OutDir>
+    <OutDir>tools</OutDir> <!-- So we can use the tool from source within the repo without having to pack -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
-  <Target Name="SetPackageProperties" BeforeTargets="_IntermediatePack">
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
+    <IntermediatePackDir>$(MSBuildProjectDirectory)/bin/$(Configuration)/publish/</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
+  </PropertyGroup>
+
+  <!-- Executes /t:Publish for all target frameworks before packing-->
+  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
     <PropertyGroup>
-      <NoPackageAnalysis>true</NoPackageAnalysis>
-      <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
-      <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+      <NuspecProperties>version=$(PackageVersion);publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)))</NuspecProperties>
     </PropertyGroup>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>
 
   <ItemGroup>
