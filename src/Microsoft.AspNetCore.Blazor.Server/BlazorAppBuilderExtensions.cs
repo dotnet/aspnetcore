@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Net.Mime;
+using System.Reflection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Builder
             this IApplicationBuilder applicationBuilder,
             string clientAssemblyName)
         {
-            var binDir = Path.GetDirectoryName(typeof(BlazorConfig).Assembly.Location);
+            var binDir = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
             var clientAssemblyPath = Path.Combine(binDir, $"{clientAssemblyName}.dll");
             applicationBuilder.UseBlazor(new BlazorOptions
             {
