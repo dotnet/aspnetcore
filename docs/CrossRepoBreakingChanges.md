@@ -1,3 +1,5 @@
+## A pattern for making cross-repo breaking changes
+
 The engineering team has come up with a pattern for making cross-repo breaking changes without destabilizing local \ CI builds using feature branches. I’ll explain it in terms of a breaking change in Configuration that affects Options:
 
 1) Start by making a feature branch in the Configuration repo. A feature branch is any branch that starts with the prefix "feature/" e.g. feature/bring-back-web-config
