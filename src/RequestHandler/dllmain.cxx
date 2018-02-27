@@ -18,6 +18,7 @@ SRWLOCK             g_srwLockRH;
 HINTERNET           g_hWinhttpSession = NULL;
 IHttpServer *       g_pHttpServer = NULL;
 HINSTANCE           g_hWinHttpModule;
+HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 
 
@@ -159,6 +160,8 @@ EnsureOutOfProcessInitializtion()
         }
 
         g_hWinHttpModule = GetModuleHandle(TEXT("winhttp.dll"));
+
+        g_hAspNetCoreModule = GetModuleHandle(TEXT("aspnetcore.dll"));
 
         hr = WINHTTP_HELPER::StaticInitialize();
         if (FAILED(hr))

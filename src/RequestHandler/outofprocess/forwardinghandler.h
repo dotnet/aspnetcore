@@ -1,6 +1,8 @@
 #pragma once
 
 extern DWORD            g_OptionalWinHttpFlags;
+extern HINSTANCE        g_hWinHttpModule;
+extern HINSTANCE        g_hAspNetCoreModule;
 
 
 enum FORWARDING_REQUEST_STATUS

@@ -572,32 +572,32 @@ Failure:
 
         pResponse->SetStatus(502, "Bad Gateway", 3, hr);
 
-//        if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
-//            hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
-//#pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
-//            FormatMessage(
-//                FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
-//                g_hWinHttpModule,
-//                HRESULT_CODE(hr),
-//                0,
-//                strDescription.QueryStr(),
-//                strDescription.QuerySizeCCH(),
-//                NULL) == 0)
-//        {
-//            /*LoadString(g_hModule,
-//                IDS_SERVER_ERROR,
-//                strDescription.QueryStr(),
-//                strDescription.QuerySizeCCH());*/
-//        }
-//
-//        (VOID)strDescription.SyncWithBuffer();
-//        if (strDescription.QueryCCH() != 0)
-//        {
-//            pResponse->SetErrorDescription(
-//                strDescription.QueryStr(),
-//                strDescription.QueryCCH(),
-//                FALSE);
-//        }
+        if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
+            hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
+#pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
+            FormatMessage(
+                FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
+                g_hWinHttpModule,
+                HRESULT_CODE(hr),
+                0,
+                strDescription.QueryStr(),
+                strDescription.QuerySizeCCH(),
+                NULL) == 0)
+        {
+            LoadString(g_hAspNetCoreModule,
+                IDS_SERVER_ERROR,
+                strDescription.QueryStr(),
+                strDescription.QuerySizeCCH());
+        }
+
+        (VOID)strDescription.SyncWithBuffer();
+        if (strDescription.QueryCCH() != 0)
+        {
+            pResponse->SetErrorDescription(
+                strDescription.QueryStr(),
+                strDescription.QueryCCH(),
+                FALSE);
+        }
     }
 
     //
@@ -1421,40 +1421,42 @@ None
 
 Failure:
 
-    m_RequestStatus = FORWARDER_DONE;
-    m_fHasError = TRUE;
-
-    pResponse->DisableKernelCache();
-    pResponse->GetRawHttpResponse()->EntityChunkCount = 0;
-
-    if (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE))
+    if (!m_fHasError)
     {
-        m_fResetConnection = TRUE;
-    }
+        m_RequestStatus = FORWARDER_DONE;
+        m_fHasError = TRUE;
 
-    if (fClientError || m_fHandleClosedDueToClient)
-    {
-        if (!m_fResponseHeadersReceivedAndSet)
+        pResponse->DisableKernelCache();
+        pResponse->GetRawHttpResponse()->EntityChunkCount = 0;
+
+        if (hr == HRESULT_FROM_WIN32(ERROR_WINHTTP_INVALID_SERVER_RESPONSE))
         {
-            pResponse->SetStatus(400, "Bad Request", 0, HRESULT_FROM_WIN32(WSAECONNRESET));
+            m_fResetConnection = TRUE;
+        }
+
+        if (fClientError || m_fHandleClosedDueToClient)
+        {
+            if (!m_fResponseHeadersReceivedAndSet)
+            {
+                pResponse->SetStatus(400, "Bad Request", 0, HRESULT_FROM_WIN32(WSAECONNRESET));
+            }
+            else
+            {
+                //
+                // Response headers from origin server were
+                // already received and set for the current response.
+                // Honor the response status.
+                //
+            }
         }
         else
         {
-            //
-            // Response headers from origin server were
-            // already received and set for the current response.
-            // Honor the response status.
-            //
-        }
-    }
-    else
-    {
-        STACK_STRU(strDescription, 128);
+            STACK_STRU(strDescription, 128);
 
-        pResponse->SetStatus(502, "Bad Gateway", 3, hr);
-        /*
-        if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
-            hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
+            pResponse->SetStatus(502, "Bad Gateway", 3, hr);
+
+            if (!(hr > HRESULT_FROM_WIN32(WINHTTP_ERROR_BASE) &&
+                hr <= HRESULT_FROM_WIN32(WINHTTP_ERROR_LAST)) ||
 #pragma prefast (suppress : __WARNING_FUNCTION_NEEDS_REVIEW, "Function and parameters reviewed.")
                 FormatMessage(
                     FORMAT_MESSAGE_IGNORE_INSERTS | FORMAT_MESSAGE_FROM_HMODULE,
@@ -1465,7 +1467,7 @@ Failure:
                     strDescription.QuerySizeCCH(),
                     NULL) == 0)
             {
-                LoadString(g_hModule,
+                LoadString(g_hAspNetCoreModule,
                     IDS_SERVER_ERROR,
                     strDescription.QueryStr(),
                     strDescription.QuerySizeCCH());
@@ -1478,9 +1480,9 @@ Failure:
                     strDescription.QueryStr(),
                     strDescription.QueryCCH(),
                     FALSE);
-            }*/
+            }
+        }
     }
-    //}
 
     // FREB log
     if (ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
