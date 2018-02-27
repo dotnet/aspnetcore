@@ -4,11 +4,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Blazor.DevHost.Server
+namespace Microsoft.AspNetCore.Blazor.Cli.Server
 {
-    public class Program
+    internal class Program
     {
-        public static IWebHost BuildWebHost(string[] args) =>
+        internal static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseConfiguration(new ConfigurationBuilder()
                     .AddCommandLine(args)

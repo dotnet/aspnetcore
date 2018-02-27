@@ -3,7 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <StartupObject>Microsoft.AspNetCore.Blazor.DevHost.Program</StartupObject>
+    <AssemblyName>dotnet-blazor</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
+    <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

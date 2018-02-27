@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using System;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Blazor.DevHost
+namespace Microsoft.AspNetCore.Blazor.Cli
 {
     internal class Program
     {

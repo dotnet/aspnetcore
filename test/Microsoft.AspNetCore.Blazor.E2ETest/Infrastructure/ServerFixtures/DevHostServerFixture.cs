@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
-using DevHostServerProgram = Microsoft.AspNetCore.Blazor.DevHost.Server.Program;
+using DevHostServerProgram = Microsoft.AspNetCore.Blazor.Cli.Server.Program;
 
 namespace Microsoft.AspNetCore.Blazor.E2ETest.Infrastructure.ServerFixtures
 {
