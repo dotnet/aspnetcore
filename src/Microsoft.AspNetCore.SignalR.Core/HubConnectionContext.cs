@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
+        private byte[] _cachedPingMessage;
 
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
         {
@@ -46,11 +47,6 @@ namespace Microsoft.AspNetCore.SignalR
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAbortedToken = _connectionAbortedTokenSource.Token;
             _keepAliveDuration = (int)keepAliveInterval.TotalMilliseconds * (Stopwatch.Frequency / 1000);
-
-            if (Features.Get<IConnectionInherentKeepAliveFeature>() == null)
-            {
-                Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
-            }
         }
 
         public virtual CancellationToken ConnectionAbortedToken { get; }
@@ -84,17 +80,42 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual async Task WriteAsync(HubMessage message)
         {
+            await _writeLock.WaitAsync();
+
             try
             {
-                await _writeLock.WaitAsync();
-
-                var buffer = ProtocolReaderWriter.WriteMessage(message);
-
+                // This will internally cache the buffer for each unique HubProtocol/DataEncoder combination
+                // So that we don't serialize the HubMessage for every single connection
+                var buffer = message.WriteMessage(ProtocolReaderWriter);
                 _connectionContext.Transport.Output.Write(buffer);
 
                 Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
 
-                await _connectionContext.Transport.Output.FlushAsync(CancellationToken.None);
+                await _connectionContext.Transport.Output.FlushAsync();
+            }
+            finally
+            {
+                _writeLock.Release();
+            }
+        }
+
+        private async Task TryWritePingAsync()
+        {
+            // Don't wait for the lock, if it returns false that means someone wrote to the connection
+            // and we don't need to send a ping anymore
+            if (!await _writeLock.WaitAsync(0))
+            {
+                return;
+            }
+
+            try
+            {
+                Debug.Assert(_cachedPingMessage != null);
+                _connectionContext.Transport.Output.Write(_cachedPingMessage);
+
+                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
+
+                await _connectionContext.Transport.Output.FlushAsync();
             }
             finally
             {
@@ -154,10 +175,17 @@ namespace Microsoft.AspNetCore.SignalR
                                             : TransferMode.Text;
 
                                     ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
+                                    _cachedPingMessage = ProtocolReaderWriter.WriteMessage(PingMessage.Instance);
 
                                     Log.UsingHubProtocol(_logger, protocol.Name);
 
                                     UserIdentifier = userIdProvider.GetUserId(this);
+
+                                    if (Features.Get<IConnectionInherentKeepAliveFeature>() == null)
+                                    {
+                                        // Only register KeepAlive after protocol negotiated otherwise KeepAliveTick could try to write without having a ProtocolReaderWriter
+                                        Features.Get<IConnectionHeartbeatFeature>()?.OnHeartbeat(state => ((HubConnectionContext)state).KeepAliveTick(), this);
+                                    }
 
                                     return true;
                                 }
@@ -210,11 +238,8 @@ namespace Microsoft.AspNetCore.SignalR
                 // adding a Ping message when the transport is full is unnecessary since the
                 // transport is still in the process of sending frames.
 
+                _ = TryWritePingAsync();
                 Log.SentPing(_logger);
-
-                _ = WriteAsync(PingMessage.Instance);
-
-                Interlocked.Exchange(ref _lastSendTimestamp, Stopwatch.GetTimestamp());
             }
         }
 

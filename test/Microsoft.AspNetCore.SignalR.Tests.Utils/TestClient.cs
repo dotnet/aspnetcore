@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
@@ -27,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public DefaultConnectionContext Connection { get; }
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Metadata["ConnectedTask"]).Task;
 
-        public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
+        public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IDataEncoder dataEncoder = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
             var options = new PipeOptions(readerScheduler: synchronousCallbacks ? PipeScheduler.Inline : null);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
@@ -44,7 +43,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
 
             protocol = protocol ?? new JsonHubProtocol();
-            _protocolReaderWriter = new HubProtocolReaderWriter(protocol, new PassThroughEncoder());
+            dataEncoder = dataEncoder ?? new PassThroughEncoder();
+            _protocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
             _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();

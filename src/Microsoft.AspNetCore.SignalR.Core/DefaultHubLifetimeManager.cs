@@ -76,7 +76,6 @@ namespace Microsoft.AspNetCore.SignalR
             var tasks = new List<Task>(count);
             var message = CreateInvocationMessage(methodName, args);
 
-            // TODO: serialize once per format by providing a different stream?
             foreach (var connection in _connections)
             {
                 if (!include(connection))

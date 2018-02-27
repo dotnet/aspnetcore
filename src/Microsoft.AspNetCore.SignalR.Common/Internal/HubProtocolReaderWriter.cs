@@ -50,5 +50,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return _dataEncoder.Encode(ms.ToArray());
             }
         }
+
+        public override bool Equals(object obj)
+        {
+            var readerWriter = obj as HubProtocolReaderWriter;
+            if (readerWriter == null)
+            {
+                return false;
+            }
+
+            // Note: ReferenceEquals on HubProtocol works for our implementation of IHubProtocolResolver because we use Singletons from DI
+            // However if someone replaces the implementation and returns a new ProtocolResolver for every connection they wont get the perf benefits
+            // Memory growth is mitigated by capping the cache size
+            return ReferenceEquals(_dataEncoder, readerWriter._dataEncoder) && ReferenceEquals(_hubProtocol, readerWriter._hubProtocol);
+        }
+
+        // This should never be used, needed because you can't override Equals without it
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

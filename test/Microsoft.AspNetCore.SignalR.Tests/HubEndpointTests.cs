@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils;
 using Microsoft.AspNetCore.Sockets;
@@ -1410,6 +1411,43 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 client.Dispose();
 
                 await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task CanSendToConnectionsWithDifferentProtocols()
+        {
+            var serviceProvider = HubEndPointTestUtils.CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client1 = new TestClient(protocol: new JsonHubProtocol()))
+            using (var client2 = new TestClient(protocol: new MessagePackHubProtocol(), dataEncoder: new Base64Encoder()))
+            {
+                var endPointLifetime1 = endPoint.OnConnectedAsync(client1.Connection);
+                var endPointLifetime2 = endPoint.OnConnectedAsync(client2.Connection);
+
+                await client1.Connected.OrTimeout();
+                await client2.Connected.OrTimeout();
+
+                var sentMessage = "From Json";
+
+                await client1.SendInvocationAsync(nameof(MethodHub.BroadcastMethod), sentMessage);
+                var message1 = await client1.ReadAsync().OrTimeout();
+                var message2 = await client2.ReadAsync().OrTimeout();
+
+                var completion1 = message1 as InvocationMessage;
+                Assert.NotNull(completion1);
+                Assert.Equal(sentMessage, completion1.Arguments[0]);
+                var completion2 = message2 as InvocationMessage;
+                Assert.NotNull(completion2);
+                // Argument[0] is a 'MsgPackObject' with a string internally, ToString to compare it
+                Assert.Equal(sentMessage, completion2.Arguments[0].ToString());
+
+                client1.Dispose();
+                client2.Dispose();
+
+                await endPointLifetime1.OrTimeout();
+                await endPointLifetime2.OrTimeout();
             }
         }
 
