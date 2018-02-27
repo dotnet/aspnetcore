@@ -3,7 +3,7 @@ JavaScript and TypeScript clients for SignalR for ASP.NET Core
 ## Installation
 
 ```bash
-npm install @aspnet/signalr-client
+npm install @aspnet/signalr
 ```
 
 ## Usage
