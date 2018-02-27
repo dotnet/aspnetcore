@@ -216,7 +216,7 @@ export class LongPollingTransport implements ITransport {
         const pollOptions: HttpRequest = {
             abortSignal: this.pollAbort.signal,
             headers: new Map<string, string>(),
-            timeout: 120000,
+            timeout: 90000,
         };
 
         if (transferMode === TransferMode.Binary) {
