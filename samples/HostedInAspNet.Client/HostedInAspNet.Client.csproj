@@ -7,7 +7,8 @@
   <!-- Local alternative to <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" /> -->
   <Import Project="..\..\src\Microsoft.AspNetCore.Blazor.Build\ReferenceFromSource.props" />
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" />
+    <!-- TODO: Remove the "PrivateAssets=all" once we no longer have RazorToolingWorkaround.cs -->
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Browser\Microsoft.AspNetCore.Blazor.Browser.csproj" PrivateAssets="all" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor\Microsoft.AspNetCore.Blazor.csproj" />
   </ItemGroup>
 

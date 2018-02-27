@@ -11,6 +11,9 @@
  * 
  * TODO: Track down what is triggering the unwanted design-time build and find out how to disable it.
  * Then this file can be removed entirely.
+ *
+ * TODO: Once this is removed, also remove all the PrivateAssets="all" flags from the references in
+ * all the project templates/samples.
  */
 
 using Microsoft.AspNetCore.Blazor.Components;
