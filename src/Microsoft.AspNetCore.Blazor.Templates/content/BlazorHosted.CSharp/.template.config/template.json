@@ -14,6 +14,11 @@
   "identity": "Microsoft.Web.Blazor.Hosted.CSharp",
   "name": "Blazor (hosted in ASP.NET server)",
   "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "path": "BlazorHosted.sln"
+    }
+  ],
   "shortName": "blazorhosted",
   "sourceName": "BlazorHosted",
   "sources": [
