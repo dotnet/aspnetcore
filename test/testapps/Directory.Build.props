@@ -5,8 +5,9 @@
     <SolutionRoot Condition="'$(SolutionRoot)' == ''">$(MSBuildThisFileDirectory)..\..\</SolutionRoot>
     <SolutionRoot>$([MSBuild]::EnsureTrailingSlash('$(SolutionRoot)'))</SolutionRoot>
 
-    <!-- Temporary hack to make things compatible with the 2.1.300-preview2-008173 Sdk -->
-    <_RazorSdkPackageReferenced>true</_RazorSdkPackageReferenced>
+    <!-- Retarget tests to use the copy of the Sdk from source -->
+    <RazorSdkCurrentVersionProps>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(BinariesRoot)'==''">
