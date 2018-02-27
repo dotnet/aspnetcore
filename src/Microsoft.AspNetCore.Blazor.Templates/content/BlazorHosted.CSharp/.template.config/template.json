@@ -1,0 +1,44 @@
+{
+  "author": "Microsoft",
+  "classifications": [
+    "Web",
+    "Blazor",
+    "Hosted"
+  ],
+  "groupIdentity": "Microsoft.Web.Blazor.Hosted",
+  "guids": [
+    "4C26868E-5E7C-458D-82E3-040509D0C71F",
+    "5990939C-7E7B-4CFA-86FF-44CA5756498A",
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
+  ],
+  "identity": "Microsoft.Web.Blazor.Hosted.CSharp",
+  "name": "Blazor (hosted in ASP.NET server)",
+  "preferNameDirectory": true,
+  "shortName": "blazorhosted",
+  "sourceName": "BlazorHosted",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ]
+    }
+  ],
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

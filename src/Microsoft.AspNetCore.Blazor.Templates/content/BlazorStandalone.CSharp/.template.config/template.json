@@ -2,12 +2,12 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "MVC",
-    "SPA"
+    "Blazor",
+    "Standalone"
   ],
-  "groupIdentity": "Microsoft.Web.Blazor",
+  "groupIdentity": "Microsoft.Web.Blazor.Standalone",
   "identity": "Microsoft.Web.Blazor.Standalone.CSharp",
-  "name": "Blazor",
+  "name": "Blazor (standalone)",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
