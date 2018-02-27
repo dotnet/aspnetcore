@@ -34,13 +34,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorGenerateInputs;
       AssignRazorGenerateTargetPaths;
       ResolveAssemblyReferenceRazorGenerateInputs;
-      _EnsureRazorCompilerReferenced;
+      _CheckForMissingRazorCompiler;
       ResolveTagHelperRazorGenerateInputs
     </PrepareForRazorGenerateDependsOn>
 
     <RazorGenerateDependsOn>
       PrepareForRazorGenerate;
-      _EnsureRazorCompilerReferenced;
+      _CheckForMissingRazorCompiler;
       RazorCoreGenerate
     </RazorGenerateDependsOn>
   
@@ -50,7 +50,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
-        ResolveRazorEmbeddedResources
+      ResolveRazorEmbeddedResources
     </ResolveRazorCompileInputsDependsOn>
 
     <RazorCompileDependsOn>
@@ -484,8 +484,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_EnsureRazorCompilerReferenced" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
-    <Error Text="A reference to Microsoft.AspNetCore.Razor.Design is required for this target to succeed. See todo:fwlink for instructions on how to resolve this." />
+  <Target Name="_CheckForMissingRazorCompiler" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
+    <Error
+      Text="A PackageReference for 'Microsoft.AspNetCore.Razor.Design' was not included in your project. This package is required to compile Razor files. Typically, a
+      transitive reference to 'Microsoft.AspNetCore.Razor.Design' and references required to compile Razor files are obtained by adding a PackageReference
+      for 'Microsoft.AspNetCore.Mvc' in your project. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
   </Target>
 
   <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">
