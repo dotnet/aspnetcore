@@ -58,6 +58,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       RazorCoreCompile
     </RazorCompileDependsOn>
 
+    <BuiltProjectOutputGroupDependsOn>
+      $(BuiltProjectOutputGroupDependsOn);
+      _RazorAddBuiltProjectOutputGroupOutput
+    </BuiltProjectOutputGroupDependsOn>
+
+    <DebugSymbolsProjectOutputGroupDependsOn>
+      $(DebugSymbolsProjectOutputGroupDependsOn);
+      _RazorAddDebugSymbolsProjectOutputGroupOutput
+    </DebugSymbolsProjectOutputGroupDependsOn>
+
     <PrepareForBuildDependsOn>
       _InitializePreserveCompilationContext;
       $(PrepareForBuildDependsOn)
@@ -337,16 +347,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target 
     Name="_RazorAddBuiltProjectOutputGroupOutput"
-    DependsOnTargets="ResolveRazorGenerateInputs"
-    BeforeTargets="BuiltProjectOutputGroup"
+    DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
-    <PropertyGroup>
-      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
-    </PropertyGroup>
-
     <ItemGroup Condition="'@(RazorGenerate)'!= ''">
-      <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(RazorOutputPath)$(RazorTargetName).dll" />
+      <BuiltProjectOutputGroupOutput Include="%(RazorIntermediateAssembly.FullPath)" FinalOutputPath="$(RazorTargetPath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="_RazorAddDebugSymbolsProjectOutputGroupOutput"
+    DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
+
+    <ItemGroup Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)')">
+      <DebugSymbolsProjectOutputGroupOutput Include="%(_RazorDebugSymbolsIntermediatePath.FullPath)" FinalOutputPath="$(RazorTargetDir)$(RazorTargetName).pdb" />
     </ItemGroup>
     
   </Target>
@@ -414,18 +430,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target 
     Name="_RazorCopyFilesToOutputDirectory" 
-    DependsOnTargets="RazorCompile"
+    DependsOnTargets="_ResolveRazorTargetPath;RazorCompile"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
-
-    <PropertyGroup>
-      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
-    </PropertyGroup>
 
     <!-- Copy the Razor dll  -->
     <Copy
       SourceFiles="@(RazorIntermediateAssembly)"
-      DestinationFolder="$(RazorOutputPath)"
+      DestinationFiles="$(RazorTargetPath)"
       SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
@@ -504,6 +516,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       Text="A PackageReference for 'Microsoft.AspNetCore.Razor.Design' was not included in your project. This package is required to compile Razor files. Typically, a
       transitive reference to 'Microsoft.AspNetCore.Razor.Design' and references required to compile Razor files are obtained by adding a PackageReference
       for 'Microsoft.AspNetCore.Mvc' in your project. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+  </Target>
+
+  <Target Name="_ResolveRazorTargetPath">
+    <PropertyGroup>
+      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
+      <RazorTargetDir>$([MSBuild]::Escape($([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RazorOutputPath)'))'))))))</RazorTargetDir>
+      <!-- Example, c:\MyProjects\MyProject\bin\debug\MyAssembly.Views.dll -->
+      <RazorTargetPath Condition=" '$(RazorTargetPath)' == '' ">$(RazorTargetDir)$(RazorTargetName).dll</RazorTargetPath>
+    </PropertyGroup>
   </Target>
 
   <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">

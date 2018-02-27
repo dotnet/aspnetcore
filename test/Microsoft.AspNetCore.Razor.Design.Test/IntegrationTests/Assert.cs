@@ -313,7 +313,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static void NupkgContains(MSBuildResult result, string nupkgPath, string filePath)
+        // This method extracts the nupkg to a fixed directory path. To avoid the extra work of
+        // cleaning up after each invocation, this method accepts multiple files.
+        public static void NupkgContains(MSBuildResult result, string nupkgPath, params string[] filePaths)
         {
             if (result == null)
             {
@@ -325,20 +327,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 throw new ArgumentNullException(nameof(nupkgPath));
             }
 
-            if (filePath == null)
+            if (filePaths == null)
             {
-                throw new ArgumentNullException(nameof(filePath));
+                throw new ArgumentNullException(nameof(filePaths));
             }
 
             nupkgPath = Path.Combine(result.Project.DirectoryPath, nupkgPath);
             FileExists(result, nupkgPath);
 
-            var unzipped = Path.Combine(result.Project.DirectoryPath, "nupkg");
+            var unzipped = Path.Combine(result.Project.DirectoryPath, Path.GetFileNameWithoutExtension(nupkgPath));
             ZipFile.ExtractToDirectory(nupkgPath, unzipped);
 
-            if (!File.Exists(Path.Combine(unzipped, filePath)))
+            foreach (var filePath in filePaths)
             {
-                throw new NupkgFileMissingException(result, nupkgPath, filePath);
+                if (!File.Exists(Path.Combine(unzipped, filePath)))
+                {
+                    throw new NupkgFileMissingException(result, nupkgPath, filePath);
+                }
             }
         }
 
