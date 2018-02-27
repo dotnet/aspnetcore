@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles
@@ -31,27 +29,6 @@ namespace Microsoft.AspNetCore.StaticFiles
             var response = await server.CreateClient().GetAsync("/ranges.txt");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            Assert.Null(response.Headers.ETag);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Symlinks not supported on Windows")]
-        public async Task ReturnsNotFoundForBrokenSymlink()
-        {
-            var badLink = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName() + ".txt");
-
-            Process.Start("ln", $"-s \"/tmp/{Path.GetRandomFileName()}\" \"{badLink}\"").WaitForExit();
-            Assert.True(File.Exists(badLink), "Should have created a symlink");
-
-            var builder = new WebHostBuilder()
-                .Configure(app => app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true }))
-                .UseWebRoot(AppContext.BaseDirectory);
-            var server = new TestServer(builder);
-
-            var response = await server.CreateClient().GetAsync(Path.GetFileName(badLink));
-
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            Assert.Null(response.Headers.ETag);
         }
 
         [Fact]
@@ -124,7 +101,6 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
                 Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
                 Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
-                Assert.NotNull(response.Headers.ETag);
 
                 using (var stream = fileInfo.CreateReadStream())
                 {

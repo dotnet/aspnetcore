@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -68,7 +67,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
 
@@ -98,35 +97,21 @@ namespace Microsoft.AspNetCore.StaticFiles
                     case StaticFileContext.PreconditionState.ShouldProcess:
                         if (fileContext.IsHeadMethod)
                         {
-                            await fileContext.SendStatusAsync(Constants.Status200Ok);
-                            return;
+                            return fileContext.SendStatusAsync(Constants.Status200Ok);
                         }
                         if (fileContext.IsRangeRequest)
                         {
-                            await fileContext.SendRangeAsync();
-                            return;
+                            return fileContext.SendRangeAsync();
                         }
-                        try
-                        {
-                            await fileContext.SendAsync();
-                            _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
-                            return;
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            _logger.LogFileNotFound(fileContext.SubPath);
-                            await fileContext.SendStatusAsync(StatusCodes.Status404NotFound);
-                            return;
-                        }
+                        _logger.LogFileServed(fileContext.SubPath, fileContext.PhysicalPath);
+                        return fileContext.SendAsync();
                     case StaticFileContext.PreconditionState.NotModified:
                         _logger.LogPathNotModified(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status304NotModified);
-                        return;
+                        return fileContext.SendStatusAsync(Constants.Status304NotModified);
 
                     case StaticFileContext.PreconditionState.PreconditionFailed:
                         _logger.LogPreconditionFailed(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
-                        return;
+                        return fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
 
                     default:
                         var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
@@ -135,7 +120,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 }
             }
 
-            await _next(context);
+            return _next(context);
         }
     }
 }

@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // the Range header field.
                 if (ifRangeHeader.LastModified.HasValue)
                 {
-                    if (_lastModified != null && _lastModified > ifRangeHeader.LastModified)
+                    if (_lastModified !=null && _lastModified > ifRangeHeader.LastModified)
                     {
                         _isRangeRequest = false;
                     }
@@ -318,11 +318,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public async Task SendAsync()
         {
+            ApplyResponseHeaders(Constants.Status200Ok);
             string physicalPath = _fileInfo.PhysicalPath;
             var sendFile = _context.Features.Get<IHttpSendFileFeature>();
             if (sendFile != null && !string.IsNullOrEmpty(physicalPath))
             {
-                ApplyResponseHeaders(Constants.Status200Ok);
                 // We don't need to directly cancel this, if the client disconnects it will fail silently.
                 await sendFile.SendFileAsync(physicalPath, 0, _length, CancellationToken.None);
                 return;
@@ -332,9 +332,6 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 using (var readStream = _fileInfo.CreateReadStream())
                 {
-                    // Don't apply headers until we are sure we can open this file.
-                    ApplyResponseHeaders(Constants.Status200Ok);
-
                     // Larger StreamCopyBufferSize is required because in case of FileStream readStream isn't going to be buffering
                     await StreamCopyOperation.CopyToAsync(readStream, _response.Body, _length, StreamCopyBufferSize, _context.RequestAborted);
                 }
