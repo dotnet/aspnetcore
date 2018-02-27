@@ -25,6 +25,23 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         [Fact]
+        public void Add_RespectsJsonPropertyAttribute_WithDotWhitespaceAndBackslashInName()
+        {
+            // Arrange
+            var obj = new JsonPropertyObjectWithStrangeNames();
+            var patchDocument = new JsonPatchDocument();
+
+            // Act
+            patchDocument.Add("/First Name.", "John");
+            patchDocument.Add("Last\\Name", "Doe");
+            patchDocument.ApplyTo(obj);
+
+            // Assert
+            Assert.Equal("John", obj.FirstName);
+            Assert.Equal("Doe", obj.LastName);
+        }
+
+        [Fact]
         public void Move_FallsbackToPropertyName_WhenJsonPropertyAttributeName_IsEmpty()
         {
             // Arrange
@@ -44,6 +61,15 @@ namespace Microsoft.AspNetCore.JsonPatch
         {
             [JsonProperty("AnotherName")]
             public string Name { get; set; }
+        }
+
+        private class JsonPropertyObjectWithStrangeNames
+        {
+            [JsonProperty("First Name.")]
+            public string FirstName { get; set; }
+
+            [JsonProperty("Last\\Name")]
+            public string LastName { get; set; }
         }
 
         private class JsonPropertyWithNoPropertyName
