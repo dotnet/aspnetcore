@@ -1,0 +1,34 @@
+﻿@using Microsoft.AspNetCore.Blazor.Routing
+<div class='main-nav'>
+    <div class='navbar navbar-inverse'>
+        <div class='navbar-header'>
+            <button type='button' class='navbar-toggle' data-toggle='collapse' data-target='.navbar-collapse'>
+                <span class='sr-only'>Toggle navigation</span>
+                <span class='icon-bar'></span>
+                <span class='icon-bar'></span>
+                <span class='icon-bar'></span>
+            </button>
+            <a class='navbar-brand' href='/'>BlazorStandalone.CSharp</a>
+        </div>
+        <div class='clearfix'></div>
+        <div class='navbar-collapse collapse'>
+            <ul class='nav navbar-nav'>
+                <li>
+                    <c:NavLink href=@("/")>
+                        <span class='glyphicon glyphicon-home'></span> Home
+                    </c:NavLink>
+                </li>
+                <li>
+                    <c:NavLink href=@("/counter")>
+                        <span class='glyphicon glyphicon-education'></span> Counter
+                    </c:NavLink>
+                </li>
+                <li>
+                    <c:NavLink href=@("/fetchdata")>
+                        <span class='glyphicon glyphicon-th-list'></span> Fetch data
+                    </c:NavLink>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

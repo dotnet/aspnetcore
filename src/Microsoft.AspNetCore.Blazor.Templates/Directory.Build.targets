@@ -1,0 +1,8 @@
+<Project>
+  <PropertyGroup>
+    <IncludeSource>false</IncludeSource>
+    <IncludeSymbols>false</IncludeSymbols>
+  </PropertyGroup>
+
+  <Import Project="SetPackageProperties.targets" />
+</Project>
