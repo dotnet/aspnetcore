@@ -8,7 +8,8 @@
 #define CS_WINDOWS_AUTHENTICATION_SECTION                L"system.webServer/security/authentication/windowsAuthentication"
 #define CS_BASIC_AUTHENTICATION_SECTION                  L"system.webServer/security/authentication/basicAuthentication"
 #define CS_ANONYMOUS_AUTHENTICATION_SECTION              L"system.webServer/security/authentication/anonymousAuthentication"
-#define CS_AUTHENTICATION_ENABLED                        L"enabled"
+#define CS_WEBSOCKET_SECTION                             L"system.webServer/webSocket"
+#define CS_ENABLED                                       L"enabled"
 #define CS_ASPNETCORE_PROCESS_EXE_PATH                   L"processPath"
 #define CS_ASPNETCORE_PROCESS_ARGUMENTS                  L"arguments"
 #define CS_ASPNETCORE_PROCESS_STARTUP_TIME_LIMIT         L"startupTimeLimit"
@@ -154,7 +155,7 @@ public:
     STRU*
     QueryProcessPath(
             VOID
-        )
+    )
     {
         return &m_struProcessPath;
     }
@@ -168,9 +169,15 @@ public:
     }
 
     BOOL
-        QueryStdoutLogEnabled()
+    QueryStdoutLogEnabled()
     {
         return m_fStdoutLogEnabled;
+    }
+
+    BOOL
+    QueryWebSocketEnabled()
+    {
+        return m_fWebSocketEnabled;
     }
 
     BOOL
@@ -315,7 +322,7 @@ private:
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
-    BOOL                   m_fIsStandAloneApplication;
+    BOOL                   m_fWebSocketEnabled;
     APP_HOSTING_MODEL      m_hostingModel;
     ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
     STRU                   m_struHostFxrLocation;

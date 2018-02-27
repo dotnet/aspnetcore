@@ -148,6 +148,7 @@ ASPNETCORE_CONFIG::Populate(
     IAppHostElement                *pWindowsAuthenticationElement = NULL;
     IAppHostElement                *pBasicAuthenticationElement = NULL;
     IAppHostElement                *pAnonymousAuthenticationElement = NULL;
+    IAppHostElement                *pWebSocketElement = NULL;
     IAppHostElement                *pEnvVarList = NULL;
     IAppHostElement                *pEnvVar = NULL;
     IAppHostElementCollection      *pEnvVarCollection = NULL;
@@ -161,6 +162,7 @@ ASPNETCORE_CONFIG::Populate(
     BSTR                            bstrBasicAuthSection = NULL;
     BSTR                            bstrAnonymousAuthSection = NULL;
     BSTR                            bstrAspNetCoreSection = NULL;
+    BSTR                            bstrWebsocketSection = NULL;
 
     m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
     if (m_pEnvironmentVariables == NULL)
@@ -235,7 +237,7 @@ ASPNETCORE_CONFIG::Populate(
     else
     {
         hr = GetElementBoolProperty(pWindowsAuthenticationElement,
-            CS_AUTHENTICATION_ENABLED,
+            CS_ENABLED,
             &m_fWindowsAuthEnabled);
         if (FAILED(hr))
         {
@@ -259,7 +261,7 @@ ASPNETCORE_CONFIG::Populate(
     else
     {
         hr = GetElementBoolProperty(pBasicAuthenticationElement,
-            CS_AUTHENTICATION_ENABLED,
+            CS_ENABLED,
             &m_fBasicAuthEnabled);
         if (FAILED(hr))
         {
@@ -282,8 +284,33 @@ ASPNETCORE_CONFIG::Populate(
     else
     {
         hr = GetElementBoolProperty(pAnonymousAuthenticationElement,
-            CS_AUTHENTICATION_ENABLED,
+            CS_ENABLED,
             &m_fAnonymousAuthEnabled);
+        if (FAILED(hr))
+        {
+            goto Finished;
+        }
+    }
+
+    bstrWebsocketSection = SysAllocString(CS_WEBSOCKET_SECTION);
+    if (bstrWebsocketSection == NULL)
+    {
+        hr = E_OUTOFMEMORY;
+        goto Finished;
+    }
+
+    hr = pAdminManager->GetAdminSection(bstrWebsocketSection,
+        m_struConfigPath.QueryStr(),
+        &pWebSocketElement);
+    if (FAILED(hr))
+    {
+        m_fWebSocketEnabled = FALSE;
+    }
+    else
+    {
+        hr = GetElementBoolProperty(pWebSocketElement,
+            CS_ENABLED,
+            &m_fWebSocketEnabled);
         if (FAILED(hr))
         {
             goto Finished;
@@ -498,6 +525,30 @@ Finished:
     {
         pAspNetCoreElement->Release();
         pAspNetCoreElement = NULL;
+    }
+
+    if (pWebSocketElement != NULL)
+    {
+        pWebSocketElement->Release();
+        pWebSocketElement = NULL;
+    }
+
+    if (pWindowsAuthenticationElement != NULL)
+    {
+        pWindowsAuthenticationElement->Release();
+        pWindowsAuthenticationElement = NULL;
+    }
+
+    if (pAnonymousAuthenticationElement!= NULL)
+    {
+        pAnonymousAuthenticationElement->Release();
+        pAnonymousAuthenticationElement = NULL;
+    }
+
+    if (pBasicAuthenticationElement != NULL)
+    {
+        pBasicAuthenticationElement->Release();
+        pBasicAuthenticationElement = NULL;
     }
 
     if (pEnvVarList != NULL)

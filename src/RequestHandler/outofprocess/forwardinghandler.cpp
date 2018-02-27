@@ -165,7 +165,7 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     //
     // Mark request as websocket if upgrade header is present.
     //
-    if (g_fWebSocketSupported)
+    if (pApplication->QueryConfig()->QueryWebSocketEnabled())
     {
         USHORT cchHeader = 0;
         PCSTR pszWebSocketHeader = pRequest->GetHeader("Upgrade", &cchHeader);
