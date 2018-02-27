@@ -158,6 +158,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorIntermediateAssembly Condition="'$(RazorIntermediateAssembly)'==''" Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
     <!-- Used in Compilation.targets -->   
     <_RazorDebugSymbolsIntermediatePath Condition="'$(_RazorDebugSymbolsProduced)'=='true'" Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
+    <!-- Add all cshtml files to UpToDateCheckInput - a collection used by the IDE's project system to determine if a project needs to be rebuilt -->
+    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
   <!--
