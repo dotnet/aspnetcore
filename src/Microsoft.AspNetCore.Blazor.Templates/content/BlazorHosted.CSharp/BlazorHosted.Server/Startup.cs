@@ -23,7 +23,7 @@ namespace BlazorHosted.Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseBlazor("BlazorHosted");
+            app.UseBlazor<BlazorHosted.Program>();
         }
     }
 }

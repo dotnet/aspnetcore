@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.0.5-preview1-10025" />
-    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.0.5-preview1-10025" />
-    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.0.5-preview1-10025" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.0.5-preview1-10031" />
+    <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.0.5-preview1-10031" />
+    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.0.5-preview1-10031" />
   </ItemGroup>
 
 </Project>
