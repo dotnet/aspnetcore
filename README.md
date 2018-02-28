@@ -60,6 +60,16 @@ Install prerequisites for E2E tests
 
 Run `dotnet test test\AllTests.proj`
 
+## Build VS Tooling
+
+Prerequisites:
+- Visual Studio 2017 15.5 (or newer)
+- Visual Studio extension development features (install via Visual Studio Installer)
+
+Open a VS Developer Command Prompt
+
+Run `msbuild BlazorTooling.sln` from the solution directory.
+
 ## Contributing
 
 There are lots of ways that you can contribute to Blazor! Read our [contributing guide](https://github.com/aspnet/Blazor/blob/dev/CONTRIBUTING.md) to learn about our development process and how to propose bug fixes and improvements.
