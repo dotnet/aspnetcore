@@ -95,35 +95,35 @@ private:
     OnWinHttpCompletionSendRequestOrWriteComplete(
         HINTERNET                   hRequest,
         DWORD                       dwInternetStatus,
-        _Out_ bool *                pfClientError,
-        _Out_ bool *                pfAnotherCompletionExpected
+        _Out_ BOOL *                pfClientError,
+        _Out_ BOOL *                pfAnotherCompletionExpected
     );
 
     HRESULT
     OnWinHttpCompletionStatusHeadersAvailable(
         HINTERNET                   hRequest,
-        _Out_ bool *                pfAnotherCompletionExpected
+        _Out_ BOOL *                pfAnotherCompletionExpected
     );
 
     HRESULT
     OnWinHttpCompletionStatusDataAvailable(
         HINTERNET                   hRequest,
         DWORD                       dwBytes,
-        _Out_ bool *                pfAnotherCompletionExpected
+        _Out_ BOOL *                pfAnotherCompletionExpected
     );
 
     HRESULT
     OnWinHttpCompletionStatusReadComplete(
         _In_ IHttpResponse *        pResponse,
         DWORD                       dwStatusInformationLength,
-        _Out_ bool *                pfAnotherCompletionExpected
+        _Out_ BOOL *                pfAnotherCompletionExpected
     );
 
     HRESULT
     OnSendingRequest(
         DWORD                       cbCompletion,
         HRESULT                     hrCompletionStatus,
-        _Out_ bool *                pfClientError
+        _Out_ BOOL *                pfClientError
     );
 
     HRESULT
@@ -151,7 +151,7 @@ private:
     HRESULT
     GetHeaders(
         _In_ const PROTOCOL_CONFIG *    pProtocol,
-        _In_    bool                    fForwardWindowsAuthToken,
+        _In_    BOOL                    fForwardWindowsAuthToken,
         _In_    SERVER_PROCESS*         pServerProcess,
         _Out_   PCWSTR *                ppszHeaders,
         _Inout_ DWORD *                 pcchHeaders
@@ -165,12 +165,12 @@ private:
     HINTERNET                           m_hRequest;
     FORWARDING_REQUEST_STATUS           m_RequestStatus;
 
-    bool                                m_fWebSocketEnabled;
-    bool                                m_fResponseHeadersReceivedAndSet;
-    bool                                m_fResetConnection;
-    bool                                m_fHandleClosedDueToClient;
-    bool                                m_fFinishRequest;
-    bool                                m_fHasError;
+    BOOL                                m_fWebSocketEnabled;
+    BOOL                                m_fResponseHeadersReceivedAndSet;
+    BOOL                                m_fResetConnection;
+    BOOL                                m_fHandleClosedDueToClient;
+    BOOL                                m_fFinishRequest;
+    BOOL                                m_fHasError;
     BOOL                                m_fDoReverseRewriteHeaders;
     PCSTR                               m_pszOriginalHostHeader;
     PCWSTR                              m_pszHeaders;

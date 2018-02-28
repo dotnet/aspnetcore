@@ -82,9 +82,9 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
 {
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_CONTINUE;
     HRESULT                     hr = S_OK;
-    bool                        fRequestLocked = FALSE;
-    bool                        fHandleSet = FALSE;
-    bool                        fFailedToStartKestrel = FALSE;
+    BOOL                        fRequestLocked = FALSE;
+    BOOL                        fHandleSet = FALSE;
+    BOOL                        fFailedToStartKestrel = FALSE;
     BOOL                        fSecure = FALSE;
     HINTERNET                   hConnect = NULL;
     IHttpRequest               *pRequest = m_pW3Context->GetRequest();
@@ -394,9 +394,9 @@ REQUEST_NOTIFICATION_STATUS
 {
     HRESULT                     hr = S_OK;
     REQUEST_NOTIFICATION_STATUS retVal = RQ_NOTIFICATION_PENDING;
-    bool                        fLocked = FALSE;
-    bool                        fClientError = FALSE;
-    bool                        fClosed = FALSE;
+    BOOL                        fLocked = FALSE;
+    BOOL                        fClientError = FALSE;
+    BOOL                        fClosed = FALSE;
 
     DBG_ASSERT(m_pW3Context != NULL);
     __analysis_assume(m_pW3Context != NULL);
@@ -762,7 +762,7 @@ FORWARDING_HANDLER::StaticTerminate()
 HRESULT
 FORWARDING_HANDLER::GetHeaders(
     _In_ const PROTOCOL_CONFIG *    pProtocol,
-    _In_    bool                    fForwardWindowsAuthToken,
+    _In_    BOOL                    fForwardWindowsAuthToken,
     _In_    SERVER_PROCESS*         pServerProcess,
     _Out_   PCWSTR *                ppszHeaders,
     _Inout_ DWORD *                 pcchHeaders
@@ -1208,11 +1208,11 @@ None
 --*/
 {
     HRESULT hr = S_OK;
-    bool fLockAcquired = FALSE;
-    bool fClientError = FALSE;
-    bool fAnotherCompletionExpected = FALSE;
-    bool fDoPostCompletion = FALSE;
-    bool fEndRequest = (dwInternetStatus == WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING);
+    BOOL fLockAcquired = FALSE;
+    BOOL fClientError = FALSE;
+    BOOL fAnotherCompletionExpected = FALSE;
+    BOOL fDoPostCompletion = FALSE;
+    BOOL fEndRequest = (dwInternetStatus == WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING);
 
     DBG_ASSERT(m_pW3Context != NULL);
     __analysis_assume(m_pW3Context != NULL);
@@ -1574,8 +1574,8 @@ HRESULT
 FORWARDING_HANDLER::OnWinHttpCompletionSendRequestOrWriteComplete(
     HINTERNET                   hRequest,
     DWORD,
-    __out bool *                pfClientError,
-    __out bool *                pfAnotherCompletionExpected
+    __out BOOL *                pfClientError,
+    __out BOOL *                pfAnotherCompletionExpected
 )
 {
     HRESULT hr = S_OK;
@@ -1683,7 +1683,7 @@ Finished:
 HRESULT
 FORWARDING_HANDLER::OnWinHttpCompletionStatusHeadersAvailable(
     HINTERNET                   hRequest,
-    __out bool *                pfAnotherCompletionExpected
+    __out BOOL *                pfAnotherCompletionExpected
 )
 {
     HRESULT       hr = S_OK;
@@ -1797,7 +1797,7 @@ HRESULT
 FORWARDING_HANDLER::OnWinHttpCompletionStatusDataAvailable(
     HINTERNET                   hRequest,
     DWORD                       dwBytes,
-    _Out_ bool *                pfAnotherCompletionExpected
+    _Out_ BOOL *                pfAnotherCompletionExpected
 )
 {
     HRESULT hr = S_OK;
@@ -1859,7 +1859,7 @@ HRESULT
 FORWARDING_HANDLER::OnWinHttpCompletionStatusReadComplete(
     __in IHttpResponse *        pResponse,
     DWORD                       dwStatusInformationLength,
-    __out bool *                pfAnotherCompletionExpected
+    __out BOOL *                pfAnotherCompletionExpected
 )
 {
     HRESULT hr = S_OK;
@@ -1944,7 +1944,7 @@ HRESULT
 FORWARDING_HANDLER::OnSendingRequest(
     DWORD                       cbCompletion,
     HRESULT                     hrCompletionStatus,
-    __out bool *                pfClientError
+    __out BOOL *                pfClientError
 )
 {
     HRESULT hr = S_OK;
