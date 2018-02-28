@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 @functions {
                     public bool HandlerWasCalled { get; set; } = false;
 
-                    void MyHandleEvent(Microsoft.AspNetCore.Blazor.RenderTree.UIEventArgs eventArgs)
+                    void MyHandleEvent(Microsoft.AspNetCore.Blazor.UIEventArgs eventArgs)
                     {
                         HandlerWasCalled = true;
                     }

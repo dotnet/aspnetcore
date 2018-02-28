@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     internal class ScopeStack
     {
-        private const string _renderFragmentTypeName = "Microsoft.AspNetCore.Blazor.RenderTree.RenderFragment";
+        private const string _renderFragmentTypeName = "Microsoft.AspNetCore.Blazor.RenderFragment";
 
         private readonly Stack<ScopeEntry> _stack = new Stack<ScopeEntry>();
         private int _builderVarNumber = 1;
