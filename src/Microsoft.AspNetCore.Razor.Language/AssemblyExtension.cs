@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class AssemblyExtension : RazorExtension
+    public class AssemblyExtension : RazorExtension
     {
         public AssemblyExtension(string extensionName, Assembly assembly)
         {
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public Assembly Assembly { get; }
 
-        public RazorExtensionInitializer CreateInitializer()
+        internal RazorExtensionInitializer CreateInitializer()
         {
             // It's not an error to have an assembly with no initializers. This is useful to specify a dependency
             // that doesn't really provide any Razor configuration.
