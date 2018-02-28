@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
 using System.Net.Mime;
-using System.Reflection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -81,7 +80,7 @@ namespace Microsoft.AspNetCore.Builder
             var result = new FileExtensionContentTypeProvider();
             result.Mappings.Add(".dll", MediaTypeNames.Application.Octet);
             result.Mappings.Add(".mem", MediaTypeNames.Application.Octet);
-            result.Mappings.Add(".wasm", MediaTypeNames.Application.Octet);
+            result.Mappings.Add(".wasm", WasmMediaTypeNames.Application.Wasm);
             return result;
         }
     }
