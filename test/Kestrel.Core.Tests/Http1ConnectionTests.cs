@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -32,14 +33,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool _pipelineFactory;
+        private readonly MemoryPool<byte> _pipelineFactory;
         private SequencePosition _consumed;
         private SequencePosition _examined;
         private Mock<ITimeoutControl> _timeoutControl;
 
         public Http1ConnectionTests()
         {
-            _pipelineFactory = new MemoryPool();
+            _pipelineFactory = KestrelMemoryPool.Create();
             var pair = DuplexPipe.CreateConnectionPair(_pipelineFactory);
 
             _transport = pair.Transport;
@@ -803,7 +804,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _http1Connection.NextMessageBody = mockMessageBody.Object;
 
             var requestProcessingTask = _http1Connection.ProcessRequestsAsync(httpApplication);
-            
+
             var data = Encoding.ASCII.GetBytes("POST / HTTP/1.1\r\nHost:\r\nConnection: close\r\ncontent-length: 1\r\n\r\n");
             await _application.Output.WriteAsync(data);
             await requestProcessingTask.TimeoutAfter(TestConstants.DefaultTimeout);

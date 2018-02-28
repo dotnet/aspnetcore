@@ -122,7 +122,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 // EAGAIN/EWOULDBLOCK so just return the buffer.
                 // http://docs.libuv.org/en/v1.x/stream.html#c.uv_read_cb
-                Input.Commit();
             }
             else if (status > 0)
             {
@@ -141,7 +140,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else
             {
                 // Given a negative status, it's possible that OnAlloc wasn't called.
-                Input.Commit();
                 _socket.ReadStop();
 
                 IOException error = null;
@@ -175,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _bufferHandle.Dispose();
         }
 
-        private async Task ApplyBackpressureAsync(ValueAwaiter<FlushResult> flushTask)
+        private async Task ApplyBackpressureAsync(PipeAwaiter<FlushResult> flushTask)
         {
             Log.ConnectionPause(ConnectionId);
             _socket.ReadStop();
@@ -183,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var result = await flushTask;
 
             // If the reader isn't complete or cancelled then resume reading
-            if (!result.IsCompleted && !result.IsCancelled)
+            if (!result.IsCompleted && !result.IsCanceled)
             {
                 Log.ConnectionResume(ConnectionId);
                 StartReading();

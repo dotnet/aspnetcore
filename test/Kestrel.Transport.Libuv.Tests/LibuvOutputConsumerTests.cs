@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 {
     public class LibuvOutputConsumerTests : IDisposable
     {
-        private readonly MemoryPool _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly MockLibuv _mockLibuv;
         private readonly LibuvThread _libuvThread;
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         public LibuvOutputConsumerTests()
         {
-            _memoryPool = new MemoryPool();
+            _memoryPool = KestrelMemoryPool.Create();
             _mockLibuv = new MockLibuv();
 
             var libuvTransport = new LibuvTransport(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0));
@@ -340,6 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
+                    writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
                     resumeWriterThreshold: maxResponseBufferSize
                 );

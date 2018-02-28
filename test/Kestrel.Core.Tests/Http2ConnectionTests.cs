@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -93,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _noData = new byte[0];
         private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Frame.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool _memoryPool = new MemoryPool();
+        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
         private readonly DuplexPipe.DuplexPipePair _pair;
         private readonly TestApplicationErrorLogger _logger;
         private readonly Http2ConnectionContext _connectionContext;

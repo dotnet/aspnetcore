@@ -9,11 +9,14 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class RequestParsingBenchmark
     {
+        private MemoryPool<byte> _memoryPool;
+
         public Pipe Pipe { get; set; }
 
         public Http1Connection Http1Connection { get; set; }
@@ -21,8 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            var memoryPool = new MemoryPool();
-            var pair = DuplexPipe.CreateConnectionPair(memoryPool);
+            _memoryPool = KestrelMemoryPool.Create();
+            var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
 
             var serviceContext = new ServiceContext
             {
@@ -36,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = memoryPool,
+                MemoryPool = _memoryPool,
                 Application = pair.Application,
                 Transport = pair.Transport,
                 TimeoutControl = new MockTimeoutControl()
@@ -45,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             http1Connection.Reset();
 
             Http1Connection = http1Connection;
-            Pipe = new Pipe(new PipeOptions(memoryPool));
+            Pipe = new Pipe(new PipeOptions(_memoryPool));
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
@@ -200,6 +203,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 Pipe.Reader.AdvanceTo(consumed, examined);
             }
             while (true);
+        }
+
+
+        [IterationCleanup]
+        public void Cleanup()
+        {
+            _memoryPool.Dispose();
         }
     }
 }

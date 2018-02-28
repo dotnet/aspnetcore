@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 
@@ -51,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Set<IConnectionTransportFeature>(this);
             }
 
-            public MemoryPool MemoryPool { get; } = new MemoryPool();
+            public MemoryPool<byte> MemoryPool { get; } = KestrelMemoryPool.Create();
 
             public IDuplexPipe Transport { get; set; }
             public IDuplexPipe Application { get; set; }

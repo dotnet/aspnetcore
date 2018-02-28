@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
     public class MockConnectionHandler : IConnectionHandler
     {
-        public Func<MemoryPool, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool);
-        public Func<MemoryPool, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool);
+        public Func<MemoryPool<byte>, PipeOptions> InputOptions { get; set; } = pool => new PipeOptions(pool);
+        public Func<MemoryPool<byte>, PipeOptions> OutputOptions { get; set; } = pool => new PipeOptions(pool);
 
         public void OnConnection(IFeatureCollection features)
         {

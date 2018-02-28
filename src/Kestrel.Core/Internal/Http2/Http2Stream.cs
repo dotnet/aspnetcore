@@ -83,14 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (data.Count > 0)
                 {
-                    try
-                    {
-                        RequestBodyPipe.Writer.Write(data);
-                    }
-                    finally
-                    {
-                        RequestBodyPipe.Writer.Commit();
-                    }
+                    RequestBodyPipe.Writer.Write(data);
 
                     RequestBodyStarted = true;
                     await RequestBodyPipe.Writer.FlushAsync();

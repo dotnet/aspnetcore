@@ -190,7 +190,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             _outputWriter.Write(data);
-            _outputWriter.Commit();
         }
 
         // Must be called with _writeLock

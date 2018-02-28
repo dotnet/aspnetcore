@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public int StreamId { get; set; }
         public ServiceContext ServiceContext { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
-        public MemoryPool MemoryPool { get; set; }
+        public MemoryPool<byte> MemoryPool { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IHttp2StreamLifetimeHandler StreamLifetimeHandler { get; set; }

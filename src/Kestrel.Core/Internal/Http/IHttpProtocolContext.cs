@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         string ConnectionId { get; set; }
         ServiceContext ServiceContext { get; set; }
         IFeatureCollection ConnectionFeatures { get; set; }
-        MemoryPool MemoryPool { get; set; }
+        MemoryPool<byte> MemoryPool { get; set; }
         IPEndPoint RemoteEndPoint { get; set; }
         IPEndPoint LocalEndPoint { get; set; }
     }

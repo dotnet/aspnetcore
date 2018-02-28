@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
@@ -24,15 +25,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly Task _psuedoAsyncTask = Task.FromResult(27);
         private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
 
-        private readonly TestHttp1Connection _http1Connection;
+        private TestHttp1Connection _http1Connection;
         private DuplexPipe.DuplexPipePair _pair;
+        private MemoryPool<byte> _memoryPool;
 
-        private readonly byte[] _writeData;
+        private readonly byte[] _writeData = Encoding.ASCII.GetBytes("Hello, World!");
 
-        public Http1WritingBenchmark()
+        [GlobalSetup]
+        public void GlobalSetup()
         {
+            _memoryPool = KestrelMemoryPool.Create();
             _http1Connection = MakeHttp1Connection();
-            _writeData = Encoding.ASCII.GetBytes("Hello, World!");
         }
 
         [Params(true, false)]
@@ -93,33 +96,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestHttp1Connection MakeHttp1Connection()
         {
-            using (var memoryPool = new MemoryPool())
+            var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
+            _pair = pair;
+
+            var serviceContext = new ServiceContext
             {
-                var pair = DuplexPipe.CreateConnectionPair(memoryPool);
-                _pair = pair;
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new MockTrace(),
+                HttpParser = new HttpParser<Http1ParsingHandler>()
+            };
 
-                var serviceContext = new ServiceContext
-                {
-                    DateHeaderValueManager = new DateHeaderValueManager(),
-                    ServerOptions = new KestrelServerOptions(),
-                    Log = new MockTrace(),
-                    HttpParser = new HttpParser<Http1ParsingHandler>()
-                };
+            var http1Connection = new TestHttp1Connection(new Http1ConnectionContext
+            {
+                ServiceContext = serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
+                MemoryPool = _memoryPool,
+                Application = pair.Application,
+                Transport = pair.Transport
+            });
 
-                var http1Connection = new TestHttp1Connection(new Http1ConnectionContext
-                {
-                    ServiceContext = serviceContext,
-                    ConnectionFeatures = new FeatureCollection(),
-                    MemoryPool = memoryPool,
-                    Application = pair.Application,
-                    Transport = pair.Transport
-                });
+            http1Connection.Reset();
+            http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
 
-                http1Connection.Reset();
-                http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
-
-                return http1Connection;
-            }
+            return http1Connection;
         }
 
         [IterationCleanup]
@@ -137,6 +137,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             None,
             Sync,
             Async
+        }
+
+        [GlobalCleanup]
+        public void Dispose()
+        {
+            _memoryPool?.Dispose();
         }
     }
 }

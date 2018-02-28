@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketTransport : ITransport
     {
-        private readonly MemoryPool _memoryPool = new MemoryPool();
+        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionHandler _handler;
         private readonly IApplicationLifetime _appLifetime;

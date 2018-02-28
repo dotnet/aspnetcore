@@ -8,9 +8,10 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Encodings.Web.Utf8;
+using System.Text.Encodings.Web;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -69,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Input.CancelPendingRead();
         }
 
-        public void ParseRequest(ReadOnlyBuffer<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public void ParseRequest(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public bool TakeStartLine(ReadOnlyBuffer<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeStartLine(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             var overLength = false;
             if (buffer.Length >= ServerOptions.Limits.MaxRequestLineSize)
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadOnlyBuffer<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
             bool overLength = false;
@@ -217,9 +218,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // URI was encoded, unescape and then parse as UTF-8
                     // Disabling warning temporary
-#pragma warning disable 618
-                    var pathLength = UrlEncoder.Decode(path, path);
-#pragma warning restore 618
+                    var pathLength = UrlDecoder.Decode(path, path);
 
                     // Removing dot segments must be done after unescaping. From RFC 3986:
                     //
@@ -430,7 +429,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
         }
 
-        protected override bool BeginRead(out ValueAwaiter<ReadResult> awaitable)
+        protected override bool BeginRead(out PipeAwaiter<ReadResult> awaitable)
         {
             awaitable = Input.ReadAsync();
             return true;

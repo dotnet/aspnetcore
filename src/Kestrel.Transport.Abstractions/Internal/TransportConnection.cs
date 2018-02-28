@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public string ConnectionId { get; set; }
 
-        public virtual MemoryPool MemoryPool { get; }
+        public virtual MemoryPool<byte> MemoryPool { get; }
         public virtual PipeScheduler InputWriterScheduler { get; }
         public virtual PipeScheduler OutputReaderScheduler { get; }
 

@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -15,11 +16,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class OutputProducerTests : IDisposable
     {
-        private readonly MemoryPool _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
 
         public OutputProducerTests()
         {
-            _memoryPool = new MemoryPool();
+            _memoryPool = KestrelMemoryPool.Create();
         }
 
         public void Dispose()

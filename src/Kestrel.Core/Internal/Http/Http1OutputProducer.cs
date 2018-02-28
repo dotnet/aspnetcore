@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var buffer = _pipeWriter;
                 callback(buffer, state);
-                buffer.Commit();
             }
         }
 
@@ -99,7 +98,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 var buffer = _pipeWriter;
                 callback(buffer, state);
-                buffer.Commit();
             }
 
             return FlushAsync();
@@ -115,14 +113,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 var buffer = _pipeWriter;
-                var writer = OutputWriter.Create(buffer);
+                var writer = new BufferWriter<PipeWriter>(buffer);
 
                 writer.Write(_bytesHttpVersion11);
                 var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
                 writer.Write(statusBytes);
                 responseHeaders.CopyTo(ref writer);
                 writer.Write(_bytesEndHeaders);
-                buffer.Commit();
+                writer.Commit();
             }
         }
 
@@ -177,14 +175,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
 
                 writableBuffer = _pipeWriter;
-                var writer = OutputWriter.Create(writableBuffer);
+                var writer = new BufferWriter<PipeWriter>(writableBuffer);
                 if (buffer.Length > 0)
                 {
                     writer.Write(buffer);
                     bytesWritten += buffer.Length;
                 }
-
-                writableBuffer.Commit();
+                writer.Commit();
             }
 
             return FlushAsync(writableBuffer, bytesWritten, cancellationToken);
@@ -203,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FlushAsyncAwaited(awaitable, bytesWritten, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(ValueAwaiter<FlushResult> awaitable, long count, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(PipeAwaiter<FlushResult> awaitable, long count, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters

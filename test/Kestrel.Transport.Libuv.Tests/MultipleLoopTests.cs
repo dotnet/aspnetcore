@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
                 await writeRequest.WriteAsync(
                     serverConnectionPipe,
-                    new ReadOnlyBuffer<byte>(new byte[] { 1, 2, 3, 4 }));
+                    new ReadOnlySequence<byte>(new byte[] { 1, 2, 3, 4 }));
 
                 writeRequest.Dispose();
                 serverConnectionPipe.Dispose();

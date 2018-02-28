@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
 
-        private MemoryPool MemoryPool => _context.MemoryPool;
+        private MemoryPool<byte> MemoryPool => _context.MemoryPool;
 
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions

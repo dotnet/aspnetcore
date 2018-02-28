@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -18,13 +19,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class HttpConnectionTests : IDisposable
     {
-        private readonly MemoryPool _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
         private readonly HttpConnectionContext _httpConnectionContext;
         private readonly HttpConnection _httpConnection;
 
         public HttpConnectionTests()
         {
-            _memoryPool = new MemoryPool();
+            _memoryPool = KestrelMemoryPool.Create();
             var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
 
             _httpConnectionContext = new HttpConnectionContext

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public static class ChunkWriter
+    internal static class ChunkWriter
     {
         private static readonly ArraySegment<byte> _endChunkBytes = CreateAsciiByteArraySegment("\r\n");
         private static readonly byte[] _hex = Encoding.ASCII.GetBytes("0123456789abcdef");
@@ -48,14 +48,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return new ArraySegment<byte>(bytes, offset, 10 - offset);
         }
 
-        public static int WriteBeginChunkBytes(ref OutputWriter<PipeWriter> start, int dataCount)
+        internal static int WriteBeginChunkBytes(ref BufferWriter<PipeWriter> start, int dataCount)
         {
             var chunkSegment = BeginChunkBytes(dataCount);
             start.Write(new ReadOnlySpan<byte>(chunkSegment.Array, chunkSegment.Offset, chunkSegment.Count));
             return chunkSegment.Count;
         }
 
-        public static void WriteEndChunkBytes(ref OutputWriter<PipeWriter> start)
+        internal static void WriteEndChunkBytes(ref BufferWriter<PipeWriter> start)
         {
             start.Write(new ReadOnlySpan<byte>(_endChunkBytes.Array, _endChunkBytes.Offset, _endChunkBytes.Count));
         }

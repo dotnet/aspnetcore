@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public ServiceContext ServiceContext { get; set; }
         public IFeatureCollection ConnectionFeatures { get; set; }
         public IList<IConnectionAdapter> ConnectionAdapters { get; set; }
-        public MemoryPool MemoryPool { get; set; }
+        public MemoryPool<byte> MemoryPool { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
         public IDuplexPipe Transport { get; set; }

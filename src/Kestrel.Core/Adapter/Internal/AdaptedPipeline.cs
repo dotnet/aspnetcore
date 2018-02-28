@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
                     try
                     {
-                        if (result.IsCancelled)
+                        if (result.IsCanceled)
                         {
                             // Forward the cancellation to the transport pipe
                             _application.Input.CancelPendingRead();
@@ -132,26 +132,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 {
 
                     var outputBuffer = Input.Writer.GetMemory(MinAllocBufferSize);
-
-                    try
-                    {
 #if NETCOREAPP2_1
-                        var bytesRead = await stream.ReadAsync(outputBuffer);
+                    var bytesRead = await stream.ReadAsync(outputBuffer);
 #else
-                        var array = outputBuffer.GetArray();
-                        var bytesRead = await stream.ReadAsync(array.Array, array.Offset, array.Count);
+                    var array = outputBuffer.GetArray();
+                    var bytesRead = await stream.ReadAsync(array.Array, array.Offset, array.Count);
 #endif
-                        Input.Writer.Advance(bytesRead);
+                    Input.Writer.Advance(bytesRead);
 
-                        if (bytesRead == 0)
-                        {
-                            // FIN
-                            break;
-                        }
-                    }
-                    finally
+                    if (bytesRead == 0)
                     {
-                        Input.Writer.Commit();
+                        // FIN
+                        break;
                     }
 
                     var result = await Input.Writer.FlushAsync();
@@ -160,7 +152,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                     {
                         break;
                     }
-
                 }
             }
             catch (Exception ex)

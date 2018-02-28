@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        private bool ParsePreface(ReadOnlyBuffer<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private bool ParsePreface(ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = readableBuffer.Start;
             examined = readableBuffer.End;

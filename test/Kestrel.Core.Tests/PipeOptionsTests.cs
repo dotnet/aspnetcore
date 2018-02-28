@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
+using System.IO.Pipelines;
 using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -24,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
             var mockScheduler = Mock.Of<PipeScheduler>();
-            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, new MemoryPool(), readerScheduler: mockScheduler);
+            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, KestrelMemoryPool.Create(), readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.ResumeWriterThreshold);
             Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.PauseWriterThreshold);
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
             var mockScheduler = Mock.Of<PipeScheduler>();
-            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, new MemoryPool(), writerScheduler: mockScheduler);
+            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, KestrelMemoryPool.Create(), writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.ResumeWriterThreshold);
             Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.PauseWriterThreshold);

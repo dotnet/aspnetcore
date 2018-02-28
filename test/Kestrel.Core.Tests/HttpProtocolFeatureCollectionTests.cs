@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
@@ -23,14 +24,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool _pipelineFactory;
+        private readonly MemoryPool<byte> _pipelineFactory;
         private Mock<ITimeoutControl> _timeoutControl;
 
         private readonly IFeatureCollection _collection;
 
         public HttpProtocolFeatureCollectionTests()
         {
-            _pipelineFactory = new MemoryPool();
+            _pipelineFactory = KestrelMemoryPool.Create();
             var pair = DuplexPipe.CreateConnectionPair(_pipelineFactory);
 
             _transport = pair.Transport;

@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 try
                 {
-                    if (result.IsCancelled)
+                    if (result.IsCanceled)
                     {
                         break;
                     }

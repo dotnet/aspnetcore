@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => LocalPort = value;
         }
 
-        MemoryPool IConnectionTransportFeature.MemoryPool => MemoryPool;
+        MemoryPool<byte> IConnectionTransportFeature.MemoryPool => MemoryPool;
 
         IDuplexPipe IConnectionTransportFeature.Transport
         {

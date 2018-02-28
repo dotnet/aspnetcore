@@ -5,10 +5,12 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -55,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
             QueueCloseHandle = PostCloseHandle;
             QueueCloseAsyncHandle = EnqueueCloseHandle;
-            MemoryPool = new MemoryPool();
+            MemoryPool = KestrelMemoryPool.Create();
             WriteReqPool = new WriteReqPool(this, _log);
         }
 
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public UvLoopHandle Loop { get { return _loop; } }
 
-        public MemoryPool MemoryPool { get; }
+        public MemoryPool<byte> MemoryPool { get; }
 
         public WriteReqPool WriteReqPool { get; }
 
