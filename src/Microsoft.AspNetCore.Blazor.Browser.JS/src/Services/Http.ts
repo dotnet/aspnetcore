@@ -17,7 +17,7 @@ async function sendAsync(id: number, method: string, requestUri: string, body: s
   try {
     response = await fetch(requestUri, {
       method: method,
-      body: body,
+      body: body || undefined,
       headers: headersJson ? (JSON.parse(headersJson) as string[][]) : undefined
     });
     responseText = await response.text();
