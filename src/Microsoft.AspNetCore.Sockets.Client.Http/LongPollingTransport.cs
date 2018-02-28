@@ -8,14 +8,13 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class LongPollingTransport : ITransport
+    public partial class LongPollingTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _application = application;
             Mode = requestedTransferMode;
 
-            _logger.StartTransport(Mode.Value);
+            Log.StartTransport(_logger, Mode.Value);
 
             // Start sending and polling (ask for binary if the server supports it)
             _poller = Poll(url, _transportCts.Token);
@@ -61,7 +60,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
-                _logger.TransportStopped(t.Exception?.InnerException);
+                Log.TransportStopped(_logger, t.Exception?.InnerException);
                 _application.Output.Complete(t.Exception?.InnerException);
                 _application.Input.Complete();
                 return t;
@@ -72,7 +71,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
-            _logger.TransportStopping();
+            Log.TransportStopping(_logger);
 
             _transportCts.Cancel();
 
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
-            _logger.StartReceive();
+            Log.StartReceive(_logger);
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -114,14 +113,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
                     {
-                        _logger.ClosingConnection();
+                        Log.ClosingConnection(_logger);
 
                         // Transport closed or polling stopped, we're done
                         break;
                     }
                     else
                     {
-                        _logger.ReceivedMessages();
+                        Log.ReceivedMessages(_logger);
 
                         var stream = new PipeWriterStream(_application.Output);
                         await response.Content.CopyToAsync(stream);
@@ -132,18 +131,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
             catch (OperationCanceledException)
             {
                 // transport is being closed
-                _logger.ReceiveCanceled();
+                Log.ReceiveCanceled(_logger);
             }
             catch (Exception ex)
             {
-                _logger.ErrorPolling(pollUrl, ex);
+                Log.ErrorPolling(_logger, pollUrl, ex);
                 throw;
             }
             finally
             {
                 // Make sure the send loop is terminated
                 _transportCts.Cancel();
-                _logger.ReceiveStopped();
+                Log.ReceiveStopped(_logger);
             }
         }
     }

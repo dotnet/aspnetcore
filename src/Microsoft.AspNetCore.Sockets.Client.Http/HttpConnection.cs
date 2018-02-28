@@ -21,7 +21,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class HttpConnection : IConnection
+    public partial class HttpConnection : IConnection
     {
         private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
 
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task StartAsyncInternal()
         {
-            _logger.HttpConnectionStarting();
+            Log.HttpConnectionStarting(_logger);
 
             try
             {
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     // Connection is being disposed while start was in progress
                     if (_connectionState == ConnectionState.Disposed)
                     {
-                        _logger.HttpConnectionClosed();
+                        Log.HttpConnectionClosed(_logger);
                         return;
                     }
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     connectUrl = CreateConnectUrl(Url, negotiationResponse);
                 }
 
-                _logger.StartingTransport(_transport, connectUrl);
+                Log.StartingTransport(_logger, _transport, connectUrl);
                 await StartTransport(connectUrl);
             }
             catch
@@ -200,16 +200,16 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     // to make sure that the message removed from the channel is processed before we drain the queue.
                     // There is a short window between we start the channel and assign the _receiveLoopTask a value.
                     // To make sure that _receiveLoopTask can be awaited (i.e. is not null) we need to await _startTask.
-                    _logger.ProcessRemainingMessages();
+                    Log.ProcessRemainingMessages(_logger);
 
                     await _startTcs.Task;
                     await _receiveLoopTask;
 
-                    _logger.DrainEvents();
+                    Log.DrainEvents(_logger);
 
                     await Task.WhenAny(_eventQueue.Drain().NoThrow(), Task.Delay(_eventQueueDrainTimeout));
 
-                    _logger.CompleteClosed();
+                    Log.CompleteClosed(_logger);
                     _logScope.ConnectionId = null;
 
                     // At this point the connection can be either in the Connected or Disposed state. The state should be changed
@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     catch (Exception ex)
                     {
                         // Suppress (but log) the exception, this is user code
-                        _logger.ErrorDuringClosedEvent(ex);
+                        Log.ErrorDuringClosedEvent(_logger, ex);
                     }
 
                 }, null);
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             try
             {
                 // Get a connection ID from the server
-                logger.EstablishingConnection(url);
+                Log.EstablishingConnection(logger, url);
                 var urlBuilder = new UriBuilder(url);
                 if (!urlBuilder.Path.EndsWith("/"))
                 {
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             catch (Exception ex)
             {
-                logger.ErrorWithNegotiation(url, ex);
+                Log.ErrorWithNegotiation(logger, url, ex);
                 throw;
             }
         }
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             catch (Exception ex)
             {
-                _logger.ErrorStartingTransport(_transport, ex);
+                Log.ErrorStartingTransport(_logger, _transport, ex);
                 throw;
             }
         }
@@ -377,13 +377,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             try
             {
-                _logger.HttpReceiveStarted();
+                Log.HttpReceiveStarted(_logger);
 
                 while (true)
                 {
                     if (_connectionState != ConnectionState.Connected)
                     {
-                        _logger.SkipRaisingReceiveEvent();
+                        Log.SkipRaisingReceiveEvent(_logger);
 
                         break;
                     }
@@ -395,12 +395,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         if (!buffer.IsEmpty)
                         {
-                            _logger.ScheduleReceiveEvent();
+                            Log.ScheduleReceiveEvent(_logger);
                             var data = buffer.ToArray();
 
                             _ = _eventQueue.Enqueue(async () =>
                             {
-                                _logger.RaiseReceiveEvent();
+                                Log.RaiseReceiveEvent(_logger);
 
                                 // Copying the callbacks to avoid concurrency issues
                                 ReceiveCallback[] callbackCopies;
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                                     }
                                     catch (Exception ex)
                                     {
-                                        _logger.ExceptionThrownFromCallback(nameof(OnReceived), ex);
+                                        Log.ExceptionThrownFromCallback(_logger, nameof(OnReceived), ex);
                                     }
                                 }
                             });
@@ -439,14 +439,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 Input.Complete(ex);
 
-                _logger.ErrorReceiving(ex);
+                Log.ErrorReceiving(_logger, ex);
             }
             finally
             {
                 Input.Complete();
             }
 
-            _logger.EndReceive();
+            Log.EndReceive(_logger);
         }
 
         public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default) =>
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     "Cannot send messages when the connection is not in the Connected state.");
             }
 
-            _logger.SendingMessage();
+            Log.SendingMessage(_logger);
 
             cancellationToken.ThrowIfCancellationRequested();
 
@@ -494,7 +494,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 if (!(_connectionState == ConnectionState.Connecting || _connectionState == ConnectionState.Connected))
                 {
-                    _logger.SkippingStop();
+                    Log.SkippingStop(_logger);
                     return;
                 }
             }
@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // See comment at AbortAsync for more discussion on the thread-safety of this.
             _abortException = exception;
 
-            _logger.StoppingClient();
+            Log.StoppingClient(_logger);
 
             try
             {
@@ -570,13 +570,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             if (ChangeState(to: ConnectionState.Disposed) == ConnectionState.Disposed)
             {
-                _logger.SkippingDispose();
+                Log.SkippingDispose(_logger);
 
                 // the connection was already disposed
                 return;
             }
 
-            _logger.DisposingClient();
+            Log.DisposingClient(_logger);
 
             _httpClient?.Dispose();
             _scopeDisposable.Dispose();
@@ -638,7 +638,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     _connectionState = to;
                 }
 
-                _logger.ConnectionStateChanged(state, to);
+                Log.ConnectionStateChanged(_logger, state, to);
                 return state;
             }
         }
@@ -649,7 +649,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 var state = _connectionState;
                 _connectionState = to;
-                _logger.ConnectionStateChanged(state, to);
+                Log.ConnectionStateChanged(_logger, state, to);
                 return state;
             }
         }

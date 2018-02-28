@@ -5,18 +5,16 @@ using System;
 using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class ServerSentEventsTransport : ITransport
+    public partial class ServerSentEventsTransport : ITransport
     {
         private readonly HttpClient _httpClient;
         private readonly HttpOptions _httpOptions;
@@ -56,14 +54,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _application = application;
             Mode = TransferMode.Text; // Server Sent Events is a text only transport
 
-            _logger.StartTransport(Mode.Value);
+            Log.StartTransport(_logger, Mode.Value);
 
             var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _httpOptions, _transportCts, _logger);
             var receiveTask = OpenConnection(_application, url, _transportCts.Token);
 
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
             {
-                _logger.TransportStopped(t.Exception?.InnerException);
+                Log.TransportStopped(_logger, t.Exception?.InnerException);
                 _application.Output.Complete(t.Exception?.InnerException);
                 _application.Input.Complete();
 
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task OpenConnection(IDuplexPipe application, Uri url, CancellationToken cancellationToken)
         {
-            _logger.StartReceive();
+            Log.StartReceive(_logger);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             SendUtils.PrepareHttpRequest(request, _httpOptions);
@@ -95,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var input = result.Buffer;
                         if (result.IsCanceled || (input.IsEmpty && result.IsCompleted))
                         {
-                            _logger.EventStreamEnded();
+                            Log.EventStreamEnded(_logger);
                             break;
                         }
 
@@ -104,11 +102,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         try
                         {
+                            Log.ParsingSSE(_logger, input.Length);
                             var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
 
                             switch (parseResult)
                             {
                                 case ServerSentEventsMessageParser.ParseResult.Completed:
+                                    Log.MessageToApp(_logger, buffer.Length);
                                     await _application.Output.WriteAsync(buffer);
                                     _parser.Reset();
                                     break;
@@ -128,20 +128,20 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 }
                 catch (OperationCanceledException)
                 {
-                    _logger.ReceiveCanceled();
+                    Log.ReceiveCanceled(_logger);
                 }
                 finally
                 {
                     readCancellationRegistration.Dispose();
                     _transportCts.Cancel();
-                    _logger.ReceiveStopped();
+                    Log.ReceiveStopped(_logger);
                 }
             }
         }
 
         public async Task StopAsync()
         {
-            _logger.TransportStopping();
+            Log.TransportStopping(_logger);
             _transportCts.Cancel();
 
             try

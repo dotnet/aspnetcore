@@ -8,13 +8,12 @@ using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Client.Http;
-using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
-    public class WebSocketsTransport : ITransport
+    public partial class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket;
         private IDuplexPipe _application;
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _application = application;
             Mode = requestedTransferMode;
 
-            _logger.StartTransport(Mode.Value);
+            Log.StartTransport(_logger, Mode.Value);
 
             await Connect(url);
 
@@ -157,7 +156,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 #endif
                     if (receiveResult.MessageType == WebSocketMessageType.Close)
                     {
-                        _logger.WebSocketClosed(_webSocket.CloseStatus);
+                        Log.WebSocketClosed(_logger, _webSocket.CloseStatus);
 
                         if (_webSocket.CloseStatus != WebSocketCloseStatus.NormalClosure)
                         {
@@ -167,7 +166,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         return;
                     }
 
-                    _logger.MessageReceived(receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+                    Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     _application.Output.Advance(receiveResult.Count);
 
@@ -186,7 +185,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             catch (OperationCanceledException)
             {
-                _logger.ReceiveCanceled();
+                Log.ReceiveCanceled(_logger);
             }
             catch (Exception ex)
             {
@@ -204,7 +203,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // We're done writing
                 _application.Output.Complete();
 
-                _logger.ReceiveStopped();
+                Log.ReceiveStopped(_logger);
             }
         }
 
@@ -237,7 +236,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             try
                             {
-                                _logger.ReceivedFromApp(buffer.Length);
+                                Log.ReceivedFromApp(_logger, buffer.Length);
 
                                 if (WebSocketCanSend(socket))
                                 {
@@ -252,7 +251,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             {
                                 if (!_aborted)
                                 {
-                                    _logger.ErrorSendingMessage(ex);
+                                    Log.ErrorSendingMessage(_logger, ex);
                                 }
                                 break;
                             }
@@ -282,7 +281,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                 _application.Input.Complete();
 
-                _logger.SendStopped();
+                Log.SendStopped(_logger);
             }
         }
 
@@ -310,7 +309,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
-            _logger.TransportStopping();
+            Log.TransportStopping(_logger);
 
             // Cancel any pending reads from the application, this should start the entire shutdown process
             _application.Input.CancelPendingRead();
