@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{15E42EAC-5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AuthSamples.FunctionalTests", "test\AuthSamples.FunctionalTests\AuthSamples.FunctionalTests.csproj", "{B5C26BE6-655E-4D7F-B756-F286750EF172}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VirtualSchemes.PathSchemeSelection", "samples\VirtualSchemes.PathSchemeSelection\VirtualSchemes.PathSchemeSelection.csproj", "{4E91BD2A-616F-45EE-9647-2F1608D17FB9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PathSchemeSelection", "samples\PathSchemeSelection\PathSchemeSelection.csproj", "{4E91BD2A-616F-45EE-9647-2F1608D17FB9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.ExternalClaims", "samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj", "{D8804E7A-BD7A-4E4B-ACA7-822A37A81B28}"
 EndProject

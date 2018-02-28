@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace AuthSamples.VirtualScheme.PathSchemeSelection
+namespace AuthSamples.PathSchemeSelection
 {
     public class Program
     {

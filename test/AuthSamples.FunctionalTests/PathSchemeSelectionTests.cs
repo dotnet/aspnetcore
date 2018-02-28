@@ -8,9 +8,9 @@ using Xunit;
 
 namespace AuthSamples.FunctionalTests
 {
-    public class VirtualSchemeTests : IClassFixture<SampleTestFixture<VirtualScheme.PathSchemeSelection.Startup>>
+    public class PathSchemeSelectionTests : IClassFixture<SampleTestFixture<PathSchemeSelection.Startup>>
     {
-        public VirtualSchemeTests(SampleTestFixture<VirtualScheme.PathSchemeSelection.Startup> fixture)
+        public PathSchemeSelectionTests(SampleTestFixture<PathSchemeSelection.Startup> fixture)
         {
             Client = fixture.Client;
         }

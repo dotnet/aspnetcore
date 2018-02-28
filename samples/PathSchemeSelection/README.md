@@ -1,4 +1,4 @@
-AuthSamples.VirtualScheme.PathSchemeSelection
+AuthSamples.PathSchemeSelection
 =================
 
 Sample demonstrating selecting between cookie and another authentication scheme based on the request:
