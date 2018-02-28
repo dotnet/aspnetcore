@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         var result = await pipelineReader.ReadAsync();
                         var input = result.Buffer;
-                        if (result.IsCancelled || (input.IsEmpty && result.IsCompleted))
+                        if (result.IsCanceled || (input.IsEmpty && result.IsCompleted))
                         {
                             _logger.EventStreamEnded();
                             break;

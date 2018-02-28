@@ -3,10 +3,7 @@
 
 using System;
 using System.Buffers;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Sequences;
-using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -25,7 +22,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;
         private List<byte[]> _data = new List<byte[]>();
 
-        public ParseResult ParseMessage(ReadOnlyBuffer<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
+        public ParseResult ParseMessage(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined, out byte[] message)
         {
             consumed = buffer.Start;
             examined = buffer.End;
@@ -149,7 +146,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlyBuffer<byte> buffer)
+        private ReadOnlySpan<byte> ConvertBufferToSpan(ReadOnlySequence<byte> buffer)
         {
             if (buffer.IsSingleSegment)
             {

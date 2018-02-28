@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return true;
         }
 
-        public static bool TryParseMessage(ReadOnlyBuffer<byte> buffer, out NegotiationMessage negotiationMessage, out SequencePosition consumed, out SequencePosition examined)
+        public static bool TryParseMessage(ReadOnlySequence<byte> buffer, out NegotiationMessage negotiationMessage, out SequencePosition consumed, out SequencePosition examined)
         {
             var separator = buffer.PositionOf(TextMessageFormatter.RecordSeparator);
             if (separator == null)

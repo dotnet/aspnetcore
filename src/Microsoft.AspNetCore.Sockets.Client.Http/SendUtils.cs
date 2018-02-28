@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
                             PrepareHttpRequest(request, httpOptions);
 
-                            request.Content = new ReadOnlyBufferContent(buffer);
+                            request.Content = new ReadOnlySequenceContent(buffer);
 
                             var response = await httpClient.SendAsync(request, transportCts.Token);
                             response.EnsureSuccessStatusCode();
@@ -99,11 +99,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
         }
 
-        private class ReadOnlyBufferContent : HttpContent
+        private class ReadOnlySequenceContent : HttpContent
         {
-            private readonly ReadOnlyBuffer<byte> _buffer;
+            private readonly ReadOnlySequence<byte> _buffer;
 
-            public ReadOnlyBufferContent(ReadOnlyBuffer<byte> buffer)
+            public ReadOnlySequenceContent(ReadOnlySequence<byte> buffer)
             {
                 _buffer = buffer;
             }

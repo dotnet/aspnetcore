@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
@@ -83,10 +84,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 Assert.False(writeTask.IsCompleted);
 
-                // Reading here puts us below the threshold 
+                // Reading here puts us below the threshold
                 await connection.Transport.Input.ConsumeAsync(5);
 
-                await writeTask.OrTimeout();
+                await writeTask.AsTask().OrTimeout();
             }
         }
 
@@ -987,7 +988,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
 
                 await endPointTask.OrTimeout();
 
@@ -1068,7 +1069,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
 
                 await endPointTask.OrTimeout();
 
@@ -1125,7 +1126,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 context.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
 
                 var endPointTask = dispatcher.ExecuteAsync(context, options, app);
-                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).OrTimeout();
+                await connection.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("Hello, World")).AsTask().OrTimeout();
 
                 await endPointTask.OrTimeout();
 

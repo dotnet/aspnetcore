@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _dataEncoder = dataEncoder;
         }
 
-        public bool ReadMessages(ReadOnlyBuffer<byte> buffer, IInvocationBinder binder, out IList<HubMessage> messages, out SequencePosition consumed, out SequencePosition examined)
+        public bool ReadMessages(ReadOnlySequence<byte> buffer, IInvocationBinder binder, out IList<HubMessage> messages, out SequencePosition consumed, out SequencePosition examined)
         {
             // TODO: Fix this implementation to be incremental
             consumed = buffer.End;

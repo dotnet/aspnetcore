@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         // We canceled in the middle of applying back pressure
                         // or if the consumer is done
-                        if (flushResult.IsCancelled || flushResult.IsCompleted)
+                        if (flushResult.IsCanceled || flushResult.IsCompleted)
                         {
                             break;
                         }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     try
                     {
-                        if (result.IsCancelled)
+                        if (result.IsCanceled)
                         {
                             break;
                         }

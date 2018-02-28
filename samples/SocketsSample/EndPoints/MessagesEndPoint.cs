@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Text;
@@ -64,10 +65,11 @@ namespace SocketsSample.EndPoints
         private Task Broadcast(byte[] payload)
         {
             var tasks = new List<Task>(Connections.Count);
+            async Task<FlushResult> ToTask(PipeAwaiter<FlushResult> awaiter) => await awaiter;
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Transport.Output.WriteAsync(payload));
+                tasks.Add(ToTask(c.Transport.Output.WriteAsync(payload)));
             }
 
             return Task.WhenAll(tasks);

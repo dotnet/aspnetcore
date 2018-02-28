@@ -14,7 +14,7 @@ namespace System.Net.WebSockets
 {
     internal static class WebSocketExtensions
     {
-        public static Task SendAsync(this WebSocket webSocket, ReadOnlyBuffer<byte> buffer, WebSocketMessageType webSocketMessageType, CancellationToken cancellationToken = default)
+        public static Task SendAsync(this WebSocket webSocket, ReadOnlySequence<byte> buffer, WebSocketMessageType webSocketMessageType, CancellationToken cancellationToken = default)
         {
             // TODO: Consider chunking writes here if we get a multi segment buffer
 #if NETCOREAPP2_1

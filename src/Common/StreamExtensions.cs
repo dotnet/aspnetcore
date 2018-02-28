@@ -11,7 +11,7 @@ namespace System.IO
 {
     internal static class StreamExtensions
     {
-        public static async Task WriteAsync(this Stream stream, ReadOnlyBuffer<byte> buffer, CancellationToken cancellationToken = default)
+        public static async Task WriteAsync(this Stream stream, ReadOnlySequence<byte> buffer, CancellationToken cancellationToken = default)
         {
             // REVIEW: Should we special case IsSingleSegment here?
             foreach (var segment in buffer)
