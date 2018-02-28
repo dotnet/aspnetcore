@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
-        private readonly MemoryPool _memoryPool;
+        private readonly MemoryPool<byte> _memoryPool;
 
         private GCHandle _thisHandle;
         private MemoryHandle _inputHandle;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
-        internal unsafe IISHttpContext(MemoryPool memoryPool, IntPtr pInProcessHandler, IISOptions options)
+        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pInProcessHandler))
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -467,13 +467,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     }
                     finally
                     {
-                        Input.Writer.Commit();
                         _inputHandle.Dispose();
                     }
 
                     var result = await Input.Writer.FlushAsync();
 
-                    if (result.IsCompleted || result.IsCancelled)
+                    if (result.IsCompleted || result.IsCanceled)
                     {
                         break;
                     }
@@ -516,7 +515,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
                 try
                 {
-                    if (result.IsCancelled)
+                    if (result.IsCanceled)
                     {
                         break;
                     }
@@ -561,7 +560,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             Output.Reader.Complete();
         }
 
-        private unsafe IISAwaitable WriteAsync(ReadOnlyBuffer<byte> buffer)
+        private unsafe IISAwaitable WriteAsync(ReadOnlySequence<byte> buffer)
         {
             var fCompletionExpected = false;
             var hr = 0;

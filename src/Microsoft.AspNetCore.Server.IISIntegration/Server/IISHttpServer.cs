@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
-        private readonly MemoryPool _memoryPool = new MemoryPool();
+        private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
         private GCHandle _httpServerHandle;
         private readonly IApplicationLifetime _applicationLifetime;
         private readonly IAuthenticationSchemeProvider _authentication;
@@ -119,10 +119,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private class IISContextFactory<T> : IISContextFactory
         {
             private readonly IHttpApplication<T> _application;
-            private readonly MemoryPool _memoryPool;
+            private readonly MemoryPool<byte> _memoryPool;
             private readonly IISOptions _options;
 
-            public IISContextFactory(MemoryPool memoryPool, IHttpApplication<T> application, IISOptions options)
+            public IISContextFactory(MemoryPool<byte> memoryPool, IHttpApplication<T> application, IISOptions options)
             {
                 _application = application;
                 _memoryPool = memoryPool;

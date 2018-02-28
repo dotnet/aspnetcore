@@ -13,7 +13,6 @@
     <PackageReference Include="System.Numerics.Vectors" Version="$(SystemNumericsVectorsPackageVersion)" />
     <PackageReference Include="System.Buffers" Version="$(SystemBuffersPackageVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
-    <PackageReference Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" />
     <PackageReference Include="System.Memory" Version="$(SystemMemoryPackageVersion)" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(SystemRuntimeCompilerServicesUnsafePackageVersion)" />
     <PackageReference Include="System.Security.Principal.Windows" Version="$(SystemSecurityPrincipalWindowsPackageVersion)" />
@@ -23,6 +22,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="$(MicrosoftAspNetCoreHttpExtensionsPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="$(MicrosoftAspNetCoreHttpOverridesPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreHttpSysSourcesPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Buffers.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsBuffersSourcesPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsOptionsPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" Version="$(MicrosoftExtensionsSecurityHelperSourcesPackageVersion)" />

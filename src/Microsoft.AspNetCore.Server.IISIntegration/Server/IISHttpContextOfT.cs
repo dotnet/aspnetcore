@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private readonly IHttpApplication<TContext> _application;
 
-        public IISHttpContextOfT(MemoryPool memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISOptions options)
+        public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISOptions options)
             : base(memoryPool, pInProcessHandler, options)
         {
             _application = application;

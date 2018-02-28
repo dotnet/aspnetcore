@@ -17,6 +17,7 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftExtensionsBuffersSourcesPackageVersion>2.1.0-preview2-t000</MicrosoftExtensionsBuffersSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
@@ -28,18 +29,17 @@
     <MicrosoftExtensionsPlatformAbstractionsPackageVersion>1.1.0</MicrosoftExtensionsPlatformAbstractionsPackageVersion>
     <MicrosoftExtensionsSecurityHelperSourcesPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsSecurityHelperSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNetHttpHeadersPackageVersion>2.1.0-preview2-30187</MicrosoftNetHttpHeadersPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftWebAdministrationPackageVersion>7.0.0</MicrosoftWebAdministrationPackageVersion>
-    <SystemBuffersPackageVersion>4.5.0-preview2-26130-01</SystemBuffersPackageVersion>
-    <SystemIOPipelinesPackageVersion>0.1.0-preview2-180130-1</SystemIOPipelinesPackageVersion>
+    <SystemBuffersPackageVersion>4.5.0-preview2-26224-02</SystemBuffersPackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26224-02</SystemIOPipelinesPackageVersion>
     <SystemManagementAutomationPackageVersion>6.1.7601.17515</SystemManagementAutomationPackageVersion>
-    <SystemMemoryPackageVersion>4.5.0-preview2-26130-01</SystemMemoryPackageVersion>
-    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26130-01</SystemNumericsVectorsPackageVersion>
-    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26130-01</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview2-26130-01</SystemSecurityPrincipalWindowsPackageVersion>
-    <SystemTextEncodingsWebUtf8PackageVersion>0.1.0-preview2-180130-1</SystemTextEncodingsWebUtf8PackageVersion>
+    <SystemMemoryPackageVersion>4.5.0-preview2-26224-02</SystemMemoryPackageVersion>
+    <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26224-02</SystemNumericsVectorsPackageVersion>
+    <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26224-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
+    <SystemSecurityPrincipalWindowsPackageVersion>4.5.0-preview2-26224-02</SystemSecurityPrincipalWindowsPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
     <XunitRunnerVisualStudioPackageVersion>2.4.0-beta.1.build3945</XunitRunnerVisualStudioPackageVersion>
   </PropertyGroup>
