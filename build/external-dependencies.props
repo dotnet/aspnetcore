@@ -77,6 +77,7 @@
     <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="$(SystemIOFileSystemAccessControlPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Packaging" Version="$(SystemIOPackagingPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="$(SystemIOPipesAccessControlPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.IO.Ports" Version="$(SystemIOPortsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Json" Version="$(SystemJsonPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Memory" Version="$(SystemMemoryPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
@@ -108,16 +109,6 @@
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-  </ItemGroup>
-  <!-- CoreFX labs -->
-  <PropertyGroup>
-    <CoreFxLabFeed>https://dotnet.myget.org/f/dotnet-corefxlab/api/v3/index.json</CoreFxLabFeed>
-  </PropertyGroup>
-  <ItemGroup>
-    <ExternalDependency Include="System.Buffers.Primitives" Version="$(SystemBuffersPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Encodings.Web.Utf8" Version="$(SystemTextEncodingsWebUtf8PackageVersion)" Source="$(CoreFxLabFeed)" Mirror="true" />
-    <ExternalDependency Include="System.Text.Primitives" Version="$(SystemTextPrimitivesPackageVersion)" Source="$(CoreFxLabFeed)" Private="true" Mirror="true" />
   </ItemGroup>
   <!-- Roslyn -->
   <PropertyGroup>
