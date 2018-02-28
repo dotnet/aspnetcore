@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
 
         public static readonly string DisplayName = "Google";
 
-        public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/auth";
+        public static readonly string AuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
 
         public static readonly string TokenEndpoint = "https://www.googleapis.com/oauth2/v4/token";
 

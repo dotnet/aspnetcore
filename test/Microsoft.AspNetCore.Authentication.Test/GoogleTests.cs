@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             var transaction = await server.SendAsync("https://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.ToString();
-            Assert.Contains("https://accounts.google.com/o/oauth2/auth?response_type=code", location);
+            Assert.Contains("https://accounts.google.com/o/oauth2/v2/auth?response_type=code", location);
             Assert.Contains("&client_id=", location);
             Assert.Contains("&redirect_uri=", location);
             Assert.Contains("&scope=", location);
