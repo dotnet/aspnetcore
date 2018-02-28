@@ -8,8 +8,13 @@
     window.Module = {
       print: function (line) { console.log(line); },
       printEr: function (line) { console.error(line); },
-      wasmBinaryFile: '/_framework/wasm/mono.wasm',
-      asmjsCodeFile: '/_framework/asmjs/mono.asm.js',
+      locateFile: function (fileName) {
+        switch (fileName) {
+          case 'mono.wasm': return '/_framework/wasm/mono.wasm';
+          case 'mono.asm.js': return '/_framework/asmjs/mono.asm.js';
+          default: return fileName;
+        }
+      },
       preloadPlugins: [],
       preRun: [function () {
         preloadAssemblies(loadAssemblyUrls);
@@ -33,13 +38,13 @@
     var type = find_class(assembly, namespace, typeName);
     var method = find_method(type, methodName, -1);
 
-    var stack = Module.Runtime.stackSave();
+    var stack = Module.stackSave();
     try {
       var resultPtr = callMethod(method, null, args);
       return dotnetStringToJavaScriptString(resultPtr);
     }
     finally {
-      Module.Runtime.stackRestore(stack);
+      Module.stackRestore(stack);
     }
   };
 
@@ -94,16 +99,16 @@
   }
 
   function callMethod(method, target, args) {
-    var stack = Module.Runtime.stackSave();
+    var stack = Module.stackSave();
     var invoke_method = Module.cwrap('mono_wasm_invoke_method', 'number', ['number', 'number', 'number']);
 
     try {
-      var argsBuffer = Module.Runtime.stackAlloc(args.length);
-      var exceptionFlagManagedInt = Module.Runtime.stackAlloc(4);
+      var argsBuffer = Module.stackAlloc(args.length);
+      var exceptionFlagManagedInt = Module.stackAlloc(4);
       for (var i = 0; i < args.length; ++i) {
         var argVal = args[i];
         if (typeof argVal === 'number') {
-          var managedInt = Module.Runtime.stackAlloc(4);
+          var managedInt = Module.stackAlloc(4);
           Module.setValue(managedInt, argVal, 'i32');
           Module.setValue(argsBuffer + i * 4, managedInt, 'i32');
         } else if (typeof argVal === 'string') {
@@ -123,7 +128,7 @@
 
       return res;
     } finally {
-      Module.Runtime.stackRestore(stack);
+      Module.stackRestore(stack);
     }
   }
 

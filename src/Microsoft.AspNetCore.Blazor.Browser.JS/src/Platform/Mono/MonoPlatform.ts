@@ -68,11 +68,11 @@ export const monoPlatform: Platform = {
       throw new Error(`Currently, MonoPlatform supports passing a maximum of 4 arguments from JS to .NET. You tried to pass ${args.length}.`);
     }
 
-    const stack = Module.Runtime.stackSave();
+    const stack = Module.stackSave();
 
     try {
-      const argsBuffer = Module.Runtime.stackAlloc(args.length);
-      const exceptionFlagManagedInt = Module.Runtime.stackAlloc(4);
+      const argsBuffer = Module.stackAlloc(args.length);
+      const exceptionFlagManagedInt = Module.stackAlloc(4);
       for (var i = 0; i < args.length; ++i) {
         Module.setValue(argsBuffer + i * 4, args[i], 'i32');
       }
@@ -87,7 +87,7 @@ export const monoPlatform: Platform = {
 
       return res;
     } finally {
-      Module.Runtime.stackRestore(stack);
+      Module.stackRestore(stack);
     }
   },
 
@@ -162,14 +162,22 @@ function addScriptTagsToDocument() {
 
 function createEmscriptenModuleInstance(loadAssemblyUrls: string[], onReady: () => void, onError: (reason?: any) => void) {
   const module = {} as typeof Module;
+  const wasmBinaryFile = '_framework/wasm/mono.wasm';
+  const asmjsCodeFile = '_framework/asmjs/mono.asm.js';
 
   module.print = line => console.log(`WASM: ${line}`);
   module.printErr = line => console.error(`WASM: ${line}`);
-  module.wasmBinaryFile = '_framework/wasm/mono.wasm';
-  module.asmjsCodeFile = '_framework/asmjs/mono.asm.js';
   module.preRun = [];
   module.postRun = [];
   module.preloadPlugins = [];
+
+  module.locateFile = fileName => {
+    switch (fileName) {
+      case 'mono.wasm': return wasmBinaryFile;
+      case 'mono.asm.js': return asmjsCodeFile;
+      default: return fileName;
+    }
+  };
 
   module.preRun.push(() => {
     // By now, emscripten should be initialised enough that we can capture these methods for later use
