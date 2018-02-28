@@ -2,8 +2,8 @@
 import { platform } from '../Environment';
 import { MethodHandle, System_String } from '../Platform/Platform';
 const httpClientAssembly = 'Microsoft.AspNetCore.Blazor.Browser';
-const httpClientNamespace = `${httpClientAssembly}.Services.Temporary`;
-const httpClientTypeName = 'HttpClient';
+const httpClientNamespace = `${httpClientAssembly}.Http`;
+const httpClientTypeName = 'BrowserHttpMessageHandler';
 const httpClientFullTypeName = `${httpClientNamespace}.${httpClientTypeName}`;
 let receiveResponseMethod: MethodHandle;
 
