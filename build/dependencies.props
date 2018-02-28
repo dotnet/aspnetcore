@@ -11,7 +11,6 @@
     <MicrosoftExtensionsProcessSourcesPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsProcessSourcesPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
     <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreApp21PackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview2-26130-01</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0-preview2-26130-01</SystemDataSqlClientPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26130-01</SystemSecurityCryptographyCngPackageVersion>

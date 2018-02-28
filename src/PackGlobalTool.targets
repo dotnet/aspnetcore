@@ -12,7 +12,7 @@
         description=$(Description);
         repositoryUrl=$(RepositoryUrl);
         targetframework=$(TargetFramework);
-        MicrosoftNETCorePlatformsPackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);
+        repositoryCommit=$(RepositoryCommit);
       </NuspecProperties>
     </PropertyGroup>
   </Target>
