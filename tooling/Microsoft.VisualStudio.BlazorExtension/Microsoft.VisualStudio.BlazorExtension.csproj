@@ -21,10 +21,14 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Following VS convention of using the VS release # as a convention for the vsix version. -->
+    <!-- 
+      Following VS convention of using the VS release # as a convention for the vsix version.
+
+      VS needs this build number to be parsable by System.Version, so it can't have any letters.
+    -->
     <VsixVersion>15.6</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'!=''">$(VsixVersion).$(BuildNumber)</VsixVersion>
-    <VsixVersion Condition="'$(BuildNumber)'==''">$(VsixVersion).999999</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'!='' AND '$(BuildNumber)'!='t000'">$(VsixVersion).$(BuildNumber)</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'=='' OR '$(BuildNumber)'=='t000'">$(VsixVersion).999999</VsixVersion>
   </PropertyGroup>
   <!--
     Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
