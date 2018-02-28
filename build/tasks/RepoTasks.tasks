@@ -5,21 +5,17 @@
 
   <UsingTask TaskName="RepoTasks.AddArchiveReferences" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.AddMetapackageReferences" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.AddRSReferences" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.AnalyzeBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ComposeNewStore" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ConsolidateManifests" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.CopyPackagesToSplitFolders" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.CreateCommonManifest" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CreateLzma" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.GenerateRestoreSourcesPropsFile" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.JoinItems" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.OrderBy" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.ProcessSharedFrameworkDeps" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PublishToAzureBlob" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ReplaceInFile" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.ResolveSymbolsRecursivePath" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.TrimDeps" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.VerifyCoherentVersions" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ResolveSymbolsRecursivePath" AssemblyFile="$(_RepoTaskAssembly)" />
 
   <!-- tools from dotnet-buildtools -->
   <PropertyGroup>

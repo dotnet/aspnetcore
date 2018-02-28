@@ -2,6 +2,7 @@
   <!-- These package version may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
     <MicrosoftCSharpPackageVersion>4.5.0-preview2-26308-02</MicrosoftCSharpPackageVersion>
+    <MicrosoftDotNetArchivePackageVersion>0.2.0-beta-62606-02</MicrosoftDotNetArchivePackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-26308-02</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-26308-02</MicrosoftExtensionsDependencyModelPackageVersion>
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->

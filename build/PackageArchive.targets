@@ -7,9 +7,6 @@
   </PropertyGroup>
 
   <Target Name="BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
-    <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
-    <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
-
     <!-- Clear the directories -->
     <RemoveDir Directories="$(_WorkRoot)" />
 
@@ -49,6 +46,6 @@
       Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp21PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);DotNetBuildOffline=true;AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
-    <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
+    <RepoTasks.CreateLzma OutputPath="$(FallbackOutputPath)" Sources="$(FallbackStagingDir)" />
   </Target>
 </Project>
