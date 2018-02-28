@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using BasicWebSite;
 using BasicWebSite.Models;
 using Newtonsoft.Json;
 using Xunit;
@@ -70,18 +69,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 State = "WA",
                 Zip = "Invalid",
             };
-            var expected = new[]
+            var expected = new Dictionary<string, string[]>
             {
-                new VndError
-                {
-                    Path = "Name",
-                    Message = "The field Name must be a string with a minimum length of 5 and a maximum length of 30.",
-                },
-                new VndError
-                {
-                    Path = "Zip",
-                    Message =  @"The field Zip must match the regular expression '\d{5}'.",
-                },
+                {"Name", new string[] {"The field Name must be a string with a minimum length of 5 and a maximum length of 30."}},
+                {"Zip", new string[]{ @"The field Zip must match the regular expression '\d{5}'."}}
             };
             var contactString = JsonConvert.SerializeObject(contactModel);
 
@@ -91,14 +82,9 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             Assert.Equal("application/vnd.error+json", response.Content.Headers.ContentType.MediaType);
-            var actual = JsonConvert.DeserializeObject<VndError[]>(await response.Content.ReadAsStringAsync());
-            actual = actual.OrderBy(e => e.Path).ToArray();
-            Assert.Equal(expected.Length, actual.Length);
-            for (var i = 0; i < expected.Length; i++)
-            {
-                Assert.Equal(expected[i].Path, expected[i].Path);
-                Assert.Equal(expected[i].Message, expected[i].Message);
-            }
+            var content = await response.Content.ReadAsStringAsync();
+            var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(content);
+            Assert.Equal(expected, actual);
         }
 
         [Fact]

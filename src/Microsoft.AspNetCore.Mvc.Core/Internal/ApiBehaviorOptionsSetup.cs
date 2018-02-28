@@ -2,19 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ApiBehaviorOptionsSetup : IConfigureOptions<ApiBehaviorOptions>
     {
-        private readonly IErrorDescriptionFactory _errorDescriptionFactory;
 
-        public ApiBehaviorOptionsSetup(IErrorDescriptionFactory errorDescriptionFactory)
+        public ApiBehaviorOptionsSetup()
         {
-            _errorDescriptionFactory = errorDescriptionFactory;
         }
 
         public void Configure(ApiBehaviorOptions options)
@@ -28,13 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             IActionResult GetInvalidModelStateResponse(ActionContext context)
             {
-                var errorDetails = _errorDescriptionFactory.CreateErrorDescription(
-                    context.ActionDescriptor,
-                    context.ModelState);
-
-                var result = (errorDetails is ModelStateDictionary modelState) ?
-                    new BadRequestObjectResult(modelState) :
-                    new BadRequestObjectResult(errorDetails);
+                var result = new BadRequestObjectResult(context.ModelState);
 
                 result.ContentTypes.Add("application/json");
                 result.ContentTypes.Add("application/xml");
