@@ -1,30 +1,30 @@
 ﻿[
   {
-    "DateFormatted": "06/05/2018",
+    "Date": "2018-05-06",
     "TemperatureC": 1,
     "Summary": "Freezing",
     "TemperatureF": 33
   },
   {
-    "DateFormatted": "07/05/2018",
+    "Date": "2018-05-07",
     "TemperatureC": 14,
     "Summary": "Bracing",
     "TemperatureF": 57
   },
   {
-    "DateFormatted": "08/05/2018",
+    "Date": "2018-05-08",
     "TemperatureC": -13,
     "Summary": "Freezing",
     "TemperatureF": 9
   },
   {
-    "DateFormatted": "09/05/2018",
+    "Date": "2018-05-09",
     "TemperatureC": -16,
     "Summary": "Balmy",
     "TemperatureF": 4
   },
   {
-    "DateFormatted": "10/05/2018",
+    "Date": "2018-05-10",
     "TemperatureC": -2,
     "Summary": "Chilly",
     "TemperatureF": 29

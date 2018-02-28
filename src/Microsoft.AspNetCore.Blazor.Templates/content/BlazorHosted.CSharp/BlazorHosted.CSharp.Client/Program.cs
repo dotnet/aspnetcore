@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Blazor.Browser.Services;
 using System;
 
-namespace BlazorHosted
+namespace BlazorHosted.CSharp.Client
 {
     public class Program
     {

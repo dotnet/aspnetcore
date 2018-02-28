@@ -4,10 +4,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
+using System.Linq;
+using System.Net.Mime;
 
 namespace Microsoft.AspNetCore.Blazor.Cli.Server
 {
@@ -16,11 +19,17 @@ namespace Microsoft.AspNetCore.Blazor.Cli.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+            services.AddResponseCompression(options =>
+            {
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes
+                    .Concat(new[] { MediaTypeNames.Application.Octet });
+            });
         }
 
         public void Configure(IApplicationBuilder app, IConfiguration configuration)
         {
             app.UseDeveloperExceptionPage();
+            app.UseResponseCompression();
             EnableConfiguredPathbase(app, configuration);
 
             var clientAssemblyPath = FindClientAssemblyPath(app);

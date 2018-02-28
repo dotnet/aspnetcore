@@ -9,18 +9,19 @@
   "guids": [
     "4C26868E-5E7C-458D-82E3-040509D0C71F",
     "5990939C-7E7B-4CFA-86FF-44CA5756498A",
-    "650B3CE7-2E93-4CC4-9F46-466686815EAA"
+    "650B3CE7-2E93-4CC4-9F46-466686815EAA",
+    "0AFFA7FD-4E37-4636-AB91-3753E746DB98"
   ],
   "identity": "Microsoft.Web.Blazor.Hosted.CSharp",
   "name": "Blazor (hosted in ASP.NET server)",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "BlazorHosted.sln"
+      "path": "BlazorHosted.CSharp.sln"
     }
   ],
   "shortName": "blazorhosted",
-  "sourceName": "BlazorHosted",
+  "sourceName": "BlazorHosted.CSharp",
   "sources": [
     {
       "source": "./",

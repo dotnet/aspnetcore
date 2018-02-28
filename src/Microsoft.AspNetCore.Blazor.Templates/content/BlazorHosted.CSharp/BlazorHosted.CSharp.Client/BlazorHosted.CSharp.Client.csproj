@@ -2,14 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RunCommand>dotnet</RunCommand>
-    <RunArguments>blazor serve</RunArguments>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.0.5-preview1-10038" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.0.5-preview1-10038" />
-    <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.0.5-preview1-10038" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BlazorHosted.CSharp.Shared\BlazorHosted.CSharp.Shared.csproj" />
   </ItemGroup>
 
 </Project>
