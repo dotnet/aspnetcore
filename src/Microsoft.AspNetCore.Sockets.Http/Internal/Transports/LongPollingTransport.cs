@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
                 if (buffer.IsEmpty && result.IsCompleted)
                 {
-                    _logger.LongPolling204();
+                    Log.LongPolling204(_logger);
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
@@ -46,7 +44,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 // We're intentionally not checking cancellation here because we need to drain messages we've got so far,
                 // but it's too late to emit the 204 required by being cancelled.
 
-                _logger.LongPollingWritingMessage(buffer.Length);
+                Log.LongPollingWritingMessage(_logger, buffer.Length);
 
                 context.Response.ContentLength = buffer.Length;
                 context.Response.ContentType = "application/octet-stream";
@@ -72,12 +70,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 {
                     // Don't count this as cancellation, this is normal as the poll can end due to the browser closing.
                     // The background thread will eventually dispose this connection if it's inactive
-                    _logger.LongPollingDisconnected();
+                    Log.LongPollingDisconnected(_logger);
                 }
                 // Case 2
                 else if (_timeoutToken.IsCancellationRequested)
                 {
-                    _logger.PollTimedOut();
+                    Log.PollTimedOut(_logger);
 
                     context.Response.ContentLength = 0;
                     context.Response.ContentType = "text/plain";
@@ -86,15 +84,58 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 else
                 {
                     // Case 3
-                    _logger.LongPolling204();
+                    Log.LongPolling204(_logger);
                     context.Response.ContentType = "text/plain";
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LongPollingTerminated(ex);
+                Log.LongPollingTerminated(_logger, ex);
                 throw;
+            }
+        }
+
+        private static class Log
+        {
+            private static readonly Action<ILogger, Exception> _longPolling204 =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(1, "LongPolling204"), "Terminating Long Polling connection by sending 204 response.");
+
+            private static readonly Action<ILogger, Exception> _pollTimedOut =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(2, "PollTimedOut"), "Poll request timed out. Sending 200 response to connection.");
+
+            private static readonly Action<ILogger, long, Exception> _longPollingWritingMessage =
+                LoggerMessage.Define<long>(LogLevel.Trace, new EventId(3, "LongPollingWritingMessage"), "Writing a {count} byte message to connection.");
+
+            private static readonly Action<ILogger, Exception> _longPollingDisconnected =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "LongPollingDisconnected"), "Client disconnected from Long Polling endpoint for connection.");
+
+            private static readonly Action<ILogger, Exception> _longPollingTerminated =
+                LoggerMessage.Define(LogLevel.Error, new EventId(5, "LongPollingTerminated"), "Long Polling transport was terminated due to an error on connection.");
+
+            public static void LongPolling204(ILogger logger)
+            {
+                _longPolling204(logger, null);
+            }
+
+            public static void PollTimedOut(ILogger logger)
+            {
+                _pollTimedOut(logger, null);
+            }
+
+            public static void LongPollingWritingMessage(ILogger logger, long count)
+            {
+                _longPollingWritingMessage(logger, count, null);
+            }
+
+            public static void LongPollingDisconnected(ILogger logger)
+            {
+                _longPollingDisconnected(logger, null);
+            }
+
+            public static void LongPollingTerminated(ILogger logger, Exception ex)
+            {
+                _longPollingTerminated(logger, ex);
             }
         }
     }

@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net.WebSockets;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
-    public class WebSocketsTransport : IHttpTransport
+    public partial class WebSocketsTransport : IHttpTransport
     {
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             using (var ws = await context.WebSockets.AcceptWebSocketAsync(_options.SubProtocol))
             {
-                _logger.SocketOpened();
+                Log.SocketOpened(_logger);
 
                 try
                 {
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 }
                 finally
                 {
-                    _logger.SocketClosed();
+                    Log.SocketClosed(_logger);
                 }
             }
         }
@@ -74,7 +73,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             if (trigger == receiving)
             {
-                _logger.WaitingForSend();
+                Log.WaitingForSend(_logger);
 
                 // We're waiting for the application to finish and there are 2 things it could be doing
                 // 1. Waiting for application data
@@ -90,7 +89,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     if (resultTask != sending)
                     {
                         // We timed out so now we're in ungraceful shutdown mode
-                        _logger.CloseTimedOut();
+                        Log.CloseTimedOut(_logger);
 
                         // Abort the websocket if we're stuck in a pending send to the client
                         _aborted = true;
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             }
             else
             {
-                _logger.WaitingForClose();
+                Log.WaitingForClose(_logger);
 
                 // We're waiting on the websocket to close and there are 2 things it could be doing
                 // 1. Waiting for websocket data
@@ -155,7 +154,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                         return;
                     }
 
-                    _logger.MessageReceived(receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+                    Log.MessageReceived(_logger, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     _application.Output.Advance(receiveResult.Count);
 
@@ -218,7 +217,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                         {
                             try
                             {
-                                _logger.SendPayload(buffer.Length);
+                                Log.SendPayload(_logger, buffer.Length);
 
                                 var webSocketMessageType = (_connection.TransferMode == TransferMode.Binary
                                     ? WebSocketMessageType.Binary
@@ -237,7 +236,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                             {
                                 if (!_aborted)
                                 {
-                                    _logger.ErrorWritingFrame(ex);
+                                    Log.ErrorWritingFrame(_logger, ex);
                                 }
                                 break;
                             }

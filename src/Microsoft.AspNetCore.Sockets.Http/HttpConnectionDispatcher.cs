@@ -20,7 +20,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class HttpConnectionDispatcher
+    public partial class HttpConnectionDispatcher
     {
         private readonly ConnectionManager _manager;
         private readonly ILoggerFactory _loggerFactory;
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection();
+                Log.EstablishedConnection(_logger);
 
                 // ServerSentEvents is a text protocol only
                 connection.TransportCapabilities = TransferMode.Text;
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection();
+                Log.EstablishedConnection(_logger);
 
                 var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                     if (connection.Status == DefaultConnectionContext.ConnectionStatus.Disposed)
                     {
-                        _logger.ConnectionDisposed(connection.ConnectionId);
+                        Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
                         // The connection was disposed
                         context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Sockets
                     if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
                     {
                         var existing = connection.GetHttpContext();
-                        _logger.ConnectionAlreadyActive(connection.ConnectionId, existing.TraceIdentifier);
+                        Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, existing.TraceIdentifier);
 
                         using (connection.Cancellation)
                         {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Sockets
                             // Wait for the previous request to drain
                             await connection.TransportTask;
 
-                            _logger.PollCanceled(connection.ConnectionId, existing.TraceIdentifier);
+                            Log.PollCanceled(_logger, connection.ConnectionId, existing.TraceIdentifier);
                         }
                     }
 
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Sockets
                     // Raise OnConnected for new connections only since polls happen all the time
                     if (connection.ApplicationTask == null)
                     {
-                        _logger.EstablishedConnection();
+                        Log.EstablishedConnection(_logger);
 
                         connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.LongPolling;
 
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Sockets
                     }
                     else
                     {
-                        _logger.ResumingConnection();
+                        Log.ResumingConnection(_logger);
                     }
 
                     // REVIEW: Performance of this isn't great as this does a bunch of per request allocations
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 if (connection.Status == DefaultConnectionContext.ConnectionStatus.Disposed)
                 {
-                    _logger.ConnectionDisposed(connection.ConnectionId);
+                    Log.ConnectionDisposed(_logger, connection.ConnectionId);
 
                     // Connection was disposed
                     context.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Sockets
                 // There's already an active request
                 if (connection.Status == DefaultConnectionContext.ConnectionStatus.Active)
                 {
-                    _logger.ConnectionAlreadyActive(connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
+                    Log.ConnectionAlreadyActive(_logger, connection.ConnectionId, connection.GetHttpContext().TraceIdentifier);
 
                     // Reject the request with a 409 conflict
                     context.Response.StatusCode = StatusCodes.Status409Conflict;
@@ -370,7 +370,7 @@ namespace Microsoft.AspNetCore.Sockets
             // Get the bytes for the connection id
             var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, options));
 
-            _logger.NegotiationRequest();
+            Log.NegotiationRequest(_logger);
 
             // Write it out to the response with the right content length
             context.Response.ContentLength = negotiateResponseBuffer.Length;
@@ -422,7 +422,7 @@ namespace Microsoft.AspNetCore.Sockets
             var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
             if (transport == TransportType.WebSockets)
             {
-                _logger.PostNotAllowedForWebSockets();
+                Log.PostNotAllowedForWebSockets(_logger);
                 context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
                 await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
                 return;
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Sockets
             var pipeWriterStream = new PipeWriterStream(connection.Application.Output);
             await context.Request.Body.CopyToAsync(pipeWriterStream);
 
-            _logger.ReceivedBytes(pipeWriterStream.Length);
+            Log.ReceivedBytes(_logger, pipeWriterStream.Length);
             await connection.Application.Output.FlushAsync();
         }
 
@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status404NotFound;
-                _logger.TransportNotSupported(transportType);
+                Log.TransportNotSupported(_logger, transportType);
                 await context.Response.WriteAsync($"{transportType} transport not supported by this end point type");
                 return false;
             }
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Sockets
             {
                 context.Response.ContentType = "text/plain";
                 context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                _logger.CannotChangeTransport(transport.Value, transportType);
+                Log.CannotChangeTransport(_logger, transport.Value, transportType);
                 await context.Response.WriteAsync("Cannot change transports mid-connection");
                 return false;
             }
