@@ -2,21 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class TestableEventBus : EventBus
     {
-        public int ListeningCount;
-        public int ConnectionCount;
-        public int CompletedCount;
-        public DateTime? LastProcessedTime;
-        public TimeSpan? KeepAlive;
-        public bool HasDetectedBadConnection;
-        public bool HitKeepAliveTimeout;
         public event EventHandler Listening;
+        public event EventHandler CompilationComplete;
+
+        public int ListeningCount { get; private set; }
+
+        public int ConnectionCount { get; private set; }
+
+        public int CompletedCount { get; private set; }
+
+        public DateTime? LastProcessedTime { get; private set; }
+
+        public TimeSpan? KeepAlive { get; private set; }
+
+        public bool HasDetectedBadConnection { get; private set; }
+
+        public bool HitKeepAliveTimeout { get; private set; }
 
         public override void ConnectionListening()
         {
@@ -33,6 +39,11 @@ namespace Microsoft.AspNetCore.Razor.Tools
         {
             CompletedCount += count;
             LastProcessedTime = DateTime.Now;
+        }
+
+        public override void CompilationCompleted()
+        {
+            CompilationComplete?.Invoke(this, EventArgs.Empty);
         }
 
         public override void UpdateKeepAlive(TimeSpan timeSpan)
