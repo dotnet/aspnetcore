@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             IEnumerable<string> jsReferences,
             IEnumerable<string> cssReferences,
             bool linkerEnabled,
+            string reloadUri,
             string outputPath)
         {
             var template = GetTemplate(path);
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
             }
             var assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
             var entryPoint = GetAssemblyEntryPoint(assemblyPath);
-            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, assemblyReferences, jsReferences, cssReferences, linkerEnabled);
+            var updatedContent = GetIndexHtmlContents(template, assemblyName, entryPoint, assemblyReferences, jsReferences, cssReferences, linkerEnabled, reloadUri);
             var normalizedOutputPath = Normalize(outputPath);
             Console.WriteLine("Writing index to: " + normalizedOutputPath);
             File.WriteAllText(normalizedOutputPath, updatedContent);
@@ -103,7 +104,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
             IEnumerable<string> assemblyReferences,
             IEnumerable<string> jsReferences,
             IEnumerable<string> cssReferences,
-            bool linkerEnabled)
+            bool linkerEnabled,
+            string reloadUri)
         {
             var resultBuilder = new StringBuilder();
 
@@ -144,7 +146,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
                                     assemblyEntryPoint,
                                     assemblyReferences,
                                     linkerEnabled,
-                                    tag.Attributes);
+                                    tag.Attributes,
+                                    reloadUri);
 
                                 // Emit tags to reference any specified JS/CSS files
                                 AppendReferenceTags(
@@ -175,7 +178,11 @@ namespace Microsoft.AspNetCore.Blazor.Build
 
                     case HtmlTokenType.EndOfFile:
                         // Finally, emit any remaining text from the original source file
-                        resultBuilder.Append(htmlTemplate, currentRangeStartPos, htmlTemplate.Length - currentRangeStartPos);
+                        var remainingLength = htmlTemplate.Length - currentRangeStartPos;
+                        if (remainingLength > 0)
+                        {
+                            resultBuilder.Append(htmlTemplate, currentRangeStartPos, remainingLength);
+                        }
                         return resultBuilder.ToString();
                 }
             }
@@ -202,7 +209,8 @@ namespace Microsoft.AspNetCore.Blazor.Build
             string assemblyEntryPoint,
             IEnumerable<string> binFiles,
             bool linkerEnabled,
-            List<KeyValuePair<string, string>> attributes)
+            List<KeyValuePair<string, string>> attributes,
+            string reloadUri)
         {
             var assemblyNameWithExtension = $"{assemblyName}.dll";
 
@@ -222,6 +230,11 @@ namespace Microsoft.AspNetCore.Blazor.Build
             else
             {
                 attributesDict.Remove("linker-enabled");
+            }
+
+            if (!string.IsNullOrEmpty(reloadUri))
+            {
+                attributesDict["reload"] = reloadUri;
             }
 
             resultBuilder.Append("<script");

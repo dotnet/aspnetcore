@@ -1,0 +1,19 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Live reload test app</title>
+    <base href="/live/reloading/subdir/" />
+</head>
+<body>
+    <app>Loading...</app>
+    <div id="some-js-file-output"></div>
+    <script type="blazor-boot"></script>
+
+    <script>
+        // The test about live reloading should be independent of any
+        // dev server caching headers
+        document.write("<script src='someJsFile.js?nocache=" + (new Date().valueOf()) + "'></" + "script>");
+    </script>
+</body>
+</html>

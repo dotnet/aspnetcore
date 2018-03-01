@@ -24,6 +24,7 @@
     <ProjectReference Include="..\..\samples\StandaloneApp\StandaloneApp.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Cli\Microsoft.AspNetCore.Blazor.Cli.csproj" />
     <ProjectReference Include="..\testapps\BasicTestApp\BasicTestApp.csproj" />
+    <ProjectReference Include="..\testapps\LiveReloadTestApp\LiveReloadTestApp.csproj" />
     <ProjectReference Include="..\testapps\TestServer\TestServer.csproj" />
   </ItemGroup>
 

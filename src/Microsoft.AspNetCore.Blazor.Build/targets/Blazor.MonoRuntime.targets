@@ -23,6 +23,9 @@
     <ItemGroup>
       <FileWrites Include="@(BlazorItemOutput->'%(TargetOutputPath)')" />
     </ItemGroup>
+    <PropertyGroup>
+      <_BlazorDidCopyFilesToOutputDirectory>true</_BlazorDidCopyFilesToOutputDirectory>
+    </PropertyGroup>
   </Target>
   
   <Target Name="_BlazorTrackResolveReferencesDidRun" AfterTargets="ResolveReferences">
@@ -47,6 +50,21 @@
     <Message Importance="$(_BlazorStatisticsReportImportance)" Text="%(_BlazorStatisticsOutput.Identity)" />
   </Target>
 
+  <!--
+    We only issue the reload notification from here if you're *not* building inside VS.
+    If you are building inside VS, then it's possible you're building an arbitrary collection
+    of projects of which this is just one, and it's important to wait until all projects in
+    the build are completed before reloading, so the notification is instead triggered by the
+    VS extension that can see when a complete build process is finished.
+  -->
+  <Target Name="_BlazorIssueLiveReloadNotification"
+          AfterTargets="Build"
+          Condition="'$(UseBlazorLiveReloading)'=='true' AND '$(_BlazorDidCopyFilesToOutputDirectory)'=='true' AND '$(BuildingInsideVisualStudio)'!='true'">
+    <!-- Touch the signal file to trigger a reload -->
+    <WriteLinesToFile File="$(ProjectDir)$(OutputPath)$(BlazorBuildCompletedSignalPath)" Lines="_" />
+    <Delete Files="$(ProjectDir)$(OutputPath)$(BlazorBuildCompletedSignalPath)" />
+  </Target>
+
   <!-- Preparing blazor files for output:
     PrepareBlazorOutputs
       _PrepareBlazorOutputConfiguration
@@ -65,6 +83,7 @@
             _TouchBlazorApplicationAssemblies
       _GenerateBlazorIndexHtml
     _BlazorCopyFilesToOutputDirectory
+    _BlazorIssueLiveReloadNotification
 
     The process for doing builds goes as follows:
     Produce a hash file with the Hash SDK task and write that hash to a marker file.
@@ -571,6 +590,7 @@
       <BlazorIndexHtmlInput Include="@(BlazorPackageJsRef->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(BlazorPackageCssRef->'%(FullPath)')" />
       <BlazorIndexHtmlInput Include="@(_BlazorLinkingOption)" />
+      <BlazorIndexHtmlInput Include="$(BlazorLiveReloadUri)" Condition="'$(UseBlazorLiveReloading)'=='true'" />
     </ItemGroup>
 
     <WriteLinesToFile
@@ -597,9 +617,10 @@
     </ItemGroup>
     <PropertyGroup>
       <_LinkerEnabledFlag Condition="'$(_BlazorShouldLinkApplicationAssemblies)' != ''">--linker-enabled</_LinkerEnabledFlag>
+      <_LiveReloadArg Condition="'$(UseBlazorLiveReloading)' == 'true' AND '$(BlazorLiveReloadUri)' != ''">--reload-uri "$(BlazorLiveReloadUri)"</_LiveReloadArg>
     </PropertyGroup>
 
-    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_JsReferences->'--js &quot;%(Identity)&quot;', ' ') @(_CssReferences->'--css &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
+    <Exec Command="$(BlazorBuildExe) build @(IntermediateAssembly) --html-page &quot;$(BlazorIndexHtml)&quot; @(_AppReferences->'--reference &quot;%(Identity)&quot;', ' ') @(_JsReferences->'--js &quot;%(Identity)&quot;', ' ') @(_CssReferences->'--css &quot;%(Identity)&quot;', ' ') $(_LinkerEnabledFlag) $(_LiveReloadArg) --output &quot;$(BlazorIndexHtmlOutputPath)&quot;" />
 
     <ItemGroup Condition="Exists('$(BlazorIndexHtmlOutputPath)')">
       <_BlazorIndex Include="$(BlazorIndexHtmlOutputPath)" />

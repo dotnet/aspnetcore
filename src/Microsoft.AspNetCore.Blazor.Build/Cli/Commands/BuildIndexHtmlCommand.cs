@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                 "Adds a <link rel=stylesheet> tag with the specified 'href' value",
                 CommandOptionType.MultipleValue);
 
+            var reloadUri = command.Option("--reload-uri",
+                "If specified, enables live reloading and specifies the URI of the notification endpoint.",
+                CommandOptionType.SingleValue);
+
             var outputPath = command.Option("--output",
                 "Path to the output file",
                 CommandOptionType.SingleValue);
@@ -55,6 +59,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                         jsReferences.Values.ToArray(),
                         cssReferences.Values.ToArray(),
                         linkerEnabledFlag.HasValue(),
+                        reloadUri.Value(),
                         outputPath.Value());
                     return 0;
                 }
