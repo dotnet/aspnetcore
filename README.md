@@ -63,12 +63,17 @@ Run `dotnet test test\AllTests.proj`
 ## Build VS Tooling
 
 Prerequisites:
-- Visual Studio 2017 15.5 (or newer)
+- Visual Studio 2017 15.6 (or newer)
 - Visual Studio extension development features (install via Visual Studio Installer)
 
 Open a VS Developer Command Prompt
 
-Run `msbuild BlazorTooling.sln` from the solution directory.
+Run the following instructions from the solution directory.
+
+```shell
+msbuild BlazorTooling.sln /t:Restore
+msbuild BlazorTooling.sln
+```
 
 ## Contributing
 
