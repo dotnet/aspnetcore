@@ -36,10 +36,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return Task.FromResult(TagHelperResolutionResult.Empty);
             }
 
-            var engine = _engineFactory.Create(project, RazorProjectFileSystem.Empty, b => 
-            {
-                b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true, });
-            });
+            var engine = _engineFactory.Create(project, RazorProjectFileSystem.Empty, b => { });
             return GetTagHelpersAsync(project, engine);
         }
     }

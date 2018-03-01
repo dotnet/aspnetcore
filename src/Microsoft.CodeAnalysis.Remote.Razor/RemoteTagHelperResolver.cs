@@ -53,11 +53,7 @@ namespace Microsoft.CodeAnalysis.Razor
             //
             // Most notably, we are going to find the Tag Helpers using a compilation, and we have
             // no editor settings.
-            Action<RazorProjectEngineBuilder> configure = (b) =>
-            {
-                b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true });
-            };
-
+            //
             // The default configuration currently matches MVC-2.0. Beyond MVC-2.0 we added SDK support for 
             // properly detecting project versions, so that's a good version to assume when we can't find a
             // configuration.
@@ -68,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // This will stop a crash from happening in this case (misconfigured project), but will still make
             // it obvious to the user that something is wrong.
             var factory = CreateFactory(configuration, factoryTypeName) ?? _fallbackFactory;
-            return factory.Create(configuration, RazorProjectFileSystem.Empty, configure);
+            return factory.Create(configuration, RazorProjectFileSystem.Empty, b => { });
         }
 
         private IProjectEngineFactory CreateFactory(RazorConfiguration configuration, string factoryTypeName)

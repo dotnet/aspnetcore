@@ -392,7 +392,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -443,7 +443,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -499,7 +499,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -559,7 +559,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -734,7 +734,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime, designTime);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -931,7 +931,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -968,7 +968,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             string expectedAttributeName)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -1005,7 +1005,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             .PropertyName(validProperty2.Name)
                             .TypeName(validProperty2.PropertyType.FullName),
                     });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(OverriddenAttributeTagHelper).FullName);
 
             // Act
@@ -1039,7 +1039,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             .PropertyName(validProperty2.Name)
                             .TypeName(validProperty2.PropertyType.FullName),
                     });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedOverriddenAttributeTagHelper).FullName);
 
             // Act
@@ -1073,7 +1073,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             .PropertyName(validProperty2.Name)
                             .TypeName(validProperty2.PropertyType.FullName),
                     });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedNotOverriddenAttributeTagHelper).FullName);
 
             // Act
@@ -1098,7 +1098,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         .PropertyName(nameof(InheritedSingleAttributeTagHelper.IntAttribute))
                         .TypeName(typeof(int).FullName)
                 });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedSingleAttributeTagHelper).FullName);
 
             // Act
@@ -1124,7 +1124,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         .PropertyName(intProperty.Name)
                         .TypeName(intProperty.PropertyType.FullName)
                 });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(SingleAttributeTagHelper).FullName);
 
             // Act
@@ -1151,7 +1151,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         .PropertyName(validProperty.Name)
                         .TypeName(validProperty.PropertyType.FullName)
                 });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(MissingAccessorTagHelper).FullName);
 
             // Act
@@ -1178,7 +1178,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         .PropertyName(validProperty.Name)
                         .TypeName(validProperty.PropertyType.FullName)
                 });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(NonPublicAccessorTagHelper).FullName);
 
             // Act
@@ -1203,7 +1203,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         .PropertyName(nameof(NotBoundAttributeTagHelper.BoundProperty))
                         .TypeName(typeof(object).FullName)
                 });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(NotBoundAttributeTagHelper).FullName);
 
             // Act
@@ -1234,7 +1234,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         builder => builder.RequireTagName("p"),
                         builder => builder.RequireTagName("div"),
                     });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(MultiTagTagHelper).FullName);
 
             // Act
@@ -1260,7 +1260,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             .PropertyName(validProp.Name)
                             .TypeName(validProp.PropertyType.FullName),
                     });
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(InheritedMultiTagTagHelper).FullName);
 
             // Act
@@ -1284,7 +1284,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     builder => builder.RequireTagName("div"),
                 });
 
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(DuplicateTagNameTagHelper).FullName);
 
             // Act
@@ -1303,7 +1303,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     "data-condition",
                     typeof(OverrideNameTagHelper).FullName,
                     AssemblyName);
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(OverrideNameTagHelper).FullName);
 
             // Act
@@ -1345,7 +1345,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
             var attribute = tagHelperType.GetAttributes().Single();
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1366,21 +1366,21 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 // name, expectedNames
                 return new TheoryData<string, IEnumerable<string>>
-                        {
-                            { "p", new[] { "p" } },
-                            { " p", new[] { "p" } },
-                            { "p ", new[] { "p" } },
-                            { " p ", new[] { "p" } },
-                            { "p,div", new[] { "p", "div" } },
-                            { " p,div", new[] { "p", "div" } },
-                            { "p ,div", new[] { "p", "div" } },
-                            { " p ,div", new[] { "p", "div" } },
-                            { "p, div", new[] { "p", "div" } },
-                            { "p,div ", new[] { "p", "div" } },
-                            { "p, div ", new[] { "p", "div" } },
-                            { " p, div ", new[] { "p", "div" } },
-                            { " p , div ", new[] { "p", "div" } },
-                        };
+                {
+                    { "p", new[] { "p" } },
+                    { " p", new[] { "p" } },
+                    { "p ", new[] { "p" } },
+                    { " p ", new[] { "p" } },
+                    { "p,div", new[] { "p", "div" } },
+                    { " p,div", new[] { "p", "div" } },
+                    { "p ,div", new[] { "p", "div" } },
+                    { " p ,div", new[] { "p", "div" } },
+                    { "p, div", new[] { "p", "div" } },
+                    { "p,div ", new[] { "p", "div" } },
+                    { "p, div ", new[] { "p", "div" } },
+                    { " p, div ", new[] { "p", "div" } },
+                    { " p , div ", new[] { "p", "div" } },
+                };
             }
         }
 
@@ -1477,7 +1477,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             IEnumerable<BoundAttributeDescriptor> expectedAttributeDescriptors)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(type.FullName);
 
             // Act
@@ -1527,7 +1527,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1567,7 +1567,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1610,7 +1610,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1656,7 +1656,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1698,7 +1698,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1739,7 +1739,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
             var tagHelperType = compilation.GetTypeByMetadataName("DynamicTestTagHelper");
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: false, excludeHidden: false);
 
             // Act
             var descriptor = factory.CreateDescriptor(tagHelperType);
@@ -1754,7 +1754,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         {
             // Arrange
             var objectAssemblyName = typeof(Enumerable).GetTypeInfo().Assembly.GetName().Name;
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(Enumerable).FullName);
             var expectedDescriptor =
                 CreateTagHelperDescriptor("enumerable", "System.Linq.Enumerable", typeSymbol.ContainingAssembly.Identity.Name);
@@ -2010,7 +2010,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             IEnumerable<RazorDiagnostic> expectedDiagnostics)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -2069,12 +2069,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
 
         [Theory]
         [MemberData(nameof(TagOutputHintData))]
-        public void CreateDescriptor_CreatesDesignTimeDescriptorsWithOutputElementHint(
+        public void CreateDescriptor_CreatesDescriptorsWithOutputElementHint(
             Type tagHelperType,
             TagHelperDescriptor expectedDescriptor)
         {
             // Arrange
-            var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: true);
+            var factory = new DefaultTagHelperDescriptorFactory(Compilation, includeDocumentation: false, excludeHidden: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(tagHelperType.FullName);
 
             // Act
@@ -2102,7 +2102,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         {
         }");
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: true);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: true, excludeHidden: false);
             var typeSymbol = compilation.GetTypeByMetadataName("DocumentedTagHelper");
             var expectedDocumentation =
 @"<member name=""T:DocumentedTagHelper"">
@@ -2151,7 +2151,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             public List<bool> RemarksAndSummaryProperty { get; set; }
         }");
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
-            var factory = new DefaultTagHelperDescriptorFactory(compilation, designTime: true);
+            var factory = new DefaultTagHelperDescriptorFactory(compilation, includeDocumentation: true, excludeHidden: false);
             var typeSymbol = compilation.GetTypeByMetadataName("DocumentedTagHelper");
             var expectedDocumentations = new[]
             {

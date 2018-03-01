@@ -32,7 +32,7 @@ namespace Microsoft.CodeAnalysis
 
         public static string AssemblyName => "TestAssembly";
 
-        public static Compilation Create(Assembly assembly, SyntaxTree syntaxTree = null)
+        public static CSharpCompilation Create(Assembly assembly, SyntaxTree syntaxTree = null)
         {
             IEnumerable<SyntaxTree> syntaxTrees = null;
 
@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis
                 _referenceCache.TryAdd(assembly, metadataReferences);
             }
 
-            var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, metadataReferences);
+            var compilation = CSharpCompilation.Create(AssemblyName, syntaxTrees, metadataReferences, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
             EnsureValidCompilation(compilation);
 

@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
@@ -24,7 +25,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             FunctionsDirective.Register(builder);
             InheritsDirective.Register(builder);
             SectionDirective.Register(builder);
-            
+
+            builder.Features.Add(new DefaultTagHelperDescriptorProvider());
             builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
 
             builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
@@ -61,6 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             InheritsDirective.Register(builder);
             SectionDirective.Register(builder);
 
+            builder.Features.Add(new DefaultTagHelperDescriptorProvider());
             builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
 
             builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
