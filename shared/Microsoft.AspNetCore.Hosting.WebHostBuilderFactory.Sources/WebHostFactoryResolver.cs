@@ -19,8 +19,11 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory
                 return FactoryResolutionResult<TWebhost, TWebhostBuilder>.NoEntryPoint();
             }
 
-            var factory = programType?.GetTypeInfo().GetDeclaredMethod(CreateWebHostBuilder);
-            if (factory == null)
+            var factory = programType.GetTypeInfo().GetDeclaredMethod(CreateWebHostBuilder);
+            if (factory == null || 
+                !typeof(TWebhostBuilder).IsAssignableFrom(factory.ReturnType) ||
+                factory.GetParameters().Length != 1 ||
+                !typeof(string []).Equals(factory.GetParameters()[0].ParameterType))
             {
                 return FactoryResolutionResult<TWebhost, TWebhostBuilder>.NoCreateWebHostBuilder(programType);
             }
@@ -39,8 +42,11 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory
                     return findResult;
                 case FactoryResolutionResultKind.Success:
                 case FactoryResolutionResultKind.NoCreateWebHostBuilder:
-                    var buildWebHostMethod = findResult.ProgramType.GetTypeInfo().GetDeclaredMethod("BuildWebHost");
-                    if (buildWebHostMethod == null)
+                    var buildWebHostMethod = findResult.ProgramType.GetTypeInfo().GetDeclaredMethod(BuildWebHost);
+                    if (buildWebHostMethod == null ||
+                        !typeof(TWebhost).IsAssignableFrom(buildWebHostMethod.ReturnType) ||
+                        buildWebHostMethod.GetParameters().Length != 1 ||
+                        !typeof(string[]).Equals(buildWebHostMethod.GetParameters()[0].ParameterType))
                     {
                         if (findResult.ResultKind == FactoryResolutionResultKind.Success)
                         {

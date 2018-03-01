@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestAssetTfms)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.TestHost\Microsoft.AspNetCore.TestHost.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)" />
+  </ItemGroup>
+
+</Project>
