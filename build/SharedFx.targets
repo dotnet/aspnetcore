@@ -119,10 +119,6 @@
       <PathSeparator Condition="'$(PathSeparator)' == ''">:</PathSeparator>
       <PathSeparator Condition="$(SharedFxRID.StartsWith('win'))">%3B</PathSeparator>
 
-      <!-- Required because SQLitePCLRaw 1.1.8 uses win7-x64/win7-x86 as its RIDs, even though the e_sqlite3.dll file works on all supported win-x64/win-x86 platforms. -->
-      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x64'">win7-x64</SharedFxRestoreRid>
-      <SharedFxRestoreRid Condition="'$(SharedFxRID)' == 'win-x86'">win7-x86</SharedFxRestoreRid>
-
       <CommonSharedFxProps>Configuration=$(Configuration);RuntimeIdentifier=$(SharedFxRestoreRid)</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</CommonSharedFxProps>
       <CommonSharedFxProps>$(CommonSharedFxProps);AspNetUniverseBuildOffline=true</CommonSharedFxProps>

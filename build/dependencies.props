@@ -17,6 +17,11 @@
     <MicrosoftNETCorePlatformsPackageVersion>2.1.0-preview2-26224-02</MicrosoftNETCorePlatformsPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.5.0-preview2-26224-02</MicrosoftWin32RegistryPackageVersion>
     <NuGetFrameworksPackageVersion>4.7.0-preview1-4958</NuGetFrameworksPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26225-03</RuntimeAlpine36X64MicrosoftNETCoreAppPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26225-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26225-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPolicyPackageVersion>2.1.0-preview2-26225-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostPolicyPackageVersion>
+    <RuntimeAlpine36X64MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26225-03</RuntimeAlpine36X64MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26225-03</RuntimeLinuxArmMicrosoftNETCoreAppPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26225-03</RuntimeLinuxArmMicrosoftNETCoreDotNetAppHostPackageVersion>
     <RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>2.1.0-preview2-26225-03</RuntimeLinuxArmMicrosoftNETCoreDotNetHostPackageVersion>
@@ -179,9 +184,9 @@
     <RemotionLinqPackageVersion>2.2.0</RemotionLinqPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
-    <SQLitePCLRawBundleGreenPackageVersion>1.1.8</SQLitePCLRawBundleGreenPackageVersion>
-    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.8</SQLitePCLRawBundleSqlcipherPackageVersion>
-    <SQLitePCLRawCorePackageVersion>1.1.8</SQLitePCLRawCorePackageVersion>
+    <SQLitePCLRawBundleGreenPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleGreenPackageVersion>
+    <SQLitePCLRawBundleSqlcipherPackageVersion>1.1.10-pre20180223200113</SQLitePCLRawBundleSqlcipherPackageVersion>
+    <SQLitePCLRawCorePackageVersion>1.1.10-pre20180223200113</SQLitePCLRawCorePackageVersion>
     <StackExchangeRedisStrongNamePackageVersion>1.2.4</StackExchangeRedisStrongNamePackageVersion>
     <StreamJsonRpcPackageVersion>1.1.92</StreamJsonRpcPackageVersion>
     <StyleCopAnalyzersPackageVersion>1.0.0</StyleCopAnalyzersPackageVersion>
