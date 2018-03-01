@@ -150,6 +150,33 @@ describe("HubConnection", () => {
 
             expect(warnings).toEqual(["No client method with the name 'message' found."]);
         });
+        
+        it("invocations ignored in callbacks that have registered then unregistered", async () => {
+            const warnings: string[] = [];
+            const logger = {
+                log: (logLevel: LogLevel, message: string) => {
+                    if (logLevel === LogLevel.Warning) {
+                        warnings.push(message);
+                    }
+                },
+            } as ILogger;
+            const connection = new TestConnection();
+            const hubConnection = new HubConnection(connection, { logger });
+
+            const handler = () => { };
+            hubConnection.on('message', handler);
+            hubConnection.off('message', handler);
+
+            connection.receive({
+                arguments: ["test"],
+                invocationId: 0,
+                nonblocking: true,
+                target: "message",
+                type: MessageType.Invocation,
+            });
+
+            expect(warnings).toEqual(["No client method with the name 'message' found."]);
+        });
 
         it("callback invoked when servers invokes a method on the client", async () => {
             const connection = new TestConnection();
