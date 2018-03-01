@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentDocumentClassifierPass : DocumentClassifierPassBase, IRazorDocumentClassifierPass
     {
-        protected override string DocumentKind => "Blazor.Component-0.1";
+        public static readonly string ComponentDocumentKind = "Blazor.Component-0.1";
+
+        protected override string DocumentKind => ComponentDocumentKind;
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {

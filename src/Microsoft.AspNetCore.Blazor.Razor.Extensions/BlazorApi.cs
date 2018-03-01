@@ -19,6 +19,18 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Layouts.LayoutAttribute";
         }
 
+        public static class IComponent
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.Components.IComponent";
+
+            public static readonly string MetadataName = FullTypeName;
+        }
+
+        public static class IDictionary
+        {
+            public static readonly string MetadataName = "System.Collection.IDictionary`2";
+        }
+
         public static class RenderFragment
         {
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.RenderFragment";
