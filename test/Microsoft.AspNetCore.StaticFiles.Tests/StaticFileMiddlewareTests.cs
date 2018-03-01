@@ -3,16 +3,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.FileProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.StaticFiles
@@ -29,6 +33,59 @@ namespace Microsoft.AspNetCore.StaticFiles
             var response = await server.CreateClient().GetAsync("/ranges.txt");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Null(response.Headers.ETag);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, SkipReason = "Symlinks not supported on Windows")]
+        public async Task ReturnsNotFoundForBrokenSymlink()
+        {
+            var badLink = Path.Combine(AppContext.BaseDirectory, Path.GetRandomFileName() + ".txt");
+
+            Process.Start("ln", $"-s \"/tmp/{Path.GetRandomFileName()}\" \"{badLink}\"").WaitForExit();
+            Assert.True(File.Exists(badLink), "Should have created a symlink");
+
+            try
+            {
+                var builder = new WebHostBuilder()
+                    .Configure(app => app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true }))
+                    .UseWebRoot(AppContext.BaseDirectory);
+                var server = new TestServer(builder);
+
+                var response = await server.CreateClient().GetAsync(Path.GetFileName(badLink));
+
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                Assert.Null(response.Headers.ETag);
+            }
+            finally
+            {
+                File.Delete(badLink);
+            }
+        }
+
+        [Fact]
+        public async Task ReturnsNotFoundIfSendFileThrows()
+        {
+            var mockSendFile = new Mock<IHttpSendFileFeature>();
+            mockSendFile.Setup(m => m.SendFileAsync(It.IsAny<string>(), It.IsAny<long>(), It.IsAny<long?>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new FileNotFoundException());
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Use(async (ctx, next) =>
+                    {
+                        ctx.Features.Set(mockSendFile.Object);
+                        await next();
+                    });
+                    app.UseStaticFiles(new StaticFileOptions { ServeUnknownFileTypes = true });
+                })
+                .UseWebRoot(AppContext.BaseDirectory);
+            var server = new TestServer(builder);
+
+            var response = await server.CreateClient().GetAsync("TestDocument.txt");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Null(response.Headers.ETag);
         }
 
         [Fact]
@@ -101,6 +158,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
                 Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
                 Assert.Equal(response.Content.Headers.ContentLength, responseContent.Length);
+                Assert.NotNull(response.Headers.ETag);
 
                 using (var stream = fileInfo.CreateReadStream())
                 {
