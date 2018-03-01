@@ -95,16 +95,53 @@
                 ]
             },
             "dotnet-aspnet-codegenerator": {
-                "packageTypes": [
-                    "DotnetTool"
-                ],
-                "Exclusions": {
-                    "ASSEMBLY_COMMIT_HASH": {
-                        "tools/any/any/Newtonsoft.Json.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/any/any/NuGet.Frameworks.dll": "Assembly is built by another project but bundled in our nupkg.",
-                        "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly is built by another project but bundled in our nupkg."
-                    }
+              "Exclusions": {
+                "NEUTRAL_RESOURCES_LANGUAGE": {
+                  "tools/any/any/Newtonsoft.Json.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/runtimes/unix/lib/netcoreapp2.0/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/runtimes/win/lib/netcoreapp2.0/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly built by another project but bundled in our nupkg."
+                },
+                "SERVICING_ATTRIBUTE": {
+                  "tools/any/any/Newtonsoft.Json.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/NuGet.Frameworks.dll": "Assembly built by another project but bundled in our nupkg."
+                },
+                "VERSION_INFORMATIONALVERSION": {
+                  "tools/any/any/Newtonsoft.Json.dll": "Third party assembly bundled in our nupkg."
+                },
+                "WRONG_PUBLICKEYTOKEN": {
+                  "tools/any/any/Newtonsoft.Json.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/NuGet.Frameworks.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Buffers.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Memory.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Numerics.Vectors.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/runtimes/unix/lib/netcoreapp2.0/System.Buffers.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/runtimes/win/lib/netcoreapp2.0/System.Buffers.dll": "Assembly built by another project but bundled in our nupkg."
+                },
+                "ASSEMBLY_INFORMATIONAL_VERSION_MISMATCH": {
+                  "tools/any/any/Newtonsoft.Json.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/NuGet.Frameworks.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/runtimes/unix/lib/netcoreapp2.0/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/runtimes/win/lib/netcoreapp2.0/System.Buffers.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/System.Memory.dll": "Third party assembly bundled in our nupkg.",
+                  "tools/any/any/System.Numerics.Vectors.dll": "Third party assembly bundled in our nupkg."
+                },
+                "ASSEMBLY_FILE_VERSION_MISMATCH": {
+                  "tools/any/any/NuGet.Frameworks.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly built by another project but bundled in our nupkg."
+                },
+                "ASSEMBLY_VERSION_MISMATCH": {
+                  "tools/any/any/NuGet.Frameworks.dll": "Assembly built by another project but bundled in our nupkg.",
+                  "tools/any/any/System.Runtime.CompilerServices.Unsafe.dll": "Assembly built by another project but bundled in our nupkg."
                 }
+              },
+              "packageTypes": [
+                "DotnetTool"
+              ]
             },
             "dotnet-sql-cache": {
                 "packageTypes": [
