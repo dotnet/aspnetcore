@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         /// <inheritdoc />
         public IUrlHelper GetUrlHelper(ActionContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(Resources.ArgumentCannotBeNullOrEmpty, (nameof(context)));
+            }
+
             var httpContext = context.HttpContext;
 
             if (httpContext == null)
