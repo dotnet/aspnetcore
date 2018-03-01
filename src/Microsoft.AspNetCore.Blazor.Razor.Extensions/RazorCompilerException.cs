@@ -12,25 +12,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// </summary>
     public class RazorCompilerException : Exception
     {
-        private readonly int _line;
-        private readonly int _column;
-
-        public RazorCompilerException(string message) : this(message, null)
+        public RazorCompilerException(RazorDiagnostic diagnostic)
         {
+            Diagnostic = diagnostic;
         }
 
-        public RazorCompilerException(string message, SourceSpan? source) : base(message)
-        {
-            _line = source.HasValue ? (source.Value.LineIndex + 1) : 1;
-            _column = source.HasValue ? (source.Value.CharacterIndex + 1) : 1;
-        }
-
-        public RazorCompilerDiagnostic ToDiagnostic(string sourceFilePath)
-            => new RazorCompilerDiagnostic(
-                RazorCompilerDiagnostic.DiagnosticType.Error,
-                sourceFilePath,
-                line: _line,
-                column: _column,
-                message: Message);
+        public RazorDiagnostic Diagnostic { get; }
     }
 }

@@ -28,16 +28,5 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.AddDirective(Directive);
             builder.Features.Add(new ImplementsDirectivePass());
         }
-
-        public static void Register(IRazorEngineBuilder builder)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.AddDirective(Directive);
-            builder.Features.Add(new ImplementsDirectivePass());
-        }
     }
 }

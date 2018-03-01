@@ -1,13 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Build.Core.RazorCompilation;
-using Microsoft.AspNetCore.Blazor.Razor;
-using Microsoft.Extensions.CommandLineUtils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Blazor.Razor;
+using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
 {
@@ -47,24 +47,35 @@ namespace Microsoft.AspNetCore.Blazor.Build.Cli.Commands
                     return 1;
                 }
 
-                var inputRazorFilePaths = FindRazorFiles(sourceDirPathValue).ToList();
+                var fileSystem = RazorProjectFileSystem.Create(sourceDirPathValue);
+                var engine = RazorProjectEngine.Create(BlazorExtensionInitializer.DefaultConfiguration, fileSystem, b =>
+                {
+                    BlazorExtensionInitializer.Register(b);
+                });
+
+                var diagnostics = new List<RazorDiagnostic>();
+                var sourceFiles = FindRazorFiles(sourceDirPathValue).ToList();
                 using (var outputWriter = new StreamWriter(outputFilePath.Value()))
                 {
-                    var diagnostics = new RazorCompiler().CompileFiles(
-                        sourceDirPathValue,
-                        inputRazorFilePaths,
-                        baseNamespace.Value(),
-                        outputWriter,
-                        verboseFlag.HasValue() ? Console.Out : null);
-
-                    foreach (var diagnostic in diagnostics)
+                    foreach (var sourceFile in sourceFiles)
                     {
-                        Console.WriteLine(diagnostic.FormatForConsole());
-                    }
+                        var item = fileSystem.GetItem(sourceFile);
 
-                    var hasError = diagnostics.Any(item => item.Type == RazorCompilerDiagnostic.DiagnosticType.Error);
-                    return hasError ? 1 : 0;
+                        var codeDocument = engine.Process(item);
+                        var cSharpDocument = codeDocument.GetCSharpDocument();
+
+                        outputWriter.WriteLine(cSharpDocument.GeneratedCode);
+                        diagnostics.AddRange(cSharpDocument.Diagnostics);
+                    }
                 }
+
+                foreach (var diagnostic in diagnostics)
+                {
+                    Console.WriteLine(diagnostic.ToString());
+                }
+
+                var hasError = diagnostics.Any(item => item.Severity == RazorDiagnosticSeverity.Error);
+                return hasError ? 1 : 0;
             });
         }
 

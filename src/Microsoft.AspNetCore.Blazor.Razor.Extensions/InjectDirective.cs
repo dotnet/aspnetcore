@@ -35,12 +35,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             builder.Features.Add(new Pass());
         }
 
-        public static void Register(IRazorEngineBuilder builder)
-        {
-            builder.AddDirective(Directive);
-            builder.Features.Add(new Pass());
-        }
-
         private class Pass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
         {
             protected override void ExecuteCore(
