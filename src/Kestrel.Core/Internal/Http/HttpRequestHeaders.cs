@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, StringValues value)
+        private void SetValueUnknown(string key, in StringValues value)
         {
             Unknown[key] = value;
         }

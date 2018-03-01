@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, StringValues value)
+        private void SetValueUnknown(string key, in StringValues value)
         {
             ValidateHeaderCharacters(key);
             Unknown[key] = value;
@@ -93,11 +93,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _collection = collection;
                 _bits = collection._bits;
                 _state = 0;
-                _current = default(KeyValuePair<string, StringValues>);
+                _current = default;
                 _hasUnknown = collection.MaybeUnknown != null;
                 _unknownEnumerator = _hasUnknown
                     ? collection.MaybeUnknown.GetEnumerator()
-                    : default(Dictionary<string, StringValues>.Enumerator);
+                    : default;
             }
 
             public KeyValuePair<string, StringValues> Current => _current;
