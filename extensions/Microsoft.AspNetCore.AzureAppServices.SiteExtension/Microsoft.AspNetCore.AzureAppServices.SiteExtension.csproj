@@ -6,8 +6,6 @@
     <TargetFramework>net461</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
-    <PackageType>AzureSiteExtension</PackageType>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
     <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreApp21PackageVersion)</HostingStartupRuntimeFrameworkVersion>
   </PropertyGroup>
