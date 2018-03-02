@@ -23,6 +23,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="DotNetCoreRazor"/>
   </ItemGroup>
 
+  <!--
+    WebSdk imports these capabilities for nesting in DotNetCoreWeb projects.
+    Conditinally import these capabilities if the project isn't targeting the WebSdk.
+   -->
+  <ItemGroup Condition="'$(UsingMicrosoftNETSdkWeb)'==''">
+    <ProjectCapability Include="SupportHierarchyContextSvc" />
+    <ProjectCapability Include="DynamicDependentFile" />
+    <ProjectCapability Include="DynamicFileNesting" />
+  </ItemGroup>
+
   <ItemGroup>
     <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorConfiguration.xaml">
       <Context>File</Context>
