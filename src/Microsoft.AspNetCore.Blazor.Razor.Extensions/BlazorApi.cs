@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public static readonly string OpenComponent = nameof(OpenComponent);
 
-            public static readonly string CloseComponent = nameof(CloseElement);
+            public static readonly string CloseComponent = nameof(CloseComponent);
 
             public static readonly string AddContent = nameof(AddContent);
 
@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             public static readonly string GetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue";
 
             public static readonly string SetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValue";
+        }
+        
+        public static class UIEventHandler
+        {
+            public static readonly string FullTypeName = "Microsoft.AspNetCore.Blazor.UIEventHandler";
         }
     }
 }

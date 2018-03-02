@@ -122,8 +122,10 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj">
       <Name>Microsoft.AspNetCore.Blazor.Razor.Extensions</Name>
       <Private>False</Private>
-      <IncludeOutputGroupsInVSIX></IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly></IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <Content Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\bin\$(Configuration)\net461\Microsoft.AspNetCore.Blazor.Razor.Extensions.dll">
       <Link>Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</Link>
@@ -146,7 +148,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Visible>false</Visible>
     </Content>
-
     <!--
       This is built as a P2P by Microsoft.VisualStudio.LanguageServices.Blazor. This is required, adding the P2P	
       to this project will cause a NU1201 error that doesn't have a workaround.	
@@ -194,23 +195,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.Imaging" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Imaging" Version="15.6.27413" />
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.10" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK.EmbedInteropTypes" Version="15.0.16" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Framework" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6072" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30320" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61031" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6070" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50727" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.0.240" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="15.0.82" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50728" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30730" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50728" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.6.46" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.Validation" Version="15.3.15" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.5.100" />
   </ItemGroup>
   <ItemGroup>

@@ -1,8 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using AngleSharp;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -49,6 +52,40 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static RazorDiagnostic Create_MismatchedClosingTagKind(SourceSpan? span, string tagName, string kind, string expectedKind)
         {
             return RazorDiagnostic.Create(MismatchedClosingTagKind, span ?? SourceSpan.Undefined, tagName, kind, expectedKind);
+        }
+
+        public static readonly RazorDiagnosticDescriptor MultipleComponents = new RazorDiagnosticDescriptor(
+            "BL9985",
+            () => "Multiple components use the tag '{0}'. Components: {1}",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_MultipleComponents(SourceSpan? span, string tagName, IEnumerable<TagHelperDescriptor> components)
+        {
+            return RazorDiagnostic.Create(MultipleComponents, span ?? SourceSpan.Undefined, tagName, string.Join(", ", components.Select(c => c.DisplayName)));
+        }
+
+        public static readonly RazorDiagnosticDescriptor UnsupportedComplexContent = new RazorDiagnosticDescriptor(
+            "BL9986",
+            () => "Component attributes do not support complex content (mixed C# and markup). Attribute: '{0}', text '{1}'",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_UnsupportedComplexContent(
+            SourceSpan? source, 
+            TagHelperPropertyIntermediateNode node,
+            IntermediateNodeCollection children)
+        {
+            var content = string.Join("", children.OfType<IntermediateToken>().Select(t => t.Content));
+            return RazorDiagnostic.Create(UnsupportedComplexContent, source ?? SourceSpan.Undefined, node.AttributeName, content);
+        }
+
+        public static readonly RazorDiagnosticDescriptor UnboundComponentAttribute = new RazorDiagnosticDescriptor(
+            "BL9987",
+            () => "The component '{0}' does not have an attribute named '{1}'.",
+            RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_UnboundComponentAttribute(SourceSpan? source, string componentType, TagHelperHtmlAttributeIntermediateNode node)
+        {
+            return RazorDiagnostic.Create(UnboundComponentAttribute, source ?? SourceSpan.Undefined, componentType, node.AttributeName);
         }
 
         private static SourceSpan? CalculateSourcePosition(

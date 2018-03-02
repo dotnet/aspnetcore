@@ -56,13 +56,18 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public RazorIntegrationTestBase()
         {
             AdditionalSyntaxTrees = new List<SyntaxTree>();
+            AdditionalRazorItems = new List<RazorProjectItem>();
+
             Configuration = BlazorExtensionInitializer.DefaultConfiguration;
             FileSystem = new VirtualRazorProjectFileSystem();
             WorkingDirectory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ArbitraryWindowsPath : ArbitraryMacLinuxPath;
 
             DefaultBaseNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
+
         }
+
+        internal List<RazorProjectItem> AdditionalRazorItems { get; }
 
         internal List<SyntaxTree> AdditionalSyntaxTrees { get; }
 
@@ -71,6 +76,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         internal virtual string DefaultBaseNamespace { get; }
 
         internal virtual string DefaultFileName { get; }
+
+        internal virtual bool DesignTime { get; }
         
         internal virtual VirtualRazorProjectFileSystem FileSystem { get; }
 
@@ -82,6 +89,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             return RazorProjectEngine.Create(configuration, FileSystem, b =>
             {
+                // Turn off checksums, we're testing code generation.
+                b.Features.Add(new SuppressChecksum());
+
                 BlazorExtensionInitializer.Register(b);
 
                 b.Features.Add(new CompilationTagHelperFeature());
@@ -92,58 +102,83 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             });
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent)
-        {
-            return CompileToCSharp(WorkingDirectory, DefaultFileName, cshtmlContent);
-        }
-
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent)
-        {
-            return CompileToCSharp(WorkingDirectory, cshtmlRelativePath, cshtmlContent);
-        }
-
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRootPath, string cshtmlRelativePath, string cshtmlContent)
+        internal RazorProjectItem CreateProjectItem(string chtmlRelativePath, string cshtmlContent)
         {
             // FilePaths in Razor are **always** are of the form '/a/b/c.cshtml'
-            var filePath = cshtmlRelativePath.Replace('\\', '/');
+            var filePath = chtmlRelativePath.Replace('\\', '/');
             if (!filePath.StartsWith('/'))
             {
                 filePath = '/' + filePath;
             }
 
-            var projectItem = new VirtualProjectItem(
-                cshtmlRootPath,
-                filePath,
-                Path.Combine(cshtmlRootPath, cshtmlRelativePath),
-                cshtmlRelativePath,
-                Encoding.UTF8.GetBytes(cshtmlContent));
+            return new VirtualProjectItem(
+                WorkingDirectory, 
+                filePath, 
+                Path.Combine(WorkingDirectory, chtmlRelativePath),
+                chtmlRelativePath,
+                Encoding.UTF8.GetBytes(cshtmlContent.TrimStart()));
+        }
 
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlContent)
+        {
+            return CompileToCSharp(DefaultFileName, cshtmlContent);
+        }
+
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent)
+        {
             if (UseTwoPhaseCompilation)
             {
                 // The first phase won't include any metadata references for component discovery. This mirrors
                 // what the build does.
                 var projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DeclarationConfiguration, Array.Empty<MetadataReference>());
-                var codeDocument = projectEngine.Process(projectItem);
+                
+                RazorCodeDocument codeDocument;
+                foreach (var item in AdditionalRazorItems)
+                {
+                    // Result of generating declarations
+                    codeDocument = projectEngine.Process(item);
+                    Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
+
+                    var syntaxTree = CSharpSyntaxTree.ParseText(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
+                    AdditionalSyntaxTrees.Add(syntaxTree);
+                }
 
                 // Result of generating declarations
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
+                codeDocument = projectEngine.Process(projectItem);
                 var declaration = new CompileToCSharpResult
                 {
+                    BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
                     CodeDocument = codeDocument,
                     Code = codeDocument.GetCSharpDocument().GeneratedCode,
                     Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
                 };
 
                 // Result of doing 'temp' compilation
-                var tempAssembly = CompileToAssembly(declaration, BaseCompilation);
+                var tempAssembly = CompileToAssembly(declaration);
 
                 // Add the 'temp' compilation as a metadata reference 
                 var references = BaseCompilation.References.Concat(new[] { tempAssembly.Compilation.ToMetadataReference() }).ToArray();
                 projectEngine = CreateProjectEngine(BlazorExtensionInitializer.DefaultConfiguration, references);
-                
-                // Result of real code
-                codeDocument = projectEngine.Process(projectItem);
+
+                // Now update the any additional files
+                foreach (var item in AdditionalRazorItems)
+                {
+                    // Result of generating declarations
+                    codeDocument = projectEngine.Process(item);
+                    Assert.Empty(codeDocument.GetCSharpDocument().Diagnostics);
+
+                    // Replace the 'declaration' syntax tree
+                    var syntaxTree = CSharpSyntaxTree.ParseText(codeDocument.GetCSharpDocument().GeneratedCode, path: item.FilePath);
+                    AdditionalSyntaxTrees.RemoveAll(st => st.FilePath == item.FilePath);
+                    AdditionalSyntaxTrees.Add(syntaxTree);
+                }
+
+                // Result of real code generation for the document under test
+                codeDocument = DesignTime ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
                 return new CompileToCSharpResult
                 {
+                    BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
                     CodeDocument = codeDocument,
                     Code = codeDocument.GetCSharpDocument().GeneratedCode,
                     Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
@@ -155,9 +190,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 // This will include the built-in Blazor components.
                 var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
 
-                var codeDocument = projectEngine.Process(projectItem);
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
+                var codeDocument = DesignTime ? projectEngine.ProcessDesignTime(projectItem) : projectEngine.Process(projectItem);
                 return new CompileToCSharpResult
                 {
+                    BaseCompilation = BaseCompilation.AddSyntaxTrees(AdditionalSyntaxTrees),
                     CodeDocument = codeDocument,
                     Code = codeDocument.GetCSharpDocument().GeneratedCode,
                     Diagnostics = codeDocument.GetCSharpDocument().Diagnostics,
@@ -167,19 +204,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected CompileToAssemblyResult CompileToAssembly(string cshtmlRelativePath, string cshtmlContent)
         {
-            return CompileToAssembly(WorkingDirectory, cshtmlRelativePath, cshtmlContent);
-        }
-
-        protected CompileToAssemblyResult CompileToAssembly(string cshtmlRootDirectory, string cshtmlRelativePath, string cshtmlContent)
-        {
-            var cSharpResult = CompileToCSharp(cshtmlRootDirectory, cshtmlRelativePath, cshtmlContent);
+            var cSharpResult = CompileToCSharp(cshtmlRelativePath, cshtmlContent);
             return CompileToAssembly(cSharpResult);
         }
 
-        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult, CSharpCompilation baseCompilation = null)
+        protected CompileToAssemblyResult CompileToAssembly(CompileToCSharpResult cSharpResult)
         {
-            baseCompilation = baseCompilation ?? BaseCompilation;
-
             if (cSharpResult.Diagnostics.Any())
             {
                 var diagnosticsLog = string.Join(Environment.NewLine, cSharpResult.Diagnostics.Select(d => d.ToString()).ToArray());
@@ -188,17 +218,24 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var syntaxTrees = new[]
             {
-                CSharpSyntaxTree.ParseText(cSharpResult.Code)
+                CSharpSyntaxTree.ParseText(cSharpResult.Code),
             };
 
-            var compilation = baseCompilation.AddSyntaxTrees(syntaxTrees).AddSyntaxTrees(AdditionalSyntaxTrees);
+            var compilation = cSharpResult.BaseCompilation.AddSyntaxTrees(syntaxTrees);
+
+            var diagnostics = compilation
+                .GetDiagnostics()
+                .Where(d => d.Severity != DiagnosticSeverity.Hidden);
+
+            if (diagnostics.Any())
+            {
+                throw new CompilationFailedException(compilation);
+            }
+
             using (var peStream = new MemoryStream())
             {
                 compilation.Emit(peStream);
 
-                var diagnostics = compilation
-                    .GetDiagnostics()
-                    .Where(d => d.Severity != DiagnosticSeverity.Hidden);
                 return new CompileToAssemblyResult
                 {
                     Compilation = compilation,
@@ -206,11 +243,12 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     Assembly = diagnostics.Any() ? null : Assembly.Load(peStream.ToArray())
                 };
             }
+
         }
 
         protected IComponent CompileToComponent(string cshtmlSource)
         {
-            var assemblyResult = CompileToAssembly(WorkingDirectory, DefaultFileName, cshtmlSource);
+            var assemblyResult = CompileToAssembly(DefaultFileName, cshtmlSource);
 
             var componentFullTypeName = $"{DefaultBaseNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
             return CompileToComponent(assemblyResult, componentFullTypeName);
@@ -223,8 +261,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected IComponent CompileToComponent(CompileToAssemblyResult assemblyResult, string fullTypeName)
         {
-            Assert.Empty(assemblyResult.Diagnostics);
-
             var componentType = assemblyResult.Assembly.GetType(fullTypeName);
             if (componentType == null)
             {
@@ -255,6 +291,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         protected class CompileToCSharpResult
         {
+            // A compilation that can be used *with* this code to compile an assembly
+            public Compilation BaseCompilation { get; set; }
             public RazorCodeDocument CodeDocument { get; set; }
             public string Code { get; set; }
             public IEnumerable<RazorDiagnostic> Diagnostics { get; set; }
@@ -282,6 +320,63 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             protected override void UpdateDisplay(RenderBatch renderBatch)
             {
                 LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+            }
+        }
+
+        private class CompilationFailedException : XunitException
+        {
+            public CompilationFailedException(Compilation compilation) 
+            {
+                Compilation = compilation;
+            }
+
+            public Compilation Compilation { get; }
+
+            public override string Message
+            {
+                get
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendLine("Compilation failed: ");
+
+                    var diagnostics = Compilation.GetDiagnostics();
+                    var syntaxTreesWithErrors = new HashSet<SyntaxTree>();
+                    foreach (var diagnostic in diagnostics)
+                    {
+                        builder.AppendLine(diagnostic.ToString());
+
+                        if (diagnostic.Location.IsInSource)
+                        {
+                            syntaxTreesWithErrors.Add(diagnostic.Location.SourceTree);
+                        }
+                    }
+
+                    if (syntaxTreesWithErrors.Any())
+                    {
+                        builder.AppendLine();
+                        builder.AppendLine();
+
+                        foreach (var syntaxTree in syntaxTreesWithErrors)
+                        {
+                            builder.AppendLine($"File {syntaxTree.FilePath ?? "unknown"}:");
+                            builder.AppendLine(syntaxTree.GetText().ToString());
+                        }
+                    }
+
+                    return builder.ToString();
+                }
+            }
+        }
+
+        private class SuppressChecksum : IConfigureRazorCodeGenerationOptionsFeature
+        {
+            public int Order => 0;
+
+            public RazorEngine Engine { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                options.SuppressChecksum = true;
             }
         }
     }

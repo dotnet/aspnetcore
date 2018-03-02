@@ -282,6 +282,53 @@ namespace Test
             Assert.False(attribute.IsStringProperty);
         }
 
+        [Fact] // UIEventHandler properties have some special intellisense behavior
+        public void Excecute_UIEventHandlerProperty_CreatesDescriptor()
+        {
+            // Arrange
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(@"
+using Microsoft.AspNetCore.Blazor;
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent
+    {
+        public UIEventHandler OnClick { get; set; }
+    }
+}
+
+"));
+
+            Assert.Empty(compilation.GetDiagnostics());
+
+            var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
+
+            var provider = new ComponentTagHelperDescriptorProvider();
+
+            // Act
+            provider.Execute(context);
+
+            // Assert
+            var components = ExcludeBuiltInComponents(context);
+            var component = Assert.Single(components);
+
+            Assert.Equal("TestAssembly", component.AssemblyName);
+            Assert.Equal("Test.MyComponent", component.Name);
+
+            var attribute = Assert.Single(component.BoundAttributes);
+            Assert.Equal("OnClick", attribute.Name);
+            Assert.Equal(BlazorApi.UIEventHandler.FullTypeName, attribute.TypeName);
+
+            Assert.False(attribute.HasIndexer);
+            Assert.False(attribute.IsBooleanProperty);
+            Assert.False(attribute.IsEnum);
+            Assert.False(attribute.IsStringProperty);
+            Assert.True(attribute.IsUIEventHandlerProperty());
+        }
+
         // For simplicity in testing, exlude the built-in components. We'll add more and we
         // don't want to update the tests when that happens.
         private TagHelperDescriptor[] ExcludeBuiltInComponents(TagHelperDescriptorProviderContext context)

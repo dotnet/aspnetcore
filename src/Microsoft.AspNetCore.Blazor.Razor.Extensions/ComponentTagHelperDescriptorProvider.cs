@@ -11,8 +11,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
-        public readonly static string ComponentTagHelperKind = ComponentDocumentClassifierPass.ComponentDocumentKind;
+        public static readonly string UIEventHandlerPropertyMetadata = "Blazor.IsUIEventHandler";
 
+        public readonly static string ComponentTagHelperKind = ComponentDocumentClassifierPass.ComponentDocumentKind;
+        
         private static readonly SymbolDisplayFormat FullNameTypeDisplayFormat =
             SymbolDisplayFormat.FullyQualifiedFormat
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
@@ -109,6 +111,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         pb.IsEnum = true;
                     }
 
+                    if (property.kind == PropertyKind.Delegate)
+                    {
+                        pb.Metadata.Add(UIEventHandlerPropertyMetadata, bool.TrueString);
+                    }
+
                     xml = property.property.GetDocumentationCommentXml();
                     if (!string.IsNullOrEmpty(xml))
                     {
@@ -145,13 +152,13 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         continue;
                     }
 
-                    var kind = PropertyKind.Default;
                     if (properties.ContainsKey(property.Name))
                     {
                         // Not visible
-                        kind = PropertyKind.Ignored;
+                        continue;
                     }
 
+                    var kind = PropertyKind.Default;
                     if (property.Parameters.Length != 0)
                     {
                         // Indexer
@@ -175,6 +182,15 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         kind = PropertyKind.Enum;
                     }
 
+                    if (kind == PropertyKind.Default &&
+                        property.Type.TypeKind == TypeKind.Delegate &&
+                        property.Type.ToDisplayString(FullNameTypeDisplayFormat) == BlazorApi.UIEventHandler.FullTypeName)
+                    {
+                        // For delegate types we do some special code generation when the type
+                        // UIEventHandler.
+                        kind = PropertyKind.Delegate;
+                    }
+
                     properties.Add(property.Name, (property, kind));
                 }
 
@@ -190,6 +206,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             Ignored,
             Default,
             Enum,
+            Delegate,
         }
 
         private class ComponentTypeVisitor : SymbolVisitor

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
     /// <summary>
-    /// Directs a <see cref="DocumentWriter"/> to use <see cref="BlazorIntermediateNodeWriter"/>.
+    /// Directs a <see cref="DocumentWriter"/> to use <see cref="BlazorRuntimeNodeWriter"/>.
     /// </summary>
     internal class BlazorCodeTarget : CodeTarget
     {
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         public override IntermediateNodeWriter CreateNodeWriter()
         {
-            return _options.DesignTime ? (IntermediateNodeWriter)new DesignTimeNodeWriter() : new BlazorIntermediateNodeWriter();
+            return _options.DesignTime ? (BlazorNodeWriter)new BlazorDesignTimeNodeWriter() : new BlazorRuntimeNodeWriter();
         }
 
         public override TExtension GetExtension<TExtension>()

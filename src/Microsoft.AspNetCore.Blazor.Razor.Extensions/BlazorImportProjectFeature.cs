@@ -14,7 +14,12 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     {
         private const string ImportsFileName = "_ViewImports.cshtml";
 
-        public RazorProjectItem DefaultImports => VirtualProjectItem.Instance;
+        private const string DefaultUsingImportContent = @"
+@using System
+@using System.Collections.Generic
+@using System.Linq
+@using System.Threading.Tasks
+";
 
         public RazorProjectEngine ProjectEngine { get; set; }
 
@@ -27,8 +32,22 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             var imports = new List<RazorProjectItem>()
             {
-                VirtualProjectItem.Instance,
+                 new VirtualProjectItem(DefaultUsingImportContent),
+                 new VirtualProjectItem(@"@addTagHelper ""*, Microsoft.AspNetCore.Blazor"""),
             };
+
+            // Try and infer a namespace from the project directory. We don't yet have the ability to pass
+            // the namespace through from the project.
+            if (projectItem.PhysicalPath != null && projectItem.FilePath != null)
+            {
+                var trimLength = projectItem.FilePath.Length + (projectItem.FilePath.StartsWith("/") ? 0 : 1);
+                var baseDirectory = projectItem.PhysicalPath.Substring(0, projectItem.PhysicalPath.Length - trimLength);
+                var baseNamespace = Path.GetFileName(baseDirectory);
+                if (!string.IsNullOrEmpty(baseNamespace))
+                {
+                    imports.Add(new VirtualProjectItem($@"@addTagHelper ""*, {baseNamespace}"""));
+                }
+            }
 
             // We add hierarchical imports second so any default directive imports can be overridden.
             imports.AddRange(GetHierarchicalImports(ProjectEngine.FileSystem, projectItem));
@@ -45,22 +64,16 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
         private class VirtualProjectItem : RazorProjectItem
         {
-            private readonly byte[] _defaultImportBytes;
+            private readonly byte[] _bytes;
 
-            private VirtualProjectItem()
+            public VirtualProjectItem(string content)
             {
                 var preamble = Encoding.UTF8.GetPreamble();
-                var content = @"
-@using System
-@using System.Collections.Generic
-@using System.Linq
-@using System.Threading.Tasks
-";
                 var contentBytes = Encoding.UTF8.GetBytes(content);
 
-                _defaultImportBytes = new byte[preamble.Length + contentBytes.Length];
-                preamble.CopyTo(_defaultImportBytes, 0);
-                contentBytes.CopyTo(_defaultImportBytes, preamble.Length);
+                _bytes = new byte[preamble.Length + contentBytes.Length];
+                preamble.CopyTo(_bytes, 0);
+                contentBytes.CopyTo(_bytes, preamble.Length);
             }
 
             public override string BasePath => null;
@@ -71,9 +84,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             public override bool Exists => true;
 
-            public static VirtualProjectItem Instance { get; } = new VirtualProjectItem();
-
-            public override Stream Read() => new MemoryStream(_defaultImportBytes);
+            public override Stream Read() => new MemoryStream(_bytes);
         }
     }
 }

@@ -43,15 +43,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             var frames = GetRenderTree(component);
             Assert.Collection(frames,
-                frame => AssertFrame.Whitespace(frame, 0),
-                frame => AssertFrame.Text(frame, "Hello", 1),
-                frame => AssertFrame.Whitespace(frame, 2),
-                frame => AssertFrame.Whitespace(frame, 3), // @((object)null)
-                frame => AssertFrame.Whitespace(frame, 4),
-                frame => AssertFrame.Text(frame, "123", 5),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Text(frame, new object().ToString(), 7),
-                frame => AssertFrame.Whitespace(frame, 8));
+                frame => AssertFrame.Text(frame, "Hello", 0),
+                frame => AssertFrame.Whitespace(frame, 1),
+                frame => AssertFrame.Whitespace(frame, 2), // @((object)null)
+                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.Text(frame, "123", 4),
+                frame => AssertFrame.Whitespace(frame, 5),
+                frame => AssertFrame.Text(frame, new object().ToString(), 6),
+                frame => AssertFrame.Whitespace(frame, 7));
         }
 
         [Fact]
@@ -70,12 +69,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             var frames = GetRenderTree(component);
             Assert.Collection(frames,
-                frame => AssertFrame.Whitespace(frame, 0),
-                frame => AssertFrame.Text(frame, "First", 1),
-                frame => AssertFrame.Text(frame, "Second", 1),
-                frame => AssertFrame.Text(frame, "Third", 1),
-                frame => AssertFrame.Whitespace(frame, 2),
-                frame => AssertFrame.Whitespace(frame, 3));
+                frame => AssertFrame.Text(frame, "First", 0),
+                frame => AssertFrame.Text(frame, "Second", 0),
+                frame => AssertFrame.Text(frame, "Third", 0),
+                frame => AssertFrame.Whitespace(frame, 1),
+                frame => AssertFrame.Whitespace(frame, 2));
         }
 
         [Fact]

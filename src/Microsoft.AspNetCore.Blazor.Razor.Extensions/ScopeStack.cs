@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 {
                     // When we're about to insert the first child into a component,
                     // it's time to open a new lambda
-                    var blazorNodeWriter = (BlazorIntermediateNodeWriter)context.NodeWriter;
+                    var blazorNodeWriter = (BlazorNodeWriter)context.NodeWriter;
                     blazorNodeWriter.BeginWriteAttribute(context.CodeWriter, BlazorApi.RenderTreeBuilder.ChildContent);
                     OffsetBuilderVarNumber(1);
                     context.CodeWriter.Write($"({BlazorApi.RenderFragment.FullTypeName})(");

@@ -1,9 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Components;
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Blazor.Components;
 
 namespace Microsoft.AspNetCore.Blazor.RenderTree
 {
@@ -224,5 +224,34 @@ namespace Microsoft.AspNetCore.Blazor.RenderTree
 
         internal RenderTreeFrame WithRegionSubtreeLength(int regionSubtreeLength)
             => new RenderTreeFrame(Sequence, regionSubtreeLength: regionSubtreeLength);
+
+        // Just to be nice for debugging and unit tests.
+        public override string ToString()
+        {
+            switch (FrameType)
+            {
+                case RenderTreeFrameType.Attribute:
+                    return $"Attribute: (seq={Sequence}, id={AttributeEventHandlerId}) '{AttributeName}'='{AttributeValue}'";
+
+                case RenderTreeFrameType.Component:
+                    return $"Component: (seq={Sequence}, len={ComponentSubtreeLength}) {ComponentType}";
+
+                case RenderTreeFrameType.Element:
+                    return $"Element: (seq={Sequence}, len={ElementSubtreeLength}) {ElementName}";
+
+                case RenderTreeFrameType.Region:
+                    return $"Region: (seq={Sequence}, len={RegionSubtreeLength})";
+
+                case RenderTreeFrameType.Text:
+                    return $"Text: (seq={Sequence}, len=n/a) {EscapeNewlines(TextContent)}";
+            }
+
+            return base.ToString();
+        }
+
+        private static string EscapeNewlines(string text)
+        {
+            return text.Replace("\n", "\\n").Replace("\r\n", "\\r\\n");
+        }
     }
 }

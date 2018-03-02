@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
     /// <summary>
     /// Generates the C# code corresponding to Razor source document contents.
     /// </summary>
-    internal class BlazorIntermediateNodeWriter : IntermediateNodeWriter
+    internal class BlazorRuntimeNodeWriter : BlazorNodeWriter
     {
         // Per the HTML spec, the following elements are inherently self-closing
         // For example, <img> is the same as <img /> (and therefore it cannot contain descendants)
@@ -46,16 +46,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         private struct PendingAttributeToken
         {
             public IntermediateToken AttributeValue;
-        }
-
-        public override void BeginWriterScope(CodeRenderingContext context, string writer)
-        {
-            throw new System.NotImplementedException(nameof(BeginWriterScope));
-        }
-
-        public override void EndWriterScope(CodeRenderingContext context)
-        {
-            throw new System.NotImplementedException(nameof(EndWriterScope));
         }
 
         public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
@@ -373,6 +363,173 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             }
         }
 
+        public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
+        {
+            context.CodeWriter.WriteUsing(node.Content, endLine: true);
+        }
+
+        public override void WriteComponentOpen(CodeRenderingContext context, ComponentOpenExtensionNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // The start tag counts as a child from a markup point of view.
+            _scopeStack.IncrementCurrentScopeChildCount(context);
+
+            // builder.OpenComponent<TComponent>(42);
+            context.CodeWriter.Write(_scopeStack.BuilderVarName);
+            context.CodeWriter.Write(".");
+            context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.OpenComponent);
+            context.CodeWriter.Write("<");
+            context.CodeWriter.Write(node.TypeName);
+            context.CodeWriter.Write(">(");
+            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.Write(");");
+            context.CodeWriter.WriteLine();
+        }
+
+        public override void WriteComponentClose(CodeRenderingContext context, ComponentCloseExtensionNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // The close tag counts as a child from a markup point of view.
+            _scopeStack.IncrementCurrentScopeChildCount(context);
+
+            // builder.OpenComponent<TComponent>(42);
+            context.CodeWriter.Write(_scopeStack.BuilderVarName);
+            context.CodeWriter.Write(".");
+            context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.CloseComponent);
+            context.CodeWriter.Write("();");
+            context.CodeWriter.WriteLine();
+        }
+
+        public override void WriteComponentBody(CodeRenderingContext context, ComponentBodyExtensionNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            _scopeStack.OpenScope(node.TagName, isComponent: true);
+            context.RenderChildren(node);
+            _scopeStack.CloseScope(context, node.TagName, isComponent: true, source: node.Source);
+        }
+
+        public override void WriteComponentAttribute(CodeRenderingContext context, ComponentAttributeExtensionNode node)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            // builder.OpenComponent<TComponent>(42);
+            context.CodeWriter.Write(_scopeStack.BuilderVarName);
+            context.CodeWriter.Write(".");
+            context.CodeWriter.Write(BlazorApi.RenderTreeBuilder.AddAttribute);
+            context.CodeWriter.Write("(");
+            context.CodeWriter.Write((_sourceSequence++).ToString());
+            context.CodeWriter.Write(", ");
+            context.CodeWriter.WriteStringLiteral(node.AttributeName);
+            context.CodeWriter.Write(", ");
+
+            if (node.AttributeStructure == AttributeStructure.Minimized)
+            {
+                // Minimized attributes always map to 'true'
+                context.CodeWriter.Write("true");
+            }
+            else if (
+                node.Children.Count != 1 ||
+                node.Children[0] is HtmlContentIntermediateNode htmlNode && htmlNode.Children.Count != 1 ||
+                node.Children[0] is CSharpExpressionIntermediateNode cSharpNode && cSharpNode.Children.Count != 1)
+            {
+                // We don't expect this to happen, we just want to know if it can.
+                throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
+            }
+            else if (node.BoundAttribute.IsUIEventHandlerProperty())
+            {
+                // This is a UIEventHandler property. We do some special code generation for this
+                // case so that it's easier to write for common cases.
+                //
+                // Example: 
+                //      <MyComponent OnClick="Foo()"/> 
+                //      --> builder.AddAttribute(X, "OnClick", new UIEventHandler((e) => Foo()));
+                //
+                // The constructor is important because we want to put type inference into a state where
+                // we know the delegate's type should be UIEventHandler. AddAttribute has an overload that
+                // accepts object, so without the 'new UIEventHandler' things will get ugly.
+                //
+                // The escape for this behavior is to prefix the expression with @. This is similar to
+                // how escaping works for ModelExpression in MVC.
+                // Example: 
+                //      <MyComponent OnClick="@Foo"/> 
+                //      --> builder.AddAttribute(X, "OnClick", new UIEventHandler(Foo));
+                if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
+                {
+                    // This is an escaped event handler;
+                    context.CodeWriter.Write("new ");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.Write(((IntermediateToken)cSharpNode.Children[0]).Content);
+                    context.CodeWriter.Write(")");
+                }
+                else
+                {
+                    context.CodeWriter.Write("new ");
+                    context.CodeWriter.Write(node.BoundAttribute.TypeName);
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.Write("e => ");
+                    context.CodeWriter.Write(((IntermediateToken)node.Children[0]).Content);
+                    context.CodeWriter.Write(")");
+                }
+            }
+            else if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
+            {
+                context.CodeWriter.Write(((IntermediateToken)cSharpNode.Children[0]).Content);
+            }
+            else if ((htmlNode = node.Children[0] as HtmlContentIntermediateNode) != null)
+            {
+                // This is how string attributes are lowered by default, a single HTML node with a single HTML token.
+                context.CodeWriter.WriteStringLiteral(((IntermediateToken)htmlNode.Children[0]).Content);
+            }
+            else if (node.Children[0] is IntermediateToken token)
+            {
+                // This is what we expect for non-string nodes.
+                context.CodeWriter.Write(((IntermediateToken)node.Children[0]).Content);
+            }
+            else
+            {
+                throw new InvalidOperationException("Unexpected node type " + node.Children[0].GetType().FullName);
+            }
+            
+            context.CodeWriter.Write(");");
+            context.CodeWriter.WriteLine();
+        }
+
         private SourceSpan? CalculateSourcePosition(
             SourceSpan? razorTokenPosition,
             TextPosition htmlNodePosition)
@@ -434,7 +591,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             codeWriter.WriteEndMethodInvocation();
         }
 
-        public void BeginWriteAttribute(CodeWriter codeWriter, string key)
+        public override void BeginWriteAttribute(CodeWriter codeWriter, string key)
         {
             codeWriter
                 .WriteStartMethodInvocation($"{_scopeStack.BuilderVarName}.{nameof(BlazorApi.RenderTreeBuilder.AddAttribute)}")
@@ -442,11 +599,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 .WriteParameterSeparator()
                 .WriteStringLiteral(key)
                 .WriteParameterSeparator();
-        }
-
-        public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
-        {
-            context.CodeWriter.WriteUsing(node.Content, endLine: true);
         }
 
         private static string GetContent(HtmlContentIntermediateNode node)

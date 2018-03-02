@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.RenderTree;
 using Xunit;
@@ -58,10 +59,21 @@ namespace Microsoft.AspNetCore.Blazor.Test.Helpers
             Assert.Equal(attributeValue, frame.AttributeValue);
         }
 
+        public static void Attribute(RenderTreeFrame frame, string attributeName, Action<object> attributeValidator, int? sequence = null)
+        {
+            AssertFrame.Attribute(frame, attributeName, sequence);
+            attributeValidator(frame.AttributeValue);
+        }
+
         public static void Component<T>(RenderTreeFrame frame, int? subtreeLength = null, int? sequence = null) where T : IComponent
         {
+            Component(frame, typeof(T).FullName, subtreeLength, sequence);
+        }
+
+        public static void Component(RenderTreeFrame frame, string typeName, int? subtreeLength = null, int? sequence = null)
+        {
             Assert.Equal(RenderTreeFrameType.Component, frame.FrameType);
-            Assert.Equal(typeof(T), frame.ComponentType);
+            Assert.Equal(typeName, frame.ComponentType.FullName);
             if (subtreeLength.HasValue)
             {
                 Assert.Equal(subtreeLength.Value, frame.ComponentSubtreeLength);

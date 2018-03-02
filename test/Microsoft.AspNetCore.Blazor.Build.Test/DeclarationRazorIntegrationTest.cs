@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.AspNetCore.Blazor.Components;
 using Microsoft.AspNetCore.Blazor.Razor;
-using Microsoft.AspNetCore.Blazor.Test.Helpers;
 using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
 

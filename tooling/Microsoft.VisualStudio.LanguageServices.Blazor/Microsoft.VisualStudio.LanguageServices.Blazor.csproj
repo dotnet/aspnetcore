@@ -6,6 +6,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Razor.Workspaces" Version="$(RazorPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor" Version="$(RazorPackageVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="15.6.27413" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.8.0" Version="8.0.50728" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.6.46" />
   </ItemGroup>
 
   <ItemGroup>
