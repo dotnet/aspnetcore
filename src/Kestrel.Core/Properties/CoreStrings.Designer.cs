@@ -333,18 +333,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("BadRequest_RequestLineTooLong");
 
         /// <summary>
-        /// Request timed out.
+        /// Reading the request headers timed out.
         /// </summary>
-        internal static string BadRequest_RequestTimeout
+        internal static string BadRequest_RequestHeadersTimeout
         {
-            get => GetString("BadRequest_RequestTimeout");
+            get => GetString("BadRequest_RequestHeadersTimeout");
         }
 
         /// <summary>
-        /// Request timed out.
+        /// Reading the request headers timed out.
         /// </summary>
-        internal static string FormatBadRequest_RequestTimeout()
-            => GetString("BadRequest_RequestTimeout");
+        internal static string FormatBadRequest_RequestHeadersTimeout()
+            => GetString("BadRequest_RequestHeadersTimeout");
 
         /// <summary>
         /// Request contains too many headers.
@@ -877,14 +877,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatWritingToResponseBodyNotSupported(object statusCode)
             => string.Format(CultureInfo.CurrentCulture, GetString("WritingToResponseBodyNotSupported", "statusCode"), statusCode);
-
-        /// <summary>
-        /// Cannot write to the response body, the response has completed.
-        /// </summary>
-        internal static string WritingToResponseBodyAfterResponseCompleted
-        {
-            get => GetString("WritingToResponseBodyAfterResponseCompleted");
-        }
 
         /// <summary>
         /// Connection shutdown abnormally.
@@ -1799,6 +1791,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </summary>
         internal static string FormatHttp2NotSupported()
             => GetString("Http2NotSupported");
+
+        /// <summary>
+        /// Cannot write to the response body, the response has completed.
+        /// </summary>
+        internal static string WritingToResponseBodyAfterResponseCompleted
+        {
+            get => GetString("WritingToResponseBodyAfterResponseCompleted");
+        }
+
+        /// <summary>
+        /// Cannot write to the response body, the response has completed.
+        /// </summary>
+        internal static string FormatWritingToResponseBodyAfterResponseCompleted()
+            => GetString("WritingToResponseBodyAfterResponseCompleted");
+
+        /// <summary>
+        /// Reading the request body timed out due to data arriving too slowly. See MinRequestBodyDataRate.
+        /// </summary>
+        internal static string BadRequest_RequestBodyTimeout
+        {
+            get => GetString("BadRequest_RequestBodyTimeout");
+        }
+
+        /// <summary>
+        /// Reading the request body timed out due to data arriving too slowly. See MinRequestBodyDataRate.
+        /// </summary>
+        internal static string FormatBadRequest_RequestBodyTimeout()
+            => GetString("BadRequest_RequestBodyTimeout");
 
         private static string GetString(string name, params string[] formatterNames)
         {

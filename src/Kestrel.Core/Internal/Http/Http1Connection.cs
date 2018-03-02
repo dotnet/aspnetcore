@@ -484,7 +484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
                 // a 408 response.
-                BadHttpRequestException.Throw(RequestRejectionReason.RequestTimeout);
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestHeadersTimeout);
             }
 
             endConnection = false;

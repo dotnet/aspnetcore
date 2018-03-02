@@ -186,8 +186,8 @@
   <data name="BadRequest_RequestLineTooLong" xml:space="preserve">
     <value>Request line too long.</value>
   </data>
-  <data name="BadRequest_RequestTimeout" xml:space="preserve">
-    <value>Request timed out.</value>
+  <data name="BadRequest_RequestHeadersTimeout" xml:space="preserve">
+    <value>Reading the request headers timed out.</value>
   </data>
   <data name="BadRequest_TooManyHeaders" xml:space="preserve">
     <value>Request contains too many headers.</value>
@@ -502,5 +502,8 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   </data>
   <data name="WritingToResponseBodyAfterResponseCompleted" xml:space="preserve">
     <value>Cannot write to the response body, the response has completed.</value>
+  </data>
+  <data name="BadRequest_RequestBodyTimeout" xml:space="preserve">
+    <value>Reading the request body timed out due to data arriving too slowly. See MinRequestBodyDataRate.</value>
   </data>
 </root>

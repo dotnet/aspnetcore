@@ -87,8 +87,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.RequestBodyTooLarge:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTooLarge, StatusCodes.Status413PayloadTooLarge);
                     break;
-                case RequestRejectionReason.RequestTimeout:
-                    ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestTimeout, StatusCodes.Status408RequestTimeout);
+                case RequestRejectionReason.RequestHeadersTimeout:
+                    ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestHeadersTimeout, StatusCodes.Status408RequestTimeout);
+                    break;
+                case RequestRejectionReason.RequestBodyTimeout:
+                    ex = new BadHttpRequestException(CoreStrings.BadRequest_RequestBodyTimeout, StatusCodes.Status408RequestTimeout);
                     break;
                 case RequestRejectionReason.OptionsMethodRequired:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_MethodNotAllowed, StatusCodes.Status405MethodNotAllowed, HttpMethod.Options);
