@@ -12,8 +12,13 @@ addons:
     - zlib1g
 mono: none
 os:
-  - linux
-  - osx
+- linux
+- osx
 osx_image: xcode7.1
 script:
-  - ./build.sh
+- ./build.sh
+branches:
+  only:
+  - dev
+  - /^release\/.*$/
+  - /^(.*\/)?ci-.*$/
