@@ -215,8 +215,8 @@ namespace Microsoft.AspNetCore.Hosting
                         return factory.CreateServiceProvider(factory.CreateBuilder(collection));
                     }
                 }
-                
-                return provider;                
+
+                return provider;
             }
         }
 
