@@ -78,7 +78,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void AddModelError_ForSingleExpression_AddsExpectedException()
+        public void TryAddModelException_ForSingleExpression_AddsExpectedException()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+
+            // Act
+            dictionary.TryAddModelException<TestModel>(model => model.Text, exception);
+
+            // Assert
+            var modelState = Assert.Single(dictionary);
+            var modelError = Assert.Single(modelState.Value.Errors);
+
+            Assert.Equal("Text", modelState.Key);
+            Assert.Same(exception, modelError.Exception);
+        }
+
+        [Fact]
+        public void AddModelError_ForSingleExpression_AddsExpectedException_WithModelMetadata()
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
@@ -98,7 +116,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void AddModelError_ForRelationExpression_AddsExpectedException()
+        public void TryAddModelException_ForRelationExpression_AddsExpectedException()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+
+            // Act
+            dictionary.TryAddModelException<TestModel>(model => model.Child.Text, exception);
+
+            // Assert
+            var modelState = Assert.Single(dictionary);
+            var modelError = Assert.Single(modelState.Value.Errors);
+
+            Assert.Equal("Child.Text", modelState.Key);
+            Assert.Same(exception, modelError.Exception);
+        }
+
+        [Fact]
+        public void AddModelError_ForRelationExpression_AddsExpectedException_WithModelMetadata()
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
@@ -118,7 +154,25 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void AddModelError_ForImplicitlyCastedToObjectExpression_AddsExpectedException()
+        public void TryAddModelException_ForImplicitlyCastedToObjectExpression_AddsExpectedException()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            var exception = new Exception();
+
+            // Act
+            dictionary.TryAddModelException<TestModel>(model => model.Child.Value, exception);
+
+            // Assert
+            var modelState = Assert.Single(dictionary);
+            var modelError = Assert.Single(modelState.Value.Errors);
+
+            Assert.Equal("Child.Value", modelState.Key);
+            Assert.Same(exception, modelError.Exception);
+        }
+
+        [Fact]
+        public void AddModelError_ForImplicitlyCastedToObjectExpression_AddsExpectedException_WithModelMetadata()
         {
             // Arrange
             var dictionary = new ModelStateDictionary();
@@ -138,7 +192,26 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
-        public void AddModelError_ForNotModelsExpression_AddsExpectedException()
+        public void TryAddModelException_ForNotModelsExpression_AddsExpectedException()
+        {
+            // Arrange
+            var dictionary = new ModelStateDictionary();
+            var variable = "Test";
+            var exception = new Exception();
+
+            // Act
+            dictionary.TryAddModelException<TestModel>(model => variable, exception);
+
+            // Assert
+            var modelState = Assert.Single(dictionary);
+            var modelError = Assert.Single(modelState.Value.Errors);
+
+            Assert.Equal("variable", modelState.Key);
+            Assert.Same(exception, modelError.Exception);
+        }
+
+        [Fact]
+        public void AddModelError_ForNotModelsExpression_AddsExpectedException_WithModelMetadata()
         {
             // Arrange
             var dictionary = new ModelStateDictionary();

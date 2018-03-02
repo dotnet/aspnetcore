@@ -15,7 +15,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     {
         /// <summary>
         /// Adds the specified <paramref name="errorMessage"/> to the <see cref="ModelStateEntry.Errors"/> instance
-        /// that is associated with the specified <paramref name="expression"/>.
+        /// that is associated with the specified <paramref name="expression"/>. If the maximum number of allowed
+        /// errors has already been recorded, ensures that a <see cref="TooManyModelErrorsException"/> exception is
+        /// recorded instead.
         /// </summary>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
@@ -46,7 +48,42 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         /// <summary>
         /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
-        /// that is associated with the specified <paramref name="expression"/>.
+        /// that is associated with the specified <paramref name="expression"/>. If the maximum number of allowed
+        /// errors has already been recorded, ensures that a <see cref="TooManyModelErrorsException"/> exception is
+        /// recorded instead.
+        /// </summary>
+        /// <remarks>
+        /// This method allows adding the <paramref name="exception"/> to the current <see cref="ModelStateDictionary"/>
+        /// when <see cref="ModelMetadata"/> is not available or the exact <paramref name="exception"/> 
+        /// must be maintained for later use (even if it is for example a <see cref="FormatException"/>).
+        /// </remarks>
+        /// <typeparam name="TModel">The type of the model.</typeparam>
+        /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
+        /// <param name="expression">An expression to be evaluated against an item in the current model.</param>
+        /// <param name="exception">The <see cref="Exception"/> to add.</param>
+        public static void TryAddModelException<TModel>(
+            this ModelStateDictionary modelState,
+            Expression<Func<TModel, object>> expression,
+            Exception exception)
+        {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            if (expression == null)
+            {
+                throw new ArgumentNullException(nameof(expression));
+            }
+
+            modelState.TryAddModelException(GetExpressionText(expression), exception);
+        }
+
+        /// <summary>
+        /// Adds the specified <paramref name="exception"/> to the <see cref="ModelStateEntry.Errors"/> instance
+        /// that is associated with the specified <paramref name="expression"/>. If the maximum number of allowed
+        /// errors has already been recorded, ensures that a <see cref="TooManyModelErrorsException"/> exception is
+        /// recorded instead.
         /// </summary>
         /// <typeparam name="TModel">The type of the model.</typeparam>
         /// <param name="modelState">The <see cref="ModelStateDictionary"/> instance this method extends.</param>
