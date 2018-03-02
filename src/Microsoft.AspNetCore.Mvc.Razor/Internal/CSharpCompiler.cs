@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private CSharpParseOptions _parseOptions;
         private CSharpCompilationOptions _compilationOptions;
         private EmitOptions _emitOptions;
+        private bool _emitPdb;
 
         public CSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
         {
@@ -47,6 +48,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 EnsureOptions();
                 return _compilationOptions;
+            }
+        }
+
+        public virtual bool EmitPdb
+        {
+            get
+            {
+                EnsureOptions();
+                return _emitPdb;
             }
         }
 
@@ -105,6 +115,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         private EmitOptions GetEmitOptions(DependencyContextCompilationOptions dependencyContextOptions)
         {
+            // Assume we're always producing pdbs unless DebugType = none
+            _emitPdb = true;
             DebugInformationFormat debugInformationFormat;
             if (string.IsNullOrEmpty(dependencyContextOptions.DebugType))
             {
@@ -117,11 +129,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 // Based on https://github.com/dotnet/roslyn/blob/1d28ff9ba248b332de3c84d23194a1d7bde07e4d/src/Compilers/CSharp/Portable/CommandLine/CSharpCommandLineParser.cs#L624-L640
                 switch (dependencyContextOptions.DebugType.ToLower())
                 {
+                    case "none":
+                        // There isn't a way to represent none in DebugInformationFormat.
+                        // We'll set EmitPdb to false and let callers handle it by setting a null pdb-stream.
+                        _emitPdb = false;
+                        return new EmitOptions();
                     case "portable":
                         debugInformationFormat = DebugInformationFormat.PortablePdb;
                         break;
                     case "embedded":
-                        debugInformationFormat = DebugInformationFormat.Embedded;
+                        // Roslyn does not expose enough public APIs to produce a binary with embedded pdbs.
+                        // We'll produce PortablePdb instead to continue providing a reasonable user experience.
+                        debugInformationFormat = DebugInformationFormat.PortablePdb;
                         break;
                     case "full":
                     case "pdbonly":

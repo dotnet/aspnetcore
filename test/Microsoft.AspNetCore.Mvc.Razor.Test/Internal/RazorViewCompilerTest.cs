@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -799,11 +800,52 @@ this should fail";
             Assert.NotNull(result);
         }
 
+        [Fact]
+        public void CompileAndEmit_DoesNotThrowIfDebugTypeIsEmbedded()
+        {
+            // Arrange
+            var referenceManager = CreateReferenceManager(Options.Create(new RazorViewEngineOptions()));
+            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>())
+            {
+                EmitOptionsSettable = new EmitOptions(debugInformationFormat: DebugInformationFormat.Embedded),
+            };
+
+            var compiler = GetViewCompiler(csharpCompiler: csharpCompiler);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
+
+            // Act
+            var result = compiler.CompileAndEmit(codeDocument, "public class Test{}");
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        public void CompileAndEmit_WorksIfEmitPdbIsNotSet()
+        {
+            // Arrange
+            var referenceManager = CreateReferenceManager(Options.Create(new RazorViewEngineOptions()));
+            var csharpCompiler = new TestCSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>())
+            {
+                EmitPdbSettable = false,
+            };
+
+            var compiler = GetViewCompiler(csharpCompiler: csharpCompiler);
+            var codeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("Hello world", "some-relative-path.cshtml"));
+
+            // Act
+            var result = compiler.CompileAndEmit(codeDocument, "public class Test{}");
+
+            // Assert
+            Assert.NotNull(result);
+        }
+
         private static TestRazorViewCompiler GetViewCompiler(
             TestFileProvider fileProvider = null,
             Action<RoslynCompilationContext> compilationCallback = null,
             RazorReferenceManager referenceManager = null,
-            IList<CompiledViewDescriptor> precompiledViews = null)
+            IList<CompiledViewDescriptor> precompiledViews = null,
+            CSharpCompiler csharpCompiler = null)
         {
             fileProvider = fileProvider ?? new TestFileProvider();
             var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
@@ -812,12 +854,7 @@ this should fail";
             var options = Options.Create(new RazorViewEngineOptions());
             if (referenceManager == null)
             {
-                var applicationPartManager = new ApplicationPartManager();
-                var assembly = typeof(RazorViewCompilerTest).Assembly;
-                applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
-                applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
-
-                referenceManager = new DefaultRazorReferenceManager(applicationPartManager, options);
+                referenceManager = CreateReferenceManager(options);
             }
 
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
@@ -828,13 +865,26 @@ this should fail";
             {
                 RazorExtensions.Register(builder);
             });
+
+            csharpCompiler = csharpCompiler ?? new CSharpCompiler(referenceManager, hostingEnvironment);
+
             var viewCompiler = new TestRazorViewCompiler(
                 fileProvider,
                 projectEngine,
-                new CSharpCompiler(referenceManager, hostingEnvironment),
+                csharpCompiler,
                 compilationCallback,
                 precompiledViews);
             return viewCompiler;
+        }
+
+        private static RazorReferenceManager CreateReferenceManager(IOptions<RazorViewEngineOptions> options)
+        {
+            var applicationPartManager = new ApplicationPartManager();
+            var assembly = typeof(RazorViewCompilerTest).Assembly;
+            applicationPartManager.ApplicationParts.Add(new AssemblyPart(assembly));
+            applicationPartManager.FeatureProviders.Add(new MetadataReferenceFeatureProvider());
+
+            return new DefaultRazorReferenceManager(applicationPartManager, options);
         }
 
         private class TestRazorViewCompiler : RazorViewCompiler
@@ -865,6 +915,22 @@ this should fail";
             {
                 return Compile(relativePath);
             }
+        }
+
+        private class TestCSharpCompiler : CSharpCompiler
+        {
+            public TestCSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
+                : base(manager, hostingEnvironment)
+            {
+            }
+
+            public EmitOptions EmitOptionsSettable { get; set; }
+
+            public bool EmitPdbSettable { get; set; }
+
+            public override EmitOptions EmitOptions => EmitOptionsSettable;
+
+            public override bool EmitPdb => EmitPdbSettable;
         }
     }
 }

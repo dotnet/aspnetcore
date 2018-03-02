@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor.Hosting;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 return cachedResult;
             }
 
-            var normalizedPath =  GetNormalizedPath(relativePath);
+            var normalizedPath = GetNormalizedPath(relativePath);
             if (_cache.TryGetValue(normalizedPath, out cachedResult))
             {
                 return cachedResult;
@@ -325,7 +326,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // error message; for now, lets just be extra protective and assume 0 imports to not give a bad error.
             var imports = importFeature?.GetImports(projectItem) ?? Enumerable.Empty<RazorProjectItem>();
             var physicalImports = imports.Where(import => import.FilePath != null);
-            
+
             // Now that we have non-dynamic imports we need to get their RazorProjectItem equivalents so we have their
             // physical file paths (according to the FileSystem).
             foreach (var physicalImport in physicalImports)
@@ -374,13 +375,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var assemblyName = Path.GetRandomFileName();
             var compilation = CreateCompilation(generatedCode, assemblyName);
 
+            var emitOptions = _csharpCompiler.EmitOptions;
+            var emitPdbFile = _csharpCompiler.EmitPdb && emitOptions.DebugInformationFormat != DebugInformationFormat.Embedded;
+
             using (var assemblyStream = new MemoryStream())
-            using (var pdbStream = new MemoryStream())
+            using (var pdbStream = emitPdbFile ? new MemoryStream() : null)
             {
                 var result = compilation.Emit(
                     assemblyStream,
                     pdbStream,
-                    options: _csharpCompiler.EmitOptions);
+                    options: emitOptions);
 
                 if (!result.Success)
                 {
@@ -392,9 +396,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 }
 
                 assemblyStream.Seek(0, SeekOrigin.Begin);
-                pdbStream.Seek(0, SeekOrigin.Begin);
+                pdbStream?.Seek(0, SeekOrigin.Begin);
 
-                var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
+                var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream?.ToArray());
                 _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FilePath, startTimestamp);
 
                 return assembly;
