@@ -7,7 +7,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\Microsoft.AspNetCore.AzureKeyVault.HostingStartup.csproj" />
   </ItemGroup>
 
   <ItemGroup>

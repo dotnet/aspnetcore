@@ -32,7 +32,6 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             Assert.Equal("add", depsElement.Name);
             Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
             Assert.Equal($@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
-                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\;" +
                          @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
                 depsElement.Attributes["value"].Value);
 
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             var startupAssembliesElement = sharedStoreElement.NextSibling;
             Assert.Equal("add", startupAssembliesElement.Name);
             Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
-            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup;Microsoft.AspNetCore.AzureKeyVault.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
+            Assert.Equal("Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         [Fact]
@@ -64,7 +63,6 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             Assert.Equal("DOTNET_ADDITIONAL_DEPS", depsElement.Attributes["name"].Value);
             Assert.Equal(@"ExistingValue1;"+
                          $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\;" +
-                         $@"{XdtExtensionPath}\additionalDeps\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\;" +
                          @"%ProgramFiles%\dotnet\additionalDeps\Microsoft.AspNetCore.AzureAppServices.HostingStartup\",
                 depsElement.Attributes["value"].Value);
 
@@ -76,7 +74,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.SiteExtension
             var startupAssembliesElement = sharedStoreElement.NextSibling;
             Assert.Equal("add", startupAssembliesElement.Name);
             Assert.Equal("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", startupAssembliesElement.Attributes["name"].Value);
-            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup;Microsoft.AspNetCore.AzureKeyVault.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
+            Assert.Equal("ExistingValue2;Microsoft.AspNetCore.AzureAppServices.HostingStartup", startupAssembliesElement.Attributes["value"].Value);
         }
 
         private static XmlDocument LoadDocAndRunTransform(string docName)

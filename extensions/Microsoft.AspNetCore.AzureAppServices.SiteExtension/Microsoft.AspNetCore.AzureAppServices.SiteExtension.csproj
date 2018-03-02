@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="$(MicrosoftAspNetCoreAzureAppServicesHostingStartupPackageVersion)" />
-    <HostingStartupPackageReference Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Version="$(MicrosoftAspNetCoreAzureKeyVaultHostingStartupPackageVersion)"  />
 
     <PackageReference Include="Internal.AspNetCore.SiteExtension.Sdk" Version="$(InternalAspNetCoreSiteExtensionSdkPackageVersion)" PrivateAssets="All" />
   </ItemGroup>

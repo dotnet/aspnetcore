@@ -54,8 +54,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Extensions.Applic
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Runtime.SiteExtension", "extensions\Microsoft.AspNetCore.Runtime.SiteExtension\Microsoft.AspNetCore.Runtime.SiteExtension.csproj", "{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureKeyVault.HostingStartup", "src\Microsoft.AspNetCore.AzureKeyVault.HostingStartup\Microsoft.AspNetCore.AzureKeyVault.HostingStartup.csproj", "{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,10 +124,6 @@ Global
 		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -151,7 +145,6 @@ Global
 		{F0CABFE8-A5B1-487B-A451-A486D26742D3} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 		{15664836-2B94-4D2D-AC18-6DED01FCCCBD} = {CD650B4B-81C2-4A44-AEF2-A251A877C1F0}
 		{E1E9BC7A-6951-4B60-8DFB-DBB9AC3CDEB0} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
-		{4B471CD7-4A15-4C42-B7B7-0A1C8BA2FDBA} = {FF9B744E-6C59-40CC-9E41-9D2EBD292435}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5743DFE7-1AA5-439D-84AE-A480EA389927}
