@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26913.0
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
 	ProjectSection(SolutionItems) = preProject
@@ -64,6 +64,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests", "test\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests\Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests.csproj", "{3834E274-3AF5-4751-8857-5B67BBE607DD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BuildWebHostPatternTestSite", "test\TestAssets\BuildWebHostPatternTestSite\BuildWebHostPatternTestSite.csproj", "{37C4BD55-CD39-4C4E-BA01-0AEAFCE128F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F9074486-EAE4-4171-BC9E-1557C2A56DDE}"
+	ProjectSection(SolutionItems) = preProject
+		build\dependencies.props = build\dependencies.props
+		build\repo.props = build\repo.props
+		build\sources.props = build\sources.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -333,6 +340,7 @@ Global
 		{45E296BB-7628-49AF-B5A5-04CD9A89CAD3} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
 		{3834E274-3AF5-4751-8857-5B67BBE607DD} = {FEB39027-9158-4DE2-997F-7ADAEF8188D0}
 		{37C4BD55-CD39-4C4E-BA01-0AEAFCE128F1} = {FA7D2012-C1B4-4AF7-9ADD-381B2004EA16}
+		{F9074486-EAE4-4171-BC9E-1557C2A56DDE} = {A7270417-6BC6-4E3F-A96A-79193D16BB82}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {AABD536D-E05F-409B-A716-535E0C478076}
