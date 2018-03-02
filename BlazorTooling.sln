@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "anglesharp", "anglesharp", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Razor.Extensions", "src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj", "{319463A4-64C8-4A96-BEFD-2952BBD5FF67}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Templates", "src\Microsoft.AspNetCore.Blazor.Templates\Microsoft.AspNetCore.Blazor.Templates.csproj", "{EDD21533-C6E6-4F85-BE4F-10E06756E24C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -80,6 +82,18 @@ Global
 		{319463A4-64C8-4A96-BEFD-2952BBD5FF67}.Release|x64.Build.0 = Release|Any CPU
 		{319463A4-64C8-4A96-BEFD-2952BBD5FF67}.Release|x86.ActiveCfg = Release|Any CPU
 		{319463A4-64C8-4A96-BEFD-2952BBD5FF67}.Release|x86.Build.0 = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|x64.Build.0 = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Debug|x86.Build.0 = Debug|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|x64.ActiveCfg = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|x64.Build.0 = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|x86.ActiveCfg = Release|Any CPU
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +104,7 @@ Global
 		{E5067AD8-3AE7-442A-86C5-D19DBC48E961} = {9DEA0869-2F17-419F-8F6A-53DCA898D3D6}
 		{9DEA0869-2F17-419F-8F6A-53DCA898D3D6} = {91810C0E-892D-40EF-BDC0-5470B37E255F}
 		{319463A4-64C8-4A96-BEFD-2952BBD5FF67} = {91810C0E-892D-40EF-BDC0-5470B37E255F}
+		{EDD21533-C6E6-4F85-BE4F-10E06756E24C} = {91810C0E-892D-40EF-BDC0-5470B37E255F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {248760B5-9F71-4110-8DBC-DDAB615AD88E}
