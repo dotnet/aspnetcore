@@ -116,17 +116,19 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// A shutdown request should not abort an existing compilation.  It should be allowed to run to 
         /// completion.
         /// </summary>
-        // Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Fact]
         public async Task ServerRunning_ShutdownRequest_DoesNotAbortCompilation()
         {
             // Arrange
-            var completionSource = new TaskCompletionSource<bool>();
+            var startCompilationSource = new TaskCompletionSource<bool>();
+            var finishCompilationSource = new TaskCompletionSource<bool>();
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
+                // At this point, the connection has been accepted and the compilation has started.
+                startCompilationSource.SetResult(true);
+
                 // We want this to keep running even after the shutdown is seen.
-                completionSource.Task.Wait();
+                finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
 
@@ -134,13 +136,16 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var compileTask = ServerUtilities.Send(serverData.PipeName, EmptyServerRequest);
 
+                // Wait for the request to go through and trigger compilation.
+                await startCompilationSource.Task;
+
                 // Act
                 // The compilation is now in progress, send the shutdown.
                 await ServerUtilities.SendShutdown(serverData.PipeName);
                 Assert.False(compileTask.IsCompleted);
 
                 // Now let the task complete.
-                completionSource.SetResult(true);
+                finishCompilationSource.SetResult(true);
 
                 // Assert
                 var response = await compileTask;
@@ -154,23 +159,28 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Multiple clients should be able to send shutdown requests to the server.
         /// </summary>
-        // Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Fact]
         public async Task ServerRunning_MultipleShutdownRequests_HandlesSuccessfully()
         {
             // Arrange
-            var completionSource = new TaskCompletionSource<bool>();
+            var startCompilationSource = new TaskCompletionSource<bool>();
+            var finishCompilationSource = new TaskCompletionSource<bool>();
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
+                // At this point, the connection has been accepted and the compilation has started.
+                startCompilationSource.SetResult(true);
+
                 // We want this to keep running even after the shutdown is seen.
-                completionSource.Task.Wait();
+                finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
 
             using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
             {
                 var compileTask = ServerUtilities.Send(serverData.PipeName, EmptyServerRequest);
+
+                // Wait for the request to go through and trigger compilation.
+                await startCompilationSource.Task;
 
                 // Act
                 for (var i = 0; i < 10; i++)
@@ -182,7 +192,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 }
 
                 // Now let the task complete.
-                completionSource.SetResult(true);
+                finishCompilationSource.SetResult(true);
 
                 // Assert
                 var response = await compileTask;
@@ -193,9 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        // Skipping temporarily on non-windows. https://github.com/aspnet/Razor/issues/1991
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Fact]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
             // Arrange
@@ -213,18 +221,28 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 return new RejectedServerResponse();
             });
 
-            using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
+            var semaphore = new SemaphoreSlim(1);
+            Action<object, EventArgs> onListening = (s, e) =>
             {
-                var tasks = new List<Task<ServerResponse>>();
+                semaphore.Release();
+            };
+            using (var serverData = ServerUtilities.CreateServer(compilerHost: host, onListening: onListening))
+            {
+                // Send all the requests.
+                var clients = new List<Client>();
                 for (var i = 0; i < requestCount; i++)
                 {
-                    var task = ServerUtilities.Send(serverData.PipeName, EmptyServerRequest);
-                    tasks.Add(task);
+                    // Wait for the server to start listening.
+                    await semaphore.WaitAsync(TimeSpan.FromMinutes(1));
+
+                    var client = await Client.ConnectAsync(serverData.PipeName, timeout: null, cancellationToken: default);
+                    await EmptyServerRequest.WriteAsync(client.Stream);
+                    clients.Add(client);
                 }
 
                 // Act
                 // Wait until all of the connections are being processed by the server. 
-                completionSource.Task.Wait();
+                await completionSource.Task;
 
                 // Now cancel
                 var stats = await serverData.CancelAndCompleteAsync();
@@ -233,10 +251,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 Assert.Equal(requestCount, stats.Connections);
                 Assert.Equal(requestCount, count);
 
-                foreach (var task in tasks)
+                // Read the server response to each client.
+                foreach (var client in clients)
                 {
+                    var task = ServerResponse.ReadAsync(client.Stream);
                     // We expect this to throw because the stream is already closed.
-                    await Assert.ThrowsAsync<EndOfStreamException>(() => task);
+                    await Assert.ThrowsAnyAsync<IOException>(() => task);
+                    client.Dispose();
                 }
             }
         }

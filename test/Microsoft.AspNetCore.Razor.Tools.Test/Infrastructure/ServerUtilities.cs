@@ -26,7 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         internal static ServerData CreateServer(
             string pipeName = null,
             CompilerHost compilerHost = null,
-            ConnectionHost connectionHost = null)
+            ConnectionHost connectionHost = null,
+            Action<object, EventArgs> onListening = null)
         {
             pipeName = pipeName ?? Guid.NewGuid().ToString();
             compilerHost = compilerHost ?? CompilerHost.Create();
@@ -40,6 +41,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var eventBus = new TestableEventBus();
                 eventBus.Listening += (sender, e) => { serverListenSource.TrySetResult(true); };
+                if (onListening != null)
+                {
+                    eventBus.Listening += (sender, e) => onListening(sender, e);
+                }
                 try
                 {
                     RunServer(
