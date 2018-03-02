@@ -18,3 +18,4 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
     - [By Judah Gabriel Himango](https://github.com/JudahGabriel/RavenDB.Identity)
     - [By Iskandar Rafiev](https://github.com/maqduni/AspNetCore.Identity.RavenDB)
  - [ASP.NET Identity Cassandra Provider](https://github.com/lkubis/AspNetCore.Identity.Cassandra)
+ - [ASP.NET Identity Firebase Provider](https://github.com/aguacongas/Identity.Firebase)
