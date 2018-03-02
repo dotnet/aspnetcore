@@ -5,6 +5,8 @@
     <UserSecretsId>aspnet-ChatSample-f11cf018-e0a8-49fa-b749-4c0eb5c9150b</UserSecretsId>
     <!-- Don't create a NuGet package -->
     <IsPackable>false</IsPackable>
+    <!-- Ensures the minification only runs on one target framework - avoids race in MSBuild. -->
+    <RunBundleMinify Condition=" '$(TargetFramework)' == 'net461' OR '$(CI)' == 'true' ">false</RunBundleMinify>
   </PropertyGroup>
 
   <ItemGroup>
