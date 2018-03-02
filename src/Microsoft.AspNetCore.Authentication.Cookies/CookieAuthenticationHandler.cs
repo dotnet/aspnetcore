@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         private DateTimeOffset? _refreshExpiresUtc;
         private string _sessionKey;
         private Task<AuthenticateResult> _readCookieTask;
+        private AuthenticationTicket _refreshTicket;
 
         public CookieAuthenticationHandler(IOptionsMonitor<CookieAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
@@ -99,7 +100,25 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 _refreshIssuedUtc = currentUtc;
                 var timeSpan = expiresUtc.Value.Subtract(issuedUtc.Value);
                 _refreshExpiresUtc = currentUtc.Add(timeSpan);
+                _refreshTicket = CloneTicket(ticket);
             }
+        }
+
+        private AuthenticationTicket CloneTicket(AuthenticationTicket ticket)
+        {
+            var newPrincipal = new ClaimsPrincipal();
+            foreach (var identity in ticket.Principal.Identities)
+            {
+                newPrincipal.AddIdentity(identity.Clone());
+            }
+
+            var newProperties = new AuthenticationProperties();
+            foreach (var item in ticket.Properties.Items)
+            {
+                newProperties.Items[item.Key] = item.Value;
+            }
+
+            return new AuthenticationTicket(newPrincipal, newProperties, ticket.AuthenticationScheme);
         }
 
         private async Task<AuthenticateResult> ReadCookieTicket()
@@ -190,7 +209,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 return;
             }
 
-            var ticket = (await HandleAuthenticateOnceSafeAsync())?.Ticket;
+            var ticket = _refreshTicket;
             if (ticket != null)
             {
                 var properties = ticket.Properties;
