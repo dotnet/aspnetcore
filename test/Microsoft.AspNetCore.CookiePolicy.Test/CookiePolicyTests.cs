@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                         Assert.Equal("A=A; path=/; samesite=lax", transaction.SetCookie[0]);
                         Assert.Equal("B=B; path=/; samesite=lax", transaction.SetCookie[1]);
                         Assert.Equal("C=C; path=/; samesite=lax", transaction.SetCookie[2]);
-                        Assert.Equal("D=D; path=/; samesite=lax", transaction.SetCookie[3]);
+                        Assert.Equal("D=D; path=/; secure; samesite=lax", transaction.SetCookie[3]);
                     }),
                 new RequestTest("https://example.com/secureSame",
                     transaction =>

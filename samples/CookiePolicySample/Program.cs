@@ -12,7 +12,7 @@ namespace CookiePolicySample
                 .ConfigureLogging(factory =>
                 {
                     factory.AddConsole();
-                    factory.AddFilter("Console", level => level >= LogLevel.Information);
+                    factory.AddFilter("Microsoft", LogLevel.Trace);
                 })
                 .UseKestrel()
                 .UseContentRoot(Directory.GetCurrentDirectory())
