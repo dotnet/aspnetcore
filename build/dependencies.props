@@ -38,6 +38,7 @@
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>2.1.0-preview2-30187</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>
     <MicrosoftEntityFrameworkCoreRelationalPackageVersion>2.1.0-preview2-30187</MicrosoftEntityFrameworkCoreRelationalPackageVersion>
     <MicrosoftEntityFrameworkCoreSqlServerPackageVersion>2.1.0-preview2-30187</MicrosoftEntityFrameworkCoreSqlServerPackageVersion>
+    <MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>2.1.0-preview2-30187</MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion>
     <MicrosoftEntityFrameworkCoreToolsPackageVersion>2.1.0-preview2-30187</MicrosoftEntityFrameworkCoreToolsPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationCommandLinePackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsConfigurationCommandLinePackageVersion>
