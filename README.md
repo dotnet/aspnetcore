@@ -75,6 +75,13 @@ msbuild BlazorTooling.sln /t:Restore
 msbuild BlazorTooling.sln
 ```
 
+## Use VS Tooling
+
+To install the Tooling following prerequisites must be installed first:
+
+- Visual Studio 2017 15.6 (or newer)
+- Workload: ASP.NET and web development
+
 ## Contributing
 
 There are lots of ways that you can contribute to Blazor! Read our [contributing guide](https://github.com/aspnet/Blazor/blob/dev/CONTRIBUTING.md) to learn about our development process and how to propose bug fixes and improvements.
