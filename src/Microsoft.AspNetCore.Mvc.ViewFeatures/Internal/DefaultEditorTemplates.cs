@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
     public static class DefaultEditorTemplates
     {
         private const string HtmlAttributeKey = "htmlAttributes";
+        private const string UsePasswordValue = "Switch.Microsoft.AspNetCore.Mvc.UsePasswordValue";
 
         public static IHtmlContent BooleanTemplate(IHtmlHelper htmlHelper)
         {
@@ -312,9 +313,15 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public static IHtmlContent PasswordTemplate(IHtmlHelper htmlHelper)
         {
+            object value = null;
+            if (AppContext.TryGetSwitch(UsePasswordValue, out var usePasswordValue) && usePasswordValue)
+            {
+                value = htmlHelper.ViewData.TemplateInfo.FormattedModelValue;
+            }
+
             return htmlHelper.Password(
                 expression: null,
-                value: htmlHelper.ViewData.TemplateInfo.FormattedModelValue,
+                value: value,
                 htmlAttributes: CreateHtmlAttributes(htmlHelper, "text-box single-line password"));
         }
 
