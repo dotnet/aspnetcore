@@ -19,7 +19,6 @@
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-
   <PropertyGroup>
     <!-- 
       Following VS convention of using the VS release # as a convention for the vsix version.
@@ -65,6 +64,14 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>
+  <Target Name="PreCreateVsixContainer" BeforeTargets="CreateVsixContainer">
+    <ItemGroup>
+      <VSIXSourceItem Include="..\..\Artifacts\Build\Microsoft.AspNetCore.Blazor.Templates.*.nupkg">
+        <VSIXSubPath>ProjectTemplates\</VSIXSubPath>
+      </VSIXSourceItem>
+      <VSIXSourceItem Include="Templates.pkgdef" />
+    </ItemGroup>
+  </Target>
   <!--
     This is needed to support our infrastructure's automatic upload of symbols to the symbol server
     for debugging. 
@@ -94,7 +101,6 @@
     <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.dll" />
     <SuppressFromVsix Include="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
   </ItemGroup>
-
   <ItemGroup>
     <!--
       Let's continue our parade of gross workarounds. 
@@ -103,12 +109,24 @@
       this problem, we're only using the P2P references to force build ordering. Then we include the build
       output of those projects as content.
     -->
+    <Content Include="Templates.pkgdef" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Templates\Microsoft.AspNetCore.Blazor.Templates.csproj">
+      <Project>{edd21533-c6e6-4f85-be4f-10e06756e24c}</Project>
+      <Name>Microsoft.AspNetCore.Blazor.Templates</Name>
+      <Private>False</Private>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
+    </ProjectReference>
     <ProjectReference Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\Microsoft.VisualStudio.LanguageServices.Blazor.csproj">
       <Project>{b9f7f502-6dd2-4e77-8fd1-cbd76f695b26}</Project>
       <Name>Microsoft.VisualStudio.LanguageServices.Blazor</Name>
       <Private>False</Private>
-      <IncludeOutputGroupsInVSIX></IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly></IncludeOutputGroupsInVSIXLocalOnly>
+      <IncludeOutputGroupsInVSIX>
+      </IncludeOutputGroupsInVSIX>
+      <IncludeOutputGroupsInVSIXLocalOnly>
+      </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <Content Include="..\Microsoft.VisualStudio.LanguageServices.Blazor\bin\$(Configuration)\net461\Microsoft.VisualStudio.LanguageServices.Blazor.dll">
       <Link>Microsoft.VisualStudio.LanguageServices.Blazor.dll</Link>
