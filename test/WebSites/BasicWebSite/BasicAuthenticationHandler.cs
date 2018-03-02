@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace FiltersWebSite
+namespace BasicWebSite
 {
-    public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
+    public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        public BasicAuthenticationHandler(IOptionsMonitor<BasicOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public BasicAuthenticationHandler(IOptionsMonitor<AuthenticationSchemeOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
@@ -22,15 +22,18 @@ namespace FiltersWebSite
         {
             var principal = new ClaimsPrincipal();
             principal.AddIdentity(new ClaimsIdentity(
-                new Claim[] {
-                    new Claim("Permission", "CanViewPage"),
+                new[]
+                {
                     new Claim("Manager", "yes"),
                     new Claim(ClaimTypes.Role, "Administrator"),
                     new Claim(ClaimTypes.NameIdentifier, "John")
                 },
                 Scheme.Name));
-            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, 
-                new AuthenticationProperties(), Scheme.Name)));
+
+            return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(
+                principal,
+                new AuthenticationProperties(),
+                Scheme.Name)));
         }
     }
 }

@@ -474,24 +474,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task AlwaysRunResultFilters_CanRunWhenResourceFiltersShortCircuit()
-        {
-            // Arrange
-            var url = "Filters/AlwaysRunResultFiltersCanRunWhenResourceFilterShortCircuit";
-            var request = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = new StringContent("Test", Encoding.UTF8, "application/json"),
-            };
-            
-            // Act
-            var response = await Client.SendAsync(request);
-
-            // Assert
-            Assert.Equal(422, (int)response.StatusCode);
-            Assert.Equal("Can't process this!", await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
         public async Task ApplicationAssemblyPartIsListedAsFirstAssembly()
         {
             // Act

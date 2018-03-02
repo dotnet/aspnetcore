@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 
-namespace FiltersWebSite
+namespace BasicWebSite
 {
     [Authorize("Api")]
     public class AuthorizeUserController : Controller
@@ -21,23 +22,10 @@ namespace FiltersWebSite
             return "Hello World!";
         }
 
-        [Authorize("Interactive")]
-        public string InteractiveUsers()
-        {
-            return "Hello World!";
-        }
-
-        [Authorize("Impossible")]
-        [AllowAnonymous]
-        public string AlwaysCanCallAllowAnonymous()
-        {
-            return "Hello World!";
-        }
-
         [Authorize("Impossible")]
         public string Impossible()
         {
-            return "Hello World!";
+            throw new Exception("Shouldn't be invoked.");
         }
     }
 }

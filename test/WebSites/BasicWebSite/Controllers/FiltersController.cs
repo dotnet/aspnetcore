@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Globalization;
 using BasicWebSite.Models;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Serialization;
 
 namespace BasicWebSite.Controllers
 {
@@ -18,5 +16,18 @@ namespace BasicWebSite.Controllers
         [UnprocessableResultFilter]
         public IActionResult AlwaysRunResultFiltersCanRunWhenResourceFilterShortCircuit([FromBody] Product product) =>
             throw new Exception("Shouldn't be executed");
+
+        [ServiceFilter(typeof(ServiceActionFilter))]
+        public IActionResult ServiceFilterTest() => Content("Service filter content");
+
+        [TraceResultOutputFilter]
+        public IActionResult TraceResult() => new EmptyResult();
+
+        [Route("{culture}/[controller]/[action]")]
+        [MiddlewareFilter(typeof(LocalizationPipeline))]
+        public IActionResult MiddlewareFilterTest()
+        {
+            return Content($"CurrentCulture:{CultureInfo.CurrentCulture.Name},CurrentUICulture:{CultureInfo.CurrentUICulture.Name}");
+        }
     }
 }

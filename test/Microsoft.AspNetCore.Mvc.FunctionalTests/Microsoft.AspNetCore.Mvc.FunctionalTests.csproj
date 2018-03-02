@@ -25,7 +25,6 @@
     <ProjectReference Include="..\WebSites\CorsWebSite\CorsWebSite.csproj" />
     <ProjectReference Include="..\WebSites\ErrorPageMiddlewareWebSite\ErrorPageMiddlewareWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FilesWebSite\FilesWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\FiltersWebSite\FiltersWebSite.csproj" />
     <ProjectReference Include="..\WebSites\FormatterWebSite\FormatterWebSite.csproj" />
     <ProjectReference Include="..\WebSites\HtmlGenerationWebSite\HtmlGenerationWebSite.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
