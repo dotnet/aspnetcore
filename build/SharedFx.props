@@ -56,7 +56,8 @@
 
   <ItemGroup>
     <WindowsSharedFxRIDs Include="win-x64;win-x86"/>
-    <NonWindowsSharedFxRIDs Include="osx-x64;linux-x64;alpine.3.6-x64"/>
+    <NonWindowsSharedFxRIDs Include="osx-x64;linux-x64" />
+    <NonWindowsSharedFxRIDs Include="alpine.3.6-x64" Condition="'$(IsAlpineSupported)' == 'true'" />
     <AllSharedFxRIDs Include="@(WindowsSharedFxRIDs);@(NonWindowsSharedFxRIDs)"/>
   </ItemGroup>
 </Project>
