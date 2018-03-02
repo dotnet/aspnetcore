@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-    <RestoreSources>$(RestoreSources);https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json</RestoreSources>
+    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json</RestoreSources>
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-deb-tool" Version="2.0.0-preview2-25331-01" />
+    <DotNetCliToolReference Include="dotnet-deb-tool" Version="2.0.0" />
   </ItemGroup>
 
 </Project>
