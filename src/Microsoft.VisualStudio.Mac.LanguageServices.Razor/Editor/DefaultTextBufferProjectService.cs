@@ -17,6 +17,7 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
     [Export(typeof(TextBufferProjectService))]
     internal class DefaultTextBufferProjectService : TextBufferProjectService
     {
+        private const string DotNetCoreRazorCapability = "DotNetCoreRazor | AspNetCore";
         private readonly ITextDocumentFactoryService _documentFactory;
 
         [ImportingConstructor]
@@ -73,7 +74,20 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.Editor
         }
 
         // VisualStudio for Mac only supports ASP.NET Core Razor.
-        public override bool IsSupportedProject(object project) => project is DotNetProject;
+        public override bool IsSupportedProject(object project)
+        {
+            if (!(project is DotNetProject dotNetProject))
+            {
+                return false;
+            }
+
+            if (!dotNetProject.IsCapabilityMatch(DotNetCoreRazorCapability))
+            {
+                return false;
+            }
+
+            return true;
+        }
 
         public override string GetProjectName(object project)
         {

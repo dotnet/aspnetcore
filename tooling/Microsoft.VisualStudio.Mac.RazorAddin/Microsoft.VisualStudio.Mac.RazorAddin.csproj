@@ -42,15 +42,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 
-      The extension project can not have a direct reference to its language service pieces. They are included via the manifest above.
-      This piece ensures that transitive builds/restores occurr for this project.
-    -->
-    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj">
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <PrivateAssets>true</PrivateAssets>
-      <OutputItemType>Content</OutputItemType>
-      <Targets>Build</Targets>
-    </ProjectReference>
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj" />
   </ItemGroup>
 </Project>

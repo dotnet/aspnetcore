@@ -19,5 +19,10 @@
     <Assembly file="Microsoft.VisualStudio.Editor.Razor.dll" />
     <Assembly file="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
     <Assembly file="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />
-  </Extension> 
+  </Extension>
+
+  <!-- Project Extensions -->
+  <Extension path = "/MonoDevelop/ProjectModel/ProjectModelExtensions">
+    <Class class="Microsoft.VisualStudio.Mac.RazorAddin.RazorProjectExtension" insertafter="FinalStep" />
+  </Extension>
 </ExtensionModel>

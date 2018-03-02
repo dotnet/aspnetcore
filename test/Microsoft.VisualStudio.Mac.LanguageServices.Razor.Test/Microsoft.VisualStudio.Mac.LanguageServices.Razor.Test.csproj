@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Editor.Razor.Test.Common\Microsoft.VisualStudio.Editor.Razor.Test.Common.csproj" />
   </ItemGroup>

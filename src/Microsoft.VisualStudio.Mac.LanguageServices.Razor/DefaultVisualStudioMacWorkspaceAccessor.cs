@@ -13,12 +13,13 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 {
     [System.Composition.Shared]
     [Export(typeof(VisualStudioWorkspaceAccessor))]
-    internal class DefaultVisualStudioWorkspaceAccessor : VisualStudioWorkspaceAccessor
+    [Export(typeof(VisualStudioMacWorkspaceAccessor))]
+    internal class DefaultVisualStudioMacWorkspaceAccessor : VisualStudioMacWorkspaceAccessor
     {
         private readonly TextBufferProjectService _projectService;
 
         [ImportingConstructor]
-        public DefaultVisualStudioWorkspaceAccessor(TextBufferProjectService projectService)
+        public DefaultVisualStudioMacWorkspaceAccessor(TextBufferProjectService projectService)
         {
             if (projectService == null)
             {
@@ -56,7 +57,17 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 return false;
             }
 
-            workspace = TypeSystemService.GetWorkspace(hostSolution);
+            return TryGetWorkspace(hostSolution, out workspace);
+        }
+
+        public override bool TryGetWorkspace(Solution solution, out Workspace workspace)
+        {
+            if (solution == null)
+            {
+                throw new ArgumentNullException(nameof(solution));
+            }
+
+            workspace = TypeSystemService.GetWorkspace(solution);
 
             // Workspace cannot be null at this point. If TypeSystemService.GetWorkspace isn't able to find a corresponding
             // workspace it returns an empty workspace. Therefore, in order to see if we have a valid workspace we need to

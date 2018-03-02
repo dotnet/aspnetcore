@@ -3,12 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.LanguageServices.Razor;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
 using Moq;
 using Xunit;
+using ProjectStateItem = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -23,6 +27,571 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private TestProjectSnapshotManager ProjectManager { get; }
 
         private Workspace Workspace { get; }
+
+        [Fact]
+        public void TryGetDefaultConfiguration_FailsIfNoRule()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetDefaultConfiguration(projectState, out var defaultConfiguration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(defaultConfiguration);
+        }
+
+        [Fact]
+        public void TryGetDefaultConfiguration_FailsIfNoConfiguration()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(Rules.RazorGeneral.SchemaName, new Dictionary<string, string>())
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetDefaultConfiguration(projectState, out var defaultConfiguration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(defaultConfiguration);
+        }
+
+        [Fact]
+        public void TryGetDefaultConfiguration_FailsIfEmptyConfiguration()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName, 
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = string.Empty
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetDefaultConfiguration(projectState, out var defaultConfiguration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(defaultConfiguration);
+        }
+
+        [Fact]
+        public void TryGetDefaultConfiguration_SucceedsWithValidConfiguration()
+        {
+            // Arrange
+            var expectedConfiguration = "Razor-13.37";
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName, 
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = expectedConfiguration
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetDefaultConfiguration(projectState, out var defaultConfiguration);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedConfiguration, defaultConfiguration);
+        }
+
+        [Fact]
+        public void TryGetLanguageVersion_FailsIfNoRule()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetLanguageVersion(projectState, out var languageVersion);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(languageVersion);
+        }
+
+        [Fact]
+        public void TryGetLanguageVersion_FailsIfNoLanguageVersion()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(Rules.RazorGeneral.SchemaName, new Dictionary<string, string>())
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetLanguageVersion(projectState, out var languageVersion);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(languageVersion);
+        }
+
+        [Fact]
+        public void TryGetLanguageVersion_FailsIfEmptyLanguageVersion()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName, 
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = string.Empty
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetLanguageVersion(projectState, out var languageVersion);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(languageVersion);
+        }
+
+        [Fact]
+        public void TryGetLanguageVersion_SucceedsWithValidLanguageVersion()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName, 
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0"
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetLanguageVersion(projectState, out var languageVersion);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(RazorLanguageVersion.Version_1_0, languageVersion);
+        }
+
+        [Fact]
+        public void TryGetLanguageVersion_SucceedsWithUnknownLanguageVersion_DefaultsToLatest()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName, 
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "13.37"
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetLanguageVersion(projectState, out var languageVersion);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(RazorLanguageVersion.Latest, languageVersion);
+        }
+
+        [Fact]
+        public void TryGetConfigurationItem_FailsNoRazorConfigurationRule()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryGetConfigurationItem_FailsNoRazorConfigurationItems()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName, 
+                    new Dictionary<string, Dictionary<string, string>>())
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryGetConfigurationItem_FailsNoMatchingRazorConfigurationItems()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName, 
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["Razor-10.0"] = new Dictionary<string, string>(),
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem("Razor-13.37", projectState, out var configurationItem);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryGetConfigurationItem_SucceedsForMatchingConfigurationItem()
+        {
+            // Arrange
+            var expectedConfiguration = "Razor-13.37";
+            var expectedConfigurationValue = new Dictionary<string, string>()
+            {
+                [Rules.RazorConfiguration.ExtensionsProperty] = "SomeExtension"
+            };
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName, 
+                    new Dictionary<string, Dictionary<string, string>>()
+                {
+                    [expectedConfiguration] = expectedConfigurationValue
+                })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfigurationItem(expectedConfiguration, projectState, out var configurationItem);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedConfiguration, configurationItem.Key);
+            Assert.True(Enumerable.SequenceEqual(expectedConfigurationValue, configurationItem.Value));
+        }
+
+        [Fact]
+        public void TryGetConfiguredExtensionNames_FailsIfNoExtensions()
+        {
+            // Arrange
+            var extensions = new Dictionary<string, string>().ToImmutableDictionary();
+            var configurationItem = new ProjectStateItem(Rules.RazorConfiguration.SchemaName, extensions);
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionnames);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuredExtensionnames);
+        }
+
+        [Fact]
+        public void TryGetConfiguredExtensionNames_FailsIfEmptyExtensions()
+        {
+            // Arrange
+            var extensions = new Dictionary<string, string>()
+            {
+                [Rules.RazorConfiguration.ExtensionsProperty] = string.Empty
+            }.ToImmutableDictionary();
+            var configurationItem = new ProjectStateItem(Rules.RazorConfiguration.SchemaName, extensions);
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuredExtensionNames);
+        }
+
+        [Fact]
+        public void TryGetConfiguredExtensionNames_SucceedsIfSingleExtension()
+        {
+            // Arrange
+            var expectedExtensionName = "SomeExtensionName";
+            var extensions = new Dictionary<string, string>()
+            {
+                [Rules.RazorConfiguration.ExtensionsProperty] = expectedExtensionName
+            }.ToImmutableDictionary();
+            var configurationItem = new ProjectStateItem(Rules.RazorConfiguration.SchemaName, extensions);
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+
+            // Assert
+            Assert.True(result);
+            var extensionName = Assert.Single(configuredExtensionNames);
+            Assert.Equal(expectedExtensionName, extensionName);
+        }
+
+        [Fact]
+        public void TryGetConfiguredExtensionNames_SucceedsIfMultipleExtensions()
+        {
+            // Arrange
+            var extensions = new Dictionary<string, string>()
+            {
+                [Rules.RazorConfiguration.ExtensionsProperty] = "SomeExtensionName;SomeOtherExtensionName"
+            }.ToImmutableDictionary();
+            var configurationItem = new ProjectStateItem(Rules.RazorConfiguration.SchemaName, extensions);
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames);
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                configuredExtensionNames,
+                name => Assert.Equal("SomeExtensionName", name),
+                name => Assert.Equal("SomeOtherExtensionName", name));
+        }
+
+        [Fact]
+        public void TryGetExtensions_NoExtensions()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetExtensions(new[] { "Extension1", "Extension2" }, projectState, out var extensions);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(extensions);
+        }
+
+        [Fact]
+        public void TryGetExtensions_SucceedsWithUnConfiguredExtensionTypes()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorExtension.PrimaryDataSourceItemType] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorExtension.PrimaryDataSourceItemType,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["UnconfiguredExtensionName"] = new Dictionary<string, string>()
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetExtensions(new[] { "Extension1", "Extension2" }, projectState, out var extensions);
+
+            // Assert
+            Assert.True(result);
+            Assert.Empty(extensions);
+        }
+
+        [Fact]
+        public void TryGetExtensions_SucceedsWithSomeConfiguredExtensions()
+        {
+            // Arrange
+            var expectedExtension1Name = "Extension1";
+            var expectedExtension2Name = "Extension2";
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorExtension.PrimaryDataSourceItemType] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorExtension.PrimaryDataSourceItemType,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["UnconfiguredExtensionName"] = new Dictionary<string, string>(),
+                        [expectedExtension1Name] = new Dictionary<string, string>(),
+                        [expectedExtension2Name] = new Dictionary<string, string>(),
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetExtensions(new[] { expectedExtension1Name, expectedExtension2Name }, projectState, out var extensions);
+
+            // Assert
+            Assert.True(result);
+            Assert.Collection(
+                extensions,
+                extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName),
+                extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName));
+        }
+
+        [Fact]
+        public void TryGetConfiguration_FailsIfNoDefaultConfiguration()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>().ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuration);
+        }
+
+        [Fact]
+        public void TryGetConfiguration_FailsIfNoLanguageVersion()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName,
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "13.37"
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuration);
+        }
+
+        [Fact]
+        public void TryGetConfiguration_FailsIfNoConfigurationItems()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName,
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "13.37",
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0",
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuration);
+        }
+
+        [Fact]
+        public void TryGetConfiguration_FailsIfNoConfiguredExtensionNames()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName,
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "13.37",
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0",
+                    }),
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["Razor-13.37"] = new Dictionary<string, string>()
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuration);
+        }
+
+        [Fact]
+        public void TryGetConfiguration_FailsIfNoExtensions()
+        {
+            // Arrange
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName,
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = "13.37",
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0",
+                    }),
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["SomeExtension"] = new Dictionary<string, string>()
+                        {
+                            ["Extensions"] = "Razor-13.37"
+                        }
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(configuration);
+        }
+
+        // This is more of an integration test but is here to test the overall flow/functionality
+        [Fact]
+        public void TryGetConfiguration_SucceedsWithAllPreRequisites()
+        {
+            // Arrange
+            var expectedLanguageVersion = RazorLanguageVersion.Version_1_0;
+            var expectedConfigurationName = "Razor-Test";
+            var expectedExtension1Name = "Extension1";
+            var expectedExtension2Name = "Extension2";
+            var projectState = new Dictionary<string, IProjectRuleSnapshot>()
+            {
+                [Rules.RazorGeneral.SchemaName] = TestProjectRuleSnapshot.CreateProperties(
+                    Rules.RazorGeneral.SchemaName,
+                    new Dictionary<string, string>()
+                    {
+                        [Rules.RazorGeneral.RazorDefaultConfigurationProperty] = expectedConfigurationName,
+                        [Rules.RazorGeneral.RazorLangVersionProperty] = "1.0",
+                    }),
+                [Rules.RazorConfiguration.SchemaName] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorConfiguration.SchemaName,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        ["UnconfiguredRazorConfiguration"] = new Dictionary<string, string>()
+                        {
+                            ["Extensions"] = "Razor-9.0"
+                        },
+                        [expectedConfigurationName] = new Dictionary<string, string>()
+                        {
+                            ["Extensions"] = expectedExtension1Name + ";" + expectedExtension2Name
+                        }
+                    }),
+                [Rules.RazorExtension.PrimaryDataSourceItemType] = TestProjectRuleSnapshot.CreateItems(
+                    Rules.RazorExtension.PrimaryDataSourceItemType,
+                    new Dictionary<string, Dictionary<string, string>>()
+                    {
+                        [expectedExtension1Name] = new Dictionary<string, string>(),
+                        [expectedExtension2Name] = new Dictionary<string, string>(),
+                    })
+            }.ToImmutableDictionary();
+
+            // Act
+            var result = DefaultRazorProjectHost.TryGetConfiguration(projectState, out var configuration);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal(expectedLanguageVersion, configuration.LanguageVersion);
+            Assert.Equal(expectedConfigurationName, configuration.ConfigurationName);
+            Assert.Collection(
+                configuration.Extensions,
+                extension => Assert.Equal(expectedExtension2Name, extension.ExtensionName),
+                extension => Assert.Equal(expectedExtension1Name, extension.ExtensionName));
+        }
 
         [ForegroundFact]
         public async Task DefaultRazorProjectHost_ForegroundThread_CreateAndDispose_Succeeds()
@@ -232,8 +801,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Equal("MVC-2.0", snapshot.Configuration.ConfigurationName);
             Assert.Collection(
                 snapshot.Configuration.Extensions,
-                e => Assert.Equal("MVC-2.0", e.ExtensionName),
-                e => Assert.Equal("Another-Thing", e.ExtensionName));
+                e => Assert.Equal("Another-Thing", e.ExtensionName),
+                e => Assert.Equal("MVC-2.0", e.ExtensionName));
 
             await Task.Run(async () => await host.DisposeAsync());
             Assert.Empty(ProjectManager.Projects);
@@ -443,7 +1012,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
-            public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace) 
+            public TestProjectSnapshotManager(ForegroundDispatcher dispatcher, Workspace workspace)
                 : base(dispatcher, Mock.Of<ErrorReporter>(), Mock.Of<ProjectSnapshotWorker>(), Array.Empty<ProjectSnapshotChangeTrigger>(), workspace)
             {
             }

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
@@ -10,6 +12,9 @@ using System.Threading.Tasks.Dataflow;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.ProjectSystem;
+using Microsoft.VisualStudio.ProjectSystem.Properties;
+using ProjectState = System.Collections.Immutable.IImmutableDictionary<string, Microsoft.VisualStudio.ProjectSystem.Properties.IProjectRuleSnapshot>;
+using ProjectStateItem = System.Collections.Generic.KeyValuePair<string, System.Collections.Immutable.IImmutableDictionary<string, string>>;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -82,47 +87,180 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 await ExecuteWithLock(async () =>
                 {
-                    var languageVersion = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorLangVersionProperty];
-                    var defaultConfiguration = update.Value.CurrentState[Rules.RazorGeneral.SchemaName].Properties[Rules.RazorGeneral.RazorDefaultConfigurationProperty];
-
-                    RazorConfiguration configuration = null;
-                    if (!string.IsNullOrEmpty(languageVersion) && !string.IsNullOrEmpty(defaultConfiguration))
+                    if (TryGetConfiguration(update.Value.CurrentState, out var configuration))
                     {
-                        if (!RazorLanguageVersion.TryParse(languageVersion, out var parsedVersion))
-                        {
-                            parsedVersion = RazorLanguageVersion.Latest;
-                        }
-
-                        var extensions = update.Value.CurrentState[Rules.RazorExtension.PrimaryDataSourceItemType].Items.Select(e =>
-                        {
-                            return new ProjectSystemRazorExtension(e.Key);
-                        }).ToArray();
-
-                        var configurations = update.Value.CurrentState[Rules.RazorConfiguration.PrimaryDataSourceItemType].Items.Select(c =>
-                        {
-                            var includedExtensions = c.Value[Rules.RazorConfiguration.ExtensionsProperty]
-                                .Split(';')
-                                .Select(name => extensions.Where(e => e.ExtensionName == name).FirstOrDefault())
-                                .Where(e => e != null)
-                                .ToArray();
-
-                            return new ProjectSystemRazorConfiguration(parsedVersion, c.Key, includedExtensions);
-                        }).ToArray();
-
-                        configuration = configurations.Where(c => c.ConfigurationName == defaultConfiguration).FirstOrDefault();
+                        var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
+                        await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
                     }
-
-                    if (configuration == null)
+                    else
                     {
-                        // Ok we can't find a language version. Let's assume this project isn't using Razor then.
+                        // Ok we can't find a configuration. Let's assume this project isn't using Razor then.
                         await UpdateProjectUnsafeAsync(null).ConfigureAwait(false);
-                        return;
                     }
-
-                    var hostProject = new HostProject(CommonServices.UnconfiguredProject.FullPath, configuration);
-                    await UpdateProjectUnsafeAsync(hostProject).ConfigureAwait(false);
                 });
             }, registerFaultHandler: true);
+        }
+
+        // Internal for testing
+        internal static bool TryGetConfiguration(
+            ProjectState projectState,
+            out RazorConfiguration configuration)
+        {
+            if (!TryGetDefaultConfiguration(projectState, out var defaultConfiguration))
+            {
+                configuration = null;
+                return false;
+            }
+
+            if (!TryGetLanguageVersion(projectState, out var languageVersion))
+            {
+                configuration = null;
+                return false;
+            }
+
+            if (!TryGetConfigurationItem(defaultConfiguration, projectState, out var configurationItem))
+            {
+                configuration = null;
+                return false;
+            }
+
+            if (!TryGetConfiguredExtensionNames(configurationItem, out var configuredExtensionNames))
+            {
+                configuration = null;
+                return false;
+            }
+
+            if (!TryGetExtensions(configuredExtensionNames, projectState, out var extensions))
+            {
+                configuration = null;
+                return false;
+            }
+
+            configuration = new ProjectSystemRazorConfiguration(languageVersion, configurationItem.Key, extensions);
+            return true;
+        }
+
+
+        // Internal for testing
+        internal static bool TryGetDefaultConfiguration(ProjectState projectState, out string defaultConfiguration)
+        {
+            if (!projectState.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
+            {
+                defaultConfiguration = null;
+                return false;
+            }
+
+            if (!rule.Properties.TryGetValue(Rules.RazorGeneral.RazorDefaultConfigurationProperty, out defaultConfiguration))
+            {
+                defaultConfiguration = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(defaultConfiguration))
+            {
+                defaultConfiguration = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool TryGetLanguageVersion(ProjectState projectState, out RazorLanguageVersion languageVersion)
+        {
+            if (!projectState.TryGetValue(Rules.RazorGeneral.SchemaName, out var rule))
+            {
+                languageVersion = null;
+                return false;
+            }
+
+            if (!rule.Properties.TryGetValue(Rules.RazorGeneral.RazorLangVersionProperty, out var languageVersionValue))
+            {
+                languageVersion = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(languageVersionValue))
+            {
+                languageVersion = null;
+                return false;
+            }
+
+            if (!RazorLanguageVersion.TryParse(languageVersionValue, out languageVersion))
+            {
+                languageVersion = RazorLanguageVersion.Latest;
+            }
+
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool TryGetConfigurationItem(
+            string configuration,
+            ProjectState projectState,
+            out ProjectStateItem configurationItem)
+        {
+            if (!projectState.TryGetValue(Rules.RazorConfiguration.PrimaryDataSourceItemType, out var configurationState))
+            {
+                configurationItem = default(ProjectStateItem);
+                return false;
+            }
+
+            var razorConfigurationItems = configurationState.Items;
+            foreach (var item in razorConfigurationItems)
+            {
+                if (item.Key == configuration)
+                {
+                    configurationItem = item;
+                    return true;
+                }
+            }
+
+            configurationItem = default(ProjectStateItem);
+            return false;
+        }
+
+        // Internal for testing
+        internal static bool TryGetConfiguredExtensionNames(ProjectStateItem configurationItem, out string[] configuredExtensionNames)
+        {
+            if (!configurationItem.Value.TryGetValue(Rules.RazorConfiguration.ExtensionsProperty, out var extensionNamesValue))
+            {
+                configuredExtensionNames = null;
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(extensionNamesValue))
+            {
+                configuredExtensionNames = null;
+                return false;
+            }
+
+            configuredExtensionNames = extensionNamesValue.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            return true;
+        }
+
+        // Internal for testing
+        internal static bool TryGetExtensions(string[] configuredExtensionNames, ProjectState projectState, out ProjectSystemRazorExtension[] extensions)
+        {
+            if (!projectState.TryGetValue(Rules.RazorExtension.PrimaryDataSourceItemType, out var extensionState))
+            {
+                extensions = null;
+                return false;
+            }
+
+            var extensionItems = extensionState.Items;
+            var extensionList = new List<ProjectSystemRazorExtension>();
+            foreach (var item in extensionItems)
+            {
+                var extensionName = item.Key;
+                if (configuredExtensionNames.Contains(extensionName))
+                {
+                    extensionList.Add(new ProjectSystemRazorExtension(extensionName));
+                }
+            }
+
+            extensions = extensionList.ToArray();
+            return true;
         }
     }
 }

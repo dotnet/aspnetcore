@@ -2,26 +2,27 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.VisualStudio.Editor.Razor;
-using Microsoft.VisualStudio.Text;
 using Moq;
 using Xunit;
 
-namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor.ProjectSystem
 {
-    public class DefaultVisualStudioWorkspaceAccessorTest
+    public class DefaultDotNetProjectHostTest : ForegroundDispatcherTestBase
     {
         [Fact]
-        public void TryGetWorkspace_NoHostProject_ReturnsFalse()
+        public void UpdateRazorHostProject_UnsupportedProjectNoops()
         {
             // Arrange
-            var workspaceAccessor = new DefaultVisualStudioWorkspaceAccessor(Mock.Of<TextBufferProjectService>());
-            var textBuffer = Mock.Of<ITextBuffer>();
+            var projectService = new Mock<TextBufferProjectService>();
+            projectService.Setup(p => p.IsSupportedProject(It.IsAny<object>()))
+                .Returns(false);
+            var dotNetProjectHost = new DefaultDotNetProjectHost(
+                Dispatcher,
+                Mock.Of<VisualStudioMacWorkspaceAccessor>(),
+                projectService.Object);
 
-            // Act
-            var result = workspaceAccessor.TryGetWorkspace(textBuffer, out var workspace);
-
-            // Assert
-            Assert.False(result);
+            // Act & Assert
+            dotNetProjectHost.UpdateRazorHostProject();
         }
 
         // -------------------------------------------------------------------------------------------

@@ -36,7 +36,7 @@
     <MicrosoftVisualStudioShellInterop90PackageVersion>9.0.30729</MicrosoftVisualStudioShellInterop90PackageVersion>
     <MicrosoftVisualStudioShellInteropPackageVersion>7.10.6071</MicrosoftVisualStudioShellInteropPackageVersion>
     <MicrosoftVisualStudioTextUIPackageVersion>15.6.161-preview</MicrosoftVisualStudioTextUIPackageVersion>
-    <MonoAddinsPackageVersion>1.3.7</MonoAddinsPackageVersion>
+    <MonoAddinsPackageVersion>1.3.8</MonoAddinsPackageVersion>
     <MonoDevelopSdkPackageVersion>1.0.1</MonoDevelopSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <NETStandardLibrary20PackageVersion>2.0.1</NETStandardLibrary20PackageVersion>
