@@ -1,0 +1,91 @@
+<Project>
+  <!-- 
+    Note that this must run before every invocation of CoreCompile to ensure that all compiler
+    runs see the generated assembly info. There is at least one scenario involving Xaml 
+    where CoreCompile is invoked without other potential hooks such as Compile or CoreBuild,
+    etc., so we hook directly on to CoreCompile. Furthermore, we  must run *after* 
+    PrepareForBuild to ensure that the intermediate directory has been created.
+   -->
+  <Target Name="GeneratePrecompiledAssemblyInfo" BeforeTargets="RazorCoreCompile" DependsOnTargets="PrepareForRazorCompile;CoreGeneratePrecompiledAssemblyInfo" Condition="'$(GeneratePrecompiledAssemblyInfo)' == 'true'" />
+
+  <Target Name="GetPrecompiledAssemblyAttributes" DependsOnTargets="GetAssemblyVersion">
+    <ItemGroup>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyCompanyAttribute" Condition="'$(Company)' != '' and '$(GeneratePrecompiledAssemblyCompanyAttribute)' == 'true'">
+        <_Parameter1>$(Company)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyConfigurationAttribute" Condition="'$(Configuration)' != '' and '$(GeneratePrecompiledAssemblyConfigurationAttribute)' == 'true'">
+        <_Parameter1>$(Configuration)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyCopyrightAttribute" Condition="'$(Copyright)' != '' and '$(GeneratePrecompiledAssemblyCopyrightAttribute)' == 'true'">
+        <_Parameter1>$(Copyright)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyDescriptionAttribute" Condition="'$(PrecompiledDescription)' != '' and '$(GeneratePrecompiledAssemblyDescriptionAttribute)' == 'true'">
+        <_Parameter1>$(PrecompiledDescription)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(FileVersion)' != '' and '$(GeneratePrecompiledAssemblyFileVersionAttribute)' == 'true'">
+        <_Parameter1>$(FileVersion)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute" Condition="'$(InformationalVersion)' != '' and '$(GeneratePrecompiledAssemblyInformationalVersionAttribute)' == 'true'">
+        <_Parameter1>$(InformationalVersion)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyProductAttribute" Condition="'$(Product)' != '' and '$(GeneratePrecompiledAssemblyProductAttribute)' == 'true'">
+        <_Parameter1>$(Product)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyTitleAttribute" Condition="'$(PrecompiledAssemblyTitle)' != '' and '$(GeneratePrecompiledAssemblyTitleAttribute)' == 'true'">
+        <_Parameter1>$(PrecompiledAssemblyTitle)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(AssemblyVersion)' != '' and '$(GeneratePrecompiledAssemblyVersionAttribute)' == 'true'">
+        <_Parameter1>$(AssemblyVersion)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Resources.NeutralResourcesLanguageAttribute" Condition="'$(NeutralLanguage)' != '' and '$(GeneratePrecompiledNeutralResourcesLanguageAttribute)' == 'true'">
+        <_Parameter1>$(NeutralLanguage)</_Parameter1>
+      </PrecompiledAssemblyAttribute>
+      <PrecompiledAssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(BuildNumber)' != ''">
+        <_Parameter1>BuildNumber</_Parameter1>
+        <_Parameter2>$(BuildNumber)</_Parameter2>
+      </PrecompiledAssemblyAttribute>
+    </ItemGroup>
+  </Target>
+
+  <!-- 
+    To allow version changes to be respected on incremental builds (e.g. through CLI parameters),
+    create a hash of all assembly attributes so that the cache file will change with the calculated
+    assembly attribute values and msbuild will then execute CoreGenerateAssembly to generate a new file.
+  -->
+  <Target Name="CreateGeneratedPrecompiledAssemblyInfoInputsCacheFile" BeforeTargets="RazorCompile" DependsOnTargets="GetPrecompiledAssemblyAttributes">
+    <PropertyGroup>
+      <GeneratedPrecompiledAssemblyInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).PrecompiledViews.AssemblyInfo$(DefaultLanguageSourceExtension)</GeneratedPrecompiledAssemblyInfoFile>
+      <GeneratedPrecompiledAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).PrecompiledViews.AssemblyInfoInputs.cache</GeneratedPrecompiledAssemblyInfoInputsCacheFile>
+    </PropertyGroup>
+
+    <!-- We only use up to _Parameter1 for most attributes, but other targets may add additional assembly attributes with multiple parameters. -->
+    <Hash ItemsToHash="@(PrecompiledAssemblyAttribute->'%(Identity)%(_Parameter1)%(_Parameter2)%(_Parameter3)%(_Parameter4)%(_Parameter5)%(_Parameter6)%(_Parameter7)%(_Parameter8)')">
+      <Output TaskParameter="HashResult" PropertyName="_PrecompiledAssemblyAttributesHash" />
+    </Hash>
+
+    <WriteLinesToFile Lines="$(_PrecompiledAssemblyAttributesHash)" File="$(GeneratedPrecompiledAssemblyInfoInputsCacheFile)" Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(GeneratedPrecompiledAssemblyInfoInputsCacheFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CoreGeneratePrecompiledAssemblyInfo" DependsOnTargets="CreateGeneratedPrecompiledAssemblyInfoInputsCacheFile" Inputs="$(GeneratedPrecompiledAssemblyInfoInputsCacheFile)" Outputs="$(GeneratedPrecompiledAssemblyInfoFile)">
+    <PropertyGroup>
+      <GeneratedPrecompiledAssemblyInfoFile>$(IntermediateOutputPath)$(MSBuildProjectName).PrecompiledViews.AssemblyInfo$(DefaultLanguageSourceExtension)</GeneratedPrecompiledAssemblyInfoFile>
+    </PropertyGroup>
+    <ItemGroup>
+      <!-- Ensure the generated assemblyinfo file is not already part of the Compile sources, as a workaround for https://github.com/dotnet/sdk/issues/114 -->
+      <Compile Remove="$(GeneratedPrecompiledAssemblyInfoFile)" />
+      <Compile Remove="$(GeneratedAssemblyInfoFile)" />
+    </ItemGroup>
+    <ItemGroup>
+      <RazorCompile Include="$(GeneratedPrecompiledAssemblyInfoFile)" />
+    </ItemGroup>
+
+    <WriteCodeFragment AssemblyAttributes="@(PrecompiledAssemblyAttribute)" Language="$(Language)" OutputFile="$(GeneratedPrecompiledAssemblyInfoFile)">
+      <Output TaskParameter="OutputFile" ItemName="Compile" />
+      <Output TaskParameter="OutputFile" ItemName="FileWrites" />
+    </WriteCodeFragment>
+  </Target>
+</Project>

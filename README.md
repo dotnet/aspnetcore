@@ -5,7 +5,7 @@ ASP.NET Core Azure Active Directory Integration
 
 Travis:   [![Travis](https://travis-ci.org/aspnet/AADIntegration.svg?branch=dev)](https://travis-ci.org/aspnet/aadintegration) -->
 
-ASP.NET Core MVC AAD Integration provides seamless authentication integration with different Azure Active Directory services like Azure Active Directory and Azure Active Directory B2C for ASP.NET Core applications.
+ASP.NET Core Azure Active Directory Integration provides seamless authentication integration with different Azure Active Directory services like Azure Active Directory and Azure Active Directory B2C for ASP.NET Core applications.
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 

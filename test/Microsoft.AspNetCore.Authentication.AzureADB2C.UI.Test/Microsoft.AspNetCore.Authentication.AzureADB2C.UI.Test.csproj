@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(StandardTestTfms)</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.Authentication.AzureADB2C.UI</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Authentication.AzureADB2C.UI\Microsoft.AspNetCore.Authentication.AzureADB2C.UI.csproj" />
+  </ItemGroup>
+
+</Project>

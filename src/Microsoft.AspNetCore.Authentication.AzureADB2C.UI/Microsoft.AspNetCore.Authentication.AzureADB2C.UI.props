@@ -1,0 +1,24 @@
+<Project>
+  <PropertyGroup>
+    <GeneratePrecompiledAssemblyInfo Condition="'$(GeneratePrecompiledAssemblyInfo)' == ''">true</GeneratePrecompiledAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GeneratePrecompiledAssemblyInfo)' == 'true'">
+    <GeneratePrecompiledAssemblyCompanyAttribute Condition="'$(GeneratePrecompiledAssemblyCompanyAttribute)' == ''">true</GeneratePrecompiledAssemblyCompanyAttribute>
+    <GeneratePrecompiledAssemblyConfigurationAttribute Condition="'$(GeneratePrecompiledAssemblyConfigurationAttribute)' == ''">true</GeneratePrecompiledAssemblyConfigurationAttribute>
+    <GeneratePrecompiledAssemblyCopyrightAttribute Condition="'$(GeneratePrecompiledAssemblyCopyrightAttribute)' == ''">true</GeneratePrecompiledAssemblyCopyrightAttribute>
+    <GeneratePrecompiledAssemblyDescriptionAttribute Condition="'$(GeneratePrecompiledAssemblyDescriptionAttribute)' == ''">true</GeneratePrecompiledAssemblyDescriptionAttribute>
+    <GeneratePrecompiledAssemblyFileVersionAttribute Condition="'$(GeneratePrecompiledAssemblyFileVersionAttribute)' == ''">true</GeneratePrecompiledAssemblyFileVersionAttribute>
+    <GeneratePrecompiledAssemblyInformationalVersionAttribute Condition="'$(GeneratePrecompiledAssemblyInformationalVersionAttribute)' == ''">true</GeneratePrecompiledAssemblyInformationalVersionAttribute>
+    <GeneratePrecompiledAssemblyProductAttribute Condition="'$(GeneratePrecompiledAssemblyProductAttribute)' == ''">true</GeneratePrecompiledAssemblyProductAttribute>
+    <GeneratePrecompiledAssemblyTitleAttribute Condition="'$(GeneratePrecompiledAssemblyTitleAttribute)' == ''">true</GeneratePrecompiledAssemblyTitleAttribute>
+    <GeneratePrecompiledAssemblyVersionAttribute Condition="'$(GeneratePrecompiledAssemblyVersionAttribute)' == ''">true</GeneratePrecompiledAssemblyVersionAttribute>
+    <GeneratePrecompiledNeutralResourcesLanguageAttribute Condition="'$(GeneratePrecompiledNeutralResourcesLanguageAttribute)' == ''">true</GeneratePrecompiledNeutralResourcesLanguageAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RazorCompile Include="$(GeneratedCommitHashAttributeFile)" />
+    <RazorCompile Include="$(GeneratedInternalAspNetCoreAttributeFile)" />
+  </ItemGroup>
+
+</Project>

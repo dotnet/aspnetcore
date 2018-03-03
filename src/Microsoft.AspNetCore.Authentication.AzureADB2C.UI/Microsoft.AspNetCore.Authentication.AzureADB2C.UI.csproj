@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk;Microsoft.NET.Sdk.Razor">
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Authentication.AzureADB2C.UI.props" />
+
+  <PropertyGroup>
+    <Description>ASP.NET Core Azure Active Directory B2C Integration provides components for easily integrating Azure Active Directory B2C authentication within your ASP.NET Core application.</Description>
+    <PrecompiledDescription>Precompiled views assembly for the ASP.NET Core Azure Active Directory B2C Integration package.</PrecompiledDescription>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageTags>aspnetcore;authentication;AzureADB2C</PackageTags>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
+    <PrecompiledAssemblyTitle Condition=" '$(PrecompiledAssemblyTitle)' == '' ">$(RazorTargetName).dll</PrecompiledAssemblyTitle>
+    <PreserveCompilationContext>false</PreserveCompilationContext>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(MicrosoftAspNetCoreMvcPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_parameter1>Microsoft.AspNetCore.Mvc.AdditionalReference</_parameter1>
+      <_parameter2>$(RazorTargetName).dll,false</_parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Areas\AzureADB2C\Pages\_ViewStart.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+  
+  <Target Name="VerifyBuildOutputs" AfterTargets="Build">
+    <PropertyGroup>
+      <ExpectedOutputFile>$(OutputPath)$(RazorTargetName).dll</ExpectedOutputFile>
+    </PropertyGroup>
+
+    <Error Text="Unable to find precompiled view file $(ExpectedOutputFile)" Condition="!Exists('$(ExpectedOutputFile)')" />
+  </Target>    
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Authentication.AzureADB2C.UI.targets" />
+  
+</Project>

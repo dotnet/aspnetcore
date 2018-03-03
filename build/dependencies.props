@@ -5,7 +5,6 @@
   <PropertyGroup Label="Package Versions">
     <InternalAspNetCoreSdkPackageVersion>2.1.0-preview3-15746</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.1.0-preview2-30406</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview2-30406</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>2.1.0-preview2-30406</MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.1.0-preview2-30406</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
     <MicrosoftAspNetCoreHttpsPolicyPackageVersion>2.1.0-preview2-30406</MicrosoftAspNetCoreHttpsPolicyPackageVersion>
