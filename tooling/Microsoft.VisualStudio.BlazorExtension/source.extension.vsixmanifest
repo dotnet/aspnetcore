@@ -18,6 +18,8 @@
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Blazor.AngleSharp.dll" />	
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.AspNetCore.Blazor.Razor.Extensions.dll" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="Microsoft.VisualStudio.LanguageServices.Blazor.dll" />
         <Asset Type="Microsoft.VisualStudio.VsPackage" Path="Templates.pkgdef" />
     </Assets>

@@ -9,6 +9,20 @@ using Microsoft.VisualStudio.Shell;
 // The versions here need to match what the build is producing. If you change the version numbers
 // for the Blazor assemblies, this needs to change as well.
 [assembly: ProvideBindingRedirection(
+    AssemblyName = "Microsoft.AspNetCore.Blazor.AngleSharp",
+    GenerateCodeBase = true,
+    PublicKeyToken = "",
+    OldVersionLowerBound = "0.0.0.0",
+    OldVersionUpperBound = "0.9.9.0",
+    NewVersion = "0.9.9.0")]
+[assembly: ProvideBindingRedirection(
+    AssemblyName = "Microsoft.AspNetCore.Blazor.Razor.Extensions",
+    GenerateCodeBase = true,
+    PublicKeyToken = "",
+    OldVersionLowerBound = "0.0.0.0",
+    OldVersionUpperBound = "0.0.5.0",
+    NewVersion = "0.0.5.0")]
+[assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.VisualStudio.LanguageServices.Blazor",
     GenerateCodeBase = true,
     PublicKeyToken = "",
