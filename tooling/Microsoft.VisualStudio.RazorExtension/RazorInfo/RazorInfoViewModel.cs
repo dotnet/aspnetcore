@@ -24,12 +24,12 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     internal class RazorInfoViewModel : NotifyPropertyChanged
     {
-        private readonly ProjectExtensibilityConfigurationFactory _configurationFactory;
         private readonly IRazorEngineDirectiveResolver _directiveResolver;
         private readonly IRazorEngineDocumentGenerator _documentGenerator;
         private readonly TagHelperResolver _tagHelperResolver;
         private readonly IServiceProvider _services;
         private readonly Workspace _workspace;
+        private readonly ProjectSnapshotManager _projectManager;
         private readonly Action<Exception> _errorHandler;
 
         private DocumentViewModel _currentDocument;
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         public RazorInfoViewModel(
             IServiceProvider services,
             Workspace workspace,
-            ProjectExtensibilityConfigurationFactory configurationFactory,
+            ProjectSnapshotManager projectManager,
             IRazorEngineDirectiveResolver directiveResolver,
             TagHelperResolver tagHelperResolver,
             IRazorEngineDocumentGenerator documentGenerator,
@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         {
             _services = services;
             _workspace = workspace;
-            _configurationFactory = configurationFactory;
+            _projectManager = projectManager;
             _directiveResolver = directiveResolver;
             _tagHelperResolver = tagHelperResolver;
             _documentGenerator = documentGenerator;
@@ -94,7 +94,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 CurrentProjectInfo = null; // Clear cached value
             }
         }
-
+        
         public ProjectInfoViewModel CurrentProjectInfo
         {
             get { return _currentProjectInfo; }
@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
         private bool CanExecuteLoad(object state)
         {
-            return !IsLoading && CurrentProject != null;
+            return !IsLoading && CurrentProject?.Snapshot?.Project?.WorkspaceProject != null;
         }
 
         private void ExecuteLoad(object state)
@@ -152,7 +152,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
         private bool CanExecuteGenerate(object state)
         {
-            return !IsLoading && CurrentDocument != null;
+            return !IsLoading && CurrentDocument != null && CurrentProject?.Snapshot?.Project?.WorkspaceProject != null;
         }
 
         private void ExecuteGenerate(object state)
@@ -168,23 +168,22 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 IsLoading = true;
 
                 var solution = _workspace.CurrentSolution;
-                var project = solution.GetProject(projectViewModel.Id);
+                var project = solution.GetProject(projectViewModel.Snapshot.Project.WorkspaceProject.Id);
 
                 var documents = GetCshtmlDocuments(project);
-                var configuration = await _configurationFactory.GetConfigurationAsync(project);
 
                 var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
                 var assemblyFilters = project.MetadataReferences
                     .Select(reference => reference.Display)
                     .Select(filter => Path.GetFileNameWithoutExtension(filter));
                 var projectFilters = project.AllProjectReferences.Select(filter => solution.GetProject(filter.ProjectId).AssemblyName);
-                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(project, CancellationToken.None);
+
+                var resolutionResult = await _tagHelperResolver.GetTagHelpersAsync(projectViewModel.Snapshot.Project);
 
                 var files = GetCshtmlDocuments(project);
 
                 CurrentProjectInfo = new ProjectInfoViewModel()
                 {
-                    Assemblies = new ObservableCollection<AssemblyViewModel>(configuration.Assemblies.Select(a => new AssemblyViewModel(a))),
                     Directives = new ObservableCollection<DirectiveViewModel>(directives.Select(d => new DirectiveViewModel(d))),
                     Documents = new ObservableCollection<DocumentViewModel>(documents.Select(d => new DocumentViewModel(d))),
                     TagHelpers = new ObservableCollection<TagHelperViewModel>(resolutionResult.Descriptors.Select(t => new TagHelperViewModel(t))),
@@ -232,7 +231,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
                 if (text != null)
                 {
-                    var project = _workspace.CurrentSolution.GetProject(CurrentProject.Id);
+                    var project = _workspace.CurrentSolution.GetProject(CurrentProject.Snapshot.Project.WorkspaceProject.Id);
                     var generated = await _documentGenerator.GenerateDocumentAsync(_workspace, project, documentViewModel.FilePath, text);
 
                     CurrentDocumentInfo = new DocumentInfoViewModel(generated);

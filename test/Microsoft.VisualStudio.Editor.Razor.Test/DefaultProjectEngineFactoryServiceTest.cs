@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -26,30 +27,67 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 project = workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
             });
 
-            Project = project;
+            WorkspaceProject = project;
+
+            HostProject_For_1_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_0);
+            HostProject_For_1_1 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_1_1);
+            HostProject_For_2_0 = new HostProject("/TestPath/SomePath/Test.csproj", FallbackRazorConfiguration.MVC_2_0);
+
+            HostProject_For_2_1 = new HostProject(
+                "/TestPath/SomePath/Test.csproj", 
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "MVC-2.1", Array.Empty<RazorExtension>()));
+            HostProject_For_UnknownConfiguration = new HostProject(
+                "/TestPath/SomePath/Test.csproj",
+                new ProjectSystemRazorConfiguration(RazorLanguageVersion.Version_2_1, "Blazor-0.1", Array.Empty<RazorExtension>()));
+
+
+            CustomFactories = new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[]
+            {
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new LegacyProjectEngineFactory_1_0(),
+                    typeof(LegacyProjectEngineFactory_1_0).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new LegacyProjectEngineFactory_1_1(),
+                    typeof(LegacyProjectEngineFactory_1_1).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new LegacyProjectEngineFactory_2_0(),
+                    typeof(LegacyProjectEngineFactory_2_0).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>(
+                    () => new LegacyProjectEngineFactory_2_1(),
+                    typeof(LegacyProjectEngineFactory_2_1).GetCustomAttribute<ExportCustomProjectEngineFactoryAttribute>()),
+            };
+
+            FallbackFactory = new FallbackProjectEngineFactory();
         }
 
-        // We don't actually look at the project, we rely on the ProjectStateManager
-        public Project Project { get; }
+        private Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[] CustomFactories { get; }
 
-        public Workspace Workspace { get; }
+        private IFallbackProjectEngineFactory FallbackFactory { get; }
+
+        private HostProject HostProject_For_1_0 { get; }
+
+        private HostProject HostProject_For_1_1 { get; }
+
+        private HostProject HostProject_For_2_0 { get; }
+
+        private HostProject HostProject_For_2_1 { get; }
+
+        private HostProject HostProject_For_UnknownConfiguration { get; }
+
+        // We don't actually look at the project, we rely on the ProjectStateManager
+        private Project WorkspaceProject { get; }
+
+        private Workspace Workspace { get; }
 
         [Fact]
-        public void Create_CreatesTemplateEngine_ForLatest()
+        public void Create_CreatesDesignTimeTemplateEngine_ForVersion2_1()
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_2_0,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("2.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("2.0.0.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_2_1);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -59,6 +97,30 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+        }
+
+        [Fact]
+        public void Create_CreatesDesignTimeTemplateEngine_ForVersion2_0()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.HostProjectAdded(HostProject_For_2_0);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
+
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
+
+            // Act
+            var engine = factoryService.Create("/TestPath/SomePath/", b =>
+            {
+                b.Features.Add(new MyCoolNewFeature());
+            });
+
+            // Assert
+            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
         }
@@ -68,17 +130,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_1_1,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.1.3.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.1.3.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_1_1);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -88,6 +143,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperDescriptorProvider>());
             Assert.Single(engine.Engine.Features.OfType<Mvc1_X.MvcViewDocumentClassifierPass>());
             Assert.Single(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperPass>());
         }
@@ -97,17 +153,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
-            {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Version_1_0,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.0.0.0")))),
-            });
+            projectManager.HostProjectAdded(HostProject_For_1_0);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
 
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -117,26 +166,41 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<Mvc1_X.MvcViewDocumentClassifierPass>());
-            Assert.Empty(engine.Engine.Features.OfType<Mvc1_X.ViewComponentTagHelperPass>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
         }
 
         [Fact]
-        public void Create_HigherMvcVersion_UsesLatest()
+        public void Create_UnknownProject_UsesVersion2_0()
         {
             // Arrange
             var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
+
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
+
+            // Act
+            var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
             {
-                Configuration = new MvcExtensibilityConfiguration(
-                    RazorLanguageVersion.Latest,
-                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("3.0.0.0"))),
-                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("3.0.0.0")))),
+                b.Features.Add(new MyCoolNewFeature());
             });
 
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
+            // Assert
+            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+        }
+
+        [Fact]
+        public void Create_ForUnknownConfiguration_UsesFallbackFactory()
+        {
+            // Arrange
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.HostProjectAdded(HostProject_For_UnknownConfiguration);
+            projectManager.WorkspaceProjectAdded(WorkspaceProject);
+
+            var factoryService = new DefaultProjectEngineFactoryService(projectManager, FallbackFactory, CustomFactories);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -146,49 +210,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
-        }
-
-        [Fact]
-        public void Create_UnknownProjectPath_UsesLatest()
-        {
-            // Arrange
-            var projectManager = new TestProjectSnapshotManager(Workspace);
-
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
-
-            // Act
-            var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
-
-            // Assert
-            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
-        }
-
-        [Fact]
-        public void Create_MvcReferenceNotFound_UsesLatest()
-        {
-            // Arrange
-            var projectManager = new TestProjectSnapshotManager(Workspace);
-            projectManager.ProjectAdded(Project);
-
-            var factoryService = new DefaultProjectEngineFactoryService(projectManager);
-
-            // Act
-            var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
-            {
-                b.Features.Add(new MyCoolNewFeature());
-            });
-
-            // Assert
-            Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
-            Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
+            Assert.Empty(engine.Engine.Features.OfType<DefaultTagHelperDescriptorProvider>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
+            Assert.Empty(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
         }
 
         private class MyCoolNewFeature : IRazorEngineFeature

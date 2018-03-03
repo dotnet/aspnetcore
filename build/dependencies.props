@@ -52,6 +52,7 @@
     <VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisEditorFeaturesTextPackageVersion>
     <VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisRemoteRazorServiceHubPackageVersion>
     <VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisVisualBasicWorkspacesPackageVersion>
     <VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftVisualStudioLanguageServicesPackageVersion>
     <VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftVisualStudioLanguageServicesRazorRemoteClientPackageVersion>
     <XunitAnalyzersPackageVersion>0.8.0</XunitAnalyzersPackageVersion>

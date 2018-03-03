@@ -126,4 +126,8 @@
   <data name="RazorLanguageServiceProjectError" xml:space="preserve">
     <value>Razor Language Service error encountered from project '{0}'.</value>
   </data>
+  <data name="RazorLanguageServiceProjectSnapshotError" xml:space="preserve">
+    <value>Error encountered from project '{0}':
+{1}</value>
+  </data>
 </root>

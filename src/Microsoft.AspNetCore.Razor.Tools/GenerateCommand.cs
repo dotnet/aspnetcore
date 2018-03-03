@@ -8,7 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.CommandLineUtils;
-using Microsoft.VisualStudio.LanguageServices.Razor;
+using Microsoft.VisualStudio.LanguageServices.Razor.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Tools
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), extensions);
+            var configuration = RazorConfiguration.Create(version, Configuration.Value(), extensions);
 
             var result = ExecuteCore(
                 configuration: configuration,
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 GetVirtualRazorProjectSystem(inputItems),
                 RazorProjectFileSystem.Create(projectDirectory),
             });
-            
+
             var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
             {
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });

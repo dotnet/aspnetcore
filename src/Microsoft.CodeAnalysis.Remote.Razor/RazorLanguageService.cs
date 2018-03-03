@@ -10,34 +10,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.VisualStudio.LanguageServices.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.CodeAnalysis.Remote.Razor
 {
-    internal class RazorLanguageService : ServiceHubServiceBase
+    internal class RazorLanguageService : RazorServiceBase
     {
         public RazorLanguageService(Stream stream, IServiceProvider serviceProvider)
-            : base(serviceProvider, stream)
+            : base(stream, serviceProvider)
         {
-            Rpc.JsonSerializer.Converters.Add(new RazorDiagnosticJsonConverter());
-
-            // Due to this issue - https://github.com/dotnet/roslyn/issues/16900#issuecomment-277378950
-            // We need to manually start the RPC connection. Otherwise we'd be opting ourselves into 
-            // race condition prone call paths.
-            Rpc.StartListening();
         }
 
-        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<TagHelperResolutionResult> GetTagHelpersAsync(ProjectSnapshotHandle projectHandle, string factoryTypeName, CancellationToken cancellationToken = default)
         {
-            var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
+            var project = await GetProjectSnapshotAsync(projectHandle, cancellationToken).ConfigureAwait(false);
 
-            var solution = await GetSolutionAsync(cancellationToken).ConfigureAwait(false);
-            var project = solution.GetProject(projectId);
-
-            var resolver = new DefaultTagHelperResolver(designTime: true);
-            var result = await resolver.GetTagHelpersAsync(project, cancellationToken).ConfigureAwait(false);
-
-            return result;
+            return await RazorServices.TagHelperResolver.GetTagHelpersAsync(project, factoryTypeName, cancellationToken);
         }
 
         public Task<IEnumerable<DirectiveDescriptor>> GetDirectivesAsync(Guid projectIdBytes, string projectDebugName, CancellationToken cancellationToken = default(CancellationToken))

@@ -70,7 +70,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+      <LanguageServiceExtensionAssembly Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.Extensions\bin\$(Configuration)\net46\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <LanguageServiceAssembly Include="$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)" Condition="Exists('$(LanguageServiceOutputPath)%(LanguageServiceAssemblyNames.Identity)')" />
+      <LanguageServiceAssembly Include="%(LanguageServiceExtensionAssembly.Identity)" />
       <LanguageServicePDB Include="%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb" Condition="Exists('%(LanguageServiceAssembly.RootDir)%(Directory)%(FileName).pdb')" />
     </ItemGroup>
 

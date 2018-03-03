@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -40,7 +41,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void UpdateProjectCfg_Done_KnownProject_Invokes_ProjectBuildComplete()
         {
             // Arrange
-            var expectedProjectName = "Test1";
             var expectedProjectPath = "Path/To/Project";
 
             uint cookie;
@@ -53,24 +53,23 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             services.Setup(s => s.GetService(It.Is<Type>(f => f == typeof(SVsSolutionBuildManager)))).Returns(buildManager.Object);
 
             var projectService = new Mock<TextBufferProjectService>();
-            projectService.Setup(p => p.GetProjectName(It.IsAny<IVsHierarchy>())).Returns(expectedProjectName);
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
 
-            var workspace = TestWorkspace.Create(ws =>
+            var projectSnapshots = new[]
             {
-                CreateProjectInWorkspace(ws, expectedProjectName, expectedProjectPath);
-                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
-            });
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == expectedProjectPath && p.HostProject == new HostProject(expectedProjectPath, RazorConfiguration.Default)),
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Test2.csproj" && p.HostProject == new HostProject("Test2.csproj", RazorConfiguration.Default)),
+            };
 
             var called = false;
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
-            projectManager.SetupGet(p => p.Workspace).Returns(workspace);
+            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
             projectManager
-                .Setup(p => p.ProjectBuildComplete(It.IsAny<Project>()))
-                .Callback<Project>(c =>
+                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
+                .Callback<HostProject>(c =>
                 {
                     called = true;
-                    Assert.Equal(expectedProjectName, c.Name);
+                    Assert.Equal(expectedProjectPath, c.FilePath);
                 });
 
             var trigger = new VsSolutionUpdatesProjectSnapshotChangeTrigger(services.Object, projectService.Object);
@@ -87,7 +86,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public void UpdateProjectCfg_Done_UnknownProject_DoesNotInvoke_ProjectBuildComplete()
         {
             // Arrange
-            var expectedProjectName = "Test1";
             var expectedProjectPath = "Path/To/Project";
 
             uint cookie;
@@ -100,20 +98,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             services.Setup(s => s.GetService(It.Is<Type>(f => f == typeof(SVsSolutionBuildManager)))).Returns(buildManager.Object);
 
             var projectService = new Mock<TextBufferProjectService>();
-            projectService.Setup(p => p.GetProjectName(It.IsAny<IVsHierarchy>())).Returns(expectedProjectName);
             projectService.Setup(p => p.GetProjectPath(It.IsAny<IVsHierarchy>())).Returns(expectedProjectPath);
 
-            var workspace = TestWorkspace.Create(ws =>
+            var projectSnapshots = new[]
             {
-                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
-                CreateProjectInWorkspace(ws, "Test3", "Path/To/DifferenProject");
-            });
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Path/To/AnotherProject" && p.HostProject == new HostProject("Path/To/AnotherProject", RazorConfiguration.Default)),
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Path/To/DifferenProject" && p.HostProject == new HostProject("Path/To/DifferenProject", RazorConfiguration.Default)),
+            };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
-            projectManager.SetupGet(p => p.Workspace).Returns(workspace);
+            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
             projectManager
-                .Setup(p => p.ProjectBuildComplete(It.IsAny<Project>()))
-                .Callback<Project>(c =>
+                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
+                .Callback<HostProject>(c =>
                 {
                     throw new InvalidOperationException("This should not be called.");
                 });
@@ -123,12 +120,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             // Act & Assert - Does not throw
             trigger.UpdateProjectCfg_Done(Mock.Of<IVsHierarchy>(), Mock.Of<IVsCfg>(), Mock.Of<IVsCfg>(), 0, 0, 0);
-        }
-
-        private static AdhocWorkspace CreateProjectInWorkspace(AdhocWorkspace workspace, string name, string path)
-        {
-            workspace.AddProject(ProjectInfo.Create(ProjectId.CreateNewId(), new VersionStamp(), name, "TestAssembly", LanguageNames.CSharp, filePath: path));
-            return workspace;
         }
     }
 }

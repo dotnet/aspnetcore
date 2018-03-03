@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
@@ -19,20 +20,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         {
             // Arrange
             var args = new BuildEventArgs(monitor: null, success: true);
-            var expectedProjectName = "Test1";
             var expectedProjectPath = "Path/To/Project";
-            var projectService = CreateProjectService(expectedProjectName, expectedProjectPath);
-            var workspace = TestWorkspace.Create(ws =>
+            var projectService = CreateProjectService(expectedProjectPath);
+            var projectSnapshots = new[]
             {
-                CreateProjectInWorkspace(ws, expectedProjectName, expectedProjectPath);
-                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
-            });
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == expectedProjectPath && p.HostProject == new HostProject(expectedProjectPath, RazorConfiguration.Default)),
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Test2.csproj" && p.HostProject == new HostProject("Test2.csproj", RazorConfiguration.Default)),
+            };
 
             var projectManager = new Mock<ProjectSnapshotManagerBase>(MockBehavior.Strict);
-            projectManager.SetupGet(p => p.Workspace).Returns(workspace);
+            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
             projectManager
-                .Setup(p => p.ProjectBuildComplete(It.IsAny<Project>()))
-                .Callback<Project>(c => Assert.Equal(expectedProjectName, c.Name));
+                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
+                .Callback<HostProject>(c => Assert.Equal(expectedProjectPath, c.FilePath));
             var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, projectManager.Object);
 
             // Act
@@ -47,15 +47,15 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         {
             // Arrange
             var args = new BuildEventArgs(monitor: null, success: true);
-            var projectService = CreateProjectService("Test1", "Path/To/Project");
-            var workspace = TestWorkspace.Create(ws =>
+            var projectService = CreateProjectService("Path/To/Project");
+            var projectSnapshots = new[]
             {
-                CreateProjectInWorkspace(ws, "Test2", "Path/To/AnotherProject");
-            });
+                Mock.Of<ProjectSnapshot>(p => p.FilePath == "Path/To/AnotherProject" && p.HostProject == new HostProject("Path/To/AnotherProject", RazorConfiguration.Default)),
+            };
             var projectManager = new Mock<ProjectSnapshotManagerBase>();
-            projectManager.SetupGet(p => p.Workspace).Returns(workspace);
+            projectManager.SetupGet(p => p.Projects).Returns(projectSnapshots);
             projectManager
-                .Setup(p => p.ProjectBuildComplete(It.IsAny<Project>()))
+                .Setup(p => p.HostProjectBuildComplete(It.IsAny<HostProject>()))
                 .Throws<InvalidOperationException>();
             var trigger = new ProjectBuildChangeTrigger(Dispatcher, projectService, projectManager.Object);
 
@@ -93,10 +93,9 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
             trigger.ProjectOperations_EndBuild(null, args);
         }
 
-        private static TextBufferProjectService CreateProjectService(string projectName, string projectPath)
+        private static TextBufferProjectService CreateProjectService(string projectPath)
         {
             var projectService = new Mock<TextBufferProjectService>();
-            projectService.Setup(p => p.GetProjectName(null)).Returns(projectName);
             projectService.Setup(p => p.GetProjectPath(null)).Returns(projectPath);
             projectService.Setup(p => p.IsSupportedProject(null)).Returns(true);
             return projectService.Object;

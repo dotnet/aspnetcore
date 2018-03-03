@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,7 +15,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private readonly DefaultProjectSnapshotManager _projectManager;
         private readonly ProjectSnapshotWorker _projectWorker;
 
-        private readonly Dictionary<ProjectId, Project> _projects;
+        private readonly Dictionary<string, ProjectSnapshotUpdateContext> _projects;
         private Timer _timer;
 
         public ProjectSnapshotWorkerQueue(ForegroundDispatcher foregroundDispatcher, DefaultProjectSnapshotManager projectManager, ProjectSnapshotWorker projectWorker)
@@ -40,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _projectManager = projectManager;
             _projectWorker = projectWorker;
 
-            _projects = new Dictionary<ProjectId, Project>();
+            _projects = new Dictionary<string, ProjectSnapshotUpdateContext>(FilePathComparer.Instance);
         }
 
         public bool HasPendingNotifications
@@ -93,11 +92,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public void Enqueue(Project project)
+        public void Enqueue(ProjectSnapshotUpdateContext context)
         {
-            if (project == null)
+            if (context == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(context));
             }
 
             _foregroundDispatcher.AssertForegroundThread();
@@ -106,7 +105,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             {
                 // We only want to store the last 'seen' version of any given project. That way when we pick one to process
                 // it's always the best version to use.
-                _projects[project.Id] = project;
+                _projects[context.FilePath] = context;
 
                 StartWorker();
             }
@@ -133,7 +132,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
                 OnStartingBackgroundWork();
 
-                Project[] work;
+                ProjectSnapshotUpdateContext[] work;
                 lock (_projects)
                 {
                     work = _projects.Values.ToArray();
@@ -145,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     try
                     {
-                        updates[i] = (new ProjectSnapshotUpdateContext(work[i]), null);
+                        updates[i] = (work[i], null);
                         await _projectWorker.ProcessUpdateAsync(updates[i].context);
                     }
                     catch (Exception projectException)
@@ -196,7 +195,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 }
                 else
                 {
-                    _projectManager.ReportError(update.exception, update.context?.UnderlyingProject);
+                    _projectManager.ReportError(update.exception, update.context?.WorkspaceProject);
                 }
             }
         }

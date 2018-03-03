@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.Editor;
@@ -64,7 +65,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, WorkspaceEditorSettings, workspace, TextBuffer, ImportDocumentManager);
 
-            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectSnapshot = new DefaultProjectSnapshot(new HostProject(project.FilePath, RazorConfiguration.Default), project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
 
             var called = false;
@@ -92,7 +93,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, WorkspaceEditorSettings, workspace, TextBuffer, ImportDocumentManager);
 
-            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectSnapshot = new DefaultProjectSnapshot(new HostProject(project.FilePath, RazorConfiguration.Default), project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.TagHelpersChanged);
 
             var called = false;
@@ -120,7 +121,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             });
             var documentTracker = new DefaultVisualStudioDocumentTracker(Dispatcher, FilePath, ProjectPath, ProjectManager, WorkspaceEditorSettings, workspace, TextBuffer, ImportDocumentManager);
 
-            var projectSnapshot = new DefaultProjectSnapshot(project);
+            var projectSnapshot = new DefaultProjectSnapshot(new HostProject(project.FilePath, RazorConfiguration.Default), project);
             var projectChangedArgs = new ProjectChangeEventArgs(projectSnapshot, ProjectChangeKind.Changed);
 
             var called = false;

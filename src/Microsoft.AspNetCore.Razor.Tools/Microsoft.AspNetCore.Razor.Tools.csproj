@@ -13,11 +13,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\RazorDiagnosticJsonConverter.cs">
-      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
-    </Compile>
-    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\TagHelperDescriptorJsonConverter.cs">
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\TagHelperDescriptorJsonConverter.cs">
       <Link>Shared\TagHelperDescriptorJsonConverter.cs</Link>
+    </Compile>
+    <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\Serialization\RazorDiagnosticJsonConverter.cs">
+      <Link>Shared\RazorDiagnosticJsonConverter.cs</Link>
     </Compile>
   </ItemGroup>
 

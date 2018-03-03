@@ -79,7 +79,9 @@
     <Compile Include="RazorInfo\DocumentInfoViewModel.cs" />
     <Compile Include="RazorInfo\DocumentViewModel.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="RazorInfo\ProjectSnapshotViewModel.cs" />
     <Compile Include="RazorInfo\ProjectViewModel.cs" />
+    <Compile Include="RazorInfo\PropertyViewModel.cs" />
     <Compile Include="RazorInfo\RazorInfoToolWindow.cs" />
     <Compile Include="RazorInfo\RazorInfoToolWindowCommand.cs" />
     <Compile Include="RazorInfo\RazorInfoViewModel.cs" />

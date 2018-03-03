@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using MonoDevelop.Core;
 
 namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
@@ -34,6 +35,19 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
 
             LoggingService.LogError(
                 Resources.FormatRazorLanguageServiceProjectError(project?.Name), 
+                exception);
+        }
+
+        public override void ReportError(Exception exception, ProjectSnapshot project)
+        {
+            if (exception == null)
+            {
+                Debug.Fail("Null exceptions should not be reported.");
+                return;
+            }
+
+            LoggingService.LogError(
+                Resources.FormatRazorLanguageServiceProjectSnapshotError(project?.FilePath, exception),
                 exception);
         }
     }

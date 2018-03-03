@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _textViews = new List<ITextView>();
         }
 
-        internal override ProjectExtensibilityConfiguration Configuration => _project?.Configuration;
+        public override RazorConfiguration Configuration => _project?.Configuration;
 
         public override EditorSettings EditorSettings => _workspaceEditorSettings.Current;
 
@@ -99,7 +99,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public override bool IsSupportedProject => _isSupportedProject;
 
-        public override Project Project => _workspace.CurrentSolution.GetProject(_project.UnderlyingProject.Id);
+        public override Project Project => _workspace.CurrentSolution.GetProject(_project.WorkspaceProject.Id);
 
         public override ITextBuffer TextBuffer => _textBuffer;
 
@@ -196,7 +196,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         internal void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
         {
             if (_projectPath != null &&
-                string.Equals(_projectPath, e.Project.UnderlyingProject.FilePath, StringComparison.OrdinalIgnoreCase))
+                string.Equals(_projectPath, e.Project.FilePath, StringComparison.OrdinalIgnoreCase))
             {
                 if (e.Kind == ProjectChangeKind.TagHelpersChanged)
                 {

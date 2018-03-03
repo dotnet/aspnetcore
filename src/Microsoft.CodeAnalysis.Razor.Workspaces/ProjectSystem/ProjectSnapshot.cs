@@ -9,10 +9,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal abstract class ProjectSnapshot
     {
-        public abstract ProjectExtensibilityConfiguration Configuration { get; }
+        public abstract RazorConfiguration Configuration { get; }
 
-        public abstract Project UnderlyingProject { get; }
+        public abstract string FilePath { get; }
+
+        public abstract bool IsInitialized { get; }
 
         public abstract IReadOnlyList<TagHelperDescriptor> TagHelpers { get; }
+
+        public abstract VersionStamp Version { get; }
+
+        public abstract Project WorkspaceProject { get; }
+
+        public abstract HostProject HostProject { get; }
     }
 }

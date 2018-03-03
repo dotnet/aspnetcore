@@ -85,16 +85,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         // This gets called when the project has finished building.
         public int UpdateProjectCfg_Done(IVsHierarchy pHierProj, IVsCfg pCfgProj, IVsCfg pCfgSln, uint dwAction, int fSuccess, int fCancel)
         {
-            var projectName = _projectService.GetProjectName(pHierProj);
             var projectPath = _projectService.GetProjectPath(pHierProj);
 
             // Get the corresponding roslyn project by matching the project name and the project path.
-            foreach (var project in _projectManager.Workspace.CurrentSolution.Projects)
+            foreach (var projectSnapshot in _projectManager.Projects)
             {
-                if (string.Equals(projectName, project.Name, StringComparison.Ordinal) &&
-                    string.Equals(projectPath, project.FilePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(projectPath, projectSnapshot.FilePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    _projectManager.ProjectBuildComplete(project);
+                    _projectManager.HostProjectBuildComplete(projectSnapshot.HostProject);
                     break;
                 }
             }

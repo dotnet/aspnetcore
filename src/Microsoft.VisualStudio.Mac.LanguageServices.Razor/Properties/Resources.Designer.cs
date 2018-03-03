@@ -52,6 +52,22 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
         internal static string FormatRazorLanguageServiceProjectError(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("RazorLanguageServiceProjectError"), p0);
 
+        /// <summary>
+        /// Error encountered from project '{0}':
+        /// {1}
+        /// </summary>
+        internal static string RazorLanguageServiceProjectSnapshotError
+        {
+            get => GetString("RazorLanguageServiceProjectSnapshotError");
+        }
+
+        /// <summary>
+        /// Error encountered from project '{0}':
+        /// {1}
+        /// </summary>
+        internal static string FormatRazorLanguageServiceProjectSnapshotError(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RazorLanguageServiceProjectSnapshotError"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

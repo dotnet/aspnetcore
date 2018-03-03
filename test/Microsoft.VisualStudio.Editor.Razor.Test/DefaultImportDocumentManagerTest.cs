@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
@@ -18,7 +20,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var filePath = "C:\\path\\to\\project\\Views\\Home\\file.cshtml";
             var projectPath = "C:\\path\\to\\project\\project.csproj";
             var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
-            var templateEngineFactoryService = GetTemplateEngineFactoryService();
+            var projectEngineService = GetProjectEngineFactoryService();
             var fileChangeTracker1 = new Mock<FileChangeTracker>();
             fileChangeTracker1.Setup(f => f.StartListening()).Verifiable();
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
@@ -39,7 +41,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(fileChangeTracker3.Object)
                 .Verifiable();
 
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, templateEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineService);
 
             // Act
             manager.OnSubscribed(tracker);
@@ -58,7 +60,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var filePath = "C:\\path\\to\\project\\file.cshtml";
             var projectPath = "C:\\path\\to\\project\\project.csproj";
             var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
-            var templateEngineFactoryService = GetTemplateEngineFactoryService();
+            var projectEngineService = GetProjectEngineFactoryService();
 
             var callCount = 0;
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
@@ -67,7 +69,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(Mock.Of<FileChangeTracker>())
                 .Callback(() => callCount++);
 
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, templateEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineService);
             manager.OnSubscribed(tracker); // Start tracking the import.
 
             var anotherFilePath = "C:\\path\\to\\project\\anotherFile.cshtml";
@@ -87,7 +89,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var filePath = "C:\\path\\to\\project\\file.cshtml";
             var projectPath = "C:\\path\\to\\project\\project.csproj";
             var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
-            var templateEngineFactoryService = GetTemplateEngineFactoryService();
+            var projectEngineService = GetProjectEngineFactoryService();
 
             var fileChangeTracker = new Mock<FileChangeTracker>();
             fileChangeTracker.Setup(f => f.StopListening()).Verifiable();
@@ -97,7 +99,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(fileChangeTracker.Object)
                 .Verifiable();
 
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, templateEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineService);
             manager.OnSubscribed(tracker); // Start tracking the import.
 
             // Act
@@ -115,7 +117,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var filePath = "C:\\path\\to\\project\\file.cshtml";
             var projectPath = "C:\\path\\to\\project\\project.csproj";
             var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
-            var templateEngineFactoryService = GetTemplateEngineFactoryService();
+            var projectEngineService = GetProjectEngineFactoryService();
 
             var fileChangeTracker = new Mock<FileChangeTracker>();
             fileChangeTracker
@@ -126,7 +128,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Setup(f => f.Create(It.IsAny<string>()))
                 .Returns(fileChangeTracker.Object);
 
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, templateEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineService);
             manager.OnSubscribed(tracker); // Starts tracking import for the first document.
 
             var anotherFilePath = "C:\\path\\to\\project\\anotherFile.cshtml";
@@ -137,12 +139,23 @@ namespace Microsoft.VisualStudio.Editor.Razor
             manager.OnUnsubscribed(tracker);
         }
 
-        private RazorProjectEngineFactoryService GetTemplateEngineFactoryService()
+        private RazorProjectEngineFactoryService GetProjectEngineFactoryService()
         {
             var projectManager = new Mock<ProjectSnapshotManager>();
             projectManager.Setup(p => p.Projects).Returns(Array.Empty<ProjectSnapshot>());
 
-            var service = new DefaultProjectEngineFactoryService(projectManager.Object);
+            var projectEngineFactory = new Mock<IFallbackProjectEngineFactory>();
+            projectEngineFactory.Setup(s => s.Create(It.IsAny<RazorConfiguration>(), It.IsAny<RazorProjectFileSystem>(), It.IsAny<Action<RazorProjectEngineBuilder>>()))
+                .Returns<RazorConfiguration, RazorProjectFileSystem, Action<RazorProjectEngineBuilder>>(
+                    (c, fs, b) => RazorProjectEngine.Create(
+                        RazorConfiguration.Default,
+                        fs,
+                        builder => RazorExtensions.Register(builder)));
+
+            var service = new DefaultProjectEngineFactoryService(
+                projectManager.Object,
+                projectEngineFactory.Object,
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[0]);
             return service;
         }
     }

@@ -2,12 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -15,19 +10,20 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     public class DefaultProjectSnapshotTest
     {
         [Fact]
-        public void WithProjectChange_WithProject_CreatesSnapshot_UpdatesUnderlyingProject()
+        public void WithWorkspaceProject_CreatesSnapshot_UpdatesUnderlyingProject()
         {
             // Arrange
-            var underlyingProject = GetProject("Test1");
-            var original = new DefaultProjectSnapshot(underlyingProject);
+            var hostProject = new HostProject("Test.cshtml", FallbackRazorConfiguration.MVC_2_0);
+            var workspaceProject = GetWorkspaceProject("Test1");
+            var original = new DefaultProjectSnapshot(hostProject, workspaceProject);
 
-            var anotherProject = GetProject("Test1");
+            var anotherProject = GetWorkspaceProject("Test1");
 
             // Act
-            var snapshot = original.WithProjectChange(anotherProject);
+            var snapshot = original.WithWorkspaceProject(anotherProject);
 
             // Assert
-            Assert.Same(anotherProject, snapshot.UnderlyingProject);
+            Assert.Same(anotherProject, snapshot.WorkspaceProject);
             Assert.Equal(original.ComputedVersion, snapshot.ComputedVersion);
             Assert.Equal(original.Configuration, snapshot.Configuration);
             Assert.Equal(original.TagHelpers, snapshot.TagHelpers);
@@ -37,23 +33,21 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WithProjectChange_WithProject_CreatesSnapshot_UpdatesValues()
         {
             // Arrange
-            var underlyingProject = GetProject("Test1");
-            var original = new DefaultProjectSnapshot(underlyingProject);
+            var hostProject = new HostProject("Test.cshtml", FallbackRazorConfiguration.MVC_2_0);
+            var workspaceProject = GetWorkspaceProject("Test1");
+            var original = new DefaultProjectSnapshot(hostProject, workspaceProject);
 
-            var anotherProject = GetProject("Test1");
-            var update = new ProjectSnapshotUpdateContext(anotherProject)
+            var anotherProject = GetWorkspaceProject("Test1");
+            var update = new ProjectSnapshotUpdateContext(original.FilePath, hostProject, anotherProject, original.Version)
             {
-                Configuration = Mock.Of<ProjectExtensibilityConfiguration>(),
                 TagHelpers = Array.Empty<TagHelperDescriptor>(),
             };
 
             // Act
-            var snapshot = original.WithProjectChange(update);
+            var snapshot = original.WithComputedUpdate(update);
 
             // Assert
-            Assert.Same(original.UnderlyingProject, snapshot.UnderlyingProject);
-            Assert.Equal(update.UnderlyingProject.Version, snapshot.ComputedVersion);
-            Assert.Same(update.Configuration, snapshot.Configuration);
+            Assert.Same(original.WorkspaceProject, snapshot.WorkspaceProject);
             Assert.Same(update.TagHelpers, snapshot.TagHelpers);
         }
 
@@ -61,12 +55,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void HaveTagHelpersChanged_NoUpdatesToTagHelpers_ReturnsFalse()
         {
             // Arrange
-            var underlyingProject = GetProject("Test1");
-            var original = new DefaultProjectSnapshot(underlyingProject);
+            var hostProject = new HostProject("Test1.csproj", RazorConfiguration.Default);
+            var workspaceProject = GetWorkspaceProject("Test1");
+            var original = new DefaultProjectSnapshot(hostProject, workspaceProject);
 
-            var anotherProject = GetProject("Test1");
-            var update = new ProjectSnapshotUpdateContext(anotherProject);
-            var snapshot = original.WithProjectChange(update);
+            var anotherProject = GetWorkspaceProject("Test1");
+            var update = new ProjectSnapshotUpdateContext("Test1.csproj", hostProject, anotherProject, VersionStamp.Default);
+            var snapshot = original.WithComputedUpdate(update);
 
             // Act
             var result = snapshot.HaveTagHelpersChanged(original);
@@ -79,11 +74,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void HaveTagHelpersChanged_TagHelpersUpdated_ReturnsTrue()
         {
             // Arrange
-            var underlyingProject = GetProject("Test1");
-            var original = new DefaultProjectSnapshot(underlyingProject);
+            var hostProject = new HostProject("Test1.csproj", RazorConfiguration.Default);
+            var workspaceProject = GetWorkspaceProject("Test1");
+            var original = new DefaultProjectSnapshot(hostProject, workspaceProject);
 
-            var anotherProject = GetProject("Test1");
-            var update = new ProjectSnapshotUpdateContext(anotherProject)
+            var anotherProject = GetWorkspaceProject("Test1");
+            var update = new ProjectSnapshotUpdateContext("Test1.csproj", hostProject, anotherProject, VersionStamp.Default)
             {
                 TagHelpers = new[]
                 {
@@ -91,7 +87,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                     TagHelperDescriptorBuilder.Create("Two", "TestAssembly").Build(),
                 },
             };
-            var snapshot = original.WithProjectChange(update);
+            var snapshot = original.WithComputedUpdate(update);
 
             // Act
             var result = snapshot.HaveTagHelpersChanged(original);
@@ -100,7 +96,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.True(result);
         }
 
-        private Project GetProject(string name)
+        private Project GetWorkspaceProject(string name)
         {
             Project project = null;
             TestWorkspace.Create(workspace =>

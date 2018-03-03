@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Moq;
@@ -21,7 +23,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var testImportsPath = "C:\\path\\to\\project\\_ViewImports.cshtml";
             var tracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == filePath && t.ProjectPath == projectPath);
             var anotherTracker = Mock.Of<VisualStudioDocumentTracker>(t => t.FilePath == anotherFilePath && t.ProjectPath == projectPath);
-            var templateEngineFactoryService = GetProjectEngineFactoryService();
+            var projectEngineFactoryService = GetProjectEngineFactoryService();
             var fileChangeTracker = new Mock<FileChangeTracker>();
             fileChangeTracker.Setup(f => f.FilePath).Returns(testImportsPath);
             var fileChangeTrackerFactory = new Mock<FileChangeTrackerFactory>();
@@ -36,7 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 .Returns(Mock.Of<FileChangeTracker>());
 
             var called = false;
-            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, templateEngineFactoryService);
+            var manager = new DefaultImportDocumentManager(Dispatcher, new DefaultErrorReporter(), fileChangeTrackerFactory.Object, projectEngineFactoryService);
             manager.OnSubscribed(tracker);
             manager.OnSubscribed(anotherTracker);
             manager.Changed += (sender, args) =>
@@ -63,7 +65,18 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var projectManager = new Mock<ProjectSnapshotManager>();
             projectManager.Setup(p => p.Projects).Returns(Array.Empty<ProjectSnapshot>());
 
-            var service = new DefaultProjectEngineFactoryService(projectManager.Object);
+            var projectEngineFactory = new Mock<IFallbackProjectEngineFactory>();
+            projectEngineFactory.Setup(s => s.Create(It.IsAny<RazorConfiguration>(), It.IsAny<RazorProjectFileSystem>(), It.IsAny<Action<RazorProjectEngineBuilder>>()))
+                .Returns<RazorConfiguration, RazorProjectFileSystem, Action<RazorProjectEngineBuilder>>(
+                    (c, fs, b) => RazorProjectEngine.Create(
+                        RazorConfiguration.Default,
+                        fs,
+                        builder => RazorExtensions.Register(builder)));
+
+            var service = new DefaultProjectEngineFactoryService(
+                projectManager.Object,
+                projectEngineFactory.Object,
+                new Lazy<IProjectEngineFactory, ICustomProjectEngineFactoryMetadata>[0]);
             return service;
         }
     }

@@ -96,16 +96,14 @@ namespace Microsoft.VisualStudio.Mac.LanguageServices.Razor
                 return;
             }
 
-            var projectName = _projectService.GetProjectName(projectItem);
             var projectPath = _projectService.GetProjectPath(projectItem);
 
             // Get the corresponding roslyn project by matching the project name and the project path.
-            foreach (var project in _projectManager.Workspace.CurrentSolution.Projects)
+            foreach (var projectSnapshot in _projectManager.Projects)
             {
-                if (string.Equals(projectName, project.Name, StringComparison.Ordinal) &&
-                    string.Equals(projectPath, project.FilePath, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(projectPath, projectSnapshot.FilePath, StringComparison.OrdinalIgnoreCase))
                 {
-                    _projectManager.ProjectBuildComplete(project);
+                    _projectManager.HostProjectBuildComplete(projectSnapshot.HostProject);
                     break;
                 }
             }
