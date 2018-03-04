@@ -169,7 +169,6 @@ namespace Microsoft.AspNetCore.Blazor.Components
             => type.IsPrimitive
             || type == typeof(string)
             || type == typeof(DateTime)
-            || type == typeof(RenderFragment)
             || type == typeof(decimal);
     }
 }

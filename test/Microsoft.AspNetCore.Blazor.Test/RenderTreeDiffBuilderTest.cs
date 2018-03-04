@@ -853,7 +853,6 @@ namespace Microsoft.AspNetCore.Blazor.Test
                 tree.AddAttribute(1, "MyDouble", double.MaxValue);
                 tree.AddAttribute(1, "MyDecimal", decimal.MinusOne);
                 tree.AddAttribute(1, "MyDate", dateTimeWillNotChange);
-                tree.AddAttribute(1, "MyFragment", fragmentWillNotChange); // Treat fragments as primitive
                 tree.CloseComponent();
             }
 
@@ -868,6 +867,32 @@ namespace Microsoft.AspNetCore.Blazor.Test
             // Assert
             Assert.Same(originalComponentInstance, newComponentInstance);
             Assert.Equal(1, originalComponentInstance.SetParametersCallCount); // Received no further parameter change notification
+        }
+
+        [Fact]
+        public void AlwaysRegardsRenderFragmentAsPossiblyChanged()
+        {
+            // Even if the RenderFragment instance itself is unchanged, the output you get
+            // when invoking it might have changed (they aren't pure functions in general)
+
+            // Arrange: Populate old and new with equivalent content
+            RenderFragment fragmentWillNotChange = builder => throw new NotImplementedException();
+            foreach (var tree in new[] { oldTree, newTree })
+            {
+                tree.OpenComponent<CaptureSetParametersComponent>(0);
+                tree.AddAttribute(1, "MyFragment", fragmentWillNotChange);
+                tree.CloseComponent();
+            }
+
+            RenderTreeDiffBuilder.ComputeDiff(renderer, new RenderBatchBuilder(), 0, new RenderTreeBuilder(renderer).GetFrames(), oldTree.GetFrames());
+            var componentInstance = (CaptureSetParametersComponent)oldTree.GetFrames().Array[0].Component;
+            Assert.Equal(1, componentInstance.SetParametersCallCount);
+
+            // Act
+            var renderBatch = GetRenderedBatch();
+
+            // Assert
+            Assert.Equal(2, componentInstance.SetParametersCallCount);
         }
 
         [Fact]
