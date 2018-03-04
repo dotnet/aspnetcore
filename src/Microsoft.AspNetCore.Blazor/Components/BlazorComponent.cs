@@ -186,6 +186,13 @@ namespace Microsoft.AspNetCore.Blazor.Components
             => throw new NotImplementedException($"{nameof(bind)} is a compile-time symbol only and should not be invoked.");
 
         /// <summary>
+        /// Applies two-way data binding between the element and the property.
+        /// </summary>
+        /// <param name="value">The model property to be bound to the element.</param>
+        protected RenderTreeFrame bind(DateTime value, string format)
+            => throw new NotImplementedException($"{nameof(bind)} is a compile-time symbol only and should not be invoked.");
+
+        /// <summary>
         /// Handles click events by invoking <paramref name="handler"/>.
         /// </summary>
         /// <param name="handler">The handler to be invoked when the event occurs.</param>

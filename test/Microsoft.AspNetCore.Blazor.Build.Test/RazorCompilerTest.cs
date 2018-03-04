@@ -393,11 +393,72 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [Fact]
-        public void SupportsTwoWayBindingForCheckboxes()
+        public void SupportsTwoWayBindingForDateValues()
         {
             // Arrange/Act
             var component = CompileToComponent(
-                @"<input @bind(MyValue) type=""checkbox"" />
+                @"<input @bind(MyDate) />
+                @functions {
+                    public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4, 1, 2, 3);
+                }");
+            var myDateProperty = component.GetType().GetProperty("MyDate");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 3, 4, 1, 2, 3).ToString(), 1),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 2);
+
+                    // Trigger the change event to show it updates the property
+                    var newDateValue = new DateTime(2018, 3, 5, 4, 5, 6);
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = newDateValue.ToString()
+                    });
+                    Assert.Equal(newDateValue, myDateProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact]
+        public void SupportsTwoWayBindingForDateValuesWithFormatString()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<input @bind(MyDate, ""ddd yyyy-MM-dd"") />
+                @functions {
+                    public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4);
+                }");
+            var myDateProperty = component.GetType().GetProperty("MyDate");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", "Sun 2018-03-04", 1),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 2);
+
+                    // Trigger the change event to show it updates the property
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = "Mon 2018-03-05"
+                    });
+                    Assert.Equal(new DateTime(2018, 3, 5), myDateProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact]
+        public void SupportsTwoWayBindingForBoolValues()
+        {
+            // Arrange/Act
+            var component = CompileToComponent(
+                @"<input @bind(MyValue) />
                 @functions {
                     public bool MyValue { get; set; } = true;
                 }");
@@ -406,12 +467,11 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Assert
             var frames = GetRenderTree(component);
             Assert.Collection(frames,
-                frame => AssertFrame.Element(frame, "input", 4, 0),
-                frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
-                frame => AssertFrame.Attribute(frame, "value", "True", 2),
+                frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", "True", 1),
                 frame =>
                 {
-                    AssertFrame.Attribute(frame, "onchange", 3);
+                    AssertFrame.Attribute(frame, "onchange", 2);
 
                     // Trigger the change event to show it updates the property
                     ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
@@ -420,7 +480,38 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                     });
                     Assert.False((bool)myValueProperty.GetValue(component));
                 },
-                frame => AssertFrame.Text(frame, "\n", 4));
+                frame => AssertFrame.Text(frame, "\n", 3));
+        }
+
+        [Fact]
+        public void SupportsTwoWayBindingForEnumValues()
+        {
+            // Arrange/Act
+            var myEnumType = FullTypeName<MyEnum>();
+            var component = CompileToComponent(
+                $@"<input @bind(MyValue) />
+                @functions {{
+                    public {myEnumType} MyValue {{ get; set; }} = {myEnumType}.{nameof(MyEnum.FirstValue)};
+                }}");
+            var myValueProperty = component.GetType().GetProperty("MyValue");
+
+            // Assert
+            var frames = GetRenderTree(component);
+            Assert.Collection(frames,
+                frame => AssertFrame.Element(frame, "input", 3, 0),
+                frame => AssertFrame.Attribute(frame, "value", MyEnum.FirstValue.ToString(), 1),
+                frame =>
+                {
+                    AssertFrame.Attribute(frame, "onchange", 2);
+
+                    // Trigger the change event to show it updates the property
+                    ((UIEventHandler)frame.AttributeValue)(new UIChangeEventArgs
+                    {
+                        Value = MyEnum.SecondValue.ToString()
+                    });
+                    Assert.Equal(MyEnum.SecondValue, (MyEnum)myValueProperty.GetValue(component));
+                },
+                frame => AssertFrame.Text(frame, "\n", 3));
         }
 
         [Fact]
@@ -900,6 +991,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         public interface IMyService2 { }
         public class MyService1Impl : IMyService1 { }
         public class MyService2Impl : IMyService2 { }
+
+        public enum MyEnum { FirstValue, SecondValue }
 
         private static string FullTypeName<T>()
             => typeof(T).FullName.Replace('+', '.');

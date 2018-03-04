@@ -24,5 +24,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public static readonly string GetFrames = nameof(GetFrames);
 
         public static readonly string ChildContent = nameof(ChildContent);
+
+        public static readonly string BindMethodsGetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.GetValue";
+
+        public static readonly string BindMethodsSetValue = "Microsoft.AspNetCore.Blazor.Components.BindMethods.SetValue";
     }
 }

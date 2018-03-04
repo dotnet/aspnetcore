@@ -12,6 +12,7 @@ using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.AspNetCore.Blazor.Razor
 {
@@ -27,6 +28,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 new[] { "area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr" },
                 StringComparer.OrdinalIgnoreCase);
         private readonly static Regex bindExpressionRegex = new Regex(@"^bind\((.+)\)$");
+        private readonly static CSharpParseOptions bindArgsParseOptions
+            = CSharpParseOptions.Default.WithKind(CodeAnalysis.SourceCodeKind.Script);
 
         private readonly ScopeStack _scopeStack = new ScopeStack();
         private string _unconsumedHtml;
@@ -323,24 +326,31 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             var bindMatch = bindExpressionRegex.Match(token.AttributeValue.Content);
             if (bindMatch.Success)
             {
-                // The @bind(X) syntax is special. We convert it to a pair of attributes:
-                // [1] value=@X
-                var valueExpression = bindMatch.Groups[1].Value;
-                WriteAttribute(context.CodeWriter, "value",
-                    new IntermediateToken { Kind = TokenKind.CSharp, Content = valueExpression });
+                // TODO: Consider alternatives to the @bind syntax. The following is very strange.
 
-                // [2] @onchange(newValue => { X = newValue; })
-                var isCheckbox = tag.Data.Equals("input", StringComparison.OrdinalIgnoreCase)
-                    && tag.Attributes.Any(a =>
-                        a.Key.Equals("type", StringComparison.Ordinal)
-                        && a.Value.Equals("checkbox", StringComparison.Ordinal));
-                var castToType = isCheckbox ? "bool" : "string";
+                // The @bind(X, Y, Z, ...) syntax is special. We convert it to a pair of attributes:
+                // [1] value=@BindMethods.GetValue(X, Y, Z, ...)
+                var valueParams = bindMatch.Groups[1].Value;
+                WriteAttribute(context.CodeWriter, "value", new IntermediateToken
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = $"{RenderTreeBuilder.BindMethodsGetValue}({valueParams})"
+                });
+
+                // [2] @onchange(BindSetValue(parsed => { X = parsed; }, X, Y, Z, ...))
+                var parsedArgs = CSharpSyntaxTree.ParseText(valueParams, bindArgsParseOptions);
+                var parsedArgsSplit = parsedArgs.GetRoot().ChildNodes().Select(x => x.ToString()).ToList();
+                if (parsedArgsSplit.Count > 0)
+                {
+                    parsedArgsSplit.Insert(0, $"_parsedValue_ => {{ {parsedArgsSplit[0]} = _parsedValue_; }}");
+                }
+                var parsedArgsJoined = string.Join(", ", parsedArgsSplit);
                 var onChangeAttributeToken = new PendingAttributeToken
                 {
                     AttributeValue = new IntermediateToken
                     {
                         Kind = TokenKind.CSharp,
-                        Content = $"onchange(_newValue_ => {{ {valueExpression} = ({castToType})_newValue_; }})"
+                        Content = $"onchange({RenderTreeBuilder.BindMethodsSetValue}({parsedArgsJoined}))"
                     }
                 };
                 WriteElementAttributeToken(context, tag, onChangeAttributeToken);
