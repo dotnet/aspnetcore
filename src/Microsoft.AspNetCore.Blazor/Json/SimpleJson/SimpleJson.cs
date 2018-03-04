@@ -1333,6 +1333,11 @@ namespace SimpleJson
             if (type == typeof (Guid) && string.IsNullOrEmpty(str))
                 return default(Guid);
 
+            if (type.IsEnum)
+            {
+                type = type.GetEnumUnderlyingType();
+            }
+
             if (value == null)
                 return null;
             

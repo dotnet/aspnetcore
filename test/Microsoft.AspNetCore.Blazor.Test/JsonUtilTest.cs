@@ -46,12 +46,13 @@ namespace Microsoft.AspNetCore.Blazor.Test
             {
                 Id = 1844,
                 Name = "Athos",
-                Pets = new[] { "Aramis", "Porthos", "D'Artagnan" }
+                Pets = new[] { "Aramis", "Porthos", "D'Artagnan" },
+                Hobby = Hobbies.Swordfighting
             };
 
             // Act/Assert
             Assert.Equal(
-                "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"]}",
+                "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2}",
                 JsonUtil.Serialize(person));
         }
 
@@ -59,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
         public void CanDeserializeClassFromJson()
         {
             // Arrange
-            var json = "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"]}";
+            var json = "{\"Id\":1844,\"Name\":\"Athos\",\"Pets\":[\"Aramis\",\"Porthos\",\"D'Artagnan\"],\"Hobby\":2}";
 
             // Act
             var person = JsonUtil.Deserialize<Person>(json);
@@ -68,6 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Test
             Assert.Equal(1844, person.Id);
             Assert.Equal("Athos", person.Name);
             Assert.Equal(new[] { "Aramis", "Porthos", "D'Artagnan" }, person.Pets);
+            Assert.Equal(Hobbies.Swordfighting, person.Hobby);
         }
 
         class Person
@@ -75,6 +77,9 @@ namespace Microsoft.AspNetCore.Blazor.Test
             public int Id { get; set; }
             public string Name { get; set; }
             public string[] Pets { get; set; }
+            public Hobbies Hobby { get; set; }
         }
+
+        enum Hobbies { Reading = 1, Swordfighting = 2 }
     }
 }
