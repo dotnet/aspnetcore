@@ -9,8 +9,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class RazorCompileIntegrationTest : MSBuildIntegrationTestBase
+    public class RazorCompileIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public RazorCompileIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorCompile_Success_CompilesAssembly()

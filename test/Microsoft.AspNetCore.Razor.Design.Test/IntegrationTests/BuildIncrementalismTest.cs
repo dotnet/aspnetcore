@@ -10,8 +10,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIncrementalismTest : MSBuildIntegrationTestBase
+    public class BuildIncrementalismTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public BuildIncrementalismTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task BuildIncremental_SimpleMvc_PersistsTargetInputFile()

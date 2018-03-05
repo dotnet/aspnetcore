@@ -6,8 +6,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class DesignTimeBuildIntegrationTest : MSBuildIntegrationTestBase
+    public class DesignTimeBuildIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public DesignTimeBuildIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task DesignTimeBuild_DoesNotRunRazorTargets()

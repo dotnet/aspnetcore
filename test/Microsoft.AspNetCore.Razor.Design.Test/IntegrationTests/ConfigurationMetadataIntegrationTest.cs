@@ -7,8 +7,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase
+    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public ConfigurationMetadataIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithMvc_AddsConfigurationMetadata()

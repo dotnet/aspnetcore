@@ -10,11 +10,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
     public class BuildServerIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
-        private readonly string _pipeName;
-
-        public BuildServerIntegrationTest(BuildServerTestFixture fixture)
+        public BuildServerIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
         {
-            _pipeName = fixture.PipeName;
         }
 
         [Fact]
@@ -32,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build", 
-                $"/p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true",
+                "/p:_RazorForceBuildServer=true",
                 msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
@@ -59,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                $"/p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true");
+                "/p:_RazorForceBuildServer=true");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                $"/p:UseRazorBuildServer=true /p:_RazorBuildServerPipeName={_pipeName} /p:_RazorForceBuildServer=true");
+                "/p:_RazorForceBuildServer=true");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "Whitespace in name.dll");

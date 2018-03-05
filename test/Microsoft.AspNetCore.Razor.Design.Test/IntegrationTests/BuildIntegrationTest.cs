@@ -12,23 +12,32 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIntegrationTest : MSBuildIntegrationTestBase
+    public class BuildIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public BuildIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public Task Build_SimpleMvc_UsingDotnetMSBuild_CanBuildSuccessfully()
-            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
+        public Task Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
+            => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
-        public Task Build_SimpleMvc_UsingDesktopMSBuild_CanBuildSuccessfully()
-            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
+        public Task Build_SimpleMvc_UsingDesktopMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
+            => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
 
-        private async Task Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind msBuildProcessKind)
+        // This test is identical to the ones in BuildServerIntegrationTest except this one explicitly disables the Razor build server.
+        private async Task Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind msBuildProcessKind)
         {
-            var result = await DotnetMSBuild("Build", msBuildProcessKind: msBuildProcessKind);
+            var result = await DotnetMSBuild("Build",
+                "/p:UseRazorBuildServer=false",
+                suppressBuildServer: true,
+                msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");

@@ -7,8 +7,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class PublishIntegrationTest : MSBuildIntegrationTestBase
+    public class PublishIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public PublishIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Publish_RazorCompileOnPublish_IsDefault()

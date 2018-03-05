@@ -8,8 +8,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class PackIntegrationTest : MSBuildIntegrationTestBase
+    public class PackIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public PackIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("ClassLibrary")]
         public async Task Pack_Works_IncludesRazorAssembly()

@@ -15,8 +15,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
 
-        protected MSBuildIntegrationTestBase()
+        protected MSBuildIntegrationTestBase(BuildServerTestFixture buildServer)
         {
+            BuildServer = buildServer;
         }
 
 #if DEBUG
@@ -44,19 +45,35 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected string TargetFramework { get; set; } = "netcoreapp2.0";
 
+        protected BuildServerTestFixture BuildServer { get; set; }
+
         internal Task<MSBuildResult> DotnetMSBuild(
             string target,
             string args = null,
             bool suppressRestore = false,
             bool suppressTimeout = false,
+            bool suppressBuildServer = false,
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
-            var restoreArgument = suppressRestore ? "" : "/restore";
+            var buildArgumentList = new List<string>();
+
+            if (!suppressRestore)
+            {
+                buildArgumentList.Add("/restore");
+            }
+
+            if (!suppressBuildServer)
+            {
+                buildArgumentList.Add($"/p:_RazorBuildServerPipeName={BuildServer.PipeName}");
+            }
+
+            buildArgumentList.Add($"/t:{target} /p:Configuration={Configuration} {args}");
+            var buildArguments = string.Join(" ", buildArgumentList);
 
             return MSBuildProcessManager.RunProcessAsync(
                 Project,
-                $"{restoreArgument} /t:{target} /p:Configuration={Configuration} {args}",
+                buildArguments,
                 timeout,
                 msBuildProcessKind);
         }

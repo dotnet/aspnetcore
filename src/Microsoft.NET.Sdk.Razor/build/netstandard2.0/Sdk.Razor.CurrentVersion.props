@@ -59,9 +59,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeRazorContentInPack Condition="'$(IncludeRazorContentInPack)'==''">false</IncludeRazorContentInPack>
 
     <!--
-    Set to true to allow a Razor code generation to use a persistent build server process.
+    Set to false to disable Razor code generation from using a persistent build server process.
     -->
-    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">true</UseRazorBuildServer>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
