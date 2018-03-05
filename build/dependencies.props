@@ -7,8 +7,8 @@
     <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildTasksCorePackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCSharpPackageVersion>4.5.0-preview2-26224-02</MicrosoftCSharpPackageVersion>
-    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-25711-01</MicrosoftDotNetPlatformAbstractionsPackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-25711-01</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-26224-02</MicrosoftDotNetPlatformAbstractionsPackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-26224-02</MicrosoftExtensionsDependencyModelPackageVersion>
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreDotNetAppHostPackageVersion>
@@ -49,14 +49,14 @@
     <RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>2.1.0-preview2-26225-03</RuntimeWinX86MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <SystemBuffersPackageVersion>4.5.0-preview2-26224-02</SystemBuffersPackageVersion>
     <SystemCodeDomPackageVersion>4.5.0-preview2-26224-02</SystemCodeDomPackageVersion>
-    <SystemCollectionsImmutablePackageVersion>1.5.0-preview2-26126-03</SystemCollectionsImmutablePackageVersion>
+    <SystemCollectionsImmutablePackageVersion>1.5.0-preview2-26224-02</SystemCollectionsImmutablePackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.5.0-preview2-26224-02</SystemComponentModelAnnotationsPackageVersion>
-    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview2-26126-03</SystemCompositionAttributedModelPackageVersion>
-    <SystemCompositionConventionPackageVersion>1.2.0-preview2-26126-03</SystemCompositionConventionPackageVersion>
-    <SystemCompositionHostingPackageVersion>1.2.0-preview2-26126-03</SystemCompositionHostingPackageVersion>
-    <SystemCompositionPackageVersion>1.2.0-preview2-26126-03</SystemCompositionPackageVersion>
-    <SystemCompositionRuntimePackageVersion>1.2.0-preview2-26126-03</SystemCompositionRuntimePackageVersion>
-    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview2-26126-03</SystemCompositionTypedPartsPackageVersion>
+    <SystemCompositionAttributedModelPackageVersion>1.2.0-preview2-26224-02</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>1.2.0-preview2-26224-02</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>1.2.0-preview2-26224-02</SystemCompositionHostingPackageVersion>
+    <SystemCompositionPackageVersion>1.2.0-preview2-26224-02</SystemCompositionPackageVersion>
+    <SystemCompositionRuntimePackageVersion>1.2.0-preview2-26224-02</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>1.2.0-preview2-26224-02</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>4.5.0-preview2-26224-02</SystemConfigurationConfigurationManagerPackageVersion>
     <SystemDataSqlClientPackageVersion>4.5.0-preview2-26224-02</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview2-26224-02</SystemDiagnosticsDiagnosticSourcePackageVersion>
@@ -72,7 +72,7 @@
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.0-preview2-26224-02</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemNumericsVectorsPackageVersion>4.5.0-preview2-26224-02</SystemNumericsVectorsPackageVersion>
     <SystemReflectionDispatchProxyPackageVersion>4.5.0-preview2-26224-02</SystemReflectionDispatchProxyPackageVersion>
-    <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26126-03</SystemReflectionMetadataPackageVersion>
+    <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26224-02</SystemReflectionMetadataPackageVersion>
     <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview2-26224-02</SystemReflectionTypeExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26224-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
     <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
@@ -88,7 +88,7 @@
     <SystemTextEncodingsWebPackageVersion>4.5.0-preview2-26224-02</SystemTextEncodingsWebPackageVersion>
     <SystemThreadingAccessControlPackageVersion>4.5.0-preview2-26224-02</SystemThreadingAccessControlPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.5.0-preview2-26224-02</SystemThreadingChannelsPackageVersion>
-    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview2-26126-03</SystemThreadingTasksDataflowPackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.9.0-preview2-26224-02</SystemThreadingTasksDataflowPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.0-preview2-26224-02</SystemThreadingTasksExtensionsPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0-preview2-26224-02</SystemValueTuplePackageVersion>
   </PropertyGroup>
