@@ -2,3 +2,5 @@ Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1' -OutFile .\build
 .\build\dotnet-install.ps1 -channel Current -version 2.1.3 -InstallDir dotnetsdk
 dotnet --version
 dotnet pack Blazor.sln --configuration Release
+msbuild BlazorTooling.sln /t:Restore
+msbuild BlazorTooling.sln
