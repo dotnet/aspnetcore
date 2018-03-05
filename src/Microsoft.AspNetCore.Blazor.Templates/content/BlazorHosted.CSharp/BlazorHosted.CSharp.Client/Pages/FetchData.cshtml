@@ -39,7 +39,6 @@ else
 
     protected override async Task OnInitAsync()
     {
-        var json = await Http.GetStringAsync("/api/SampleData/WeatherForecasts");
-        forecasts = JsonUtil.Deserialize<WeatherForecast[]>(json);
+        forecasts = await Http.GetJsonAsync<WeatherForecast[]>("/api/SampleData/WeatherForecasts");
     }
 }
