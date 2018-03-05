@@ -48,7 +48,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" AllMetapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Certificates.Generation.Sources" Category="noship" />
@@ -262,7 +262,7 @@
     <PackageArtifact Include="Microsoft.Extensions.Logging" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Analyzers" Category="shipoob" Analyzer="true" />
-    <PackageArtifact Include="Microsoft.Extensions.Logging.AzureAppServices" Category="ship" AppMetapackage="true" AllMetapackage="true" />
+    <PackageArtifact Include="Microsoft.Extensions.Logging.AzureAppServices" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Configuration" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Console" Category="ship" AppMetapackage="true" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.Extensions.Logging.Debug" Category="ship" AppMetapackage="true" AllMetapackage="true" />
