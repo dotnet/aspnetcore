@@ -90,10 +90,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal unsafe static extern int http_websockets_write_bytes(IntPtr pInProcessHandler, HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks, int nChunks, PFN_WEBSOCKET_ASYNC_COMPLETION pfnCompletionCallback, IntPtr pvCompletionContext, out bool fCompletionExpected);
 
         [DllImport(AspNetCoreModuleDll)]
-        public unsafe static extern int http_enable_websockets(IntPtr pHttpContext);
+        public unsafe static extern int http_enable_websockets(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
-        public unsafe static extern int http_cancel_io(IntPtr pHttpContext);
+        public unsafe static extern int http_cancel_io(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern int http_response_set_unknown_header(IntPtr pInProcessHandler, byte* pszHeaderName, byte* pszHeaderValue, ushort usHeaderValueLength, bool fReplace);

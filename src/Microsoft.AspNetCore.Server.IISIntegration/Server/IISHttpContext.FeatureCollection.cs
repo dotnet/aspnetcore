@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading;
@@ -14,7 +13,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -291,15 +289,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             {
                 throw new InvalidOperationException("CoreStrings.UpgradeCannotBeCalledMultipleTimes");
             }
+            _wasUpgraded = true;
 
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
-            await UpgradeAsync();
-            NativeMethods.http_enable_websockets(_pInProcessHandler);
-
-            _wasUpgraded = true;
             _readWebSocketsOperation = new IISAwaitable();
             _writeWebSocketsOperation = new IISAwaitable();
+            NativeMethods.http_enable_websockets(_pInProcessHandler);
+
+            // Upgrade async will cause the stream processing to go into duplex mode
+            await UpgradeAsync();
 
             return new DuplexStream(RequestBody, ResponseBody);
         }

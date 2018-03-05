@@ -4,6 +4,8 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +37,12 @@ namespace IISTestSite
             app.Map("/CheckEnvironmentLongValueVariable", CheckEnvironmentLongValueVariable);
             app.Map("/CheckAppendedEnvironmentVariable", CheckAppendedEnvironmentVariable);
             app.Map("/CheckRemoveAuthEnvironmentVariable", CheckRemoveAuthEnvironmentVariable);
+            app.Map("/ReadAndWriteSynchronously", ReadAndWriteSynchronously);
+            app.Map("/ReadAndWriteEcho", ReadAndWriteEcho);
+            app.Map("/ReadAndWriteCopyToAsync", ReadAndWriteCopyToAsync);
+            app.Map("/ReadAndWriteEchoTwice", ReadAndWriteEchoTwice);
+            app.Map("/ReadAndWriteSlowConnection", ReadAndWriteSlowConnection);
+            app.Map("/WebsocketRequest", WebsocketRequest);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -323,6 +331,98 @@ namespace IISTestSite
             {
                 var variable = Environment.GetEnvironmentVariable("ASPNETCORE_IIS_HTTPAUTH");
                 await context.Response.WriteAsync(variable);
+            });
+        }
+        private void ReadAndWriteSynchronously(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var t2 = Task.Run(() => WriteManyTimesToResponseBody(context));
+                var t1 = Task.Run(() => ReadRequestBody(context));
+                await Task.WhenAll(t1, t2);
+            });
+        }
+
+        private async Task ReadRequestBody(HttpContext context)
+        {
+            var readBuffer = new byte[1];
+            var result = await context.Request.Body.ReadAsync(readBuffer, 0, 1);
+            while (result != 0)
+            {
+                result = await context.Request.Body.ReadAsync(readBuffer, 0, 1);
+            }
+        }
+
+        private async Task WriteManyTimesToResponseBody(HttpContext context)
+        {
+            for (var i = 0; i < 10000; i++)
+            {
+                await context.Response.WriteAsync("hello world");
+            }
+        }
+
+        private void ReadAndWriteEcho(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var readBuffer = new byte[4096];
+                var result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
+                while (result != 0)
+                {
+                    await context.Response.WriteAsync(Encoding.UTF8.GetString(readBuffer, 0, result));
+                    result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
+                }
+            });
+        }
+
+        private void ReadAndWriteEchoTwice(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var readBuffer = new byte[4096];
+                var result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
+                while (result != 0)
+                {
+                    await context.Response.WriteAsync(Encoding.UTF8.GetString(readBuffer, 0, result));
+                    await context.Response.Body.FlushAsync();
+                    await context.Response.WriteAsync(Encoding.UTF8.GetString(readBuffer, 0, result));
+                    await context.Response.Body.FlushAsync();
+                    result = await context.Request.Body.ReadAsync(readBuffer, 0, readBuffer.Length);
+                }
+            });
+        }
+
+        private void ReadAndWriteSlowConnection(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                var t2 = Task.Run(() => WriteResponseBodyAFewTimes(context));
+                var t1 = Task.Run(() => ReadRequestBody(context));
+                await Task.WhenAll(t1, t2);
+            });
+        }
+
+        private async Task WriteResponseBodyAFewTimes(HttpContext context)
+        {
+            for (var i = 0; i < 100; i++)
+            {
+                await context.Response.WriteAsync("hello world");
+            }
+        }
+
+        private void WebsocketRequest(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                await context.Response.WriteAsync("test");
+            });
+        }
+
+        private void ReadAndWriteCopyToAsync(IApplicationBuilder app)
+        {
+            app.Run(async context =>
+            {
+                await context.Request.Body.CopyToAsync(context.Response.Body);
             });
         }
     }

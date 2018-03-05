@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,8 +17,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private Action _callback;
 
         private Exception _exception;
-
         private int _cbBytes;
+        private int _hr;
 
         public static readonly NativeMethods.PFN_WEBSOCKET_ASYNC_COMPLETION ReadCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
         {
@@ -52,15 +51,30 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             var exception = _exception;
             var cbBytes = _cbBytes;
+            var hr = _hr;
 
             // Reset the awaitable state
             _exception = null;
             _cbBytes = 0;
             _callback = null;
+            _hr = 0;
 
             if (exception != null)
             {
-                throw exception;
+                // If the exception was an aborted read operation,
+                // return -1 to notify NativeReadAsync that the write was cancelled.
+                // E_OPERATIONABORTED == 0x800703e3 == -2147023901
+                // We also don't throw the exception here as this is expected behavior
+                // and can negatively impact perf if we catch an exception for each
+                // cann
+                if (hr != IISServerConstants.HResultCancelIO)   
+                {
+                    throw exception;
+                }
+                else
+                {
+                    cbBytes = -1;
+                }
             }
 
             return cbBytes;
@@ -86,12 +100,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         public void Complete(int hr, int cbBytes)
         {
+            _hr = hr;
+            _exception = Marshal.GetExceptionForHR(hr);
+            _cbBytes = cbBytes;
+            var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
+            continuation?.Invoke();
+        }
+
+        public Action GetCompletion(int hr, int cbBytes)
+        {
+            _hr = hr;
             _exception = Marshal.GetExceptionForHR(hr);
             _cbBytes = cbBytes;
 
-            var continuation = Interlocked.Exchange(ref _callback, _callbackCompleted);
-
-            continuation?.Invoke();
+            return Interlocked.Exchange(ref _callback, _callbackCompleted);
         }
     }
 }

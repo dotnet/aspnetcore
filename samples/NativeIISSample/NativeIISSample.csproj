@@ -20,4 +20,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <AspNetCoreModuleHostingModel>inprocess</AspNetCoreModuleHostingModel>
+  </PropertyGroup>
+
 </Project>

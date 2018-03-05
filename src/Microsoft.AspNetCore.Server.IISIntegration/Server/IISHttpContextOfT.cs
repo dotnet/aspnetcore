@@ -3,8 +3,8 @@
 
 using System;
 using System.Buffers;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 
@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             try
             {
                 context = _application.CreateContext(this);
-
                 await _application.ProcessRequestAsync(context);
                 // TODO Verification of Response
                 //if (Volatile.Read(ref _requestAborted) == 0)
@@ -82,18 +81,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 // The app is finished and there should be nobody writing to the response pipe
                 Output.Dispose();
 
-                if (_writingTask != null)
-                {
-                    await _writingTask;
-                }
-
                 // The app is finished and there should be nobody reading from the request pipe
                 Input.Reader.Complete();
 
-                if (_readingTask != null)
+                Task processBodiesTask;
+                lock (_createReadWriteBodySync)
                 {
-                    await _readingTask;
+                    processBodiesTask = _processBodiesTask;
                 }
+                await processBodiesTask;
             }
             return success;
         }

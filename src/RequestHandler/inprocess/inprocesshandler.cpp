@@ -59,25 +59,15 @@ IN_PROCESS_HANDLER::OnAsyncCompletion(
     HRESULT     hrCompletionStatus
 )
 {
-    HRESULT hr;
-    if (FAILED(hrCompletionStatus))
+    IN_PROCESS_APPLICATION* application = (IN_PROCESS_APPLICATION*)m_pApplication;
+    if (application == NULL)
     {
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
-    else
-    {
-        // For now we are assuming we are in our own self contained box. 
-        // TODO refactor Finished and Failure sections to handle in process and out of process failure.
-        // TODO verify that websocket's OnAsyncCompletion is not calling this.
-        IN_PROCESS_APPLICATION* application = (IN_PROCESS_APPLICATION*)m_pApplication;
-        if (application == NULL)
-        {
-            hr = E_FAIL;
-            return RQ_NOTIFICATION_FINISH_REQUEST;
-        }
 
-        return application->OnAsyncCompletion(cbCompletion, hrCompletionStatus, this);
-    }
+    // OnAsyncCompletion must call into the application if there was a error. We will redo calls
+    // to Read/Write if we called cancelIo on the IHttpContext.
+    return application->OnAsyncCompletion(cbCompletion, hrCompletionStatus, this);
 }
 
 VOID
