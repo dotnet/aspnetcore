@@ -50,7 +50,6 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" AllMetapackage="true" HostingStartup="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureKeyVault.HostingStartup" Category="ship" HostingStartup="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Category="noship" />
