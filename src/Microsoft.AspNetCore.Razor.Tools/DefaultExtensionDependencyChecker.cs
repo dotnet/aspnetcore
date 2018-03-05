@@ -26,15 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private readonly ExtensionAssemblyLoader _loader;
         private readonly TextWriter _output;
+        private readonly TextWriter _error;
         private readonly string[] _ignoredAssemblies;
 
         public DefaultExtensionDependencyChecker(
             ExtensionAssemblyLoader loader,
             TextWriter output,
+            TextWriter error,
             string[] ignoredAssemblies = null)
         {
             _loader = loader;
             _output = output;
+            _error = error;
             _ignoredAssemblies = ignoredAssemblies ?? DefaultIgnoredAssemblies;
         }
 
@@ -46,8 +49,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
             catch (Exception ex)
             {
-                _output.WriteLine("Exception performing Extension dependency check:");
-                _output.WriteLine(ex.ToString());
+                _error.WriteLine("Exception performing Extension dependency check:");
+                _error.WriteLine(ex.ToString());
                 return false;
             }
         }
@@ -64,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 if (!Path.IsPathRooted(item.FilePath))
                 {
-                    _output.WriteLine($"The file path '{item.FilePath}' is not a rooted path. File paths must be absolute and fully-qualified.");
+                    _error.WriteLine($"The file path '{item.FilePath}' is not a rooted path. File paths must be absolute and fully-qualified.");
                     return false;
                 }
 
@@ -83,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     }
 
                     // If we get here we can't resolve this assembly. This is an error.
-                    _output.WriteLine($"Extension assembly '{item.Identity.Name}' depends on '{reference.ToString()} which is missing.");
+                    _error.WriteLine($"Extension assembly '{item.Identity.Name}' depends on '{reference.ToString()} which is missing.");
                     return false;
                 }
             }
@@ -110,7 +113,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var item = items[i];
                 if (item.Mvid != item.Assembly.ManifestModule.ModuleVersionId)
                 {
-                    _output.WriteLine($"Extension assembly '{item.Identity.Name}' at '{item.FilePath}' has a different ModuleVersionId than loaded assembly '{item.Assembly.FullName}'");
+                    _error.WriteLine($"Extension assembly '{item.Identity.Name}' at '{item.FilePath}' has a different ModuleVersionId than loaded assembly '{item.Assembly.FullName}'");
                     return false;
                 }
             }

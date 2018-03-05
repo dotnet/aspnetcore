@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
             // Prevent shadow copying.
             var loader = new DefaultExtensionAssemblyLoader(baseDirectory: null);
-            var checker = new DefaultExtensionDependencyChecker(loader, Console.Error);
+            var checker = new DefaultExtensionDependencyChecker(loader, Console.Out, Console.Error);
 
             var application = new Application(
                 cancel.Token,

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 var writer = ServerLogger.IsLoggingEnabled ? new StringWriter() : TextWriter.Null;
 
-                var checker = new DefaultExtensionDependencyChecker(Loader, writer);
+                var checker = new DefaultExtensionDependencyChecker(Loader, writer, writer);
                 var app = new Application(cancellationToken, Loader, checker, AssemblyReferenceProvider)
                 {
                     Out = writer,
