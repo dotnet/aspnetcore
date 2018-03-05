@@ -18,4 +18,8 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Hosting\Microsoft.AspNetCore.Hosting.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="System.IO.Pipelines" Version="$(SystemIOPipelinesPackageVersion)" />
+  </ItemGroup>
+
 </Project>

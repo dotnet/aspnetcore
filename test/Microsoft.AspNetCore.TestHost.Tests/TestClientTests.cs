@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.TestHost
                     var receiveArray = new byte[1024];
                     while (true)
                     {
-                        var receiveResult = await websocket.ReceiveAsync(new System.ArraySegment<byte>(receiveArray), CancellationToken.None);
+                        var receiveResult = await websocket.ReceiveAsync(new ArraySegment<byte>(receiveArray), CancellationToken.None);
                         if (receiveResult.MessageType == WebSocketMessageType.Close)
                         {
                             await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);

@@ -210,8 +210,7 @@ namespace Microsoft.AspNetCore.TestHost
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100);
             Assert.False(readTask.IsCompleted);
             responseStream.Dispose();
-            Thread.Sleep(50);
-            Assert.True(readTask.IsCompleted);
+            Assert.True(readTask.Wait(TimeSpan.FromSeconds(10)), "Finished");
             Assert.Equal(0, readTask.Result);
             block.Set();
         }
@@ -234,11 +233,10 @@ namespace Microsoft.AspNetCore.TestHost
             Stream responseStream = await response.Content.ReadAsStreamAsync();
             CancellationTokenSource cts = new CancellationTokenSource();
             Task<int> readTask = responseStream.ReadAsync(new byte[100], 0, 100, cts.Token);
-            Assert.False(readTask.IsCompleted);
+            Assert.False(readTask.IsCompleted, "Not Completed");
             cts.Cancel();
-            Thread.Sleep(50);
-            Assert.True(readTask.IsCompleted);
-            Assert.True(readTask.IsFaulted);
+            var ex = Assert.Throws<AggregateException>(() => readTask.Wait(TimeSpan.FromSeconds(10)));
+            Assert.IsAssignableFrom<OperationCanceledException>(ex.GetBaseException());
             block.Set();
         }
 

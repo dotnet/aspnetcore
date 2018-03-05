@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -99,7 +100,34 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
-        public async Task HeadersAvailableBeforeBodyFinished()
+        public async Task HeadersAvailableBeforeSyncBodyFinished()
+        {
+            var block = new ManualResetEvent(false);
+            var builder = new WebHostBuilder().Configure(app =>
+            {
+                app.Run(c =>
+                {
+                    c.Response.Headers["TestHeader"] = "TestValue";
+                    var bytes = Encoding.UTF8.GetBytes("BodyStarted" + Environment.NewLine);
+                    c.Response.Body.Write(bytes, 0, bytes.Length);
+                    Assert.True(block.WaitOne(TimeSpan.FromSeconds(5)));
+                    bytes = Encoding.UTF8.GetBytes("BodyFinished");
+                    c.Response.Body.Write(bytes, 0, bytes.Length);
+                    return Task.CompletedTask;
+                });
+            });
+            var server = new TestServer(builder);
+            var context = await server.SendAsync(c => { });
+
+            Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
+            var reader = new StreamReader(context.Response.Body);
+            Assert.Equal("BodyStarted", reader.ReadLine());
+            block.Set();
+            Assert.Equal("BodyFinished", reader.ReadToEnd());
+        }
+
+        [Fact]
+        public async Task HeadersAvailableBeforeAsyncBodyFinished()
         {
             var block = new ManualResetEvent(false);
             var builder = new WebHostBuilder().Configure(app =>
@@ -107,8 +135,8 @@ namespace Microsoft.AspNetCore.TestHost
                 app.Run(async c =>
                 {
                     c.Response.Headers["TestHeader"] = "TestValue";
-                    await c.Response.WriteAsync("BodyStarted,");
-                    block.WaitOne();
+                    await c.Response.WriteAsync("BodyStarted" + Environment.NewLine);
+                    Assert.True(block.WaitOne(TimeSpan.FromSeconds(5)));
                     await c.Response.WriteAsync("BodyFinished");
                 });
             });
@@ -116,8 +144,10 @@ namespace Microsoft.AspNetCore.TestHost
             var context = await server.SendAsync(c => { });
 
             Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
+            var reader = new StreamReader(context.Response.Body);
+            Assert.Equal("BodyStarted", await reader.ReadLineAsync());
             block.Set();
-            Assert.Equal("BodyStarted,BodyFinished", new StreamReader(context.Response.Body).ReadToEnd());
+            Assert.Equal("BodyFinished", await reader.ReadToEndAsync());
         }
 
         [Fact]
@@ -217,7 +247,7 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.False(readTask.IsCompleted);
             cts.Cancel();
             var ex = Assert.Throws<AggregateException>(() => readTask.Wait(TimeSpan.FromSeconds(10)));
-            Assert.IsAssignableFrom<OperationCanceledException>(ex.GetBaseException().InnerException);
+            Assert.IsAssignableFrom<OperationCanceledException>(ex.GetBaseException());
             block.Set();
         }
 

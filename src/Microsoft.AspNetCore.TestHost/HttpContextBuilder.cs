@@ -90,14 +90,14 @@ namespace Microsoft.AspNetCore.TestHost
             {
                 _requestAbortedSource.Cancel();
             }
-            _responseStream.Complete();
+            _responseStream.CompleteWrites();
         }
 
         internal async Task CompleteResponseAsync()
         {
             _pipelineFinished = true;
             await ReturnResponseMessageAsync();
-            _responseStream.Complete();
+            _responseStream.CompleteWrites();
             await _responseFeature.FireOnResponseCompletedAsync();
         }
 

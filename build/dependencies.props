@@ -40,6 +40,7 @@
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>3.2.0</SerilogSinksFilePackageVersion>
     <SystemDiagnosticsDiagnosticSourcePackageVersion>4.5.0-preview2-26224-02</SystemDiagnosticsDiagnosticSourcePackageVersion>
+    <SystemIOPipelinesPackageVersion>4.5.0-preview2-26224-02</SystemIOPipelinesPackageVersion>
     <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26126-03</SystemReflectionMetadataPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.5.0-preview2-26224-02</SystemServiceProcessServiceControllerPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
