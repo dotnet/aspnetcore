@@ -8,8 +8,6 @@
       <AllMetapackage>false</AllMetapackage>
       <!-- When true, this dependency will be included in the Microsoft.AspNetCore.Analyzers metapackage. -->
       <Analyzer>false</Analyzer>
-      <!-- When true, this dependency will be used to generate a deps.json for hosting startup. -->
-      <HostingStartup>false</HostingStartup>
       <!-- When true, this dependency will be included in the LZMA. -->
       <LZMA>false</LZMA>
       <!--
@@ -33,7 +31,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" LZMA="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Analyzers" Category="shipoob" />
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" AllMetapackage="true" HostingStartup="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AspNetCoreModule" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Abstractions" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
@@ -49,7 +47,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication.WsFederation" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
-    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" AllMetapackage="true" HostingStartup="true" />
+    <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Category="ship" AllMetapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.AzureAppServicesIntegration" Category="ship" AppMetapackage="true" AllMetapackage="true"/>
     <PackageArtifact Include="Microsoft.AspNetCore.Buffering" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" Category="noship" />
