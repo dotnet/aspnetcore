@@ -3,4 +3,4 @@ Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1' -OutFile .\build
 dotnet --version
 dotnet pack Blazor.sln --configuration Release
 cmd /c "C:\Program Files (x86)\Microsoft Visual Studio\aspnetci\Enterprise\MSBuild\15.0\Bin\MSBuild.exe" BlazorTooling.sln /t:Restore
-cmd /c "C:\Program Files (x86)\Microsoft Visual Studio\aspnetci\Enterprise\MSBuild\15.0\Bin\MSBuild.exe" BlazorTooling.sln
+cmd /c "C:\Program Files (x86)\Microsoft Visual Studio\aspnetci\Enterprise\MSBuild\15.0\Bin\MSBuild.exe" BlazorTooling.sln /p:DeployExtension=false
