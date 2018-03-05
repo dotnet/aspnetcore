@@ -5,9 +5,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
-using Moq;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
@@ -15,15 +16,29 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
     public class QueryStringValueProviderFactoryTest
     {
         [Fact]
+        public async Task DoesNotCreateValueProvider_WhenQueryStringIsEmpty()
+        {
+            // Arrange
+            var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+            var factoryContext = new ValueProviderFactoryContext(actionContext);
+            var factory = new QueryStringValueProviderFactory();
+
+            // Act
+            await factory.CreateValueProviderAsync(factoryContext);
+
+            // Assert
+            Assert.Empty(factoryContext.ValueProviders);
+        }
+
+        [Fact]
         public async Task GetValueProvider_ReturnsQueryStringValueProviderInstanceWithInvariantCulture()
         {
             // Arrange
-            var request = new Mock<HttpRequest>();
-            request.SetupGet(f => f.Query).Returns(Mock.Of<IQueryCollection>());
-            var context = new Mock<HttpContext>();
-            context.SetupGet(c => c.Items).Returns(new Dictionary<object, object>());
-            context.SetupGet(c => c.Request).Returns(request.Object);
-            var actionContext = new ActionContext(context.Object, new RouteData(), new ActionDescriptor());
+            var queryValues = new Dictionary<string, StringValues>();
+            queryValues.Add("foo", "bar");
+            var context = new DefaultHttpContext();
+            context.Request.Query = new QueryCollection(queryValues);
+            var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
             var factoryContext = new ValueProviderFactoryContext(actionContext);
             var factory = new QueryStringValueProviderFactory();
 

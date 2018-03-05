@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
@@ -12,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
 {
-    public class JQueryFormValueProviderFactoryTest
+    public class JQueryQueryStringValueProviderFactoryTest
     {
         private static readonly Dictionary<string, StringValues> _backingStore = new Dictionary<string, StringValues>
         {
@@ -37,39 +38,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             { "[property7][property8]", new[] { "found" } },
             { "[property9][][property10]Value", new[] { "found" } },
         };
-
-        [Fact]
-        public async Task GetValueProvider_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
-        {
-            // Arrange
-            var context = CreateContext("some-content-type", formValues: null);
-            var factory = new JQueryFormValueProviderFactory();
-
-            // Act
-            await factory.CreateValueProviderAsync(context);
-
-            // Assert
-            Assert.Empty(context.ValueProviders);
-        }
-
-        [Theory]
-        [InlineData("application/x-www-form-urlencoded")]
-        [InlineData("application/x-www-form-urlencoded;charset=utf-8")]
-        [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq")]
-        [InlineData("multipart/form-data; boundary=----WebKitFormBoundarymx2fSWqWSd0OxQqq; charset=utf-8")]
-        public async Task CreateValueProviderAsync_ReturnsValueProvider_WithCurrentCulture(string contentType)
-        {
-            // Arrange
-            var context = CreateContext(contentType, formValues: null);
-            var factory = new JQueryFormValueProviderFactory();
-
-            // Act
-            await factory.CreateValueProviderAsync(context);
-
-            // Assert
-            var valueProvider = Assert.IsType<JQueryFormValueProvider>(Assert.Single(context.ValueProviders));
-            Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
-        }
 
         public static TheoryData<string> SuccessDataSet
         {
@@ -104,8 +72,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         public async Task GetValueProvider_ReturnsValueProvider_ContainingExpectedKeys(string key)
         {
             // Arrange
-            var context = CreateContext("application/x-www-form-urlencoded", formValues: _backingStore);
-            var factory = new JQueryFormValueProviderFactory();
+            var context = CreateContext(_backingStore);
+            var factory = new JQueryQueryStringValueProviderFactory();
 
             // Act
             await factory.CreateValueProviderAsync(context);
@@ -117,33 +85,42 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         }
 
         [Fact]
-        public async Task CreatesValueProvider_WithCurrentCulture()
+        public async Task DoesNotCreateValueProvider_WhenQueryIsEmpty()
         {
             // Arrange
-            var context = CreateContext("application/x-www-form-urlencoded", formValues: _backingStore);
-            var factory = new JQueryFormValueProviderFactory();
+            var context = CreateContext(new Dictionary<string, StringValues>());
+            var factory = new JQueryQueryStringValueProviderFactory();
+
+            // Act
+            await factory.CreateValueProviderAsync(context);
+
+            // Assert
+            Assert.Empty(context.ValueProviders);
+        }
+
+        [Fact]
+        public async Task CreatesValueProvider_WithInvariantCulture()
+        {
+            // Arrange
+            var context = CreateContext(_backingStore);
+            var factory = new JQueryQueryStringValueProviderFactory();
 
             // Act
             await factory.CreateValueProviderAsync(context);
 
             // Assert
             var valueProvider = Assert.Single(context.ValueProviders);
-            var jqueryFormValueProvider = Assert.IsType<JQueryFormValueProvider>(valueProvider);
-            Assert.Equal(CultureInfo.CurrentCulture, jqueryFormValueProvider.Culture);
+            var jqueryQueryStringValueProvider = Assert.IsType<JQueryQueryStringValueProvider>(valueProvider);
+            Assert.Equal(CultureInfo.InvariantCulture, jqueryQueryStringValueProvider.Culture);
         }
 
-        private static ValueProviderFactoryContext CreateContext(string contentType, Dictionary<string, StringValues> formValues)
+        private static ValueProviderFactoryContext CreateContext(Dictionary<string, StringValues> queryStringValues)
         {
             var context = new DefaultHttpContext();
-            context.Request.ContentType = contentType;
 
-            if (context.Request.HasFormContentType)
-            {
-                context.Request.Form = new FormCollection(formValues ?? new Dictionary<string, StringValues>());
-            }
+            context.Request.Query = new QueryCollection(queryStringValues);
 
             var actionContext = new ActionContext(context, new RouteData(), new ActionDescriptor());
-
             return new ValueProviderFactoryContext(actionContext);
         }
     }
