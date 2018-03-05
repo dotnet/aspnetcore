@@ -57,19 +57,21 @@ namespace Microsoft.AspNetCore.Razor.Tools
                             var process = Process.GetProcessById(response.ServerProcessId);
                             process.WaitForExit();
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             // There is an inherent race here with the server process.  If it has already shutdown
-                            // by the time we try to access it then the operation has succeed.
+                            // by the time we try to access it then the operation has succeeded.
+                            Error.Write(ex);
                         }
 
                         Out.Write("Server pid:{0} shut down", response.ServerProcessId);
                     }
                 }
             }
-            catch (Exception) when (IsServerRunning())
+            catch (Exception ex) when (IsServerRunning())
             {
                 // Ignore an exception that occurred while the server was shutting down.
+                Error.Write(ex);
             }
 
             return 0;
