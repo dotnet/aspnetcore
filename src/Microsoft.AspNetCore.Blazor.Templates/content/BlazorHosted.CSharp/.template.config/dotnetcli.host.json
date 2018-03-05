@@ -4,6 +4,9 @@
     "skipRestore": {
       "longName": "no-restore",
       "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
     }
   }
 }

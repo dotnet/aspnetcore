@@ -17,7 +17,32 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
+      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")", 
       "path": "BlazorHosted.CSharp.sln"
+    },
+    {
+      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Server\\BlazorHosted.CSharp.Server.csproj"
+    },
+    {
+      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Server/BlazorHosted.CSharp.Server.csproj"
+    },
+    {
+      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Client\\BlazorHosted.CSharp.Client.csproj"
+    },
+    {
+      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Client/BlazorHosted.CSharp.Client.csproj"
+    },
+    {
+      "condition": "(OS == \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Shared\\BlazorHosted.CSharp.Shared.csproj"
+    },
+    {
+      "condition": "(OS != \"Windows_NT\" && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "BlazorHosted.CSharp.Shared/BlazorHosted.CSharp.Shared.csproj"
     }
   ],
   "shortName": "blazorhosted",
@@ -32,6 +57,19 @@
     }
   ],
   "symbols": {
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp2.0",
+          "description": "Target netcoreapp2.0"
+        }
+      ],
+      "replaces": "netcoreapp2.0",
+      "defaultValue": "netcoreapp2.0"
+    },
     "HostIdentifier": {
       "type": "bind",
       "binding": "HostIdentifier"
