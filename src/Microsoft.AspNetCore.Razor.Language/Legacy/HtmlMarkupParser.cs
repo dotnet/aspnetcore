@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (AcceptAndMoveNext())
             {
-                if (CurrentSymbol.Type == HtmlSymbolType.DoubleHyphen)
+                if (IsHtmlCommentAhead())
                 {
                     using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
                     {
@@ -505,32 +505,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
                             if (At(HtmlSymbolType.DoubleHyphen))
                             {
-                                var lastDoubleHyphen = CurrentSymbol;
-                                AcceptWhile(s =>
-                                {
-                                    if (NextIs(HtmlSymbolType.DoubleHyphen))
-                                    {
-                                        lastDoubleHyphen = s;
-                                        return true;
-                                    }
-
-                                    NextToken();
-                                    EnsureCurrent();
-                                    return false;
-                                });
-
-                                if (At(HtmlSymbolType.Text) &&
-                                    string.Equals(CurrentSymbol.Content, "-", StringComparison.Ordinal))
-                                {
-                                    // Doing this here to maintain the order of symbols
-                                    if (!NextIs(HtmlSymbolType.CloseAngle))
-                                    {
-                                        Accept(lastDoubleHyphen);
-                                        lastDoubleHyphen = null;
-                                    }
-
-                                    AcceptAndMoveNext();
-                                }
+                                var lastDoubleHyphen = AcceptAllButLastDoubleHypens();
 
                                 if (At(HtmlSymbolType.CloseAngle))
                                 {
@@ -541,7 +516,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     Accept(lastDoubleHyphen);
                                     AcceptAndMoveNext();
                                     Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
-
                                     return true;
                                 }
                                 else if (lastDoubleHyphen != null)
@@ -551,8 +525,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             }
                         }
                     }
-
-                    return false;
                 }
                 else if (CurrentSymbol.Type == HtmlSymbolType.LeftBracket)
                 {
@@ -569,6 +541,125 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return false;
+        }
+
+        private HtmlSymbol AcceptAllButLastDoubleHypens()
+        {
+            var lastDoubleHyphen = CurrentSymbol;
+            AcceptWhile(s =>
+            {
+                if (NextIs(HtmlSymbolType.DoubleHyphen))
+                {
+                    lastDoubleHyphen = s;
+                    return true;
+                }
+
+                NextToken();
+                EnsureCurrent();
+                return false;
+            });
+
+            if (At(HtmlSymbolType.Text) && IsDashSymbol(CurrentSymbol))
+            {
+                // Doing this here to maintain the order of symbols
+                if (!NextIs(HtmlSymbolType.CloseAngle))
+                {
+                    Accept(lastDoubleHyphen);
+                    lastDoubleHyphen = null;
+                }
+
+                AcceptAndMoveNext();
+            }
+
+            return lastDoubleHyphen;
+        }
+
+        private static bool IsDashSymbol(HtmlSymbol symbol)
+        {
+            return string.Equals(symbol.Content, "-", StringComparison.Ordinal);
+        }
+
+        private bool IsHtmlCommentAhead()
+        {
+            /*
+             * From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments
+             * 
+             * Comments must have the following format:
+             * 1. The string "<!--"
+             * 2. Optionally, text, with the additional restriction that the text
+             *      2.1 must not start with the string ">" nor start with the string "->"
+             *      2.2 nor contain the strings "<!--", "-->", or "--!>"
+             *      2.3 nor end with the string "<!-".
+             * 3. The string "-->"
+             * 
+             * */
+
+            if (CurrentSymbol.Type != HtmlSymbolType.DoubleHyphen)
+            {
+                return false;
+            }
+
+            // Check condition 2.1
+            if (NextIs(HtmlSymbolType.CloseAngle) || NextIs(next => IsDashSymbol(next) && NextIs(HtmlSymbolType.CloseAngle)))
+            {
+                return false;
+            }
+
+            // Check condition 2.2
+            bool isValidComment = false;
+            LookaheadUntil((s, p) =>
+            {
+                bool breakLookahead = false;
+                if (s.Type == HtmlSymbolType.DoubleHyphen)
+                {
+                    if (NextIs(HtmlSymbolType.CloseAngle))
+                    {
+                        // We're at the end of a comment. check the condition 2.3 to make sure the text ending is allowed.
+                        isValidComment = !EndsWithSymbolsSequence(p, HtmlSymbolType.OpenAngle, HtmlSymbolType.Bang, HtmlSymbolType.DoubleHyphen);
+                        breakLookahead = true;
+                    }
+                    else if (NextIs(ns => IsDashSymbol(ns) && NextIs(HtmlSymbolType.CloseAngle)))
+                    {
+                        // This is also a valid closing comment case, as the dashes lookup is treated with DoubleHyphen symbols first.
+                        isValidComment = true;
+                        breakLookahead = true;
+                    }
+                    else if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.CloseAngle)))
+                    {
+                        isValidComment = false;
+                        breakLookahead = true;
+                    }
+                }
+                else if (s.Type == HtmlSymbolType.OpenAngle)
+                {
+                    if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.DoubleHyphen)))
+                    {
+                        isValidComment = false;
+                        breakLookahead = true;
+                    }
+                }
+
+                return breakLookahead;
+            });
+
+            return isValidComment;
+        }
+
+        private bool EndsWithSymbolsSequence(IEnumerable<HtmlSymbol> symbols, params HtmlSymbolType[] sequenceToMatchWith)
+        {
+            int index = sequenceToMatchWith.Length;
+            foreach (var previousSymbol in symbols)
+            {
+                if (index == 0)
+                {
+                    break;
+                }
+
+                if (sequenceToMatchWith[--index] != previousSymbol.Type)
+                    return false;
+            }
+
+            return index == 0;
         }
 
         private bool CData()

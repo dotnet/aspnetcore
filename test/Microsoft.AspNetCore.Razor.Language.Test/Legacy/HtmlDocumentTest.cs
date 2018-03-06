@@ -219,8 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Markup("Foo Baz"),
                     BlockFactory.HtmlCommentBlock("Foo"),
                     Factory.Markup("Bar"),
-                    new HtmlCommentBlock(Factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("F> Qux").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Markup("<!--F> Qux")));
         }
 
         [Fact]
