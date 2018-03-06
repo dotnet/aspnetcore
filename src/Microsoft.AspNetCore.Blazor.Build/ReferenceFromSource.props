@@ -14,12 +14,13 @@
     <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="$(RazorPackageVersion)"/>
   </ItemGroup>
 
-  <Target Name="BuildBlazorBuildBinary"
-          BeforeTargets="BlazorCompileRazorComponents">
+  <Target 
+    Name="BuildBlazorBuildBinary"
+    BeforeTargets="BlazorGenerateDeclaration">
     <!-- Ensures this project is built before the consuming project, but without
          adding a runtime dependency on the .dll (to be equivalent to a <PackageDependency>
          given that the packed version of this project wouldn't add a .dll reference) -->
-    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)Microsoft.AspNetCore.Blazor.Build.csproj" Targets="Restore;Build" />
   </Target>
 
   <PropertyGroup>
