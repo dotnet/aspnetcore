@@ -13,6 +13,10 @@
       <Private>false</Private>
       <!-- When true, this dependency should be mirrored to aspnetcore's nightly build feeds. -->
       <Mirror>false</Mirror>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.App metapackage. -->
+      <AppMetapackage>false</AppMetapackage>
+      <!-- When true, this dependency will be included in the Microsoft.AspNetCore.All metapackage. -->
+      <AllMetapackage>false</AllMetapackage>
     </ExternalDependency>
   </ItemDefinitionGroup>
 
@@ -225,7 +229,7 @@
     <ExternalDependency Include="Libuv" Version="$(LibuvPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="$(MicrosoftApplicationInsightsAspNetCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(MicrosoftAspNetIdentityEntityFrameworkPackageVersion)" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" Source="$(DefaultNuGetFeed)" AppMetapackage="true" AllMetapackage="true"/>
     <ExternalDependency Include="Microsoft.Azure.DocumentDB.Core" Version="$(MicrosoftAzureDocumentDBCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" Source="$(DefaultNuGetFeed)" />
