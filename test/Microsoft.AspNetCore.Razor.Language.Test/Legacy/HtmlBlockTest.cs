@@ -419,9 +419,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(
                 "<!--<foo>",
                 new MarkupBlock(
-                    new HtmlCommentBlock(Factory.Markup("<!--").Accepts(AcceptedCharactersInternal.None)),
-                    Factory.Markup("<foo>").Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.EmptyHtml()));
+                    Factory.Markup("<!--<foo>").Accepts(AcceptedCharactersInternal.None)));
         }
 
         [Fact]
