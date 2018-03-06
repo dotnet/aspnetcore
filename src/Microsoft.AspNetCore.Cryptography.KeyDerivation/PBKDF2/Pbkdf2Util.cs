@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Cryptography.Cng;
 
 namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
@@ -20,15 +19,28 @@ namespace Microsoft.AspNetCore.Cryptography.KeyDerivation.PBKDF2
             {
                 // fastest implementation
                 return new Win8Pbkdf2Provider();
-            } else if (OSVersionUtil.IsWindows())
+            }
+            else if (OSVersionUtil.IsWindows())
             {
                 // acceptable implementation
                 return new Win7Pbkdf2Provider();
-            } else
+            }
+#if NETCOREAPP2_0
+            else
+            {
+                // fastest implementation on .NET Core for Linux/macOS.
+                // Not supported on .NET Framework
+                return new NetCorePbkdf2Provider();
+            }
+#elif NETSTANDARD2_0
+            else
             {
                 // slowest implementation
                 return new ManagedPbkdf2Provider();
             }
+#else
+#error Update target frameworks
+#endif
         }
     }
 }

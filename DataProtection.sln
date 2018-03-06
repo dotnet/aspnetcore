@@ -5,13 +5,30 @@ MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5FCB2DA3-5395-47F5-BCEE-E0EA319448EA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{60336AB3-948D-4D15-A5FB-F32A2B91E814}"
+	ProjectSection(SolutionItems) = preProject
+		test\CreateTestCert.ps1 = test\CreateTestCert.ps1
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{5A3A5DE3-49AD-431C-971D-B01B62D94AE2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E1D86B1B-41D8-43C9-97FD-C2BF65C414E2}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.travis.yml = .travis.yml
+		CONTRIBUTING.md = CONTRIBUTING.md
 		build\dependencies.props = build\dependencies.props
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		korebuild.json = korebuild.json
+		LICENSE.txt = LICENSE.txt
 		NuGet.config = NuGet.config
+		NuGetPackageVerifier.json = NuGetPackageVerifier.json
+		Provision-AutoGenKeys.ps1 = Provision-AutoGenKeys.ps1
+		README.md = README.md
+		version.props = version.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection", "src\Microsoft.AspNetCore.DataProtection\Microsoft.AspNetCore.DataProtection.csproj", "{1E570CD4-6F12-44F4-961E-005EE2002BC2}"
