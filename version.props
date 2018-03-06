@@ -11,9 +11,10 @@
     <ExperimentalPackageVersion Condition="'$(IsFinalBuild)' == 'true'">$(ExperimentalVersionPrefix)-$(ExperimentalVersionSuffix)-final</ExperimentalPackageVersion>
     <BuildNumber Condition="'$(BuildNumber)' == ''">t000</BuildNumber>
 
-    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
+    <FeatureBranchVersionPrefix Condition="'$(FeatureBranchVersionPrefix)' == ''">a-</FeatureBranchVersionPrefix>
+    <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(VersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</VersionSuffix>
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(ExperimentalVersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</ExperimentalVersionSuffix>
+    <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(FeatureBranchVersionSuffix)' != ''">$(FeatureBranchVersionPrefix)$(ExperimentalVersionSuffix)-$([System.Text.RegularExpressions.Regex]::Replace('$(FeatureBranchVersionSuffix)', '[^\w-]', '-'))</ExperimentalVersionSuffix>
     <ExperimentalVersionSuffix Condition="'$(ExperimentalVersionSuffix)' != '' And '$(BuildNumber)' != ''">$(ExperimentalVersionSuffix)-$(BuildNumber)</ExperimentalVersionSuffix>
   </PropertyGroup>
 </Project>
