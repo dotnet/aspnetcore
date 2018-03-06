@@ -29,15 +29,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             IActionResult GetInvalidModelStateResponse(ActionContext context)
             {
                 var errorDetails = _errorDescriptionFactory.CreateErrorDescription(
-                    context.ActionDescriptor, 
+                    context.ActionDescriptor,
                     context.ModelState);
 
                 var result = (errorDetails is ModelStateDictionary modelState) ?
                     new BadRequestObjectResult(modelState) :
                     new BadRequestObjectResult(errorDetails);
 
-                result.ContentTypes.Add("application/problem+json");
-                result.ContentTypes.Add("application/problem+json");
+                result.ContentTypes.Add("application/json");
+                result.ContentTypes.Add("application/xml");
 
                 return result;
             }

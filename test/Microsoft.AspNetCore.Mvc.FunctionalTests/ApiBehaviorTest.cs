@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            Assert.Equal("application/problem+json", response.Content.Headers.ContentType.MediaType);
+            Assert.Equal("application/json", response.Content.Headers.ContentType.MediaType);
             var actual = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(await response.Content.ReadAsStringAsync());
             Assert.Collection(
                 actual.OrderBy(kvp => kvp.Key),
