@@ -123,7 +123,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http2ConnectionTests()
         {
-            _pair = DuplexPipe.CreateConnectionPair(_memoryPool);
+            var inlineSchedulingPipeOptions = new PipeOptions(
+                pool: _memoryPool,
+                readerScheduler: PipeScheduler.Inline,
+                writerScheduler: PipeScheduler.Inline
+            );
+
+            _pair = DuplexPipe.CreateConnectionPair(inlineSchedulingPipeOptions, inlineSchedulingPipeOptions);
 
             _noopApplication = context => Task.CompletedTask;
 
