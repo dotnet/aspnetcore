@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             return
                 method.ContainingType.HasAttribute(ApiControllerAttribute, inherit: true) &&
                 method.DeclaredAccessibility == Accessibility.Public &&
+                method.MethodKind == MethodKind.Ordinary &&
                 !method.IsGenericMethod &&
                 !method.IsAbstract &&
                 !method.IsStatic &&

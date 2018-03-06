@@ -77,6 +77,28 @@ public class PetController : Controller
         }
 
         [Fact]
+        public async Task NoDiagnosticsAreReturned_ForConstructors()
+        {
+            // Arrange
+            var test =
+@"
+using Microsoft.AspNetCore.Mvc;
+
+[ApiController]
+public class PetController : Controller
+{
+    public PetController(){ }
+}";
+            var project = CreateProject(test);
+
+            // Act
+            var result = await GetDiagnosticAsync(project);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public async Task NoDiagnosticsAreReturned_ForNonActions()
         {
             // Arrange
