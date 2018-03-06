@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize ?? 0,
                 resumeWriterThreshold: maxResponseBufferSize ?? 0
             );
@@ -103,6 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 0,
                 resumeWriterThreshold: 0
             );
@@ -151,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1
             );
@@ -207,6 +210,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize,
                 resumeWriterThreshold: maxResponseBufferSize
             );
@@ -271,6 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
+                    writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
                     resumeWriterThreshold: maxResponseBufferSize
                 );
@@ -435,6 +440,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
+                    writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
                     resumeWriterThreshold: maxResponseBufferSize
                 );
@@ -519,6 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 (
                     pool: _memoryPool,
                     readerScheduler: _libuvThread,
+                    writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
                     resumeWriterThreshold: maxResponseBufferSize
                 );
@@ -601,6 +608,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize,
                 resumeWriterThreshold: maxResponseBufferSize
             );
@@ -662,6 +670,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: _libuvThread,
+                writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize ?? 0,
                 resumeWriterThreshold: maxResponseBufferSize ?? 0
             );
