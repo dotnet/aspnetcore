@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 {
     public class DefaultSigningCredentialsSourceTest
     {
-        [Fact]
+        [Fact(Skip="https://github.com/aspnet/Identity/issues/1630")]
         public async Task GetCredentialsAsync_ReadsCredentialsFromOptions()
         {
             // Arrange

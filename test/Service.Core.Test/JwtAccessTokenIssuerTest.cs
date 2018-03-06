@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal($"Missing '{ClaimTypes.NameIdentifier}' claim from the user.", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task JwtAccessTokenIssuer_SignsAccessToken()
         {
             // Arrange
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal(new[] { "all" }, tokenScopes);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task JwtAccessTokenIssuer_IncludesAllRequiredData()
         {
             // Arrange

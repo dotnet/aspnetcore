@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             Assert.Equal(expectedDateTime.UtcDateTime, jwtToken.ValidFrom);
         }
 
-        [Theory]
+        [Theory(Skip="https://github.com/aspnet/Identity/issues/1630")]
         [InlineData(null, null, null)]
         [InlineData("nonce", null, null)]
         [InlineData("nonce", "code", null)]
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 new Claim(IdentityServiceClaimTypes.RedirectUri,"redirectUri"),
             };
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task JwtIdTokenIssuer_IncludesAllRequiredData()
         {
             // Arrange

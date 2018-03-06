@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.Service
 {
     public class AuthorizationCodeExchangeIntegrationTest
     {
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/Identity/issues/1630")]
         public async Task ValidAuthorizationCode_ProducesAccessTokenIdTokenAndRefreshToken()
         {
             // Arrange
