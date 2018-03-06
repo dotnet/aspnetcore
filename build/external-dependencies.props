@@ -108,11 +108,6 @@
     <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="$(SystemThreadingTasksDataflowPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="System.ValueTuple" Version="$(SystemValueTuplePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="NuGet.Frameworks" Version="$(NuGetFrameworksPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
   <!-- Roslyn -->
@@ -235,6 +230,11 @@
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="$(MicrosoftAzureKeyVaultPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="$(MicrosoftAzureServicesAppAuthenticationPackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" Source="$(DefaultNuGetFeed)" />
     <!-- Razor uses a custom version of roslyn packages -->
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(MicrosoftCodeAnalysisCommonPackageVersion)" Source="$(DefaultNuGetFeed)">
       <NoWarn>KRB2004</NoWarn>

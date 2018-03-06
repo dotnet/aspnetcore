@@ -1,11 +1,6 @@
 <Project>
   <!-- These package version may be overridden or updated by automation. -->
   <PropertyGroup Label="Package Versions: Auto" Condition=" '$(DotNetPackageVersionPropsPath)' == '' ">
-    <MicrosoftBuildFrameworkPackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildFrameworkPackageVersion>
-    <MicrosoftBuildPackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildRuntimePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildRuntimePackageVersion>
-    <MicrosoftBuildTasksCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildTasksCorePackageVersion>
-    <MicrosoftBuildUtilitiesCorePackageVersion>15.7.0-preview-000011-1378327</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCSharpPackageVersion>4.5.0-preview2-26224-02</MicrosoftCSharpPackageVersion>
     <MicrosoftDotNetPlatformAbstractionsPackageVersion>2.1.0-preview2-26224-02</MicrosoftDotNetPlatformAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>2.1.0-preview2-26224-02</MicrosoftExtensionsDependencyModelPackageVersion>
@@ -75,7 +70,6 @@
     <SystemReflectionMetadataPackageVersion>1.6.0-preview2-26224-02</SystemReflectionMetadataPackageVersion>
     <SystemReflectionTypeExtensionsPackageVersion>4.5.0-preview2-26224-02</SystemReflectionTypeExtensionsPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>4.5.0-preview2-26224-02</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <SystemSecurityAccessControlPackageVersion>4.5.0-preview2-26224-02</SystemSecurityAccessControlPackageVersion>
     <SystemSecurityCryptographyCngPackageVersion>4.5.0-preview2-26224-02</SystemSecurityCryptographyCngPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>4.5.0-preview2-26224-02</SystemSecurityCryptographyPkcsPackageVersion>
@@ -125,6 +119,11 @@
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
     <MicrosoftAzureManagementFluentPackageVersion>1.1.3</MicrosoftAzureManagementFluentPackageVersion>
     <MicrosoftAzureServicesAppAuthenticationPackageVersion>1.1.0-preview</MicrosoftAzureServicesAppAuthenticationPackageVersion>
+    <MicrosoftBuildFrameworkPackageVersion>15.6.82</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildPackageVersion>15.6.82</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildRuntimePackageVersion>15.6.82</MicrosoftBuildRuntimePackageVersion>
+    <MicrosoftBuildTasksCorePackageVersion>15.6.82</MicrosoftBuildTasksCorePackageVersion>
+    <MicrosoftBuildUtilitiesCorePackageVersion>15.6.82</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>2.6.1</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
@@ -196,6 +195,7 @@
     <SystemNetHttpPackageVersion>4.3.2</SystemNetHttpPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <SystemReflectionEmitPackageVersion>4.3.0</SystemReflectionEmitPackageVersion>
+    <SystemRuntimeInteropServicesRuntimeInformationPackageVersion>4.3.0</SystemRuntimeInteropServicesRuntimeInformationPackageVersion>
     <VisualStudio_NewtonsoftJsonPackageVersion>9.0.1</VisualStudio_NewtonsoftJsonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCommonPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCommonPackageVersion>
     <VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>2.7.0-beta3-62512-06</VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
