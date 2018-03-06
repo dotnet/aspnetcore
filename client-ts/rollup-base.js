@@ -22,31 +22,13 @@ export default function(rootDir, moduleGlobals) {
             banner: "/* @license\r\n" +
                 " * Copyright (c) .NET Foundation. All rights reserved.\r\n" +
                 " * Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.\r\n" +
-                "*/",
+                " */",
             globals: moduleGlobals,
         },
-        external: function (m) {
-            let match = m.match(/node_modules/);
-            if (match) {
-                let moduleName = m.substring(match.index + "node_modules".length + 1);
-                let slashIndex = moduleName.indexOf('/');
-                if(slashIndex < 0) {
-                    slashIndex = moduleName.indexOf('\\');
-                }
-                moduleName = moduleName.substring(0, slashIndex);
 
-                if(polyfills.indexOf(moduleName) >= 0) {
-                    // This is a polyfill
-                    console.log(`Importing polyfill: ${m}`);
-                    return false;
-                }
-                else if(!allowed_externals.indexOf(moduleName)) {
-                    console.log(`WARNING: External module '${m}' in use.`);
-                }
-                return true;
-            }
-            return false;
-        },
+        // Mark everything in the dependencies list as external
+        external: Object.keys(pkg.dependencies || {}),
+
         plugins: [
             commonjs(),
             resolve({

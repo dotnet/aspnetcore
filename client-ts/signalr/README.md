@@ -36,7 +36,7 @@ connection.start()
 ### Example (NodeJS)
 
 ```JavaScript
-const signalR = require("@aspnet/signalR");
+const signalR = require("@aspnet/signalr");
 
 let connection = new signalR.HubConnection('/chat');
 
