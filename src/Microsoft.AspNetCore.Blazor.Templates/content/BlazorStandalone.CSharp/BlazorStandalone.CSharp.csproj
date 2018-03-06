@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Razor/2.1.0-preview2-30230;Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.1.0-preview2-30230" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Browser" Version="0.0.5-preview1-10054" PrivateAssets="all" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="0.0.5-preview1-10054" />
     <DotNetCliToolReference Include="Microsoft.AspNetCore.Blazor.Cli" Version="0.0.5-preview1-10054" />

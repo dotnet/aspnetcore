@@ -14,8 +14,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         {
             var documentNode = codeDocument.GetDocumentIntermediateNode();
             ThrowForMissingDocumentDependency(documentNode);
-            
+#pragma warning disable CS0618
             var writer = new DocumentWriterWorkaround().Create(documentNode.Target, documentNode.Options);
+#pragma warning restore CS0618
             try
             {
                 var cSharpDocument = writer.WriteDocument(codeDocument, documentNode);
