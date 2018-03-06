@@ -122,7 +122,7 @@ describe("hubConnection", () => {
             });
 
             it("rethrows an exception from the server when invoking", (done) => {
-                const errorMessage = "An error occurred.";
+                const errorMessage = "An unexpected error occurred invoking 'ThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
                     logger: LogLevel.Trace,
                     protocol,
@@ -130,7 +130,7 @@ describe("hubConnection", () => {
                 });
 
                 hubConnection.start().then(() => {
-                    hubConnection.invoke("ThrowException", errorMessage).then(() => {
+                    hubConnection.invoke("ThrowException", "An error occurred.").then(() => {
                         // exception expected but none thrown
                         fail();
                     }).catch((e) => {
@@ -195,7 +195,7 @@ describe("hubConnection", () => {
             });
 
             it("rethrows an exception from the server when streaming", (done) => {
-                const errorMessage = "An error occurred.";
+                const errorMessage = "An unexpected error occurred invoking 'StreamThrowException' on the server. InvalidOperationException: An error occurred.";
                 const hubConnection = new HubConnection(TESTHUBENDPOINT_URL, {
                     logger: LogLevel.Trace,
                     protocol,
@@ -203,13 +203,13 @@ describe("hubConnection", () => {
                 });
 
                 hubConnection.start().then(() => {
-                    hubConnection.stream("StreamThrowException", errorMessage).subscribe({
+                    hubConnection.stream("StreamThrowException", "An error occurred.").subscribe({
                         complete: function complete() {
                             hubConnection.stop();
                             fail();
                         },
                         error: function error(err) {
-                            expect(err.message).toEqual("An error occurred.");
+                            expect(err.message).toEqual(errorMessage);
                             hubConnection.stop();
                             done();
                         },

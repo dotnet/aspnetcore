@@ -397,7 +397,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var channel = await connection.StreamAsync<int>("StreamException").OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("Error occurred while streaming.", ex.Message);
+                    Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -451,7 +451,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("Echo", "p1", 42)).OrTimeout();
-                    Assert.Equal("Invocation provides 2 argument(s) but target expects 1.", ex.Message);
+                    Assert.Equal("Failed to invoke 'Echo'. Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
 
                     var ex = await Assert.ThrowsAsync<HubException>(() => connection.InvokeAsync("Echo", new int[] { 42 })).OrTimeout();
-                    Assert.StartsWith("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
+                    Assert.StartsWith("Failed to invoke 'Echo'. Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -535,7 +535,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsync<int>("Stream", 42, 42);
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.Equal("Invocation provides 2 argument(s) but target expects 1.", ex.Message);
+                    Assert.Equal("Failed to invoke 'Stream'. Invocation provides 2 argument(s) but target expects 1.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsync<int>("Stream", "xyz");
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAllAsync().OrTimeout());
-                    Assert.StartsWith("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
+                    Assert.StartsWith("Failed to invoke 'Stream'. Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
                 }
                 catch (Exception ex)
                 {

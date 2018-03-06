@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var result = (await client.InvokeAsync(methodName).OrTimeout());
 
-                Assert.Equal("BOOM!", result.Error);
+                Assert.Equal($"An unexpected error occurred invoking '{methodName}' on the server. InvalidOperationException: BOOM!", result.Error);
 
                 // kill the connection
                 client.Dispose();
