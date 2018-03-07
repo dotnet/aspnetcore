@@ -56,6 +56,83 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert.Equal("pre-existing values", tokenizer.Buffer.ToString(), StringComparer.Ordinal);
         }
 
+        [Fact]
+        public void LookaheadUntil_PassesThePreviousSymbolsInReverseOrder()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create("asdf--fvd--<");
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+
+            // Act
+            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
+            var i = 3;
+            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            {
+                symbols.Push(s);
+                return --i == 0;
+            });
+
+            // Assert
+            Assert.Equal(3, symbols.Count);
+            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), symbols.Pop());
+            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
+            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+        }
+
+        [Fact]
+        public void LookaheadUntil_ReturnsFalseAfterIteratingOverAllSymbolsIfConditionIsNotMet()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create("asdf--fvd");
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+
+            // Act
+            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
+            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            {
+                symbols.Push(s);
+                return false;
+            });
+
+            // Assert
+            Assert.False(symbolFound);
+            Assert.Equal(3, symbols.Count);
+            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), symbols.Pop());
+            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
+            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+        }
+
+        [Fact]
+        public void LookaheadUntil_ReturnsTrueAndBreaksIteration()
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create("asdf--fvd");
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+
+            // Act
+            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
+            var symbolFound = tokenizer.LookaheadUntil((s, p) =>
+            {
+                symbols.Push(s);
+                return s.Type == HtmlSymbolType.DoubleHyphen;
+            });
+
+            // Assert
+            Assert.True(symbolFound);
+            Assert.Equal(2, symbols.Count);
+            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
+            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+        }
+
         private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
         {
             public ExposedTokenizer(string input)
@@ -114,6 +191,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             protected override StateResult Dispatch()
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        private class TestTokenizerBackedParser : TokenizerBackedParser<HtmlTokenizer, HtmlSymbol, HtmlSymbolType>
+        {
+            internal TestTokenizerBackedParser(LanguageCharacteristics<HtmlTokenizer, HtmlSymbol, HtmlSymbolType> language, ParserContext context) : base(language, context)
+            {
+            }
+
+            public override void ParseBlock()
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override bool SymbolTypeEquals(HtmlSymbolType x, HtmlSymbolType y)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal new bool LookaheadUntil(Func<HtmlSymbol, IEnumerable<HtmlSymbol>, bool> condition)
+            {
+                return base.LookaheadUntil(condition);
             }
         }
     }
