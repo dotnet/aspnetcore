@@ -110,7 +110,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 if (_flushTcs == null || _flushTcs.Task.IsCompleted)
                 {
                     _flushTcs = new TaskCompletionSource<object>();
-
                     awaitable.OnCompleted(_flushCompleted);
                 }
             }

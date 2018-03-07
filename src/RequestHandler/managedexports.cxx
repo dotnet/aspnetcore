@@ -423,4 +423,18 @@ http_get_authentication_information(
     return S_OK;
 }
 
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_stop_calls_into_mananged()
+{
+    IN_PROCESS_APPLICATION::GetInstance()->StopCallsIntoManaged();
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+VOID
+http_stop_incoming_requests()
+{
+    IN_PROCESS_APPLICATION::GetInstance()->StopIncomingRequests();
+}
+
 // End of export

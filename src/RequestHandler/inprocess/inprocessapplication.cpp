@@ -7,15 +7,15 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     ASPNETCORE_CONFIG*  pConfig) :
     APPLICATION(pHttpServer, pConfig),
     m_ProcessExitCode(0),
-    m_fManagedAppLoaded(FALSE),
-    m_fLoadManagedAppError(FALSE),
-    m_fInitialized(FALSE),
-    m_fRecycleProcessCalled(FALSE),
     m_hLogFileHandle(INVALID_HANDLE_VALUE),
     m_hErrReadPipe(INVALID_HANDLE_VALUE),
     m_hErrWritePipe(INVALID_HANDLE_VALUE),
+    m_dwStdErrReadTotal(0),
     m_fDoneStdRedirect(FALSE),
-    m_dwStdErrReadTotal(0)
+    m_fBlockCallbacksIntoManaged(FALSE),
+    m_fInitialized(FALSE),
+    m_fShutdownCalledFromNative(FALSE),
+    m_fShutdownCalledFromManaged(FALSE)
 {
     // is it guaranteed that we have already checked app offline at this point?
     // If so, I don't think there is much to do here.
@@ -24,111 +24,158 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     InitializeSRWLock(&m_srwLock);
 
     // TODO we can probably initialized as I believe we are the only ones calling recycle.
-    m_fInitialized = TRUE;
-    m_status = APPLICATION_STATUS::RUNNING;
+    m_status = APPLICATION_STATUS::STARTING;
 }
 
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
-    Recycle();
+    // TODO check if anything else needs to be cleaned up
 }
 
 __override
 VOID
 IN_PROCESS_APPLICATION::ShutDown()
 {
-    //todo
-}
+    DWORD    dwThreadStatus = 0;
+    DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
+    HANDLE   handle = NULL;
+    WIN32_FIND_DATA fileData;
+    BOOL     fLocked = FALSE;
 
-// This is the same function as before, TODO configrm if we need to change anything for configuration.
-VOID
-IN_PROCESS_APPLICATION::Recycle(
-    VOID
-)
-{
-    if (m_fInitialized)
+    if (IsDebuggerPresent())
     {
-        DWORD    dwThreadStatus = 0;
-        DWORD    dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
-        HANDLE   handle = NULL;
-        WIN32_FIND_DATA fileData;
+        dwTimeout = INFINITE;
+    }
+    else
+    {
+        dwTimeout = m_pConfig->QueryShutdownTimeLimitInMS();
+    }
 
-        AcquireSRWLockExclusive(&m_srwLock);
+    if (m_fShutdownCalledFromNative ||
+        m_status == APPLICATION_STATUS::STARTING ||
+        m_status == APPLICATION_STATUS::FAIL)
+    {
+        goto Finished;
+    }
 
-        if (!m_pHttpServer->IsCommandLineLaunch() &&
-            !m_fRecycleProcessCalled &&
-            (m_pHttpServer->GetAdminManager() != NULL))
-        {
-            // IIS scenario.
-            // notify IIS first so that new request will be routed to new worker process
-            m_pHttpServer->RecycleProcess(L"AspNetCore Recycle Process on Demand");
-        }
+    AcquireSRWLockExclusive(&m_srwLock);
+    fLocked = TRUE;
 
-        m_fRecycleProcessCalled = TRUE;
+    if (m_fShutdownCalledFromNative ||
+        m_status == APPLICATION_STATUS::STARTING ||
+        m_status == APPLICATION_STATUS::FAIL)
+    {
+        goto Finished;
+    }
 
-        // First call into the managed server and shutdown
-        if (m_ShutdownHandler != NULL)
-        {
-            m_ShutdownHandler(m_ShutdownHandlerContext);
-            m_ShutdownHandler = NULL;
-        }
+    // We need to keep track of when both managed and native initiate shutdown
+    // to avoid AVs. If shutdown has already been initiated in managed, we don't want to call into
+    // managed. We still need to wait on main exiting no matter what. m_fShutdownCalledFromNative
+    // is used for detecting redundant calls and blocking more requests to OnExecuteRequestHandler.
+    m_fShutdownCalledFromNative = TRUE;
+    m_status = APPLICATION_STATUS::SHUTDOWN;
 
+    if (!m_fShutdownCalledFromManaged)
+    {
+        // Initiate a recycle such that another worker process is created to replace this one.
+
+        m_ShutdownHandler(m_ShutdownHandlerContext);
+        m_ShutdownHandler = NULL;
+
+        ReleaseSRWLockExclusive(&m_srwLock);
+        fLocked = FALSE;
+
+        // Release the lock before we wait on the thread to exit. 
         if (m_hThread != NULL &&
             GetExitCodeThread(m_hThread, &dwThreadStatus) != 0 &&
             dwThreadStatus == STILL_ACTIVE)
         {
-            // wait for gracefullshut down, i.e., the exit of the background thread or timeout
+            // wait for graceful shutdown, i.e., the exit of the background thread or timeout
             if (WaitForSingleObject(m_hThread, dwTimeout) != WAIT_OBJECT_0)
             {
                 // if the thread is still running, we need kill it first before exit to avoid AV
                 if (GetExitCodeThread(m_hThread, &dwThreadStatus) != 0 && dwThreadStatus == STILL_ACTIVE)
                 {
+                    // Calling back into managed at this point is prone to have AVs
+                    // Calling terminate thread here may be our best solution.
                     TerminateThread(m_hThread, STATUS_CONTROL_C_EXIT);
                 }
             }
         }
-
-        CloseHandle(m_hThread);
-        m_hThread = NULL;
-        s_Application = NULL;
-
-        ReleaseSRWLockExclusive(&m_srwLock);
-
-        CloseStdErrHandles();
-
-        if (m_pStdFile != NULL)
-        {
-            fflush(stdout);
-            fflush(stderr);
-            fclose(m_pStdFile);
-        }
-
-        if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-        {
-            m_Timer.CancelTimer();
-            CloseHandle(m_hLogFileHandle);
-            m_hLogFileHandle = INVALID_HANDLE_VALUE;
-        }
-
-        // delete empty log file
-        handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
-        if (handle != INVALID_HANDLE_VALUE &&
-            fileData.nFileSizeHigh == 0 &&
-            fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
-        {
-            FindClose(handle);
-            // no need to check whether the deletion succeeds
-            // as nothing can be done
-            DeleteFile(m_struLogFilePath.QueryStr());
-        }
-
-        if (m_pHttpServer && m_pHttpServer->IsCommandLineLaunch())
-        {
-            // IISExpress scenario
-            // Can only call exit to terminate current process
-            exit(0);
-        }
     }
+
+    CloseHandle(m_hThread);
+    m_hThread = NULL;
+    s_Application = NULL;
+
+    CloseStdErrHandles();
+
+    if (m_pStdFile != NULL)
+    {
+        fflush(stdout);
+        fflush(stderr);
+        fclose(m_pStdFile);
+    }
+
+    if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
+    {
+        m_Timer.CancelTimer();
+        CloseHandle(m_hLogFileHandle);
+        m_hLogFileHandle = INVALID_HANDLE_VALUE;
+    }
+
+    // delete empty log file
+    handle = FindFirstFile(m_struLogFilePath.QueryStr(), &fileData);
+    if (handle != INVALID_HANDLE_VALUE &&
+        fileData.nFileSizeHigh == 0 &&  
+        fileData.nFileSizeLow == 0) // skip check of nFileSizeHigh
+    {
+        FindClose(handle);
+        // no need to check whether the deletion succeeds
+        // as nothing can be done
+        DeleteFile(m_struLogFilePath.QueryStr());
+    }
+
+Finished:
+
+    if (fLocked)
+    {
+        ReleaseSRWLockExclusive(&m_srwLock);
+    }
+    return;
+}
+
+VOID
+IN_PROCESS_APPLICATION::Recycle(
+    VOID
+)
+{
+    // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
+    // multiple times can lead to AVs. 
+    if (m_fRecycleCalled)
+    {
+        return;
+    }
+    AcquireSRWLockExclusive(&m_srwLock);
+    if (m_fRecycleCalled)
+    {
+        goto Finished;
+    }
+    if (!m_pHttpServer->IsCommandLineLaunch())
+    {
+        // IIS scenario.
+        // notify IIS first so that new request will be routed to new worker process
+        m_pHttpServer->RecycleProcess(L"AspNetCore InProcess Recycle Process on Demand");
+    }
+    else
+    {
+        // IISExpress scenario
+        // Can only call exit to terminate current process
+        ShutDown();
+        exit(0);
+    }
+Finished:
+    ReleaseSRWLockExclusive(&m_srwLock);
 }
 
 REQUEST_NOTIFICATION_STATUS
@@ -140,18 +187,33 @@ IN_PROCESS_APPLICATION::OnAsyncCompletion(
 {
     REQUEST_NOTIFICATION_STATUS dwRequestNotificationStatus = RQ_NOTIFICATION_CONTINUE;
 
+    ReferenceApplication();
+
     if (pInProcessHandler->QueryIsManagedRequestComplete())
     {
         // means PostCompletion has been called and this is the associated callback.
         dwRequestNotificationStatus = pInProcessHandler->QueryAsyncCompletionStatus();
-        // TODO cleanup whatever disconnect listener there is
-        return dwRequestNotificationStatus;
+    }
+    else if (m_fBlockCallbacksIntoManaged)
+    {
+        // this can potentially happen in ungraceful shutdown.
+        // Or something really wrong happening with async completions
+        // At this point, managed is in a shutting down state and we cannot send a request to it.
+        pInProcessHandler->QueryHttpContext()->GetResponse()->SetStatus(503,
+            "Server has been shutdown",
+            0,
+            (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
+        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
     }
     else
     {
         // Call the managed handler for async completion.
-        return m_AsyncCompletionHandler(pInProcessHandler->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
+        dwRequestNotificationStatus = m_AsyncCompletionHandler(pInProcessHandler->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
     }
+
+    DereferenceApplication();
+
+    return dwRequestNotificationStatus;
 }
 
 REQUEST_NOTIFICATION_STATUS
@@ -160,27 +222,47 @@ IN_PROCESS_APPLICATION::OnExecuteRequest(
     _In_ IN_PROCESS_HANDLER* pInProcessHandler
 )
 {
-    if (m_RequestHandler != NULL)
-    {
-        return m_RequestHandler(pInProcessHandler, m_RequestHandlerContext);
-    }
+    REQUEST_NOTIFICATION_STATUS dwRequestNotificationStatus = RQ_NOTIFICATION_CONTINUE;
+    PFN_REQUEST_HANDLER pRequestHandler = NULL;
 
-    //
-    // return error as the application did not register callback
-    //
-    if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(pHttpContext->GetTraceContext()))
+    ReferenceApplication();
+    pRequestHandler = m_RequestHandler;
+
+    if (pRequestHandler == NULL)
     {
-        ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(pHttpContext->GetTraceContext(),
-            NULL,
+        //
+        // return error as the application did not register callback
+        //
+        if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(pHttpContext->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(pHttpContext->GetTraceContext(),
+                NULL,
+                (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+        }
+
+        pHttpContext->GetResponse()->SetStatus(500,
+            "Internal Server Error",
+            0,
             (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+
+        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+    else if (m_status != APPLICATION_STATUS::RUNNING || m_fBlockCallbacksIntoManaged)
+    {
+        pHttpContext->GetResponse()->SetStatus(503,
+            "Server is currently shutting down.",
+            0,
+            (ULONG)HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IN_PROGRESS));
+        dwRequestNotificationStatus = RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+    else
+    {
+        dwRequestNotificationStatus = pRequestHandler(pInProcessHandler, m_RequestHandlerContext);
     }
 
-    pHttpContext->GetResponse()->SetStatus(500,
-        "Internal Server Error",
-        0,
-        (ULONG)E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+    DereferenceApplication();
 
-    return RQ_NOTIFICATION_FINISH_REQUEST;
+    return dwRequestNotificationStatus;
 }
 
 VOID
@@ -203,7 +285,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     SetStdHandle(STD_ERROR_HANDLE, INVALID_HANDLE_VALUE);
     // Initialization complete
     SetEvent(m_pInitalizeEvent);
-
+    m_fInitialized = TRUE;
 }
 
 VOID
@@ -478,13 +560,19 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
     DWORD      dwResult;
     BOOL       fLocked = FALSE;
 
-    if (m_fManagedAppLoaded || m_fLoadManagedAppError)
+    ReferenceApplication();
+
+    if (m_status != APPLICATION_STATUS::STARTING)
     {
         // Core CLR has already been loaded.
         // Cannot load more than once even there was a failure
-        if (m_fLoadManagedAppError)
+        if (m_status == APPLICATION_STATUS::FAIL)
         {
             hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
+        }
+        else if (m_status == APPLICATION_STATUS::SHUTDOWN)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IS_SCHEDULED);
         }
 
         goto Finished;
@@ -495,11 +583,15 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
 
     AcquireSRWLockExclusive(&m_srwLock);
     fLocked = TRUE;
-    if (m_fManagedAppLoaded || m_fLoadManagedAppError)
+    if (m_status != APPLICATION_STATUS::STARTING)
     {
-        if (m_fLoadManagedAppError)
+        if (m_status == APPLICATION_STATUS::FAIL)
         {
             hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
+        }
+        else if (m_status == APPLICATION_STATUS::SHUTDOWN)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_SHUTDOWN_IS_SCHEDULED);
         }
 
         goto Finished;
@@ -566,16 +658,14 @@ IN_PROCESS_APPLICATION::LoadManagedApplication
         goto Finished;
     }
 
-    m_fManagedAppLoaded = TRUE;
+    m_status = APPLICATION_STATUS::RUNNING;
 
 Finished:
 
     if (FAILED(hr))
     {
         STACK_STRU(strEventMsg, 256);
-        // Question: in case of application loading failure, should we allow retry on 
-        // following request or block the activation at all
-        m_fLoadManagedAppError = TRUE; // m_hThread != NULL ?
+        m_status = APPLICATION_STATUS::FAIL;
 
         if (SUCCEEDED(strEventMsg.SafeSnwprintf(
             ASPNETCORE_EVENT_LOAD_CLR_FALIURE_MSG,
@@ -594,6 +684,8 @@ Finished:
     {
         ReleaseSRWLockExclusive(&m_srwLock);
     }
+
+    DereferenceApplication();
 
     return hr;
 }
@@ -657,7 +749,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         hr = ERROR_BAD_ENVIRONMENT;
         goto Finished;
     }
-    
+
     // Get the entry point for main
     pProc = (hostfxr_main_fn)GetProcAddress(hModule, "hostfxr_main");
     if (pProc == NULL)
@@ -683,90 +775,100 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
 
 Finished:
 
-    if (!m_fRecycleProcessCalled)
+    //
+    // this method is called by the background thread and should never exit unless shutdown
+    // If main returned and shutdown was not called in managed, we want to block native from calling into
+    // managed. To do this, we can say that shutdown was called from managed.
+    // Don't bother locking here as there will always be a race between receiving a native shutdown
+    // notification and unexpected managed exit.
+    //
+    m_status = APPLICATION_STATUS::SHUTDOWN;
+    m_fShutdownCalledFromManaged = TRUE;
+    FreeLibrary(hModule);
+
+    if (!m_fShutdownCalledFromNative)
     {
-        //
-        // Ungraceful shutdown, try to log an error message.
-        // This will be a common place for errors as it means the hostfxr_main returned
-        // or there was an exception.
-        //
-
-        CHAR            pzFileContents[4096] = { 0 };
-        DWORD           dwNumBytesRead;
-        STRU            struStdErrLog;
-        LARGE_INTEGER   li = { 0 };
-        STRU            strEventMsg;
-        BOOL            fLogged = FALSE;
-        DWORD           dwFilePointer = 0;
-
-        if (m_pConfig->QueryStdoutLogEnabled())
+        LogErrorsOnMainExit(hr);
+        if (m_fInitialized)
         {
-            // Put stdout/stderr logs into 
-            if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
-            {
-                if (GetFileSizeEx(m_hLogFileHandle, &li) && li.LowPart > 0 && li.HighPart == 0)
-                {
-                    if (li.LowPart > 4096)
-                    {
-                        dwFilePointer = SetFilePointer(m_hLogFileHandle, -4096, NULL, FILE_END);
-                    }
-                    else
-                    {
-                        dwFilePointer = SetFilePointer(m_hLogFileHandle, 0, NULL, FILE_BEGIN);
-                    }
-                    if (dwFilePointer != INVALID_SET_FILE_POINTER)
-                    {
-                        if (ReadFile(m_hLogFileHandle, pzFileContents, 4096, &dwNumBytesRead, NULL))
-                        {
-                            if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
-                                SUCCEEDED(strEventMsg.SafeSnwprintf(
-                                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
-                                    m_pConfig->QueryApplicationPath()->QueryStr(),
-                                    m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                                    hr,
-                                    struStdErrLog.QueryStr())))
-                            {
-                                UTILITY::LogEvent(g_hEventLog,
-                                    EVENTLOG_ERROR_TYPE,
-                                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                                    strEventMsg.QueryStr());
-                                fLogged = TRUE;
+            //
+            // If the inprocess server was initialized, we need to cause recycle to be called on the worker process.
+            //
+            Recycle();
+        }
+    }
 
-                            }
+    return hr;
+}
+
+VOID
+IN_PROCESS_APPLICATION::LogErrorsOnMainExit(
+    HRESULT hr
+)
+{
+    //
+    // Ungraceful shutdown, try to log an error message.
+    // This will be a common place for errors as it means the hostfxr_main returned
+    // or there was an exception.
+    //
+    CHAR            pzFileContents[4096] = { 0 };
+    DWORD           dwNumBytesRead;
+    STRU            struStdErrLog;
+    LARGE_INTEGER   li = { 0 };
+    STRU            strEventMsg;
+    BOOL            fLogged = FALSE;
+    DWORD           dwFilePointer = 0;
+
+    if (m_pConfig->QueryStdoutLogEnabled())
+    {
+        // Put stdout/stderr logs into 
+        if (m_hLogFileHandle != INVALID_HANDLE_VALUE)
+        {
+            if (GetFileSizeEx(m_hLogFileHandle, &li) && li.LowPart > 0 && li.HighPart == 0)
+            {
+                if (li.LowPart > 4096)
+                {
+                    dwFilePointer = SetFilePointer(m_hLogFileHandle, -4096, NULL, FILE_END);
+                }
+                else
+                {
+                    dwFilePointer = SetFilePointer(m_hLogFileHandle, 0, NULL, FILE_BEGIN);
+                }
+                if (dwFilePointer != INVALID_SET_FILE_POINTER)
+                {
+                    if (ReadFile(m_hLogFileHandle, pzFileContents, 4096, &dwNumBytesRead, NULL))
+                    {
+                        if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
+                            SUCCEEDED(strEventMsg.SafeSnwprintf(
+                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG,
+                                m_pConfig->QueryApplicationPath()->QueryStr(),
+                                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                                hr,
+                                struStdErrLog.QueryStr())))
+                        {
+                            UTILITY::LogEvent(g_hEventLog,
+                                EVENTLOG_ERROR_TYPE,
+                                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+                                strEventMsg.QueryStr());
+                            fLogged = TRUE;
+
                         }
                     }
                 }
             }
         }
-        else
+    }
+    else
+    {
+        if (m_dwStdErrReadTotal > 0)
         {
-            if (m_dwStdErrReadTotal > 0)
-            {
-                if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
-                    SUCCEEDED(strEventMsg.SafeSnwprintf(
-                        ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDERR_MSG,
-                        m_pConfig->QueryApplicationPath()->QueryStr(),
-                        m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                        hr,
-                        struStdErrLog.QueryStr())))
-                {
-                    UTILITY::LogEvent(g_hEventLog,
-                        EVENTLOG_ERROR_TYPE,
-                        ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
-                        strEventMsg.QueryStr());
-                    fLogged = TRUE;
-                }
-            }
-        }
-
-        if (!fLogged)
-        {
-            // If we didn't log, log the generic message.
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
-                m_pConfig->QueryApplicationPath()->QueryStr(),
-                m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
-                hr)))
+            if (SUCCEEDED(struStdErrLog.CopyA(m_pzFileContents, m_dwStdErrReadTotal)) &&
+                SUCCEEDED(strEventMsg.SafeSnwprintf(
+                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDERR_MSG,
+                    m_pConfig->QueryApplicationPath()->QueryStr(),
+                    m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+                    hr,
+                    struStdErrLog.QueryStr())))
             {
                 UTILITY::LogEvent(g_hEventLog,
                     EVENTLOG_ERROR_TYPE,
@@ -775,11 +877,24 @@ Finished:
                 fLogged = TRUE;
             }
         }
-
-        // The destructor of inprocessapplication will call recycle. No need to recycle here.
     }
 
-    return hr;
+    if (!fLogged)
+    {
+        // If we didn't log, log the generic message.
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
+            m_pConfig->QueryApplicationPath()->QueryStr(),
+            m_pConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            hr)))
+        {
+            UTILITY::LogEvent(g_hEventLog,
+                EVENTLOG_ERROR_TYPE,
+                ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+                strEventMsg.QueryStr());
+            fLogged = TRUE;
+        }
+    }
 }
 
 //

@@ -13,6 +13,7 @@ HINSTANCE           g_hModule;
 HMODULE             g_hAspnetCoreRH = NULL;
 BOOL                g_fAspnetcoreRHAssemblyLoaded = FALSE;
 BOOL                g_fAspnetcoreRHLoadedError = FALSE;
+BOOL                g_fInShutdown = FALSE;
 DWORD               g_dwAspNetCoreDebugFlags = 0;
 DWORD               g_dwActiveServerProcesses = 0;
 SRWLOCK             g_srwLock;
@@ -47,6 +48,10 @@ BOOL WINAPI DllMain(HMODULE hModule,
         DisableThreadLibraryCalls(hModule);
         break;
     case DLL_PROCESS_DETACH:
+        // IIS can cause dll detatch to occur before we receive global notifications
+        // For example, when we switch the bitness of the worker process, 
+        // this is a bug in IIS. To try to avoid AVs, we will set a global flag
+        g_fInShutdown = TRUE;
         StaticCleanup();
     default:
         break;
@@ -137,6 +142,8 @@ HRESULT
         {
             fDisableANCM = (dwData != 0);
         }
+
+        RegCloseKey(hKey);
     }
 
     if (fDisableANCM)
@@ -202,7 +209,7 @@ HRESULT
 
     hr = pModuleInfo->SetGlobalNotifications(
                               pGlobalModule,
-                              GL_APPLICATION_STOP | // Configuration change trigers IIS application stop
+                              GL_CONFIGURATION_CHANGE | // Configuration change trigers IIS application stop
                               GL_STOP_LISTENING);   // worker process stop or recycle
 
     if (FAILED(hr))

@@ -6,8 +6,10 @@
 enum APPLICATION_STATUS
 {
     UNKNOWN = 0,
+    STARTING,
     RUNNING,
-    FAUL
+    SHUTDOWN,
+    FAIL
 };
 
 class  ASPNETCORE_CONFIG;
@@ -22,6 +24,10 @@ public:
     virtual
     VOID
     ShutDown() = 0;
+
+    virtual
+    VOID
+    Recycle() = 0;
 
     virtual
     ~APPLICATION();
@@ -42,7 +48,7 @@ public:
 
 protected:
     mutable LONG            m_cRefs;
-    APPLICATION_STATUS      m_status;
+    volatile APPLICATION_STATUS m_status;
     IHttpServer*            m_pHttpServer;
     ASPNETCORE_CONFIG*      m_pConfig;
 };

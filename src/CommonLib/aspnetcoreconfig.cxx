@@ -46,12 +46,16 @@ ASPNETCORE_CONFIG::GetConfig(
     _In_  IHttpServer             *pHttpServer,
     _In_  HTTP_MODULE_ID           pModuleId,
     _In_  IHttpContext            *pHttpContext,
+    _In_  HANDLE                   hEventLog,
     _Out_ ASPNETCORE_CONFIG      **ppAspNetCoreConfig
 )
 {
     HRESULT                 hr = S_OK;
     IHttpApplication       *pHttpApplication = pHttpContext->GetApplication();
     ASPNETCORE_CONFIG      *pAspNetCoreConfig = NULL;
+    STRU                    struHostFxrDllLocation;
+    PWSTR*                  pwzArgv;
+    DWORD                   dwArgCount;
 
     if (ppAspNetCoreConfig == NULL)
     {
@@ -85,6 +89,29 @@ ASPNETCORE_CONFIG::GetConfig(
         goto Finished;
     }
 
+    // Modify config for inprocess.
+    if (pAspNetCoreConfig->QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+    {
+        if (FAILED(hr = HOSTFXR_UTILITY::GetHostFxrParameters(
+            hEventLog,
+            pAspNetCoreConfig->QueryProcessPath()->QueryStr(),
+            pAspNetCoreConfig->QueryApplicationPhysicalPath()->QueryStr(),
+            pAspNetCoreConfig->QueryArguments()->QueryStr(),
+            &struHostFxrDllLocation,
+            &dwArgCount,
+            &pwzArgv)))
+        {
+            goto Finished;
+        }
+
+        if (FAILED(hr = pAspNetCoreConfig->SetHostFxrFullPath(struHostFxrDllLocation.QueryStr())))
+        {
+            goto Finished;
+        }
+
+        pAspNetCoreConfig->SetHostFxrArguments(dwArgCount, pwzArgv);
+    }
+
     hr = pHttpApplication->GetModuleContextContainer()->
         SetModuleContext(pAspNetCoreConfig, pModuleId);
     if (FAILED(hr))
@@ -94,8 +121,8 @@ ASPNETCORE_CONFIG::GetConfig(
             delete pAspNetCoreConfig;
 
             pAspNetCoreConfig = (ASPNETCORE_CONFIG*)pHttpApplication->
-                                 GetModuleContextContainer()->
-                                 GetModuleContext(pModuleId);
+                GetModuleContextContainer()->
+                GetModuleContext(pModuleId);
 
             _ASSERT(pAspNetCoreConfig != NULL);
 
@@ -539,7 +566,7 @@ Finished:
         pWindowsAuthenticationElement = NULL;
     }
 
-    if (pAnonymousAuthenticationElement!= NULL)
+    if (pAnonymousAuthenticationElement != NULL)
     {
         pAnonymousAuthenticationElement->Release();
         pAnonymousAuthenticationElement = NULL;

@@ -89,6 +89,10 @@ APPLICATION_INFO::StartMonitoringAppOffline()
     return hr;
 }
 
+//
+// Called by the file watcher when the app_offline.htm's file status has been changed.
+// If it finds it, we will call recycle on the application.
+//
 VOID
 APPLICATION_INFO::UpdateAppOfflineFileHandle()
 {
@@ -98,15 +102,30 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         &strFilePath);
     APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
     APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
+    BOOL             fLocked = FALSE;
 
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) &&
         GetLastError() == ERROR_FILE_NOT_FOUND)
     {
+        // Check if app offline was originally present.
+        // if it was, log that app_offline has been dropped.
+        if (m_fAppOfflineFound)
+        {
+            STACK_STRU(strEventMsg, 256);
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED_MSG)))
+            {
+                UTILITY::LogEvent(g_hEventLog,
+                    EVENTLOG_INFORMATION_TYPE,
+                    ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED,
+                    strEventMsg.QueryStr());
+            }
+        }
+
         m_fAppOfflineFound = FALSE;
     }
     else
     {
-        m_fAppOfflineFound = TRUE;
         pNewAppOfflineHtm = new APP_OFFLINE_HTM(strFilePath.QueryStr());
 
         if (pNewAppOfflineHtm != NULL)
@@ -132,9 +151,18 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
             }
         }
 
+        m_fAppOfflineFound = TRUE;
+
         // recycle the application
         if (m_pApplication != NULL)
         {
+            // Lock here to avoid races with the application manager calling shutdown on the application.
+            AcquireSRWLockExclusive(&m_srwLock);
+            fLocked = TRUE;
+            if (m_pApplication == NULL)
+            {
+                goto Finished;
+            }
             STACK_STRU(strEventMsg, 256);
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
@@ -146,11 +174,15 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
                     strEventMsg.QueryStr());
             }
 
-            m_pApplication->ShutDown();
-            m_pApplication->DereferenceApplication();
-            m_pApplication = NULL;
+            APPLICATION_MANAGER::RecycleApplication(this, m_pConfiguration->QueryHostingModel());
 
         }
+    }
+
+Finished:
+    if (fLocked)
+    {
+        ReleaseSRWLockExclusive(&m_srwLock);
     }
 }
 

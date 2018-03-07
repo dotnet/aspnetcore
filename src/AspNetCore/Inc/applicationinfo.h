@@ -134,6 +134,20 @@ public:
         return m_pApplication;
     }
 
+    VOID
+    ClearAndDereferenceApplication()
+    {
+        APPLICATION* pApplication = m_pApplication;
+        m_pApplication = NULL;
+        pApplication->DereferenceApplication();
+    }
+
+    VOID
+    ClearApplication()
+    {
+        m_pApplication = NULL;
+    }
+
     HRESULT
     EnsureApplicationCreated();
 
@@ -209,6 +223,18 @@ public:
     )
     {
         pApplicationInfo->DereferenceApplicationInfo();
+    }
+
+    static
+    VOID
+    ReferenceCopyToTable(
+        APPLICATION_INFO *        pEntry,
+        PVOID                     pvData
+    )
+    {
+        APPLICATION_INFO_HASH *pHash = static_cast<APPLICATION_INFO_HASH *>(pvData);
+        DBG_ASSERT(pHash);
+        pHash->InsertRecord(pEntry);
     }
 
 private:

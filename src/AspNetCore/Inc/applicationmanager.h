@@ -3,13 +3,20 @@
 
 #pragma once
 
-#define DEFAULT_HASH_BUCKETS 293
+#define DEFAULT_HASH_BUCKETS 17
 
 //
 // This class will manage the lifecycle of all Asp.Net Core applciation
 // It should be global singleton.
 // Should always call GetInstance to get the object instance
 //
+
+struct CONFIG_CHANGE_CONTEXT
+{
+    PCWSTR   pstrPath;
+    MULTISZ  MultiSz;
+};
+
 class APPLICATION_MANAGER
 {
 public:
@@ -41,15 +48,42 @@ public:
         }
     }
 
+    static
+    BOOL
+    FindConfigChangedApplication(
+        _In_ APPLICATION_INFO *     pEntry,
+        _In_ PVOID                  pvContext
+    );
+
+    static
+    VOID
+    RecycleApplication(
+        _In_ APPLICATION_INFO *     pEntry,
+        _In_ APP_HOSTING_MODEL      hostingModel
+    );
+
+    static
+    void
+    DoRecycleApplication(
+        LPVOID lpParam
+    );
+
+    static
+    VOID
+    ShutdownApplication(
+        _In_ APPLICATION_INFO *     pEntry,
+        _In_ PVOID                  pvContext
+    );
+
     HRESULT
-    GetApplicationInfo(
+    GetOrCreateApplicationInfo(
         _In_ IHttpServer*          pServer,
         _In_ ASPNETCORE_CONFIG*    pConfig,
         _Out_ APPLICATION_INFO **  ppApplicationInfo
     );
 
     HRESULT
-    RecycleApplication(
+    RecycleApplicationFromManager(
         _In_ LPCWSTR pszApplicationId
     );
 
@@ -120,8 +154,7 @@ private:
     // 
     APPLICATION_MANAGER() : m_pApplicationInfoHash(NULL), 
         m_pFileWatcher(NULL),
-        m_hostingModel(HOSTING_UNKNOWN),
-        m_fInShutdown(FALSE)
+        m_hostingModel(HOSTING_UNKNOWN)
     {
         InitializeSRWLock(&m_srwLock);
     }
@@ -131,5 +164,4 @@ private:
     static APPLICATION_MANAGER *sm_pApplicationManager;
     SRWLOCK                     m_srwLock;
     APP_HOSTING_MODEL          m_hostingModel;
-    bool                       m_fInShutdown;
 };

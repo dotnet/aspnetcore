@@ -60,6 +60,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         internal unsafe static extern HttpApiTypes.HTTP_REQUEST_V2* http_get_raw_request(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]
+        internal unsafe static extern void http_stop_calls_into_managed();
+
+        [DllImport(AspNetCoreModuleDll)]
+        internal unsafe static extern void http_stop_incoming_requests();
+
+        [DllImport(AspNetCoreModuleDll)]
         internal unsafe static extern HttpApiTypes.HTTP_RESPONSE_V2* http_get_raw_response(IntPtr pInProcessHandler);
 
         [DllImport(AspNetCoreModuleDll)]

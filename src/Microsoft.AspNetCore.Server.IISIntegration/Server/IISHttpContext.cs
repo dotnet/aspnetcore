@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         protected Exception _applicationException;
         private readonly MemoryPool<byte> _memoryPool;
+        private readonly IISHttpServer _server;
 
         private GCHandle _thisHandle;
         private MemoryHandle _inputHandle;
@@ -59,13 +60,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
 
-        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options)
+        internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pInProcessHandler))
         {
             _thisHandle = GCHandle.Alloc(this);
 
             _memoryPool = memoryPool;
             _pInProcessHandler = pInProcessHandler;
+            _server = server;
 
             NativeMethods.http_set_managed_context(pInProcessHandler, (IntPtr)_thisHandle);
             unsafe
@@ -198,6 +200,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
                 _reasonPhrase = value;
             }
+        }
+        
+        internal IISHttpServer Server
+        {
+            get { return _server; }
         }
 
         private async Task InitializeResponseAwaited()

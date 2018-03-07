@@ -28,8 +28,8 @@ public:
     );
 
     GLOBAL_NOTIFICATION_STATUS
-    OnGlobalApplicationStop(
-        _In_ IHttpApplicationStopProvider * pProvider
+    OnGlobalConfigurationChange(
+        _In_ IGlobalConfigurationChangeProvider * pProvider
     );
 
 private:

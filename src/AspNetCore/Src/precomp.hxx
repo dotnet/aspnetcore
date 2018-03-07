@@ -146,6 +146,7 @@ HRESULT_FROM_GETLASTERROR()
 extern PVOID        g_pModuleId;
 extern BOOL         g_fAspnetcoreRHAssemblyLoaded;
 extern BOOL         g_fAspnetcoreRHLoadedError;
+extern BOOL         g_fInShutdown;
 extern BOOL         g_fEnableReferenceCountTracing;
 extern DWORD        g_dwActiveServerProcesses;
 extern HINSTANCE    g_hModule;

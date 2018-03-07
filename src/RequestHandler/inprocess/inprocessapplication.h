@@ -19,18 +19,19 @@ public:
         ShutDown();
 
     VOID
-        SetCallbackHandles(
-            _In_ PFN_REQUEST_HANDLER request_callback,
-            _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
-            _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
-            _In_ VOID* pvRequstHandlerContext,
-            _In_ VOID* pvShutdownHandlerContext
-        );
+    SetCallbackHandles(
+        _In_ PFN_REQUEST_HANDLER request_callback,
+        _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
+        _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
+        _In_ VOID* pvRequstHandlerContext,
+        _In_ VOID* pvShutdownHandlerContext
+    );
 
+    __override
     VOID
-        Recycle(
-            VOID
-        );
+    Recycle(
+        VOID
+    );
 
     // Executes the .NET Core process
     HRESULT
@@ -53,6 +54,11 @@ public:
             VOID
         );
 
+    VOID
+        LogErrorsOnMainExit(
+            HRESULT hr
+        );
+
     REQUEST_NOTIFICATION_STATUS
         OnAsyncCompletion(
             DWORD                   cbCompletion,
@@ -66,6 +72,22 @@ public:
             IHttpContext* pHttpContext,
             IN_PROCESS_HANDLER* pInProcessHandler
         );
+
+    VOID
+    StopCallsIntoManaged(
+        VOID
+    )
+    {
+        m_fBlockCallbacksIntoManaged = TRUE;
+    }
+
+    VOID
+    StopIncomingRequests(
+        VOID
+    )
+    {
+        m_fShutdownCalledFromManaged = TRUE;
+    }
 
     static
         IN_PROCESS_APPLICATION*
@@ -102,12 +124,13 @@ private:
     // The exit code of the .NET Core process
     INT                             m_ProcessExitCode;
 
-    BOOL                            m_fManagedAppLoaded;
-    BOOL                            m_fLoadManagedAppError;
-    BOOL                            m_fInitialized;
     BOOL                            m_fIsWebSocketsConnection;
     BOOL                            m_fDoneStdRedirect;
-    BOOL                            m_fRecycleProcessCalled;
+    volatile BOOL                   m_fBlockCallbacksIntoManaged;
+    volatile BOOL                   m_fShutdownCalledFromNative;
+    volatile BOOL                   m_fShutdownCalledFromManaged;
+    BOOL                            m_fRecycleCalled;
+    BOOL                            m_fInitialized;
 
     FILE*                           m_pStdFile;
     STTIMER                         m_Timer;
@@ -138,9 +161,9 @@ private:
         );
 
     HRESULT
-    SetEnvironementVariablesOnWorkerProcess(
-        VOID
-    );
+        SetEnvironementVariablesOnWorkerProcess(
+            VOID
+        );
 
     static
         INT

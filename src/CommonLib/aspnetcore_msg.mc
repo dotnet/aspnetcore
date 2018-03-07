@@ -158,6 +158,26 @@ Language=English
 %1
 .
 
+Messageid=1022
+SymbolicName=ASPNETCORE_EVENT_RECYCLE_APP_FAILURE
+Language=English
+%1
+.
+
+Messageid=1023
+SymbolicName=ASPNETCORE_EVENT_APP_IN_SHUTDOWN
+Language=English
+%1
+.
+
+Messageid=1024
+SymbolicName=ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_REMOVED
+Language=English
+%1
+.
+
+
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;

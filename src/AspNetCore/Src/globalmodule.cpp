@@ -17,13 +17,17 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
 {
     UNREFERENCED_PARAMETER(pProvider);
 
-    if (m_pApplicationManager != NULL)
+    if (g_fInShutdown)
     {
-        // we should let application manager to shudown all allication
-        // and dereference it as some requests may still reference to application manager
-        m_pApplicationManager->ShutDown();
-        m_pApplicationManager = NULL;
+        // Avoid receiving two shutudown notifications.
+        return GL_NOTIFICATION_CONTINUE;
     }
+
+    DBG_ASSERT(m_pApplicationManager);
+    // we should let application manager to shutdown all allication
+    // and dereference it as some requests may still reference to application manager
+    m_pApplicationManager->ShutDown();
+    m_pApplicationManager = NULL;
 
     // Return processing to the pipeline.
     return GL_NOTIFICATION_CONTINUE;
@@ -34,14 +38,16 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalStopListening(
 // Recycled the corresponding core app if its configuration changed
 //
 GLOBAL_NOTIFICATION_STATUS
-ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
-    _In_ IHttpApplicationStopProvider * pProvider
+ASPNET_CORE_GLOBAL_MODULE::OnGlobalConfigurationChange(
+    _In_ IGlobalConfigurationChangeProvider * pProvider
 )
 {
+    if (g_fInShutdown)
+    {
+        return GL_NOTIFICATION_CONTINUE;
+    }
     // Retrieve the path that has changed.
-    IHttpApplication* pApplication = pProvider->GetApplication();
-
-    PCWSTR pwszChangePath = pApplication->GetAppConfigPath();
+    PCWSTR pwszChangePath = pProvider->GetChangePath();
 
     // Test for an error.
     if (NULL != pwszChangePath &&
@@ -50,7 +56,7 @@ ASPNET_CORE_GLOBAL_MODULE::OnGlobalApplicationStop(
     {
         if (m_pApplicationManager != NULL)
         {
-            m_pApplicationManager->RecycleApplication(pwszChangePath);
+            m_pApplicationManager->RecycleApplicationFromManager(pwszChangePath);
         }
     }
 

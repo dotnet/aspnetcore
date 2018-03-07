@@ -20,6 +20,11 @@ public:
     VOID
     ShutDown();
 
+    __override
+    VOID
+    Recycle();
+
 private:
     PROCESS_MANAGER * m_pProcessManager;
+    SRWLOCK           rwlock;
 };

@@ -84,7 +84,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     APPLICATION* pApplication = NULL;
     STACK_STRU(struFileName, 256);
 
-    hr = ASPNETCORE_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext, &pConfig);
+    hr = ASPNETCORE_CONFIG::GetConfig(g_pHttpServer, g_pModuleId, pHttpContext, g_hEventLog, &pConfig);
     if (FAILED(hr))
     {
         goto Finished;
@@ -97,7 +97,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
         goto Finished;
     }
 
-    hr = pApplicationManager->GetApplicationInfo(
+    hr = pApplicationManager->GetOrCreateApplicationInfo(
         g_pHttpServer,
         pConfig,
         &m_pApplicationInfo);
@@ -149,7 +149,8 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
 
     // make sure application is in running state
     // cannot recreate the application as we cannot reload clr for inprocess
-    if (pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING)
+    if (pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
+        pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
     {
         hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
         goto Finished;
@@ -173,6 +174,7 @@ Finished:
         pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, hr);
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;
     }
+
     return retVal;
 }
 
