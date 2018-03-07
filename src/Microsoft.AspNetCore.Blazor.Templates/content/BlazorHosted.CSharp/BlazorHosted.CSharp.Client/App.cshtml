@@ -2,5 +2,5 @@
     Configuring this stuff here is temporary. Later we'll move the app config
     into Program.cs, and it won't be necessary to specify AppAssembly.
 -->
-<c:Router AppAssembly=@(typeof(Program).Assembly)
-          PagesNamespace=@("BlazorHosted.CSharp.Client.Pages") />
+<Router AppAssembly=typeof(Program).Assembly
+        PagesNamespace="BlazorHosted.CSharp.Client.Pages" />
