@@ -10,7 +10,7 @@ def parameters = [
     'DOTNET_SKIP_FIRST_TIME_EXPERIENCE': 'true'
 ]
 
-def jobName = "${RepoName} ${BrancName}"
+def jobName = "${RepoName} ${BranchName}"
 
 windowsPipeline.triggerPipelineOnEveryGithubPR("Windows ${configuration} x64 Build", parameters, jobName)
 windowsPipeline.triggerPipelineOnGithubPush(parameters, jobName)
