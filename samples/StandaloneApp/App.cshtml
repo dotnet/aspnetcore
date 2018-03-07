@@ -2,6 +2,6 @@
     Configuring this stuff here is temporary. Later we'll move the app config
     into Program.cs, and it won't be necessary to specify AppAssembly.
 -->
-<c:Router
-    AppAssembly=@(typeof(StandaloneApp.Program).Assembly)
-    PagesNamespace=@("StandaloneApp.Pages") />
+<Router
+    AppAssembly=typeof(StandaloneApp.Program).Assembly
+    PagesNamespace="StandaloneApp.Pages" />
