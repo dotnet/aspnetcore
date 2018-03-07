@@ -176,6 +176,23 @@ Language=English
 %1
 .
 
+Messageid=1025
+SymbolicName=ASPNETCORE_EVENT_GENERAL_INFO_MSG
+Language=English
+%1
+.
+
+Messageid=1026
+SymbolicName=ASPNETCORE_EVENT_GENERAL_WARNING_MSG
+Language=English
+%1
+.
+
+Messageid=1027
+SymbolicName=ASPNETCORE_EVENT_GENERAL_ERROR_MSG
+Language=English
+%1
+.
 
 
 ;
