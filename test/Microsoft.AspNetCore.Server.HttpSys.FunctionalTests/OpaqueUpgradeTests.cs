@@ -18,6 +18,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public class OpaqueUpgradeTests
     {
         [ConditionalFact]
+        [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        public async Task OpaqueUpgrade_DownLevel_FeatureIsAbsent()
+        {
+            using (Utilities.CreateHttpServer(out var address, httpContext =>
+            {
+                try
+                {
+                    var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                    Assert.Null(opaqueFeature);
+                }
+                catch (Exception ex)
+                {
+                    return httpContext.Response.WriteAsync(ex.ToString());
+                }
+                return Task.FromResult(0);
+            }))
+            {
+                HttpResponseMessage response = await SendRequestAsync(address);
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
+                Assert.Equal(0, response.Content.Headers.ContentLength);
+                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
+            }
+        }
+
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_SupportKeys_Present()
         {

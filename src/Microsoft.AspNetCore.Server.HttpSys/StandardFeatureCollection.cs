@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // { typeof(ITlsTokenBindingFeature), ctx => ctx.GetTlsTokenBindingFeature() }, TODO: https://github.com/aspnet/HttpSysServer/issues/231
             { typeof(IHttpBufferingFeature), _identityFunc },
             { typeof(IHttpRequestLifetimeFeature), _identityFunc },
-            { typeof(IHttpUpgradeFeature), _identityFunc },
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
@@ -31,6 +30,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         };
 
         private readonly FeatureContext _featureContext;
+
+        static StandardFeatureCollection()
+        {
+            if (ComNetOS.IsWin8orLater)
+            {
+                // Only add the upgrade feature if it stands a chance of working.
+                // SignalR uses the presence of the feature to detect feature support.
+                // https://github.com/aspnet/HttpSysServer/issues/427
+                _featureFuncLookup[typeof(IHttpUpgradeFeature)] = _identityFunc;
+            }
+        }
 
         public StandardFeatureCollection(FeatureContext featureContext)
         {
