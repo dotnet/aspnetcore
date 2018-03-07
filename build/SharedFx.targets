@@ -395,7 +395,7 @@
 
     <!-- Produce symbols nupkg -->
     <PackNuspec NuspecPath="$(SymbolsWorkDir)$(SymbolsPackageId).nuspec"
-      DestinationFolder="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\"
+      OutputPath="$([MSBuild]::NormalizeDirectory($(ArtifactsDir)))symbols\$(SymbolsPackageId).$(PackageVersion).symbols.nupkg"
       Properties="version=$(PackageVersion);id=$(SymbolsPackageId);description=$(Description);Configuration=$(Configuration)"
       Overwrite="true"
       PackageFiles="@(SymbolFiles)"
@@ -468,10 +468,10 @@
     <!-- Create symbols nupkg -->
     <PropertyGroup>
       <AppSymbolsArguments>SymbolsWorkDir=$(AppSharedFxSymbolsDirectory)</AppSymbolsArguments>
-      <AppSymbolsArguments>$(AppSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.App.symbols</AppSymbolsArguments>
+      <AppSymbolsArguments>$(AppSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.App</AppSymbolsArguments>
       <AppSymbolsArguments>$(AppSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.App shared framework</AppSymbolsArguments>
       <AllSymbolsArguments>SymbolsWorkDir=$(AllSharedFxSymbolsDirectory)</AllSymbolsArguments>
-      <AllSymbolsArguments>$(AllSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.All.symbols</AllSymbolsArguments>
+      <AllSymbolsArguments>$(AllSymbolsArguments);SymbolsNuspecIdSuffix=Microsoft.AspNetCore.All</AllSymbolsArguments>
       <AllSymbolsArguments>$(AllSymbolsArguments);Description=Symbol packages for Microsoft.AspNetCore.All shared framework</AllSymbolsArguments>
     </PropertyGroup>
 
