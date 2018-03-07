@@ -4,12 +4,17 @@
 using System;
 using System.Buffers;
 using System.IO.Pipelines;
+using System.Linq;
+using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,6 +47,35 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     TransferMode.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
+            }
+        }
+
+        [ConditionalFact(Skip = "Issue in ClientWebSocket prevents user-agent being set - https://github.com/dotnet/corefx/issues/26627")]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        public async Task WebSocketsTransportSendsUserAgent()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+                var webSocketsTransport = new WebSocketsTransport(httpOptions: null, loggerFactory: loggerFactory);
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/httpheader"), pair.Application,
+                    TransferMode.Binary, connection: Mock.Of<IConnection>()).OrTimeout();
+
+                await pair.Transport.Output.WriteAsync(Encoding.UTF8.GetBytes("User-Agent"));
+
+                // The HTTP header endpoint closes the connection immediately after sending response which should stop the transport
+                await webSocketsTransport.Running.OrTimeout();
+
+                Assert.True(pair.Transport.Input.TryRead(out var result));
+
+                string userAgent = Encoding.UTF8.GetString(result.Buffer.ToArray());
+
+                // user agent version should come from version embedded in assembly metadata
+                var assemblyVersion = typeof(Constants)
+                    .Assembly
+                    .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+                Assert.Equal("Microsoft.AspNetCore.Sockets.Client.Http/" + assemblyVersion.InformationalVersion, userAgent);
             }
         }
 

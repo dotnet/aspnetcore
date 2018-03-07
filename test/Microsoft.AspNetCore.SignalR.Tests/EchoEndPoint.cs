@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 {
     public class EchoEndPoint : EndPoint
     {
-        public async override Task OnConnectedAsync(ConnectionContext connection)
+        public override async Task OnConnectedAsync(ConnectionContext connection)
         {
             var result = await connection.Transport.Input.ReadAsync();
             var buffer = result.Buffer;

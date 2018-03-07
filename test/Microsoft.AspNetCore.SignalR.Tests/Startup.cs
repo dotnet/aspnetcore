@@ -14,11 +14,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             services.AddSockets();
             services.AddSignalR();
             services.AddEndPoint<EchoEndPoint>();
+            services.AddEndPoint<HttpHeaderEndPoint>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("/echo"));
+            app.UseSockets(options => options.MapEndPoint<HttpHeaderEndPoint>("/httpheader"));
             app.UseSignalR(options => options.MapHub<UncreatableHub>("/uncreatable"));
         }
     }

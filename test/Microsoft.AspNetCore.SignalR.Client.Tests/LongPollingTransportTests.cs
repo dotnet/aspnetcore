@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -13,6 +16,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client.Tests;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Moq;
 using Moq.Protected;
 using Xunit;
@@ -386,6 +390,50 @@ namespace Microsoft.AspNetCore.Client.Tests
                     await longPollingTransport.StopAsync();
                 }
             }
+        }
+
+        [Fact]
+        public async Task LongPollingTransportSetsUserAgent()
+        {
+            HttpHeaderValueCollection<ProductInfoHeaderValue> userAgentHeaderCollection = null;
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    userAgentHeaderCollection = request.Headers.UserAgent;
+                    await Task.Yield();
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var longPollingTransport = new LongPollingTransport(httpClient);
+
+                try
+                {
+                    var pair = DuplexPipe.CreateConnectionPair(PipeOptions.Default, PipeOptions.Default);
+
+                    Assert.Null(longPollingTransport.Mode);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), pair.Application, TransferMode.Text, connection: new TestConnection());
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
+            }
+
+            Assert.NotNull(userAgentHeaderCollection);
+            var userAgentHeader = Assert.Single(userAgentHeaderCollection);
+            Assert.Equal("Microsoft.AspNetCore.Sockets.Client.Http", userAgentHeader.Product.Name);
+
+            // user agent version should come from version embedded in assembly metadata
+            var assemblyVersion = typeof(Constants)
+                .Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+
+            Assert.Equal(assemblyVersion.InformationalVersion, userAgentHeader.Product.Version);
         }
 
         [Fact]
