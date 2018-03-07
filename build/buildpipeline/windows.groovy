@@ -7,6 +7,11 @@ simpleNode('Windows_NT','latest') {
         checkout scm
     }
     stage ('Build') {
+        environment {
+            DOTNET_CLI_TELEMETRY_OPTOUT = 'true'
+            DOTNET_SKIP_FIRST_TIME_EXPERIENCE = 'true'
+        }
+
         bat '.\\run.cmd default-build'
     }
 }
