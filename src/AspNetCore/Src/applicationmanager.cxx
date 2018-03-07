@@ -370,7 +370,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             DBG_ASSERT(pRecord != NULL);
 
             // RecycleApplication is called on a separate thread. 
-            RecycleApplication(pRecord, m_hostingModel);
+            RecycleApplication(pRecord);
             pRecord->DereferenceApplicationInfo();
             path = context.MultiSz.Next(path);
         }
@@ -480,19 +480,21 @@ APPLICATION_MANAGER::DoRecycleApplication(
 // static
 VOID
 APPLICATION_MANAGER::RecycleApplication(
-    _In_ APPLICATION_INFO *     pEntry,
-    _In_ APP_HOSTING_MODEL      hostingModel
+    _In_ APPLICATION_INFO *     pEntry
 )
 {
-
     APPLICATION* pApplication = pEntry->QueryApplication();
+    DBG_ASSERT(pApplication != NULL);
 
     // Reference the application first
     pApplication->ReferenceApplication();
 
-    if (hostingModel == APP_HOSTING_MODEL::HOSTING_OUT_PROCESS)
+    if (pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
     {
-        pEntry->ClearApplication();
+        // Need to set m_pApplication to NULL first
+        // to avoid mapping new request to the recycled application
+        // A new application instance will be created for new request
+        pEntry->ClearAndDereferenceApplication();
     }
 
     // Reset application pointer to NULL
@@ -504,7 +506,6 @@ APPLICATION_MANAGER::RecycleApplication(
         pApplication,       // thread function arguments
         0,          // default creation flags
         NULL);      // receive thread identifier
-
 
     CloseHandle(hThread);
 }

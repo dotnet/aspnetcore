@@ -174,7 +174,7 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
                     strEventMsg.QueryStr());
             }
 
-            APPLICATION_MANAGER::RecycleApplication(this, m_pConfiguration->QueryHostingModel());
+            APPLICATION_MANAGER::RecycleApplication(this);
 
         }
     }

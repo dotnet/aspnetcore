@@ -142,12 +142,6 @@ public:
         pApplication->DereferenceApplication();
     }
 
-    VOID
-    ClearApplication()
-    {
-        m_pApplication = NULL;
-    }
-
     HRESULT
     EnsureApplicationCreated();
 

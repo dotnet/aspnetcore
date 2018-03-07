@@ -58,8 +58,7 @@ public:
     static
     VOID
     RecycleApplication(
-        _In_ APPLICATION_INFO *     pEntry,
-        _In_ APP_HOSTING_MODEL      hostingModel
+        _In_ APPLICATION_INFO *     pEntry
     );
 
     static
