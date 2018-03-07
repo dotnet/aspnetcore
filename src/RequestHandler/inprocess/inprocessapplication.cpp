@@ -150,13 +150,17 @@ IN_PROCESS_APPLICATION::Recycle(
     VOID
 )
 {
+    BOOL  fLockAcquired = FALSE;
     // We need to guarantee that recycle is only called once, as calling pHttpServer->RecycleProcess
     // multiple times can lead to AVs. 
     if (m_fRecycleCalled)
     {
-        return;
+        goto Finished;
     }
+
     AcquireSRWLockExclusive(&m_srwLock);
+    fLockAcquired = TRUE;
+
     if (m_fRecycleCalled)
     {
         goto Finished;
@@ -170,12 +174,20 @@ IN_PROCESS_APPLICATION::Recycle(
     else
     {
         // IISExpress scenario
-        // Can only call exit to terminate current process
+        // Release the lock first as Shutdown will acquire lock later
+        ReleaseSRWLockExclusive(&m_srwLock);
+        fLockAcquired = FALSE;
+
+        // Shutdown the managed application and call exit to terminate current process
         ShutDown();
         exit(0);
     }
+
 Finished:
-    ReleaseSRWLockExclusive(&m_srwLock);
+    if (fLockAcquired)
+    {
+        ReleaseSRWLockExclusive(&m_srwLock);
+    }
 }
 
 REQUEST_NOTIFICATION_STATUS
