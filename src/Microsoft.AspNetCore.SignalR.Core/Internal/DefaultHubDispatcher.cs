@@ -372,6 +372,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static bool IsStreamed(Type resultType)
         {
+            // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
+            resultType = UnwrapTask(resultType);
+
             var observableInterface = IsIObservable(resultType) ?
                 resultType :
                 resultType.GetInterfaces().FirstOrDefault(IsIObservable);
@@ -393,6 +396,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             if (result != null)
             {
+                // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
+                resultType = UnwrapTask(resultType);
+
                 var observableInterface = IsIObservable(resultType) ?
                     resultType :
                     resultType.GetInterfaces().FirstOrDefault(IsIObservable);
@@ -418,6 +424,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
                 return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAbortedToken, streamCts.Token).Token;
             }
+        }
+
+        private static Type UnwrapTask(Type type)
+        {
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
+            {
+                return type.GetGenericArguments()[0];
+            }
+
+            return type;
         }
 
         private static bool IsIObservable(Type iface)
