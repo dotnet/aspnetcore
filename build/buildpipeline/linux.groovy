@@ -1,6 +1,6 @@
 @Library('dotnet-ci') _
 
-simpleNode('Ubuntu14.04','latest') {
+simpleNode('Ubuntu16.04','latest') {
     stage ('Checking out source') {
         checkout scm
     }
