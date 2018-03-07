@@ -203,7 +203,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/Razor/issues/1991")]
+        // https://github.com/aspnet/Razor/issues/1991
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task ServerRunning_CancelCompilation_CancelsSuccessfully()
         {
