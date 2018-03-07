@@ -68,7 +68,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return new ParameterBinder(
                 metadataProvider,
                 new ModelBinderFactory(metadataProvider, options, serviceProvider),
-                new CompositeModelValidatorProvider(GetModelValidatorProviders(options)),
+                new DefaultObjectValidator(
+                    metadataProvider,
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
                 NullLoggerFactory.Instance);
         }
 
@@ -90,7 +92,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return new ParameterBinder(
                 metadataProvider,
                 new ModelBinderFactory(metadataProvider, options, services),
-                new CompositeModelValidatorProvider(GetModelValidatorProviders(options)),
+                new DefaultObjectValidator(
+                    metadataProvider,
+                    new[] { new CompositeModelValidatorProvider(GetModelValidatorProviders(options)) }),
                 NullLoggerFactory.Instance);
         }
 

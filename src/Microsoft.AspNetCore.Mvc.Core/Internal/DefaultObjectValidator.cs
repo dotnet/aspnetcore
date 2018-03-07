@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -11,12 +10,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// <summary>
     /// The default implementation of <see cref="IObjectModelValidator"/>.
     /// </summary>
-    public class DefaultObjectValidator : IObjectModelValidator
+    public class DefaultObjectValidator : ObjectModelValidator
     {
-        private readonly IModelMetadataProvider _modelMetadataProvider;
-        private readonly ValidatorCache _validatorCache;
-        private readonly IModelValidatorProvider _validatorProvider;
-
         /// <summary>
         /// Initializes a new instance of <see cref="DefaultObjectValidator"/>.
         /// </summary>
@@ -25,44 +20,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public DefaultObjectValidator(
             IModelMetadataProvider modelMetadataProvider,
             IList<IModelValidatorProvider> validatorProviders)
+            : base(modelMetadataProvider, validatorProviders)
         {
-            if (modelMetadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(modelMetadataProvider));
-            }
-
-            if (validatorProviders == null)
-            {
-                throw new ArgumentNullException(nameof(validatorProviders));
-            }
-
-            _modelMetadataProvider = modelMetadataProvider;
-            _validatorCache = new ValidatorCache();
-
-            _validatorProvider = new CompositeModelValidatorProvider(validatorProviders);
         }
 
-        /// <inheritdoc />
-        public void Validate(
+        public override ValidationVisitor GetValidationVisitor(
             ActionContext actionContext,
-            ValidationStateDictionary validationState,
-            string prefix,
-            object model)
+            IModelValidatorProvider validatorProvider,
+            ValidatorCache validatorCache,
+            IModelMetadataProvider metadataProvider,
+            ValidationStateDictionary validationState)
         {
-            if (actionContext == null)
-            {
-                throw new ArgumentNullException(nameof(actionContext));
-            }
-
-            var visitor = new ValidationVisitor(
+            return new ValidationVisitor(
                 actionContext,
-                _validatorProvider,
-                _validatorCache,
-                _modelMetadataProvider,
+                validatorProvider,
+                validatorCache,
+                metadataProvider,
                 validationState);
-
-            var metadata = model == null ? null : _modelMetadataProvider.GetMetadataForType(model.GetType());
-            visitor.Validate(metadata, prefix, model);
         }
     }
 }

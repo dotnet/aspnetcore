@@ -232,15 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders);
             });
             services.TryAddSingleton<ClientValidatorCache>();
-            services.TryAddSingleton<ParameterBinder>(s =>
-            {
-                var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
-                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
-                var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
-                var modelBinderFactory = s.GetRequiredService<IModelBinderFactory>();
-                var modelValidatorProvider = new CompositeModelValidatorProvider(options.ModelValidatorProviders);
-                return new ParameterBinder(metadataProvider, modelBinderFactory, modelValidatorProvider, loggerFactory);
-            });
+            services.TryAddSingleton<ParameterBinder>();
 
             //
             // Random Infrastructure

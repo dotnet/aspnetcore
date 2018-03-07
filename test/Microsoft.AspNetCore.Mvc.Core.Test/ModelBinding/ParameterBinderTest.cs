@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var parameterBinder = new ParameterBinder(
                 metadataProvider,
                 factory.Object,
-                CreateMockValidatorProvider(),
+                Mock.Of< IObjectModelValidator>(),
                 NullLoggerFactory.Instance);
 
             var controllerContext = GetControllerContext();
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var argumentBinder = new ParameterBinder(
                 metadataProvider,
                 factory.Object,
-                CreateMockValidatorProvider(),
+                Mock.Of<IObjectModelValidator>(),
                 NullLoggerFactory.Instance);
 
             var valueProvider = new SimpleValueProvider
@@ -364,10 +364,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             return new ParameterBinder(
                 mockModelMetadataProvider.Object,
                 mockModelBinderFactory.Object,
-                CreateMockValidatorProvider(validator),
+                new DefaultObjectValidator(
+                    mockModelMetadataProvider.Object, 
+                    new[] { GetModelValidatorProvider(validator) }),
                 NullLoggerFactory.Instance);
         }
 
+        private static IModelValidatorProvider GetModelValidatorProvider(IModelValidator validator = null)
+        {
+            if (validator == null)
+            {
+                validator = Mock.Of<IModelValidator>();
+            }
+
+            var validatorProvider = new Mock<IModelValidatorProvider>();
+            validatorProvider
+                .Setup(p => p.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
+                .Callback<ModelValidatorProviderContext>(context =>
+                {
+                    foreach (var result in context.Results)
+                    {
+                        result.Validator = validator;
+                        result.IsReusable = true;
+                    }
+                });
+            return validatorProvider.Object;
+        }
+        
         private static ParameterBinder CreateBackCompatParameterBinder(
             ModelMetadata modelMetadata,
             IObjectModelValidator validator)

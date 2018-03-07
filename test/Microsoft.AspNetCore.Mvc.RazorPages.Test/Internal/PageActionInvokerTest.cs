@@ -1239,10 +1239,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 factory = TestModelBinderFactory.CreateDefault();
             }
 
+            var metadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
             return new ParameterBinder(
-                TestModelMetadataProvider.CreateDefaultProvider(),
+                metadataProvider,
                 factory,
-                validator,
+                new DefaultObjectValidator(metadataProvider, new[] { validator }),
                 NullLoggerFactory.Instance);
         }
 
