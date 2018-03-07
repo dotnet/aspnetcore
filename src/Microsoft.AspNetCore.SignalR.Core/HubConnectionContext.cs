@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly CancellationTokenSource _connectionAbortedTokenSource = new CancellationTokenSource();
         private readonly TaskCompletionSource<object> _abortCompletedTcs = new TaskCompletionSource<object>();
         private readonly long _keepAliveDuration;
-
         private readonly SemaphoreSlim _writeLock = new SemaphoreSlim(1);
 
         private long _lastSendTimestamp = Stopwatch.GetTimestamp();
@@ -136,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR
             Task.Factory.StartNew(_abortedCallback, this);
         }
 
-        internal async Task<bool> NegotiateAsync(TimeSpan timeout, IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider)
+        internal async Task<bool> NegotiateAsync(TimeSpan timeout, IList<string> supportedProtocols, IHubProtocolResolver protocolResolver, IUserIdProvider userIdProvider)
         {
             try
             {
@@ -157,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR
                             {
                                 if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage, out consumed, out examined))
                                 {
-                                    var protocol = protocolResolver.GetProtocol(negotiationMessage.Protocol, this);
+                                    var protocol = protocolResolver.GetProtocol(negotiationMessage.Protocol, supportedProtocols, this);
 
                                     var transportCapabilities = Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
                                         ?? throw new InvalidOperationException("Unable to read transport capabilities.");

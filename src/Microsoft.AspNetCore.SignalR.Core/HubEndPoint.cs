@@ -17,13 +17,15 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger<HubEndPoint<THub>> _logger;
         private readonly IHubProtocolResolver _protocolResolver;
-        private readonly HubOptions _hubOptions;
+        private readonly HubOptions<THub> _hubOptions;
+        private readonly HubOptions _globalHubOptions;
         private readonly IUserIdProvider _userIdProvider;
         private readonly HubDispatcher<THub> _dispatcher;
 
         public HubEndPoint(HubLifetimeManager<THub> lifetimeManager,
                            IHubProtocolResolver protocolResolver,
-                           IOptions<HubOptions> hubOptions,
+                           IOptions<HubOptions> globalHubOptions,
+                           IOptions<HubOptions<THub>> hubOptions,
                            ILoggerFactory loggerFactory,
                            IUserIdProvider userIdProvider,
                            HubDispatcher<THub> dispatcher)
@@ -32,6 +34,7 @@ namespace Microsoft.AspNetCore.SignalR
             _lifetimeManager = lifetimeManager;
             _loggerFactory = loggerFactory;
             _hubOptions = hubOptions.Value;
+            _globalHubOptions = globalHubOptions.Value;
             _logger = loggerFactory.CreateLogger<HubEndPoint<THub>>();
             _userIdProvider = userIdProvider;
             _dispatcher = dispatcher;
@@ -39,9 +42,20 @@ namespace Microsoft.AspNetCore.SignalR
 
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
-            var connectionContext = new HubConnectionContext(connection, _hubOptions.KeepAliveInterval, _loggerFactory);
+            // We check to see if HubOptions<THub> are set because those take precedence over global hub options.
+            // Then set the keepAlive and negotiateTimeout values to the defaults in HubOptionsSetup incase they were explicitly set to null.
+            var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
+            var negotiateTimeout = _hubOptions.NegotiateTimeout ?? _globalHubOptions.NegotiateTimeout ?? HubOptionsSetup.DefaultNegotiateTimeout;
+            var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
-            if (!await connectionContext.NegotiateAsync(_hubOptions.NegotiateTimeout, _protocolResolver, _userIdProvider))
+            if (supportedProtocols != null && supportedProtocols.Count == 0)
+            {
+                throw new InvalidOperationException("There are no supported protocols");
+            }
+
+            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory);
+
+            if (!await connectionContext.NegotiateAsync(negotiateTimeout, supportedProtocols, _protocolResolver, _userIdProvider))
             {
                 return;
             }
@@ -56,7 +70,6 @@ namespace Microsoft.AspNetCore.SignalR
                 await _lifetimeManager.OnDisconnectedAsync(connectionContext);
             }
         }
-
 
         private async Task RunHubAsync(HubConnectionContext connection)
         {

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -12,13 +13,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class DefaultHubProtocolResolver : IHubProtocolResolver
     {
-        private readonly IOptions<HubOptions> _options;
         private readonly ILogger<DefaultHubProtocolResolver> _logger;
         private readonly Dictionary<string, IHubProtocol> _availableProtocols;
 
-        public DefaultHubProtocolResolver(IOptions<HubOptions> options, IEnumerable<IHubProtocol> availableProtocols, ILogger<DefaultHubProtocolResolver> logger)
+        public DefaultHubProtocolResolver(IEnumerable<IHubProtocol> availableProtocols, ILogger<DefaultHubProtocolResolver> logger)
         {
-            _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? NullLogger<DefaultHubProtocolResolver>.Instance;
             _availableProtocols = new Dictionary<string, IHubProtocol>(StringComparer.OrdinalIgnoreCase);
 
@@ -33,11 +32,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
 
-        public IHubProtocol GetProtocol(string protocolName, HubConnectionContext connection)
+        public IHubProtocol GetProtocol(string protocolName, IList<string> supportedProtocols, HubConnectionContext connection)
         {
             protocolName = protocolName ?? throw new ArgumentNullException(nameof(protocolName));
 
-            if (_availableProtocols.TryGetValue(protocolName, out var protocol))
+            if (_availableProtocols.TryGetValue(protocolName, out var protocol) && (supportedProtocols == null || supportedProtocols.Contains(protocolName, StringComparer.OrdinalIgnoreCase)))
             {
                 Log.FoundImplementationForProtocol(_logger, protocolName);
                 return protocol;

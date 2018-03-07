@@ -2,27 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public class HubOptions
     {
-        /// <summary>
-        /// The default keep-alive interval. This is set to exactly half of the default client timeout window,
-        /// to ensure a ping can arrive in time to satisfy the client timeout.
-        /// </summary>
-        public static readonly TimeSpan DefaultKeepAliveInterval = TimeSpan.FromSeconds(15);
+        // NegotiateTimeout and KeepAliveInterval are set to null here to help identify when
+        // local hub options have been set. Global default values are set in HubOptionsSetup.
+        // SupportedProtocols being null is the true default value, and it represents support
+        // for all available protocols.
+        public TimeSpan? NegotiateTimeout { get; set; } = null;
 
-        public TimeSpan NegotiateTimeout { get; set; } = TimeSpan.FromSeconds(5);
+        public TimeSpan? KeepAliveInterval { get; set; } = null;
 
-        /// <summary>
-        /// The interval at which keep-alive messages should be sent. The default interval
-        /// is 15 seconds.
-        /// </summary>
-        /// <remarks>
-        /// This interval is not used by the Long Polling transport as it has inherent keep-alive
-        /// functionality because of the polling mechanism. 
-        /// </remarks>
-        public TimeSpan KeepAliveInterval { get; set; } = DefaultKeepAliveInterval;
+        public IList<string> SupportedProtocols { get; set; } = null;
     }
 }
