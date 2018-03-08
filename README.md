@@ -1,5 +1,14 @@
 
 # ASP.NET Core
+
+[app-metapackage-nuget]:  https://nuget.org/packages/Microsoft.AspNetCore.All
+[app-metapackage-nuget-badge]: http://img.shields.io/nuget/v/Microsoft.AspNetCore.All.svg?style=flat-square&label=aspnet@stable
+[app-metapackage-myget]:  https://dotnet.myget.org/feed/dotnet-core/package/nuget/Microsoft.AspNetCore.App
+[app-metapackage-myget-badge]: http://img.shields.io/dotnet.myget/dotnet-core/v/Microsoft.AspNetCore.App.svg?style=flat-square&label=aspnet@preview
+
+[![][app-metapackage-nuget-badge]][app-metapackage-nuget]
+[![][app-metapackage-myget-badge]][app-metapackage-myget]
+
 [![Join the chat at https://gitter.im/aspnet/Home](https://badges.gitter.im/aspnet/Home.svg)](https://gitter.im/aspnet/Home?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 This is the home page of the ASP.NET Core source code repositories and is intended for those contributing to ASP.NET Core or using bleeding edge nightly builds.
@@ -16,11 +25,9 @@ Follow the [Getting Started](https://docs.microsoft.com/en-us/aspnet/core/gettin
 
 Also checkout the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
-## Builds
+## Daily builds
 
-[![MyGet tenant](https://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.All.svg)]()
-
-If you want to use the latest dev build then you need to:
+If you want to use the latest daily build then you need to:
 
 - Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/cli#installers-and-binaries)
 - Add a NuGet.Config to your app with the following content:
@@ -30,7 +37,7 @@ If you want to use the latest dev build then you need to:
   <configuration>
       <packageSources>
           <clear />
-          <add key="AspNetVNext" value="https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json" />
+          <add key="dotnet-core" value="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>
@@ -38,10 +45,7 @@ If you want to use the latest dev build then you need to:
 
   *NOTE: This NuGet.Config should be with your application unless you want nightly packages to potentially start being restored for other apps on the machine.*
 
-- Change your applications dependencies to have a `*` to get the latest version (ex. `1.0.0-*`).
-
-Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
-
+Prerelease tooling builds for Visual Studio are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
 
 
 ## Community and roadmap
