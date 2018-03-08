@@ -24,5 +24,16 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, $"UpToDateCheckInput: {Path.Combine("Views", "Home", "Index.cshtml")}");
             Assert.BuildOutputContainsLine(result, $"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}");
         }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorSdk_AddsGeneratedRazorFilesAndAssemblyInfoToRazorCompile()
+        {
+            var result = await DotnetMSBuild("Build", "/t:_IntrospectRazorCompileItems");
+
+            Assert.BuildPassed(result);
+            Assert.BuildOutputContainsLine(result, $"RazorCompile: {Path.Combine(IntermediateOutputPath, "Razor", "Views", "Home", "Index.cs")}");
+            Assert.BuildOutputContainsLine(result, $"RazorCompile: {Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs")}");
+        }
     }
 }

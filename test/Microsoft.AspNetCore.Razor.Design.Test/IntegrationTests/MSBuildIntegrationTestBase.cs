@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     public abstract class MSBuildIntegrationTestBase
     {
         private static readonly AsyncLocal<ProjectDirectory> _project = new AsyncLocal<ProjectDirectory>();
+        private static readonly AsyncLocal<string> _projectTfm = new AsyncLocal<string>();
 
         protected MSBuildIntegrationTestBase(BuildServerTestFixture buildServer)
         {
@@ -43,7 +44,11 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         protected string RazorIntermediateOutputPath => Path.Combine(IntermediateOutputPath, "Razor");
 
-        protected string TargetFramework { get; set; } = "netcoreapp2.0";
+        internal static string TargetFramework
+        {
+            get => _projectTfm.Value;
+            set => _projectTfm.Value = value;
+        }
 
         protected BuildServerTestFixture BuildServer { get; set; }
 

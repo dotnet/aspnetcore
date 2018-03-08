@@ -1,0 +1,120 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0">
+  <PropertyGroup>
+    <!-- Determines if the generated Razor assembly includes an auto-generated assembly info. -->
+    <GenerateRazorTargetAssemblyInfo Condition="'$(GenerateRazorTargetAssemblyInfo)'==''">$(GenerateAssemblyInfo)</GenerateRazorTargetAssemblyInfo>
+    <GenerateRazorTargetAssemblyInfo Condition="'$(GenerateRazorTargetAssemblyInfo)'==''">true</GenerateRazorTargetAssemblyInfo>
+
+    <!-- Set to true, to automatically include some AssemblyAttributes inferred from the project metadata in the generated Razor assembly -->
+    <EnableDefaultRazorTargetAssemblyInfoAttributes Condition="'$(EnableDefaultRazorTargetAssemblyInfoAttributes)'==''">true</EnableDefaultRazorTargetAssemblyInfoAttributes>
+
+    <GeneratedRazorTargetAssemblyInfo Condition="'$(GeneratedRazorTargetAssemblyInfo)'==''">$(IntermediateOutputPath)$(MSBuildProjectName).RazorAssemblyInfo.cs</GeneratedRazorTargetAssemblyInfo>
+
+    <_GeneratedRazorAssemblyInfoInputsCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorAssemblyInfoInputs.cache</_GeneratedRazorAssemblyInfoInputsCacheFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateRazorAssemblyInfoDependsOn>
+      GetRazorAssemblyAttributes;
+      CreateRazorGeneratedAssemblyInfoInputsCacheFile;
+    </GenerateRazorAssemblyInfoDependsOn>
+  </PropertyGroup>
+
+  <Target
+    Name="GenerateRazorAssemblyInfo"
+    DependsOnTargets="$(GenerateRazorAssemblyInfoDependsOn)"
+    Inputs="$(_GeneratedRazorAssemblyInfoInputsCacheFile)"
+    Outputs="$(GeneratedRazorTargetAssemblyInfo)"
+    Condition="'$(GenerateRazorTargetAssemblyInfo)'=='true' AND '@(RazorAssemblyAttribute)'!='' AND '@(RazorCompile)'!=''">
+
+    <ItemGroup Condition="'$(GenerateRazorTargetAssemblyInfo)'=='true'">
+      <!-- Ensure the generated assemblyinfo file is not already part of RazorCompile sources -->
+      <RazorCompile Remove="$(GeneratedRazorTargetAssemblyInfo)" />
+      <RazorCompile Include="$(GeneratedRazorTargetAssemblyInfo)" />
+    </ItemGroup>
+
+    <WriteCodeFragment AssemblyAttributes="@(RazorAssemblyAttribute)" Language="C#" OutputFile="$(GeneratedRazorTargetAssemblyInfo)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(GeneratedRazorTargetAssemblyInfo)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="GetRazorAssemblyAttributes"
+    DependsOnTargets="GetAssemblyVersion"
+    Condition="'$(EnableDefaultRazorTargetAssemblyInfoAttributes)'=='true'">
+
+    <PropertyGroup>
+      <RazorAssemblyFileVersion Condition="'$(RazorAssemblyFileVersion)' == ''">$(FileVersion)</RazorAssemblyFileVersion>
+      <RazorAssemblyInformationalVersion Condition="'$(RazorAssemblyInformationalVersion)' == ''">$(InformationalVersion)</RazorAssemblyInformationalVersion>
+      <RazorAssemblyTitle Condition="'$(RazorAssemblyTitle)'==''">$(RazorTargetName)</RazorAssemblyTitle>
+      <RazorAssemblyVersion Condition="'$(RazorAssemblyVersion)' == ''">$(AssemblyVersion)</RazorAssemblyVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyCompanyAttribute" Condition="'$(Company)' != '' and '$(GenerateAssemblyCompanyAttribute)' == 'true'">
+        <_Parameter1>$(Company)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyConfigurationAttribute" Condition="'$(Configuration)' != '' and '$(GenerateAssemblyConfigurationAttribute)' == 'true'">
+        <_Parameter1>$(Configuration)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyCopyrightAttribute" Condition="'$(Copyright)' != '' and '$(GenerateAssemblyCopyrightAttribute)' == 'true'">
+        <_Parameter1>$(Copyright)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyProductAttribute" Condition="'$(Product)' != '' and '$(GenerateAssemblyProductAttribute)' == 'true'">
+        <_Parameter1>$(Product)</_Parameter1>
+      </RazorAssemblyAttribute>
+
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyFileVersionAttribute" Condition="'$(RazorAssemblyFileVersion)' != '' and '$(GenerateAssemblyFileVersionAttribute)' == 'true'">
+        <_Parameter1>$(RazorAssemblyFileVersion)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyInformationalVersionAttribute" Condition="'$(RazorAssemblyInformationalVersion)' != '' and '$(GenerateAssemblyInformationalVersionAttribute)' == 'true'">
+        <_Parameter1>$(RazorAssemblyInformationalVersion)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyTitleAttribute" Condition="'$(RazorAssemblyTitle)' != '' and '$(GenerateAssemblyTitleAttribute)' == 'true'">
+        <_Parameter1>$(RazorAssemblyTitle)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="System.Reflection.AssemblyVersionAttribute" Condition="'$(RazorAssemblyVersion)' != '' and '$(GenerateAssemblyVersionAttribute)' == 'true'">
+        <_Parameter1>$(RazorAssemblyVersion)</_Parameter1>
+      </RazorAssemblyAttribute>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    To allow version changes to be respected on incremental builds (e.g. through CLI parameters),
+    create a hash of all assembly attributes so that the cache file will change with the calculated
+    assembly attribute values and msbuild will then execute CoreGenerateAssembly to generate a new file.
+  -->
+  <Target Name="CreateRazorGeneratedAssemblyInfoInputsCacheFile" Condition="'@(RazorAssemblyAttribute)' != ''">
+
+    <!-- We only use up to _Parameter1 for most attributes, but other targets may add additional assembly attributes with multiple parameters. -->
+    <Hash ItemsToHash="@(RazorAssemblyAttribute->'%(Identity)%(_Parameter1)%(_Parameter2)%(_Parameter3)%(_Parameter4)%(_Parameter5)%(_Parameter6)%(_Parameter7)%(_Parameter8)')">
+      <Output TaskParameter="HashResult" PropertyName="_RazorAssemblyAttributesHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_RazorAssemblyAttributesHash)"
+      File="$(_GeneratedRazorAssemblyInfoInputsCacheFile)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedRazorAssemblyInfoInputsCacheFile)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

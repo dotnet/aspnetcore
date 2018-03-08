@@ -14,6 +14,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+
+    <Copyright>© Microsoft</Copyright>
+    <Product>Razor Test</Product>
+    <Company>Microsoft</Company>
   </PropertyGroup>
 
   <!-- Test Placeholder -->

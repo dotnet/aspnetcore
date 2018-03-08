@@ -177,4 +177,5 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="@(_RazorDebugSymbolsIntermediatePath)" Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)')" />
     </ItemGroup>
   </Target>
+
 </Project>

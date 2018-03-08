@@ -10,4 +10,8 @@
   <Target Name="_IntrospectUpToDateCheckInput">
     <Message Text="UpToDateCheckInput: %(UpToDateCheckInput.Identity)" Importance="High" />
   </Target>
+
+  <Target Name="_IntrospectRazorCompileItems">
+    <Message Text="RazorCompile: %(RazorCompile.Identity)" Importance="High" />
+  </Target>
 </Project>

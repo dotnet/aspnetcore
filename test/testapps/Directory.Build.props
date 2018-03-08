@@ -10,9 +10,14 @@
     <RazorSdkCurrentVersionTargets>$(SolutionRoot)src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
+  <!-- Don't use the server when building in place. This locks up rzc.dll -->
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
-    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
+    <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Runtime\Microsoft.AspNetCore.Razor.Runtime.csproj"/>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Razor.Design\Microsoft.AspNetCore.Razor.Design.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>

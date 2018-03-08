@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ClassLibrary")]
         public async Task Pack_Works_IncludesRazorAssembly()
         {
-            TargetFramework = "netstandard2.0";
             var result = await DotnetMSBuild("Pack");
 
             Assert.BuildPassed(result);
@@ -89,7 +88,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ClassLibrary")]
         public async Task Pack_IncludesRazorFilesAsContent_WhenIncludeRazorContentInPack_IsSet()
         {
-            TargetFramework = "netstandard2.0";
             var result = await DotnetMSBuild("Pack", "/p:IncludeRazorContentInPack=true");
 
             Assert.BuildPassed(result);

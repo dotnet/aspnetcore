@@ -11,4 +11,16 @@
     -->
     <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true'">
+    <AssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
+      <_Parameter1>$(RazorTargetName)</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
+      <_Parameter1>Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</_Parameter1>
+    </RazorAssemblyAttribute>
+  </ItemGroup>
 </Project>

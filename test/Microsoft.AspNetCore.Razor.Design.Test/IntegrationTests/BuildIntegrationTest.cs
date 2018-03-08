@@ -66,6 +66,10 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileExists(result, OutputPath, "SimpleMvc.pdb");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.dll");
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.Views.pdb");
+
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
         }
 
         [Fact]
@@ -270,13 +274,97 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("ClassLibrary")]
-        public async Task Build_ClassLibrary_DoesNotProduceDepsFile()
+        public async Task Build_ClassLibrary_DoesNotProduceDepsFileWithCompilationContext()
         {
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
+            Assert.FileExists(result, OutputPath, "ClassLibrary.deps.json");
+            var depsFilePath = Path.Combine(Project.DirectoryPath, OutputPath, "ClassLibrary.deps.json");
+            var dependencyContext = ReadDependencyContext(depsFilePath);
+            Assert.All(dependencyContext.CompileLibraries, library => Assert.Empty(library.Assemblies));
+            Assert.Empty(dependencyContext.CompilationOptions.Defines);
+        }
 
-            Assert.FileDoesNotExist(result, OutputPath, "ClassLibrary.deps.json");
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_CodeGensAssemblyInfoUsingValuesFromProject()
+        {
+            var assemblyInfoPath = Path.Combine(IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, assemblyInfoPath);
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyCopyrightAttribute(\"© Microsoft\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyProductAttribute(\"Razor Test\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyCompanyAttribute(\"Microsoft\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyTitleAttribute(\"ClassLibrary.Views\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyVersionAttribute(\"1.0.0.0\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyFileVersionAttribute(\"1.0.0.0\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyInformationalVersionAttribute(\"1.0.0\")]");
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_UsesRazorSpecificAssemblyProperties()
+        {
+            var assemblyInfoPath = Path.Combine(IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
+            var buildArguments = "/p:RazorAssemblyFileVersion=2.0.0.100 /p:RazorAssemblyInformationalVersion=2.0.0-preview /p:RazorAssemblyTitle=MyRazorViews /p:RazorAssemblyVersion=2.0.0";
+            var result = await DotnetMSBuild("Build", buildArguments);
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, assemblyInfoPath);
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyTitleAttribute(\"MyRazorViews\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyVersionAttribute(\"2.0.0\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyFileVersionAttribute(\"2.0.0.100\")]");
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: System.Reflection.AssemblyInformationalVersionAttribute(\"2.0.0-preview\")]");
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_DoesNotGenerateAssemblyInfo_IfGenerateRazorTargetAssemblyInfo_IsSetToFalse()
+        {
+            var result = await DotnetMSBuild("Build", "/p:GeneratedRazorTargetAssemblyInfo=false");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "ClassLibrary.RazorAssemblyInfo.cs");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_AddsApplicationPartAttributes()
+        {
+            var assemblyInfoPath = Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
+            var razorAssemblyInfoPath = Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, assemblyInfoPath);
+            Assert.FileContains(result, assemblyInfoPath, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute(\"SimpleMvc.Views\")]");
+
+            Assert.FileExists(result, razorAssemblyInfoPath);
+            Assert.FileContains(result, razorAssemblyInfoPath, "[assembly: System.Reflection.AssemblyTitleAttribute(\"SimpleMvc.Views\")]");
+            Assert.FileContains(result, razorAssemblyInfoPath, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(\"Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFac\"");
+        }
+
+         [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_AddsApplicationPartAttributes_WhenEnableDefaultRazorTargetAssemblyInfoAttributes_IsFalse()
+        {
+            var razorAssemblyInfoPath = Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
+            var result = await DotnetMSBuild("Build", "/p:EnableDefaultRazorTargetAssemblyInfoAttributes=false");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
+            Assert.FileExists(result, razorAssemblyInfoPath);
+            Assert.FileDoesNotContain(result, razorAssemblyInfoPath, "[assembly: System.Reflection.AssemblyTitleAttribute");
+            Assert.FileContains(result, razorAssemblyInfoPath, "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute(\"Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFac\"");
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)

@@ -70,8 +70,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_ForClassLibrary_SuppressesConfigurationMetadata()
         {
-            TargetFramework = "netstandard2.0";
-
             var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);

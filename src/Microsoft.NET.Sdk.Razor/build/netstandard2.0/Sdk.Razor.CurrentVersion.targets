@@ -46,7 +46,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   
     <PrepareForRazorCompileDependsOn>
       RazorGenerate;
-      ResolveRazorCompileInputs
+      ResolveRazorCompileInputs;
+      GenerateRazorAssemblyInfo
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
@@ -106,7 +107,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- File name (without extension) of the assembly produced by Razor -->
     <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName)$(RazorTargetNameSuffix)</RazorTargetName>
 
-    <!--
+   <!--
       The compatibility zone - these properties were provided by the MVC Precompilation tool and they
       map to supported settings in Razor SDK.
 
@@ -183,6 +184,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Import Project="$(RazorCodeGenerationTargetsPath)"
     Condition="'$(RazorCodeGenerationTargetsPath)' != '' AND Exists('$(RazorCodeGenerationTargetsPath)')" />
+
+  <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
   <!-- 
     These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
