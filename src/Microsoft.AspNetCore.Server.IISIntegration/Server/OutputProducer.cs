@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         // This locks access to to all of the below fields
         private readonly object _contextLock = new object();
 
+        private ValueTask<FlushResult> _flushTask;
         private bool _completed = false;
 
         private readonly Pipe _pipe;
@@ -99,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return FlushAsyncAwaited(awaitable, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(PipeAwaiter<FlushResult> awaitable, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(ValueTask<FlushResult> awaitable, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters
@@ -107,21 +108,42 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             // All awaiters get the same task
             lock (_flushLock)
             {
+                _flushTask = awaitable;
                 if (_flushTcs == null || _flushTcs.Task.IsCompleted)
                 {
                     _flushTcs = new TaskCompletionSource<object>();
-                    awaitable.OnCompleted(_flushCompleted);
+
+                    _flushTask.GetAwaiter().OnCompleted(_flushCompleted);
                 }
             }
 
-            await _flushTcs.Task;
-
-            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await _flushTcs.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException)
+            {
+                _completed = true;
+                throw;
+            }
         }
 
         private void OnFlushCompleted()
         {
-            _flushTcs.TrySetResult(null);
+            try
+            {
+                _flushTask.GetAwaiter().GetResult();
+                _flushTcs.TrySetResult(null);
+            }
+            catch (Exception exception)
+            {
+                _flushTcs.TrySetResult(exception);
+            }
+            finally
+            {
+                _flushTask = default;
+            }
         }
     }
 }
