@@ -28,9 +28,11 @@ namespace Microsoft.CodeAnalysis.Razor
                 .WithGlobalNamespaceStyle(SymbolDisplayGlobalNamespaceStyle.Omitted)
                 .WithMiscellaneousOptions(SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions & (~SymbolDisplayMiscellaneousOptions.UseSpecialTypes));
 
-        public DefaultTagHelperDescriptorFactory(Compilation compilation, bool designTime)
+        public DefaultTagHelperDescriptorFactory(Compilation compilation, bool includeDocumentation, bool excludeHidden)
         {
-            DesignTime = designTime;
+            IncludeDocumentation = includeDocumentation;
+            ExcludeHidden = excludeHidden;
+
             _htmlAttributeNameAttributeSymbol = compilation.GetTypeByMetadataName(TagHelperTypes.HtmlAttributeNameAttribute);
             _htmlAttributeNotBoundAttributeSymbol = compilation.GetTypeByMetadataName(TagHelperTypes.HtmlAttributeNotBoundAttribute);
             _htmlTargetElementAttributeSymbol = compilation.GetTypeByMetadataName(TagHelperTypes.HtmlTargetElementAttribute);
@@ -40,7 +42,9 @@ namespace Microsoft.CodeAnalysis.Razor
             _iDictionarySymbol = compilation.GetTypeByMetadataName(TagHelperTypes.IDictionary);
         }
 
-        protected bool DesignTime { get; }
+        protected bool ExcludeHidden { get; }
+
+        protected bool IncludeDocumentation { get; }
 
         /// <inheritdoc />
         public virtual TagHelperDescriptor CreateDescriptor(INamedTypeSymbol type)
@@ -154,7 +158,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private void AddDocumentation(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
-            if (!DesignTime)
+            if (!IncludeDocumentation)
             {
                 return;
             }
@@ -169,10 +173,6 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private void AddTagOutputHint(INamedTypeSymbol type, TagHelperDescriptorBuilder builder)
         {
-            if (!DesignTime)
-            {
-                return;
-            }
             string outputElementHint = null;
             var outputElementHintAttribute = type.GetAttributes().Where(a => a.AttributeClass == _outputElementHintAttributeSymbol).FirstOrDefault();
             if (outputElementHintAttribute != null)
@@ -221,7 +221,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     builder.IsEnum = true;
                 }
 
-                if (DesignTime)
+                if (IncludeDocumentation)
                 {
                     var xml = property.GetDocumentationCommentXml();
 
@@ -416,7 +416,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private bool ShouldSkipDescriptorCreation(ISymbol symbol)
         {
-            if (DesignTime)
+            if (ExcludeHidden)
             {
                 var editorBrowsableAttribute = symbol.GetAttributes().Where(a => a.AttributeClass == _editorBrowsableAttributeSymbol).FirstOrDefault();
 

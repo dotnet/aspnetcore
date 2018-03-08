@@ -11,10 +11,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public sealed class ViewComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
-        // Hack for testability. The visitor will normally just no op if we're not referencing
-        // an appropriate version of MVC.
-        internal bool ForceEnabled { get; set; }
-
         public int Order { get; set; }
 
         public void Execute(TagHelperDescriptorProviderContext context)
@@ -33,10 +29,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var types = new List<INamedTypeSymbol>();
             var visitor = ViewComponentTypeVisitor.Create(compilation, types);
-            if (ForceEnabled)
-            {
-                visitor.Enabled = true;
-            }
 
             // We always visit the global namespace.
             visitor.Visit(compilation.Assembly.GlobalNamespace);

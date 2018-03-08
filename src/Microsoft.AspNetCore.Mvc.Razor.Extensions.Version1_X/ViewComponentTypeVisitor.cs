@@ -18,22 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         public static ViewComponentTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
         {
-            var enabled = false;
-            foreach (var reference in compilation.References)
-            {
-                var symbol = compilation.GetAssemblyOrModuleSymbol(reference) as IAssemblySymbol;
-                if (symbol != null)
-                {
-                    if (string.Equals(symbol.Identity.Name, ViewComponentTypes.Assembly, StringComparison.Ordinal))
-                    {
-                        enabled = symbol.Identity.Version >= ViewComponentTypes.AssemblyVersion;
-                        break;
-                    }
-                }
-            }
-
-            var vcAttribute = enabled ? compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute) : null;
-            var nonVCAttribute = enabled ? compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute) : null;
+            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
+            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
             return new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, results);
         }
 

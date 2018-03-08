@@ -4,7 +4,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.IntegrationTests;
@@ -13,22 +12,22 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.Extensions.DependencyModel;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
 {
     public class CodeGenerationIntegrationTest : IntegrationTestBase
     {
-        private const string CurrentMvcShim = "Microsoft.AspNetCore.Razor.Test.MvcShim.dll";
         private static readonly RazorSourceDocument DefaultImports = MvcRazorTemplateEngine.GetDefaultImports();
+
+        private CSharpCompilation BaseCompilation => MvcShim.BaseCompilation.WithAssemblyName("AppCode");
 
         #region Runtime
         [Fact]
         public void InvalidNamespaceAtEOF_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -39,9 +38,9 @@ public class MyService<TModel>
 {
     public string Html { get; set; }
 }";
-            var compilationReferences = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(compilationReferences);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -63,9 +62,9 @@ public class MyModel
 
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -87,44 +86,50 @@ public class MyModel
 {
 
 }";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void MalformedPageDirective_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void Basic_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void Sections_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class InputTestTagHelper : {typeof(TagHelper).FullName}
 {{
     public ModelExpression For {{ get; set; }}
 }}
-");
-            RunRuntimeTest(references);
+";
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void _ViewImports_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -136,9 +141,9 @@ public class MyApp
     public string MyProperty { get; set; }
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -159,9 +164,9 @@ public class MyApp
 {
     public string MyProperty { get; set; }
 }";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
@@ -183,75 +188,81 @@ public class MyService<TModel>
     public string Html { get; set; }
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void Model_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
+            var compilation = BaseCompilation;
 
-            RunRuntimeTest(references);
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void ModelExpressionTagHelper_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class InputTestTagHelper : {typeof(TagHelper).FullName}
 {{
     public ModelExpression For {{ get; set; }}
 }}
-");
-            RunRuntimeTest(references);
+";
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void RazorPages_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class DivTagHelper : {typeof(TagHelper).FullName}
 {{
 
 }}
-");
-            RunRuntimeTest(references);
+";
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void RazorPagesWithoutModel_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class DivTagHelper : {typeof(TagHelper).FullName}
 {{
 
 }}
-");
-            RunRuntimeTest(references);
+";
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void PageWithNamespace_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void ViewWithNamespace_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references);
+            var compilation = BaseCompilation;
+            RunRuntimeTest(compilation);
         }
 
         [Fact]
         public void ViewComponentTagHelper_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class TestViewComponent
 {{
     public string Invoke(string firstName)
@@ -265,8 +276,11 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 {{
     public string Bar {{ get; set; }}
 }}
-");
-            RunRuntimeTest(references);
+";
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+            
+            RunRuntimeTest(compilation);
         }
         #endregion
 
@@ -274,8 +288,8 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
         [Fact]
         public void InvalidNamespaceAtEOF_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -288,8 +302,9 @@ public class MyService<TModel>
 }
 ";
 
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -312,8 +327,9 @@ public class MyModel
 
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -337,43 +353,47 @@ public abstract class MyPageModel<T> : Page
 }
 ";
 
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void MalformedPageDirective_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void Basic_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void Sections_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class InputTestTagHelper : {typeof(TagHelper).FullName}
 {{
     public ModelExpression For {{ get; set; }}
 }}
-");
-            RunDesignTimeTest(references);
+";
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void _ViewImports_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -385,8 +405,9 @@ public class MyApp
     public string MyProperty { get; set; }
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -408,8 +429,9 @@ public class MyApp
     public string MyProperty { get; set; }
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -431,15 +453,16 @@ public class MyApp
     public string MyProperty { get; set; }
 }
 ";
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void Model_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
@@ -451,66 +474,74 @@ public class ThisShouldBeGenerated
 
 }";
 
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
         
         [Fact]
         public void ModelExpressionTagHelper_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 
 public class InputTestTagHelper : {typeof(TagHelper).FullName}
 {{
     public ModelExpression For {{ get; set; }}
 }}
-");
-            RunDesignTimeTest(references);
+";
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void RazorPages_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class DivTagHelper : {typeof(TagHelper).FullName}
 {{
 
 }}
-");
-            RunDesignTimeTest(references);
+";
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void RazorPagesWithoutModel_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class DivTagHelper : {typeof(TagHelper).FullName}
 {{
 
 }}
-");
-            RunDesignTimeTest(references);
+";
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void PageWithNamespace_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void ViewWithNamespace_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references);
+            var compilation = BaseCompilation;
+            RunDesignTimeTest(compilation);
         }
 
         [Fact]
         public void ViewComponentTagHelper_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+            var appCode = $@"
 public class TestViewComponent
 {{
     public string Invoke(string firstName)
@@ -524,17 +555,22 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
 {{
     public string Bar {{ get; set; }}
 }}
-");
-            RunDesignTimeTest(references);
+";
+
+            var compilation = BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(appCode));
+            
+            RunDesignTimeTest(compilation);
         }
         #endregion
 
         private void RunRuntimeTest(
-            IEnumerable<MetadataReference> compilationReferences,
+            CSharpCompilation baseCompilation,
             IEnumerable<string> expectedErrors = null)
         {
+            Assert.Empty(baseCompilation.GetDiagnostics());
+
             // Arrange
-            var engine = CreateRuntimeEngine(compilationReferences);
+            var engine = CreateRuntimeEngine(baseCompilation);
             var document = CreateCodeDocument();
 
             // Act
@@ -543,15 +579,17 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertDocumentCompiles(document, compilationReferences, expectedErrors);
+            AssertDocumentCompiles(document, baseCompilation, expectedErrors);
         }
 
         private void RunDesignTimeTest(
-            IEnumerable<MetadataReference> compilationReferences,
+            CSharpCompilation baseCompilation,
             IEnumerable<string> expectedErrors = null)
         {
+            Assert.Empty(baseCompilation.GetDiagnostics());
+
             // Arrange
-            var engine = CreateDesignTimeEngine(compilationReferences);
+            var engine = CreateDesignTimeEngine(baseCompilation);
             var document = CreateCodeDocument();
 
             // Act
@@ -561,25 +599,21 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
             AssertSourceMappingsMatchBaseline(document);
-            AssertDocumentCompiles(document, compilationReferences, expectedErrors);
-        }
-
-        private static IEnumerable<MetadataReference> CreateCompilationReferences(string mvcShimName, string appCode = null)
-        {
-            var shimReferences = CreateMvcShimReferences(mvcShimName);
-            return CreateAppCodeReferences(appCode, shimReferences);
+            AssertDocumentCompiles(document, baseCompilation, expectedErrors);
         }
 
         private void AssertDocumentCompiles(
             RazorCodeDocument document,
-            IEnumerable<MetadataReference> compilationReferences,
+            CSharpCompilation baseCompilation,
             IEnumerable<string> expectedErrors = null)
         {
             var cSharp = document.GetCSharpDocument().GeneratedCode;
 
             var syntaxTree = CSharpSyntaxTree.ParseText(cSharp);
             var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
-            var compilation = CSharpCompilation.Create("CodeGenerationTestAssembly", new[] { syntaxTree }, compilationReferences, options);
+
+            var references = baseCompilation.References.Concat(new[] { baseCompilation.ToMetadataReference() });
+            var compilation = CSharpCompilation.Create("CodeGenerationTestAssembly", new[] { syntaxTree }, references, options);
 
             var diagnostics = compilation.GetDiagnostics();
 
@@ -595,29 +629,29 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             }
         }
 
-        protected RazorEngine CreateDesignTimeEngine(IEnumerable<MetadataReference> references)
+        protected RazorEngine CreateDesignTimeEngine(CSharpCompilation compilation)
         {
+            var references = compilation.References.Concat(new[] { compilation.ToMetadataReference() });
+
             return RazorEngine.CreateDesignTime(b =>
             {
                 RazorExtensions.Register(b);
 
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
-                b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true });
-                b.Features.Add(new ViewComponentTagHelperDescriptorProvider() { ForceEnabled = true });
             });
         }
 
-        protected RazorEngine CreateRuntimeEngine(IEnumerable<MetadataReference> references)
+        protected RazorEngine CreateRuntimeEngine(CSharpCompilation compilation)
         {
+            var references = compilation.References.Concat(new[] { compilation.ToMetadataReference() });
+
             return RazorEngine.Create(b =>
             {
                 RazorExtensions.Register(b);
 
                 b.Features.Add(GetMetadataReferenceFeature(references));
                 b.Features.Add(new CompilationTagHelperFeature());
-                b.Features.Add(new DefaultTagHelperDescriptorProvider() { DesignTime = true });
-                b.Features.Add(new ViewComponentTagHelperDescriptorProvider() { ForceEnabled = true });
             });
         }
 
@@ -663,49 +697,6 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             {
                 References = references.ToList()
             };
-        }
-
-        private static IEnumerable<MetadataReference> CreateAppCodeReferences(string appCode, IEnumerable<MetadataReference> shimReferences)
-        {
-            var references = new List<MetadataReference>(shimReferences);
-
-            if (appCode != null)
-            {
-                var appCodeSyntaxTrees = new List<SyntaxTree> { CSharpSyntaxTree.ParseText(appCode) };
-
-                var compilation = CSharpCompilation.Create(
-                    "AppCode",
-                    appCodeSyntaxTrees,
-                    shimReferences,
-                    options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
-                var stream = new MemoryStream();
-                var compilationResult = compilation.Emit(stream, options: new EmitOptions());
-                stream.Position = 0;
-
-                var diagString = string.Join(";", compilationResult.Diagnostics.Where(s => s.Severity == DiagnosticSeverity.Error).Select(s => s.ToString()));
-                Assert.True(compilationResult.Success, string.Format("Application code needed for tests didn't compile!: {0}", diagString));
-
-                references.Add(MetadataReference.CreateFromStream(stream));
-            }
-
-            return references;
-        }
-
-        private static IEnumerable<MetadataReference> CreateMvcShimReferences(string mvcShimName)
-        {
-            var dllPath = Path.Combine(Directory.GetCurrentDirectory(), mvcShimName);
-            var assembly = Assembly.LoadFile(dllPath);
-            var assemblyDependencyContext = DependencyContext.Load(assembly);
-
-            var assemblyReferencePaths = assemblyDependencyContext.CompileLibraries.SelectMany(l => l.ResolveReferencePaths());
-
-            var references = assemblyReferencePaths
-                .Select(assemblyPath => MetadataReference.CreateFromFile(assemblyPath))
-                .ToList<MetadataReference>();
-
-            Assert.NotEmpty(references);
-
-            return references;
         }
     }
 }

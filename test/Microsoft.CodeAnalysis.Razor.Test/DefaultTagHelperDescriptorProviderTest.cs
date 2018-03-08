@@ -18,11 +18,10 @@ namespace Microsoft.CodeAnalysis.Razor
             // Arrange
             var editorBrowsableTypeName = "Microsoft.CodeAnalysis.Razor.Workspaces.Test.EditorBrowsableTagHelper";
             var compilation = TestCompilation.Create(_assembly);
-            var descriptorProvider = new DefaultTagHelperDescriptorProvider()
-            {
-                DesignTime = true,
-            };
+            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
+
             var context = TagHelperDescriptorProviderContext.Create();
+            context.ExcludeHidden = true;
 
             // Act 
             descriptorProvider.Execute(context);

@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
     // This is just a basic integration test. There are detailed tests for the VCTH visitor and descriptor factory.
     public class ViewComponentTagHelperDescriptorProviderTest
     {
-        private static readonly Assembly _assembly = typeof(ViewComponentTagHelperDescriptorProviderTest).GetTypeInfo().Assembly;
-
         [Fact]
         public void DescriptorProvider_FindsVCTH()
         {
@@ -27,15 +25,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         }
 ";
 
-            var testCompilation = TestCompilation.Create(_assembly, CSharpSyntaxTree.ParseText(code));
+            var compilation = MvcShim.BaseCompilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(code));
 
             var context = TagHelperDescriptorProviderContext.Create();
-            context.SetCompilation(testCompilation);
+            context.SetCompilation(compilation);
 
             var provider = new ViewComponentTagHelperDescriptorProvider()
             {
                 Engine = RazorEngine.CreateEmpty(b => { }),
-                ForceEnabled = true,
             };
 
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
@@ -68,8 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             provider.Execute(context);
 
             // Assert
-            var descriptor = context.Results.FirstOrDefault(d => TagHelperDescriptorComparer.CaseSensitive.Equals(d, expectedDescriptor));
-            Assert.NotNull(descriptor);
+            Assert.Single(context.Results, d => TagHelperDescriptorComparer.CaseSensitive.Equals(d, expectedDescriptor));
         }
     }
 }

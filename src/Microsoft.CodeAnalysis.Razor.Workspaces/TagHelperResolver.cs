@@ -41,6 +41,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var results = new List<TagHelperDescriptor>();
             var context = TagHelperDescriptorProviderContext.Create(results);
+            context.ExcludeHidden = true;
+            context.IncludeDocumentation = true;
 
             var compilation = await project.WorkspaceProject.GetCompilationAsync().ConfigureAwait(false);
             context.SetCompilation(compilation);

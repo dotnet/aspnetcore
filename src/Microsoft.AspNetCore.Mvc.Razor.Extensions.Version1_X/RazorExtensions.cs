@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 {
@@ -21,6 +22,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             FunctionsDirective.Register(builder);
             InheritsDirective.Register(builder);
+
+            builder.Features.Add(new DefaultTagHelperDescriptorProvider());
 
             // Register section directive with the 1.x compatible target extension.
             builder.AddDirective(SectionDirective.Directive);
@@ -66,6 +69,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             FunctionsDirective.Register(builder);
             InheritsDirective.Register(builder);
+
+            builder.Features.Add(new DefaultTagHelperDescriptorProvider());
 
             // Register section directive with the 1.x compatible target extension.
             builder.AddDirective(SectionDirective.Directive);

@@ -8,6 +8,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class TagHelperDescriptorProviderContext
     {
+        public virtual bool ExcludeHidden { get; set; }
+
+        public virtual bool IncludeDocumentation { get; set; }
+
         public abstract ItemCollection Items { get; }
 
         public abstract ICollection<TagHelperDescriptor> Results { get; }

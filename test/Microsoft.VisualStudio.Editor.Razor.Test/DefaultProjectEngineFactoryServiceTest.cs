@@ -187,6 +187,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             // Assert
             Assert.Single(engine.Engine.Features.OfType<MyCoolNewFeature>());
+            Assert.Single(engine.Engine.Features.OfType<DefaultTagHelperDescriptorProvider>());
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperDescriptorProvider>());
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.MvcViewDocumentClassifierPass>());
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());

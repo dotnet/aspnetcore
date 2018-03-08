@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -29,11 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             _viewComponentAttribute = viewComponentAttribute;
             _nonViewComponentAttribute = nonViewComponentAttribute;
             _results = results;
-
-            Enabled = _viewComponentAttribute != null;
         }
-
-        public bool Enabled { get; set; }
 
         public override void VisitNamedType(INamedTypeSymbol symbol)
         {
@@ -63,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         internal bool IsViewComponent(INamedTypeSymbol symbol)
         {
-            if (!Enabled)
+            if (_viewComponentAttribute == null)
             {
                 return false;
             }
