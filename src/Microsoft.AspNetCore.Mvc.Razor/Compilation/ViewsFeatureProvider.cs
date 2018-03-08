@@ -7,98 +7,56 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Razor.Hosting;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     /// <summary>
     /// An <see cref="IApplicationFeatureProvider{TFeature}"/> for <see cref="ViewsFeature"/>.
     /// </summary>
+    [Obsolete("This type is obsolete and will be removed in a future version. See " + nameof(IRazorCompiledItemProvider) + " for alternatives.")]
     public class ViewsFeatureProvider : IApplicationFeatureProvider<ViewsFeature>
     {
         public static readonly string PrecompiledViewsAssemblySuffix = ".PrecompiledViews";
 
-        public static readonly IReadOnlyList<string> ViewAssemblySuffixes = new string[]
-        {
-            PrecompiledViewsAssemblySuffix,
-            ".Views",
-        };
-
         /// <inheritdoc />
         public void PopulateFeature(IEnumerable<ApplicationPart> parts, ViewsFeature feature)
         {
-            var knownIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var descriptors = new List<CompiledViewDescriptor>();
             foreach (var assemblyPart in parts.OfType<AssemblyPart>())
             {
-                var attributes = GetViewAttributes(assemblyPart);
-                var items = LoadItems(assemblyPart);
+                var viewAttributes = GetViewAttributes(assemblyPart)
+                    .Select(attribute => (Attribute: attribute, RelativePath: ViewPath.NormalizePath(attribute.Path)));
 
-                var merged = Merge(items, attributes);
-                foreach (var item in merged)
+                var duplicates = viewAttributes.GroupBy(a => a.RelativePath, StringComparer.OrdinalIgnoreCase)
+                    .FirstOrDefault(g => g.Count() > 1);
+
+                if (duplicates != null)
                 {
-                    var descriptor = new CompiledViewDescriptor(item.item, item.attribute);
-                    // We iterate through ApplicationPart instances appear in precendence order.
-                    // If a view path appears in multiple views, we'll use the order to break ties.
-                    if (knownIdentifiers.Add(descriptor.RelativePath))
+                    // Ensure parts do not specify views with differing cases. This is not supported
+                    // at runtime and we should flag at as such for precompiled views.
+                    var viewsDiffereningInCase = string.Join(Environment.NewLine, duplicates.Select(d => d.RelativePath));
+
+                    var message = string.Join(
+                        Environment.NewLine,
+                        Resources.RazorViewCompiler_ViewPathsDifferOnlyInCase,
+                        viewsDiffereningInCase);
+                    throw new InvalidOperationException(message);
+                }
+
+                foreach (var (attribute, relativePath) in viewAttributes)
+                {
+                    var viewDescriptor = new CompiledViewDescriptor
                     {
-                        feature.ViewDescriptors.Add(descriptor);
-                    }
+                        ExpirationTokens = Array.Empty<IChangeToken>(),
+                        RelativePath = relativePath,
+                        ViewAttribute = attribute,
+                        IsPrecompiled = true,
+                    };
+
+                    feature.ViewDescriptors.Add(viewDescriptor);
                 }
             }
-        }
-
-        private ICollection<(RazorCompiledItem item, RazorViewAttribute attribute)> Merge(
-            IReadOnlyList<RazorCompiledItem> items,
-            IEnumerable<RazorViewAttribute> attributes)
-        {
-            // This code is a intentionally defensive. We assume that it's possible to have duplicates
-            // of attributes, and also items that have a single kind of metadata, but not the other.
-            var dictionary = new Dictionary<string, (RazorCompiledItem item, RazorViewAttribute attribute)>(StringComparer.OrdinalIgnoreCase);
-            for (var i = 0; i < items.Count; i++)
-            {
-                var item = items[i];
-                if (!dictionary.TryGetValue(item.Identifier, out var entry))
-                {
-                    dictionary.Add(item.Identifier, (item, null));
-
-                }
-                else if (entry.item == null)
-                {
-                    dictionary[item.Identifier] = (item, entry.attribute);
-                }
-            }
-
-            foreach (var attribute in attributes)
-            {
-                if (!dictionary.TryGetValue(attribute.Path, out var entry))
-                {
-                    dictionary.Add(attribute.Path, (null, attribute));
-                }
-                else if (entry.attribute == null)
-                {
-                    dictionary[attribute.Path] = (entry.item, attribute);
-                }
-            }
-
-            return dictionary.Values;
-        }
-
-        internal virtual IReadOnlyList<RazorCompiledItem> LoadItems(AssemblyPart assemblyPart)
-        {
-            if (assemblyPart == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyPart));
-            }
-
-            var viewAssembly = assemblyPart.Assembly;
-            if (viewAssembly != null)
-            {
-                var loader = new RazorCompiledItemLoader();
-                return loader.LoadItems(viewAssembly);
-            }
-
-            return Array.Empty<RazorCompiledItem>();
         }
 
         /// <summary>
@@ -108,35 +66,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <returns>The sequence of <see cref="RazorViewAttribute"/> instances.</returns>
         protected virtual IEnumerable<RazorViewAttribute> GetViewAttributes(AssemblyPart assemblyPart)
         {
-            // We check if the method was overriden by a subclass and preserve the old behavior in that case.
-            if (GetViewAttributesOverriden())
-            {
-                return GetViewAttributesLegacy(assemblyPart);
-            }
-            else
-            {
-                // It is safe to call this method for additional assembly parts even if there is a feature provider
-                // present on the pipeline that overrides getviewattributes as dependent parts are later in the list
-                // of application parts.
-                return GetViewAttributesFromCurrentAssembly(assemblyPart);
-            }
-
-            bool GetViewAttributesOverriden()
-            {
-                const BindingFlags bindingFlags = BindingFlags.NonPublic | BindingFlags.Instance;
-                return GetType() != typeof(ViewsFeatureProvider) &&
-                    GetType().GetMethod(nameof(GetViewAttributes), bindingFlags).DeclaringType != typeof(ViewsFeatureProvider);
-            }
-        }
-
-        private IEnumerable<RazorViewAttribute> GetViewAttributesLegacy(AssemblyPart assemblyPart)
-        {
             if (assemblyPart == null)
             {
                 throw new ArgumentNullException(nameof(assemblyPart));
             }
 
-            var featureAssembly = GetViewAssembly(assemblyPart);
+            var featureAssembly = GetFeatureAssembly(assemblyPart);
             if (featureAssembly != null)
             {
                 return featureAssembly.GetCustomAttributes<RazorViewAttribute>();
@@ -145,48 +80,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
             return Enumerable.Empty<RazorViewAttribute>();
         }
 
-        private Assembly GetViewAssembly(AssemblyPart assemblyPart)
+        private static Assembly GetFeatureAssembly(AssemblyPart assemblyPart)
         {
-            if (assemblyPart.Assembly.IsDynamic || string.IsNullOrEmpty(assemblyPart.Assembly.Location))
+            if (assemblyPart.Assembly.IsDynamic || string.IsNullOrEmpty((string)assemblyPart.Assembly.Location))
             {
                 return null;
             }
 
-            for (var i = 0; i < ViewAssemblySuffixes.Count; i++)
-            {
-                var fileName = assemblyPart.Assembly.GetName().Name + ViewAssemblySuffixes[i] + ".dll";
-                var filePath = Path.Combine(Path.GetDirectoryName(assemblyPart.Assembly.Location), fileName);
+            var precompiledAssemblyFileName = assemblyPart.Assembly.GetName().Name
+                + PrecompiledViewsAssemblySuffix
+                + ".dll";
 
-                if (File.Exists(filePath))
+            var precompiledAssemblyFilePath = Path.Combine(
+                Path.GetDirectoryName(assemblyPart.Assembly.Location),
+                precompiledAssemblyFileName);
+
+            if (File.Exists(precompiledAssemblyFilePath))
+            {
+                try
                 {
-                    try
-                    {
-                        return Assembly.LoadFile(filePath);
-                    }
-                    catch (FileLoadException)
-                    {
-                        // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
-                    }
+                    return Assembly.LoadFile(precompiledAssemblyFilePath);
+                }
+                catch (FileLoadException)
+                {
+                    // Don't throw if assembly cannot be loaded. This can happen if the file is not a managed assembly.
                 }
             }
 
             return null;
-        }
-
-        private static IEnumerable<RazorViewAttribute> GetViewAttributesFromCurrentAssembly(AssemblyPart assemblyPart)
-        {
-            if (assemblyPart == null)
-            {
-                throw new ArgumentNullException(nameof(assemblyPart));
-            }
-
-            var featureAssembly = assemblyPart.Assembly;
-            if (featureAssembly != null)
-            {
-                return featureAssembly.GetCustomAttributes<RazorViewAttribute>();
-            }
-
-            return Enumerable.Empty<RazorViewAttribute>();
         }
     }
 }

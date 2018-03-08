@@ -100,17 +100,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             {
                 logger.ViewCompilerLocatedCompiledView(precompiledView.RelativePath);
 
-                if (_precompiledViews.TryGetValue(precompiledView.RelativePath, out var otherValue))
+                if (!_precompiledViews.ContainsKey(precompiledView.RelativePath))
                 {
-                    var message = string.Join(
-                        Environment.NewLine,
-                        Resources.RazorViewCompiler_ViewPathsDifferOnlyInCase,
-                        otherValue.RelativePath,
-                        precompiledView.RelativePath);
-                    throw new InvalidOperationException(message);
+                    // View ordering has precedence semantics, a view with a higher precedence was
+                    // already added to the list.
+                    _precompiledViews.Add(precompiledView.RelativePath, precompiledView);
                 }
-
-                _precompiledViews.Add(precompiledView.RelativePath, precompiledView);
             }
 
             if (_precompiledViews.Count == 0)

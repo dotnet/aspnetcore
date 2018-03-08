@@ -24,27 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     public class RazorViewCompilerTest
     {
         [Fact]
-        public void Constructor_ThrowsIfMultiplePrecompiledViewsHavePathsDifferingOnlyInCase()
-        {
-            // Arrange
-            var fileProvider = new TestFileProvider();
-            var precompiledViews = new[]
-            {
-                new CompiledViewDescriptor { RelativePath = "/Views/Home/About.cshtml" },
-                new CompiledViewDescriptor { RelativePath = "/Views/home/About.cshtml" },
-            };
-            var message = string.Join(
-                Environment.NewLine,
-                "The following precompiled view paths differ only in case, which is not supported:",
-                precompiledViews[0].RelativePath,
-                precompiledViews[1].RelativePath);
-
-            // Act & Assert
-            var ex = Assert.Throws<InvalidOperationException>(() => GetViewCompiler(fileProvider, precompiledViews: precompiledViews));
-            Assert.Equal(message, ex.Message);
-        }
-
-        [Fact]
         public async Task CompileAsync_ReturnsResultWithNullAttribute_IfFileIsNotFoundInFileSystem()
         {
             // Arrange

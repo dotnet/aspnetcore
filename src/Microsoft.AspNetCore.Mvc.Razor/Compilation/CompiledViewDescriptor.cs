@@ -63,6 +63,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         /// <summary>
         /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the view.
         /// </summary>
+        /// <remarks>
+        /// May be <c>null</c>.
+        /// </remarks>
         public RazorViewAttribute ViewAttribute { get; set; }
 
         /// <summary>

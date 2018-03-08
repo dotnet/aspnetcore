@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
                 new ControllersFeatureProvider((f, v) => f.Values.Add($"ControllersFeatureProvider2{v}")));
 
             var feature = new ControllersFeature();
-            var expectedResults = new[] {
+            var expectedResults = new[]
+            {
                 "ControllersFeatureProvider1ControllersPartA",
                 "ControllersFeatureProvider1ControllersPartC",
                 "ControllersFeatureProvider2ControllersPartA",

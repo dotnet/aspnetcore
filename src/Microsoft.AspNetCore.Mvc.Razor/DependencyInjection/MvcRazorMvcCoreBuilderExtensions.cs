@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -74,10 +75,21 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder.PartManager.FeatureProviders.Add(new TagHelperFeatureProvider());
             }
 
+            // ViewFeature items have precedence semantics - when two views have the same path \ identifier,
+            // the one that appears earlier in the list wins. Therefore the ordering of
+            // RazorCompiledItemFeatureProvider and ViewsFeatureProvider is pertinent - any view compiled
+            // using the Sdk will be prefered to views compiled using MvcPrecompilation.
+            if (!builder.PartManager.FeatureProviders.OfType<RazorCompiledItemFeatureProvider>().Any())
+            {
+                builder.PartManager.FeatureProviders.Add(new RazorCompiledItemFeatureProvider());
+            }
+
+#pragma warning disable CS0618 // Type or member is obsolete
             if (!builder.PartManager.FeatureProviders.OfType<ViewsFeatureProvider>().Any())
             {
                 builder.PartManager.FeatureProviders.Add(new ViewsFeatureProvider());
             }
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>

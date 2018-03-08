@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     public class CompiledRazorAssemblyApplicationPartFactory : ApplicationPartFactory
     {
         /// <inheritdoc />
-        public override IEnumerable<ApplicationPart> GetApplicationParts(
-            Assembly assembly,
-            string configuration)
+        public override IEnumerable<ApplicationPart> GetApplicationParts(Assembly assembly, string configuration)
         {
             if (assembly == null)
             {
