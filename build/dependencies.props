@@ -17,7 +17,7 @@
     <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftExtensionsBuffersSourcesPackageVersion>2.1.0-preview2-pk-corefx0-16426</MicrosoftExtensionsBuffersSourcesPackageVersion>
-    <MicrosoftExtensionsBuffersSourcesTestingPackageVersion>2.1.0-preview2-pk-corefx0-16426</MicrosoftExtensionsBuffersSourcesTestingPackageVersion>
+    <MicrosoftExtensionsBuffersTestingSourcesPackageVersion>2.1.0-preview2-pk-corefx0-16426</MicrosoftExtensionsBuffersTestingSourcesPackageVersion>
     <MicrosoftExtensionsConfigurationBinderPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsConfigurationBinderPackageVersion>
     <MicrosoftExtensionsConfigurationJsonPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsConfigurationJsonPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsDependencyInjectionPackageVersion>
