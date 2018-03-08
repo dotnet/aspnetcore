@@ -3,20 +3,20 @@
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
   <PropertyGroup Label="Package Versions">
-    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15721</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreDataProtectionPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreDataProtectionPackageVersion>
-    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
-    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreHttpPackageVersion>
-    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreTestingPackageVersion>
-    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview2-30187</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsDependencyInjectionPackageVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsLoggingTestingPackageVersion>
-    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview2-30187</MicrosoftExtensionsWebEncodersPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview2-15728</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDataProtectionPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreDataProtectionPackageVersion>
+    <MicrosoftAspNetCoreHttpAbstractionsPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreHttpAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHttpExtensionsPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreHttpExtensionsPackageVersion>
+    <MicrosoftAspNetCoreHttpPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreHttpPackageVersion>
+    <MicrosoftAspNetCoreTestingPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreTestingPackageVersion>
+    <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview2-30272</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingTestingPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsLoggingTestingPackageVersion>
+    <MicrosoftExtensionsObjectPoolPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsObjectPoolPackageVersion>
+    <MicrosoftExtensionsWebEncodersPackageVersion>2.1.0-preview2-30272</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftNETCoreApp20PackageVersion>2.0.0</MicrosoftNETCoreApp20PackageVersion>
-    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26130-04</MicrosoftNETCoreApp21PackageVersion>
+    <MicrosoftNETCoreApp21PackageVersion>2.1.0-preview2-26225-03</MicrosoftNETCoreApp21PackageVersion>
     <MicrosoftNETTestSdkPackageVersion>15.6.0</MicrosoftNETTestSdkPackageVersion>
     <MoqPackageVersion>4.7.49</MoqPackageVersion>
     <XunitPackageVersion>2.3.1</XunitPackageVersion>
