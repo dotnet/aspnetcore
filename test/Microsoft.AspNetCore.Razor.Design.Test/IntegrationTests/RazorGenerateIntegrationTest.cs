@@ -10,9 +10,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class RazorGenerateIntegrationTest : MSBuildIntegrationTestBase
+    public class RazorGenerateIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
         private const string RazorGenerateTarget = "RazorGenerate";
+
+        public RazorGenerateIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]

@@ -7,13 +7,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase
+    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public ConfigurationMetadataIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithMvc_AddsConfigurationMetadata()
         {
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -39,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithGenerateRazorAssemblyInfo_False_SuppressesConfigurationMetadata()
         {
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:GenerateRazorAssemblyInfo=false");
+            var result = await DotnetMSBuild("Build", "/p:GenerateRazorAssemblyInfo=false");
 
             Assert.BuildPassed(result);
 
@@ -67,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             TargetFramework = "netstandard2.0";
 
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var alphaFilePath = LoaderTestResources.Alpha.WriteToFile(directory.DirectoryPath, "Alpha.dll");
 
                 var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.DirectoryPath, "shadow"));
-                var checker = new DefaultExtensionDependencyChecker(loader, output);
+                var checker = new DefaultExtensionDependencyChecker(loader, output, output);
 
                 // Act
                 var result = checker.Check(new[] { alphaFilePath, });
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var deltaFilePath = LoaderTestResources.Delta.WriteToFile(directory.DirectoryPath, "Delta.dll");
 
                 var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.DirectoryPath, "shadow"));
-                var checker = new DefaultExtensionDependencyChecker(loader, output);
+                var checker = new DefaultExtensionDependencyChecker(loader, output, output);
 
                 // Act
                 var result = checker.Check(new[] { alphaFilePath, betaFilePath, gammaFilePath, deltaFilePath, });
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 var deltaFilePath = LoaderTestResources.Delta.WriteToFile(directory.DirectoryPath, "Delta.dll");
 
                 var loader = new TestDefaultExtensionAssemblyLoader(Path.Combine(directory.DirectoryPath, "shadow"));
-                var checker = new DefaultExtensionDependencyChecker(loader, output);
+                var checker = new DefaultExtensionDependencyChecker(loader, output, output);
 
                 // This will cause the loader to cache some inconsistent information.
                 loader.LoadFromPath(alphaFilePath);
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 loader
                     .Setup(l => l.LoadFromPath(It.IsAny<string>()))
                     .Throws(new InvalidOperationException());
-                var checker = new DefaultExtensionDependencyChecker(loader.Object, output);
+                var checker = new DefaultExtensionDependencyChecker(loader.Object, output, output);
 
                 // Act
                 var result = checker.Check(new[] { deltaFilePath, });

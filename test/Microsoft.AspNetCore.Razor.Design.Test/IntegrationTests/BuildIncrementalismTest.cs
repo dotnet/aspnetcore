@@ -10,8 +10,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIncrementalismTest : MSBuildIntegrationTestBase
+    public class BuildIncrementalismTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public BuildIncrementalismTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task BuildIncremental_SimpleMvc_PersistsTargetInputFile()
@@ -20,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             var thumbprintLookup = new Dictionary<string, FileThumbPrint>();
 
             // Act 1
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath);
             var filesToIgnore = new[]
@@ -45,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 // We want to make sure nothing changed between multiple incremental builds.
                 using (var razorGenDirectoryLock = LockDirectory(RazorIntermediateOutputPath))
                 {
-                    result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+                    result = await DotnetMSBuild("Build");
                 }
 
                 Assert.BuildPassed(result);
@@ -63,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             // Act - 1
             var expectedTagHelperCacheContent = @"""Name"":""SimpleMvc.SimpleTagHelper""";
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
             var file = Path.Combine(Project.DirectoryPath, "SimpleTagHelper.cs");
             var tagHelperOutputCache = Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
             var generatedFile = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
@@ -76,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Act - 2
             // Update the source content and build. We should expect the outputs to be regenerated.
             ReplaceContent(string.Empty, file);
-            result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            result = await DotnetMSBuild("Build");
 
             // Assert - 2
             Assert.BuildPassed(result);

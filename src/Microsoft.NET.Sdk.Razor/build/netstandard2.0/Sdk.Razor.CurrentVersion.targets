@@ -79,7 +79,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Default values for properties that affect Razor targets to the standard build lifecycle.
   -->
   <PropertyGroup Condition="'$(RazorCompileOnBuild)'==''">
-    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RazorCompileOnPublish)'==''">

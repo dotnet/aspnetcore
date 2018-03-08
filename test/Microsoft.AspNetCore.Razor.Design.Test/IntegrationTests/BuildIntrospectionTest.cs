@@ -7,13 +7,18 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIntrospectionTest : MSBuildIntegrationTestBase
+    public class BuildIntrospectionTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public BuildIntrospectionTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
-            var result = await DotnetMSBuild("_IntrospectUpToDateCheckInput", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("_IntrospectUpToDateCheckInput");
 
             Assert.BuildPassed(result);
             Assert.BuildOutputContainsLine(result, $"UpToDateCheckInput: {Path.Combine("Views", "Home", "Index.cshtml")}");

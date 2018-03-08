@@ -8,14 +8,19 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class PackIntegrationTest : MSBuildIntegrationTestBase
+    public class PackIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public PackIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("ClassLibrary")]
         public async Task Pack_Works_IncludesRazorAssembly()
         {
             TargetFramework = "netstandard2.0";
-            var result = await DotnetMSBuild("Pack", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Pack");
 
             Assert.BuildPassed(result);
 
@@ -85,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Pack_IncludesRazorFilesAsContent_WhenIncludeRazorContentInPack_IsSet()
         {
             TargetFramework = "netstandard2.0";
-            var result = await DotnetMSBuild("Pack", "/p:RazorCompileOnBuild=true /p:IncludeRazorContentInPack=true");
+            var result = await DotnetMSBuild("Pack", "/p:IncludeRazorContentInPack=true");
 
             Assert.BuildPassed(result);
 

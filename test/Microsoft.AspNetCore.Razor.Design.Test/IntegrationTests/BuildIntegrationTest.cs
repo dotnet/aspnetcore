@@ -12,23 +12,32 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class BuildIntegrationTest : MSBuildIntegrationTestBase
+    public class BuildIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public BuildIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public Task Build_SimpleMvc_UsingDotnetMSBuild_CanBuildSuccessfully()
-            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
+        public Task Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
+            => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind.Dotnet);
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InitializeTestProject("SimpleMvc")]
-        public Task Build_SimpleMvc_UsingDesktopMSBuild_CanBuildSuccessfully()
-            => Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
+        public Task Build_SimpleMvc_UsingDesktopMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
+            => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind.Desktop);
 
-        private async Task Build_SimpleMvc_CanBuildSuccessfully(MSBuildProcessKind msBuildProcessKind)
+        // This test is identical to the ones in BuildServerIntegrationTest except this one explicitly disables the Razor build server.
+        private async Task Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully(MSBuildProcessKind msBuildProcessKind)
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true", msBuildProcessKind: msBuildProcessKind);
+            var result = await DotnetMSBuild("Build",
+                "/p:UseRazorBuildServer=false",
+                suppressBuildServer: true,
+                msBuildProcessKind: msBuildProcessKind);
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
@@ -50,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             Directory.Delete(Path.Combine(Project.DirectoryPath, "Views"), recursive: true);
 
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
@@ -61,9 +70,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_SimpleMvc_NoopsWithRazorCompileOnPublish()
+        public async Task Build_SimpleMvc_NoopsWithRazorCompileOnBuild_False()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnPublish=true");
+            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=false");
 
             Assert.BuildPassed(result);
             Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
@@ -79,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Introducing a C# semantic error
             ReplaceContent("@{ var foo = \"\".Substring(\"bleh\"); }", "Views", "Home", "Index.cshtml");
 
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildFailed(result);
 
@@ -95,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimplePages")]
         public async Task Build_Works_WhenFilesAtDifferentPathsHaveSameNamespaceHierarchy()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -108,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Build_RazorOutputPath_SetToNonDefault()
         {
             var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:RazorOutputPath={customOutputPath}");
+            var result = await DotnetMSBuild("Build", $"/p:RazorOutputPath={customOutputPath}");
 
             Assert.BuildPassed(result);
 
@@ -124,7 +133,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public async Task Build_MvcRazorOutputPath_SetToNonDefault()
         {
             var customOutputPath = Path.Combine("bin", Configuration, TargetFramework, "Razor");
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:MvcRazorOutputPath={customOutputPath}");
+            var result = await DotnetMSBuild("Build", $"/p:MvcRazorOutputPath={customOutputPath}");
 
             Assert.BuildPassed(result);
 
@@ -139,7 +148,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_SkipsCopyingBinariesToOutputDirectory_IfCopyBuildOutputToOutputDirectory_IsUnset()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:CopyBuildOutputToOutputDirectory=false");
+            var result = await DotnetMSBuild("Build", "/p:CopyBuildOutputToOutputDirectory=false");
 
             Assert.BuildPassed(result);
 
@@ -154,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_SkipsCopyingBinariesToOutputDirectory_IfCopyOutputSymbolsToOutputDirectory_IsUnset()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:CopyOutputSymbolsToOutputDirectory=false");
+            var result = await DotnetMSBuild("Build", "/p:CopyOutputSymbolsToOutputDirectory=false");
 
             Assert.BuildPassed(result);
 
@@ -168,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_Works_WhenSymbolsAreNotGenerated()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true /p:DebugType=none");
+            var result = await DotnetMSBuild("Build", "/p:DebugType=none");
 
             Assert.BuildPassed(result);
 
@@ -184,7 +193,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("AppWithP2PReference", "ClassLibrary")]
         public async Task Build_WithP2P_CopiesRazorAssembly()
         {
-            var result = await DotnetMSBuild("Build", "/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
@@ -211,7 +220,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             AddProjectFileContent(additionalProjectContent);
             Directory.CreateDirectory(Path.Combine(Project.DirectoryPath, "..", "LinkedDir"));
 
-            var result = await DotnetMSBuild("Build", "/t:_IntrospectRazorEmbeddedResources /p:RazorCompileOnBuild=true /p:EmbedRazorGenerateSources=true");
+            var result = await DotnetMSBuild("Build", "/t:_IntrospectRazorEmbeddedResources /p:EmbedRazorGenerateSources=true");
 
             Assert.BuildPassed(result);
 

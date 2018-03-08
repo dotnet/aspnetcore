@@ -6,15 +6,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class DesignTimeBuildIntegrationTest : MSBuildIntegrationTestBase
+    public class DesignTimeBuildIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public DesignTimeBuildIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task DesignTimeBuild_DoesNotRunRazorTargets()
         {
             // Using Compile here instead of CompileDesignTime because the latter is only defined when using
             // the VS targets. This is a close enough simulation for an SDK project
-            var result = await DotnetMSBuild("Compile", "/p:RazorCompileOnBuild=true /p:DesignTimeBuild=true /clp:PerformanceSummary");
+            var result = await DotnetMSBuild("Compile", "/p:DesignTimeBuild=true /clp:PerformanceSummary");
 
             Assert.BuildPassed(result);
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.dll");

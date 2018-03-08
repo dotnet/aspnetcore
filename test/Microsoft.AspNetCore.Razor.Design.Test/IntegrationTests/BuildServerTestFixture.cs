@@ -31,16 +31,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Shutdown the build server.
             using (var cts = new CancellationTokenSource(_defaultShutdownTimeout))
             {
+                var writer = new StringWriter();
+
                 cts.Token.Register(() =>
                 {
-                    throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.");
+                    var output = writer.ToString();
+                    throw new TimeoutException($"Shutting down the build server at pipe {PipeName} took longer than expected.{Environment.NewLine}Output: {output}.");
                 });
 
-                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>());
+                var application = new Application(cts.Token, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>())
+                {
+                    Out = writer,
+                    Error = writer,
+                };
                 var exitCode = application.Execute("shutdown", "-w", "-p", PipeName);
                 if (exitCode != 0)
                 {
-                    var output = application.Error.ToString();
+                    var output = writer.ToString();
                     throw new InvalidOperationException(
                         $"Build server at pipe {PipeName} failed to shutdown with exit code {exitCode}. Output: {output}");
                 }
