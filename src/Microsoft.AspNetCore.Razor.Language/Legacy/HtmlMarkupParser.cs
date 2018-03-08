@@ -614,8 +614,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     if (NextIs(HtmlSymbolType.CloseAngle))
                     {
-                        // We're at the end of a comment. check the condition 2.3 to make sure the text ending is allowed.
-                        isValidComment = !EndsWithSymbolsSequence(p, HtmlSymbolType.OpenAngle, HtmlSymbolType.Bang, HtmlSymbolType.DoubleHyphen);
+                        // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
+                        isValidComment = !SymbolSequenceEndsWithItems(p, HtmlSymbolType.OpenAngle, HtmlSymbolType.Bang, HtmlSymbolType.DoubleHyphen);
                         breakLookahead = true;
                     }
                     else if (NextIs(ns => IsDashSymbol(ns) && NextIs(HtmlSymbolType.CloseAngle)))
@@ -645,17 +645,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return isValidComment;
         }
 
-        private bool EndsWithSymbolsSequence(IEnumerable<HtmlSymbol> symbols, params HtmlSymbolType[] sequenceToMatchWith)
+        internal static bool SymbolSequenceEndsWithItems(IEnumerable<HtmlSymbol> sequence, params HtmlSymbolType[] items)
         {
-            int index = sequenceToMatchWith.Length;
-            foreach (var previousSymbol in symbols)
+            int index = items.Length;
+            foreach (var previousSymbol in sequence)
             {
                 if (index == 0)
                 {
                     break;
                 }
 
-                if (sequenceToMatchWith[--index] != previousSymbol.Type)
+                if (items[--index] != previousSymbol.Type)
                     return false;
             }
 

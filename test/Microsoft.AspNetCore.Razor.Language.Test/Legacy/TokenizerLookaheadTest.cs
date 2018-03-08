@@ -60,11 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void LookaheadUntil_PassesThePreviousSymbolsInReverseOrder()
         {
             // Arrange
-            var source = TestRazorSourceDocument.Create("asdf--fvd--<");
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+            var tokenizer = CreateContentTokenizer("asdf--fvd--<");
 
             // Act
             Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
@@ -86,11 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void LookaheadUntil_ReturnsFalseAfterIteratingOverAllSymbolsIfConditionIsNotMet()
         {
             // Arrange
-            var source = TestRazorSourceDocument.Create("asdf--fvd");
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+            var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
             Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
@@ -112,11 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void LookaheadUntil_ReturnsTrueAndBreaksIteration()
         {
             // Arrange
-            var source = TestRazorSourceDocument.Create("asdf--fvd");
-            var options = RazorParserOptions.CreateDefault();
-            var context = new ParserContext(source, options);
-
-            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+            var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
             Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
@@ -131,6 +119,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Assert.Equal(2, symbols.Count);
             Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
             Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+        }
+
+        private static TestTokenizerBackedParser CreateContentTokenizer(string content)
+        {
+            var source = TestRazorSourceDocument.Create(content);
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var tokenizer = new TestTokenizerBackedParser(HtmlLanguageCharacteristics.Instance, context);
+            return tokenizer;
         }
 
         private class ExposedTokenizer : Tokenizer<CSharpSymbol, CSharpSymbolType>
