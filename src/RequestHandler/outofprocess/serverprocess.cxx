@@ -980,6 +980,14 @@ SERVER_PROCESS::SetupStdHandles(
 
     DBG_ASSERT(pStartupInfo);
 
+    if (!m_fStdoutLogEnabled)
+    {
+        pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
+        pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdError = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdOutput = INVALID_HANDLE_VALUE;
+        return hr;
+    }
     if (m_hStdoutHandle != NULL && m_hStdoutHandle != INVALID_HANDLE_VALUE)
     {
         if (!CloseHandle(m_hStdoutHandle))
@@ -1038,22 +1046,12 @@ SERVER_PROCESS::SetupStdHandles(
         goto Finished;
     }
 
-    if (m_fStdoutLogEnabled)
-    {
-        pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
-        pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdError = m_hStdoutHandle;
-        pStartupInfo->hStdOutput = m_hStdoutHandle;
-        // start timer to open and close handles regularly.
-        m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struFullLogFile, 3000, 3000);
-    }
-    else
-    {   // only enable stderr
-        pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
-        pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdError = m_hStdoutHandle;
-        pStartupInfo->hStdOutput = INVALID_HANDLE_VALUE;
-    }
+    pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
+    pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
+    pStartupInfo->hStdError = m_hStdoutHandle;
+    pStartupInfo->hStdOutput = m_hStdoutHandle;
+    // start timer to open and close handles regularly.
+    m_Timer.InitializeTimer(STTIMER::TimerCallback, &m_struFullLogFile, 3000, 3000);
 
 Finished:
     if (FAILED(hr))
