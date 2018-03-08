@@ -137,12 +137,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
             manager.OnUnsubscribed(tracker);
         }
 
-        private RazorTemplateEngineFactoryService GetTemplateEngineFactoryService()
+        private RazorProjectEngineFactoryService GetTemplateEngineFactoryService()
         {
             var projectManager = new Mock<ProjectSnapshotManager>();
             projectManager.Setup(p => p.Projects).Returns(Array.Empty<ProjectSnapshot>());
 
-            var service = new DefaultTemplateEngineFactoryService(projectManager.Object);
+            var service = new DefaultProjectEngineFactoryService(projectManager.Object);
             return service;
         }
     }

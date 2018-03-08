@@ -34,13 +34,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveRazorGenerateInputs;
       AssignRazorGenerateTargetPaths;
       ResolveAssemblyReferenceRazorGenerateInputs;
-      _EnsureRazorCompilerReferenced;
+      _CheckForMissingRazorCompiler;
       ResolveTagHelperRazorGenerateInputs
     </PrepareForRazorGenerateDependsOn>
 
     <RazorGenerateDependsOn>
       PrepareForRazorGenerate;
-      _EnsureRazorCompilerReferenced;
+      _CheckForMissingRazorCompiler;
       RazorCoreGenerate
     </RazorGenerateDependsOn>
   
@@ -50,20 +50,36 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PrepareForRazorCompileDependsOn>
 
     <ResolveRazorCompileInputsDependsOn>
-        ResolveRazorEmbeddedResources
+      ResolveRazorEmbeddedResources
     </ResolveRazorCompileInputsDependsOn>
 
     <RazorCompileDependsOn>
       PrepareForRazorCompile;
       RazorCoreCompile
     </RazorCompileDependsOn>
+
+    <BuiltProjectOutputGroupDependsOn>
+      $(BuiltProjectOutputGroupDependsOn);
+      _RazorAddBuiltProjectOutputGroupOutput
+    </BuiltProjectOutputGroupDependsOn>
+
+    <DebugSymbolsProjectOutputGroupDependsOn>
+      $(DebugSymbolsProjectOutputGroupDependsOn);
+      _RazorAddDebugSymbolsProjectOutputGroupOutput
+    </DebugSymbolsProjectOutputGroupDependsOn>
+
+    <PrepareForBuildDependsOn>
+      _InitializePreserveCompilationContext;
+      $(PrepareForBuildDependsOn)
+    </PrepareForBuildDependsOn>
+
   </PropertyGroup>
 
   <!-- 
     Default values for properties that affect Razor targets to the standard build lifecycle.
   -->
   <PropertyGroup Condition="'$(RazorCompileOnBuild)'==''">
-    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+    <RazorCompileOnBuild>true</RazorCompileOnBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RazorCompileOnPublish)'==''">
@@ -83,9 +99,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Output directory used for generated files -->
     <RazorGenerateIntermediateOutputPath Condition="'$(RazorGenerateIntermediateOutputPath)'==''">$(IntermediateOutputPath)Razor\</RazorGenerateIntermediateOutputPath>
+
+    <!-- Suffix appended to $(TargetName) to produce $(RazorTargetName), the name of the assembly produced by Razor -->
+    <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)' == ''">.Razor</RazorTargetNameSuffix>
     
     <!-- File name (without extension) of the assembly produced by Razor -->
-    <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName).PrecompiledViews</RazorTargetName>
+    <RazorTargetName Condition="'$(RazorTargetName)'==''">$(TargetName)$(RazorTargetNameSuffix)</RazorTargetName>
 
     <!--
       The compatibility zone - these properties were provided by the MVC Precompilation tool and they
@@ -129,7 +148,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!-- Resolve the toolset to use -->
-  <PropertyGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true'">
+  <PropertyGroup>
     <!-- Default value for the property 'MvcRazorCompileOnPublish' is empty. If it has been explicitly enabled, continue using precompilation. -->
     <ResolvedRazorCompileToolset Condition="'$(MvcRazorCompileOnPublish)' == 'true'">PrecompilationTool</ResolvedRazorCompileToolset>
 
@@ -154,6 +173,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorIntermediateAssembly Condition="'$(RazorIntermediateAssembly)'==''" Include="$(IntermediateOutputPath)$(RazorTargetName).dll" />
     <!-- Used in Compilation.targets -->   
     <_RazorDebugSymbolsIntermediatePath Condition="'$(_RazorDebugSymbolsProduced)'=='true'" Include="$(IntermediateOutputPath)$(RazorTargetName).pdb" />
+    <!-- Add all cshtml files to UpToDateCheckInput - a collection used by the IDE's project system to determine if a project needs to be rebuilt -->
+    <UpToDateCheckInput Condition="'$(RazorCompileOnBuild)'=='true'" Include="@(Content->WithMetadataValue('Extension', '.cshtml'))" />
   </ItemGroup>
 
   <!--
@@ -180,6 +201,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
+  </Target>
+
+  <!--
+    PreserveCompilationContext needs to enabled by default only for "applications" (OutputType = exe) which have one or more Razor files.
+    We cannot only inspect ItemGroups globally, therefore setting this must be done inside a target. We wire this up to run before Build.
+  -->
+  <Target Name="_InitializePreserveCompilationContext">
+    <PropertyGroup Condition="'$(PreserveCompilationContext)' == '' AND '$(OutputType)' == 'exe' AND '@(Content->AnyHaveMetadataValue('Extension', '.cshtml'))' == 'true'">
+      <PreserveCompilationContext>true</PreserveCompilationContext>
+    </PropertyGroup>
   </Target>
 
   <!-- 
@@ -316,16 +347,22 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target 
     Name="_RazorAddBuiltProjectOutputGroupOutput"
-    DependsOnTargets="ResolveRazorGenerateInputs"
-    BeforeTargets="BuiltProjectOutputGroup"
+    DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
-    <PropertyGroup>
-      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
-    </PropertyGroup>
-
     <ItemGroup Condition="'@(RazorGenerate)'!= ''">
-      <BuiltProjectOutputGroupOutput Include="@(RazorIntermediateAssembly)" FinalOutputPath="$(RazorOutputPath)$(RazorTargetName).dll" />
+      <BuiltProjectOutputGroupOutput Include="%(RazorIntermediateAssembly.FullPath)" FinalOutputPath="$(RazorTargetPath)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target
+    Name="_RazorAddDebugSymbolsProjectOutputGroupOutput"
+    DependsOnTargets="_ResolveRazorTargetPath;ResolveRazorGenerateInputs"
+    Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
+
+    <ItemGroup Condition="Exists('@(_RazorDebugSymbolsIntermediatePath)')">
+      <DebugSymbolsProjectOutputGroupOutput Include="%(_RazorDebugSymbolsIntermediatePath.FullPath)" FinalOutputPath="$(RazorTargetDir)$(RazorTargetName).pdb" />
     </ItemGroup>
     
   </Target>
@@ -393,18 +430,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target 
     Name="_RazorCopyFilesToOutputDirectory" 
-    DependsOnTargets="RazorCompile"
+    DependsOnTargets="_ResolveRazorTargetPath;RazorCompile"
     AfterTargets="CopyFilesToOutputDirectory"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
-
-    <PropertyGroup>
-      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
-    </PropertyGroup>
 
     <!-- Copy the Razor dll  -->
     <Copy
       SourceFiles="@(RazorIntermediateAssembly)"
-      DestinationFolder="$(RazorOutputPath)"
+      DestinationFiles="$(RazorTargetPath)"
       SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
       OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
       Retries="$(CopyRetryCount)"
@@ -478,10 +511,28 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <Target Name="_EnsureRazorCompilerReferenced" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
-    <Error Text="A reference to Microsoft.AspNetCore.Razor.Design is required for this target to succeed. See todo:fwlink for instructions on how to resolve this." />
-
+  <Target Name="_CheckForMissingRazorCompiler" Condition="'$(IsRazorCompilerReferenced)' != 'true'">
+    <Error
+      Text="A PackageReference for 'Microsoft.AspNetCore.Razor.Design' was not included in your project. This package is required to compile Razor files. Typically, a
+      transitive reference to 'Microsoft.AspNetCore.Razor.Design' and references required to compile Razor files are obtained by adding a PackageReference
+      for 'Microsoft.AspNetCore.Mvc' in your project. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
   </Target>
+
+  <Target Name="_ResolveRazorTargetPath">
+    <PropertyGroup>
+      <RazorOutputPath Condition="'$(RazorOutputPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(OutDir)'))</RazorOutputPath>
+      <RazorTargetDir>$([MSBuild]::Escape($([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(RazorOutputPath)'))'))))))</RazorTargetDir>
+      <!-- Example, c:\MyProjects\MyProject\bin\debug\MyAssembly.Views.dll -->
+      <RazorTargetPath Condition=" '$(RazorTargetPath)' == '' ">$(RazorTargetDir)$(RazorTargetName).dll</RazorTargetPath>
+    </PropertyGroup>
+  </Target>
+
+  <PropertyGroup Condition="'$(RazorDesignTimeTargets)'==''">
+    <RazorDesignTimeTargets>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Razor\Microsoft.NET.Sdk.Razor.DesignTime.targets</RazorDesignTimeTargets>
+    <RazorDesignTimeTargets Condition="!Exists('$(RazorDesignTimeTargets)')">$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Razor.DesignTime.targets</RazorDesignTimeTargets>
+  </PropertyGroup>
+
+  <Import Project="$(RazorDesignTimeTargets)" />
 
   <!--
     This is a hook to import a set of targets after the Razor targets. By default this is unused.

@@ -19,6 +19,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <PropertyGroup>
     <!--
+    Set to true to automatically include certain file types, such as .cshtml files, as content in the project.
+    When referenced via Microsoft.NET.Sdk.Web, this additionally includes all files under wwwroot, and any config files.
+    -->
+    <EnableDefaultContentItems Condition="'$(EnableDefaultContentItems)'==''">true</EnableDefaultContentItems>
+
+    <!--
       Set to true to automatically include Razor (.cshtml) files in @(RazorGenerate) from @(Content).
     -->
     <EnableDefaultRazorGenerateItems Condition="'$(EnableDefaultRazorGenerateItems)'==''">true</EnableDefaultRazorGenerateItems>
@@ -46,37 +52,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RazorCompileToolset>Implicit</RazorCompileToolset>
 
     <!--
-    Set to true to allow a Razor code generation to use a persistent build server process.
+    Configures whether all Razor content items (.cshtml files) will be marked to be included in the produced NuGet package as content.
+
+    All Content items are included in a NuGet package as content files. This setting can be used to control this behavior for Razor content items.
     -->
-    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">false</UseRazorBuildServer>
+    <IncludeRazorContentInPack Condition="'$(IncludeRazorContentInPack)'==''">false</IncludeRazorContentInPack>
+
+    <!--
+    Set to false to disable Razor code generation from using a persistent build server process.
+    -->
+    <UseRazorBuildServer Condition="'$(UseRazorBuildServer)'==''">true</UseRazorBuildServer>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(_WebSdkHeartsRazorSdk)' == 'true' AND '$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
-    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)" />
+  <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">
+    <Content Include="**\*.cshtml" CopyToPublishDirectory="PreserveNewest" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder);$(DefaultWebContentItemExcludes)">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+
     <None Remove="**\*.cshtml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- 
-      Defines the generic .NET Core 'Razor' capability.
-
-      Note that we don't define any capabilities here that depend on the version of the runtime/toolset
-      in use by the project. Those capabilities are defined by the relevant runtime packages so that
-      we use the lack of the capability to detect downlevel scenarios.
-    -->
-    <ProjectCapability Include="DotNetCoreRazor"/>
-  </ItemGroup>
-
-  <ItemGroup> 
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorConfiguration.xaml">
-      <Context>File</Context>
-    </PropertyPageSchema>
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorExtension.xaml">
-      <Context>File</Context>
-    </PropertyPageSchema>
-    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)Rules\RazorGeneral.xaml">
-      <Context>Project</Context>
-    </PropertyPageSchema>
   </ItemGroup>
 
 </Project>

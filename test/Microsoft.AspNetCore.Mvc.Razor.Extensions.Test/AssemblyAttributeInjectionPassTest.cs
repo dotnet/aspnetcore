@@ -13,7 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_NoOps_IfNamespaceNodeIsMissing()
         {
             // Arrange
-            var irDocument = new DocumentIntermediateNode();
+            var irDocument = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var pass = new AssemblyAttributeInjectionPass
             {
                 Engine = RazorEngine.Create(),
@@ -30,7 +34,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_NoOps_IfNamespaceNodeHasEmptyContent()
         {
             // Arrange
-            var irDocument = new DocumentIntermediateNode();
+            var irDocument = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = string.Empty };
             @namespace.Annotations[CommonAnnotations.PrimaryNamespace] = CommonAnnotations.PrimaryNamespace;
@@ -53,7 +60,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_NoOps_IfClassNameNodeIsMissing()
         {
             // Arrange
-            var irDocument = new DocumentIntermediateNode();
+            var irDocument = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "SomeNamespace" };
             builder.Push(@namespace);
@@ -67,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
-            Assert.Collection(irDocument.Children,
+            Assert.Collection(
+                irDocument.Children,
                 node => Assert.Same(@namespace, node));
         }
 
@@ -75,7 +87,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void Execute_NoOps_IfClassNameIsEmpty()
         {
             // Arrange
-            var irDocument = new DocumentIntermediateNode();
+            var irDocument = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode
             {
@@ -115,6 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = "Default",
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "SomeNamespace" };
@@ -138,7 +154,54 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
 
             // Assert
-            Assert.Collection(irDocument.Children,
+            Assert.Collection(
+                irDocument.Children,
+                node => Assert.Same(@namespace, node));
+        }
+
+        [Fact]
+        public void Execute_NoOps_ForDesignTime()
+        {
+            // Arrange
+            var irDocument = new DocumentIntermediateNode
+            {
+                DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
+                Options = RazorCodeGenerationOptions.CreateDesignTimeDefault(),
+            };
+            var builder = IntermediateNodeBuilder.Create(irDocument);
+            var @namespace = new NamespaceDeclarationIntermediateNode
+            {
+                Content = "SomeNamespace",
+                Annotations =
+                {
+                    [CommonAnnotations.PrimaryNamespace] = CommonAnnotations.PrimaryNamespace
+                },
+            };
+            builder.Push(@namespace);
+            var @class = new ClassDeclarationIntermediateNode
+            {
+                ClassName = "SomeName",
+                Annotations =
+                {
+                    [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
+                },
+            };
+            builder.Add(@class);
+
+            var pass = new AssemblyAttributeInjectionPass
+            {
+                Engine = RazorEngine.Create(),
+            };
+
+            var source = TestRazorSourceDocument.Create("test", new RazorSourceDocumentProperties(filePath: null, relativePath: "/Views/Index.cshtml"));
+            var document = RazorCodeDocument.Create(source);
+
+            // Act
+            pass.Execute(document, irDocument);
+
+            // Assert
+            Assert.Collection(
+                irDocument.Children,
                 node => Assert.Same(@namespace, node));
         }
 
@@ -150,6 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode
@@ -202,6 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode
@@ -254,6 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind,
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var pageDirective = new DirectiveIntermediateNode
@@ -313,6 +379,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var irDocument = new DocumentIntermediateNode
             {
                 DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind,
+                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var @namespace = new NamespaceDeclarationIntermediateNode

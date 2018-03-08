@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Write a Request to the stream.
         /// </summary>
-        public async Task WriteAsync(Stream outStream, CancellationToken cancellationToken = default)
+        public async Task WriteAsync(Stream outStream, CancellationToken cancellationToken = default(CancellationToken))
         {
             using (var memoryStream = new MemoryStream())
             using (var writer = new BinaryWriter(memoryStream, Encoding.Unicode))

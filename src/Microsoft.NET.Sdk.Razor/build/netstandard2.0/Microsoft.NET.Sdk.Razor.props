@@ -10,10 +10,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Project="Sdk.Razor.CurrentVersion.props" />
-
   <PropertyGroup>
-    <!-- Redirect the SDK to use the targets from the current package -->
-    <RazorSdkTargetsPath>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.targets</RazorSdkTargetsPath>
+    <RazorSdkCurrentVersionProps>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 </Project>

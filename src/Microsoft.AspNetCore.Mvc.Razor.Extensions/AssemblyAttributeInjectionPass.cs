@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
+            if (documentNode.Options.DesignTime)
+            {
+                return;
+            }
+
             var @namespace = documentNode.FindPrimaryNamespace();
             if (@namespace == null || string.IsNullOrEmpty(@namespace.Content))
             {

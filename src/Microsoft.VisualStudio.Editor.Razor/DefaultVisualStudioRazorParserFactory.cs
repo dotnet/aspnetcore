@@ -9,7 +9,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     internal class DefaultVisualStudioRazorParserFactory : VisualStudioRazorParserFactory
     {
         private readonly ForegroundDispatcher _dispatcher;
-        private readonly RazorTemplateEngineFactoryService _templateEngineFactoryService;
+        private readonly RazorProjectEngineFactoryService _projectEngineFactoryService;
         private readonly VisualStudioCompletionBroker _completionBroker;
         private readonly ErrorReporter _errorReporter;
 
@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             ForegroundDispatcher dispatcher,
             ErrorReporter errorReporter,
             VisualStudioCompletionBroker completionBroker,
-            RazorTemplateEngineFactoryService templateEngineFactoryService)
+            RazorProjectEngineFactoryService projectEngineFactoryService)
         {
             if (dispatcher == null)
             {
@@ -34,15 +34,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
-            if (templateEngineFactoryService == null)
+            if (projectEngineFactoryService == null)
             {
-                throw new ArgumentNullException(nameof(templateEngineFactoryService));
+                throw new ArgumentNullException(nameof(projectEngineFactoryService));
             }
 
             _dispatcher = dispatcher;
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
-            _templateEngineFactoryService = templateEngineFactoryService;
+            _projectEngineFactoryService = projectEngineFactoryService;
         }
 
         public override VisualStudioRazorParser Create(VisualStudioDocumentTracker documentTracker)
@@ -57,7 +57,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var parser = new DefaultVisualStudioRazorParser(
                 _dispatcher,
                 documentTracker,
-                _templateEngineFactoryService,
+                _projectEngineFactoryService,
                 _errorReporter,
                 _completionBroker);
             return parser;

@@ -1,10 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -19,6 +21,25 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         private class DefaultCompilerHost : CompilerHost
         {
+            public DefaultCompilerHost()
+            {
+                // The loader needs to live for the lifetime of the server. 
+                //
+                // This means that if a request tries to use a set of binaries that are inconsistent with what
+                // the server already has, then it will be rejected to try again on the client.
+                //
+                // We also check each set of extensions for missing depenencies individually, so that we can
+                // consistently reject a request that doesn't specify everything it needs. Otherwise the request
+                // could succeed sometimes if it relies on transient state.
+                Loader = new DefaultExtensionAssemblyLoader(Path.Combine(Path.GetTempPath(), "Razor-Server"));
+
+                AssemblyReferenceProvider = (path, properties) => new CachingMetadataReference(path, properties);
+            }
+
+            public Func<string, MetadataReferenceProperties, PortableExecutableReference> AssemblyReferenceProvider { get; }
+
+            public ExtensionAssemblyLoader Loader { get; }
+
             public override ServerResponse Execute(ServerRequest request, CancellationToken cancellationToken)
             {
                 if (!TryParseArguments(request, out var parsed))
@@ -28,28 +49,23 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
                 var exitCode = 0;
                 var output = string.Empty;
-                var app = new Application(cancellationToken);
                 var commandArgs = parsed.args.ToArray();
+
+                var writer = ServerLogger.IsLoggingEnabled ? new StringWriter() : TextWriter.Null;
+
+                var checker = new DefaultExtensionDependencyChecker(Loader, writer, writer);
+                var app = new Application(cancellationToken, Loader, checker, AssemblyReferenceProvider)
+                {
+                    Out = writer,
+                    Error = writer,
+                };
+
+                exitCode = app.Execute(commandArgs);
 
                 if (ServerLogger.IsLoggingEnabled)
                 {
-                    using (var writer = new StringWriter())
-                    {
-                        app.Out = writer;
-                        app.Error = writer;
-                        exitCode = app.Execute(commandArgs);
-                        output = writer.ToString();
-                        ServerLogger.Log(output);
-                    }
-                }
-                else
-                {
-                    using (var writer = new StreamWriter(Stream.Null))
-                    {
-                        app.Out = writer;
-                        app.Error = writer;
-                        exitCode = app.Execute(commandArgs);
-                    }
+                    output = writer.ToString();
+                    ServerLogger.Log(output);
                 }
 
                 return new CompletedServerResponse(exitCode, utf8output: false, output: string.Empty);

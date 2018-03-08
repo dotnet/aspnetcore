@@ -5,5 +5,10 @@
       MVC will generally want to add support for runtime compilation, but only for applications. 
     -->
     <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'=='' and '$(OutputType)'=='Exe'">true</GenerateRazorAssemblyInfo>
+
+    <!--
+      Use the suffix .Views when producing compiled view assemblies. This matches the requirements for Mvc's ViewsFeatureProvider.
+    -->
+    <RazorTargetNameSuffix Condition="'$(RazorTargetNameSuffix)'==''">.Views</RazorTargetNameSuffix>
   </PropertyGroup>
 </Project>

@@ -10,7 +10,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
+  <PropertyGroup>
+    <!-- Determines if the Razor Sdk is responsible for importing Microsoft.NET.Sdk. Microsoft.NET.Sdk.Web may have previously imported this. -->
+    <_RazorSdkImportsMicrosoftNetSdk Condition="'$(UsingMicrosoftNETSdk)' != 'true'">true</_RazorSdkImportsMicrosoftNetSdk>
+  </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props" />
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" Condition="'$(_RazorSdkImportsMicrosoftNetSdk)' == 'true'" />
 
+  <PropertyGroup>
+    <RazorSdkCurrentVersionProps Condition="'$(RazorSdkCurrentVersionProps)' == ''">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+  </PropertyGroup>
+
+  <Import Project="$(RazorSdkCurrentVersionProps)" />
 </Project>

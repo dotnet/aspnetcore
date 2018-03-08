@@ -7,18 +7,23 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase
+    public class ConfigurationMetadataIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
+        public ConfigurationMetadataIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
+
         [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithMvc_AddsConfigurationMetadata()
         {
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
             Assert.FileContainsLine(
@@ -39,12 +44,12 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithGenerateRazorAssemblyInfo_False_SuppressesConfigurationMetadata()
         {
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true /p:GenerateRazorAssemblyInfo=false");
+            var result = await DotnetMSBuild("Build", "/p:GenerateRazorAssemblyInfo=false");
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
             Assert.FileDoesNotContainLine(
@@ -65,12 +70,14 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         [InitializeTestProject("ClassLibrary")]
         public async Task Build_ForClassLibrary_SuppressesConfigurationMetadata()
         {
-            var result = await DotnetMSBuild("Build", $"/p:RazorCompileOnBuild=true");
+            TargetFramework = "netstandard2.0";
+
+            var result = await DotnetMSBuild("Build");
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.PrecompiledViews.dll");
-            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.PrecompiledViews.pdb");
+            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.Views.pdb");
 
             Assert.FileExists(result, IntermediateOutputPath, "ClassLibrary.AssemblyInfo.cs");
             Assert.FileDoesNotContainLine(

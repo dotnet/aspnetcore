@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             builder.AddDirective(Directive);
-            builder.Features.Add(new Pass(builder.Configuration.DesignTime));
+            builder.Features.Add(new Pass());
             return builder;
         }
 
@@ -71,13 +71,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         internal class Pass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
         {
-            private readonly bool _designTime;
-
-            public Pass(bool designTime)
-            {
-                _designTime = designTime;
-            }
-
             // Runs after the @inherits directive
             public override int Order => 5;
 
@@ -86,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 var visitor = new Visitor();
                 var modelType = GetModelType(documentNode, visitor);
 
-                if (_designTime)
+                if (documentNode.Options.DesignTime)
                 {
                     // Alias the TModel token to a known type.
                     // This allows design time compilation to succeed for Razor files where the token isn't replaced.
@@ -150,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             builder.AddDirective(Directive);
-            builder.Features.Add(new Pass(builder.DesignTime));
+            builder.Features.Add(new Pass());
             return builder;
         }
         #endregion

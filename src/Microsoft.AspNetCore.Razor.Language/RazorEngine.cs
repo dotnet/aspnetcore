@@ -17,27 +17,27 @@ namespace Microsoft.AspNetCore.Razor.Language
             return Create(configure: null);
         }
 
-        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, configure);
+        public static RazorEngine Create(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, false, configure);
 
         public static RazorEngine CreateDesignTime()
         {
             return CreateDesignTime(configure: null);
         }
 
-        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.DefaultDesignTime, configure);
+        public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure) => CreateCore(RazorConfiguration.Default, true, configure);
 
         // Internal since RazorEngine APIs are going to be obsolete.
-        internal static RazorEngine CreateCore(RazorConfiguration configuration, Action<IRazorEngineBuilder> configure)
+        internal static RazorEngine CreateCore(RazorConfiguration configuration, bool designTime, Action<IRazorEngineBuilder> configure)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            var builder = new DefaultRazorEngineBuilder(configuration.DesignTime);
+            var builder = new DefaultRazorEngineBuilder(designTime);
             AddDefaults(builder);
 
-            if (configuration.DesignTime)
+            if (designTime)
             {
                 AddDefaultDesignTimeFeatures(configuration, builder.Features);
             }
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var targetExtension = features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
             Debug.Assert(targetExtension != null);
 
-            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension() { DesignTime = false });
+            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension());
             targetExtension.TargetExtensions.Add(new PreallocatedAttributeTargetExtension());
         }
 
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var targetExtension = features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
             Debug.Assert(targetExtension != null);
 
-            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension() { DesignTime = true });
+            targetExtension.TargetExtensions.Add(new DefaultTagHelperTargetExtension());
             targetExtension.TargetExtensions.Add(new DesignTimeDirectiveTargetExtension());
         }
 

@@ -37,6 +37,13 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public virtual void ConnectionCompleted(int count)
         {
         }
+        
+        /// <summary>
+        /// Called when a compilation is completed successfully and the response is written to the stream.
+        /// </summary>
+        public virtual void CompilationCompleted()
+        {
+        }
 
         /// <summary>
         /// Called when a bad client connection was detected and the server will be shutting down as a 

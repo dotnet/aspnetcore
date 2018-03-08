@@ -35,13 +35,13 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var workspaceServices = languageServices.WorkspaceServices;
             var errorReporter = workspaceServices.GetRequiredService<ErrorReporter>();
             var completionBroker = languageServices.GetRequiredService<VisualStudioCompletionBroker>();
-            var templateEngineFactoryService = languageServices.GetRequiredService<RazorTemplateEngineFactoryService>();
+            var projectEngineFactoryService = languageServices.GetRequiredService<RazorProjectEngineFactoryService>();
 
             return new DefaultVisualStudioRazorParserFactory(
                 _foregroundDispatcher,
                 errorReporter,
                 completionBroker,
-                templateEngineFactoryService);
+                projectEngineFactoryService);
         }
     }
 }

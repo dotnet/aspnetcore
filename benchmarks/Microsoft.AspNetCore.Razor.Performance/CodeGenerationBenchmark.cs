@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -21,33 +20,22 @@ namespace Microsoft.AspNetCore.Razor.Performance
             }
 
             var root = current;
-
-            var engine = RazorEngine.Create(b => { RazorExtensions.Register(b); });
-
             var fileSystem = RazorProjectFileSystem.Create(root.FullName);
+            
+            ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, b => RazorExtensions.Register(b)); ;
 
-            DesignTimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.CreateDesignTime(b => { RazorExtensions.Register(b); }), fileSystem);
-            RuntimeTemplateEngine = new MvcRazorTemplateEngine(RazorEngine.Create(b => { RazorExtensions.Register(b); }), fileSystem);
-
-            var codeDocument = RuntimeTemplateEngine.CreateCodeDocument(Path.Combine(root.FullName, "MSN.cshtml"));
-
-            Imports = codeDocument.Imports;
-            MSN = codeDocument.Source;
+            MSN = fileSystem.GetItem(Path.Combine(root.FullName, "MSN.cshtml"));
         }
 
-        public RazorTemplateEngine DesignTimeTemplateEngine { get; }
+        public RazorProjectEngine ProjectEngine { get; }
 
-        public RazorTemplateEngine RuntimeTemplateEngine { get; }
-
-        public IReadOnlyList<RazorSourceDocument> Imports { get; }
-
-        public RazorSourceDocument MSN { get; }
+        public RazorProjectItem MSN { get; }
 
         [Benchmark(Description = "Razor Design Time Code Generation of MSN.com")]
         public void CodeGeneration_DesignTime_LargeStaticFile()
         {
-            var codeDocument = RazorCodeDocument.Create(MSN, Imports);
-            var generated = DesignTimeTemplateEngine.GenerateCode(codeDocument);
+            var codeDocument = ProjectEngine.ProcessDesignTime(MSN);
+            var generated = codeDocument.GetCSharpDocument();
 
             if (generated.Diagnostics.Count != 0)
             {
@@ -58,8 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Performance
         [Benchmark(Description = "Razor Runtime Code Generation of MSN.com")]
         public void CodeGeneration_Runtime_LargeStaticFile()
         {
-            var codeDocument = RazorCodeDocument.Create(MSN, Imports);
-            var generated = RuntimeTemplateEngine.GenerateCode(codeDocument);
+            var codeDocument = ProjectEngine.Process(MSN);
+            var generated = codeDocument.GetCSharpDocument();
 
             if (generated.Diagnostics.Count != 0)
             {

@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorProjectFileSystem : RazorProject
     {
+        internal static readonly RazorProjectFileSystem Empty = new EmptyProjectFileSystem();
+
         /// <summary>
         /// Create a Razor project file system based off of a root directory.
         /// </summary>

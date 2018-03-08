@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.VisualStudio.LanguageServices.Razor;
@@ -13,13 +13,6 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
-    internal class Builder<T>
-    {
-        public static Builder<T> Make(CommandBase result) => null;
-
-        public static Builder<T> Make(T result) => null;
-    }
-
     internal class GenerateCommand : CommandBase
     {
         public GenerateCommand(Application parent)
@@ -30,6 +23,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             RelativePaths = Option("-r", "Relative path", CommandOptionType.MultipleValue);
             ProjectDirectory = Option("-p", "project root directory", CommandOptionType.SingleValue);
             TagHelperManifest = Option("-t", "tag helper manifest file", CommandOptionType.SingleValue);
+            Version = Option("-v|--version", "Razor language version", CommandOptionType.SingleValue);
+            Configuration = Option("-c", "Razor configuration name", CommandOptionType.SingleValue);
+            ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
+            ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
         }
 
         public CommandOption Sources { get; }
@@ -42,9 +39,29 @@ namespace Microsoft.AspNetCore.Razor.Tools
 
         public CommandOption TagHelperManifest { get; }
 
+        public CommandOption Version { get; }
+
+        public CommandOption Configuration { get; }
+
+        public CommandOption ExtensionNames { get; }
+
+        public CommandOption ExtensionFilePaths { get; }
+
         protected override Task<int> ExecuteCoreAsync()
         {
+            // Loading all of the extensions should succeed as the dependency checker will have already
+            // loaded them.
+            var extensions = new RazorExtension[ExtensionNames.Values.Count];
+            for (var i = 0; i < ExtensionNames.Values.Count; i++)
+            {
+                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]));
+            }
+
+            var version = RazorLanguageVersion.Parse(Version.Value());
+            var configuration = new RazorConfiguration(version, Configuration.Value(), extensions);
+
             var result = ExecuteCore(
+                configuration: configuration,
                 projectDirectory: ProjectDirectory.Value(),
                 tagHelperManifest: TagHelperManifest.Value(),
                 sources: Sources.Values,
@@ -77,10 +94,48 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 ProjectDirectory.Values.Add(Environment.CurrentDirectory);
             }
 
+            if (string.IsNullOrEmpty(Version.Value()))
+            {
+                Error.WriteLine($"{Version.ValueName} must be specified.");
+                return false;
+            }
+            else if (!RazorLanguageVersion.TryParse(Version.Value(), out _))
+            {
+                Error.WriteLine($"{Version.ValueName} is not a valid language version.");
+                return false;
+            }
+
+            if (string.IsNullOrEmpty(Configuration.Value()))
+            {
+                Error.WriteLine($"{Configuration.ValueName} must be specified.");
+                return false;
+            }
+
+            if (ExtensionNames.Values.Count != ExtensionFilePaths.Values.Count)
+            {
+                Error.WriteLine($"{ExtensionNames.ValueName} and {ExtensionFilePaths.ValueName} should have the same number of values.");
+            }
+
+            foreach (var filePath in ExtensionFilePaths.Values)
+            {
+                if (!Path.IsPathRooted(filePath))
+                {
+                    Error.WriteLine($"Extension file paths must be fully-qualified, absolute paths.");
+                    return false;
+                }
+            }
+
+            if (!Parent.Checker.Check(ExtensionFilePaths.Values))
+            {
+                Error.WriteLine($"Extensions could not be loaded. See output for details.");
+                return false;
+            }
+
             return true;
         }
 
         private int ExecuteCore(
+            RazorConfiguration configuration,
             string projectDirectory,
             string tagHelperManifest,
             List<string> sources,
@@ -90,26 +145,19 @@ namespace Microsoft.AspNetCore.Razor.Tools
             tagHelperManifest = Path.Combine(projectDirectory, tagHelperManifest);
 
             var tagHelpers = GetTagHelpers(tagHelperManifest);
-
-            var engine = RazorEngine.Create(b =>
+            var inputItems = GetInputItems(projectDirectory, sources, outputs, relativePaths);
+            var compositeFileSystem = new CompositeRazorProjectFileSystem(new[]
             {
-                RazorExtensions.Register(b);
-
+                GetVirtualRazorProjectSystem(inputItems),
+                RazorProjectFileSystem.Create(projectDirectory),
+            });
+            
+            var engine = RazorProjectEngine.Create(configuration, compositeFileSystem, b =>
+            {
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
             });
 
-
-            var inputItems = GetInputItems(projectDirectory, sources, outputs, relativePaths);
-            var compositeProject = new CompositeRazorProjectFileSystem(
-                new[]
-                {
-                    GetVirtualRazorProjectSystem(inputItems),
-                    RazorProjectFileSystem.Create(projectDirectory),
-                });
-
-            var templateEngine = new MvcRazorTemplateEngine(engine, compositeProject);
-
-            var results = GenerateCode(templateEngine, inputItems);
+            var results = GenerateCode(engine, inputItems);
 
             var success = true;
 
@@ -180,14 +228,15 @@ namespace Microsoft.AspNetCore.Razor.Tools
             return items;
         }
 
-        private OutputItem[] GenerateCode(RazorTemplateEngine templateEngine, SourceItem[] inputs)
+        private OutputItem[] GenerateCode(RazorProjectEngine engine, SourceItem[] inputs)
         {
             var outputs = new OutputItem[inputs.Length];
-            Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = 4 }, i =>
+            Parallel.For(0, outputs.Length, new ParallelOptions() { MaxDegreeOfParallelism = Debugger.IsAttached ? 1 : 4 }, i =>
             {
                 var inputItem = inputs[i];
 
-                var csharpDocument = templateEngine.GenerateCode(inputItem.FilePath);
+                var codeDocument = engine.Process(engine.FileSystem.GetItem(inputItem.FilePath));
+                var csharpDocument = codeDocument.GetCSharpDocument();
                 outputs[i] = new OutputItem(inputItem, csharpDocument);
             });
 

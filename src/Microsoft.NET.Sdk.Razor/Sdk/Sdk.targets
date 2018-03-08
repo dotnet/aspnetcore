@@ -11,11 +11,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project ToolsVersion="14.0">
 
-  <PropertyGroup Condition="'$(RazorSdkTargetsPath)' == ''">
-    <RazorSdkTargetsPath Condition="'$(IsCrossTargetingBuild)' == 'true'">$(MSBuildThisFileDirectory)..\buildMultiTargeting\Sdk.Razor.CurrentVersion.MultiTargeting.targets</RazorSdkTargetsPath>
-    <RazorSdkTargetsPath Condition="'$(IsCrossTargetingBuild)' != 'true'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkTargetsPath>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" Condition="'$(_RazorSdkImportsMicrosoftNetSdk)' == 'true'" />
+
+  <PropertyGroup Condition="'$(RazorSdkCurrentVersionTargets)' == ''">
+    <RazorSdkCurrentVersionTargets Condition="'$(IsCrossTargetingBuild)' == 'true'">$(MSBuildThisFileDirectory)..\buildMultiTargeting\Sdk.Razor.CurrentVersion.MultiTargeting.targets</RazorSdkCurrentVersionTargets>
+    <RazorSdkCurrentVersionTargets Condition="'$(IsCrossTargetingBuild)' != 'true'">$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.targets</RazorSdkCurrentVersionTargets>
   </PropertyGroup>
 
-  <Import Project="$(RazorSdkTargetsPath)" />
+  <Import Project="$(RazorSdkCurrentVersionTargets)" />
 
 </Project>

@@ -1,6 +1,7 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27107.3000
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 	ProjectSection(SolutionItems) = preProject
@@ -92,9 +93,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools", "src\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj", "{3E7F2D49-3B45-45A8-9893-F73EC1EEBAAB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.NET.Sdk.Razor", "src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj", "{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.NET.Sdk.Razor", "src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj", "{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Razor.Tools.Test", "test\Microsoft.AspNetCore.Razor.Tools.Test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{6EA56B2B-89EC-4C38-A384-97D203375B06}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Tools.Test", "test\Microsoft.AspNetCore.Razor.Tools.Test\Microsoft.AspNetCore.Razor.Tools.Test.csproj", "{6EA56B2B-89EC-4C38-A384-97D203375B06}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj", "{72E89155-86C7-454E-BDD9-39F497F2F61B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -398,6 +401,14 @@ Global
 		{6EA56B2B-89EC-4C38-A384-97D203375B06}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6EA56B2B-89EC-4C38-A384-97D203375B06}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{6EA56B2B-89EC-4C38-A384-97D203375B06}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{72E89155-86C7-454E-BDD9-39F497F2F61B}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -440,6 +451,7 @@ Global
 		{3E7F2D49-3B45-45A8-9893-F73EC1EEBAAB} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{7D9ECCEE-71D1-4A42-ABEE-876AFA1B4FC9} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
 		{6EA56B2B-89EC-4C38-A384-97D203375B06} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{72E89155-86C7-454E-BDD9-39F497F2F61B} = {92463391-81BE-462B-AC3C-78C6C760741F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}

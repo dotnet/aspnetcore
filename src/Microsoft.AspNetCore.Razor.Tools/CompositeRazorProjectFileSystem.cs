@@ -3,24 +3,25 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class CompositeRazorProjectFileSystem : RazorProjectFileSystem
     {
-        public CompositeRazorProjectFileSystem(IReadOnlyList<RazorProjectFileSystem> projects)
+        public CompositeRazorProjectFileSystem(IReadOnlyList<RazorProjectFileSystem> fileSystems)
         {
-            Projects = projects ?? throw new ArgumentNullException(nameof(projects));
+            FileSystems = fileSystems ?? throw new ArgumentNullException(nameof(fileSystems));
         }
 
-        public IReadOnlyList<RazorProjectFileSystem> Projects { get; }
+        public IReadOnlyList<RazorProjectFileSystem> FileSystems { get; }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)
         {
-            foreach (var project in Projects)
+            foreach (var fileSystem in FileSystems)
             {
-                foreach (var result in project.EnumerateItems(basePath))
+                foreach (var result in fileSystem.EnumerateItems(basePath))
                 {
                     yield return result;
                 }
@@ -30,9 +31,9 @@ namespace Microsoft.AspNetCore.Razor.Tools
         public override RazorProjectItem GetItem(string path)
         {
             RazorProjectItem razorProjectItem = null;
-            foreach (var project in Projects)
+            foreach (var fileSystem in FileSystems)
             {
-                razorProjectItem = project.GetItem(path);
+                razorProjectItem = fileSystem.GetItem(path);
                 if (razorProjectItem != null && razorProjectItem.Exists)
                 {
                     return razorProjectItem;

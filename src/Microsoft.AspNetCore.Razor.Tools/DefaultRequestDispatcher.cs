@@ -383,6 +383,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
                                 ServerLogger.Log("End writing response.");
 
                                 reason = ConnectionResult.Reason.CompilationCompleted;
+
+                                _eventBus.CompilationCompleted();
                             }
                             catch
                             {

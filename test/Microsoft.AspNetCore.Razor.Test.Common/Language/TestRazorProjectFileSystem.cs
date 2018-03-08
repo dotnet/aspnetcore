@@ -4,13 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TestRazorProjectFileSystem : RazorProjectFileSystem
+    internal class TestRazorProjectFileSystem : DefaultRazorProjectFileSystem
     {
-        public static RazorProjectFileSystem Empty = new TestRazorProjectFileSystem();
+        public new static RazorProjectFileSystem Empty = new TestRazorProjectFileSystem();
 
         private readonly Dictionary<string, RazorProjectItem> _lookup;
 
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
-        public TestRazorProjectFileSystem(IList<RazorProjectItem> items)
+        public TestRazorProjectFileSystem(IList<RazorProjectItem> items) : base("/")
         {
             _lookup = items.ToDictionary(item => item.FilePath);
         }

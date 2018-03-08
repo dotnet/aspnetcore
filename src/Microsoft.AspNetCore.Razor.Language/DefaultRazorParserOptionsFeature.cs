@@ -5,7 +5,9 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     internal class DefaultRazorParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         private readonly bool _designTime;
         private readonly RazorLanguageVersion _version;

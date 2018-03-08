@@ -60,11 +60,11 @@
       -->
     <Touch
       Files="$(_RazorTagHelperInputCache)"
-      AlwaysCreate="true">
-      <Output
-        TaskParameter="TouchedFiles"
-        ItemName="FileWrites" />
-    </Touch>
+      AlwaysCreate="true" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_RazorTagHelperInputCache)" />
+    </ItemGroup>
 
     <RazorTagHelper
       Debug="$(_RazorDebugTagHelperTask)"
@@ -73,6 +73,9 @@
       UseServer="$(UseRazorBuildServer)"
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(ResolvedRazorConfiguration)"
+      Extensions="@(ResolvedRazorExtension)"
       Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
@@ -121,6 +124,9 @@
       UseServer="$(UseRazorBuildServer)"
       ForceServer="$(_RazorForceBuildServer)"
       PipeName="$(_RazorBuildServerPipeName)"
+      Version="$(RazorLangVersion)"
+      Configuration="@(ResolvedRazorConfiguration)"
+      Extensions="@(ResolvedRazorExtension)"
       Sources="@(RazorGenerateWithTargetPath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)" />
