@@ -10,6 +10,19 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 {
     public class RazorTagHelper : DotNetToolTask
     {
+        private const string Identity = "Identity";
+        private const string AssemblyName = "AssemblyName";
+        private const string AssemblyFilePath = "AssemblyFilePath";
+
+        [Required]
+        public string Version { get; set; }
+
+        [Required]
+        public ITaskItem[] Configuration { get; set; }
+
+        [Required]
+        public ITaskItem[] Extensions { get; set; }
+
         [Required]
         public string[] Assemblies { get; set; }
 
@@ -50,6 +63,21 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine("-p");
             builder.AppendLine(ProjectRoot);
+
+            builder.AppendLine("-v");
+            builder.AppendLine(Version);
+
+            builder.AppendLine("-c");
+            builder.AppendLine(Configuration[0].GetMetadata(Identity));
+
+            for (var i = 0; i < Extensions.Length; i++)
+            {
+                builder.AppendLine("-n");
+                builder.AppendLine(Extensions[i].GetMetadata(Identity));
+
+                builder.AppendLine("-e");
+                builder.AppendLine(Path.GetFullPath(Extensions[i].GetMetadata(AssemblyFilePath)));
+            }
 
             return builder.ToString();
         }

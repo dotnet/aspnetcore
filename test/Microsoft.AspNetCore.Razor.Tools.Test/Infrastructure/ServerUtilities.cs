@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
+using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
@@ -24,7 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Tools
         internal static ServerData CreateServer(
             string pipeName = null,
             CompilerHost compilerHost = null,
-            ConnectionHost connectionHost = null)
+            ConnectionHost connectionHost = null,
+            Action<object, EventArgs> onListening = null)
         {
             pipeName = pipeName ?? Guid.NewGuid().ToString();
             compilerHost = compilerHost ?? CompilerHost.Create();
@@ -38,6 +41,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var eventBus = new TestableEventBus();
                 eventBus.Listening += (sender, e) => { serverListenSource.TrySetResult(true); };
+                if (onListening != null)
+                {
+                    eventBus.Listening += (sender, e) => onListening(sender, e);
+                }
                 try
                 {
                     RunServer(
@@ -116,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 CancellationToken ct,
                 EventBus eventBus,
                 TimeSpan? keepAlive)
-                : base(new Application(ct))
+                : base(new Application(ct, Mock.Of<ExtensionAssemblyLoader>(), Mock.Of<ExtensionDependencyChecker>(), (path, properties) => Mock.Of<PortableExecutableReference>()))
             {
                 _host = host;
                 _compilerHost = compilerHost;

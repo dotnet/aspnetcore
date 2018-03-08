@@ -6,15 +6,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.CommandLineUtils;
 
 namespace Microsoft.AspNetCore.Razor.Tools
 {
     internal class Application : CommandLineApplication
     {
-        public Application(CancellationToken cancellationToken)
+        public Application(CancellationToken cancellationToken, ExtensionAssemblyLoader loader, ExtensionDependencyChecker checker, Func<string, MetadataReferenceProperties, PortableExecutableReference> assemblyReferenceProvider)
         {
             CancellationToken = cancellationToken;
+            Checker = checker;
+            Loader = loader;
+            AssemblyReferenceProvider = assemblyReferenceProvider;
 
             Name = "rzc";
             FullName = "Microsoft ASP.NET Core Razor CLI tool";
@@ -30,6 +34,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
         }
 
         public CancellationToken CancellationToken { get; }
+
+        public ExtensionAssemblyLoader Loader { get; }
+
+        public ExtensionDependencyChecker Checker { get; }
+
+        public Func<string, MetadataReferenceProperties, PortableExecutableReference> AssemblyReferenceProvider { get; }
 
         public new int Execute(params string[] args)
         {

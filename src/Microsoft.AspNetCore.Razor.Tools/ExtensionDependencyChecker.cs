@@ -3,10 +3,10 @@
 
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Tools
 {
-    public interface IRazorImportFeature : IRazorProjectEngineFeature
+    internal abstract class ExtensionDependencyChecker
     {
-        IReadOnlyList<RazorSourceDocument> GetImports(RazorProjectItem projectItem);
+        public abstract bool Check(IEnumerable<string> extensionFilePaths);
     }
 }

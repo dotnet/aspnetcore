@@ -6,18 +6,18 @@ using Microsoft.AspNetCore.Razor.Language;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
+namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class DefaultMvcImportFeatureTest
+    public class MvcImportProjectFeatureTest
     {
         [Fact]
         public void AddDefaultDirectivesImport_AddsSingleDynamicImport()
         {
             // Arrange
-            var imports = new List<RazorSourceDocument>();
+            var imports = new List<RazorProjectItem>();
 
             // Act
-            DefaultMvcImportFeature.AddDefaultDirectivesImport(imports);
+            MvcImportProjectFeature.AddDefaultDirectivesImport(imports);
 
             // Assert
             var import = Assert.Single(imports);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         public void AddHierarchicalImports_AddsViewImportSourceDocumentsOnDisk()
         {
             // Arrange
-            var imports = new List<RazorSourceDocument>();
+            var imports = new List<RazorProjectItem>();
             var projectItem = new TestRazorProjectItem("/Contact/Index.cshtml");
             var testFileSystem = new TestRazorProjectFileSystem(new[]
             {
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 new TestRazorProjectItem("/Contact/_ViewImports.cshtml"),
                 projectItem,
             });
-            var mvcImportFeature = new DefaultMvcImportFeature()
+            var mvcImportFeature = new MvcImportProjectFeature()
             {
                 ProjectEngine = Mock.Of<RazorProjectEngine>(projectEngine => projectEngine.FileSystem == testFileSystem)
             };
@@ -55,10 +55,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         public void AddHierarchicalImports_AddsViewImportSourceDocumentsNotOnDisk()
         {
             // Arrange
-            var imports = new List<RazorSourceDocument>();
+            var imports = new List<RazorProjectItem>();
             var projectItem = new TestRazorProjectItem("/Pages/Contact/Index.cshtml");
             var testFileSystem = new TestRazorProjectFileSystem(new[] { projectItem });
-            var mvcImportFeature = new DefaultMvcImportFeature()
+            var mvcImportFeature = new MvcImportProjectFeature()
             {
                 ProjectEngine = Mock.Of<RazorProjectEngine>(projectEngine => projectEngine.FileSystem == testFileSystem)
             };

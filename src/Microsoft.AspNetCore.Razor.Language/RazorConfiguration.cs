@@ -12,22 +12,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         public static readonly RazorConfiguration Default = new RazorConfiguration(
             RazorLanguageVersion.Latest, 
             "unnamed",
-            Array.Empty<RazorExtension>(),
-            designTime: false);
-
-        // This is used only in some back-compat scenarios. We don't expose it because there's no
-        // use case for anyone else to use it.
-        internal static readonly RazorConfiguration DefaultDesignTime = new RazorConfiguration(
-            RazorLanguageVersion.Latest,
-            "unnamed",
-            Array.Empty<RazorExtension>(),
-            designTime: true);
+            Array.Empty<RazorExtension>());
 
         public RazorConfiguration(
             RazorLanguageVersion languageVersion, 
             string configurationName,
-            IEnumerable<RazorExtension> extensions,
-            bool designTime)
+            IEnumerable<RazorExtension> extensions)
         {
             if (languageVersion == null)
             {
@@ -47,7 +37,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             LanguageVersion = languageVersion;
             ConfigurationName = configurationName;
             Extensions = extensions.ToArray();
-            DesignTime = designTime;
         }
 
         public string ConfigurationName { get; }
@@ -55,7 +44,5 @@ namespace Microsoft.AspNetCore.Razor.Language
         public IReadOnlyList<RazorExtension> Extensions { get; }
 
         public RazorLanguageVersion LanguageVersion { get; }
-
-        public bool DesignTime { get; }
     }
 }

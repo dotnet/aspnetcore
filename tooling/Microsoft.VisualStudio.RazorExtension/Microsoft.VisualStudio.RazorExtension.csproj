@@ -268,6 +268,21 @@
     <Copy SourceFiles="$(OutDir)$(AssemblyName).pdb" DestinationFolder="$(SymbolsPublishDir)" />
   </Target>
 
+  <!-- Include Razor SDK design time assets in the VSIX -->
+  <ItemGroup>
+    <Content Include="..\..\src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Microsoft.NET.Sdk.Razor.DesignTime.targets">
+      <IncludeInVsix>true</IncludeInVsix>
+      <InstallRoot>MSBuild</InstallRoot>
+      <VSIXSubPath>Microsoft\VisualStudio\Razor\</VSIXSubPath>
+    </Content>
+
+    <Content Include="..\..\src\Microsoft.NET.Sdk.Razor\build\netstandard2.0\Rules\*.xaml">
+      <IncludeInVsix>true</IncludeInVsix>
+      <InstallRoot>MSBuild</InstallRoot>
+      <VSIXSubPath>Microsoft\VisualStudio\Razor\Rules\</VSIXSubPath>
+    </Content>
+  </ItemGroup>
+
   <!--
     Begin workaround for https://github.com/dotnet/sdk/issues/433
 
@@ -293,6 +308,7 @@
     </Content>
   </ItemGroup>
   <!-- End workaround for https://github.com/dotnet/sdk/issues/433 -->
+  
   <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />

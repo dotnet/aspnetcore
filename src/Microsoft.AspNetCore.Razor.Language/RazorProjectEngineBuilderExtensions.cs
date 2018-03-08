@@ -2,14 +2,80 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class RazorProjectEngineBuilderExtensions
     {
-        public static void SetImportFeature(this RazorProjectEngineBuilder builder, IRazorImportFeature feature)
+        /// <summary>
+        /// Registers a class configuration delegate that gets invoked during code generation.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="configureClass"><see cref="Action"/> invoked to configure 
+        /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder ConfigureClass(
+            this RazorProjectEngineBuilder builder,
+            Action<RazorCodeDocument, ClassDeclarationIntermediateNode> configureClass)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configureClass == null)
+            {
+                throw new ArgumentNullException(nameof(configureClass));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add(configureClass);
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the base type for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="baseType">The name of the base type.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetBaseType(this RazorProjectEngineBuilder builder, string baseType)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureClass.Add((document, @class) => @class.BaseType = baseType);
+            return builder;
+        }
+
+        /// <summary>
+        /// Sets the namespace for generated types.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="namespaceName">The name of the namespace.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder SetNamespace(this RazorProjectEngineBuilder builder, string namespaceName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var configurationFeature = GetDefaultDocumentClassifierPassFeature(builder);
+            configurationFeature.ConfigureNamespace.Add((document, @namespace) => @namespace.Content = namespaceName);
+            return builder;
+        }
+
+        public static void SetImportFeature(this RazorProjectEngineBuilder builder, IImportProjectFeature feature)
         {
             if (builder == null)
             {
@@ -22,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             // Remove any existing import features in favor of the new one we're given.
-            var existingFeatures = builder.Features.OfType<IRazorImportFeature>().ToArray();
+            var existingFeatures = builder.Features.OfType<IImportProjectFeature>().ToArray();
             foreach (var existingFeature in existingFeatures)
             {
                 builder.Features.Remove(existingFeature);
@@ -79,6 +145,27 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        /// <summary>
+        /// Adds the provided <see cref="RazorProjectItem" />s as imports to all project items processed
+        /// by the <see cref="RazorProjectEngine"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
+        /// <param name="imports">The collection of imports.</param>
+        /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
+        public static RazorProjectEngineBuilder AddDefaultImports(this RazorProjectEngineBuilder builder, params string[] imports)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            var existingImportFeature = builder.Features.OfType<IImportProjectFeature>().First();
+            var testImportFeature = new AdditionalImportsProjectFeature(existingImportFeature, imports);
+            builder.SetImportFeature(testImportFeature);
+
+            return builder;
+        }
+
         private static IRazorDirectiveFeature GetDirectiveFeature(RazorProjectEngineBuilder builder)
         {
             var directiveFeature = builder.Features.OfType<IRazorDirectiveFeature>().FirstOrDefault();
@@ -101,6 +188,78 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return targetExtensionFeature;
+        }
+
+        private static DefaultDocumentClassifierPassFeature GetDefaultDocumentClassifierPassFeature(RazorProjectEngineBuilder builder)
+        {
+            var configurationFeature = builder.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
+            if (configurationFeature == null)
+            {
+                configurationFeature = new DefaultDocumentClassifierPassFeature();
+                builder.Features.Add(configurationFeature);
+            }
+
+            return configurationFeature;
+        }
+
+        private class AdditionalImportsProjectFeature : RazorProjectEngineFeatureBase, IImportProjectFeature
+        {
+            private readonly IImportProjectFeature _existingImportFeature;
+            private readonly IEnumerable<RazorProjectItem> _imports;
+
+            public override RazorProjectEngine ProjectEngine
+            {
+                get => base.ProjectEngine;
+                set
+                {
+                    _existingImportFeature.ProjectEngine = value;
+                    base.ProjectEngine = value;
+                }
+            }
+
+            public AdditionalImportsProjectFeature(IImportProjectFeature existingImportFeature, params string[] imports)
+            {
+                _existingImportFeature = existingImportFeature;
+                _imports = imports.Select(import => new InMemoryProjectItem(import));
+            }
+
+            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
+            {
+                var imports = _existingImportFeature.GetImports(projectItem).ToList();
+                imports.AddRange(_imports);
+
+                return imports;
+            }
+
+            private class InMemoryProjectItem : RazorProjectItem
+            {
+                private readonly byte[] _importBytes;
+
+                public InMemoryProjectItem(string content)
+                {
+                    if (string.IsNullOrEmpty(content))
+                    {
+                        throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(content));
+                    }
+
+                    var preamble = Encoding.UTF8.GetPreamble();
+                    var contentBytes = Encoding.UTF8.GetBytes(content);
+
+                    _importBytes = new byte[preamble.Length + contentBytes.Length];
+                    preamble.CopyTo(_importBytes, 0);
+                    contentBytes.CopyTo(_importBytes, preamble.Length);
+                }
+
+                public override string BasePath => null;
+
+                public override string FilePath => null;
+
+                public override string PhysicalPath => null;
+
+                public override bool Exists => true;
+
+                public override Stream Read() => new MemoryStream(_importBytes);
+            }
         }
     }
 }

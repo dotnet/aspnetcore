@@ -10,9 +10,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 {
-    public class RazorGenerateIntegrationTest : MSBuildIntegrationTestBase
+    public class RazorGenerateIntegrationTest : MSBuildIntegrationTestBase, IClassFixture<BuildServerTestFixture>
     {
         private const string RazorGenerateTarget = "RazorGenerate";
+
+        public RazorGenerateIntegrationTest(BuildServerTestFixture buildServer)
+            : base(buildServer)
+        {
+        }
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
@@ -24,7 +29,15 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+
+            // RazorGenerate should generate correct TagHelper caches
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.TagHelpers.input.cache");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache");
+            Assert.FileContains(
+                result,
+                Path.Combine(IntermediateOutputPath, "SimpleMvc.TagHelpers.output.cache"),
+                @"""Name"":""SimpleMvc.SimpleTagHelper""");
 
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");
@@ -44,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // Introducing a syntax error, an unclosed brace
             ReplaceContent("@{", "Views", "Home", "Index.cshtml");
 
-            var result = await DotnetMSBuild("RazorGenerate");
+            var result = await DotnetMSBuild(RazorGenerateTarget);
 
             Assert.BuildFailed(result);
 
@@ -53,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             // The file should still be generated even if we had a Razor syntax error.
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "Home", "Index.cs");
@@ -101,9 +114,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // Act - 2
             // Update the source content and build. We should expect the outputs to be regenerated.
-            // Timestamps on xplat are precise only to a second. Add a delay so we can ensure that MSBuild recognizes the
-            // file change. See https://github.com/dotnet/corefx/issues/26024
-            await Task.Delay(TimeSpan.FromSeconds(1));
             ReplaceContent("Uodated content", file);
             result = await DotnetMSBuild(RazorGenerateTarget);
 
@@ -313,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             // RazorGenerate should compile the assembly, but not the views.
             Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.dll");
-            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.PrecompiledViews.dll");
+            Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
 
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewImports.cs");
             Assert.FileExists(result, RazorIntermediateOutputPath, "Views", "_ViewStart.cs");

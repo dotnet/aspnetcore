@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new DefaultRazorProjectEngineBuilder(RazorConfiguration.Default, Mock.Of<RazorProjectFileSystem>());
-            var testFeature1 = Mock.Of<IRazorImportFeature>();
-            var testFeature2 = Mock.Of<IRazorImportFeature>();
+            var testFeature1 = Mock.Of<IImportProjectFeature>();
+            var testFeature2 = Mock.Of<IImportProjectFeature>();
             builder.Features.Add(testFeature1);
             builder.Features.Add(testFeature2);
-            var newFeature = Mock.Of<IRazorImportFeature>();
+            var newFeature = Mock.Of<IImportProjectFeature>();
 
             // Act
             builder.SetImportFeature(newFeature);

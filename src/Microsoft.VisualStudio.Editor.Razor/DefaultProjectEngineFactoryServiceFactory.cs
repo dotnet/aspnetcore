@@ -8,12 +8,12 @@ using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [ExportLanguageServiceFactory(typeof(RazorTemplateEngineFactoryService), RazorLanguage.Name, ServiceLayer.Default)]
-    internal class DefaultTemplateEngineFactoryServiceFactory : ILanguageServiceFactory
+    [ExportLanguageServiceFactory(typeof(RazorProjectEngineFactoryService), RazorLanguage.Name, ServiceLayer.Default)]
+    internal class DefaultProjectEngineFactoryServiceFactory : ILanguageServiceFactory
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTemplateEngineFactoryService(languageServices.GetRequiredService<ProjectSnapshotManager>());
+            return new DefaultProjectEngineFactoryService(languageServices.GetRequiredService<ProjectSnapshotManager>());
         }
     }
 }

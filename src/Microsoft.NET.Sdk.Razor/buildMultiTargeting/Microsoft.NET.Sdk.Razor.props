@@ -1,6 +1,6 @@
 <!--
 ***********************************************************************************************
-Microsoft.NET.Sdk.Razor.targets
+Microsoft.Net.Sdk.Razor.props
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -10,5 +10,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
-  <Import Project="Sdk.Razor.CurrentVersion.targets" />
+  <PropertyGroup>
+    <RazorSdkCurrentVersionProps>$(MSBuildThisFileDirectory)..\build\netstandard2.0\Sdk.Razor.CurrentVersion.props</RazorSdkCurrentVersionProps>
+    <RazorSdkCurrentVersionTargets>$(MSBuildThisFileDirectory)Sdk.Razor.CurrentVersion.MultiTargeting.targets</RazorSdkCurrentVersTargetsFile>
+  </PropertyGroup>
 </Project>

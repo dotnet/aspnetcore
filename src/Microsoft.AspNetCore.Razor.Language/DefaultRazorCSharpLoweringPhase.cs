@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new InvalidOperationException(message);
             }
 
-            var writer = new DefaultDocumentWriter(documentNode.Target, documentNode.Options);
+            var writer = DocumentWriter.CreateDefault(documentNode.Target, documentNode.Options);
             var cSharpDocument = writer.WriteDocument(codeDocument, documentNode);
             codeDocument.SetCSharpDocument(cSharpDocument);
         }

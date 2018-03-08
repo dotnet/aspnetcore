@@ -22,29 +22,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             Phases = new List<IRazorEnginePhase>();
         }
 
+        public override RazorConfiguration Configuration { get; }
+
         public override RazorProjectFileSystem FileSystem { get; }
 
         public override ICollection<IRazorFeature> Features { get; }
 
         public override IList<IRazorEnginePhase> Phases { get; }
-
-        public override RazorConfiguration Configuration { get; }
-
+        
         public override RazorProjectEngine Build()
         {
-            RazorEngine engine = null;
-
-            if (Configuration.DesignTime)
-            {
-                engine = RazorEngine.CreateDesignTimeEmpty(ConfigureRazorEngine);
-            }
-            else
-            {
-                engine = RazorEngine.CreateEmpty(ConfigureRazorEngine);
-            }
-
-            var projectEngineFeatures = Features.OfType<IRazorProjectEngineFeature>().ToArray();
-            var projectEngine = new DefaultRazorProjectEngine(engine, FileSystem, projectEngineFeatures);
+            var engine = RazorEngine.CreateEmpty(ConfigureRazorEngine);
+            var projectFeatures = Features.OfType<IRazorProjectEngineFeature>().ToArray();
+            var projectEngine = new DefaultRazorProjectEngine(Configuration, engine, FileSystem, projectFeatures);
 
             return projectEngine;
         }

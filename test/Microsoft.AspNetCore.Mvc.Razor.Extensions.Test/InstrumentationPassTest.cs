@@ -11,10 +11,46 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class InstrumentationPassTest
     {
         [Fact]
+        public void InstrumentationPass_NoOps_ForDesignTime()
+        {
+            // Arrange
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDesignTimeDefault(),
+            };
+
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new HtmlContentIntermediateNode());
+            builder.Add(new IntermediateToken()
+            {
+                Content = "Hi",
+                Kind = TokenKind.Html,
+            });
+            builder.Pop();
+
+            var pass = new InstrumentationPass()
+            {
+                Engine = RazorEngine.CreateEmpty(b => { }),
+            };
+
+            // Act
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), document);
+
+            // Assert
+            Children(
+                document,
+                n => IntermediateNodeAssert.Html("Hi", n));
+        }
+
+        [Fact]
         public void InstrumentationPass_InstrumentsHtml()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
 
             builder.Push(new HtmlContentIntermediateNode()
@@ -49,7 +85,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsHtml_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new HtmlContentIntermediateNode());
             builder.Add(new IntermediateToken()
@@ -77,7 +117,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsCSharpExpression()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new CSharpExpressionIntermediateNode()
             {
@@ -109,7 +153,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new CSharpExpressionIntermediateNode());
             builder.Add(new IntermediateToken()
@@ -136,7 +184,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new TagHelperIntermediateNode());
 
@@ -183,7 +235,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new TagHelperIntermediateNode());
 
@@ -230,7 +286,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsTagHelper()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Add(new TagHelperIntermediateNode()
             {
@@ -257,7 +317,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsTagHelper_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIntermediateNode();
+            var document = new DocumentIntermediateNode()
+            {
+                Options = RazorCodeGenerationOptions.CreateDefault(),
+            };
+
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new TagHelperIntermediateNode());
 

@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            EnsureDesignTime(builder);
-
             InjectDirective.Register(builder);
             ModelDirective.Register(builder);
 
@@ -37,7 +35,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             builder.Features.Add(new ModelExpressionPass());
             builder.Features.Add(new MvcViewDocumentClassifierPass());
 
-            builder.SetImportFeature(new DefaultMvcImportFeature());
+            builder.SetImportFeature(new MvcImportProjectFeature());
         }
 
         public static void RegisterViewComponentTagHelpers(RazorProjectEngineBuilder builder)
@@ -47,20 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            EnsureDesignTime(builder);
-
             builder.Features.Add(new ViewComponentTagHelperPass());
             builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
-        }
-
-        private static void EnsureDesignTime(RazorProjectEngineBuilder builder)
-        {
-            if (builder.Configuration.DesignTime)
-            {
-                return;
-            }
-
-            throw new NotSupportedException(Resources.RuntimeCodeGenerationNotSupported);
         }
 
         #region Obsolete

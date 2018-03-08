@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -335,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
         /// <summary>
         /// Ensure server respects keep alive and shuts down after processing simultaneous connections.
         /// </summary>
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/2018")]
+        [Fact]
         public async Task Dispatcher_ProcessSimultaneousConnections_HitsKeepAliveTimeout()
         {
             // Arrange
@@ -352,6 +353,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
                         var source = new TaskCompletionSource<bool>();
                         var connectionTask = CreateConnectionWithEmptyServerRequest(c =>
                         {
+                            // Keep the connection active until we decide to end it.
                             c.WaitForDisconnectAsyncFunc = _ => source.Task;
                         });
                         list.Add(source);
@@ -370,24 +372,42 @@ namespace Microsoft.AspNetCore.Razor.Tools
                 };
             });
 
-            var keepAlive = TimeSpan.FromSeconds(1);
             var eventBus = new TestableEventBus();
+            var completedCompilations = 0;
+            var allCompilationsComplete = new TaskCompletionSource<bool>();
+            eventBus.CompilationComplete += (obj, args) =>
+            {
+                if (++completedCompilations == totalCount)
+                {
+                    // All compilations have completed.
+                    allCompilationsComplete.SetResult(true);
+                }
+            };
+            var keepAlive = TimeSpan.FromSeconds(1);
             var dispatcherTask = Task.Run(() =>
             {
                 var dispatcher = new DefaultRequestDispatcher(connectionHost.Object, compilerHost, CancellationToken.None, eventBus, keepAlive);
                 dispatcher.Run();
             });
 
+            // Wait for all connections to be created.
             await readySource.Task;
+
+            // Wait for all compilations to complete.
+            await allCompilationsComplete.Task;
+
+            // Now allow all the connections to be disconnected.
             foreach (var source in list)
             {
                 source.SetResult(true);
             }
 
             // Act
+            // Now dispatcher should be in an idle state with no active connections.
             await dispatcherTask;
 
             // Assert
+            Assert.False(eventBus.HasDetectedBadConnection);
             Assert.Equal(totalCount, eventBus.CompletedCount);
             Assert.True(eventBus.LastProcessedTime.HasValue, "LastProcessedTime should have had a value.");
             Assert.True(eventBus.HitKeepAliveTimeout, "HitKeepAliveTimeout should have been hit.");

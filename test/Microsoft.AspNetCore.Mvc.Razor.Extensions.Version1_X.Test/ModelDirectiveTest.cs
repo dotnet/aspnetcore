@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: false)
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: false)
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: false)
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 ");
 
             var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: false)
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -163,8 +163,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 @inherits BaseType<TModel>
 ");
 
-            var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: true)
+            var engine = CreateDesignTimeEngine();
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -193,8 +193,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 @model SomeType
 ");
 
-            var engine = CreateEngine();
-            var pass = new ModelDirective.Pass(designTime: true)
+            var engine = CreateDesignTimeEngine();
+            var pass = new ModelDirective.Pass()
             {
                 Engine = engine,
             };
@@ -237,6 +237,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         private RazorEngine CreateEngine()
         {
             return RazorEngine.Create(b =>
+            {
+                // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
+                b.AddDirective(ModelDirective.Directive);
+
+                // There's some special interaction with the inherits directive
+                InheritsDirective.Register(b);
+            });
+        }
+
+        private RazorEngine CreateDesignTimeEngine()
+        {
+            return RazorEngine.CreateDesignTime(b =>
             {
                 // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
                 b.AddDirective(ModelDirective.Directive);
