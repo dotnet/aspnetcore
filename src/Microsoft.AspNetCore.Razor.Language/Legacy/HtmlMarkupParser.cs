@@ -496,6 +496,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     using (Context.Builder.StartBlock(BlockKindInternal.HtmlComment))
                     {
+                        // Accept the double-hyphen symbol at the beginning of the comment block.
                         AcceptAndMoveNext();
                         Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
 
@@ -503,25 +504,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         while (!EndOfFile)
                         {
                             SkipToAndParseCode(HtmlSymbolType.DoubleHyphen);
-                            if (At(HtmlSymbolType.DoubleHyphen))
+                            var lastDoubleHyphen = AcceptAllButLastDoubleHypens();
+
+                            if (At(HtmlSymbolType.CloseAngle))
                             {
-                                var lastDoubleHyphen = AcceptAllButLastDoubleHypens();
+                                // Output the content in the comment block as a separate markup
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
 
-                                if (At(HtmlSymbolType.CloseAngle))
-                                {
-                                    // Output the content in the comment block as a separate markup
-                                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.WhiteSpace);
-
-                                    // This is the end of a comment block
-                                    Accept(lastDoubleHyphen);
-                                    AcceptAndMoveNext();
-                                    Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
-                                    return true;
-                                }
-                                else if (lastDoubleHyphen != null)
-                                {
-                                    Accept(lastDoubleHyphen);
-                                }
+                                // This is the end of a comment block
+                                Accept(lastDoubleHyphen);
+                                AcceptAndMoveNext();
+                                Output(SpanKindInternal.Markup, AcceptedCharactersInternal.None);
+                                return true;
+                            }
+                            else if (lastDoubleHyphen != null)
+                            {
+                                Accept(lastDoubleHyphen);
                             }
                         }
                     }
@@ -606,28 +604,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Check condition 2.2
-            bool isValidComment = false;
+            var isValidComment = false;
             LookaheadUntil((s, p) =>
             {
-                bool breakLookahead = false;
                 if (s.Type == HtmlSymbolType.DoubleHyphen)
                 {
                     if (NextIs(HtmlSymbolType.CloseAngle))
                     {
                         // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
                         isValidComment = !SymbolSequenceEndsWithItems(p, HtmlSymbolType.OpenAngle, HtmlSymbolType.Bang, HtmlSymbolType.DoubleHyphen);
-                        breakLookahead = true;
+                        return true;
                     }
                     else if (NextIs(ns => IsDashSymbol(ns) && NextIs(HtmlSymbolType.CloseAngle)))
                     {
                         // This is also a valid closing comment case, as the dashes lookup is treated with DoubleHyphen symbols first.
                         isValidComment = true;
-                        breakLookahead = true;
+                        return true;
                     }
                     else if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.CloseAngle)))
                     {
                         isValidComment = false;
-                        breakLookahead = true;
+                        return true;
                     }
                 }
                 else if (s.Type == HtmlSymbolType.OpenAngle)
@@ -635,11 +632,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (NextIs(ns => ns.Type == HtmlSymbolType.Bang && NextIs(HtmlSymbolType.DoubleHyphen)))
                     {
                         isValidComment = false;
-                        breakLookahead = true;
+                        return true;
                     }
                 }
 
-                return breakLookahead;
+                return false;
             });
 
             return isValidComment;

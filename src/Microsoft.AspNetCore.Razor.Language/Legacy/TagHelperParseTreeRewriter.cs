@@ -488,28 +488,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void ValidateParentAllowsContent(Span child, ErrorSink errorSink)
         {
-            var isDisallowedContent = true;
-            if (_featureFlags.AllowHtmlCommentsInTagHelpers)
+            if (HasAllowedChildren())
             {
-                isDisallowedContent = !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code;
-            }
-
-            if (HasAllowedChildren() && isDisallowedContent)
-            {
-                var content = child.Content;
-                if (!string.IsNullOrWhiteSpace(content))
+                var isDisallowedContent = true;
+                if (_featureFlags.AllowHtmlCommentsInTagHelpers)
                 {
-                    var trimmedStart = content.TrimStart();
-                    var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
-                    var errorStart = SourceLocationTracker.Advance(child.Start, whitespace);
-                    var length = trimmedStart.TrimEnd().Length;
-                    var allowedChildren = _currentTagHelperTracker.AllowedChildren;
-                    var allowedChildrenString = string.Join(", ", allowedChildren);
-                    errorSink.OnError(
-                        RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
-                            new SourceSpan(errorStart, length),
-                            _currentTagHelperTracker.TagName,
-                            allowedChildrenString));
+                    isDisallowedContent = !IsComment(child) && child.Kind != SpanKindInternal.Transition && child.Kind != SpanKindInternal.Code;
+                }
+
+                if (isDisallowedContent)
+                {
+                    var content = child.Content;
+                    if (!string.IsNullOrWhiteSpace(content))
+                    {
+                        var trimmedStart = content.TrimStart();
+                        var whitespace = content.Substring(0, content.Length - trimmedStart.Length);
+                        var errorStart = SourceLocationTracker.Advance(child.Start, whitespace);
+                        var length = trimmedStart.TrimEnd().Length;
+                        var allowedChildren = _currentTagHelperTracker.AllowedChildren;
+                        var allowedChildrenString = string.Join(", ", allowedChildren);
+                        errorSink.OnError(
+                            RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                                new SourceSpan(errorStart, length),
+                                _currentTagHelperTracker.TagName,
+                                allowedChildrenString));
+                    }
                 }
             }
         }
