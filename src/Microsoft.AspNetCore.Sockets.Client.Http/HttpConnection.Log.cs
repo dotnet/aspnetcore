@@ -95,11 +95,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 _httpConnectionClosed(logger, null);
             }
 
-            public static void StartingTransport(ILogger logger, ITransport transport, Uri url)
+            public static void StartingTransport(ILogger logger, TransportType transportType, Uri url)
             {
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _startingTransport(logger, transport.GetType().Name, url, null);
+                    _startingTransport(logger, transportType.ToString(), url, null);
                 }
             }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Text;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
@@ -51,6 +53,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
             var connection = new HttpConnection(new Uri(url));
+            await connection.StartAsync().OrTimeout();
+            await connection.DisposeAsync().OrTimeout();
+        }
+
+        [Fact]
+        public async Task TransportThatFallsbackCreatesNewConnection()
+        {
+            var url = _serverFixture.Url + "/echo";
+            // The test should connect to the server using WebSockets transport on Windows 8 and newer.
+            // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
+
+            // The test logic lives in the TestTransportFactory and FakeTransport.
+            var connection = new HttpConnection(new Uri(url), new TestTransportFactory(), null, null);
             await connection.StartAsync().OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
@@ -333,7 +348,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 var url = _serverFixture.Url + "/uncreatable";
-
                 var connection = new HubConnectionBuilder()
                         .WithUrl(new Uri(url))
                         .WithTransport(transportType)
@@ -381,6 +395,62 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connection.DisposeAsync().OrTimeout();
                     logger.LogInformation("Disposed Connection");
                 }
+            }
+        }
+
+        // Serves a fake transport that lets us verify fallback behavior 
+        private class TestTransportFactory : ITransportFactory
+        {
+            private ITransport _transport;
+
+            public ITransport CreateTransport(TransportType availableServerTransports)
+            {
+                if (_transport == null)
+                {
+                    _transport = new FakeTransport();
+                }
+
+                return _transport;
+            }
+        }
+
+        private class FakeTransport : ITransport
+        {
+            public TransferMode? Mode => TransferMode.Text;
+            public string prevConnectionId = null;
+            private int tries = 0;
+            private IDuplexPipe _application;
+
+            public Task StartAsync(Uri url, IDuplexPipe application, TransferMode requestedTransferMode, IConnection connection)
+            {
+                _application = application;
+                tries++;
+                Assert.True(QueryHelpers.ParseQuery(url.Query.ToString()).TryGetValue("id", out var id)); 
+                if (prevConnectionId == null)
+                {
+                    prevConnectionId = id;
+                }
+                else
+                {
+                    Assert.True(prevConnectionId != id);
+                    prevConnectionId = id;
+                }
+
+                if (tries < 3)
+                {
+                    throw new Exception();
+                }
+                else
+                {
+                    return Task.CompletedTask;
+                }
+            }
+
+            public Task StopAsync()
+            {
+                _application.Output.Complete();
+                _application.Input.Complete();
+                return Task.CompletedTask;
             }
         }
 

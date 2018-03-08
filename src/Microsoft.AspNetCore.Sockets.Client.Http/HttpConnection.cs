@@ -47,6 +47,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private PipeWriter Output => _transportChannel.Output;
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
         private readonly TransportType _requestedTransportType = TransportType.All;
+        private TransportType _serverTransports = TransportType.All;
+        // The order of the transports here is the order determines the fallback order.
+        private static readonly TransportType[] AllTransports = new[]{ TransportType.WebSockets, TransportType.ServerSentEvents, TransportType.LongPolling };
         private readonly ConnectionLogScope _logScope;
         private readonly IDisposable _scopeDisposable;
 
@@ -142,6 +145,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return _startTcs.Task;
         }
 
+        private async Task<NegotiationResponse> GetNegotiationResponse()
+        {
+            var negotiationResponse = await Negotiate(Url, _httpClient, _logger);
+            _connectionId = negotiationResponse.ConnectionId;
+            _logScope.ConnectionId = _connectionId;
+            return negotiationResponse;
+        }
+
         private async Task StartAsyncInternal()
         {
             Log.HttpConnectionStarting(_logger);
@@ -151,13 +162,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 var connectUrl = Url;
                 if (_requestedTransportType == TransportType.WebSockets)
                 {
-                    _transport = _transportFactory.CreateTransport(TransportType.WebSockets);
+                    Log.StartingTransport(_logger, _requestedTransportType, connectUrl);
+                    await StartTransport(connectUrl, _requestedTransportType);
                 }
                 else
                 {
-                    var negotiationResponse = await Negotiate(Url, _httpClient, _logger);
-                    _connectionId = negotiationResponse.ConnectionId;
-                    _logScope.ConnectionId = _connectionId;
+                    var negotiationResponse = await GetNegotiationResponse();
 
                     // Connection is being disposed while start was in progress
                     if (_connectionState == ConnectionState.Disposed)
@@ -166,13 +176,43 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         return;
                     }
 
-                    _transport = _transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
-                    connectUrl = CreateConnectUrl(Url, negotiationResponse);
-                }
+                    // This should only need to happen once
+                    _serverTransports = GetAvailableServerTransports(negotiationResponse);
+                    connectUrl = CreateConnectUrl(Url, negotiationResponse.ConnectionId);
 
-                Log.StartingTransport(_logger, _transport, connectUrl);
-                await StartTransport(connectUrl);
+                    foreach (var transport in AllTransports)
+                    {
+                        try
+                        {
+                            if ((transport & _serverTransports & _requestedTransportType) != 0)
+                            {
+                                // The negotiation response gets cleared in the fallback scenario.
+                                if (negotiationResponse == null)
+                                {
+                                    negotiationResponse = await GetNegotiationResponse();
+                                    connectUrl = CreateConnectUrl(Url, negotiationResponse.ConnectionId);
+                                }
+
+                                Log.StartingTransport(_logger, transport, connectUrl);
+                                await StartTransport(connectUrl, transport);
+                                break;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            // Try the next transport
+                            // Clear the negotiation response so we know to re-negotiate.
+                            negotiationResponse = null;
+                        }
+                    }
+                }
+                
+                if (_transport == null)
+                {
+                    throw new InvalidOperationException("Unable to connect to the server with any of the available transports.");
+                }
             }
+
             catch
             {
                 // The connection can now be either in the Connecting or Disposed state - only change the state to
@@ -314,21 +354,23 @@ namespace Microsoft.AspNetCore.Sockets.Client
             return availableServerTransports;
         }
 
-        private static Uri CreateConnectUrl(Uri url, NegotiationResponse negotiationResponse)
+        private static Uri CreateConnectUrl(Uri url, string connectionId)
         {
-            if (string.IsNullOrWhiteSpace(negotiationResponse.ConnectionId))
+            if (string.IsNullOrWhiteSpace(connectionId))
             {
-                throw new FormatException("Invalid connection id returned in negotiation response.");
+                throw new FormatException("Invalid connection id.");
             }
 
-            return Utils.AppendQueryString(url, "id=" + negotiationResponse.ConnectionId);
+            return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl)
+        private async Task StartTransport(Uri connectUrl, TransportType transportType)
         {
+
             var options = new PipeOptions(readerScheduler: PipeScheduler.ThreadPool);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             _transportChannel = pair.Transport;
+            _transport = _transportFactory.CreateTransport(transportType);
 
             // Start the transport, giving it one end of the pipeline
             try
@@ -346,6 +388,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             catch (Exception ex)
             {
                 Log.ErrorStartingTransport(_logger, _transport, ex);
+                _transport = null;
                 throw;
             }
         }
