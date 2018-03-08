@@ -122,9 +122,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 throw new ArgumentNullException(nameof(condition));
             }
 
-            bool matchFound = false;
+            var matchFound = false;
 
-            // We add 1 in order to store the current symbol.
             var symbols = new List<TSymbol>();
             symbols.Add(CurrentSymbol);
 
