@@ -159,7 +159,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
     PCWSTR              pcwzArguments,
     _Inout_ STRU*		struHostFxrDllLocation,
     _Out_ DWORD*		pdwArgCount,
-    _Out_ PWSTR**		ppwzArgv
+    _Out_ BSTR**		pbstrArgv
 )
 {
     HRESULT                     hr = S_OK;
@@ -198,7 +198,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
                 hEventLog,
                 struHostFxrDllLocation,
                 pdwArgCount,
-                ppwzArgv);
+                pbstrArgv);
             goto Finished;
         }
     }
@@ -322,7 +322,7 @@ HOSTFXR_UTILITY::GetHostFxrParameters(
         pcwzApplicationPhysicalPath,
         hEventLog,
         pdwArgCount,
-        ppwzArgv)))
+        pbstrArgv)))
     {
         goto Finished;
     }
@@ -352,7 +352,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
     PCWSTR              pcwzApplicationPhysicalPath,
     HANDLE              hEventLog,
     _Out_ DWORD*        pdwArgCount,
-    _Out_ PWSTR**       ppwzArgv
+    _Out_ BSTR**        pbstrArgv
 )
 {
     UNREFERENCED_PARAMETER( hEventLog ); // TODO use event log to set errors.
@@ -362,10 +362,18 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
 
     HRESULT     hr = S_OK;
     INT         argc = 0;
-    PWSTR*     argv = NULL;
+    BSTR*       argv = NULL;
     LPWSTR*     pwzArgs = NULL;
     STRU        struTempPath;
-    DWORD         dwArgsProcessed = 0;
+    INT         intArgsProcessed = 0;
+
+    // If we call CommandLineToArgvW with an empty string, argc is 5 for some interesting reason.
+    // Protectively guard against this by check if the string is null or empty.
+    if (pwzArgumentsFromConfig == NULL || wcscmp(pwzArgumentsFromConfig, L"") == 0)
+    {
+        hr = E_INVALIDARG;
+        goto Finished;
+    }
 
     pwzArgs = CommandLineToArgvW(pwzArgumentsFromConfig, &argc);
 
@@ -375,14 +383,7 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
         goto Failure;
     }
 
-    if (argc < 1)
-    {
-        // Invalid arguments
-        hr = E_INVALIDARG;
-        goto Failure;
-    }
-
-    argv = new PWSTR[argc + 2];
+    argv = new PWSTR[argc + 1];
     if (argv == NULL)
     {
         hr = E_OUTOFMEMORY;
@@ -396,55 +397,52 @@ HOSTFXR_UTILITY::ParseHostfxrArguments(
         hr = E_OUTOFMEMORY;
         goto Failure;
     }
-    dwArgsProcessed++;
-
-    argv[1] = SysAllocString(L"exec");
-    if (argv[1] == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Failure;
-    }
-    dwArgsProcessed++;
 
     // Try to convert the application dll from a relative to an absolute path
     // Don't record this failure as pwzArgs[0] may already be an absolute path to the dll.
-    if (SUCCEEDED(UTILITY::ConvertPathToFullPath(pwzArgs[0], pcwzApplicationPhysicalPath, &struTempPath)))
+    for (intArgsProcessed = 0; intArgsProcessed < argc; intArgsProcessed++)
     {
-        argv[2] = SysAllocString(struTempPath.QueryStr());
-    }
-    else
-    {
-        argv[2] = SysAllocString(pwzArgs[0]);
-    }
-    if (argv[2] == NULL)
-    {
-        hr = E_OUTOFMEMORY;
-        goto Failure;
-    }
-    dwArgsProcessed++;
-
-    for (INT i = 1; i < argc; i++)
-    {
-        argv[i + 2] = SysAllocString(pwzArgs[i]);
-        if (argv[i + 2] == NULL)
+        struTempPath.Copy(pwzArgs[intArgsProcessed]);
+        if (struTempPath.EndsWith(L".dll"))
         {
-            hr = E_OUTOFMEMORY;
-            goto Failure;
+            if (SUCCEEDED(UTILITY::ConvertPathToFullPath(pwzArgs[intArgsProcessed], pcwzApplicationPhysicalPath, &struTempPath)))
+            {
+                argv[intArgsProcessed + 1] = SysAllocString(struTempPath.QueryStr());
+            }
+            else
+            {
+                argv[intArgsProcessed + 1] = SysAllocString(pwzArgs[intArgsProcessed]);
+            }
+            if (argv[intArgsProcessed + 1] == NULL)
+            {
+                hr = E_OUTOFMEMORY;
+                goto Failure;
+            }
         }
-        dwArgsProcessed++;
+        else
+        {
+            argv[intArgsProcessed + 1] = SysAllocString(pwzArgs[intArgsProcessed]);
+            if (argv[intArgsProcessed + 1] == NULL)
+            {
+                hr = E_OUTOFMEMORY;
+                goto Failure;
+            }
+        }
     }
 
-    *ppwzArgv = argv;
-    *pdwArgCount = dwArgsProcessed;
+    *pbstrArgv = argv;
+    *pdwArgCount = argc + 1;
 
     goto Finished;
 
 Failure:
     if (argv != NULL)
     {
-        for (DWORD i = 0; i < dwArgsProcessed; i++)
+        // intArgsProcess - 1 here as if we fail to allocated the ith string
+        // we don't want to free it.
+        for (INT i = 0; i < intArgsProcessed - 1; i++)
         {
-            SysFreeString((BSTR)argv[i]);
+            SysFreeString(argv[i]);
         }
     }
 
@@ -458,11 +456,11 @@ Finished:
     }
     return hr;
 }
+
 //
 // Invoke where.exe to find the location of dotnet.exe
 // Copies contents of dotnet.exe to a temp file
 // Respects path ordering.
-
 HRESULT
 HOSTFXR_UTILITY::FindDotnetExePath(
     _Out_ STRU* struDotnetPath

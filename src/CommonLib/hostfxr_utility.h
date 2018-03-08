@@ -23,10 +23,9 @@ public:
         PCWSTR              pcwzArguments,
         _Inout_ STRU*       struHostFxrDllLocation,
         _Out_ DWORD*        pdwArgCount,
-        _Out_ PWSTR**       ppwzArgv
+        _Out_ BSTR**       ppwzArgv
 	);
 
-private:
     static
     HRESULT
     GetStandaloneHostfxrParameters(
@@ -36,7 +35,7 @@ private:
         HANDLE              hEventLog,
         _Inout_ STRU*		struHostFxrDllLocation,
         _Out_ DWORD*		pdwArgCount,
-        _Out_ PWSTR**		ppwzArgv
+        _Out_ BSTR**		ppwzArgv
     );
 
     static
@@ -47,9 +46,8 @@ private:
         PCWSTR				pcwzApplicationPhysicalPath,
         HANDLE              hEventLog,
         _Out_ DWORD*        pdwArgCount,
-        _Out_ PWSTR**       ppwzArgv
+        _Out_ BSTR**       ppwzArgv
     );
-
 
     static
     HRESULT

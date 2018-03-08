@@ -4,6 +4,7 @@
    <ItemGroup> 
      <Projects Include="$(SolutionDir)\src\AspNetCore\AspNetCore.vcxproj" /> 
      <Projects Include="$(SolutionDir)\src\RequestHandler\RequestHandler.vcxproj" /> 
+     <Projects Include="$(SolutionDir)\test\AspNetCoreModuleTests\AspNetCoreModuleTests.vcxproj">
    </ItemGroup> 
  
    <Target Name="Build"> 
