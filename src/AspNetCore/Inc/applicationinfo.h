@@ -4,6 +4,8 @@
 #pragma once
 #define API_BUFFER_TOO_SMALL 0x80008098
 
+extern BOOL     g_fRecycleProcessCalled;
+
 typedef
 HRESULT
 (WINAPI * PFN_ASPNETCORE_CREATE_APPLICATION)(
@@ -128,19 +130,28 @@ public:
         return m_pConfiguration;
     }
 
-    APPLICATION*
-    QueryApplication()
+    //
+    // ExtractApplication will increase the reference counter of the application
+    // Caller is responsible for dereference the application.
+    // Otherwise memory leak
+    //
+    VOID
+    ExtractApplication(APPLICATION** ppApplication)
     {
-        return m_pApplication;
+        AcquireSRWLockShared(&m_srwLock);
+        if (m_pApplication != NULL)
+        {
+            m_pApplication->ReferenceApplication();
+        }
+        *ppApplication = m_pApplication;
+        ReleaseSRWLockShared(&m_srwLock);
     }
 
     VOID
-    ClearAndDereferenceApplication()
-    {
-        APPLICATION* pApplication = m_pApplication;
-        m_pApplication = NULL;
-        pApplication->DereferenceApplication();
-    }
+    RecycleApplication();
+
+    VOID
+    ShutDownApplication();
 
     HRESULT
     EnsureApplicationCreated();
@@ -155,6 +166,8 @@ private:
     HRESULT FindRequestHandlerAssembly();
     HRESULT FindNativeAssemblyFromGlobalLocation(STRU* struFilename);
     HRESULT FindNativeAssemblyFromHostfxr(STRU* struFilename);
+
+    static VOID DoRecycleApplication(LPVOID lpParam);
 
     mutable LONG            m_cRefs;
     APPLICATION_INFO_KEY    m_applicationInfoKey;

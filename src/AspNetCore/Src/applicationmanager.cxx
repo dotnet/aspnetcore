@@ -370,7 +370,7 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
             DBG_ASSERT(pRecord != NULL);
 
             // RecycleApplication is called on a separate thread. 
-            RecycleApplication(pRecord);
+            pRecord->RecycleApplication();
             pRecord->DereferenceApplicationInfo();
             path = context.MultiSz.Next(path);
         }
@@ -397,7 +397,11 @@ Finished:
                 strEventMsg.QueryStr());
         }
         // Need to recycle the process as we cannot recycle the application
-        g_pHttpServer->RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
+        if (!g_fRecycleProcessCalled)
+        {
+            g_fRecycleProcessCalled = TRUE;
+            g_pHttpServer->RecycleProcess(L"AspNetCore Recycle Process on Demand Due Application Recycle Error");
+        }
     }
 
     return hr;
@@ -448,64 +452,7 @@ APPLICATION_MANAGER::ShutdownApplication(
 )
 {
     UNREFERENCED_PARAMETER(pvContext);
-    APPLICATION* pApplication = pEntry->QueryApplication();
-    pApplication->ReferenceApplication();
+    DBG_ASSERT(pEntry != NULL);
 
-    // Remove the application from the applicationInfo. 
-    pEntry->ClearAndDereferenceApplication();
-    pApplication->ShutDown();
-    pApplication->DereferenceApplication();
-}
-
-//
-// Function used by DoRecycleApplication thread to do the real shutdown
-//
-// static
-VOID
-APPLICATION_MANAGER::DoRecycleApplication(
-    LPVOID lpParam)
-{
-    APPLICATION* pApplication = static_cast<APPLICATION*>(lpParam);
-
-    // Recycle will call shutdown for out of process
-    pApplication->Recycle();
-
-    // Decrement the ref count as we reference it in RecycleApplication.
-    pApplication->DereferenceApplication();
-}
-
-//
-// Function used to recycle an application
-//
-// static
-VOID
-APPLICATION_MANAGER::RecycleApplication(
-    _In_ APPLICATION_INFO *     pEntry
-)
-{
-    APPLICATION* pApplication = pEntry->QueryApplication();
-    DBG_ASSERT(pApplication != NULL);
-
-    // Reference the application first
-    pApplication->ReferenceApplication();
-
-    if (pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
-    {
-        // Need to set m_pApplication to NULL first
-        // to avoid mapping new request to the recycled application
-        // A new application instance will be created for new request
-        pEntry->ClearAndDereferenceApplication();
-    }
-
-    // Reset application pointer to NULL
-    // The destructor of ApplictionInfo will not call ShutDown again
-    HANDLE hThread = CreateThread(
-        NULL,       // default security attributes
-        0,          // default stack size
-        (LPTHREAD_START_ROUTINE)DoRecycleApplication,
-        pApplication,       // thread function arguments
-        0,          // default creation flags
-        NULL);      // receive thread identifier
-
-    CloseHandle(hThread);
+    pEntry->ShutDownApplication();
 }

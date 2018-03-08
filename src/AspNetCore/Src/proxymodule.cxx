@@ -138,18 +138,18 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     }
 
     // make sure assmebly is loaded and application is created
-
     hr = m_pApplicationInfo->EnsureApplicationCreated();
     if (FAILED(hr))
     {
         goto Finished;
     }
-    pApplication = m_pApplicationInfo->QueryApplication();
-    DBG_ASSERT(pApplication);
+
+    m_pApplicationInfo->ExtractApplication(&pApplication);
 
     // make sure application is in running state
     // cannot recreate the application as we cannot reload clr for inprocess
-    if (pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
+    if (pApplication != NULL &&
+        pApplication->QueryStatus() != APPLICATION_STATUS::RUNNING &&
         pApplication->QueryStatus() != APPLICATION_STATUS::STARTING)
     {
         hr = HRESULT_FROM_WIN32(ERROR_SERVER_DISABLED);
@@ -166,6 +166,7 @@ ASPNET_CORE_PROXY_MODULE::OnExecuteRequestHandler(
     {
         goto Finished;
     }
+
     retVal = m_pHandler->OnExecuteRequestHandler();
 
 Finished: 
@@ -175,6 +176,10 @@ Finished:
         retVal = RQ_NOTIFICATION_FINISH_REQUEST;
     }
 
+    if (pApplication != NULL)
+    {
+        pApplication->DereferenceApplication();
+    }
     return retVal;
 }
 

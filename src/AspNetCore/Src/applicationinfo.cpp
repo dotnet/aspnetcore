@@ -102,7 +102,8 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         &strFilePath);
     APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
     APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
-    BOOL             fLocked = FALSE;
+
+    ReferenceApplicationInfo();
 
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(strFilePath.QueryStr()) &&
         GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -156,13 +157,6 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
         // recycle the application
         if (m_pApplication != NULL)
         {
-            // Lock here to avoid races with the application manager calling shutdown on the application.
-            AcquireSRWLockExclusive(&m_srwLock);
-            fLocked = TRUE;
-            if (m_pApplication == NULL)
-            {
-                goto Finished;
-            }
             STACK_STRU(strEventMsg, 256);
             if (SUCCEEDED(strEventMsg.SafeSnwprintf(
                 ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
@@ -174,16 +168,11 @@ APPLICATION_INFO::UpdateAppOfflineFileHandle()
                     strEventMsg.QueryStr());
             }
 
-            APPLICATION_MANAGER::RecycleApplication(this);
-
+            RecycleApplication();
         }
     }
 
-Finished:
-    if (fLocked)
-    {
-        ReleaseSRWLockExclusive(&m_srwLock);
-    }
+    DereferenceApplicationInfo();
 }
 
 HRESULT
@@ -239,19 +228,26 @@ APPLICATION_INFO::EnsureApplicationCreated()
             goto Finished;
         }
 
-        if (m_pfnAspNetCoreCreateApplication == NULL)
+        //
+        // in case of app offline, we don't want to create a new application now
+        //
+        if (!m_fAppOfflineFound)
         {
-            hr = HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
-            goto Finished;
-        }
+            if (m_pfnAspNetCoreCreateApplication == NULL)
+            {
+                hr = HRESULT_FROM_WIN32(ERROR_INVALID_FUNCTION);
+                goto Finished;
+            }
 
-        hr = m_pfnAspNetCoreCreateApplication(m_pServer, m_pConfiguration, &pApplication);
-        if (FAILED(hr))
-        {
-            goto Finished;
+            hr = m_pfnAspNetCoreCreateApplication(m_pServer, m_pConfiguration, &pApplication);
+            if (FAILED(hr))
+            {
+                goto Finished;
+            }
+            m_pApplication = pApplication;
         }
-        m_pApplication = pApplication;
     }
+
 Finished:
     if (fLocked)
     {
@@ -532,4 +528,111 @@ Finished:
         FreeLibrary(hmHostFxrDll);
     }
     return hr;
+}
+
+VOID
+APPLICATION_INFO::RecycleApplication()
+{
+    APPLICATION* pApplication = NULL;
+    HANDLE       hThread = INVALID_HANDLE_VALUE;
+    BOOL         fLockAcquired = FALSE;
+
+    if (m_pApplication != NULL)
+    {
+        AcquireSRWLockExclusive(&m_srwLock);
+        fLockAcquired = TRUE;
+        if (m_pApplication != NULL)
+        {
+            pApplication = m_pApplication;
+            if (pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
+            {
+                //
+                // For inprocess, need to set m_pApplication to NULL first to
+                // avoid mapping new request to the recycled application.
+                // Outofprocess application instance will be created for new request
+                // For inprocess, as recycle will lead to shutdown later, leave m_pApplication
+                // to not block incoming requests till worker process shutdown
+                //
+                m_pApplication = NULL;
+            }
+            else
+            {
+                //
+                // For inprocess, need hold the application till shutdown is called
+                // Bump the reference counter as DoRecycleApplication will do dereference
+                //
+                pApplication->ReferenceApplication();
+            }
+
+            hThread = CreateThread(
+                NULL,       // default security attributes
+                0,          // default stack size
+                (LPTHREAD_START_ROUTINE)DoRecycleApplication,
+                pApplication,       // thread function arguments
+                0,          // default creation flags
+                NULL);      // receive thread identifier
+        }
+
+        if (hThread == NULL)
+        {
+            if (!g_fRecycleProcessCalled)
+            {
+                g_fRecycleProcessCalled = TRUE;
+                g_pHttpServer->RecycleProcess(L"On Demand by AspNetCore Module for recycle application failure");
+            }
+        }
+
+        if (fLockAcquired)
+        {
+            ReleaseSRWLockExclusive(&m_srwLock);
+        }
+    }
+}
+
+
+VOID
+APPLICATION_INFO::DoRecycleApplication(
+    LPVOID lpParam)
+{
+    APPLICATION* pApplication = static_cast<APPLICATION*>(lpParam);
+
+    // No lock required
+
+    if (pApplication != NULL)
+    {
+        // Recycle will call shutdown for out of process
+        pApplication->Recycle();
+
+        // Decrement the ref count as we reference it in RecycleApplication.
+        pApplication->DereferenceApplication();
+    }
+}
+
+
+VOID
+APPLICATION_INFO::ShutDownApplication()
+{
+    APPLICATION* pApplication = NULL;
+    BOOL         fLockAcquired = FALSE;
+
+    // pApplication can be NULL due to app_offline
+    if (m_pApplication != NULL)
+    {
+        AcquireSRWLockExclusive(&m_srwLock);
+        fLockAcquired = TRUE;
+        if (m_pApplication != NULL)
+        {
+            pApplication = m_pApplication;
+
+            // Set m_pApplication to NULL first to prevent anyone from using it
+            m_pApplication = NULL;
+            pApplication->ShutDown();
+            pApplication->DereferenceApplication();
+        }
+
+        if (fLockAcquired)
+        {
+            ReleaseSRWLockExclusive(&m_srwLock);
+        }
+    }
 }

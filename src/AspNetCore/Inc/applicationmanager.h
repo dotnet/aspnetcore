@@ -57,18 +57,6 @@ public:
 
     static
     VOID
-    RecycleApplication(
-        _In_ APPLICATION_INFO *     pEntry
-    );
-
-    static
-    void
-    DoRecycleApplication(
-        LPVOID lpParam
-    );
-
-    static
-    VOID
     ShutdownApplication(
         _In_ APPLICATION_INFO *     pEntry,
         _In_ PVOID                  pvContext
