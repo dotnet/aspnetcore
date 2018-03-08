@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsync<int>("Stream", 1000, cts.Token).OrTimeout();
 
-                    await channel.WaitToReadAsync().OrTimeout();
+                    await channel.WaitToReadAsync().AsTask().OrTimeout();
                     cts.Cancel();
 
                     var results = await channel.ReadAllAsync().OrTimeout();
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var channel = await connection.StreamAsync<int>("Stream", 5, cts.Token).OrTimeout();
 
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => channel.WaitToReadAsync().OrTimeout());
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => channel.WaitToReadAsync().AsTask().OrTimeout());
                 }
                 catch (Exception ex)
                 {

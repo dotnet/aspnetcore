@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
             else
             {
-                consumed = buffer.GetPosition(separator.Value, 1);
+                consumed = buffer.GetPosition(1, separator.Value);
                 examined = consumed;
             }
 

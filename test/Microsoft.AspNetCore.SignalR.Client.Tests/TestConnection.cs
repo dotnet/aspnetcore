@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             var json = JsonConvert.SerializeObject(jsonObject, Formatting.None);
             var bytes = FormatMessageToArray(Encoding.UTF8.GetBytes(json));
 
-            return _receivedMessages.Writer.WriteAsync(bytes);
+            return _receivedMessages.Writer.WriteAsync(bytes).AsTask();
         }
 
         private byte[] FormatMessageToArray(byte[] message)

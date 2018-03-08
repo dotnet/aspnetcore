@@ -64,7 +64,7 @@ namespace System.IO.Pipelines
         private static async Task WriteToStream(Stream stream, ReadOnlyMemory<byte> readOnlyMemory)
         {
             var memory = MemoryMarshal.AsMemory(readOnlyMemory);
-            if (memory.TryGetArray(out ArraySegment<byte> data))
+            if (MemoryMarshal.TryGetArray(memory, out ArraySegment<byte> data))
             {
                 await stream.WriteAsync(data.Array, data.Offset, data.Count)
                     .ConfigureAwait(continueOnCapturedContext: false);

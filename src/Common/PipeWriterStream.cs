@@ -63,11 +63,11 @@ namespace System.IO.Pipelines
         }
 
 #if NETCOREAPP2_1
-        public override Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             _pipeWriter.Write(source.Span);
             _length += source.Length;
-            return Task.CompletedTask;
+            return new ValueTask(Task.CompletedTask);
         }
 #endif
     }

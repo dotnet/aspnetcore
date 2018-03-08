@@ -1362,14 +1362,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     {
         public override Task OnConnectedAsync(ConnectionContext connection)
         {
-            var waitHandle = new ManualResetEventSlim();
-            var awaiter = connection.Transport.Input.ReadAsync();
-            awaiter.OnCompleted(waitHandle.Set);
-            waitHandle.Wait();
-
-            var result = awaiter.GetResult();
+            var result = connection.Transport.Input.ReadAsync().AsTask().Result;
             connection.Transport.Input.AdvanceTo(result.Buffer.End);
-
             return Task.CompletedTask;
         }
     }

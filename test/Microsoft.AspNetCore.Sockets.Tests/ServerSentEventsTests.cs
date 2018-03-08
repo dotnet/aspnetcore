@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var connection = new DefaultConnectionContext("foo", pair.Transport, pair.Application);
             var context = new DefaultHttpContext();
 
-            
+
             var ms = new MemoryStream();
             context.Response.Body = ms;
             var sse = new ServerSentEventsTransport(connection.Application.Input, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -66,12 +66,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var task = sse.ProcessRequestAsync(context, context.RequestAborted);
 
             await connection.Transport.Output.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
-
-            Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
-
             connection.Transport.Output.Complete();
-
             await task.OrTimeout();
+            Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
         }
 
         [Theory]

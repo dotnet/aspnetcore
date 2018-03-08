@@ -20,7 +20,7 @@ namespace System.Net.WebSockets
 #if NETCOREAPP2_1
             if (buffer.IsSingleSegment)
             {
-                return webSocket.SendAsync(buffer.First, webSocketMessageType, endOfMessage: true, cancellationToken);
+                return webSocket.SendAsync(buffer.First, webSocketMessageType, endOfMessage: true, cancellationToken).AsTask();
             }
             else
             {

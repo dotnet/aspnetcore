@@ -93,10 +93,5 @@ namespace System.Threading.Tasks
                 return "Operation timed out";
             }
         }
-
-        public static async Task<T> AsTask<T>(this PipeAwaiter<T> awaiter)
-        {
-            return await awaiter;
-        }
     }
 }

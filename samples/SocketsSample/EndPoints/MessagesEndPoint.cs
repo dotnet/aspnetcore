@@ -65,11 +65,9 @@ namespace SocketsSample.EndPoints
         private Task Broadcast(byte[] payload)
         {
             var tasks = new List<Task>(Connections.Count);
-            async Task<FlushResult> ToTask(PipeAwaiter<FlushResult> awaiter) => await awaiter;
-
             foreach (var c in Connections)
             {
-                tasks.Add(ToTask(c.Transport.Output.WriteAsync(payload)));
+                tasks.Add(c.Transport.Output.WriteAsync(payload).AsTask());
             }
 
             return Task.WhenAll(tasks);

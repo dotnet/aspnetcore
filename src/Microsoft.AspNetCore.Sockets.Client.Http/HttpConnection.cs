@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         }
                     }
                 }
-                
+
                 if (_transport == null)
                 {
                     throw new InvalidOperationException("Unable to connect to the server with any of the available transports.");
@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private async Task StartTransport(Uri connectUrl, TransportType transportType)
         {
 
-            var options = new PipeOptions(readerScheduler: PipeScheduler.ThreadPool);
+            var options = new PipeOptions(writerScheduler: PipeScheduler.Inline, readerScheduler: PipeScheduler.ThreadPool, useSynchronizationContext: false);
             var pair = DuplexPipe.CreateConnectionPair(options, options);
             _transportChannel = pair.Transport;
             _transport = _transportFactory.CreateTransport(transportType);

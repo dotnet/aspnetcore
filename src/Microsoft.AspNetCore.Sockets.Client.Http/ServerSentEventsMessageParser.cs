@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     return ParseResult.Incomplete;
                 }
 
-                lineEnd = buffer.GetPosition(lineEnd, 1);
+                lineEnd = buffer.GetPosition(1, lineEnd);
                 var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
                 buffer = buffer.Slice(line.Length);
 

@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var parseResult = parser.ParseMessage(result.Buffer, out var consumed, out var examined, out var message);
                 Assert.Equal(ServerSentEventsMessageParser.ParseResult.Completed, parseResult);
                 Assert.Equal("foo", Encoding.UTF8.GetString(message));
-                Assert.Equal(consumed, result.Buffer.GetPosition(result.Buffer.Start, message1.Length));
+                Assert.Equal(consumed, result.Buffer.GetPosition(message1.Length));
                 pipe.Reader.AdvanceTo(consumed, examined);
                 Assert.Equal(consumed, examined);
 

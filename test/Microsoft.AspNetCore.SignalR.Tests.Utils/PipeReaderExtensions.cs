@@ -61,7 +61,7 @@ namespace System.IO.Pipelines
                     pipeReader.AdvanceTo(result.Buffer.Start, result.Buffer.End);
                     continue;
                 }
-                pipeReader.AdvanceTo(result.Buffer.GetPosition(result.Buffer.Start, numBytes));
+                pipeReader.AdvanceTo(result.Buffer.GetPosition(numBytes));
                 break;
             }
         }
