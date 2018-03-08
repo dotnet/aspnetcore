@@ -75,6 +75,10 @@ namespace Templates.Test
             Assert.Contains("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
 
+            RunDotNetEfCreateMigration("razorpages");
+
+            AssertEmptyMigration("razorpages");
+
             foreach (var publish in new[] { false, true })
             {
                 using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))

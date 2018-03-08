@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using Microsoft.Extensions.CommandLineUtils;
@@ -79,6 +80,18 @@ namespace Templates.Test
             }
         }
 
+        protected void RunDotNetEfCreateMigration(string migrationName)
+        {
+            var args = $"ef migrations add {migrationName}";
+
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            lock (DotNetNewLock)
+            {
+                ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args).WaitForExit(assertSuccess: true);
+            }
+        }
+
         protected void AssertDirectoryExists(string path, bool shouldExist)
         {
             var fullPath = Path.Combine(TemplateOutputDir, path);
@@ -92,6 +105,26 @@ namespace Templates.Test
             {
                 Assert.False(doesExist, "Expected directory not to exist, but it does: " + path);
             }
+        }
+
+        protected void AssertEmptyMigration(string migration)
+        {
+            var fullPath = Path.Combine(TemplateOutputDir, "Data/Migrations");
+            var file = Directory.EnumerateFiles(fullPath).Where(f => f.EndsWith($"{migration}.cs")).FirstOrDefault();
+
+            Assert.NotNull(file);
+            var contents = File.ReadAllText(file);
+
+            var emptyMigration = @"protected override void Up(MigrationBuilder migrationBuilder)
+        {
+
+        }
+
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+
+        }";
+            Assert.Contains(emptyMigration, contents);
         }
 
         protected void AssertFileExists(string path, bool shouldExist)
