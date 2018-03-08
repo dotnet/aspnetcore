@@ -135,5 +135,21 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var resetPassword = await ResetPassword.CreateAsync(link, client, new DefaultUIContext().WithExistingUser());
             return await resetPassword.SendNewPasswordAsync(email, newPassword);
         }
+
+        internal static async Task<Index> DeleteUser(Index index, string password)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var personalData = await manage.ClickPersonalDataLinkAsync();
+            var deleteUser = await personalData.ClickDeleteLinkAsync();
+            return await deleteUser.Delete(password);
+        }
+
+        internal static async Task<string> DownloadPersonalData(Index index, string userName)
+        {
+            var manage = await index.ClickManageLinkAsync();
+            var personalData = await manage.ClickPersonalDataLinkAsync();
+            var download = await personalData.SubmitDownloadForm();
+            return await download.Content.ReadAsStringAsync();
+        }
     }
 }

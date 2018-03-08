@@ -184,6 +184,21 @@ namespace Microsoft.AspNetCore.Identity
             return AddScoped(typeof(IRoleValidator<>).MakeGenericType(RoleType), typeof(TRole));
         }
 
+        /// <summary>
+        /// Adds an <see cref="ILookupProtector"/> and <see cref="ILookupProtectorKeyRing"/>.
+        /// </summary>
+        /// <typeparam name="TProtector">The personal data protector type.</typeparam>
+        /// <typeparam name="TKeyRing">The personal data protector key ring type.</typeparam>
+        /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
+        public virtual IdentityBuilder AddPersonalDataProtection<TProtector, TKeyRing>() 
+            where TProtector : class,ILookupProtector
+            where TKeyRing : class, ILookupProtectorKeyRing
+        {
+            Services.AddSingleton<IPersonalDataProtector, DefaultPersonalDataProtector>();
+            Services.AddSingleton<ILookupProtector, TProtector>();
+            Services.AddSingleton<ILookupProtectorKeyRing, TKeyRing>();
+            return this;
+        }
 
         /// <summary>
         /// Adds a <see cref="IRoleStore{TRole}"/> for the <seealso cref="RoleType"/>.

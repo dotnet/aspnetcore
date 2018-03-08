@@ -46,6 +46,5 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             // This used to throw
             var builder = services.AddIdentity<IdentityUser<string>, IdentityRole<string>>().AddEntityFrameworkStores<TestDbContext>();
         }
-
     }
 }

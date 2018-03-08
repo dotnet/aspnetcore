@@ -699,6 +699,86 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public void UserManagerThrowsIfStoreDoesNotSupportProtection()
+        {
+            var services = new ServiceCollection()
+                    .AddLogging();
+            services.AddIdentity<TestUser, TestRole>(o => o.Stores.ProtectPersonalData = true)
+                .AddUserStore<NoopUserStore>();
+            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<TestUser>>());
+            Assert.Contains("Store does not implement IProtectedUserStore", e.Message);
+        }
+
+        [Fact]
+        public void UserManagerThrowsIfMissingPersonalDataProtection()
+        {
+            var services = new ServiceCollection()
+                    .AddLogging();
+            services.AddIdentity<TestUser, TestRole>(o => o.Stores.ProtectPersonalData = true)
+                .AddUserStore<ProtectedStore>();
+            var e = Assert.Throws<InvalidOperationException>(() => services.BuildServiceProvider().GetService<UserManager<TestUser>>());
+            Assert.Contains("No IPersonalDataProtector service was registered", e.Message);
+        }
+
+        private class ProtectedStore : IProtectedUserStore<TestUser>
+        {
+            public Task<IdentityResult> CreateAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IdentityResult> DeleteAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Dispose()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindByIdAsync(string userId, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<TestUser> FindByNameAsync(string normalizedUserName, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetNormalizedUserNameAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetUserIdAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<string> GetUserNameAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetNormalizedUserNameAsync(TestUser user, string normalizedName, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SetUserNameAsync(TestUser user, string userName, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IdentityResult> UpdateAsync(TestUser user, CancellationToken cancellationToken)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
         public void UserManagerWillUseTokenProviderInstanceOverDefaults()
         {
             var provider = new ATokenProvider();

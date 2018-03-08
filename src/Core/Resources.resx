@@ -309,4 +309,12 @@
     <value>No RoleType was specified, try AddRoles&lt;TRole&gt;().</value>
     <comment>Error when the IdentityBuilder.RoleType was not specified</comment>
   </data>
+  <data name="StoreNotIProtectedUserStore" xml:space="preserve">
+    <value>Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true.</value>
+    <comment>Error when the store does not implement this interface</comment>
+  </data>
+  <data name="NoPersonalDataProtector" xml:space="preserve">
+    <value>No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true.</value>
+    <comment>Error when there is no IPersonalDataProtector</comment>
+  </data>
 </root>

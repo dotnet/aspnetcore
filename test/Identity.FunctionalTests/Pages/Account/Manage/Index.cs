@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
         private readonly IHtmlAnchorElement _personalDataLink;
         private readonly IHtmlFormElement _updateProfileForm;
         private readonly IHtmlElement _confirmEmailButton;
+        public static readonly string Path = "/";
 
         public Index(HttpClient client, IHtmlDocument manage, DefaultUIContext context)
             : base(client, manage, context)
@@ -53,5 +54,13 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests.Account.Manage
 
             return new Index(Client, manage, Context);
         }
+
+        public async Task<PersonalData> ClickPersonalDataLinkAsync()
+        {
+            var goToPersonalData = await Client.GetAsync(_personalDataLink.Href);
+            var personalData = await ResponseAssert.IsHtmlDocumentAsync(goToPersonalData);
+            return new PersonalData(Client, personalData, Context);
+        }
+
     }
 }

@@ -682,6 +682,34 @@ namespace Microsoft.Extensions.Identity.Core
         internal static string FormatNoRoleType()
             => GetString("NoRoleType");
 
+        /// <summary>
+        /// Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true.
+        /// </summary>
+        internal static string StoreNotIProtectedUserStore
+        {
+            get => GetString("StoreNotIProtectedUserStore");
+        }
+
+        /// <summary>
+        /// Store does not implement IProtectedUserStore&lt;TUser&gt; which is required when ProtectPersonalData = true.
+        /// </summary>
+        internal static string FormatStoreNotIProtectedUserStore()
+            => GetString("StoreNotIProtectedUserStore");
+
+        /// <summary>
+        /// No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true.
+        /// </summary>
+        internal static string NoPersonalDataProtector
+        {
+            get => GetString("NoPersonalDataProtector");
+        }
+
+        /// <summary>
+        /// No IPersonalDataProtector service was registered, this is required when ProtectPersonalData = true.
+        /// </summary>
+        internal static string FormatNoPersonalDataProtector()
+            => GetString("NoPersonalDataProtector");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

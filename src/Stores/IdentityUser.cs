@@ -57,11 +57,13 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets or sets the primary key for this user.
         /// </summary>
+        [PersonalData]
         public virtual TKey Id { get; set; }
 
         /// <summary>
         /// Gets or sets the user name for this user.
         /// </summary>
+        [ProtectedPersonalData]
         public virtual string UserName { get; set; }
 
         /// <summary>
@@ -72,6 +74,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets or sets the email address for this user.
         /// </summary>
+        [ProtectedPersonalData]
         public virtual string Email { get; set; }
 
         /// <summary>
@@ -83,6 +86,7 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets or sets a flag indicating if a user has confirmed their email address.
         /// </summary>
         /// <value>True if the email address has been confirmed, otherwise false.</value>
+        [PersonalData]
         public virtual bool EmailConfirmed { get; set; }
 
         /// <summary>
@@ -103,18 +107,21 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets or sets a telephone number for the user.
         /// </summary>
+        [ProtectedPersonalData]
         public virtual string PhoneNumber { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if a user has confirmed their telephone address.
         /// </summary>
         /// <value>True if the telephone number has been confirmed, otherwise false.</value>
+        [PersonalData]
         public virtual bool PhoneNumberConfirmed { get; set; }
 
         /// <summary>
         /// Gets or sets a flag indicating if two factor authentication is enabled for this user.
         /// </summary>
         /// <value>True if 2fa is enabled, otherwise false.</value>
+        [PersonalData]
         public virtual bool TwoFactorEnabled { get; set; }
 
         /// <summary>
@@ -140,8 +147,6 @@ namespace Microsoft.AspNetCore.Identity
         /// Returns the username for this user.
         /// </summary>
         public override string ToString()
-        {
-            return UserName;
-        }
+            => UserName;
     }
 }

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Identity
         private TimeSpan _defaultLockout = TimeSpan.Zero;
         private bool _disposed;
         private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
-
+        private IServiceProvider _services;
 
         /// <summary>
         /// The cancellation token used to cancel operations.
@@ -99,6 +99,7 @@ namespace Microsoft.AspNetCore.Identity
                 }
             }
 
+            _services = services;
             if (services != null)
             {
                 foreach (var providerName in Options.Tokens.ProviderMap.Keys)
@@ -111,6 +112,18 @@ namespace Microsoft.AspNetCore.Identity
                     {
                         RegisterTokenProvider(providerName, provider);
                     }
+                }
+            }
+
+            if (Options.Stores.ProtectPersonalData)
+            {
+                if (!(Store is IProtectedUserStore<TUser>))
+                {
+                    throw new InvalidOperationException(Resources.StoreNotIProtectedUserStore);
+                }
+                if (services.GetService<ILookupProtector>() == null)
+                {
+                    throw new InvalidOperationException(Resources.NoPersonalDataProtector);
                 }
             }
         }
@@ -527,7 +540,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the user matching the specified <paramref name="userName"/> if it exists.
         /// </returns>
-        public virtual Task<TUser> FindByNameAsync(string userName)
+        public virtual async Task<TUser> FindByNameAsync(string userName)
         {
             ThrowIfDisposed();
             if (userName == null)
@@ -535,7 +548,28 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(userName));
             }
             userName = NormalizeKey(userName);
-            return Store.FindByNameAsync(userName, CancellationToken);
+
+            var user = await Store.FindByNameAsync(userName, CancellationToken);
+
+            // Need to potentially check all keys
+            if (user == null && Options.Stores.ProtectPersonalData)
+            {
+                var keyRing = _services.GetService<ILookupProtectorKeyRing>();
+                var protector = _services.GetService<ILookupProtector>();
+                if (keyRing != null && protector != null)
+                {
+                    foreach (var key in keyRing.GetAllKeyIds())
+                    {
+                        var oldKey = protector.Protect(key, userName);
+                        user = await Store.FindByNameAsync(oldKey, CancellationToken);
+                        if (user != null)
+                        {
+                            return user;
+                        }
+                    }
+                }
+            }
+            return user;
         }
 
         /// <summary>
@@ -578,6 +612,17 @@ namespace Microsoft.AspNetCore.Identity
             return (KeyNormalizer == null) ? key : KeyNormalizer.Normalize(key);
         }
 
+        private string ProtectPersonalData(string data)
+        {
+            if (Options.Stores.ProtectPersonalData)
+            {
+                var keyRing = _services.GetService<ILookupProtectorKeyRing>();
+                var protector = _services.GetService<ILookupProtector>();
+                return protector.Protect(keyRing.CurrentKeyId, data);
+            }
+            return data;
+        }
+
         /// <summary>
         /// Updates the normalized user name for the specified <paramref name="user"/>.
         /// </summary>
@@ -586,6 +631,7 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task UpdateNormalizedUserNameAsync(TUser user)
         {
             var normalizedName = NormalizeKey(await GetUserNameAsync(user));
+            normalizedName = ProtectPersonalData(normalizedName);
             await Store.SetNormalizedUserNameAsync(user, normalizedName, CancellationToken);
         }
 
@@ -1352,7 +1398,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>
         /// The task object containing the results of the asynchronous lookup operation, the user, if any, associated with a normalized value of the specified email address.
         /// </returns>
-        public virtual Task<TUser> FindByEmailAsync(string email)
+        public virtual async Task<TUser> FindByEmailAsync(string email)
         {
             ThrowIfDisposed();
             var store = GetEmailStore();
@@ -1360,7 +1406,29 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(email));
             }
-            return store.FindByEmailAsync(NormalizeKey(email), CancellationToken);
+
+            email = NormalizeKey(email);
+            var user = await store.FindByEmailAsync(email, CancellationToken);
+
+            // Need to potentially check all keys
+            if (user == null && Options.Stores.ProtectPersonalData)
+            {
+                var keyRing = _services.GetService<ILookupProtectorKeyRing>();
+                var protector = _services.GetService<ILookupProtector>();
+                if (keyRing != null && protector != null)
+                {
+                    foreach (var key in keyRing.GetAllKeyIds())
+                    {
+                        var oldKey = protector.Protect(key, email);
+                        user = await store.FindByEmailAsync(oldKey, CancellationToken);
+                        if (user != null)
+                        {
+                            return user;
+                        }
+                    }
+                }
+            }
+            return user;
         }
 
         /// <summary>
@@ -1374,7 +1442,7 @@ namespace Microsoft.AspNetCore.Identity
             if (store != null)
             {
                 var email = await GetEmailAsync(user);
-                await store.SetNormalizedEmailAsync(user, NormalizeKey(email), CancellationToken);
+                await store.SetNormalizedEmailAsync(user, ProtectPersonalData(NormalizeKey(email)), CancellationToken);
             }
         }
 

@@ -3,9 +3,9 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage.Converters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -96,16 +96,16 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </summary>
         public DbSet<TUserToken> UserTokens { get; set; }
 
-        private int GetMaxLengthForKeys()
-        {
-            // Need to get the actual application service provider, fallback will cause
-            // options to not work since IEnumerable<IConfigureOptions> don't flow across providers
-            var options = this.GetService<IDbContextOptions>()
+        private StoreOptions GetStoreOptions() => this.GetService<IDbContextOptions>()
                             .Extensions.OfType<CoreOptionsExtension>()
                             .FirstOrDefault()?.ApplicationServiceProvider
                             ?.GetService<IOptions<IdentityOptions>>()
                             ?.Value?.Stores;
-            return options != null ? options.MaxLengthForKeys : 0;
+
+        private class PersonalDataConverter : ValueConverter<string, string>
+        {
+            public PersonalDataConverter(IPersonalDataProtector protector) : base(s => protector.Protect(s), s => protector.Unprotect(s), default)
+            { }
         }
 
         /// <summary>
@@ -116,7 +116,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// </param>
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            var maxKeyLength = GetMaxLengthForKeys();
+            var storeOptions = GetStoreOptions();
+            var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
+            var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
 
             builder.Entity<TUser>(b =>
             {
@@ -130,6 +132,21 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 b.Property(u => u.NormalizedUserName).HasMaxLength(256);
                 b.Property(u => u.Email).HasMaxLength(256);
                 b.Property(u => u.NormalizedEmail).HasMaxLength(256);
+
+                if (encryptPersonalData)
+                {
+                    var converter = new PersonalDataConverter(this.GetService<IPersonalDataProtector>());
+                    var personalDataProps = typeof(TUser).GetProperties().Where(
+                                    prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                    foreach (var p in personalDataProps)
+                    {
+                        if (p.PropertyType != typeof(string))
+                        {
+                            throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                        }
+                        b.Property(typeof(string), p.Name).HasConversion(converter);
+                    }
+                }
 
                 b.HasMany<TUserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
                 b.HasMany<TUserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();

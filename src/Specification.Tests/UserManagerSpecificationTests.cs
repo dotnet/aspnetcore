@@ -1020,12 +1020,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
-        public async Task CanFindUsersViaUserQuerable()
+        public async virtual Task CanFindUsersViaUserQuerable()
         {
             if (ShouldSkipDbTests())
             {
                 return;
             }
+
             var mgr = CreateManager();
             if (mgr.SupportsQueryableUsers)
             {

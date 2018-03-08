@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -43,12 +44,13 @@ namespace Microsoft.AspNetCore.Identity.UI.Pages.Account.Manage.Internal
 
             // Only include personal data for download
             var personalData = new Dictionary<string, string>();
-            personalData.Add("UserId", await _userManager.GetUserIdAsync(user));
-            personalData.Add("UserName", await _userManager.GetUserNameAsync(user));
-            personalData.Add("Email", await _userManager.GetEmailAsync(user));
-            personalData.Add("EmailConfirmed", (await _userManager.IsEmailConfirmedAsync(user)).ToString());
-            personalData.Add("PhoneNumber", await _userManager.GetPhoneNumberAsync(user));
-            personalData.Add("PhoneNumberConfirmed", (await _userManager.IsPhoneNumberConfirmedAsync(user)).ToString());
+
+            var personalDataProps = typeof(TUser).GetProperties().Where(
+                            prop => Attribute.IsDefined(prop, typeof(PersonalDataAttribute)));
+            foreach (var p in personalDataProps)
+            {
+                personalData.Add(p.Name, p.GetValue(user)?.ToString() ?? "null");
+            }
 
             Response.Headers.Add("Content-Disposition", "attachment; filename=PersonalData.json");
             return new FileContentResult(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(personalData)), "text/json");

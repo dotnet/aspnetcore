@@ -52,5 +52,42 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             var email = emails.SentEmails[1];
             await UserStories.ConfirmEmailAsync(email, client);
         }
+
+        [Fact]
+        public async Task CanDownloadPersonalData()
+        {
+            // Arrange
+            var client = ServerFactory.CreateDefaultClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            var jsonData = await UserStories.DownloadPersonalData(index, userName);
+            Assert.Contains($"\"Id\":\"", jsonData);
+            Assert.Contains($"\"UserName\":\"{userName}\"", jsonData);
+            Assert.Contains($"\"Email\":\"{userName}\"", jsonData);
+            Assert.Contains($"\"EmailConfirmed\":\"False\"", jsonData);
+            Assert.Contains($"\"PhoneNumber\":\"null\"", jsonData);
+            Assert.Contains($"\"PhoneNumberConfirmed\":\"False\"", jsonData);
+            Assert.Contains($"\"TwoFactorEnabled\":\"False\"", jsonData);
+        }
+
+        [Fact]
+        public async Task CanDeleteUser()
+        {
+            // Arrange
+            var client = ServerFactory.CreateDefaultClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            var index = await UserStories.RegisterNewUserAsync(client, userName, password);
+
+            // Act & Assert
+            await UserStories.DeleteUser(index, password);
+        }
     }
 }

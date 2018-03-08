@@ -12,6 +12,9 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
         public DefaultUIContext WithAuthenticatedUser() =>
             new DefaultUIContext(this) { UserAuthenticated = true };
 
+        public DefaultUIContext WithAnonymousUser() =>
+            new DefaultUIContext(this) { UserAuthenticated = false };
+
         public DefaultUIContext WithSocialLoginEnabled() =>
             new DefaultUIContext(this) { ContosoLoginEnabled = true };
 
@@ -49,6 +52,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             get => GetValue<bool>(nameof(UserAuthenticated));
             set => SetValue(nameof(UserAuthenticated), value);
         }
+
         public bool ExistingUser
         {
             get => GetValue<bool>(nameof(ExistingUser));

@@ -11,6 +11,20 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             = new ResourceManager("Microsoft.AspNetCore.Identity.EntityFrameworkCore.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// [ProtectedPersonalData] only works strings by default.
+        /// </summary>
+        internal static string CanOnlyProtectStrings
+        {
+            get => GetString("CanOnlyProtectStrings");
+        }
+
+        /// <summary>
+        /// [ProtectedPersonalData] only works strings by default.
+        /// </summary>
+        internal static string FormatCanOnlyProtectStrings()
+            => GetString("CanOnlyProtectStrings");
+
+        /// <summary>
         /// AddEntityFrameworkStores can only be called with a role that derives from IdentityRole&lt;TKey&gt;.
         /// </summary>
         internal static string NotIdentityRole

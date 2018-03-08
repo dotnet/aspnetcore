@@ -13,5 +13,11 @@ namespace Microsoft.AspNetCore.Identity
         /// properties used as keys, i.e. UserId, LoginProvider, ProviderKey.
         /// </summary>
         public int MaxLengthForKeys { get; set; }
+
+        /// <summary>
+        /// If set to true, the store must protect all personally identifying data for a user. 
+        /// This will be enforced by requiring the store to implement <see cref="IProtectedUserStore{TUser}"/>.
+        /// </summary>
+        public bool ProtectPersonalData { get; set; }
     }
 }

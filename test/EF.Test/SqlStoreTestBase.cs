@@ -24,20 +24,15 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         where TRole : IdentityRole<TKey>, new()
         where TKey : IEquatable<TKey>
     {
-        private readonly ScratchDatabaseFixture _fixture;
+        protected readonly ScratchDatabaseFixture _fixture;
 
         protected SqlStoreTestBase(ScratchDatabaseFixture fixture)
         {
             _fixture = fixture;
         }
 
-        protected override void SetupIdentityServices(IServiceCollection services, object context)
+        protected virtual void SetupAddIdentity(IServiceCollection services)
         {
-            services.AddHttpContextAccessor();
-            services.AddSingleton((TestDbContext)context);
-            services.AddLogging();
-            services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
-            services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
             services.AddIdentity<TUser, TRole>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -48,6 +43,16 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             })
             .AddDefaultTokenProviders()
             .AddEntityFrameworkStores<TestDbContext>();
+        }
+
+        protected override void SetupIdentityServices(IServiceCollection services, object context)
+        {
+            services.AddHttpContextAccessor();
+            services.AddSingleton((TestDbContext)context);
+            services.AddLogging();
+            services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
+            services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
+            SetupAddIdentity(services);
         }
 
         protected override bool ShouldSkipDbTests()
@@ -86,9 +91,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
 
-        public TestDbContext CreateContext()
+        public virtual TestDbContext CreateContext()
         {
-            var db = DbUtil.Create<TestDbContext>(_fixture.ConnectionString);
+            var services = new ServiceCollection();
+            SetupAddIdentity(services);
+            var db = DbUtil.Create<TestDbContext>(_fixture.ConnectionString, services);
             db.Database.EnsureCreated();
             return db;
         }
