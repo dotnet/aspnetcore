@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         public static IWebHostBuilder GetWebHostBuilder()
         {
-            return new WebHostBuilder().UseLibuv();
+            return new WebHostBuilder().UseLibuv().ConfigureServices(TestServer.RemoveDevCert);
         }
     }
 }

@@ -69,7 +69,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize ?? 0,
-                resumeWriterThreshold: maxResponseBufferSize ?? 0
+                resumeWriterThreshold: maxResponseBufferSize ?? 0,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -106,7 +107,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 0,
-                resumeWriterThreshold: 0
+                resumeWriterThreshold: 0,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -155,7 +157,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: 1,
-                resumeWriterThreshold: 1
+                resumeWriterThreshold: 1,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -212,7 +215,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize,
-                resumeWriterThreshold: maxResponseBufferSize
+                resumeWriterThreshold: maxResponseBufferSize,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -277,7 +281,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     readerScheduler: _libuvThread,
                     writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
-                    resumeWriterThreshold: maxResponseBufferSize
+                    resumeWriterThreshold: maxResponseBufferSize,
+                    useSynchronizationContext: false
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -348,7 +353,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     readerScheduler: _libuvThread,
                     writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
-                    resumeWriterThreshold: maxResponseBufferSize
+                    resumeWriterThreshold: maxResponseBufferSize,
+                    useSynchronizationContext: false
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions, abortedSource))
@@ -442,7 +448,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     readerScheduler: _libuvThread,
                     writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
-                    resumeWriterThreshold: maxResponseBufferSize
+                    resumeWriterThreshold: maxResponseBufferSize,
+                    useSynchronizationContext: false
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -527,7 +534,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     readerScheduler: _libuvThread,
                     writerScheduler: PipeScheduler.Inline,
                     pauseWriterThreshold: maxResponseBufferSize,
-                    resumeWriterThreshold: maxResponseBufferSize
+                    resumeWriterThreshold: maxResponseBufferSize,
+                    useSynchronizationContext: false
                 );
 
                 using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -610,7 +618,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize,
-                resumeWriterThreshold: maxResponseBufferSize
+                resumeWriterThreshold: maxResponseBufferSize,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))
@@ -672,7 +681,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 readerScheduler: _libuvThread,
                 writerScheduler: PipeScheduler.Inline,
                 pauseWriterThreshold: maxResponseBufferSize ?? 0,
-                resumeWriterThreshold: maxResponseBufferSize ?? 0
+                resumeWriterThreshold: maxResponseBufferSize ?? 0,
+                useSynchronizationContext: false
             );
 
             using (var outputProducer = CreateOutputProducer(pipeOptions))

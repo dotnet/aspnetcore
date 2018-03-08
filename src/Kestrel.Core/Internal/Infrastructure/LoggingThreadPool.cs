@@ -50,12 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             System.Threading.ThreadPool.QueueUserWorkItem(action, state);
         }
 
-        public override void Schedule(Action action)
-        {
-            Run(action);
-        }
-
-        public override void Schedule(Action<object> action, object state)
+        public override void Schedule<T>(Action<T> action, T state)
         {
             Run(() => action(state));
         }

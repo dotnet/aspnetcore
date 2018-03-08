@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             _uv = uv;
             ThreadId = threadId;
-            
+
             handle = Marshal.AllocCoTaskMem(size);
             *(IntPtr*)handle = GCHandle.ToIntPtr(GCHandle.Alloc(this, _handleType));
         }

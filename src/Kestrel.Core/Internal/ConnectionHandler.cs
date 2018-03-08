@@ -89,7 +89,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             readerScheduler: serviceContext.ThreadPool,
             writerScheduler: writerScheduler,
             pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            useSynchronizationContext: false
         );
 
         internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
@@ -98,7 +99,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             readerScheduler: readerScheduler,
             writerScheduler: serviceContext.ThreadPool,
             pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext)
+            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
+            useSynchronizationContext: false
         );
 
         private static long GetOutputResponseBufferSize(ServiceContext serviceContext)

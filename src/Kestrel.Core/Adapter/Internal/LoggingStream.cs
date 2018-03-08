@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
         }
 
 #if NETCOREAPP2_1
-        public override Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             Log("WriteAsync", source.Span);
             return _inner.WriteAsync(source, cancellationToken);

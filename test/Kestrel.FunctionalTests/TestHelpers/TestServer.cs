@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
@@ -11,9 +12,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -68,13 +71,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         }
                         return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
                     });
-
+                    RemoveDevCert(services);
                     configureServices(services);
                 })
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
                 .Build();
 
             _host.Start();
+        }
+
+        public static void RemoveDevCert(IServiceCollection services)
+        {
+            // KestrelServerOptionsSetup would scan all system certificates on every test server creation
+            // making test runs very slow
+            foreach (var descriptor in services.ToArray())
+            {
+                if (descriptor.ImplementationType == typeof(KestrelServerOptionsSetup))
+                {
+                    services.Remove(descriptor);
+                }
+            }
         }
 
         public IPEndPoint EndPoint => _listenOptions.IPEndPoint;

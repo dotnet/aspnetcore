@@ -112,11 +112,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
 #if NETCOREAPP2_1
-        public override Task WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
             ValidateState(cancellationToken);
 
-            return _httpResponseControl.WriteAsync(source, cancellationToken);
+            return new ValueTask(_httpResponseControl.WriteAsync(source, cancellationToken));
         }
 #endif
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using System.Numerics;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Xunit;
 
@@ -41,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData(0x80)]
         private void ExceptionThrownForZeroOrNonAscii(byte b)
         {
-            for (var length = 1; length < 1024; length++)
+            for (var length = 1; length < Vector<sbyte>.Count * 4; length++)
             {
                 for (var position = 0; position < length; position++)
                 {

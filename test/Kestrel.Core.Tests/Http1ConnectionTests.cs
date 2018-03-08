@@ -41,7 +41,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public Http1ConnectionTests()
         {
             _pipelineFactory = KestrelMemoryPool.Create();
-            var pair = DuplexPipe.CreateConnectionPair(_pipelineFactory);
+            var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
 
             _transport = pair.Transport;
             _application = pair.Application;

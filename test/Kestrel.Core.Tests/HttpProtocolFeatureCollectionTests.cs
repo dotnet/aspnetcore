@@ -24,15 +24,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private readonly TestHttp1Connection _http1Connection;
         private readonly ServiceContext _serviceContext;
         private readonly Http1ConnectionContext _http1ConnectionContext;
-        private readonly MemoryPool<byte> _pipelineFactory;
+        private readonly MemoryPool<byte> _memoryPool;
         private Mock<ITimeoutControl> _timeoutControl;
 
         private readonly IFeatureCollection _collection;
 
         public HttpProtocolFeatureCollectionTests()
         {
-            _pipelineFactory = KestrelMemoryPool.Create();
-            var pair = DuplexPipe.CreateConnectionPair(_pipelineFactory);
+            _memoryPool = KestrelMemoryPool.Create();
+            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
 
             _transport = pair.Transport;
             _application = pair.Application;
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                MemoryPool = _pipelineFactory,
+                MemoryPool = _memoryPool,
                 TimeoutControl = _timeoutControl.Object,
                 Application = pair.Application,
                 Transport = pair.Transport
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _application.Input.Complete();
             _application.Output.Complete();
 
-            _pipelineFactory.Dispose();
+            _memoryPool.Dispose();
         }
 
         [Fact]

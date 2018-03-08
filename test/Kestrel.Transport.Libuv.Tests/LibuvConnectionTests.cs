@@ -64,11 +64,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     pool: pool,
                     pauseWriterThreshold: 3,
                     readerScheduler: PipeScheduler.Inline,
-                    writerScheduler: PipeScheduler.Inline);
+                    writerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false);
 
             // We don't set the output writer scheduler here since we want to run the callback inline
 
-            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline);
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
 
             Task connectionTask = null;
@@ -121,9 +122,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var thread = new LibuvThread(transport);
             var mockScheduler = new Mock<PipeScheduler>();
             Action backPressure = null;
-            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action>())).Callback<Action>(a =>
+            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action<object>>(), It.IsAny<object>())).Callback<Action<object>, object>((a, o) =>
             {
-                backPressure = a;
+                backPressure = () => a(o);
             });
             mockConnectionHandler.InputOptions = pool =>
                 new PipeOptions(
@@ -131,9 +132,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     pauseWriterThreshold: 3,
                     resumeWriterThreshold: 3,
                     writerScheduler: mockScheduler.Object,
-                    readerScheduler: PipeScheduler.Inline);
+                    readerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false);
 
-            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline);
+            mockConnectionHandler.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
 
             Task connectionTask = null;
             try

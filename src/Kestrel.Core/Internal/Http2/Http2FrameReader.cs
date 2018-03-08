@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             readableBuffer.Slice(Http2Frame.HeaderLength, frame.Length).CopyTo(frame.Payload);
-            consumed = examined = readableBuffer.GetPosition(readableBuffer.Start, Http2Frame.HeaderLength + frame.Length);
+            consumed = examined = readableBuffer.GetPosition(Http2Frame.HeaderLength + frame.Length);
 
             return true;
         }

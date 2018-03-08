@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             debugger.Setup(d => d.IsAttached).Returns(true);
             kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
 
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object, TimeSpan.FromSeconds(0.01)))
             {
                 onHeartbeatTasks[0] = Task.Run(() => heartbeat.OnHeartbeat());
                 onHeartbeatTasks[1] = Task.Run(() => heartbeat.OnHeartbeat());
-                Assert.False(traceMre.Wait(TimeSpan.FromSeconds(10)));
+                Assert.False(traceMre.Wait(TimeSpan.FromSeconds(2)));
             }
 
             handlerMre.Set();

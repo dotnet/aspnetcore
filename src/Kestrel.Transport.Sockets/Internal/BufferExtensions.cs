@@ -10,11 +10,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         public static ArraySegment<byte> GetArray(this Memory<byte> memory)
         {
-            if (!memory.TryGetArray(out var result))
-            {
-                throw new InvalidOperationException("Buffer backed by array was expected");
-            }
-            return result;
+            return ((ReadOnlyMemory<byte>)memory).GetArray();
         }
 
         public static ArraySegment<byte> GetArray(this ReadOnlyMemory<byte> memory)

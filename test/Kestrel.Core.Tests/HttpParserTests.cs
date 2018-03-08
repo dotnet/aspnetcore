@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class HttpParserTests
     {
+        private static IKestrelTrace _nullTrace = Mock.Of<IKestrelTrace>();
+
         [Theory]
         [MemberData(nameof(RequestLineValidData))]
         public void ParsesRequestLine(
@@ -33,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 #pragma warning restore xUnit1026
             string expectedVersion)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(RequestLineIncompleteData))]
         public void ParseRequestLineReturnsFalseWhenGivenIncompleteRequestLines(string requestLine)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(RequestLineIncompleteData))]
         public void ParseRequestLineDoesNotConsumeIncompleteRequestLine(string requestLine)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(requestLine));
             var requestHandler = new RequestHandler();
 
@@ -176,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("Header-1: value1\r\nHeader-2: value2\r\n\r")]
         public void ParseHeadersReturnsFalseWhenGivenIncompleteHeaders(string rawHeaders)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
 
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
@@ -201,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("Header: value\r")]
         public void ParseHeadersDoesNotConsumeIncompleteHeader(string rawHeaders)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
 
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
             var requestHandler = new RequestHandler();
@@ -290,14 +292,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ParseHeadersConsumesBytesCorrectlyAtEnd()
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
 
             const string headerLine = "Header: value\r\n\r";
             var buffer1 = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(headerLine));
             var requestHandler = new RequestHandler();
             Assert.False(parser.ParseHeaders(requestHandler, buffer1, out var consumed, out var examined, out var consumedBytes));
 
-            Assert.Equal(buffer1.GetPosition(buffer1.Start, headerLine.Length - 1), consumed);
+            Assert.Equal(buffer1.GetPosition(headerLine.Length - 1), consumed);
             Assert.Equal(buffer1.End, examined);
             Assert.Equal(headerLine.Length - 1, consumedBytes);
 
@@ -371,8 +373,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ParseRequestLineSplitBufferWithoutNewLineDoesNotUpdateConsumed()
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
-            var buffer = CreateBuffer("GET ", "/");
+            var parser = CreateParser(_nullTrace);
+            var buffer = ReadOnlySequenceFactory.CreateSegments(
+                Encoding.ASCII.GetBytes("GET "),
+                Encoding.ASCII.GetBytes("/"));
 
             var requestHandler = new RequestHandler();
             var result = parser.ParseRequestLine(requestHandler, buffer, out var consumed, out var examined);
@@ -387,7 +391,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             string rawHeaderValue,
             string expectedHeaderValue)
         {
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes($"{headerName}:{rawHeaderValue}\r\n"));
 
             var requestHandler = new RequestHandler();
@@ -405,7 +409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             Assert.True(expectedHeaderNames.Count() == expectedHeaderValues.Count(), $"{nameof(expectedHeaderNames)} and {nameof(expectedHeaderValues)} sizes must match");
 
-            var parser = CreateParser(Mock.Of<IKestrelTrace>());
+            var parser = CreateParser(_nullTrace);
             var buffer = new ReadOnlySequence<byte>(Encoding.ASCII.GetBytes(rawHeaders));
 
             var requestHandler = new RequestHandler();
@@ -463,87 +467,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 RawPath = path.GetAsciiStringNonNullCharacters();
                 Query = query.GetAsciiStringNonNullCharacters();
                 PathEncoded = pathEncoded;
-            }
-        }
-
-        private static ReadOnlySequence<byte> CreateBuffer(params string[] inputs)
-        {
-            var buffers = new byte[inputs.Length][];
-            for (int i = 0; i < inputs.Length; i++)
-            {
-                buffers[i] = Encoding.UTF8.GetBytes(inputs[i]);
-            }
-            return CreateBuffer(buffers);
-        }
-
-        // Copied from https://github.com/dotnet/corefx/blob/master/src/System.Memory/tests/ReadOnlyBuffer/ReadOnlySequenceFactory.cs
-        private static ReadOnlySequence<byte> CreateBuffer(params byte[][] inputs)
-        {
-            if (inputs == null || inputs.Length == 0)
-            {
-                throw new InvalidOperationException();
-            }
-
-            int i = 0;
-
-            BufferSegment last = null;
-            BufferSegment first = null;
-
-            do
-            {
-                byte[] s = inputs[i];
-                int length = s.Length;
-                int dataOffset = length;
-                var chars = new byte[length * 2];
-
-                for (int j = 0; j < length; j++)
-                {
-                    chars[dataOffset + j] = s[j];
-                }
-
-                // Create a segment that has offset relative to the OwnedMemory and OwnedMemory itself has offset relative to array
-                var memory = new Memory<byte>(chars).Slice(length, length);
-
-                if (first == null)
-                {
-                    first = new BufferSegment(memory);
-                    last = first;
-                }
-                else
-                {
-                    last = last.Append(memory);
-                }
-                i++;
-            } while (i < inputs.Length);
-
-            return new ReadOnlySequence<byte>(first, 0, last, last.Memory.Length);
-        }
-
-        // Copied from https://github.com/dotnet/corefx/blob/master/src/System.Memory/tests/ReadOnlyBuffer/BufferSegment.cs
-        private class BufferSegment : IMemoryList<byte>
-        {
-            public BufferSegment(Memory<byte> memory)
-            {
-                Memory = memory;
-            }
-
-            /// <summary>
-            /// Combined length of all segments before this
-            /// </summary>
-            public long RunningIndex { get; private set; }
-
-            public Memory<byte> Memory { get; set; }
-
-            public IMemoryList<byte> Next { get; private set; }
-
-            public BufferSegment Append(Memory<byte> memory)
-            {
-                var segment = new BufferSegment(memory)
-                {
-                    RunningIndex = RunningIndex + Memory.Length
-                };
-                Next = segment;
-                return segment;
             }
         }
     }

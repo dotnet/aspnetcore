@@ -28,12 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static ArraySegment<byte> GetArray(this Memory<byte> buffer)
         {
-            ArraySegment<byte> result;
-            if (!buffer.TryGetArray(out result))
-            {
-                throw new InvalidOperationException("Buffer backed by array was expected");
-            }
-            return result;
+            return ((ReadOnlyMemory<byte>)buffer).GetArray();
         }
 
         public static ArraySegment<byte> GetArray(this ReadOnlyMemory<byte> memory)

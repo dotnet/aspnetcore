@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _bufferHandle.Dispose();
         }
 
-        private async Task ApplyBackpressureAsync(PipeAwaiter<FlushResult> flushTask)
+        private async Task ApplyBackpressureAsync(ValueTask<FlushResult> flushTask)
         {
             Log.ConnectionPause(ConnectionId);
             _socket.ReadStop();

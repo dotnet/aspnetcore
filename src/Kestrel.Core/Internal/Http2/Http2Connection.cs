@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
-            consumed = examined = readableBuffer.GetPosition(readableBuffer.Start, ClientPreface.Length);
+            consumed = examined = readableBuffer.GetPosition(ClientPreface.Length);
             return true;
         }
 

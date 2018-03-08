@@ -33,12 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             action(state);
         }
 
-        public override void Schedule(Action action)
-        {
-            Run(action);
-        }
-
-        public override void Schedule(Action<object> action, object state)
+        public override void Schedule<T>(Action<T> action, T state)
         {
             try
             {

@@ -114,7 +114,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             _memoryPool = KestrelMemoryPool.Create();
-            var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
+            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
 
             var serviceContext = new ServiceContext
             {

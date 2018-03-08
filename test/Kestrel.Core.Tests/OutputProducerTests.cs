@@ -35,7 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             (
                 pool: _memoryPool,
                 readerScheduler: Mock.Of<PipeScheduler>(),
-                writerScheduler: PipeScheduler.Inline
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
             );
 
             using (var socketOutput = CreateOutputProducer(pipeOptions))

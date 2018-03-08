@@ -96,7 +96,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private TestHttp1Connection MakeHttp1Connection()
         {
-            var pair = DuplexPipe.CreateConnectionPair(_memoryPool);
+            var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+            var pair = DuplexPipe.CreateConnectionPair(options, options);
             _pair = pair;
 
             var serviceContext = new ServiceContext

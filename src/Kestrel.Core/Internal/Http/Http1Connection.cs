@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -429,7 +430,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
         }
 
-        protected override bool BeginRead(out PipeAwaiter<ReadResult> awaitable)
+        protected override bool BeginRead(out ValueTask<ReadResult> awaitable)
         {
             awaitable = Input.ReadAsync();
             return true;

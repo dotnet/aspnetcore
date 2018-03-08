@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public class InMemoryConnection : TransportConnection
         {
-            public PipeAwaiter<FlushResult> SendRequestAsync(byte[] request)
+            public ValueTask<FlushResult> SendRequestAsync(byte[] request)
             {
                 return Input.WriteAsync(request);
             }

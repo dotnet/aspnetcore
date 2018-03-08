@@ -38,6 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _flushLock = new object();
         private Action _flushCompleted;
 
+        private ValueTask<FlushResult> _flushTask;
+
         public Http1OutputProducer(
             PipeReader outputPipeReader,
             PipeWriter pipeWriter,
@@ -200,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return FlushAsyncAwaited(awaitable, bytesWritten, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(PipeAwaiter<FlushResult> awaitable, long count, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(ValueTask<FlushResult> awaitable, long count, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters
@@ -208,24 +210,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // All awaiters get the same task
             lock (_flushLock)
             {
+                _flushTask = awaitable;
                 if (_flushTcs == null || _flushTcs.Task.IsCompleted)
                 {
                     _flushTcs = new TaskCompletionSource<object>();
 
-                    awaitable.OnCompleted(_flushCompleted);
+                    _flushTask.GetAwaiter().OnCompleted(_flushCompleted);
                 }
             }
 
             _timeoutControl.StartTimingWrite(count);
-            await _flushTcs.Task;
-            _timeoutControl.StopTimingWrite();
-
-            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                await _flushTcs.Task;
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+            catch (OperationCanceledException)
+            {
+                _completed = true;
+                throw;
+            }
+            finally
+            {
+                _timeoutControl.StopTimingWrite();
+            }
         }
 
         private void OnFlushCompleted()
         {
-            _flushTcs.TrySetResult(null);
+            try
+            {
+                _flushTask.GetAwaiter().GetResult();
+                _flushTcs.TrySetResult(null);
+            }
+            catch (Exception exception)
+            {
+                _flushTcs.TrySetResult(exception);
+            }
+            finally
+            {
+                _flushTask = default;
+            }
         }
     }
 }

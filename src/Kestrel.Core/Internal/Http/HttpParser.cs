@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var lineIndex = span.IndexOf(ByteLF);
             if (lineIndex >= 0)
             {
-                consumed = buffer.GetPosition(consumed, lineIndex + 1);
+                consumed = buffer.GetPosition(lineIndex + 1, consumed);
                 span = span.Slice(0, lineIndex + 1);
             }
             else if (buffer.IsSingleSegment)
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 var lineEnd = lineEndPosition.Value;
 
                                 // Make sure LF is included in lineEnd
-                                lineEnd = buffer.GetPosition(lineEnd, 1);
+                                lineEnd = buffer.GetPosition(1, lineEnd);
                                 var headerSpan = buffer.Slice(current, lineEnd).ToSpan();
                                 length = headerSpan.Length;
 
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (byteLfPosition != null)
             {
                 // Move 1 byte past the \n
-                found = buffer.GetPosition(byteLfPosition.Value, 1);
+                found = buffer.GetPosition(1, byteLfPosition.Value);
                 return true;
             }
 

@@ -126,7 +126,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var inlineSchedulingPipeOptions = new PipeOptions(
                 pool: _memoryPool,
                 readerScheduler: PipeScheduler.Inline,
-                writerScheduler: PipeScheduler.Inline
+                writerScheduler: PipeScheduler.Inline,
+                useSynchronizationContext: false
             );
 
             _pair = DuplexPipe.CreateConnectionPair(inlineSchedulingPipeOptions, inlineSchedulingPipeOptions);

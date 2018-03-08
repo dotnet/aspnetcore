@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         //  buffer.Count is int
                         var actual = (int) Math.Min(readableBuffer.Length, buffer.Length);
                         var slice = readableBuffer.Slice(0, actual);
-                        consumed = readableBuffer.GetPosition(readableBuffer.Start, actual);
+                        consumed = readableBuffer.GetPosition(actual);
                         slice.CopyTo(buffer.Span);
                         return actual;
                     }

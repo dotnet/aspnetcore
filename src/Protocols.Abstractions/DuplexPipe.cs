@@ -18,11 +18,6 @@ namespace System.IO.Pipelines
         {
         }
 
-        public static DuplexPipePair CreateConnectionPair(MemoryPool<byte> memoryPool)
-        {
-            return CreateConnectionPair(new PipeOptions(memoryPool), new PipeOptions(memoryPool));
-        }
-
         public static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
         {
             var input = new Pipe(inputOptions);

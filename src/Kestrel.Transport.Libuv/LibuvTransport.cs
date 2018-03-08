@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
             }
 
             Threads.Clear();
-#if DEBUG
+#if DEBUG && !INNER_LOOP
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
