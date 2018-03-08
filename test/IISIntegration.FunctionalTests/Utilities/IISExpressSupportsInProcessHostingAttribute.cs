@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Assembly | AttributeTargets.Class)]
     public sealed class IISExpressSupportsInProcessHostingAttribute : Attribute, ITestCondition

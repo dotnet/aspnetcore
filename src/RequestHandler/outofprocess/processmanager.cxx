@@ -225,6 +225,7 @@ PROCESS_MANAGER::GetProcess(
                     pConfig->QueryAnonymousAuthEnabled(),
                     pConfig->QueryEnvironmentVariables(),
                     pConfig->QueryStdoutLogEnabled(),
+                    pConfig->QueryWebSocketEnabled(),
                     pConfig->QueryStdoutLogFile(),
                     pConfig->QueryApplicationPhysicalPath(),   // physical path
                     pConfig->QueryApplicationPath(),           // app path

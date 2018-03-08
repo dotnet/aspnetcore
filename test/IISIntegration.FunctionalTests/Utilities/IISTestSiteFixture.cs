@@ -8,7 +8,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class IISTestSiteFixture : IDisposable
     {
@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public IISTestSiteFixture()
         {
-            var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(),
+            var deploymentParameters = new DeploymentParameters(Helpers.GetInProcessTestSitesPath(),
                 ServerType.IISExpress,
                 RuntimeFlavor.CoreClr,
                 RuntimeArchitecture.x64)
             {
-                ServerConfigTemplateContent = File.ReadAllText("Http.config"),
+                ServerConfigTemplateContent = File.ReadAllText("AppHostConfig/Http.config"),
                 SiteName = "HttpTestSite",
                 TargetFramework = "netcoreapp2.0",
                 ApplicationType = ApplicationType.Portable,

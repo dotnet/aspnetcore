@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const int PauseWriterThreshold = 65536;
         private const int ResumeWriterTheshold = PauseWriterThreshold / 2;
 
-        private static bool UpgradeAvailable = (Environment.OSVersion.Version >= new Version(6, 2));
+        // TODO make this static again.
+        private static WebsocketAvailabilityStatus _websocketAvailability = WebsocketAvailabilityStatus.Uninitialized;
 
         protected readonly IntPtr _pInProcessHandler;
 
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
+        private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
         internal unsafe IISHttpContext(MemoryPool<byte> memoryPool, IntPtr pInProcessHandler, IISOptions options, IISHttpServer server)
             : base((HttpApiTypes.HTTP_REQUEST*)NativeMethods.http_get_raw_request(pInProcessHandler))
@@ -121,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 StatusCode = 200;
 
                 RequestHeaders = new RequestHeaders(this);
-                HttpResponseHeaders = new HeaderCollection(); // TODO Optimize for known headers
+                HttpResponseHeaders = new HeaderCollection();
                 ResponseHeaders = HttpResponseHeaders;
 
                 if (options.ForwardWindowsAuthentication)
@@ -134,6 +136,26 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
 
                 ResetFeatureCollection();
+
+                // Check if the Http upgrade feature is available in IIS.
+                // To check this, we can look at the server variable WEBSOCKET_VERSION
+                // And see if there is a version. Same check that Katana did:
+                // https://github.com/aspnet/AspNetKatana/blob/9f6e09af6bf203744feb5347121fe25f6eec06d8/src/Microsoft.Owin.Host.SystemWeb/OwinAppContext.cs#L125
+                // Actively not locking here as acquiring a lock on every request will hurt perf more than checking the
+                // server variables a few extra times if a bunch of requests hit the server at the same time.
+                if (_websocketAvailability == WebsocketAvailabilityStatus.Uninitialized)
+                {
+                    NativeMethods.http_get_server_variable(pInProcessHandler, WebSocketVersionString, out var webSocketsSupported);
+                    var webSocketsAvailable = !string.IsNullOrEmpty(webSocketsSupported);
+                    _websocketAvailability = webSocketsAvailable ?
+                        WebsocketAvailabilityStatus.Available :
+                        WebsocketAvailabilityStatus.NotAvailable;
+                }
+
+                if (_websocketAvailability == WebsocketAvailabilityStatus.NotAvailable)
+                {
+                    _currentIHttpUpgradeFeature = null;
+                }
             }
 
             RequestBody = new IISHttpRequestBody(this);
@@ -533,6 +555,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 }
             }
             return null;
+        }
+
+        private enum WebsocketAvailabilityStatus
+        {
+            Uninitialized = 1,
+            Available,
+            NotAvailable
         }
     }
 }

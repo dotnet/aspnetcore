@@ -80,6 +80,7 @@
     <ClInclude Include="aspnetcore_event.h" />
     <ClInclude Include="sttimer.h" />
     <ClInclude Include="disconnectcontext.h" />
+    <ClInclude Include="environmentvariablehelpers.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source.def" />

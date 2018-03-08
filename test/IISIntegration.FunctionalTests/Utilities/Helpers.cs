@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class Helpers
     {
-        public static string GetTestSitesPath()
+        public static string GetInProcessTestSitesPath()
         {
             return Path.GetFullPath(
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
@@ -17,6 +17,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 "..", // obj
                 "..", // projectfolder
                 "IISTestSite"));
+        }
+
+        public static string GetOutOfProcessTestSitesPath()
+        {
+            return Path.GetFullPath(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory,
+                "..", // tfm
+                "..", // debug
+                "..", // obj
+                "..", // projectfolder
+                "TestSites"));
         }
     }
 }

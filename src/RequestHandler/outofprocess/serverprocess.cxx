@@ -22,6 +22,7 @@ SERVER_PROCESS::Initialize(
     BOOL                  fAnonymousAuthEnabled,
     ENVIRONMENT_VAR_HASH *pEnvironmentVariables,
     BOOL                  fStdoutLogEnabled,
+    BOOL                  fWebsocketsEnabled,
     STRU                  *pstruStdoutLogFile,
     STRU                  *pszAppPhysicalPath,
     STRU                  *pszAppPath,
@@ -38,6 +39,7 @@ SERVER_PROCESS::Initialize(
     m_fWindowsAuthEnabled = fWindowsAuthEnabled;
     m_fBasicAuthEnabled = fBasicAuthEnabled;
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
+    m_fWebsocketsEnabled = fWebsocketsEnabled;
     m_pProcessManager->ReferenceProcessManager();
 
     if (FAILED(hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
@@ -402,7 +404,7 @@ SERVER_PROCESS::OutputEnvironmentVariables
         pszCurrentVariable = pszNextVariable;
     }
     // append the remaining env variable in hash table
-    pEnvironmentVarTable->Apply(ENVIRONMENT_VAR_HASH::CopyToMultiSz, pmszOutput);
+    pEnvironmentVarTable->Apply(ENVIRONMENT_VAR_HELPERS::CopyToMultiSz, pmszOutput);
 
 Finished:
     if (pszEnvironmentVariables != NULL)
@@ -755,7 +757,7 @@ SERVER_PROCESS::StartProcess(
             goto Failure;
         }
 
-        if (FAILED(hr = ENVIRONMENT_VAR_HASH::InitEnvironmentVariablesTable(
+        if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
             m_pEnvironmentVarTable,
             m_fWindowsAuthEnabled,
             m_fBasicAuthEnabled,
@@ -764,6 +766,16 @@ SERVER_PROCESS::StartProcess(
         {
             pStrStage = L"InitEnvironmentVariablesTable";
             goto Failure;
+        }
+
+        if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::AddWebsocketEnabledToEnvironmentVariables(
+            pHashTable,
+            m_fWebsocketsEnabled
+        )))
+        {
+            pStrStage = L"AddWebsocketEnabledToEnvironmentVariables";
+            goto Failure;
+
         }
 
         //

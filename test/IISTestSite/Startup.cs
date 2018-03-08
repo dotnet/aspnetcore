@@ -43,6 +43,7 @@ namespace IISTestSite
             app.Map("/ReadAndWriteEchoTwice", ReadAndWriteEchoTwice);
             app.Map("/ReadAndWriteSlowConnection", ReadAndWriteSlowConnection);
             app.Map("/WebsocketRequest", WebsocketRequest);
+            app.Map("/UpgradeFeatureDetection", UpgradeFeatureDetection);
         }
 
         private void ServerVariable(IApplicationBuilder app)
@@ -423,6 +424,21 @@ namespace IISTestSite
             app.Run(async context =>
             {
                 await context.Request.Body.CopyToAsync(context.Response.Body);
+            });
+        }
+
+        private void UpgradeFeatureDetection(IApplicationBuilder app)
+        {
+            app.Run(async ctx =>
+            {
+                if (ctx.Features.Get<IHttpUpgradeFeature>() != null)
+                {
+                    await ctx.Response.WriteAsync("Enabled");
+                }
+                else
+                {
+                    await ctx.Response.WriteAsync("Disabled");
+                }
             });
         }
     }

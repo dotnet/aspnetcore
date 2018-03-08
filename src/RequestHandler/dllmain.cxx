@@ -112,8 +112,6 @@ InitializeGlobalConfiguration(
             g_fNsiApiNotSupported = TRUE;
         }
 
-        // WebSocket is supported on Win8 and above only
-        // todo: test on win7
         g_fWebSocketSupported = IsWindows8OrGreater();
 
         g_fGlobalInitialize = TRUE;

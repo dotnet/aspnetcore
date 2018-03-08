@@ -59,6 +59,7 @@
 #include "aspnetcore_event.h"
 #include "aspnetcore_msg.h"
 #include "disconnectcontext.h"
+#include "environmentvariablehelpers.h"
 #include "sttimer.h"
 #include ".\inprocess\InProcessHandler.h"
 #include ".\inprocess\inprocessapplication.h"

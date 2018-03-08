@@ -70,6 +70,16 @@ namespace NativeIISSample
                 {
                     await context.Response.WriteAsync(varName + ": " + context.GetIISServerVariable(varName) + Environment.NewLine);
                 }
+
+                await context.Response.WriteAsync(Environment.NewLine);
+                if (context.Features.Get<IHttpUpgradeFeature>() != null)
+                {
+                    await context.Response.WriteAsync("Websocket feature is enabled.");
+                }
+                else
+                {
+                    await context.Response.WriteAsync("Websocket feature is disabled.");
+                }
             });
         }
 
@@ -83,6 +93,7 @@ namespace NativeIISSample
             "REMOTE_PORT",
             "REMOTE_USER",
             "REQUEST_METHOD",
+            "WEBSOCKET_VERSION"
         };
 
         public static void Main(string[] args)

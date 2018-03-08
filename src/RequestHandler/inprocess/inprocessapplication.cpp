@@ -726,7 +726,7 @@ IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
 {
     HRESULT hr = S_OK;
     ENVIRONMENT_VAR_HASH* pHashTable = NULL;
-    if (FAILED(hr = ENVIRONMENT_VAR_HASH::InitEnvironmentVariablesTable(
+    if (FAILED(hr = ENVIRONMENT_VAR_HELPERS::InitEnvironmentVariablesTable(
         m_pConfig->QueryEnvironmentVariables(),
         m_pConfig->QueryWindowsAuthEnabled(),
         m_pConfig->QueryBasicAuthEnabled(),
@@ -736,8 +736,16 @@ IN_PROCESS_APPLICATION::SetEnvironementVariablesOnWorkerProcess(
         goto Finished;
     }
 
-    pHashTable->Apply(ENVIRONMENT_VAR_HASH::AppendEnvironmentVariables, NULL);
-    pHashTable->Apply(ENVIRONMENT_VAR_HASH::SetEnvironmentVariables, NULL);
+    pHashTable->Apply(ENVIRONMENT_VAR_HELPERS::AppendEnvironmentVariables, &hr);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+    pHashTable->Apply(ENVIRONMENT_VAR_HELPERS::SetEnvironmentVariables, &hr);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
 Finished:
     return hr;
 }
@@ -770,15 +778,15 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
         goto Finished;
     }
 
-    // There can only ever be a single instance of .NET Core
-    // loaded in the process but we need to get config information to boot it up in the
-    // first place. This is happening in an execute request handler and everyone waits
-    // until this initialization is done.
     if (FAILED(hr = SetEnvironementVariablesOnWorkerProcess()))
     {
         goto Finished;
     }
 
+    // There can only ever be a single instance of .NET Core
+    // loaded in the process but we need to get config information to boot it up in the
+    // first place. This is happening in an execute request handler and everyone waits
+    // until this initialization is done.
     // We set a static so that managed code can call back into this instance and
     // set the callbacks
     s_Application = this;

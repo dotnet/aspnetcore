@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Hosting
         private static readonly string ServerPath = "APPL_PATH";
         private static readonly string PairingToken = "TOKEN";
         private static readonly string IISAuth = "IIS_HTTPAUTH";
+        private static readonly string IISWebSockets = "IIS_WEBSOCKETS_SUPPORTED";
 
         /// <summary>
         /// Configures the port and base path the server should listen on when running behind AspNetCoreModule.
@@ -74,6 +75,14 @@ namespace Microsoft.AspNetCore.Hosting
             var path = hostBuilder.GetSetting(ServerPath) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPath}");
             var pairingToken = hostBuilder.GetSetting(PairingToken) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{PairingToken}");
             var iisAuth = hostBuilder.GetSetting(IISAuth) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{IISAuth}");
+            var websocketsSupported = hostBuilder.GetSetting(IISWebSockets) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{IISWebSockets}");
+
+            bool isWebSocketsSupported;
+            if (!bool.TryParse(websocketsSupported, out isWebSocketsSupported))
+            {
+                // If the websocket support variable is not set, we will always fallback to assuming websockets are enabled.
+                isWebSocketsSupported = (Environment.OSVersion.Version >= new Version(6, 2));
+            }
 
             if (!string.IsNullOrEmpty(port) && !string.IsNullOrEmpty(path) && !string.IsNullOrEmpty(pairingToken))
             {
@@ -107,7 +116,7 @@ namespace Microsoft.AspNetCore.Hosting
                     // Delay register the url so users don't accidently overwrite it.
                     hostBuilder.UseSetting(WebHostDefaults.ServerUrlsKey, address);
                     hostBuilder.PreferHostingUrls(true);
-                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path)));
+                    services.AddSingleton<IStartupFilter>(new IISSetupFilter(pairingToken, new PathString(path), isWebSocketsSupported));
                     services.Configure<ForwardedHeadersOptions>(options =>
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;

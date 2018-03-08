@@ -183,7 +183,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         bool IHttpResponseFeature.HasStarted => HasResponseStarted;
 
-        bool IHttpUpgradeFeature.IsUpgradableRequest => UpgradeAvailable;
+        // The UpgradeAvailable Feature is set on the first request to the server. 
+        bool IHttpUpgradeFeature.IsUpgradableRequest => _websocketAvailability == WebsocketAvailabilityStatus.Available;
 
         bool IFeatureCollection.IsReadOnly => false;
 

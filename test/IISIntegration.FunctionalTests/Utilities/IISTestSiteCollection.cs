@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     /// <summary>
     /// This type just maps collection names to available fixtures

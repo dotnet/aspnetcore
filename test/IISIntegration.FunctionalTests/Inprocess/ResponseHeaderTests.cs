@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
 
