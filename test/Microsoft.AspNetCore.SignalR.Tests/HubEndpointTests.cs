@@ -1453,7 +1453,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             get
             {
-                foreach (var method in new[] { nameof(StreamingHub.CounterChannel), nameof(StreamingHub.CounterChannelAsync), nameof(StreamingHub.CounterObservable), nameof(StreamingHub.CounterObservableAsync) })
+                foreach (var method in new[]
+                {
+                    nameof(StreamingHub.CounterChannel), nameof(StreamingHub.CounterChannelAsync), nameof(StreamingHub.CounterChannelValueTaskAsync),
+                    nameof(StreamingHub.CounterObservable), nameof(StreamingHub.CounterObservableAsync), nameof(StreamingHub.CounterObservableValueTaskAsync)
+                })
                 {
                     foreach (var protocol in new IHubProtocol[] { new JsonHubProtocol(), new MessagePackHubProtocol() })
                     {

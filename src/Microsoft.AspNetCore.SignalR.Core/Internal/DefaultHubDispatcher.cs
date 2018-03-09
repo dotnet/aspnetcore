@@ -116,8 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override IReadOnlyList<Type> GetParameterTypes(string methodName)
         {
-            HubMethodDescriptor descriptor;
-            if (!_methods.TryGetValue(methodName, out descriptor))
+            if (!_methods.TryGetValue(methodName, out var descriptor))
             {
                 return Type.EmptyTypes;
             }
@@ -165,7 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     return;
                 }
 
-                if (!await ValidateInvocationMode(methodExecutor.MethodReturnType, isStreamedInvocation, hubMethodInvocationMessage, connection))
+                if (!await ValidateInvocationMode(methodExecutor, isStreamedInvocation, hubMethodInvocationMessage, connection))
                 {
                     return;
                 }
@@ -188,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
                     if (isStreamedInvocation)
                     {
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
+                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, methodExecutor, result, out var enumerator))
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
 
@@ -341,10 +340,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return authorizationResult.Succeeded;
         }
 
-        private async Task<bool> ValidateInvocationMode(Type resultType, bool isStreamedInvocation,
+        private async Task<bool> ValidateInvocationMode(ObjectMethodExecutor methodExecutor, bool isStreamedInvocation,
             HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
         {
-            var isStreamedResult = IsStreamed(resultType);
+            var isStreamedResult = IsStreamed(methodExecutor);
             if (isStreamedResult && !isStreamedInvocation)
             {
                 // Non-null/empty InvocationId? Blocking
@@ -370,11 +369,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return true;
         }
 
-        private static bool IsStreamed(Type resultType)
+        private static bool IsStreamed(ObjectMethodExecutor methodExecutor)
         {
-            // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
-            resultType = UnwrapTask(resultType);
+            var resultType = (methodExecutor.IsMethodAsync)
+                ? methodExecutor.AsyncResultType
+                : methodExecutor.MethodReturnType;
 
+            // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
             var observableInterface = IsIObservable(resultType) ?
                 resultType :
                 resultType.GetInterfaces().FirstOrDefault(IsIObservable);
@@ -392,13 +393,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return false;
         }
 
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, ObjectMethodExecutor methodExecutor, object result, Type resultType, out IAsyncEnumerator<object> enumerator)
+        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, ObjectMethodExecutor methodExecutor, object result, out IAsyncEnumerator<object> enumerator)
         {
             if (result != null)
             {
-                // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
-                resultType = UnwrapTask(resultType);
+                var resultType = (methodExecutor.IsMethodAsync)
+                    ? methodExecutor.AsyncResultType
+                    : methodExecutor.MethodReturnType;
 
+                // TODO: cache reflection for performance, on HubMethodDescriptor maybe?
                 var observableInterface = IsIObservable(resultType) ?
                     resultType :
                     resultType.GetInterfaces().FirstOrDefault(IsIObservable);
@@ -424,16 +427,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
                 return CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAbortedToken, streamCts.Token).Token;
             }
-        }
-
-        private static Type UnwrapTask(Type type)
-        {
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>))
-            {
-                return type.GetGenericArguments()[0];
-            }
-
-            return type;
         }
 
         private static bool IsIObservable(Type iface)

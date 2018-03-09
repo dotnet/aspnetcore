@@ -519,6 +519,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
             return CounterObservable(count);
         }
 
+        public async ValueTask<IObservable<string>> CounterObservableValueTaskAsync(int count)
+        {
+            await Task.Yield();
+            return CounterObservable(count);
+        }
+
         public ChannelReader<string> CounterChannel(int count)
         {
             var channel = Channel.CreateUnbounded<string>();
@@ -536,6 +542,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests.HubEndpointTestUtils
         }
 
         public async Task<ChannelReader<string>> CounterChannelAsync(int count)
+        {
+            await Task.Yield();
+            return CounterChannel(count);
+        }
+
+        public async ValueTask<ChannelReader<string>> CounterChannelValueTaskAsync(int count)
         {
             await Task.Yield();
             return CounterChannel(count);
