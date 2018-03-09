@@ -308,6 +308,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 EnsureCurrent();
                 return result;
             }
+            else
+            {
+                PutBack(cur);
+                EnsureCurrent();
+            }
 
             return false;
         }
