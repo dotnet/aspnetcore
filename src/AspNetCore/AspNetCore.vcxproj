@@ -234,10 +234,10 @@
       <VersionHeaderContents Include="%0a" />
       <VersionHeaderContents Include="// This file is auto-generated" />
       <VersionHeaderContents Include="%0a" />
-      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AspNetCoreModuleVersionPatch),$(AssemblyRevision)" />
-      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AspNetCoreModuleVersionPatch).$(AssemblyRevision)\0&quot;" />
-      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AspNetCoreModuleVersionPatch),$(AssemblyRevision)" />
-      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AspNetCoreModuleVersionPatch).$(AssemblyRevision)\0&quot;" />
+      <VersionHeaderContents Include="#define FileVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AssemblyBuild),$(AspNetCoreModuleVersionRevision)" />
+      <VersionHeaderContents Include="#define FileVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AssemblyBuild).$(AspNetCoreModuleVersionRevision)\0&quot;" />
+      <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreModuleVersionMinor),$(AssemblyBuild),$(AspNetCoreModuleVersionRevision)" />
+      <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreModuleVersionMinor).$(AssemblyBuild).$(AspNetCoreModuleVersionRevision)\0&quot;" />
       <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
     </ItemGroup>
     <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />

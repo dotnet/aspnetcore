@@ -10,6 +10,6 @@
     <VersionSuffix Condition="'$(VersionSuffix)' != '' And '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <AspNetCoreModuleVersionMajor>8</AspNetCoreModuleVersionMajor>
     <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor>
-    <AspNetCoreModuleVersionPatch>0</AspNetCoreModuleVersionPatch>
+    <AspNetCoreModuleVersionRevision>0</AspNetCoreModuleVersionRevision>
   </PropertyGroup>
 </Project>
