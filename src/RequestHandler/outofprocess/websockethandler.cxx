@@ -106,6 +106,8 @@ WEBSOCKET_HANDLER::StaticInitialize(
         sm_pTraceLog = CreateRefTraceLog( 10000, 0 );
     }
 
+    InitializeSRWLock(&sm_RequestsListLock);
+
     return S_OK;
 }
 
