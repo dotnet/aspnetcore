@@ -11,7 +11,11 @@
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta7" />
   </ItemGroup>
 
-  <Target Name="GenerateDist" AfterTargets="Build">
+  <Target 
+    Name="GenerateDist" 
+    AfterTargets="Build"
+    Inputs="$(MSBuildAllProjects);$(OutDir)$(AssemblyName).dll"
+    Outputs="$(MSBuildThisFileDirectory)dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll">
     <Exec WorkingDirectory="$(MSBuildThisFileDirectory)" Command="dotnet $(OutDir)$(AssemblyName).dll" />
   </Target>
 

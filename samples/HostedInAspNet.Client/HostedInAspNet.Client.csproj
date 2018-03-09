@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor/2.1.0-preview2-30230">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>

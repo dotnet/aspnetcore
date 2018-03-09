@@ -10,6 +10,9 @@
     <_BlazorAngleSharpAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.AngleSharp.dll</_BlazorAngleSharpAssemblyPath>
     <_BlazorExtensionAssemblyPath>$(MSBuildThisFileDirectory)../tools/Microsoft.AspNetCore.Blazor.Razor.Extensions.dll</_BlazorExtensionAssemblyPath>
 
+    <!-- Deactivates the Razor SDK's build-time compilation. We do our own -->
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
+
     <RazorDefaultConfiguration>Blazor-0.1</RazorDefaultConfiguration>
   </PropertyGroup>
 
@@ -190,7 +193,8 @@
 
     <!-- Include the temp assembly as a reference so we can discover components from the app.-->
     <ItemGroup>
-      <_BlazorReferencePathWithRefAssemblies Include="@(ReferencePathWithRefAssemblies);@(_BlazorTempAssembly)"/>
+      <_BlazorReferencePathWithRefAssemblies Include="@(ReferencePathWithRefAssemblies)" />
+      <_BlazorReferencePathWithRefAssemblies Include="%(_BlazorTempAssembly.FullPath)" />
     </ItemGroup>
 
     <ItemGroup>

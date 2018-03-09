@@ -82,15 +82,21 @@ namespace Microsoft.AspNetCore.Blazor.Cli.Server
 
         private static string FindClientBinDir(string clientAppSourceRoot)
         {
-            var binDebugDir = Path.Combine(clientAppSourceRoot, "bin", "Debug");
-            var subdirectories = Directory.GetDirectories(binDebugDir);
+            // Our CI scripts will use Release
+            #if DEBUG
+            var binDir = Path.Combine(clientAppSourceRoot, "bin", "Debug");
+            #else
+            var binDir = Path.Combine(clientAppSourceRoot, "bin", "Release");
+            #endif
+
+            var subdirectories = Directory.GetDirectories(binDir);
             if (subdirectories.Length != 1)
             {
                 throw new InvalidOperationException($"Could not locate bin directory for Blazor app. " +
-                    $"Expected to find exactly 1 subdirectory in '{binDebugDir}', but found {subdirectories.Length}.");
+                    $"Expected to find exactly 1 subdirectory in '{binDir}', but found {subdirectories.Length}.");
             }
 
-            return Path.Combine(binDebugDir, subdirectories[0]);
+            return Path.Combine(binDir, subdirectories[0]);
         }
     }
 }

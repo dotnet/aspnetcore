@@ -1,14 +1,30 @@
 <Project>
+  <Import
+    Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))\AspNetCoreSettings.props"
+    Condition=" '$(CI)' != 'true' AND '$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), AspNetCoreSettings.props))' != '' " />
+
   <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="build\sources.props" />
   
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core Blazor</Product>
     <RepositoryUrl>https://github.com/aspnet/blazor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts\build</PackageOutputPath>
+    <AssemblySigningCertName>Microsoft</AssemblySigningCertName>
+
+    <!-- Our customizations -->
+    <SignAssembly>false</SignAssembly>
+    <EnableApiCheck>false</EnableApiCheck>
+    <PublicSign>false</PublicSign>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
+  </ItemGroup>
 
   <PropertyGroup>
     <RazorPackageVersion>2.1.0-preview2-30230</RazorPackageVersion>

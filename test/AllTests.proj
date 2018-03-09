@@ -1,8 +1,0 @@
-<Project>
-  <ItemGroup>
-    <TestProject Include="*\*.csproj" />
-  </ItemGroup>
-  <Target Name="VSTest">
-    <MSBuild Projects="@(TestProject)" Targets="VSTest" ContinueOnError="ErrorAndContinue" />
-  </Target>
-</Project>

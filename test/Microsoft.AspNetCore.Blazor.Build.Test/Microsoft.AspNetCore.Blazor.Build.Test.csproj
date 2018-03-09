@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Mono\Microsoft.AspNetCore.Blazor.Mono.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Blazor.Razor.Extensions\Microsoft.AspNetCore.Blazor.Razor.Extensions.csproj" />
     <Reference Include="Microsoft.AspNetCore.Blazor.AngleSharp" HintPath="..\..\src\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />

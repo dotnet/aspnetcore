@@ -289,6 +289,19 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             return builder.GetFrames();
         }
 
+        protected static void AssertSourceEquals(string expected, CompileToCSharpResult generated)
+        {
+            // Normalize the paths inside the expected result to match the OS paths
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var windowsPath = Path.Combine(ArbitraryWindowsPath, generated.CodeDocument.Source.RelativePath).Replace('/', '\\');
+                expected = expected.Replace(windowsPath, generated.CodeDocument.Source.FilePath);
+            }
+
+            expected = expected.Trim();
+            Assert.Equal(expected, generated.Code.Trim(), ignoreLineEndingDifferences: true);
+        }
+
         protected class CompileToCSharpResult
         {
             // A compilation that can be used *with* this code to compile an assembly

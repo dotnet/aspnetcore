@@ -15,13 +15,13 @@ test: 'off'
 deploy: 'off'
 os: Visual Studio 2017 Preview
 build_script:
-  - dotnet build Blazor.sln
+  - build.cmd /p:SkipTests=true
 before_test:
   - choco install googlechrome --ignore-checksum
   - npm install -g selenium-standalone
   - selenium-standalone install
   - ps: $SeleniumProcess = Start-Process "selenium-standalone" -ArgumentList "start" -PassThru
 test_script:
-  - dotnet test test\AllTests.proj
+  - build.cmd /t:Test /p:BlazorAllTests=true
 after_test:
   - ps: Stop-Process -Id $SeleniumProcess.Id

@@ -3,9 +3,11 @@
 
 using AngleSharp.Parser.Html;
 using Mono.Cecil;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading;
 
 namespace AngleSharpBuilder
 {
@@ -28,9 +30,30 @@ namespace AngleSharpBuilder
     {
         public static void Main()
         {
-            var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "dist");
-            var inputAssembly = Assembly.GetAssembly(typeof(HtmlParser));
-            WriteModifiedAssembly(inputAssembly, outputDir);
+            // Prevent concurrent execution of this program. Since this is called by MSBuild
+            // make sure to wait for other instances to exit, we need the file to exist when 
+            // this program exits.
+            using (var mutex = new Mutex(true, "AngleSharpBuilder", out var created))
+            {
+                if (created)
+                {
+                    try
+                    {
+                        var outputDir = Path.Combine(Directory.GetCurrentDirectory(), "dist");
+                        var inputAssembly = Assembly.GetAssembly(typeof(HtmlParser));
+                        WriteModifiedAssembly(inputAssembly, outputDir);
+                    }
+                    finally
+                    {
+                        mutex.ReleaseMutex();
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Waiting for AngleSharpBuilder to exit...");
+                    mutex.WaitOne(TimeSpan.FromSeconds(10));
+                }
+            }
         }
 
         private static void WriteModifiedAssembly(Assembly assembly, string outputDir)

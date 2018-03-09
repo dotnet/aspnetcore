@@ -35,6 +35,6 @@ install:
   - curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current --version latest --install-dir "$DOTNET_INSTALL_DIR"
   - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 script:
-  - dotnet build Blazor.sln
+  - ./build.sh /p:SkipTests=true
   - selenium-standalone start &
-  - dotnet test test/AllTests.proj
+  - ./build.sh /t:Test /p:BlazorAllTests=true

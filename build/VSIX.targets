@@ -1,0 +1,120 @@
+﻿<Project>
+  <PropertyGroup>
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
+    <GetArtifactInfoDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(GetArtifactInfoDependsOn);GetVSIXArtifactInfo</GetArtifactInfoDependsOn>
+    <VSIXName>Microsoft.VisualStudio.BlazorExtension</VSIXName>
+    <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
+    <VSIXManifestOutputPath>$(BuildDir)$(VSIXName).json</VSIXManifestOutputPath>
+    <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
+    <VSIXSymbolsOutputPath>$(BuildDir)$(VSIXName).pdb</VSIXSymbolsOutputPath>
+    <VSIXArtifactCategory>shipoob</VSIXArtifactCategory>
+  </PropertyGroup>
+
+  <Target
+    Name="GenerateVSIX"
+    DependsOnTargets="RestoreVSIX;PackageVSIX"
+    Condition="'$(OS)'=='Windows_NT'" />
+
+  <!-- This target is required so KoreBuild can generate a bill of materials with relevant information about the VSIX. -->
+  <Target Name="GetVSIXArtifactInfo">
+    <ItemGroup>
+
+      <ArtifactInfo Include="$(VSIXOutputPath)">
+        <ArtifactType>VsixPackage</ArtifactType>
+        <Version>$(PackageVersion)</Version>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <PackageId>$(VSIXName)</PackageId>
+      </ArtifactInfo>
+
+      <ArtifactInfo Include="$(VSIXSymbolsOutputPath)">
+        <ArtifactType>SymbolsFile</ArtifactType>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <Dependencies>$(VSIXName).vsix</Dependencies>
+        <DebugType>full</DebugType>
+      </ArtifactInfo>
+
+      <ArtifactInfo Include="$(VSIXManifestOutputPath)" Condition="'$(IsProductComponent)'=='true'">
+        <ArtifactType>VsixPackageManifestFile</ArtifactType>
+        <Category>$(VSIXArtifactCategory)</Category>
+        <Dependencies>$(VSIXName).vsix</Dependencies>
+        <PackageId>$(VSIXName)</PackageId>
+      </ArtifactInfo>
+
+      <FilesToSign Include="$(VSIXOutputPath)" Certificate="Vsix" />
+      <FilesToExcludeFromSigning Include="$(VSIXManifestOutputPath)" />
+      <FilesToExcludeFromSigning Include="$(VSIXSymbolsOutputPath)" />
+
+    </ItemGroup>
+  </Target>
+
+  <!--
+    VisualStudioMSBuildx86Path is set by the GetToolsets target in KoreBuild if a version of VS matching the requirements in korebuild.json is found.
+   -->
+  <Target Name="RestoreVSIX" DependsOnTargets="GetToolsets">
+
+    <PropertyGroup>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-restore.rsp</VSIXResponseFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MSBuildArguments Remove="@(MSBuildArguments)" />
+      <MSBuildArguments Include="
+        $(VSIXProject);
+        /t:Restore;
+        /m;
+        /v:m;
+        /p:Configuration=$(Configuration);
+        /p:BuildNumber=$(BuildNumber);" />
+      <MSBuildArguments Include="/p:DotNetPackageVersionPropsPath=$(DotNetPackageVersionPropsPath)" Condition="'$(DotNetPackageVersionPropsPath)' != ''" />
+      <MSBuildArguments Include="/p:DotNetRestoreSourcePropsPath=$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(LogOutputDir)" />
+
+    <WriteLinesToFile
+      File="$(VSIXResponseFilePath)"
+      Lines="@(MSBuildArguments)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(VSIXResponseFilePath)&quot;"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+  <Target Name="PackageVSIX" DependsOnTargets="GetToolsets">
+
+    <Warning Text="Could not find a version of Visual Studio that has the Visual Studio SDK installed. This is required to build the Razor VSIX. Skipping."
+      Condition="'$(VisualStudioMSBuildx86Path)' == ''" />
+
+    <PropertyGroup>
+      <VSIXLogFilePath>$(LogOutputDir)vsix.log</VSIXLogFilePath>
+      <VSIXResponseFilePath>$(LogOutputDir)vsix-build.rsp</VSIXResponseFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MSBuildArguments Remove="@(MSBuildArguments)" />
+      <MSBuildArguments Include="
+        $(VSIXProject);
+        /m;
+        /v:M;
+        /fl;
+        /flp:LogFile=$(VSIXLogFilePath);
+        /p:DeployExtension=false;
+        /p:TargetVSIXContainer=$(VSIXOutputPath);
+        /p:SymbolsPublishDir=$(BuildDir);
+        /p:Configuration=$(Configuration);" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(LogOutputDir)" />
+
+    <WriteLinesToFile
+      File="$(VSIXResponseFilePath)"
+      Lines="@(MSBuildArguments)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(VisualStudioMSBuildx86Path)&quot; @&quot;$(VSIXResponseFilePath)&quot;"
+      Condition="'$(VisualStudioMSBuildx86Path)' != ''" />
+  </Target>
+
+</Project>

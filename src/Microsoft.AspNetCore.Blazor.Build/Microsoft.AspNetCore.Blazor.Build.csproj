@@ -27,6 +27,27 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>
 
+  <!-- Our build tools and nuget don't play well together with hand-authoring a .nuspec -->
+  <Target Name="_GetArtifactInfoWorkaround" AfterTargets="GetSignedPackageFiles">
+    <ItemGroup>
+      <ArtifactInfo Include="$(PackageOutputPath)$(PackageId).$(PackageVersion).symbols.nupkg">
+        <ArtifactType>NuGetSymbolsPackage</ArtifactType>
+        <PackageId>$(PackageId)</PackageId>
+        <Version>$(PackageVersion)</Version>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <TargetFrameworks>$([MSBuild]::Escape($(TargetFrameworks)))</TargetFrameworks>
+        <SourceIncluded>$(IncludeSource)</SourceIncluded>
+        <PackageType>$(PackageType)</PackageType>
+        <RepositoryRoot>$(RepositoryRoot)</RepositoryRoot>
+        <RepositoryUrl>$(RepositoryUrl)</RepositoryUrl>
+        <Category>$(PackageArtifactCategory)</Category>
+        <Certificate>$(PackageSigningCertName)</Certificate>
+        <ShouldBeSigned Condition="'$(PackageSigningCertName)' != '' OR @(SignedPackageFile->Count()) != 0 ">true</ShouldBeSigned>
+        <ShouldBeSigned Condition=" '$(DisableCodeSigning)' == 'true' ">false</ShouldBeSigned>
+        <IsContainer>true</IsContainer>
+      </ArtifactInfo>
+    </ItemGroup>
+  </Target>
   <ItemGroup>
     <None Remove="tools\**" />
   </ItemGroup>
@@ -52,12 +73,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\anglesharp\AngleSharpBuilder\AngleSharpBuilder.csproj">
-      <Name>AngleSharpBuilder</Name>
-      <Private>False</Private>
-      <SetTargetFramework>TargetFramework=netcoreapp2.0</SetTargetFramework>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <Reference Include="..\anglesharp\AngleSharpBuilder\dist\Microsoft.AspNetCore.Blazor.AngleSharp.dll" />
   </ItemGroup>
 </Project>
