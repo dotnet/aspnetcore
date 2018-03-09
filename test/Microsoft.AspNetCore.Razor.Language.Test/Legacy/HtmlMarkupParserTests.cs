@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
 
@@ -25,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsDashSymbol_ReturnsFalseForNonDashSymbol(object symbol)
         {
             // Arrange
-            HtmlSymbol convertedSymbol = (HtmlSymbol)symbol;
+            var convertedSymbol = (HtmlSymbol)symbol;
 
             // Act & Assert
             Assert.False(HtmlMarkupParser.IsDashSymbol(convertedSymbol));
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsDashSymbol_ReturnsTrueForADashSymbol()
         {
             // Arrange
-            HtmlSymbol dashSymbol = new HtmlSymbol("-", HtmlSymbolType.Text);
+            var dashSymbol = new HtmlSymbol("-", HtmlSymbolType.Text);
 
             // Act & Assert
             Assert.True(HtmlMarkupParser.IsDashSymbol(dashSymbol));
@@ -45,10 +47,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void AcceptAllButLastDoubleHypens_ReturnsTheOnlyDoubleHyphenSymbol()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-->");
+            var sut = CreateTestParserForContent("-->");
 
             // Act
-            HtmlSymbol symbol = sut.AcceptAllButLastDoubleHypens();
+            var symbol = sut.AcceptAllButLastDoubleHypens();
 
             // Assert
             Assert.Equal(doubleHyphenSymbol, symbol);
@@ -60,10 +62,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void AcceptAllButLastDoubleHypens_ReturnsTheDoubleHyphenSymbolAfterAcceptingTheDash()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("--->");
+            var sut = CreateTestParserForContent("--->");
 
             // Act
-            HtmlSymbol symbol = sut.AcceptAllButLastDoubleHypens();
+            var symbol = sut.AcceptAllButLastDoubleHypens();
 
             // Assert
             Assert.Equal(doubleHyphenSymbol, symbol);
@@ -75,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForEmptyCommentTag()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("---->");
+            var sut = CreateTestParserForContent("---->");
 
             // Act & Assert
             Assert.True(sut.IsHtmlCommentAhead());
@@ -85,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTag()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-- Some comment content in here -->");
+            var sut = CreateTestParserForContent("-- Some comment content in here -->");
 
             // Act & Assert
             Assert.True(sut.IsHtmlCommentAhead());
@@ -95,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTagWithExtraDashesAtClosingTag()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-- Some comment content in here ----->");
+            var sut = CreateTestParserForContent("-- Some comment content in here ----->");
 
             // Act & Assert
             Assert.True(sut.IsHtmlCommentAhead());
@@ -105,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsTrueForValidCommentTagWithExtraInfoAfter()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang symbols");
+            var sut = CreateTestParserForContent("-- comment --> the first part is a valid comment without the Open angle and bang symbols");
 
             // Act & Assert
             Assert.True(sut.IsHtmlCommentAhead());
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsFalseForNotClosedComment()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-- not closed comment");
+            var sut = CreateTestParserForContent("-- not closed comment");
 
             // Act & Assert
             Assert.False(sut.IsHtmlCommentAhead());
@@ -125,10 +127,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         public void IsHtmlCommentAhead_ReturnsFalseForCommentWithoutLastClosingAngle()
         {
             // Arrange
-            TestHtmlMarkupParser sut = CreateTestParserForContent("-- not closed comment--");
+            var sut = CreateTestParserForContent("-- not closed comment--");
 
             // Act & Assert
             Assert.False(sut.IsHtmlCommentAhead());
+        }
+
+        [Fact]
+        public void IsCommentContentDisallowed_ReturnsFalseForAllowedContent()
+        {
+            // Arrange
+            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
+            var sequence = Enumerable.Range((int)'a', 26).Select(item => new HtmlSymbol(((char)item).ToString(), HtmlSymbolType.Text));
+
+            // Act & Assert
+            Assert.False(HtmlMarkupParser.IsCommentContentDisallowed(sequence));
+        }
+
+        [Fact]
+        public void IsCommentContentDisallowed_ReturnsTrueForDisallowedContent()
+        {
+            // Arrange
+            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
+            var sequence = new[] { new HtmlSymbol("<", HtmlSymbolType.OpenAngle), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("-", HtmlSymbolType.Text) };
+
+            // Act & Assert
+            Assert.True(HtmlMarkupParser.IsCommentContentDisallowed(sequence));
+        }
+
+        [Fact]
+        public void IsCommentContentDisallowed_ReturnsFalseForEmptyContent()
+        {
+            // Arrange
+            var expectedSymbol1 = new HtmlSymbol("a", HtmlSymbolType.Text);
+            var sequence = Array.Empty<HtmlSymbol>();
+
+            // Act & Assert
+            Assert.False(HtmlMarkupParser.IsCommentContentDisallowed(sequence));
         }
 
         private class TestHtmlMarkupParser : HtmlMarkupParser

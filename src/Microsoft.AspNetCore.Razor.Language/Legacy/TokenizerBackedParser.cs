@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 symbols.Add(CurrentSymbol);
-                if (condition(CurrentSymbol, symbols.Reverse<TSymbol>()))
+                if (condition(CurrentSymbol, symbols))
                 {
                     matchFound = true;
                     break;

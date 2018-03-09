@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -57,25 +57,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void LookaheadUntil_PassesThePreviousSymbolsInReverseOrder()
+        public void LookaheadUntil_PassesThePreviousSymbolsInTheSameOrder()
         {
             // Arrange
             var tokenizer = CreateContentTokenizer("asdf--fvd--<");
 
             // Act
-            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
             var i = 3;
+            IEnumerable<HtmlSymbol> previousSymbols = null;
             var symbolFound = tokenizer.LookaheadUntil((s, p) =>
             {
-                symbols.Push(s);
+                previousSymbols = p;
                 return --i == 0;
             });
 
             // Assert
-            Assert.Equal(3, symbols.Count);
-            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), symbols.Pop());
-            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), symbols.Pop());
-            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), symbols.Pop());
+            Assert.Equal(4, previousSymbols.Count());
+
+            // For the very first element, there will be no previous items, so null is expected
+            var orderIndex = 0;
+            Assert.Null(previousSymbols.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlSymbol("asdf", HtmlSymbolType.Text), previousSymbols.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlSymbol("--", HtmlSymbolType.DoubleHyphen), previousSymbols.ElementAt(orderIndex++));
+            Assert.Equal(new HtmlSymbol("fvd", HtmlSymbolType.Text), previousSymbols.ElementAt(orderIndex++));
         }
 
         [Fact]
@@ -85,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
+            var symbols = new Stack<HtmlSymbol>();
             var symbolFound = tokenizer.LookaheadUntil((s, p) =>
             {
                 symbols.Push(s);
@@ -107,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var tokenizer = CreateContentTokenizer("asdf--fvd");
 
             // Act
-            Stack<HtmlSymbol> symbols = new Stack<HtmlSymbol>();
+            var symbols = new Stack<HtmlSymbol>();
             var symbolFound = tokenizer.LookaheadUntil((s, p) =>
             {
                 symbols.Push(s);

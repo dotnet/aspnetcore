@@ -613,7 +613,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     if (NextIs(HtmlSymbolType.CloseAngle))
                     {
                         // Check condition 2.3: We're at the end of a comment. Check to make sure the text ending is allowed.
-                        isValidComment = !SymbolSequenceEndsWithItems(p, HtmlSymbolType.OpenAngle, HtmlSymbolType.Bang, HtmlSymbolType.DoubleHyphen);
+                        isValidComment = !IsCommentContentDisallowed(p);
                         return true;
                     }
                     else if (NextIs(ns => IsDashSymbol(ns) && NextIs(HtmlSymbolType.CloseAngle)))
@@ -643,21 +643,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return isValidComment;
         }
 
-        internal static bool SymbolSequenceEndsWithItems(IEnumerable<HtmlSymbol> sequence, params HtmlSymbolType[] items)
+        /// <summary>
+        /// Verifies, that the sequence doesn't end with the "&lt;!-" HtmlSymbols. Note, the first symbol is an opening bracket symbol
+        /// </summary>
+        internal static bool IsCommentContentDisallowed(IEnumerable<HtmlSymbol> sequence)
         {
-            int index = items.Length;
-            foreach (var previousSymbol in sequence)
+            var reversedSequence = sequence.Reverse();
+            var disallowEnding = new[] { new HtmlSymbol("-", HtmlSymbolType.Text), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
+            var index = 0;
+            foreach (var item in reversedSequence)
             {
-                if (index == 0)
+                if (!item.Equals(disallowEnding[index++]))
                 {
-                    break;
+                    return false;
                 }
 
-                if (items[--index] != previousSymbol.Type)
-                    return false;
+                if (index == disallowEnding.Length)
+                {
+                    return true;
+                }
             }
 
-            return index == 0;
+            return false;
         }
 
         private bool CData()
