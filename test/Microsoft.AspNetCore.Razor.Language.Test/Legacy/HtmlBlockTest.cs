@@ -333,7 +333,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockSupportsCommentAsBlock()
         {
-            ParseBlockTest("<!-- foo -->", new MarkupBlock( BlockFactory.HtmlCommentBlock(" foo ")));
+            ParseBlockTest("<!-- foo -->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo ")));
+        }
+
+        [Fact]
+        public void ParseBlockSupportsCommentWithExtraDashAsBlock()
+        {
+            ParseBlockTest("<!-- foo --->", new MarkupBlock(BlockFactory.HtmlCommentBlock(" foo -")));
         }
 
         [Fact]
