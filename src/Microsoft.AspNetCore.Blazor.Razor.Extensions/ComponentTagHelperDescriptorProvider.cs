@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 {
     internal class ComponentTagHelperDescriptorProvider : RazorEngineFeatureBase, ITagHelperDescriptorProvider
     {
-        public static readonly string UIEventHandlerPropertyMetadata = "Blazor.IsUIEventHandler";
+        public static readonly string DelegateSignatureMetadata = "Blazor.DelegateSignature";
 
         public readonly static string ComponentTagHelperKind = ComponentDocumentClassifierPass.ComponentDocumentKind;
         
@@ -113,7 +114,11 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
                     if (property.kind == PropertyKind.Delegate)
                     {
-                        pb.Metadata.Add(UIEventHandlerPropertyMetadata, bool.TrueString);
+                        var propertyType = (INamedTypeSymbol)property.property.Type;
+                        var parameters = propertyType.DelegateInvokeMethod.Parameters;
+
+                        var signature = "(" + string.Join(", ", parameters.Select(p => p.Name)) + ")";
+                        pb.Metadata.Add(DelegateSignatureMetadata, signature);
                     }
 
                     xml = property.property.GetDocumentationCommentXml();
@@ -182,12 +187,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                         kind = PropertyKind.Enum;
                     }
 
-                    if (kind == PropertyKind.Default &&
-                        property.Type.TypeKind == TypeKind.Delegate &&
-                        property.Type.ToDisplayString(FullNameTypeDisplayFormat) == BlazorApi.UIEventHandler.FullTypeName)
+                    if (kind == PropertyKind.Default && property.Type.TypeKind == TypeKind.Delegate)
                     {
-                        // For delegate types we do some special code generation when the type
-                        // UIEventHandler.
                         kind = PropertyKind.Delegate;
                     }
 

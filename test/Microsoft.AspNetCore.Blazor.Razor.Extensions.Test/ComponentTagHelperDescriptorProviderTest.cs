@@ -282,8 +282,8 @@ namespace Test
             Assert.False(attribute.IsStringProperty);
         }
 
-        [Fact] // UIEventHandler properties have some special intellisense behavior
-        public void Excecute_UIEventHandlerProperty_CreatesDescriptor()
+        [Fact]
+        public void Execute_DelegateProperty_CreatesDescriptor()
         {
             // Arrange
 
@@ -326,7 +326,7 @@ namespace Test
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
             Assert.False(attribute.IsStringProperty);
-            Assert.True(attribute.IsUIEventHandlerProperty());
+            Assert.True(attribute.IsDelegateProperty());
         }
 
         // For simplicity in testing, exlude the built-in components. We'll add more and we

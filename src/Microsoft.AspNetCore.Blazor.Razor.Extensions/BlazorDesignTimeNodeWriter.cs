@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We don't expect this to happen, we just want to know if it can.
                 throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
             }
-            else if (node.BoundAttribute.IsUIEventHandlerProperty())
+            else if (node.BoundAttribute.IsDelegateProperty())
             {
                 // See the runtime version of this code for a thorough description of what we're doing here
                 if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)
@@ -445,7 +445,9 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     context.CodeWriter.Write(" = ");
                     context.CodeWriter.Write("new ");
                     context.CodeWriter.Write(node.BoundAttribute.TypeName);
-                    context.CodeWriter.Write("(e => ");
+                    context.CodeWriter.Write("(");
+                    context.CodeWriter.Write(node.BoundAttribute.GetDelegateSignature());
+                    context.CodeWriter.Write(" => ");
                     WriteCSharpToken(context, ((IntermediateToken)node.Children[0]));
                     context.CodeWriter.Write(");");
                     context.CodeWriter.WriteLine();

@@ -225,7 +225,7 @@ namespace Test
         {
             base.BuildRenderTree(builder);
             builder.OpenComponent<Test.MyComponent>(0);
-            builder.AddAttribute(1, ""OnClick"", new Microsoft.AspNetCore.Blazor.UIEventHandler(e => Increment()));
+            builder.AddAttribute(1, ""OnClick"", new Microsoft.AspNetCore.Blazor.UIEventHandler(eventArgs => Increment()));
             builder.CloseComponent();
             builder.AddContent(2, ""\n\n"");
         }

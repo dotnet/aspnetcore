@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We don't expect this to happen, we just want to know if it can.
                 throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
             }
-            else if (node.BoundAttribute.IsUIEventHandlerProperty())
+            else if (node.BoundAttribute.IsDelegateProperty())
             {
                 // This is a UIEventHandler property. We do some special code generation for this
                 // case so that it's easier to write for common cases.
@@ -502,7 +502,8 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     context.CodeWriter.Write("new ");
                     context.CodeWriter.Write(node.BoundAttribute.TypeName);
                     context.CodeWriter.Write("(");
-                    context.CodeWriter.Write("e => ");
+                    context.CodeWriter.Write(node.BoundAttribute.GetDelegateSignature());
+                    context.CodeWriter.Write(" => ");
                     context.CodeWriter.Write(((IntermediateToken)node.Children[0]).Content);
                     context.CodeWriter.Write(")");
                 }
