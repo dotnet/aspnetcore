@@ -20,7 +20,8 @@
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
       <SrcExclusions Include="
-        src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs">
+        src\Microsoft.AspNetCore.Mvc.DataAnnotations\Internal\DataAnnotationsMetadataProvider.cs;
+        src\Microsoft.CodeAnalysis.Razor.Workspaces\ProjectSystem\DefaultProjectSnapshotManager.cs">
         <term>hanging</term>
         <Justification>Refers to a stuck process/thread.</Justification>
       </SrcExclusions>
