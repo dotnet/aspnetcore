@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                             // Send them in a single post
                             var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
+                            // Corefx changed the default version and High Sierra curlhandler tries to upgrade request
+                            request.Version = new Version(1, 1);
                             PrepareHttpRequest(request, httpOptions);
 
                             request.Content = new ReadOnlySequenceContent(buffer);
