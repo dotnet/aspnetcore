@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.ExceptionServices;
@@ -19,10 +20,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketTransport : ITransport
     {
+        private static readonly PipeScheduler[] ThreadPoolSchedulerArray = new PipeScheduler[] { PipeScheduler.ThreadPool };
+
         private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionHandler _handler;
         private readonly IApplicationLifetime _appLifetime;
+        private readonly int _numSchedulers;
+        private readonly PipeScheduler[] _schedulers;
         private readonly ISocketsTrace _trace;
         private Socket _listenSocket;
         private Task _listenTask;
@@ -33,6 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IEndPointInformation endPointInformation,
             IConnectionHandler handler,
             IApplicationLifetime applicationLifetime,
+            int ioQueueCount,
             ISocketsTrace trace)
         {
             Debug.Assert(endPointInformation != null);
@@ -45,6 +51,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _handler = handler;
             _appLifetime = applicationLifetime;
             _trace = trace;
+
+            if (ioQueueCount > 0)
+            {
+                _numSchedulers = ioQueueCount;
+                _schedulers = new IOQueue[_numSchedulers];
+
+                for (var i = 0; i < _numSchedulers; i++)
+                {
+                    _schedulers[i] = new IOQueue();
+                }
+            }
+            else
+            {
+                _numSchedulers = ThreadPoolSchedulerArray.Length;
+                _schedulers = ThreadPoolSchedulerArray;
+            }
         }
 
         public Task BindAsync()
@@ -125,22 +147,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 while (true)
                 {
-                    try
+                    for (var schedulerIndex = 0; schedulerIndex < _numSchedulers;  schedulerIndex++)
                     {
-                        var acceptSocket = await _listenSocket.AcceptAsync();
-                        acceptSocket.NoDelay = _endPointInformation.NoDelay;
+                        try
+                        {
+                            var acceptSocket = await _listenSocket.AcceptAsync();
+                            acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                        var connection = new SocketConnection(acceptSocket, _memoryPool, _trace);
-                        _ = connection.StartAsync(_handler);
-                    }
-                    catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
-                    {
-                        // REVIEW: Should there be a seperate log message for a connection reset this early?
-                        _trace.ConnectionReset(connectionId: "(null)");
-                    }
-                    catch (SocketException ex) when (!_unbinding)
-                    {
-                        _trace.ConnectionError(connectionId: "(null)", ex);
+                            var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
+                            _ = connection.StartAsync(_handler);
+                        }
+                        catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+                        {
+                            // REVIEW: Should there be a seperate log message for a connection reset this early?
+                            _trace.ConnectionReset(connectionId: "(null)");
+                        }
+                        catch (SocketException ex) when (!_unbinding)
+                        {
+                            _trace.ConnectionError(connectionId: "(null)", ex);
+                        }
                     }
                 }
             }

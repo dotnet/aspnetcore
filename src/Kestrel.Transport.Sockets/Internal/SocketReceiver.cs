@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
@@ -10,11 +11,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     {
         private readonly Socket _socket;
         private readonly SocketAsyncEventArgs _eventArgs = new SocketAsyncEventArgs();
-        private readonly SocketAwaitable _awaitable = new SocketAwaitable();
+        private readonly SocketAwaitable _awaitable;
 
-        public SocketReceiver(Socket socket)
+        public SocketReceiver(Socket socket, PipeScheduler scheduler)
         {
             _socket = socket;
+            _awaitable = new SocketAwaitable(scheduler);
             _eventArgs.UserToken = _awaitable;
             _eventArgs.Completed += (_, e) => ((SocketAwaitable)e.UserToken).Complete(e.BytesTransferred, e.SocketError);
         }

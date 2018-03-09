@@ -8,9 +8,9 @@ using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
-using System.Threading;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -19,15 +19,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
     internal sealed class SocketConnection : TransportConnection
     {
         private const int MinAllocBufferSize = 2048;
+        public static bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 
         private readonly Socket _socket;
+        private readonly PipeScheduler _scheduler;
         private readonly ISocketsTrace _trace;
         private readonly SocketReceiver _receiver;
         private readonly SocketSender _sender;
 
         private volatile bool _aborted;
 
-        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, ISocketsTrace trace)
+        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _socket = socket;
             MemoryPool = memoryPool;
+            _scheduler = scheduler;
             _trace = trace;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
@@ -46,13 +49,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             RemoteAddress = remoteEndPoint.Address;
             RemotePort = remoteEndPoint.Port;
 
-            _receiver = new SocketReceiver(_socket);
-            _sender = new SocketSender(_socket);
+            // On *nix platforms, Sockets already dispatches to the ThreadPool.
+            var awaiterScheduler = IsWindows ? _scheduler : PipeScheduler.Inline;
+
+            _receiver = new SocketReceiver(_socket, awaiterScheduler);
+            _sender = new SocketSender(_socket, awaiterScheduler);
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
-        public override PipeScheduler InputWriterScheduler => PipeScheduler.Inline;
-        public override PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
+        public override PipeScheduler InputWriterScheduler => _scheduler;
+        public override PipeScheduler OutputReaderScheduler => _scheduler;
 
         public async Task StartAsync(IConnectionHandler connectionHandler)
         {

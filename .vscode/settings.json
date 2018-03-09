@@ -3,7 +3,6 @@
     "editor.tabSize": 2
   },
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
   "files.associations": {
     "*.props": "xml",
     "*.targets": "xml"

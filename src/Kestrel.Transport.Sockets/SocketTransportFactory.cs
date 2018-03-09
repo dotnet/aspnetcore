@@ -12,8 +12,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     public sealed class SocketTransportFactory : ITransportFactory
     {
-        private readonly SocketsTrace _trace;
+        private readonly SocketTransportOptions _options;
         private readonly IApplicationLifetime _appLifetime;
+        private readonly SocketsTrace _trace;
 
         public SocketTransportFactory(
             IOptions<SocketTransportOptions> options,
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            _options = options.Value;
             _appLifetime = applicationLifetime;
             var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
@@ -55,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            return new SocketTransport(endPointInformation, handler, _appLifetime, _trace);
+            return new SocketTransport(endPointInformation, handler, _appLifetime, _options.IOQueueCount, _trace);
         }
     }
 }
