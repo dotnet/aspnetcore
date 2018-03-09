@@ -1272,7 +1272,9 @@ namespace SimpleJson
 
         internal virtual ReflectionUtils.ConstructorDelegate ContructorDelegateFactory(Type key)
         {
-            return ReflectionUtils.GetContructor(key, key.IsArray ? ArrayConstructorParameterTypes : EmptyTypes);
+            // We need List<T>(int) constructor so that DeserializeObject method will work for generating IList-declared values
+            var needsCapacityArgument = key.IsArray || key.IsConstructedGenericType && key.GetGenericTypeDefinition() == typeof(List<>);
+            return ReflectionUtils.GetContructor(key, needsCapacityArgument ? ArrayConstructorParameterTypes : EmptyTypes);
         }
 
         internal virtual IDictionary<string, ReflectionUtils.GetDelegate> GetterValueFactory(Type type)
