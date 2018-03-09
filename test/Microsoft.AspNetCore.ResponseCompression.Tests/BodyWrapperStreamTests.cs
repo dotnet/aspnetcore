@@ -65,47 +65,29 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         public async Task WriteAsync_IsPassedToUnderlyingStream_WhenDisableResponseBuffering(bool flushable)
         {
             var buffer = new byte[] { 1 };
-            byte[] written = null;
 
-            var mock = new Mock<Stream>();
-            mock.SetupGet(s => s.CanWrite).Returns(true);
-            mock.Setup(s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Callback<byte[], int, int, CancellationToken>((b, o, c, t) =>
-                {
-                    written = new ArraySegment<byte>(b, 0, c).ToArray();
-                })
-                .Returns(Task.FromResult(0));
-
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), mock.Object, new MockResponseCompressionProvider(flushable), null, null);
+            var memoryStream = new MemoryStream();
+            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(flushable), null, null);
 
             stream.DisableResponseBuffering();
             await stream.WriteAsync(buffer, 0, buffer.Length);
 
-            Assert.Equal(buffer, written);
+            Assert.Equal(buffer, memoryStream.ToArray());
         }
 
         [Fact]
         public async Task SendFileAsync_IsPassedToUnderlyingStream_WhenDisableResponseBuffering()
         {
-            byte[] written = null;
+            var memoryStream = new MemoryStream();
 
-            var mock = new Mock<Stream>();
-            mock.SetupGet(s => s.CanWrite).Returns(true);
-            mock.Setup(s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Callback<byte[], int, int, CancellationToken>((b, o, c, t) =>
-                {
-                    written = new ArraySegment<byte>(b, 0, c).ToArray();
-                })
-                .Returns(Task.FromResult(0));
-
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), mock.Object, new MockResponseCompressionProvider(true), null, null);
+            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(true), null, null);
 
             stream.DisableResponseBuffering();
 
             var path = "testfile1kb.txt";
             await stream.SendFileAsync(path, 0, null, CancellationToken.None);
 
-            Assert.Equal(File.ReadAllBytes(path), written);
+            Assert.Equal(File.ReadAllBytes(path), memoryStream.ToArray());
         }
 
         [Theory]
@@ -114,23 +96,15 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
         public void BeginWrite_IsPassedToUnderlyingStream_WhenDisableResponseBuffering(bool flushable)
         {
             var buffer = new byte[] { 1 };
-            byte[] written = null;
 
-            var mock = new Mock<Stream>();
-            mock.SetupGet(s => s.CanWrite).Returns(true);
-            mock.Setup(s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Callback<byte[], int, int, CancellationToken>((b, o, c, t) =>
-                {
-                    written = new ArraySegment<byte>(b, 0, c).ToArray();
-                })
-            .Returns(Task.FromResult(0));
+            var memoryStream = new MemoryStream();
 
-            var stream = new BodyWrapperStream(new DefaultHttpContext(), mock.Object, new MockResponseCompressionProvider(flushable), null, null);
+            var stream = new BodyWrapperStream(new DefaultHttpContext(), memoryStream, new MockResponseCompressionProvider(flushable), null, null);
 
             stream.DisableResponseBuffering();
             stream.BeginWrite(buffer, 0, buffer.Length, (o) => {}, null);
 
-            Assert.Equal(buffer, written);
+            Assert.Equal(buffer, memoryStream.ToArray());
         }
 
         private class MockResponseCompressionProvider: IResponseCompressionProvider
