@@ -3,6 +3,8 @@
   <PropertyGroup>
     <TargetFrameworks>$(StandardTestWebsiteTfms)</TargetFrameworks>
     <DebugType Condition="'$(TargetFramework)' == 'net461'">full</DebugType>
+    <!-- We want to validate runtime parser \ compilation exceptions -->
+    <RazorCompileOnBuild>false</RazorCompileOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

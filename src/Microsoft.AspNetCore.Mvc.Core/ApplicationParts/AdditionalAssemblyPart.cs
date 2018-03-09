@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
     /// An <see cref="AssemblyPart"/> that was added by an assembly that referenced it through the use
     /// of an assembly metadata attribute.
     /// </summary>
-    public class AdditionalAssemblyPart : AssemblyPart, ICompilationReferencesProvider
+    public class AdditionalAssemblyPart : AssemblyPart, ICompilationReferencesProvider, IApplicationPartTypeProvider
     {
         /// <inheritdoc />
         public AdditionalAssemblyPart(Assembly assembly) : base(assembly)
@@ -19,5 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         }
 
         IEnumerable<string> ICompilationReferencesProvider.GetReferencePaths() => Array.Empty<string>();
+
+        IEnumerable<TypeInfo> IApplicationPartTypeProvider.Types => Array.Empty<TypeInfo>();
     }
 }
