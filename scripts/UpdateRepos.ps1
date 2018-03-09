@@ -56,11 +56,12 @@ Push-Location $ModuleDirectory
 try {
 
     $build_errors = @()
-    # Get-Submodules also update --init's them
     $submodules = Get-Submodules $RepoRoot
     foreach ($submodule in $submodules) {
         Push-Location $submodule.path
         try {
+            Invoke-Block { & git fetch }
+            Invoke-Block { & git checkout origin/$($submodule.branch) }
             $depsFile = Join-Path (Join-Path $($submodule.path) "build") "dependencies.props"
 
             if (!(Test-Path $depsFile)) {
