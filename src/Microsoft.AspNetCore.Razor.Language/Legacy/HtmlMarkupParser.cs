@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return false;
         }
 
-        private HtmlSymbol AcceptAllButLastDoubleHypens()
+        protected HtmlSymbol AcceptAllButLastDoubleHypens()
         {
             var lastDoubleHyphen = CurrentSymbol;
             AcceptWhile(s =>
@@ -552,10 +552,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return true;
                 }
 
-                NextToken();
-                EnsureCurrent();
                 return false;
             });
+
+            NextToken();
+            EnsureCurrent();
 
             if (At(HtmlSymbolType.Text) && IsDashSymbol(CurrentSymbol))
             {
@@ -572,12 +573,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return lastDoubleHyphen;
         }
 
-        private static bool IsDashSymbol(HtmlSymbol symbol)
+        internal static bool IsDashSymbol(HtmlSymbol symbol)
         {
             return string.Equals(symbol.Content, "-", StringComparison.Ordinal);
         }
 
-        private bool IsHtmlCommentAhead()
+        protected bool IsHtmlCommentAhead()
         {
             /*
              * From HTML5 Specification, available at http://www.w3.org/TR/html52/syntax.html#comments

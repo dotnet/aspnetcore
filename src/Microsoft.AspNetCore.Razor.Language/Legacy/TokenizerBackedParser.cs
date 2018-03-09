@@ -300,12 +300,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         protected internal bool NextIs(Func<TSymbol, bool> condition)
         {
             var cur = CurrentSymbol;
-            NextToken();
-            var result = condition(CurrentSymbol);
-            PutCurrentBack();
-            PutBack(cur);
-            EnsureCurrent();
-            return result;
+            if (NextToken())
+            {
+                var result = condition(CurrentSymbol);
+                PutCurrentBack();
+                PutBack(cur);
+                EnsureCurrent();
+                return result;
+            }
+
+            return false;
         }
 
         protected internal bool Was(TSymbolType type)
