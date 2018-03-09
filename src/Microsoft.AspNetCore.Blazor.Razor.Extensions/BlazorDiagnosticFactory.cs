@@ -69,23 +69,10 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             () => "Component attributes do not support complex content (mixed C# and markup). Attribute: '{0}', text '{1}'",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic Create_UnsupportedComplexContent(
-            SourceSpan? source, 
-            TagHelperPropertyIntermediateNode node,
-            IntermediateNodeCollection children)
+        public static RazorDiagnostic Create_UnsupportedComplexContent(IntermediateNode node, string attributeName)
         {
-            var content = string.Join("", children.OfType<IntermediateToken>().Select(t => t.Content));
-            return RazorDiagnostic.Create(UnsupportedComplexContent, source ?? SourceSpan.Undefined, node.AttributeName, content);
-        }
-
-        public static readonly RazorDiagnosticDescriptor UnboundComponentAttribute = new RazorDiagnosticDescriptor(
-            "BL9987",
-            () => "The component '{0}' does not have an attribute named '{1}'.",
-            RazorDiagnosticSeverity.Error);
-
-        public static RazorDiagnostic Create_UnboundComponentAttribute(SourceSpan? source, string componentType, TagHelperHtmlAttributeIntermediateNode node)
-        {
-            return RazorDiagnostic.Create(UnboundComponentAttribute, source ?? SourceSpan.Undefined, componentType, node.AttributeName);
+            var content = string.Join("", node.FindDescendantNodes<IntermediateToken>().Select(t => t.Content));
+            return RazorDiagnostic.Create(UnsupportedComplexContent, node.Source ?? SourceSpan.Undefined, attributeName, content);
         }
 
         private static SourceSpan? CalculateSourcePosition(

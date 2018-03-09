@@ -70,7 +70,7 @@ namespace Test
     IntProperty=""123""
     BoolProperty=""true""
     StringProperty=""My string""
-    ObjectProperty=""new SomeType()""/>");
+    ObjectProperty=""new SomeType()"" />");
 
             // Act
             var frames = GetRenderTree(component);
@@ -118,6 +118,40 @@ namespace Test
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 0),
                 frame => AssertFrame.Attribute(frame, "StringProperty", "42", 1));
         }
+
+        [Fact]
+        public void Render_ChildComponent_WithNonPropertyAttributes()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(CSharpSyntaxTree.ParseText(@"
+using Microsoft.AspNetCore.Blazor.Components;
+
+namespace Test
+{
+    public class MyComponent : BlazorComponent, IComponent
+    {
+        void IComponent.SetParameters(ParameterCollection parameters)
+        {
+        }
+    }
+}
+"));
+
+            var component = CompileToComponent(@"
+@addTagHelper *, TestAssembly
+<MyComponent some-attribute=""foo"" another-attribute=""@(42.ToString())"" />");
+
+            // Act
+            var frames = GetRenderTree(component);
+
+            // Assert
+            Assert.Collection(
+                frames,
+                frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
+                frame => AssertFrame.Attribute(frame, "some-attribute", "foo", 1),
+                frame => AssertFrame.Attribute(frame, "another-attribute", "42", 2));
+        }
+
 
         [Fact]
         public void Render_ChildComponent_WithLambdaEventHandler()

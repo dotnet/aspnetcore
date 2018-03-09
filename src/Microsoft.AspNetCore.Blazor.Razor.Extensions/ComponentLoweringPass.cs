@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
 
             node.Children.Add(new ComponentCloseExtensionNode());
 
-            // Now we need to rewrite any set property nodes to call the appropriate AddAttribute api.
+            // Now we need to rewrite any set property or HTML nodes to call the appropriate AddAttribute api.
             for (var i = node.Children.Count - 1; i >= 0; i--)
             {
                 if (node.Children[i] is TagHelperPropertyIntermediateNode propertyNode &&
@@ -76,60 +77,99 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                     //
                     // This is where a lot of the complexity in the Razor/TagHelpers model creeps in and we
                     // might be able to avoid it if these features aren't needed.
-                    if (propertyNode.Children.Count == 1 &&
-                        propertyNode.Children[0] is HtmlAttributeIntermediateNode htmlNode &&
-                        htmlNode.Children.Count > 1)
-                    {
-                        // This case can be hit for a 'string' attribute
-                        node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
-                            propertyNode.Source,
-                            propertyNode,
-                            htmlNode.Children));
-                        node.Children.RemoveAt(i);
-                        continue;
-                    }
-                    if (propertyNode.Children.Count == 1 &&
-                        propertyNode.Children[0] is CSharpExpressionIntermediateNode cSharpNode &&
-                        cSharpNode.Children.Count > 1)
-                    {
-                        // This case can be hit when the attribute has an explicit @ inside, which
-                        // 'escapes' any special sugar we provide for codegen.
-                        node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
-                            propertyNode.Source,
-                            propertyNode,
-                            cSharpNode.Children));
-                        node.Children.RemoveAt(i);
-                        continue;
-                    }
-                    else if (propertyNode.Children.Count > 1)
+                    if (HasComplexChildContent(propertyNode))
                     {
                         node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
-                            propertyNode.Source,
                             propertyNode,
-                            propertyNode.Children));
+                            propertyNode.AttributeName));
                         node.Children.RemoveAt(i);
                         continue;
                     }
 
-                    node.Children[i] = new ComponentAttributeExtensionNode(propertyNode)
-                    {
-                        PropertyName = propertyNode.BoundAttribute.GetPropertyName(),
-                    };
+                    node.Children[i] = new ComponentAttributeExtensionNode(propertyNode);
                 }
-            }
-
-            // Add an error and remove any nodes that don't map to a component property.
-            for (var i = node.Children.Count - 1; i >= 0; i--)
-            {
-                if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode attributeNode)
+                else if (node.Children[i] is TagHelperHtmlAttributeIntermediateNode htmlNode)
                 {
-                    node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnboundComponentAttribute(
-                        attributeNode.Source,
-                        tagHelper.GetTypeName(),
-                        attributeNode));
-                    node.Children.RemoveAt(i);
+                    if (HasComplexChildContent(htmlNode))
+                    {
+                        node.Diagnostics.Add(BlazorDiagnosticFactory.Create_UnsupportedComplexContent(
+                            htmlNode,
+                            htmlNode.AttributeName));
+                        node.Children.RemoveAt(i);
+                        continue;
+                    }
+
+                    // For any nodes that don't map to a component property we won't have type information
+                    // but these should follow the same path through the runtime.
+                    var attributeNode = new ComponentAttributeExtensionNode(htmlNode);
+                    node.Children[i] = attributeNode;
+
+                    // Since we don't support complex content, we can rewrite the inside of this
+                    // node to the rather simpler form that property nodes usually have.
+                    for (var j = 0; j < attributeNode.Children.Count; j++)
+                    {
+                        if (attributeNode.Children[j] is HtmlAttributeValueIntermediateNode htmlValue)
+                        {
+                            attributeNode.Children[j] = new HtmlContentIntermediateNode()
+                            {
+                                Children =
+                                {
+                                    htmlValue.Children.Single(),
+                                },
+                                Source = htmlValue.Source,
+                            };
+                        }
+                        else if (attributeNode.Children[j] is CSharpExpressionAttributeValueIntermediateNode expressionValue)
+                        {
+                            attributeNode.Children[j] = new CSharpExpressionIntermediateNode()
+                            {
+                                Children =
+                                {
+                                    expressionValue.Children.Single(),
+                                },
+                                Source = expressionValue.Source,
+                            };
+                        }
+                        else if (attributeNode.Children[j] is CSharpCodeAttributeValueIntermediateNode codeValue)
+                        {
+                            attributeNode.Children[j] = new CSharpExpressionIntermediateNode()
+                            {
+                                Children =
+                                {
+                                    codeValue.Children.Single(),
+                                },
+                                Source = codeValue.Source,
+                            };
+                        }
+                    }
                 }
             }
+        }
+
+        private static bool HasComplexChildContent(IntermediateNode node)
+        {
+            if (node.Children.Count == 1 &&
+                node.Children[0] is HtmlAttributeIntermediateNode htmlNode &&
+                htmlNode.Children.Count > 1)
+            {
+                // This case can be hit for a 'string' attribute
+                return true;
+            }
+            else if (node.Children.Count == 1 &&
+                node.Children[0] is CSharpExpressionIntermediateNode cSharpNode &&
+                cSharpNode.Children.Count > 1)
+            {
+                // This case can be hit when the attribute has an explicit @ inside, which
+                // 'escapes' any special sugar we provide for codegen.
+                return true;
+            }
+            else if (node.Children.Count > 1)
+            {
+                // This is the common case for 'mixed' content
+                return true;
+            }
+
+            return false;
         }
     }
 }

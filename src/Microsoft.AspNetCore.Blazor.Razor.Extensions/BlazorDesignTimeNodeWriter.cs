@@ -413,7 +413,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             // This rougly follows the design of the runtime writer for simplicity.
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
-                // Do nothhing
+                // Do nothing
             }
             else if (
                 node.Children.Count != 1 ||
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We don't expect this to happen, we just want to know if it can.
                 throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
             }
-            else if (node.BoundAttribute.IsDelegateProperty())
+            else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
             {
                 // See the runtime version of this code for a thorough description of what we're doing here
                 if ((cSharpNode = node.Children[0] as CSharpExpressionIntermediateNode) != null)

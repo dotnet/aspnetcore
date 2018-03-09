@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
                 // We don't expect this to happen, we just want to know if it can.
                 throw new InvalidOperationException("Attribute nodes should either be minimized or a single content node.");
             }
-            else if (node.BoundAttribute.IsDelegateProperty())
+            else if (node.BoundAttribute?.IsDelegateProperty() ?? false)
             {
                 // This is a UIEventHandler property. We do some special code generation for this
                 // case so that it's easier to write for common cases.

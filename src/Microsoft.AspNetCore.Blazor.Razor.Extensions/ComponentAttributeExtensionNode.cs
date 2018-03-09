@@ -14,6 +14,28 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         {
         }
 
+        public ComponentAttributeExtensionNode(TagHelperHtmlAttributeIntermediateNode attributeNode)
+        {
+            if (attributeNode == null)
+            {
+                throw new ArgumentNullException(nameof(attributeNode));
+            }
+
+            AttributeName = attributeNode.AttributeName;
+            AttributeStructure = attributeNode.AttributeStructure;
+            Source = attributeNode.Source;
+
+            for (var i = 0; i < attributeNode.Children.Count; i++)
+            {
+                Children.Add(attributeNode.Children[i]);
+            }
+
+            for (var i = 0; i < attributeNode.Diagnostics.Count; i++)
+            {
+                Diagnostics.Add(attributeNode.Diagnostics[i]);
+            }
+        }
+
         public ComponentAttributeExtensionNode(TagHelperPropertyIntermediateNode propertyNode)
         {
             if (propertyNode == null)
@@ -24,7 +46,7 @@ namespace Microsoft.AspNetCore.Blazor.Razor
             AttributeName = propertyNode.AttributeName;
             AttributeStructure = propertyNode.AttributeStructure;
             BoundAttribute = propertyNode.BoundAttribute;
-            IsIndexerNameMatch = propertyNode.IsIndexerNameMatch;
+            PropertyName = propertyNode.BoundAttribute.GetPropertyName();
             Source = propertyNode.Source;
             TagHelper = propertyNode.TagHelper;
 
@@ -46,10 +68,6 @@ namespace Microsoft.AspNetCore.Blazor.Razor
         public AttributeStructure AttributeStructure { get; set; }
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
-
-        public string FieldName { get; set; }
-
-        public bool IsIndexerNameMatch { get; set; }
 
         public string PropertyName { get; set; }
 
