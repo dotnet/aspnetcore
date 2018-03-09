@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 {
     public class UpgradeFeatureDetectionTests : LoggedTest
     {
+        private string _isWebsocketsSupported = Environment.OSVersion.Version >= new Version(6, 2) ? "Enabled" : "Disabled";
+
         public UpgradeFeatureDetectionTests(ITestOutputHelper output) : base(output)
         {
         }
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 ApplicationType.Portable,
                 "AppHostConfig/Http.config",
                 Helpers.GetInProcessTestSitesPath(),
-                "Enabled");
+                _isWebsocketsSupported);
         }
 
         [Fact]
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 ApplicationType.Portable,
                 "AppHostConfig/Http.config",
                 Helpers.GetOutOfProcessTestSitesPath(),
-                "Enabled");
+                _isWebsocketsSupported);
         }
 
         private async Task UpgradeFeatureDetectionDeployer(RuntimeFlavor runtimeFlavor,
