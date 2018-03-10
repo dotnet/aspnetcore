@@ -200,7 +200,12 @@ namespace ServerComparison.FunctionalTests
         private static async Task CheckContentLengthAsync(HttpClient client, ILogger logger)
         {
             logger.LogInformation("Testing ContentLength");
-            var response = await client.GetAsync("contentlength");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "contentlength")
+            {
+                Version = new Version(1, 1)
+            };
+
+            var response = await client.SendAsync(requestMessage);
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
@@ -265,7 +270,12 @@ namespace ServerComparison.FunctionalTests
         private static async Task CheckChunkedAsync(HttpClient client, ILogger logger)
         {
             logger.LogInformation("Testing Chunked");
-            var response = await client.GetAsync("chunked");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "chunked")
+            {
+                Version = new Version(1, 1)
+            };
+
+            var response = await client.SendAsync(requestMessage);
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
@@ -285,7 +295,12 @@ namespace ServerComparison.FunctionalTests
         private static async Task CheckManuallyChunkedAsync(HttpClient client, ILogger logger)
         {
             logger.LogInformation("Testing ManuallyChunked");
-            var response = await client.GetAsync("manuallychunked");
+            var requestMessage = new HttpRequestMessage(HttpMethod.Get, "manuallychunked")
+            {
+                Version = new Version(1, 1)
+            };
+
+            var response = await client.SendAsync(requestMessage);
             var responseText = await response.Content.ReadAsStringAsync();
             try
             {
