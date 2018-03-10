@@ -97,6 +97,12 @@ FORWARDING_HANDLER::OnExecuteRequestHandler()
     STACK_STRU(strUrl, 2048);
     STACK_STRU(struEscapedUrl, 2048);
 
+    //
+    // Take a reference so that object does not go away as a result of
+    // async completion.
+    //
+    ReferenceRequestHandler();
+
     // override Protocol related config from aspNetCore config
     pProtocol->OverrideConfig(m_pApplication->QueryConfig());
 
@@ -354,6 +360,12 @@ Finished:
         ReleaseSRWLockShared(&m_RequestLock);
         DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == NULL);
     }
+
+    DereferenceRequestHandler();
+    //
+    // Do not use this object after dereferencing it, it may be gone.
+    //
+
     return retVal;
 }
 
