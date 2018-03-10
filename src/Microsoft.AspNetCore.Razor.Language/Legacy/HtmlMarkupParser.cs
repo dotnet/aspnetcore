@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     {
         private const string ScriptTagName = "script";
 
+        private static readonly HtmlSymbol[] nonAllowedHtmlCommentEnding = new[] { new HtmlSymbol("-", HtmlSymbolType.Text), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
+
         private static readonly char[] ValidAfterTypeAttributeNameCharacters = { ' ', '\t', '\r', '\n', '\f', '=' };
         private SourceLocation _lastTagStart = SourceLocation.Zero;
         private HtmlSymbol _bufferedOpenAngle;
@@ -649,16 +651,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal static bool IsCommentContentDisallowed(IEnumerable<HtmlSymbol> sequence)
         {
             var reversedSequence = sequence.Reverse();
-            var disallowEnding = new[] { new HtmlSymbol("-", HtmlSymbolType.Text), new HtmlSymbol("!", HtmlSymbolType.Bang), new HtmlSymbol("<", HtmlSymbolType.OpenAngle) };
             var index = 0;
             foreach (var item in reversedSequence)
             {
-                if (!item.Equals(disallowEnding[index++]))
+                if (!item.Equals(nonAllowedHtmlCommentEnding[index++]))
                 {
                     return false;
                 }
 
-                if (index == disallowEnding.Length)
+                if (index == nonAllowedHtmlCommentEnding.Length)
                 {
                     return true;
                 }

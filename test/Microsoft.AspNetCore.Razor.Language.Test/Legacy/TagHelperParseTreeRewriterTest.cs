@@ -1111,7 +1111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Rewrite_AllowsSimpleHtmlCommentsAsChildren()
         {
-            // Arrangestring documentContent,
+            // Arrange
             IEnumerable<string> allowedChildren = new List<string> { "b" };
             string literal = "asdf";
             string commentOutput = "Hello World";
@@ -1149,9 +1149,60 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void Rewrite_DoesntAllowSimpleHtmlCommentsAsChildrenWhenFeatureFlagIsOff()
+        {
+            // Arrange
+            Func<string, string, string, int, int, RazorDiagnostic> nestedTagError =
+                    (childName, parentName, allowed, location, length) =>
+                    RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
+                        new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), childName, parentName, allowed);
+            Func<string, string, int, int, RazorDiagnostic> nestedContentError =
+                (parentName, allowed, location, length) =>
+                RazorDiagnosticFactory.CreateTagHelper_CannotHaveNonTagContent(
+                    new SourceSpan(absoluteIndex: location, lineIndex: 0, characterIndex: location, length: length), parentName, allowed);
+
+            IEnumerable<string> allowedChildren = new List<string> { "b" };
+            string comment1 = "Hello";
+            string expectedOutput = $"<p><!--{comment1}--></p>";
+
+            var pTagHelperBuilder = TagHelperDescriptorBuilder
+                .Create("PTagHelper", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"));
+            foreach (var childTag in allowedChildren)
+            {
+                pTagHelperBuilder.AllowChildTag(childTag);
+            }
+
+            var descriptors = new TagHelperDescriptor[]
+            {
+                pTagHelperBuilder.Build()
+            };
+
+            var factory = new SpanFactory();
+            var blockFactory = new BlockFactory(factory);
+
+            var expectedMarkup = new MarkupBlock(
+                new MarkupTagHelperBlock("p",
+                    blockFactory.HtmlCommentBlock(comment1)));
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                expectedOutput,
+                expectedMarkup,
+                new[]
+                {
+                    nestedContentError("p", "b", 3, 4),
+                    nestedContentError("p", "b", 7, 5),
+                    nestedContentError("p", "b", 12, 3),
+                },
+                featureFlags: RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_0));
+        }
+
+        [Fact]
         public void Rewrite_FailsForContentWithCommentsAsChildren()
         {
-            // Arrangestring documentContent,
+            // Arrange
             Func<string, string, string, int, int, RazorDiagnostic> nestedTagError =
                     (childName, parentName, allowed, location, length) =>
                     RazorDiagnosticFactory.CreateTagHelper_InvalidNestedTag(
@@ -1203,7 +1254,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Rewrite_AllowsRazorCommentsAsChildren()
         {
-            // Arrangestring documentContent,
+            // Arrange
             IEnumerable<string> allowedChildren = new List<string> { "b" };
             string literal = "asdf";
             string commentOutput = $"@*{literal}*@";
@@ -1248,7 +1299,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void Rewrite_AllowsRazorMarkupInHtmlComment()
         {
-            // Arrangestring documentContent,
+            // Arrange
             IEnumerable<string> allowedChildren = new List<string> { "b" };
             string literal = "asdf";
             string part1 = "Hello ";

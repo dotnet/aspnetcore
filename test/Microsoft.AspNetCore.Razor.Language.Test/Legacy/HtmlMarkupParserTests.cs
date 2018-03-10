@@ -134,6 +134,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Test.Legacy
         }
 
         [Fact]
+        public void IsHtmlCommentAhead_ReturnsTrueForCommentWithCodeInside()
+        {
+            // Arrange
+            var sut = CreateTestParserForContent("-- not closed @DateTime.Now comment-->");
+
+            // Act & Assert
+            Assert.True(sut.IsHtmlCommentAhead());
+        }
+
+        [Fact]
         public void IsCommentContentDisallowed_ReturnsFalseForAllowedContent()
         {
             // Arrange
