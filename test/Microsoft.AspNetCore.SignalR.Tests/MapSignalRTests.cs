@@ -24,6 +24,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public void NotAddingSignalRServiceThrows()
+        {
+            var t = new WebHostBuilder()
+            .UseKestrel()
+            .Configure(app =>
+            {
+                var ex = Assert.Throws<InvalidOperationException>(() => {
+                    app.UseSignalR(options =>
+                    {
+                        options.MapHub<AuthHub>("/overloads");
+                    });
+                });
+
+                Assert.Equal("Unable to find the SignalR service. Please add it by calling 'IServiceCollection.AddSignalR()'.", ex.Message);
+            })
+            .Build();
+
+        }
+
+        [Fact]
         public void MapHubFindsAuthAttributeOnHub()
         {
             var authCount = 0;
